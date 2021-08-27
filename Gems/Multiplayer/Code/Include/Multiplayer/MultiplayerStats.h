@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -54,10 +50,13 @@ namespace Multiplayer
         AZStd::vector<ComponentStats> m_componentStats;
 
         void ReserveComponentStats(NetComponentId netComponentId, uint16_t propertyCount, uint16_t rpcCount);
+        void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
+        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, NetComponentId netComponentId);
+        void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
         void RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
         void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
-        void RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
-        void RecordRpcReceived(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
         void TickStats(AZ::TimeMs metricFrameTimeMs);
 
         Metric CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const;
@@ -68,5 +67,31 @@ namespace Multiplayer
         Metric CalculateTotalPropertyUpdateRecvMetrics() const;
         Metric CalculateTotalRpcsSentMetrics() const;
         Metric CalculateTotalRpcsRecvMetrics() const;
+
+        struct Events
+        {
+            AZ::Event<AzNetworking::SerializerMode, AZ::EntityId, const char*> m_entitySerializeStart;
+            AZ::Event<AzNetworking::SerializerMode, NetComponentId> m_componentSerializeEnd;
+            AZ::Event<AzNetworking::SerializerMode, AZ::EntityId, const char*> m_entitySerializeStop;
+            AZ::Event<NetComponentId, PropertyIndex, uint32_t> m_propertySent;
+            AZ::Event<NetComponentId, PropertyIndex, uint32_t> m_propertyReceived;
+            AZ::Event<AZ::EntityId, const char*, NetComponentId, RpcIndex, uint32_t> m_rpcSent;
+            AZ::Event<AZ::EntityId, const char*, NetComponentId, RpcIndex, uint32_t> m_rpcReceived;
+        };
+
+        Events m_events;
+
+        struct EventHandlers
+        {
+            AZ::Event<AzNetworking::SerializerMode, AZ::EntityId, const char*>::Handler m_entitySerializeStart;
+            AZ::Event<AzNetworking::SerializerMode, NetComponentId>::Handler m_componentSerializeEnd;
+            AZ::Event<AzNetworking::SerializerMode, AZ::EntityId, const char*>::Handler m_entitySerializeStop;
+            AZ::Event<NetComponentId, PropertyIndex, uint32_t>::Handler m_propertySent;
+            AZ::Event<NetComponentId, PropertyIndex, uint32_t>::Handler m_propertyReceived;
+            AZ::Event<AZ::EntityId, const char*, NetComponentId, RpcIndex, uint32_t>::Handler m_rpcSent;
+            AZ::Event<AZ::EntityId, const char*, NetComponentId, RpcIndex, uint32_t>::Handler m_rpcReceived;
+        };
+
+        void ConnectHandlers(EventHandlers& handlers);
     };
 }

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -760,7 +756,7 @@ namespace EditorPythonBindings
                             }
 
                             AZStd::string subModuleName = pybind11::cast<AZStd::string>(subModule.attr("__name__"));
-                            PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClassMethod, subModuleName, globalMethodName, behaviorClass, behaviorMethod);
+                            PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassMethod, subModuleName, globalMethodName, behaviorClass, behaviorMethod);
                         }
                         else
                         {
@@ -786,7 +782,7 @@ namespace EditorPythonBindings
                         pybind11::setattr(subModule, constantPropertyName.c_str(), constantValue);
 
                         AZStd::string subModuleName = pybind11::cast<AZStd::string>(subModule.attr("__name__"));
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, constantPropertyName, behaviorProperty);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, constantPropertyName, behaviorProperty);
                     }
                 }
 
@@ -813,11 +809,11 @@ namespace EditorPythonBindings
                         {
                             return ConstructPythonProxyObjectByTypename(behaviorClassName, pythonArgs);
                         });
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, properSyntax);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, properSyntax);
                     }
                     else
                     {
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClass, subModuleName, behaviorClass);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClass, subModuleName, behaviorClass);
                     }
                 }
             }

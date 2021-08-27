@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 """
@@ -85,7 +81,7 @@ class TestSlopeFilterComponentAndOverrides(EditorTestHelper):
         # 3) Add surfaces to plant on. This will include a flat surface and a sphere mesh to provide a sloped surface
         dynveg.create_surface_entity("Planting Surface", center_point, 32.0, 32.0, 1.0)
         sloped_surface_center = math.Vector3(512.0, 512.0, 38.0)
-        dynveg.create_mesh_surface_entity_with_slopes("Sloped Planting Surface", sloped_surface_center, 5.0, 5.0, 5.0)
+        dynveg.create_mesh_surface_entity_with_slopes("Sloped Planting Surface", sloped_surface_center, 10.0)
 
         # Set instances to spawn on a center snap point to avoid unexpected instances around the edges of the box shape
         veg_system_settings_component = hydra.add_level_component("Vegetation System Settings")
@@ -105,7 +101,7 @@ class TestSlopeFilterComponentAndOverrides(EditorTestHelper):
         spawner_entity.get_set_test(3, "Configuration|Slope Max", 45)
 
         # 6) Validate instance counts post-filter: instances should only plant on slopes between 20-45 degrees
-        num_expected_slopes_post_filter = 44
+        num_expected_slopes_post_filter = 48
         slope_min_max_success = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
             spawner_entity.id, num_expected_slopes_post_filter), 5.0)
         self.test_success = slope_min_max_success and self.test_success
@@ -119,7 +115,7 @@ class TestSlopeFilterComponentAndOverrides(EditorTestHelper):
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Slope Filter|Max", 20)
 
         # 9) Validate instance counts post-filter: instances should only plant on slopes between 5-20 degrees
-        num_expected_slopes_post_filter_overrides = 16
+        num_expected_slopes_post_filter_overrides = 12
         overrides_min_max_success = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
             spawner_entity.id, num_expected_slopes_post_filter_overrides), 5.0)
         self.test_success = overrides_min_max_success and self.test_success

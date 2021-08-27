@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/Allocators.h>
 #include "BlendSpaceParamEvaluator.h"
@@ -104,14 +100,14 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Vector3 position(transform.mPosition);
+        AZ::Vector3 position(transform.m_position);
         float distance = 0.0f;
         float time = sampleTimeStep;
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            distance += (transform.mPosition - position).GetLength();
-            position = transform.mPosition;
+            distance += (transform.m_position - position).GetLength();
+            position = transform.m_position;
         }
 
         return distance / duration;
@@ -146,16 +142,16 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Quaternion rotation(transform.mRotation);
+        AZ::Quaternion rotation(transform.m_rotation);
         float totalAngle = 0.0f;
         float time = sampleTimeStep;
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            AZ::Quaternion deltaRotation = transform.mRotation * rotation.GetConjugate();
+            AZ::Quaternion deltaRotation = transform.m_rotation * rotation.GetConjugate();
             const float angle = -MCore::GetEulerZ(deltaRotation);// negating because we prefer the convention of clockwise being +ve
             totalAngle += angle;
-            rotation = transform.mRotation;
+            rotation = transform.m_rotation;
         }
 
         return totalAngle / duration;
@@ -189,7 +185,7 @@ namespace EMotionFX
         Transform endTransform;
         motion->CalcNodeTransform(&motionInstance, &endTransform, actor, node, duration, retargeting);
 
-        AZ::Vector3 diffVec(endTransform.mPosition - startTransform.mPosition);
+        AZ::Vector3 diffVec(endTransform.m_position - startTransform.m_position);
         return ::atan2f(diffVec.GetX(), diffVec.GetY());
     }
 
@@ -222,19 +218,19 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Vector3 position(transform.mPosition);
+        AZ::Vector3 position(transform.m_position);
         float slopeSum = 0.0f;
         float time = sampleTimeStep;
         uint32 count = 0; // number of samples added to slopeSum
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            AZ::Vector3 diffVec(transform.mPosition - position);
+            AZ::Vector3 diffVec(transform.m_position - position);
             float horizontalDistance = AZ::Vector2(diffVec.GetX(), diffVec.GetY()).GetLength();
             if (horizontalDistance > 0)
             {
                 slopeSum += atan2f(diffVec.GetZ(), horizontalDistance);
-                position = transform.mPosition;
+                position = transform.m_position;
                 count++;
             }
         }
@@ -272,16 +268,16 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Quaternion rotation(transform.mRotation);
+        AZ::Quaternion rotation(transform.m_rotation);
         float totalTurnAngle = 0.0f;
         float time = sampleTimeStep;
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            AZ::Quaternion deltaRotation = transform.mRotation * rotation.GetConjugate();
+            AZ::Quaternion deltaRotation = transform.m_rotation * rotation.GetConjugate();
             const float angle = -MCore::GetEulerZ(deltaRotation);// negating because we prefer the convention of clockwise being +ve
             totalTurnAngle += angle;
-            rotation = transform.mRotation;
+            rotation = transform.m_rotation;
         }
 
         return totalTurnAngle;
@@ -315,7 +311,7 @@ namespace EMotionFX
         Transform endTransform;
         motion->CalcNodeTransform(&motionInstance, &endTransform, actor, node, duration, retargeting);
 
-        return (endTransform.mPosition - startTransform.mPosition).GetLength();
+        return (endTransform.m_position - startTransform.m_position).GetLength();
     }
 
     const char* BlendSpaceTravelDistanceParamEvaluator::GetName() const
@@ -349,15 +345,15 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Vector3 position(transform.mPosition);
+        AZ::Vector3 position(transform.m_position);
         float distance = 0.0f;
         float time = sampleTimeStep;
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            AZ::Vector3 moveVec(transform.mPosition - position);
+            AZ::Vector3 moveVec(transform.m_position - position);
             distance += moveVec.Dot(xAxis);
-            position = transform.mPosition;
+            position = transform.m_position;
         }
 
         return distance / duration;
@@ -394,15 +390,15 @@ namespace EMotionFX
 
         Transform transform;
         motion->CalcNodeTransform(&motionInstance, &transform, actor, node, 0, retargeting);
-        AZ::Vector3 position(transform.mPosition);
+        AZ::Vector3 position(transform.m_position);
         float distance = 0.0f;
         float time = sampleTimeStep;
         for (uint32 i = 1; i < numSamples; ++i, time += sampleTimeStep)
         {
             motion->CalcNodeTransform(&motionInstance, &transform, actor, node, time, retargeting);
-            AZ::Vector3 moveVec(transform.mPosition - position);
+            AZ::Vector3 moveVec(transform.m_position - position);
             distance += moveVec.Dot(yAxis);
-            position = transform.mPosition;
+            position = transform.m_position;
         }
 
         return distance / duration;

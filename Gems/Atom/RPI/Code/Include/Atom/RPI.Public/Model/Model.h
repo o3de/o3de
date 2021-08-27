@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -32,6 +28,7 @@ namespace AZ
             : public Data::InstanceData
         {
             friend class ModelSystem;
+
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
             AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
@@ -52,8 +49,6 @@ namespace AZ
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;
-
-            const AZ::Aabb& GetAabb() const;
 
             const Data::Asset<ModelAsset>& GetModelAsset() const;
 
@@ -95,8 +90,8 @@ namespace AZ
         private:
             Model() = default;
 
-            static Data::Instance<Model> CreateInternal(ModelAsset& modelAsset);
-            RHI::ResultCode Init(ModelAsset& modelAsset);
+            static Data::Instance<Model> CreateInternal(const Data::Asset<ModelAsset>& modelAsset);
+            RHI::ResultCode Init(const Data::Asset<ModelAsset>& modelAsset);
 
             AZStd::fixed_vector<Data::Instance<ModelLod>, ModelLodAsset::LodCountMax> m_lods;
             Data::Asset<ModelAsset> m_modelAsset;
@@ -105,8 +100,6 @@ namespace AZ
 
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;
-
-            AZ::Aabb m_aabb;
         };
     } // namespace RPI
 } // namespace AZ

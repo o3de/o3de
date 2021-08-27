@@ -1,20 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <QAbstractItemModel>
 #include <QListView>
-#include <Maestro/Bus/EditorSequenceBus.h>
-#include <Maestro/Bus/SequenceComponentBus.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -29,38 +23,26 @@ namespace Camera
         // Each item in the list holds the camera's entityId and name
         struct CameraListItem
             : public AZ::EntityBus::Handler
-            , public Maestro::SequenceComponentNotificationBus::Handler
         {
         public:
             CameraListItem(const AZ::EntityId& cameraId);
-            // Used for a virtual camera that is really whatever camera is being
-            // used for a Track View Sequence.
-            CameraListItem(const char* cameraName, const AZ::EntityId& sequenceId);
             ~CameraListItem();
 
             void OnEntityNameChanged(const AZStd::string& name) override { m_cameraName = name; }
 
-            //////////////////////////////////////////////////////////////////////////
-            /// Maestro::SequenceComponentNotificationBus::Handler
-            void OnCameraChanged(const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
             bool operator<(const CameraListItem& rhs);
 
             AZ::EntityId m_cameraId;
             AZStd::string m_cameraName;
-            AZ::EntityId m_sequenceId;
         };
 
         // holds a list of camera items
         struct CameraListModel
             : public QAbstractListModel
             , public CameraNotificationBus::Handler
-            , public Maestro::EditorSequenceNotificationBus::Handler
         {
         public:
-
-            static const char* m_sequenceCameraName;
-
-            CameraListModel(QObject* myParent);
+            explicit CameraListModel(QWidget* myParent);
             ~CameraListModel();
 
             // QAbstractItemModel interface
@@ -71,9 +53,6 @@ namespace Camera
             void OnCameraAdded(const AZ::EntityId& cameraId) override;
             void OnCameraRemoved(const AZ::EntityId& cameraId) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            /// Maestro::EditorSequenceNotificationBus::Handler
-            void OnSequenceSelected(const AZ::EntityId& sequenceEntityId) override;
             QModelIndex GetIndexForEntityId(const AZ::EntityId entityId);
 
         private:
@@ -86,8 +65,6 @@ namespace Camera
             : public QListView
             , public EditorCameraNotificationBus::Handler
             , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-            , public Maestro::EditorSequenceNotificationBus::Handler
-            , public Maestro::SequenceComponentNotificationBus::Handler
         {
         public:
             ViewportCameraSelectorWindow(QWidget* parent = nullptr);
@@ -104,14 +81,6 @@ namespace Camera
             // make sure we can only use this window while in Edit mode
             void OnStartPlayInEditor() override;
             void OnStopPlayInEditor() override;
-
-            //////////////////////////////////////////////////////////////////////////
-            /// Maestro::EditorSequenceNotificationBus::Handler
-            void OnSequenceSelected(const AZ::EntityId& sequenceEntityId) override;
-
-            //////////////////////////////////////////////////////////////////////////
-            /// Maestro::SequenceComponentNotificationBus::Handler
-            void OnCameraChanged(const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
 
             void mouseMoveEvent(QMouseEvent*) override;
             void mouseDoubleClickEvent(QMouseEvent* event) override;

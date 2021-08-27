@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ShaderBuilderUtility.h"
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -25,7 +21,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -464,6 +460,10 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
+                }
                 else if (platformIdentifier == "mac")
                 {
                     platformId = AzFramework::PlatformId::MAC_ID;
@@ -811,91 +811,6 @@ namespace AZ
                     }
                 }
                 return success;
-            }
-
-            
-            //! Returns a list of acceptable default entry point names
-            static void GetAcceptableDefaultEntryPoints(
-                const AZStd::vector<FunctionData>& azslFunctionDataList,
-                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& defaultEntryPoints)
-            {
-                for (const auto& func : azslFunctionDataList)
-                {
-                    if (!func.m_hasShaderStageVaryings)
-                    {
-                        // Not declaring any semantics for a shader entry is valid, but unusual.
-                        // A shader entry with no semantics must be explicitly listed and won't be selected by default.
-                        continue;
-                    }
-
-                    if (func.m_name.starts_with("VS") || func.m_name.ends_with("VS"))
-                    {
-                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Vertex;
-                        AZ_TracePrintf(
-                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Vertex shader entry point.\n", func.m_name.c_str());
-                    }
-                    else if (func.m_name.starts_with("PS") || func.m_name.ends_with("PS"))
-                    {
-                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Fragment;
-                        AZ_TracePrintf(
-                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Fragment shader entry point.\n",
-                            func.m_name.c_str());
-                    }
-                    else if (func.m_name.starts_with("CS") || func.m_name.ends_with("CS"))
-                    {
-                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Compute;
-                        AZ_TracePrintf(
-                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Compute shader entry point.\n", func.m_name.c_str());
-                    }
-                }
-            }
-
-
-            // DEPRECATED [ATOM-15472
-            //! Returns a list of acceptable default entry point names
-            //! This function
-            static void GetAcceptableDefaultEntryPoints(
-                const AzslData& azslData, AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& defaultEntryPoints)
-            {
-                return GetAcceptableDefaultEntryPoints(azslData.m_functions, defaultEntryPoints);
-            }
-
-
-            void GetDefaultEntryPointsFromFunctionDataList(
-                const AZStd::vector<FunctionData> azslFunctionDataList,
-                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints)
-            {
-                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPoints;
-                GetAcceptableDefaultEntryPoints(azslFunctionDataList, defaultEntryPoints);
-
-                for (const auto& functionData : azslFunctionDataList)
-                {
-                    for (const auto& defaultEntryPoint : defaultEntryPoints)
-                    {
-                        // Equal defaults to case insensitive compares...
-                        if (AzFramework::StringFunc::Equal(defaultEntryPoint.first.c_str(), functionData.m_name.c_str()))
-                        {
-                            shaderEntryPoints[defaultEntryPoint.first] = defaultEntryPoint.second;
-                            break; // stop looping default entry points and go to the next shader function
-                        }
-                    }
-                }
-            }
-
-            AZStd::string GetAcceptableDefaultEntryPointNames(const AzslData& azslData)
-            {
-                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPointList;
-                GetAcceptableDefaultEntryPoints(azslData, defaultEntryPointList);
-
-                AZStd::vector<AZStd::string> defaultEntryPointNamesList;
-                for (const auto& shaderEntryPoint : defaultEntryPointList)
-                {
-                    defaultEntryPointNamesList.push_back(shaderEntryPoint.first);
-                }
-                AZStd::string shaderEntryPoints;
-                AzFramework::StringFunc::Join(
-                    shaderEntryPoints, defaultEntryPointNamesList.begin(), defaultEntryPointNamesList.end(), ", ");
-                return AZStd::move(shaderEntryPoints);
             }
 
         }  // namespace ShaderBuilderUtility

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __RENDERGL_GLSLSHADER_H
 #define __RENDERGL_GLSLSHADER_H
@@ -18,7 +14,7 @@
 #include "Shader.h"
 
 // include OpenGL
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <QOpenGLExtraFunctions>
@@ -40,13 +36,13 @@ namespace RenderGL
         void Deactivate() override;
         bool Validate() override;
 
-        uint32 FindAttributeLocation(const char* name);
+        size_t FindAttributeLocation(const char* name);
         uint32 GetType() const override;
 
-        MCORE_INLINE unsigned int GetProgram() const                                    { return mProgram; }
-        bool CheckIfIsDefined(const char* attributeName);
+        MCORE_INLINE unsigned int GetProgram() const                                    { return m_program; }
+        bool CheckIfIsDefined(const char* attributeName) const;
 
-        bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines);
+        bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines);
         void SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset) override;
 
         void SetUniform(const char* name, float value) override;
@@ -69,16 +65,16 @@ namespace RenderGL
         {
             ShaderParameter(const char* name, GLint loc, bool isAttrib);
 
-            AZStd::string       mName;
-            GLint               mLocation;
-            GLenum              mType;
-            uint32              mSize;
-            uint32              mTextureUnit;
-            bool                mIsAttribute;
+            AZStd::string       m_name;
+            GLint               m_location;
+            GLenum              m_type;
+            uint32              m_size;
+            uint32              m_textureUnit;
+            bool                m_isAttribute;
         };
 
-        uint32 FindAttributeIndex(const char* name);
-        uint32 FindUniformIndex(const char* name);
+        size_t FindAttributeIndex(const char* name);
+        size_t FindUniformIndex(const char* name);
         ShaderParameter* FindAttribute(const char* name);
         ShaderParameter* FindUniform(const char* name);
 
@@ -86,19 +82,19 @@ namespace RenderGL
         template<class T>
         void InfoLog(GLuint object, T func);
 
-        AZ::IO::Path                    mFileName;
+        AZ::IO::Path                    m_fileName;
 
-        MCore::Array<uint32>            mActivatedAttribs;
-        MCore::Array<uint32>            mActivatedTextures;
-        MCore::Array<ShaderParameter>   mUniforms;
-        MCore::Array<ShaderParameter>   mAttributes;
-        MCore::Array<AZStd::string>     mDefines;
+        AZStd::vector<size_t>            m_activatedAttribs;
+        AZStd::vector<size_t>            m_activatedTextures;
+        AZStd::vector<ShaderParameter>   m_uniforms;
+        AZStd::vector<ShaderParameter>   m_attributes;
+        AZStd::vector<AZStd::string>     m_defines;
 
-        unsigned int                    mVertexShader;
-        unsigned int                    mPixelShader;
-        unsigned int                    mProgram;
+        unsigned int                    m_vertexShader;
+        unsigned int                    m_pixelShader;
+        unsigned int                    m_program;
 
-        uint32                          mTextureUnit;
+        uint32                          m_textureUnit;
     };
 }
 

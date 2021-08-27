@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "SystemComponentFixture.h"
@@ -86,9 +82,9 @@ namespace EMotionFX
             m_morphSetup->AddMorphTarget(morphTarget);
 
             // Without this call, the bind pose does not know about newly added
-            // morph target (mMorphWeights.GetLength() == 0)
+            // morph target (m_morphWeights.size() == 0)
             m_actor->ResizeTransformData();
-            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 
             m_animGraph = AZStd::make_unique<AnimGraph>();
 
@@ -120,7 +116,7 @@ namespace EMotionFX
             // InitAfterLoading() is called
             morphTargetNode->AddConnection(
                 parameterNode,
-                parameterNode->FindOutputPortIndex("FloatParam"),
+                aznumeric_caster(parameterNode->FindOutputPortIndex("FloatParam")),
                 BlendTreeMorphTargetNode::PORTID_INPUT_WEIGHT
             );
             finalNode->AddConnection(

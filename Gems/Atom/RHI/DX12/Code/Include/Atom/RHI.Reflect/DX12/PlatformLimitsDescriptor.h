@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,11 +23,11 @@ namespace AZ
             DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             DESCRIPTOR_HEAP_TYPE_SAMPLER,
             DESCRIPTOR_HEAP_TYPE_RTV,
-            DESCRIPTOR_HEAP_TYPE_DSV);     
+            DESCRIPTOR_HEAP_TYPE_DSV);
 
         struct FrameGraphExecuterData
         {
-            AZ_TYPE_INFO(FrameGraphExecuterData, "{C21547F6-DE48-4F82-B812-1A187101AB4E}");
+            AZ_TYPE_INFO(AZ::DX12::FrameGraphExecuterData, "{C21547F6-DE48-4F82-B812-1A187101AB4E}");
             static void Reflect(AZ::ReflectContext* context);
 
             //Cost per draw/dispatch item
@@ -56,15 +52,15 @@ namespace AZ
         {
             using Base = RHI::PlatformLimitsDescriptor;
         public:
-            AZ_RTTI(DX12::PlatformLimitsDescriptor, "{ADCC8071-FCE4-4FA1-A048-DF8982951A0D}", Base);
-            AZ_CLASS_ALLOCATOR(PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::DX12::PlatformLimitsDescriptor, "{ADCC8071-FCE4-4FA1-A048-DF8982951A0D}", Base);
+            AZ_CLASS_ALLOCATOR(AZ::DX12::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
             PlatformLimitsDescriptor() = default;
 
             static const uint32_t NumHeapFlags = 2;// D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE + 1;
 
-            //! string key: stringifed version of DESCRIPTOR_HEAP_TYPE.
+            //! string key: string version of DESCRIPTOR_HEAP_TYPE.
             //! int array: Max count for descriptors 
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
 

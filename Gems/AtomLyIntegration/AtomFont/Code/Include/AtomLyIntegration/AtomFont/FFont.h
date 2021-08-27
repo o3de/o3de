@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Font class.
 
@@ -22,7 +18,8 @@
 #include <vector>
 #include <CryCommon/Cry_Math.h>
 #include <CryCommon/Cry_Color.h>
-#include <CryCommon/CryString.h>
+#include <CryCommon/VertexFormats.h>
+#include <CryCommon/IRenderer.h>
 #include "AtomFont.h"
 
 #include <AzCore/std/parallel/mutex.h>
@@ -125,7 +122,7 @@ namespace AZ
 
         struct FontEffect
         {
-            string m_name;
+            AZStd::string m_name;
             std::vector<FontRenderingPass> m_passes;
 
             FontEffect(const char* name)
@@ -181,7 +178,7 @@ namespace AZ
         void DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx) override;
         Vec2 GetTextSize(const char* str, const bool asciiMultiLine, const TextDrawContext& ctx) override;
         size_t GetTextLength(const char* str, const bool asciiMultiLine) const override;
-        void WrapText(string& result, float maxWidth, const char* str, const TextDrawContext& ctx) override;
+        void WrapText(AZStd::string& result, float maxWidth, const char* str, const TextDrawContext& ctx) override;
         void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {};
         void GetGradientTextureCoord(float& minU, float& minV, float& maxU, float& maxV) const override;
         unsigned int GetEffectId(const char* effectName) const override;
@@ -218,7 +215,7 @@ namespace AZ
         FFont(AtomFont* atomFont, const char* fontName);
 
         FontTexture* GetFontTexture() const { return m_fontTexture; }
-        const string& GetName() const { return m_name; }
+        const AZStd::string& GetName() const { return m_name; }
 
         FontEffect* AddEffect(const char* effectName);
         FontEffect* GetDefaultEffect();
@@ -294,8 +291,8 @@ namespace AZ
         static constexpr uint32_t NumBuffers = 2;
         static constexpr float WindowScaleWidth = 800.0f;
         static constexpr float WindowScaleHeight = 600.0f;
-        string m_name;
-        string m_curPath;
+        AZStd::string m_name;
+        AZStd::string m_curPath;
 
         AZ::Name m_dynamicDrawContextName = AZ::Name(AZ::AtomFontDynamicDrawContextName);
 
@@ -344,7 +341,7 @@ namespace AZ
         FFont* font = const_cast<FFont*>(static_cast<const FFont*>(ptr));
         if (font && font->m_atomFont)
         {
-            font->m_atomFont->UnregisterFont(font->m_name);
+            font->m_atomFont->UnregisterFont(font->m_name.c_str());
             font->m_atomFont = nullptr;
         }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <MysticQt/Source/MysticQtManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/PlaybackOptionsGroup.h>
@@ -85,7 +81,7 @@ namespace EMStudio
         {
             const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
 
-            const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+            const size_t numSelectedMotions = selection.GetNumSelectedMotions();
             const bool isEnabled = (numSelectedMotions == 1);
 
             m_loopForeverAction->setEnabled(isEnabled);
@@ -102,8 +98,8 @@ namespace EMStudio
                 MotionWindowPlugin* motionWindowPlugin = TimeViewToolBar::GetMotionWindowPlugin();
                 if (motionWindowPlugin)
                 {
-                    const uint32 numMotions = selection.GetNumSelectedMotions();
-                    for (uint32 i = 0; i < numMotions; ++i)
+                    const size_t numMotions = selection.GetNumSelectedMotions();
+                    for (size_t i = 0; i < numMotions; ++i)
                     {
                         MotionWindowPlugin::MotionTableEntry* entry = motionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
                         if (!entry)
@@ -112,18 +108,18 @@ namespace EMStudio
                             continue;
                         }
 
-                        EMotionFX::Motion* motion = entry->mMotion;
+                        EMotionFX::Motion* motion = entry->m_motion;
                         const EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
-                        m_loopForeverAction->setChecked(defaultPlayBackInfo->mNumLoops == EMFX_LOOPFOREVER);
-                        m_mirrorAction->setChecked(defaultPlayBackInfo->mMirrorMotion);
-                        m_inPlaceAction->setChecked(defaultPlayBackInfo->mInPlace);
-                        m_retargetAction->setChecked(defaultPlayBackInfo->mRetarget);
+                        m_loopForeverAction->setChecked(defaultPlayBackInfo->m_numLoops == EMFX_LOOPFOREVER);
+                        m_mirrorAction->setChecked(defaultPlayBackInfo->m_mirrorMotion);
+                        m_inPlaceAction->setChecked(defaultPlayBackInfo->m_inPlace);
+                        m_retargetAction->setChecked(defaultPlayBackInfo->m_retarget);
 
-                        const bool playBackward = (defaultPlayBackInfo->mPlayMode == EMotionFX::PLAYMODE_BACKWARD);
+                        const bool playBackward = (defaultPlayBackInfo->m_playMode == EMotionFX::PLAYMODE_BACKWARD);
                         m_backwardAction->setChecked(playBackward);
 
-                        SetPlaySpeed(defaultPlayBackInfo->mPlaySpeed);
+                        SetPlaySpeed(defaultPlayBackInfo->m_playSpeed);
                     }
                 }
             }

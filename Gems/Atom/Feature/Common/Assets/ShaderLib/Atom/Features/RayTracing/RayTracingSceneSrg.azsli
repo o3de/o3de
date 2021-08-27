@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -156,15 +152,15 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_INDEX_BUFFER_OFFSET        0
     #define MESH_POSITION_BUFFER_OFFSET     1
     #define MESH_NORMAL_BUFFER_OFFSET       2   
-    #define MESH_TANGENT_BUFFER_OFFSET      3   
-    #define MESH_BITANGENT_BUFFER_OFFSET    4   
 
-    // buffer flag bits indicating if optional buffers are present
-    #define MESH_BUFFER_FLAG_UV             1
+    // buffer flag bits indicating if optional buffers are present (note: these are bit masks)
+    #define MESH_BUFFER_FLAG_TANGENT        (1 << 0)
+    #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
+    #define MESH_BUFFER_FLAG_UV             (1 << 2)
 
     // Unbounded array of mesh stream buffers:
-    // - Index, Position, Normal, Tangent, and Bitangent stream buffers are always present
-    // - Optional stream buffers such as UV are indicated in the MeshInfo.m_bufferFlags field
+    // - Index, Position, Normal stream buffers are always present
+    // - Optional stream buffers such as Tangent, Bitangent, and UV are indicated in the MeshInfo.m_bufferFlags field
     // - Buffers for a particular mesh start at MeshInfo.m_bufferStartIndex
     ByteAddressBuffer m_meshBuffers[];
 }

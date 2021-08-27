@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformIncl.h>
 
@@ -83,8 +78,8 @@ namespace ScriptCanvasDeveloper
     {
         CompoundAction* compoundAction = aznew CompoundAction();
 
-        QPoint startPoint(m_scenePoint.x() - 5, m_scenePoint.y() - 5);
-        QPoint endPoint(m_scenePoint.x() + 5, m_scenePoint.y() + 5);
+        QPoint startPoint(static_cast<int>(m_scenePoint.x() - 5.0), static_cast<int>(m_scenePoint.y() - 5.0));
+        QPoint endPoint(static_cast<int>(m_scenePoint.x() + 5.0), static_cast<int>(m_scenePoint.y() + 5.0));
 
         QRect sceneRect = QRect(startPoint, endPoint);
 
@@ -155,8 +150,8 @@ namespace ScriptCanvasDeveloper
     {
         CompoundAction* compoundAction = aznew CompoundAction();
 
-        QPoint startPoint(m_scenePoint.x() - 5, m_scenePoint.y() - 5);
-        QPoint endPoint(m_scenePoint.x() + 5, m_scenePoint.y() + 5);
+        QPoint startPoint(static_cast<int>(m_scenePoint.x() - 5.0), static_cast<int>(m_scenePoint.y() - 5.0));
+        QPoint endPoint(static_cast<int>(m_scenePoint.x() + 5.0), static_cast<int>(m_scenePoint.y() + 5.0));
 
         QRect sceneRect = QRect(startPoint, endPoint);
 

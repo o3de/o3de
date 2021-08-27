@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -58,11 +54,11 @@ namespace EMStudio
         bool CheckIfIsCloseToHead(const QPoint& point) const override;
         bool CheckIfIsCloseToTail(const QPoint& point) const override;
 
-        uint32 GetType() override                           { return TYPE_ID; }
+        uint32 GetType() const override                     { return TYPE_ID; }
 
         EMotionFX::AnimGraphTransitionCondition* FindCondition(const QPoint& mousePos);
 
-        bool GetIsWildcardTransition() const override       { return mIsWildcardConnection; }
+        bool GetIsWildcardTransition() const override       { return m_isWildcardConnection; }
 
         static void RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
             QPoint start, QPoint end,
@@ -74,7 +70,7 @@ namespace EMStudio
     private:
         void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end);
 
-        bool mIsWildcardConnection;
+        bool m_isWildcardConnection;
     };
 
 
@@ -102,8 +98,8 @@ namespace EMStudio
         int32 CalcRequiredHeight() const override;
         int32 CalcRequiredWidth() override;
 
-        QRect CalcInputPortRect(uint32 portNr) override;
-        QRect CalcOutputPortRect(uint32 portNr) override;
+        QRect CalcInputPortRect(AZ::u16 portNr) override;
+        QRect CalcOutputPortRect(AZ::u16 portNr) override;
 
         void UpdateTextPixmap() override;
 

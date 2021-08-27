@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ
 {
@@ -23,7 +20,9 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            DWORD fileAttributes = GetFileAttributesA(resolvedPath);
+            wchar_t resolvedPathW[AZ_MAX_PATH_LEN];
+            AZStd::to_wstring(resolvedPathW, AZ_MAX_PATH_LEN, resolvedPath);
+            DWORD fileAttributes = GetFileAttributesW(resolvedPathW);
             if (fileAttributes == INVALID_FILE_ATTRIBUTES)
             {
                 return false;
@@ -37,7 +36,7 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZ::OSString searchPattern;
+            AZStd::string searchPattern;
             if ((resolvedPath[0] == 0) || (resolvedPath[1] == 0))
             {
                 return ResultCode::Error; // not a valid path.
@@ -58,7 +57,9 @@ namespace AZ
             searchPattern += "\\*.*"; // use our own filtering function!
 
             WIN32_FIND_DATA findData;
-            HANDLE hFind = FindFirstFile(searchPattern.c_str(), &findData);
+            AZStd::wstring searchPatternW;
+            AZStd::to_wstring(searchPatternW, searchPattern.c_str());
+            HANDLE hFind = FindFirstFileW(searchPatternW.c_str(), &findData);
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
@@ -67,15 +68,17 @@ namespace AZ
                 char tempBuffer[AZ_MAX_PATH_LEN];
                 do
                 {
-                    AZStd::string_view filenameView = findData.cFileName;
+                    AZStd::string fileName;
+                    AZStd::to_string(fileName, findData.cFileName);
+                    AZStd::string_view filenameView = fileName;
                     // Skip over the current directory and parent directory paths to prevent infinite recursion
-                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(findData.cFileName, filter))
+                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(fileName.c_str(), filter))
                     {
                         continue;
                     }
 
-                    AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
-                    foundFilePath += findData.cFileName;
+                    AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
+                    foundFilePath += fileName;
                     AZStd::replace(foundFilePath.begin(), foundFilePath.end(), '\\', '/');
 
                     // if aliased, de-alias!
@@ -173,7 +176,7 @@ namespace AZ
 
         bool LocalFileIO::IsAbsolutePath(const char* path) const
         {
-            char drive[16];
+            char drive[16] = { 0 };
             _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
             return strlen(drive) > 0;
         }

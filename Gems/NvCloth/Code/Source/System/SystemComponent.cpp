@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -110,26 +106,26 @@ namespace NvCloth
             {
                 if (detached)
                 {
-                    AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::Cloth, AZ::Crc32(eventName), eventName);
+                    AZ_PROFILE_INTERVAL_START(Cloth, AZ::Crc32(eventName), eventName);
                 }
                 else
                 {
-                    AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Cloth, eventName);
+                    AZ_PROFILE_BEGIN(Cloth, eventName);
                 }
                 return nullptr;
             }
 
             void zoneEnd([[maybe_unused]] void* profilerData,
-                const char* eventName, bool detached,
+                [[maybe_unused]] const char* eventName, bool detached,
                 [[maybe_unused]] uint64_t contextId) override
             {
                 if (detached)
                 {
-                    AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::Cloth, AZ::Crc32(eventName));
+                    AZ_PROFILE_INTERVAL_END(Cloth, AZ::Crc32(eventName));
                 }
                 else
                 {
-                    AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Cloth);
+                    AZ_PROFILE_END();
                 }
             }
         };
@@ -313,7 +309,7 @@ namespace NvCloth
         const AZStd::vector<SimParticleFormat>& initialParticles,
         const FabricCookedData& fabricCookedData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         FabricId fabricId = FindOrCreateFabric(fabricCookedData);
         if (!fabricId.IsValid())
@@ -407,7 +403,7 @@ namespace NvCloth
         float deltaTime,
         [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         for (auto& solverIt : m_solvers)
         {

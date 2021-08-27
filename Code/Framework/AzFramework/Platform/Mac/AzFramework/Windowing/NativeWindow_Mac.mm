@@ -1,13 +1,9 @@
 
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -38,12 +34,14 @@ namespace AzFramework
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
+        uint32_t GetDisplayRefreshRate() const override;
 
     private:
         static NSWindowStyleMask ConvertToNSWindowStyleMask(const WindowStyleMasks& styleMasks);
 
         NSWindow* m_nativeWindow;
         NSString* m_windowTitle;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -75,9 +73,22 @@ namespace AzFramework
         // Add a fullscreen button in the upper right of the title bar.
         [m_nativeWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 
+        m_nativeWindow.tabbingMode = NSWindowTabbingModeDisallowed;
+        
         // Make the window active
         [m_nativeWindow makeKeyAndOrderFront:nil];
         m_nativeWindow.title = m_windowTitle;
+
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        m_mainDisplayRefreshRate = CGDisplayModeGetRefreshRate(currentMode);
+
+        // Assume 60hz if 0 is returned.
+        // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which wont have this issue
+        if (m_mainDisplayRefreshRate == 0)
+        {
+            m_mainDisplayRefreshRate = 60;
+        }
     }
 
     NativeWindowHandle NativeWindowImpl_Darwin::GetWindowHandle() const
@@ -129,5 +140,10 @@ namespace AzFramework
 
         const NSWindowStyleMask defaultMask = NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
         return nativeMask ? nativeMask : defaultMask;
+    }
+
+    uint32_t NativeWindowImpl_Darwin::GetDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
     }
 } // namespace AzFramework

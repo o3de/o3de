@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EMStudioManager.h"
 #include "MainWindow.h"
@@ -23,23 +19,23 @@ namespace EMStudio
     // constructor
     DockWidgetPlugin::DockWidgetPlugin()
         : EMStudioPlugin()
-        , mDock()
+        , m_dock()
     {
     }
 
     // destructor
     DockWidgetPlugin::~DockWidgetPlugin()
     {
-        if (!mDock.isNull())
+        if (!m_dock.isNull())
         {
-            // Disconnecting all signals from mDock to this object since we are
+            // Disconnecting all signals from m_dock to this object since we are
             // destroying it. Some plugins connect to visibility change that gets
             // triggered from removeDockWidget. Calling those slots at this point
             // is not safe since the plugin is being destroyed.
-            mDock->disconnect(this);
+            m_dock->disconnect(this);
 
-            EMStudio::GetMainWindow()->removeDockWidget(mDock);
-            delete mDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_dock);
+            delete m_dock;
         }
     }
 
@@ -51,13 +47,13 @@ namespace EMStudio
     // check if we have a window that uses this object name
     bool DockWidgetPlugin::GetHasWindowWithObjectName(const AZStd::string& objectName)
     {
-        if (mDock.isNull())
+        if (m_dock.isNull())
         {
             return false;
         }
 
         // check if the object name is equal to the one of the dock widget
-        return objectName == FromQtString(mDock->objectName());
+        return objectName == FromQtString(m_dock->objectName());
     }
 
 
@@ -79,25 +75,25 @@ namespace EMStudio
     // set the interface title
     void DockWidgetPlugin::SetInterfaceTitle(const char* name)
     {
-        if (!mDock.isNull())
+        if (!m_dock.isNull())
         {
-            mDock->setWindowTitle(name);
+            m_dock->setWindowTitle(name);
         }
     }
 
     QDockWidget* DockWidgetPlugin::GetDockWidget()
     { 
-        if (!mDock.isNull())
+        if (!m_dock.isNull())
         {
-            return mDock;
+            return m_dock;
         }
         
         // get the main window
         QMainWindow* mainWindow = GetMainWindow();
 
         // create a window for the plugin
-        mDock = new RemovePluginOnCloseDockWidget(mainWindow, GetName(), this);
-        mDock->setAllowedAreas(Qt::AllDockWidgetAreas);
+        m_dock = new RemovePluginOnCloseDockWidget(mainWindow, GetName(), this);
+        m_dock->setAllowedAreas(Qt::AllDockWidgetAreas);
 
         QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;
         if (GetIsClosable())
@@ -117,11 +113,11 @@ namespace EMStudio
             features |= QDockWidget::DockWidgetFloatable;
         }
 
-        mDock->setFeatures(features);
+        m_dock->setFeatures(features);
 
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mDock);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_dock);
 
-        return mDock;
+        return m_dock;
     }
 
     QWidget* DockWidgetPlugin::CreateErrorContentWidget(const char* errorMessage) const

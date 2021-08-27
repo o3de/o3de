@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -34,8 +30,6 @@ namespace AZ
     namespace Render
     {
         static const char* const LookModificationTransformPassTemplateName{ "LookModificationTransformTemplate" };
-        static const char* const ExposureShaderVariantOptionName{ "o_enableExposureControlFeature" };
-        static const char* const ColorGradingShaderVariantOptionName{ "o_enableColorGradingLut" };
 
         /**
          *  The look modification composite pass. If color grading LUTs are enabled, this pass will apply the blended LUT.
@@ -47,6 +41,14 @@ namespace AZ
         public:
             AZ_RTTI(LookModificationCompositePass, "{D7DF3E8A-B642-4D51-ABC2-ADB2B60FCE1D}", AZ::RPI::FullscreenTrianglePass);
             AZ_CLASS_ALLOCATOR(LookModificationCompositePass, SystemAllocator, 0);
+
+            enum class SampleQuality : uint8_t
+            {
+                Linear = 0,
+                BSpline7Tap = 1,
+                BSpline19Tap = 2,
+            };
+
             virtual ~LookModificationCompositePass() = default;
 
             //! Creates a LookModificationPass
@@ -57,6 +59,8 @@ namespace AZ
 
             //! Set shaper parameters
             void SetShaperParameters(const ShaperParams& shaperParams);
+
+            void SetSampleQuality(SampleQuality sampleQuality);
 
         protected:
             LookModificationCompositePass(const RPI::PassDescriptor& descriptor);
@@ -80,11 +84,15 @@ namespace AZ
 
             bool m_exposureControlEnabled = false;
             bool m_colorGradingLutEnabled = false;
+            SampleQuality m_sampleQuality = SampleQuality::Linear;
+
             Render::DisplayMapperLut m_blendedColorGradingLut;
             Render::ShaperParams m_colorGradingShaperParams;
 
-            const AZ::Name m_exposureShaderVariantOptionName;
-            const AZ::Name m_colorGradingShaderVariantOptionName;
+            const AZ::Name m_exposureShaderVariantOptionName{ "o_enableExposureControlFeature" };
+            const AZ::Name m_colorGradingShaderVariantOptionName{ "o_enableColorGradingLut" };
+            const AZ::Name m_lutSampleQualityShaderVariantOptionName{ "o_lutSampleQuality" };
+
             bool m_needToUpdateShaderVariant = true;
 
             RHI::ShaderInputNameIndex m_shaderColorGradingLutImageIndex = "m_gradingLut";

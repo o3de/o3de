@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzCore/Android/Utils.h>
@@ -29,7 +25,7 @@ namespace AzFramework
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
-
+        uint32_t GetDisplayRefreshRate() const override;
     private:
         ANativeWindow* m_nativeWindow = nullptr;
     };
@@ -59,4 +55,9 @@ namespace AzFramework
         return reinterpret_cast<NativeWindowHandle>(m_nativeWindow);
     }
 
+    uint32_t NativeWindowImpl_Android::GetDisplayRefreshRate() const
+    {
+        // Using 60 for now until proper support is added
+        return 60;
+    }
 } // namespace AzFramework

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -24,9 +20,6 @@
 
 #include "Node.h"
 #include "Attributes.h"
-
-#pragma warning( push )
-#pragma warning( disable : 5046) // 'function' : Symbol involving type with internal linkage not defined
 
 /**
  * NodeFunctionGeneric.h
@@ -111,7 +104,9 @@ namespace ScriptCanvas
     private:\
         static AZStd::string_view GetName(size_t i)\
         {\
+            AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")\
             static_assert(s_numArgs <= s_numNames, "Number of arguments is greater than number of names in " #NODE_NAME );\
+            AZ_POP_DISABLE_WARNING\
             /*static_assert(s_numResults <= s_numNames, "Number of results is greater than number of names in " #NODE_NAME );*/\
             /*static_assert((s_numResults + s_numArgs) == s_numNames, "Argument name count + result name count != name count in " #NODE_NAME );*/\
             static const AZStd::array<AZStd::string_view, s_numNames> s_names = {{ __VA_ARGS__ }};\
@@ -188,9 +183,12 @@ namespace ScriptCanvas
         : public Node
     {
     public:
+    AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
         AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
+    AZ_POP_DISABLE_WARNING
+
 
         static const char* GetNodeFunctionName()
         {
@@ -253,8 +251,6 @@ namespace ScriptCanvas
             return AZ::Success(scope);
         }
 
-        
-
     protected:
 
         template<typename ArgType, size_t Index>
@@ -302,13 +298,6 @@ namespace ScriptCanvas
 
             MultipleOutputInvoker<t_Func, function, t_Traits>::Add(*this);
         }
-
-        void OnInputSignal(const SlotId&) override
-        {
-            MultipleOutputInvoker<t_Func, function, t_Traits>::Call(*this);
-            SignalOutput(GetSlotId("Out"));
-        }
-
 
         static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
         static bool ConvertOldNodeGeneric(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
@@ -385,5 +374,3 @@ namespace ScriptCanvas
     }
 
 }
-
-#pragma warning( pop )

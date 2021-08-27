@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-* or , if provided, by the license below or the license accompanying this file.Do not
-*remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #if defined(HAVE_BENCHMARK)
 
 #include <Prefab/Benchmark/PrefabBenchmarkFixture.h>
@@ -20,7 +16,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabCreate, CreatePrefabs_SingleEntityEach)(::benchmark::State& state)
     {
-        const unsigned int numEntities = state.range();
+        const unsigned int numEntities = static_cast<unsigned int>(state.range());
         const unsigned int numInstances = numEntities;
 
         CreateFakePaths(numInstances);
@@ -36,7 +32,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 newInstances.push_back(m_prefabSystemComponent->CreatePrefab(
                     { entities[instanceCounter] },
@@ -62,7 +58,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabCreate, CreatePrefab_FromEntities)(::benchmark::State& state)
     {
-        const unsigned int numEntities = state.range();
+        const unsigned int numEntities = static_cast<unsigned int>(state.range());
 
         for (auto _ : state)
         {
@@ -97,7 +93,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabCreate, CreatePrefab_FromSingleDepthInstances)(::benchmark::State& state)
     {
-        const unsigned int numInstancesToAdd = state.range();
+        const unsigned int numInstancesToAdd = static_cast<unsigned int>(state.range());
         const unsigned int numEntities = numInstancesToAdd;
 
         // Create fake paths for all the nested instances
@@ -114,7 +110,7 @@ namespace Benchmark
             AZStd::vector<AZStd::unique_ptr<Instance>> testInstances;
             testInstances.resize(numInstancesToAdd);
 
-            for (int instanceCounter = 0; instanceCounter < numInstancesToAdd; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstancesToAdd; ++instanceCounter)
             {
                 testInstances[instanceCounter] = (m_prefabSystemComponent->CreatePrefab(
                     { entities[instanceCounter] }
@@ -148,7 +144,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabCreate, CreatePrefab_FromLinearNestingOfInstances)(::benchmark::State& state)
     {
-        const unsigned int numInstances = state.range();
+        const unsigned int numInstances = static_cast<unsigned int>(state.range());
 
         // Create fake paths for all the nested instances
         // plus the root instance
@@ -165,7 +161,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 nestedInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},

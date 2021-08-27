@@ -1,21 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 //
 // Purpose:
 //  - Render a glyph outline into a bitmap using FreeType 2
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -26,6 +21,8 @@
 #include <freetype/ftimage.h>
 
 #include <AzCore/Casting/lossy_cast.h>
+
+#include <CryCommon/ISystem.h>
 
 // Sizes are defined in in 26.6 fixed float format (TT_F26Dot6), where
 // 1 unit is 1/64 of a pixel.
@@ -99,7 +96,7 @@ AZ::FontRenderer::~FontRenderer()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontRenderer::LoadFromFile(const string& fileName)
+int AZ::FontRenderer::LoadFromFile(const AZStd::string& fileName)
 {
     int iError = FT_Init_FreeType(&m_library);
 
@@ -238,12 +235,12 @@ int AZ::FontRenderer::GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance,
 
     if (glyphWidth)
     {
-        *glyphWidth = m_glyph->bitmap.width;
+        *glyphWidth = static_cast<uint8_t>(m_glyph->bitmap.width);
     }
 
     if (glyphHeight)
     {
-        *glyphHeight = m_glyph->bitmap.rows;
+        *glyphHeight = static_cast<uint8_t>(m_glyph->bitmap.rows);
     }
 
     unsigned char* buffer = glyphBitmap->GetBuffer();
@@ -257,8 +254,8 @@ int AZ::FontRenderer::GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance,
     const int textureSlotBufferHeight = glyphBitmap->GetHeight();
 
     // might happen if font characters are too big or cache dimenstions in font.xml is too small "<font path="VeraMono.ttf" w="320" h="368"/>"
-    const bool charWidthFits = iX + m_glyph->bitmap.width <= textureSlotBufferWidth;
-    const bool charHeightFits = iY + m_glyph->bitmap.rows <= textureSlotBufferHeight;
+    const bool charWidthFits = static_cast<int>(iX + m_glyph->bitmap.width) <= textureSlotBufferWidth;
+    const bool charHeightFits = static_cast<int>(iY + m_glyph->bitmap.rows) <= textureSlotBufferHeight;
     const bool charFitsInSlot = charWidthFits && charHeightFits;
     AZ_Error("Font", charFitsInSlot, "Character code %d doesn't fit in font texture; check 'sizeRatio' attribute in font XML or adjust this character's sizing in the font.", characterCode);
 
@@ -314,8 +311,7 @@ Vec2 AZ::FontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
 #if !defined(_RELEASE)
         if (0 != ftError)
         {
-            string warnMsg;
-            warnMsg.Format("FT_Get_Kerning returned %d", ftError);
+            AZStd::string warnMsg = AZStd::string::format("FT_Get_Kerning returned %d", ftError);
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
         }
 #endif

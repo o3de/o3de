@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -30,6 +26,8 @@ namespace AZ
             seed = TypeHash64(m_overrideStrength, seed);
             seed = TypeHash64(m_assetId.GetId(), seed);
             seed = TypeHash64(m_shaperPreset, seed);
+            seed = TypeHash64(m_customMinExposure, seed);
+            seed = TypeHash64(m_customMaxExposure, seed);
             return seed;
         }
 
@@ -45,7 +43,6 @@ namespace AZ
 
         void LookModificationSettings::ApplySettingsTo(LookModificationSettings* target, float alpha) const
         {
-            AZ_UNUSED(alpha);
             AZ_Assert(target != nullptr, "LookModificationSettings::ApplySettingsTo called with nullptr as argument.");
 
             auto lutAssetId = GetColorGradingLut();
@@ -53,20 +50,13 @@ namespace AZ
             {
                 Render::LutBlendItem lutBlend;
                 lutBlend.m_intensity = GetColorGradingLutIntensity();
-                lutBlend.m_overrideStrength = GetColorGradingLutOverride();
+                lutBlend.m_overrideStrength = GetColorGradingLutOverride() * alpha;
                 lutBlend.m_assetId = lutAssetId;
+                lutBlend.m_shaperPreset = GetShaperPresetType();
+                lutBlend.m_customMinExposure = GetCustomMinExposure();
+                lutBlend.m_customMaxExposure = GetCustomMaxExposure();
                 target->AddLutBlend(lutBlend);
             }
-
-            // Auto-gen code to blend individual params based on their override value onto target settings
-#define OVERRIDE_TARGET target
-#define OVERRIDE_ALPHA alpha
-
-#include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
-#include <Atom/Feature/PostProcess/LookModification/LookModificationParams.inl>
-#include <Atom/Feature/ParamMacros/EndParams.inl>
-#undef OVERRIDE_TARGET
-#undef OVERRIDE_ALPHA
         }
 
         void LookModificationSettings::Simulate(float deltaTime)
@@ -102,6 +92,9 @@ namespace AZ
                     blendItem.m_intensity = GetColorGradingLutIntensity();
                     blendItem.m_overrideStrength = GetColorGradingLutOverride();
                     blendItem.m_assetId = GetColorGradingLut();
+                    blendItem.m_shaperPreset = GetShaperPresetType();
+                    blendItem.m_customMinExposure = GetCustomMinExposure();
+                    blendItem.m_customMaxExposure = GetCustomMaxExposure();
                     m_lutBlendStack.insert(m_lutBlendStack.begin(), blendItem);
                 }
             }

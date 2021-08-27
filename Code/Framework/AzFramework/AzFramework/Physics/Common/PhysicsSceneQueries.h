@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>
@@ -193,7 +190,7 @@ namespace AzPhysics
         AZ::Transform m_start = AZ::Transform::CreateIdentity(); //!< World space start position. Assumes only rotation + translation (no scaling).
         AZ::Vector3 m_direction = AZ::Vector3::CreateZero(); //!< World space direction (Should be normalized)
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration; //!< Shape information.
-        SceneQuery::HitFlags m_hitFlags = SceneQuery::HitFlags::Default; //!< Query behavior flags
+        SceneQuery::HitFlags m_hitFlags = SceneQuery::HitFlags::Default | SceneQuery::HitFlags::MTD; //!< Query behavior flags. MTD Is On by default to correctly report objects that are initially in contact with the start pose.
         SceneQuery::FilterCallback m_filterCallback = nullptr; //!< Hit filtering function
         bool m_reportMultipleHits = false; //!< flag to have the cast stop after the first hit or return all hits along the query.
     };

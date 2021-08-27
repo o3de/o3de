@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "NodeableNodeOverloaded.h"
 
@@ -17,8 +13,6 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/IdUtils.h>
 #include <ScriptCanvas/Core/Attributes.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
@@ -581,7 +575,7 @@ namespace ScriptCanvas
             const SlotExecution::Map* slotExecutionMap = GetSlotExecutionMap();
             const auto& executionIns = slotExecutionMap->GetIns();
 
-            if (methodIndex < 0 || methodIndex >= executionIns.size())
+            if (methodIndex >= executionIns.size())
             {
                 return;
             }
@@ -661,7 +655,7 @@ namespace ScriptCanvas
 
         AZ::Outcome<void, AZStd::string> NodeableNodeOverloaded::IsValidConfiguration(size_t methodIndex, const DataIndexMapping& inputMapping, const DataIndexMapping& outputMapping)
         {
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Trying to access unknown method index."));
             }
@@ -722,7 +716,7 @@ namespace ScriptCanvas
             const SlotExecution::Map* slotExecutionMap = GetSlotExecutionMap();
             const auto& executionIns = slotExecutionMap->GetIns();
 
-            if (methodIndex < 0 || methodIndex >= executionIns.size())
+            if (methodIndex >= executionIns.size())
             {
                 return AZ::Failure(AZStd::string("Invalid method index given to Nodeable"));;
             }
@@ -791,7 +785,7 @@ namespace ScriptCanvas
                 return AZ::Success();
             }
 
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Invalid Method index given to Nodeable Node Overloaded."));
             }
@@ -832,7 +826,7 @@ namespace ScriptCanvas
         {
             static const DataTypeSet k_emptySet;
 
-            if (methodIndex >= 0 && methodIndex < m_methodSelections.size())
+            if (methodIndex < m_methodSelections.size())
             {
                 const OverloadConfiguration& overloadConfiguration = m_methodConfigurations[methodIndex];
                 size_t startIndex = NodeableNodeOverloadedCpp::AdjustForHiddenNodeableThisPointer(overloadConfiguration, 0);
@@ -851,7 +845,7 @@ namespace ScriptCanvas
                 return AZ::Success();
             }
 
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Invalid Method index given to Nodeable Node Overloaded."));
             }
@@ -889,7 +883,7 @@ namespace ScriptCanvas
         {
             static const DataTypeSet k_emptySet;
 
-            if (methodIndex >= 0 && methodIndex < m_methodSelections.size())
+            if (methodIndex < m_methodSelections.size())
             {
                 return m_methodSelections[methodIndex].FindPossibleInputTypes(index);
             }

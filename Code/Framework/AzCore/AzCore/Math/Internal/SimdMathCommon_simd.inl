@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,29 +12,29 @@ namespace AZ
 {
     namespace Simd
     {
-        static AZ_ALIGN(constexpr float g_sinCoef1[4],    16) = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
-        static AZ_ALIGN(constexpr float g_sinCoef2[4],    16) = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
-        static AZ_ALIGN(constexpr float g_sinCoef3[4],    16) = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
-        static AZ_ALIGN(constexpr float g_cosCoef1[4],    16) = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
-        static AZ_ALIGN(constexpr float g_cosCoef2[4],    16) = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
-        static AZ_ALIGN(constexpr float g_cosCoef3[4],    16) = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef1[4], 16) = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef2[4], 16) = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef3[4], 16) = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef4[4], 16) = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef1[4], 16) = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef2[4], 16) = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef3[4], 16) = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef4[4], 16) = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
-        static AZ_ALIGN(constexpr float g_acosCoef1[4],   16) = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
-        static AZ_ALIGN(constexpr float g_acosCoef2[4],   16) = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
-        static AZ_ALIGN(constexpr float g_acosCoef3[4],   16) = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
-        static AZ_ALIGN(constexpr float g_atanHiRange[4], 16) = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanLoRange[4], 16) = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanCoef1[4],   16) = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
-        static AZ_ALIGN(constexpr float g_atanCoef2[4],   16) = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef3[4],   16) = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef4[4],   16) = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) static constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
+        alignas(16) static constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
+        alignas(16) static constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
+        alignas(16) static constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
+        alignas(16) static constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
+        alignas(16) static constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
+        alignas(16) static constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
+        alignas(16) static constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
+        alignas(16) static constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
+        alignas(16) static constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
+        alignas(16) static constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
+        alignas(16) static constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
+        alignas(16) static constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
+        alignas(16) static constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
+        alignas(16) static constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
+        alignas(16) static constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
+        alignas(16) static constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
+        alignas(16) static constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
+        alignas(16) static constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
+        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
+        alignas(16) static constexpr float g_atanCoef2[4]   = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
+        alignas(16) static constexpr float g_atanCoef4[4]   = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
 
         namespace Common
         {
@@ -292,8 +288,13 @@ namespace AZ
                 const typename VecType::FloatType cmp2 = VecType::AndNot(cmp0, cmp1);
 
                 // -1/x
+                // this step is calculated for all values of x, but only used if x > Sqrt(2) + 1
+                // in order to avoid a division by zero, detect if xabs is zero here and replace it with an arbitrary value
+                // if xabs does equal zero, the value here doesn't matter because the result will be thrown away
+                typename VecType::FloatType xabsSafe =
+                    VecType::Add(xabs, VecType::And(VecType::CmpEq(xabs, VecType::ZeroFloat()), FastLoadConstant<VecType>(Simd::g_vec1111)));
                 const typename VecType::FloatType y0 = VecType::And(cmp0, FastLoadConstant<VecType>(Simd::g_HalfPi));
-                typename VecType::FloatType x0 = VecType::Div(FastLoadConstant<VecType>(Simd::g_vec1111), xabs);
+                typename VecType::FloatType x0 = VecType::Div(FastLoadConstant<VecType>(Simd::g_vec1111), xabsSafe);
                 x0 = VecType::Xor(x0, VecType::CastToFloat(FastLoadConstant<VecType>(Simd::g_negateMask)));
 
                 const typename VecType::FloatType y1 = VecType::And(cmp2, FastLoadConstant<VecType>(Simd::g_QuarterPi));
@@ -368,8 +369,12 @@ namespace AZ
 
                 typename VecType::FloatType offset = VecType::And(x_lt_0, offset1);
 
+                // the result of this part of the computation is thrown away if x equals 0,
+                // but if x does equal 0, it will cause a division by zero
+                // so replace zero by an arbitrary value here in that case
+                typename VecType::FloatType xSafe = VecType::Add(x, VecType::And(x_eq_0, FastLoadConstant<VecType>(Simd::g_vec1111)));
                 const typename VecType::FloatType atan_mask = VecType::Not(VecType::Or(x_eq_0, y_eq_0));
-                const typename VecType::FloatType atan_arg = VecType::Div(y, x);
+                const typename VecType::FloatType atan_arg = VecType::Div(y, xSafe);
                 typename VecType::FloatType atan_result = VecType::Atan(atan_arg);
                 atan_result = VecType::Add(atan_result, offset);
                 atan_result = VecType::AndNot(pio2_mask, atan_result);

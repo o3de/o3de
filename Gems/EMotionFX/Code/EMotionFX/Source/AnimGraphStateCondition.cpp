@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -67,7 +63,7 @@ namespace EMotionFX
             return;
         }
 
-        m_state = mAnimGraph->RecursiveFindNodeById(m_stateId);
+        m_state = m_animGraph->RecursiveFindNodeById(m_stateId);
     }
 
 
@@ -104,7 +100,7 @@ namespace EMotionFX
     {
         // in case a event got triggered constantly fire true until the condition gets reset
         const UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        if (uniqueData->mTriggered)
+        if (uniqueData->m_triggered)
         {
             return true;
         }
@@ -153,7 +149,7 @@ namespace EMotionFX
             // reached the specified play time
             if (m_state)
             {
-                const float currentLocalTime = m_state->GetCurrentPlayTime(uniqueData->mAnimGraphInstance);
+                const float currentLocalTime = m_state->GetCurrentPlayTime(uniqueData->m_animGraphInstance);
                 // the has reached play time condition is not part of the event handler, so we have to manually handle it here
                 if (AZ::IsClose(currentLocalTime, m_playTime, AZ::Constants::FloatEpsilon) || currentLocalTime >= m_playTime)
                 {
@@ -174,7 +170,7 @@ namespace EMotionFX
     {
         // find the unique data and reset it
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        uniqueData->mTriggered = false;
+        uniqueData->m_triggered = false;
     }
 
     // construct and output the information summary string for this object
@@ -225,10 +221,10 @@ namespace EMotionFX
     // constructor
     AnimGraphStateCondition::UniqueData::UniqueData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : AnimGraphObjectData(object, animGraphInstance)
-        , mAnimGraphInstance(animGraphInstance)
+        , m_animGraphInstance(animGraphInstance)
     {
-        mEventHandler       = nullptr;
-        mTriggered          = false;
+        m_eventHandler       = nullptr;
+        m_triggered          = false;
         CreateEventHandler();
     }
 
@@ -244,22 +240,22 @@ namespace EMotionFX
     {
         DeleteEventHandler();
 
-        if (mAnimGraphInstance)
+        if (m_animGraphInstance)
         {
-            mEventHandler = aznew AnimGraphStateCondition::EventHandler(static_cast<AnimGraphStateCondition*>(mObject), this);
-            mAnimGraphInstance->AddEventHandler(mEventHandler);
+            m_eventHandler = aznew AnimGraphStateCondition::EventHandler(static_cast<AnimGraphStateCondition*>(m_object), this);
+            m_animGraphInstance->AddEventHandler(m_eventHandler);
         }
     }
 
 
     void AnimGraphStateCondition::UniqueData::DeleteEventHandler()
     {
-        if (mEventHandler)
+        if (m_eventHandler)
         {
-            mAnimGraphInstance->RemoveEventHandler(mEventHandler);
+            m_animGraphInstance->RemoveEventHandler(m_eventHandler);
 
-            delete mEventHandler;
-            mEventHandler = nullptr;
+            delete m_eventHandler;
+            m_eventHandler = nullptr;
         }
     }
 
@@ -283,8 +279,8 @@ namespace EMotionFX
     AnimGraphStateCondition::EventHandler::EventHandler(AnimGraphStateCondition* condition, UniqueData* uniqueData)
         : EMotionFX::AnimGraphInstanceEventHandler()
     {
-        mCondition      = condition;
-        mUniqueData     = uniqueData;
+        m_condition      = condition;
+        m_uniqueData     = uniqueData;
     }
 
 
@@ -296,7 +292,7 @@ namespace EMotionFX
 
     bool AnimGraphStateCondition::EventHandler::IsTargetState(const AnimGraphNode* state) const
     {
-        const AnimGraphNode* conditionState = mCondition->GetState();
+        const AnimGraphNode* conditionState = m_condition->GetState();
         if (conditionState)
         {
             const AZStd::string& stateName = conditionState->GetNameString();
@@ -315,10 +311,10 @@ namespace EMotionFX
             return;
         }
 
-        const TestFunction testFunction = mCondition->GetTestFunction();
+        const TestFunction testFunction = m_condition->GetTestFunction();
         if (testFunction == targetFunction && IsTargetState(state))
         {
-            mUniqueData->mTriggered = true;
+            m_uniqueData->m_triggered = true;
         }
     }
 
@@ -359,7 +355,7 @@ namespace EMotionFX
     void AnimGraphStateCondition::SetStateId(AnimGraphNodeId stateId)
     {
         m_stateId = stateId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

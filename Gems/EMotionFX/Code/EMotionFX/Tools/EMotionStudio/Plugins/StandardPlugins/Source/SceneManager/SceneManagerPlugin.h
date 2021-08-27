@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -41,7 +37,7 @@ namespace EMStudio
 
     public:
         SaveDirtyActorFilesCallback(SceneManagerPlugin* plugin)
-            : SaveDirtyFilesCallback()  { mPlugin = plugin; }
+            : SaveDirtyFilesCallback()  { m_plugin = plugin; }
         ~SaveDirtyActorFilesCallback()                                                      {}
 
         uint32 GetType() const override                                                     { return TYPE_ID; }
@@ -58,7 +54,7 @@ namespace EMStudio
         int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override;
 
     private:
-        SceneManagerPlugin* mPlugin;
+        SceneManagerPlugin* m_plugin;
     };
 
     class SceneManagerPlugin
@@ -80,7 +76,7 @@ namespace EMStudio
         const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Actor Manager"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
-        const char* GetCreatorName() const override         { return "Amazon"; }
+        const char* GetCreatorName() const override         { return "O3DE"; }
         float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
@@ -111,22 +107,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorInstanceCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandScaleActorDataCallback);
 
-        ImportActorCallback*                    mImportActorCallback;
-        CreateActorInstanceCallback*            mCreateActorInstanceCallback;
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        RemoveActorCallback*                    mRemoveActorCallback;
-        RemoveActorInstanceCallback*            mRemoveActorInstanceCallback;
-        SaveActorAssetInfoCallback*             mSaveActorAssetInfoCallback;
-        CommandAdjustActorCallback*             mAdjustActorCallback;
-        CommandActorSetCollisionMeshesCallback* mActorSetCollisionMeshesCallback;
-        CommandAdjustActorInstanceCallback*     mAdjustActorInstanceCallback;
-        CommandScaleActorDataCallback*          mScaleActorDataCallback;
+        ImportActorCallback*                    m_importActorCallback;
+        CreateActorInstanceCallback*            m_createActorInstanceCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        RemoveActorCallback*                    m_removeActorCallback;
+        RemoveActorInstanceCallback*            m_removeActorInstanceCallback;
+        SaveActorAssetInfoCallback*             m_saveActorAssetInfoCallback;
+        CommandAdjustActorCallback*             m_adjustActorCallback;
+        CommandActorSetCollisionMeshesCallback* m_actorSetCollisionMeshesCallback;
+        CommandAdjustActorInstanceCallback*     m_adjustActorInstanceCallback;
+        CommandScaleActorDataCallback*          m_scaleActorDataCallback;
 
-        SaveDirtyActorFilesCallback*            mDirtyFilesCallback;
+        SaveDirtyActorFilesCallback*            m_dirtyFilesCallback;
 
-        ActorsWindow*                           mActorsWindow;
-        ActorPropertiesWindow*                  mActorPropsWindow;
+        ActorsWindow*                           m_actorsWindow;
+        ActorPropertiesWindow*                  m_actorPropsWindow;
     };
 } // namespace EMStudio

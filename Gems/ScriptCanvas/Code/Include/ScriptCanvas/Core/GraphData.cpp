@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/EntityUtils.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -23,17 +19,17 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     class GraphDataEventHandler : public AZ::SerializeContext::IEventHandler
     {
     public:
         /// Called to rebuild the Endpoint map
         void OnWriteEnd(void* classPtr) override
         {
-            auto* graphData = reinterpret_cast<GraphData*>(classPtr);
-            graphData->BuildEndpointMap();
-            graphData->LoadDependentAssets();
+            reinterpret_cast<GraphData*>(classPtr)->OnDeserialized();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     void GraphData::Reflect(AZ::ReflectContext* context)
     {
@@ -46,7 +42,9 @@ namespace ScriptCanvas
 
             serializeContext->Class<GraphData>()
                 ->Version(4, &GraphData::VersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<GraphDataEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Field("m_nodes", &GraphData::m_nodes)
                 ->Field("m_connections", &GraphData::m_connections)
                 ->Field("m_dependentAssets", &GraphData::m_dependentAssets)
@@ -218,5 +216,11 @@ namespace ScriptCanvas
         }
 
         m_dependentAssets.clear();
+    }
+
+    void GraphData::OnDeserialized()
+    {
+        BuildEndpointMap();
+        LoadDependentAssets();
     }
 }

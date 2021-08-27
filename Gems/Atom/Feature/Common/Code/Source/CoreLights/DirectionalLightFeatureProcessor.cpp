@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/CascadedShadowmapsPass.h>
@@ -20,6 +16,8 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -227,7 +225,7 @@ namespace AZ
                 }
                 if (segmentsNeedUpdate)
                 {
-                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, cascadeCount);
+                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, static_cast<uint16_t>(cascadeCount));
                     SetShadowmapImageSizeArraySize(m_shadowingLightHandle);
                 }
 
@@ -935,9 +933,10 @@ namespace AZ
 
         uint16_t DirectionalLightFeatureProcessor::GetCascadeCount(LightHandle handle) const
         {
-            for (const auto& segmentIt : m_shadowProperties.GetData(handle.GetIndex()).m_segments)
+            const auto& segments = m_shadowProperties.GetData(handle.GetIndex()).m_segments;
+            if (!segments.empty())
             {
-                return aznumeric_cast<uint16_t>(segmentIt.second.size());
+                return aznumeric_cast<uint16_t>(segments.begin()->second.size());
             }
             return 0;
         }
@@ -1070,7 +1069,18 @@ namespace AZ
                     segment.m_pipelineViewTag = viewTag;
                     if (!segment.m_view || segment.m_view->GetName() != viewName)
                     {
-                        segment.m_view = RPI::View::CreateView(viewName, RPI::View::UsageShadow);
+                        RPI::View::UsageFlags usageFlags = RPI::View::UsageShadow;
+
+                        // if the shadow is rendering in an EnvironmentCubeMapPass it also needs to be a ReflectiveCubeMap view,
+                        // to filter out shadows from objects that are excluded from the cubemap
+                        RPI::PassClassFilter<RPI::EnvironmentCubeMapPass> passFilter;
+                        AZStd::vector<AZ::RPI::Pass*> cubeMapPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
+                        if (!cubeMapPasses.empty())
+                        {
+                            usageFlags |= RPI::View::UsageReflectiveCubeMap;
+                        }
+
+                        segment.m_view = RPI::View::CreateView(viewName, usageFlags);
                     }
                 }
             }
@@ -1207,7 +1217,7 @@ namespace AZ
             else
             {
                 // If ESM is not used, set filter offsets and filter counts zero in ESM data.
-                for (uint32_t index = 0; index < GetCascadeCount(handle); ++index)
+                for (uint16_t index = 0; index < GetCascadeCount(handle); ++index)
                 {
                     EsmShadowmapsPass::FilterParameter& filterParameter = m_esmParameterData.at(cameraView).GetData(index);
                     filterParameter.m_isEnabled = false;

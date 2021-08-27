@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#ifndef AZSTD_SMART_PTR_INTRUSIVE_PTR_H
-#define AZSTD_SMART_PTR_INTRUSIVE_PTR_H
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
 
 //
 //  intrusive_ptr.hpp
@@ -23,10 +18,10 @@
 //
 //  See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
 //
-
-#include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/std/typetraits/is_abstract.h>
+#include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd
 {
@@ -116,7 +111,7 @@ namespace AZStd
                 CountPolicy::add_ref(px);
             }
         }
-        
+
         ~intrusive_ptr()
         {
             if (px != 0)
@@ -124,7 +119,7 @@ namespace AZStd
                 CountPolicy::release(px);
             }
         }
-        
+
         template<class U>
         enable_if_t<is_convertible<U*, T*>::value, intrusive_ptr&> operator=(intrusive_ptr<U> const& rhs)
         {
@@ -161,28 +156,28 @@ namespace AZStd
             this_type(rhs).swap(*this);
             return *this;
         }
-        
+
         intrusive_ptr& operator=(T* rhs)
         {
             this_type(rhs).swap(*this);
             return *this;
         }
-        
+
         void reset()
         {
             this_type().swap(*this);
         }
-        
+
         void reset(T* rhs)
         {
             this_type(rhs).swap(*this);
         }
-        
+
         T* get() const
         {
             return px;
         }
-        
+
         T& operator*() const
         {
             AZ_Assert(px != 0, "You can't dereference a null pointer");
@@ -302,6 +297,3 @@ namespace AZStd
 
     // operator<< - not supported
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_INTRUSIVE_PTR_H
-#pragma once

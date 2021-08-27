@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -45,6 +41,10 @@ namespace AZ::Render
     AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The time period over which to calculate the framerate for r_displayInfo."
     );
+
+    AZ_CVAR(
+        AZ::Vector2, r_topRightBorderPadding, AZ::Vector2(-40.0f, 22.0f), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The top right border padding for the viewport debug display text");
 
     void AtomViewportDisplayInfoSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -135,7 +135,7 @@ namespace AZ::Render
             return;
         }
 
-        m_fpsInterval = AZStd::chrono::seconds(r_fpsCalcInterval);
+        m_fpsInterval = AZStd::chrono::seconds(static_cast<AZStd::sys_time_t>(r_fpsCalcInterval));
 
         UpdateFramerate();
 
@@ -156,9 +156,9 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.f, 1.f);
+        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_color = AZ::Colors::White;
-        m_drawParams.m_scale = AZ::Vector2(0.7f);
+        m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;
@@ -230,91 +230,68 @@ namespace AZ::Render
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
-        AZStd::function<int(const AZ::RPI::Ptr<AZ::RPI::Pass>)> containingPassCount = [&containingPassCount](const AZ::RPI::Ptr<AZ::RPI::Pass> pass)
-        {
-            int count = 1;
-            if (auto passAsParent = pass->AsParent())
-            {
-                for (const auto& child : passAsParent->GetChildren())
-                {
-                    count += containingPassCount(child);
-                }
-            }
-            return count;
-        };
-        const int numPasses = containingPassCount(rootPass);
+
+        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
+
         DrawLine(AZStd::string::format(
-            "Total Passes: %d Vertex Count: %lld Primitive Count: %lld",
-            numPasses,
+            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
+            passSystemFrameStatistics.m_numRenderPassesExecuted,
             aznumeric_cast<long long>(stats.m_vertexCount),
             aznumeric_cast<long long>(stats.m_primitiveCount)
+        ));
+        DrawLine(AZStd::string::format(
+            "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
+            passSystemFrameStatistics.m_totalDrawItemsRendered,
+            passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
         ));
     }
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
-        if (!m_tickRequests)
-        {
-            m_tickRequests = AZ::TickRequestBus::FindFirstHandler();
-            if (!m_tickRequests)
-            {
-                return;
-            }
-        }
-
-        AZ::ScriptTimePoint currentTime = m_tickRequests->GetTimeAtCurrentTick();
-        // Only keep as much sampling data as is required by our FPS history.
-        while (!m_fpsHistory.empty() && (currentTime.Get() - m_fpsHistory.front().Get()) > m_fpsInterval)
+        auto currentTime = AZStd::chrono::system_clock::now();
+        while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
         }
-
-        // Discard entries with a zero time-delta (can happen when we don't have window focus).
-        if (m_fpsHistory.empty() || (currentTime.Get() - m_fpsHistory.back().Get()) != AZStd::chrono::seconds(0))
-        {
-            m_fpsHistory.push_back(currentTime);
-        }
+        m_fpsHistory.push_back(currentTime);
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
     {
-        AZStd::chrono::duration<double> actualInterval = AZStd::chrono::seconds(0);
-        AZStd::optional<AZ::ScriptTimePoint> lastTime;
-        AZStd::optional<double> minFPS;
-        AZStd::optional<double> maxFPS;
-        for (const AZ::ScriptTimePoint& time : m_fpsHistory)
+        AZStd::optional<AZStd::chrono::system_clock::time_point> lastTime;
+        double minFPS = DBL_MAX;
+        double maxFPS = 0;
+        AZStd::chrono::duration<double> deltaTime;
+        for (const auto& time : m_fpsHistory)
         {
             if (lastTime.has_value())
             {
-                AZStd::chrono::duration<double> deltaTime = time.Get() - lastTime.value().Get();
+                deltaTime = time - lastTime.value();
                 double fps = AZStd::chrono::seconds(1) / deltaTime;
-                if (!minFPS.has_value())
-                {
-                    minFPS = fps;
-                    maxFPS = fps;
-                }
-                else
-                {
-                    minFPS = AZStd::min(minFPS.value(), fps);
-                    maxFPS = AZStd::max(maxFPS.value(), fps);
-                }
-                actualInterval += deltaTime;
+                minFPS = AZStd::min(minFPS, fps);
+                maxFPS = AZStd::max(maxFPS, fps);
             }
             lastTime = time;
         }
 
-        const double averageFPS = (actualInterval.count() != 0.0)
-            ? aznumeric_cast<double>(m_fpsHistory.size()) / actualInterval.count()
-            : 0.0;
+        double averageFPS = 0;
+        double averageFrameMs = 0;
+        if (m_fpsHistory.size() > 1)
+        {
+            deltaTime = m_fpsHistory.back() - m_fpsHistory.front();
+            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
+            averageFrameMs = 1000.0f/averageFPS;
+        }
 
         const double frameIntervalSeconds = m_fpsInterval.count();
 
         DrawLine(
             AZStd::string::format(
-                "FPS %.1f [%.0f..%.0f], frame avg over %.1fs",
+                "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
                 averageFPS,
-                minFPS.value_or(0.0),
-                maxFPS.value_or(0.0),
+                minFPS,
+                maxFPS,
+                averageFrameMs,
                 frameIntervalSeconds),
             AZ::Colors::Yellow);
     }

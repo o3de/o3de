@@ -1,16 +1,11 @@
 
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <Family/BlastFamilyImpl.h>
 
@@ -127,7 +122,7 @@ namespace Blast
 
     void BlastFamilyImpl::HandleEvents(const Nv::Blast::TkEvent* events, uint32_t eventCount)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZStd::vector<BlastActorDesc> newActors;
         AZStd::unordered_set<BlastActor*> actorsToDelete;
@@ -155,7 +150,7 @@ namespace Blast
         const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActors,
         AZStd::unordered_set<BlastActor*>& actorsToDelete)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZ_Assert(splitEvent, "Received null TkSplitEvent from the Blast library.");
         if (!splitEvent)
@@ -261,7 +256,7 @@ namespace Blast
 
     void BlastFamilyImpl::CreateActors(const AZStd::vector<BlastActorDesc>& actorDescs)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto& actorDesc : actorDescs)
         {
@@ -273,7 +268,7 @@ namespace Blast
 
     void BlastFamilyImpl::DestroyActors(const AZStd::unordered_set<BlastActor*>& actors)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (const auto actor : actors)
         {
@@ -299,14 +294,14 @@ namespace Blast
 
     void BlastFamilyImpl::DispatchActorCreated(const BlastActor& actor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         m_listener->OnActorCreated(*this, actor);
     }
 
     void BlastFamilyImpl::DispatchActorDestroyed(const BlastActor& actor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         m_listener->OnActorDestroyed(*this, actor);
     }
@@ -455,7 +450,7 @@ namespace Blast
             const auto buffer = m_asset.GetAccelerator()->fillDebugRender(-1, mode == DebugRenderAabbTreeSegments);
             if (buffer.lineCount)
             {
-                for (int i = 0; i < buffer.lineCount; ++i)
+                for (uint32_t i = 0; i < buffer.lineCount; ++i)
                 {
                     auto& line = buffer.lines[i];
                     AZ::Color color;

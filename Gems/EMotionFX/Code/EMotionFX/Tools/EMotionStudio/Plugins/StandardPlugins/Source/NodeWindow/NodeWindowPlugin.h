@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -52,7 +48,7 @@ namespace EMStudio
         const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Joint outliner"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
-        const char* GetCreatorName() const override         { return "Amazon"; }
+        const char* GetCreatorName() const override         { return "O3DE"; }
         float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
@@ -80,14 +76,14 @@ namespace EMStudio
 
         AZStd::vector<UpdateCallback*> m_callbacks;
 
-        MysticQt::DialogStack*              mDialogStack;
-        NodeHierarchyWidget*                mHierarchyWidget;
+        MysticQt::DialogStack*              m_dialogStack;
+        NodeHierarchyWidget*                m_hierarchyWidget;
         AzToolsFramework::ReflectedPropertyEditor* m_propertyWidget;
 
-        AZStd::string                       mString;
-        AZStd::string                       mTempGroupName;
-        AZStd::unordered_set<AZ::u32> m_visibleNodeIndices;
-        AZStd::unordered_set<AZ::u32> m_selectedNodeIndices;
+        AZStd::string                       m_string;
+        AZStd::string                       m_tempGroupName;
+        AZStd::unordered_set<size_t> m_visibleNodeIndices;
+        AZStd::unordered_set<size_t> m_selectedNodeIndices;
 
         AZStd::unique_ptr<ActorInfo>        m_actorInfo;
         AZStd::unique_ptr<NodeInfo>         m_nodeInfo;

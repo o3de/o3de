@@ -1,23 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 // AZ
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/any.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
 // Graph Model
+#include <GraphModel/Integration/GraphCanvasMetadata.h>
 #include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/GraphElement.h>
 
@@ -136,9 +132,9 @@ namespace GraphModel
         //! Set/gets a bundle of generic metadata that is provided by the node graph UI
         //! system. This may include node positions, comment blocks, node groupings, and 
         //! bookmarks, for example.
-        void SetUiMetadata(const AZStd::any& uiMetadata);
-        const AZStd::any& GetUiMetadata() const;
-        AZStd::any& GetUiMetadata();
+        void SetUiMetadata(const GraphModelIntegration::GraphCanvasMetadata& uiMetadata);
+        const GraphModelIntegration::GraphCanvasMetadata& GetUiMetadata() const;
+        GraphModelIntegration::GraphCanvasMetadata& GetUiMetadata();
 
         AZStd::shared_ptr<Slot> FindSlot(const Endpoint& endpoint);
 
@@ -157,7 +153,7 @@ namespace GraphModel
         ConnectionList m_connections;
 
         //! Used to store and serialize metadata from the graph UI, like node positions, comments, group boxes, etc.
-        AZStd::any m_uiMetadata;
+        GraphModelIntegration::GraphCanvasMetadata m_uiMetadata;
 
         //! Used to store all of our node <-> wrapper node mappings
         NodeWrappingMap m_nodeWrappings;

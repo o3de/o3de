@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <GridMate/Session/Session.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/lock.h>
@@ -64,7 +60,7 @@ namespace GridMate
 
             typedef vector<NewConnection> NewConnectionsType;
             typedef vector<AZ::u8> UserDataBufferType;
-            typedef unordered_set<string> AddressSetType;
+            typedef unordered_set<AZStd::string> AddressSetType;
 
             GridSessionHandshake(unsigned int handshakeTimeoutMS, const VersionType& version);
             virtual ~GridSessionHandshake() {}
@@ -96,19 +92,19 @@ namespace GridMate
             */
             virtual bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; } // we don't do any further filtering
             /// Return true if you want to reject early reject a connection.
-            virtual bool            OnNewConnection(const string& address);
+            virtual bool            OnNewConnection(const AZStd::string& address);
             /// Called when we close a connection.
             virtual void            OnDisconnect(ConnectionID id);
             /// Return timeout in milliseconds of the handshake procedure.
             virtual unsigned int    GetHandshakeTimeOutMS() const                   { return m_handshakeTimeOutMS; }
             //////////////////////////////////////////////////////////////////////////
 
-            void                    BanAddress(string address);
+            void                    BanAddress(AZStd::string address);
             void                    SetHost(bool isHost);
             void                    SetInvited(bool isInvited);
             void                    SetHostMigration(bool isMigrating);
             void                    SetUserData(const void* data, size_t dataSize);
-            void                    SetSessionId(string sessionId);
+            void                    SetSessionId(AZStd::string sessionId);
             bool                    IsNewConnections()                              { return !m_newConnections.empty(); }
             NewConnectionsType&     AcquireNewConnections();
             void                    ReleaseNewConnections();
@@ -121,7 +117,7 @@ namespace GridMate
             NewConnectionsType      m_newConnections;
             AddressSetType          m_banList;
             UserDataBufferType      m_userData;
-            string                  m_sessionId;
+            AZStd::string           m_sessionId;
             RemotePeerMode          m_peerMode;
             VersionType             m_version;
 
@@ -169,7 +165,7 @@ void GridSessionParam::SetValue(AZ::s32* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -187,7 +183,7 @@ void GridSessionParam::SetValue(AZ::s64* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -205,7 +201,7 @@ void GridSessionParam::SetValue(float* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -223,7 +219,7 @@ void GridSessionParam::SetValue(double* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -688,7 +684,7 @@ GridSession::SetParam(const GridSessionParam& param)
 // RemoveParam
 //=========================================================================
 bool
-GridSession::RemoveParam(const string& paramId)
+GridSession::RemoveParam(const AZStd::string& paramId)
 {
     AZ_Assert(m_state, "Invalid session state replica. Session is not initialized.");
 
@@ -730,7 +726,7 @@ GridSession::RemoveParam(unsigned int index)
         {
             const GridSessionReplica::ParamContainer& curParams = m_state->m_params.Get();
             const GridSessionParam& foundParam = curParams.at(index);
-            string paramId = foundParam.m_id;
+            AZStd::string paramId = foundParam.m_id;
             m_state->m_params.Modify([=](Internal::GridSessionReplica::ParamContainer& params)
                 {
                     params.erase(&params.at(index));
@@ -974,7 +970,7 @@ GridSession::AddMember(GridMember* member)
 // IsAddressInMemberList
 //=========================================================================
 bool
-GridSession::IsAddressInMemberList(const string& address)
+GridSession::IsAddressInMemberList(const AZStd::string& address)
 {
     for (AZStd::size_t i = 0; i < m_members.size(); ++i)
     {
@@ -1224,7 +1220,7 @@ GridSession::OnDriverError(Carrier* carrier, ConnectionID id, const DriverError&
         return; // not for us
     }
     uintptr_t idInt = reinterpret_cast<uintptr_t>(static_cast<void*>(id));
-    string errorMsg = string::format("Carrier driver error ConnectionID: %" PRIuPTR "ErrorCode: 0x%08x", idInt, error.m_errorCode);
+    AZStd::string errorMsg = AZStd::string::format("Carrier driver error ConnectionID: %" PRIuPTR "ErrorCode: 0x%08x", idInt, error.m_errorCode);
     EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionError, this, errorMsg);
 
@@ -1252,7 +1248,7 @@ GridSession::OnSecurityError(Carrier* carrier, ConnectionID id, const SecurityEr
         return; // not for us
     }
     uintptr_t idInt = reinterpret_cast<uintptr_t>(static_cast<void*>(id));
-    string errorMsg = string::format("Carrier security error ConnectionID: %" PRIuPTR " ErrorCode: 0x%08x", idInt, error.m_errorCode);
+    AZStd::string errorMsg = AZStd::string::format("Carrier security error ConnectionID: %" PRIuPTR " ErrorCode: 0x%08x", idInt, error.m_errorCode);
     EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
 }
 
@@ -1980,7 +1976,7 @@ GridMember::GetNatType() const
 //=========================================================================
 // GetName
 //=========================================================================
-string
+AZStd::string
 GridMember::GetName() const
 {
     return m_clientState ? m_clientState->m_name.Get().c_str() : "Unknown";
@@ -2248,7 +2244,7 @@ GridMember::GetProcessId() const
 //=========================================================================
 // GetMachineName
 //=========================================================================
-string
+AZStd::string
 GridMember::GetMachineName() const
 {
     if (m_clientState)
@@ -2257,7 +2253,7 @@ GridMember::GetMachineName() const
     }
     else
     {
-        return string();
+        return AZStd::string();
     }
 }
 
@@ -2692,7 +2688,7 @@ HandshakeErrorCode GridSessionHandshake::OnReceiveRequest(ConnectionID id, ReadB
 {
     (void)id;
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
-    string sessionId;
+    AZStd::string sessionId;
     bool isInvited = false;
     RemotePeerMode peerMode;
     VersionType version;
@@ -2765,7 +2761,7 @@ bool GridSessionHandshake::OnConfirmRequest(ConnectionID id, ReadBuffer& rb)
     (void)id;
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
 
-    string sessionId;
+    AZStd::string sessionId;
     if (!rb.Read(sessionId))
     {
         return false;
@@ -2787,7 +2783,7 @@ bool GridSessionHandshake::OnConfirmRequest(ConnectionID id, ReadBuffer& rb)
 //=========================================================================
 // OnNewConnection
 //=========================================================================
-bool GridSessionHandshake::OnNewConnection(const string& address)
+bool GridSessionHandshake::OnNewConnection(const AZStd::string& address)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
 
@@ -2822,7 +2818,7 @@ void GridSessionHandshake::OnDisconnect(ConnectionID id)
 //=========================================================================
 // BanAddress
 //=========================================================================
-void GridSessionHandshake::BanAddress(string address)
+void GridSessionHandshake::BanAddress(AZStd::string address)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
     m_banList.insert(address);
@@ -2868,7 +2864,7 @@ void GridSessionHandshake::SetUserData(const void* data, size_t dataSize)
 //=========================================================================
 // SetSessionId
 //=========================================================================
-void GridSessionHandshake::SetSessionId(string sessionId)
+void GridSessionHandshake::SetSessionId(AZStd::string sessionId)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
     m_sessionId = sessionId;

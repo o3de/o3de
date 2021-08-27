@@ -1,23 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <QMessageBox>
 #include <QDateTime>
 
 #include "UpgradeTool.h"
-
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
@@ -288,10 +280,6 @@ namespace ScriptCanvasEditor
                     if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                     {
                         tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
-                    }
-                    else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                    {
-                        tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasFunctionAsset>()->GetScriptCanvasData());
                     }
 
                     fileStream.Close();
@@ -712,10 +700,6 @@ namespace ScriptCanvasEditor
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
             scriptCanvasEntity = UpgradeGraph<ScriptCanvasAsset>(asset, this);
-        }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            scriptCanvasEntity = UpgradeGraph<ScriptCanvasFunctionAsset>(asset, this);
         }
 
         if (!scriptCanvasEntity)

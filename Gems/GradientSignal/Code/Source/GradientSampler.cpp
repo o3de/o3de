@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignal/GradientSampler.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Vector3.h>
@@ -66,45 +61,38 @@ namespace GradientSignal
 
                     ->DataElement(0, &GradientSampler::m_invertInput, "Invert Input", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
-                    ->DataElement(0, &GradientSampler::m_enableTransform, "Enable Transform", "")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
+
+                    ->GroupElementToggle("Enable Transform", &GradientSampler::m_enableTransform)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(0, &GradientSampler::m_translate, "Translate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(0, &GradientSampler::m_scale, "Scale", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(0, &GradientSampler::m_rotate, "Rotate", "Rotation in degrees.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
-                    ->DataElement(0, &GradientSampler::m_enableLevels, "Enable Levels", "")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
+                    ->GroupElementToggle("Enable Levels", &GradientSampler::m_enableLevels)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMid, "Input Mid", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMin, "Input Min", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMax, "Input Max", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMin, "Output Min", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMax, "Output Max", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview (Inbound)")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)

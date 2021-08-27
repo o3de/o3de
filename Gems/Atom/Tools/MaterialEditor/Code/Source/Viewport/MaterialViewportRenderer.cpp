@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #undef RC_INVOKED
 
@@ -247,7 +243,7 @@ namespace MaterialEditor
         OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
         OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
 
-        MaterialDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
@@ -259,7 +255,7 @@ namespace MaterialEditor
         AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        MaterialDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
 
@@ -328,7 +324,7 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
             return;
         }
 
@@ -369,13 +365,13 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
             return;
         }
 
         if (!preset->m_modelAsset.GetId().IsValid())
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
             return;
         }
 

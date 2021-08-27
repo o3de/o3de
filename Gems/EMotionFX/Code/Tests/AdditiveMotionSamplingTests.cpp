@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Actor.h>
@@ -31,10 +27,10 @@ namespace EMotionFX
         void CreateSubMotionLikeBindPose(const std::string& name)
         {
             const Skeleton* skeleton = m_actor->GetSkeleton();
-            AZ::u32 jointIndex = InvalidIndex32;
+            size_t jointIndex = InvalidIndex;
             const Node* node = skeleton->FindNodeAndIndexByName(name.c_str(), jointIndex);
             ASSERT_NE(node, nullptr);
-            ASSERT_NE(jointIndex, InvalidIndex32);
+            ASSERT_NE(jointIndex, InvalidIndex);
 
             const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
             const Transform& transform = bindPose->GetLocalSpaceTransform(jointIndex);
@@ -45,7 +41,7 @@ namespace EMotionFX
         {
             // Find and store the joint index.
             const Skeleton* skeleton = m_actor->GetSkeleton();
-            AZ::u32 jointIndex = InvalidIndex32;
+            size_t jointIndex = InvalidIndex;
             const Node* node = skeleton->FindNodeAndIndexByName(name.c_str(), jointIndex);
             ASSERT_NE(node, nullptr);
             ASSERT_NE(jointIndex, InvalidIndex32);
@@ -95,9 +91,9 @@ namespace EMotionFX
     protected:
         Motion* m_motion = nullptr;
         MotionInstance* m_motionInstance = nullptr; // Automatically deleted internally when deleting the actor instance.
-        std::vector<AZ::u32> m_jointIndices;
+        std::vector<size_t> m_jointIndices;
         std::vector<std::string> m_jointNames { "l_upLeg", "l_loLeg", "l_ankle" };
-        AZ::u32 m_footIndex = InvalidIndex32;
+        size_t m_footIndex = InvalidIndex;
     };
 
     TEST_F(MotionSamplingFixture, SampleAdditiveJoint)
@@ -106,7 +102,7 @@ namespace EMotionFX
 
         // Sample the joints that exist in our actor skeleton as well as inside the motion data.
         const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
-        for (AZ::u32 jointIndex : m_jointIndices)
+        for (size_t jointIndex : m_jointIndices)
         {
             // Sample the motion.
             Transform transform = Transform::CreateZero(); // Set all to Zero, not identity as this methods might return identity and we want to verify that.
@@ -144,7 +140,7 @@ namespace EMotionFX
      
         // Test if the joints that exist in both motion and actor have the expected transforms.
         const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
-        for (AZ::u32 jointIndex : m_jointIndices)
+        for (size_t jointIndex : m_jointIndices)
         {
             const Transform& transform = pose.GetLocalSpaceTransform(jointIndex);
             const Transform& bindTransform = bindPose->GetLocalSpaceTransform(jointIndex);

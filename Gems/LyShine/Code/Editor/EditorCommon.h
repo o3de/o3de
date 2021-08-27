@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Cry_Geo.h>
@@ -37,8 +33,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
-
-#pragma warning(disable: 4355) // 'this' : used in base member initializer list
 
 class CanvasSizeToolbarSection;
 class CommandCanvasPropertiesChange;
@@ -117,7 +111,6 @@ enum class FusibleCommand
 #include "FileHelpers.h"
 #include "ComponentHelpers.h"
 #include "HierarchyHelpers.h"
-#include "PrefabHelpers.h"
 #include "UiSliceManager.h"
 #include "SelectionHelpers.h"
 #include "ViewportInteraction.h"
@@ -165,8 +158,8 @@ enum class FusibleCommand
 #include "ViewportWidget.h"
 
 // IMPORTANT: This is NOT the permanent location for these values.
-#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "Amazon"
-#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "Open 3D Engine"
+#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "O3DE"
+#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "O3DE"
 
 // See: http://en.wikipedia.org/wiki/Internet_media_type#Prefix_x
 #define UICANVASEDITOR_MIMETYPE "application/x-amazon-o3de-uicanvaseditor"
@@ -177,8 +170,6 @@ bool ClipboardContainsOurDataType();
 
 #define UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE    QKeySequence(Qt::CTRL + Qt::Key_W)
 #define UICANVASEDITOR_SNAP_TO_GRID_TOGGLE_SHORTCUT_KEY_SEQUENCE        QKeySequence(Qt::Key_G)
-
-#define UICANVASEDITOR_PREFAB_EXTENSION "uiprefab"
 
 #define UICANVASEDITOR_CANVAS_DIRECTORY "UI/Canvases"
 #define UICANVASEDITOR_CANVAS_EXTENSION "uicanvas"

@@ -1,15 +1,11 @@
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Tests/AnimGraphFixture.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -24,11 +20,11 @@ namespace EMotionFX
 {
     struct AnimGraphStateMachineSyncParam
     {
-        float playSpeedA;
-        float durationA;
-        float playSpeedB;
-        float durationB;
-        bool syncEnabled;
+        float m_playSpeedA;
+        float m_durationA;
+        float m_playSpeedB;
+        float m_durationB;
+        bool m_syncEnabled;
     };
 
     class AnimGraphStateMachineSyncFixture
@@ -55,7 +51,7 @@ namespace EMotionFX
                 1.0f/*blendTime*/,
                 0.0f/*countDownTime*/);
 
-            if (param.syncEnabled)
+            if (param.m_syncEnabled)
             {
                 m_transition->SetSyncMode(AnimGraphObject::SYNCMODE_CLIPBASED);
             }
@@ -89,8 +85,8 @@ namespace EMotionFX
             m_animGraphInstance->Destroy();
             m_animGraphInstance = m_motionNodeAnimGraph->GetAnimGraphInstance(m_actorInstance, m_motionSet);
 
-            SetUpMotionNode("testMotionA", param.playSpeedA, param.durationA, m_stateA);
-            SetUpMotionNode("testMotionB", param.playSpeedB, param.durationB, m_stateB);
+            SetUpMotionNode("testMotionA", param.m_playSpeedA, param.m_durationA, m_stateA);
+            SetUpMotionNode("testMotionB", param.m_playSpeedB, param.m_durationB, m_stateB);
 
             GetEMotionFX().Update(0.0f);
         }

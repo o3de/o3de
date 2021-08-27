@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "Vegetation_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "VegetationSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -25,8 +20,7 @@
 #include <Vegetation/InstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
-
-#include <CrySystemBus.h>
+#include <Vegetation/PrefabInstanceSpawner.h>
 
 namespace Vegetation
 {
@@ -53,19 +47,24 @@ namespace Vegetation
 
     void VegetationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
+    }
+
+    void VegetationSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
     }
 
     void VegetationSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -73,6 +72,7 @@ namespace Vegetation
         InstanceSpawner::Reflect(context);
         EmptyInstanceSpawner::Reflect(context);
         DynamicSliceInstanceSpawner::Reflect(context);
+        PrefabInstanceSpawner::Reflect(context);
         Descriptor::Reflect(context);
         AreaConfig::Reflect(context);
         AreaComponentBase::Reflect(context);

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -45,7 +41,7 @@ namespace AzToolsFramework
             //asset type filtering
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();
-
+            const FilterConstType& GetFilter() const { return m_filter; }
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus
             //////////////////////////////////////////////////////////////////////////
@@ -53,7 +49,6 @@ namespace AzToolsFramework
 
         Q_SIGNALS:
             void filterChanged();
-
             //////////////////////////////////////////////////////////////////////////
             //QSortFilterProxyModel
         protected:
@@ -68,7 +63,7 @@ namespace AzToolsFramework
         protected:
             //set for filtering columns
             //if the column is in the set the column is not filtered and is shown
-            AZStd::fixed_unordered_set<int, 3, static_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
+            AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
             bool m_alreadyRecomputingFilters = false;
             //asset source name match filter
             FilterConstType m_filter;

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <ATLAudioObject.h>
 
@@ -28,7 +24,6 @@
 
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {
@@ -388,7 +383,7 @@ namespace Audio
         const AZ::Vector3 cPositionDelta = m_oPosition.GetPositionVec() - m_oPreviousPosition.GetPositionVec();
         const float fCurrentVelocity = (1000.0f * cPositionDelta.GetLength()) / fUpdateIntervalMS; // fCurrentVelocity is given in units per second
 
-        if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > g_audioCVars.m_fVelocityTrackingThreshold)
+        if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > Audio::CVars::s_VelocityTrackingThreshold)
         {
             m_fPreviousVelocity = fCurrentVelocity;
             SAudioRequest oRequest;
@@ -432,8 +427,8 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CATLAudioObject::CanRunRaycasts() const
     {
-        return Audio::s_EnableRaycasts      // This is the CVar to enable/disable audio raycasts.
-            && Audio::s_RaycastMinDistance < Audio::s_RaycastMaxDistance
+        return Audio::CVars::s_EnableRaycasts      // This is the CVar to enable/disable audio raycasts.
+            && Audio::CVars::s_RaycastMinDistance < Audio::CVars::s_RaycastMaxDistance
             && m_raycastProcessor.CanRun();
     }
 
@@ -475,7 +470,7 @@ namespace Audio
 
         info.UpdateContribution();
         info.m_cached = true;
-        info.m_cacheTimerMs = Audio::s_RaycastCacheTimeMs;
+        info.m_cacheTimerMs = Audio::CVars::s_RaycastCacheTimeMs;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +495,7 @@ namespace Audio
         // Max extent is the s_RaycastMaxDistance, and use the distance embedded in the raycast request as a percent (inverse).
         // Objects closer to the listener will have greater contribution amounts.
         // Objects farther away will contribute less obstruction/occlusion, but distance attenuation will be the larger contributing factor.
-        const float maxDistance = static_cast<float>(s_RaycastMaxDistance);
+        const float maxDistance = static_cast<float>(Audio::CVars::s_RaycastMaxDistance);
         float clampedDistance = AZ::GetClamp(m_raycastRequest.m_distance, 0.f, maxDistance);
         float distanceScale = 1.f - (clampedDistance / maxDistance);
 
@@ -528,8 +523,8 @@ namespace Audio
     RaycastProcessor::RaycastProcessor(const TAudioObjectID objectId, const SATLWorldPosition& objectPosition)
         : m_rayInfos(s_maxRaysPerObject, RaycastInfo())
         , m_position(objectPosition)
-        , m_obstructionValue(s_RaycastSmoothFactor, s_epsilon)
-        , m_occlusionValue(s_RaycastSmoothFactor, s_epsilon)
+        , m_obstructionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
+        , m_occlusionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_audioObjectId(objectId)
         , m_obstOccType(eAOOCT_IGNORE)
     {
@@ -568,8 +563,8 @@ namespace Audio
             }
         }
 
-        m_obstructionValue.Update(s_RaycastSmoothFactor);
-        m_occlusionValue.Update(s_RaycastSmoothFactor);
+        m_obstructionValue.Update(Audio::CVars::s_RaycastSmoothFactor);
+        m_occlusionValue.Update(Audio::CVars::s_RaycastSmoothFactor);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,7 +623,7 @@ namespace Audio
         const float distance = ray.GetLength();
 
         // Prevent raycast when individual sources are not within the allowed distance range...
-        if (Audio::s_RaycastMinDistance >= distance || distance >= Audio::s_RaycastMaxDistance)
+        if (Audio::CVars::s_RaycastMinDistance >= distance || distance >= Audio::CVars::s_RaycastMaxDistance)
         {
             Reset();
             return;
@@ -644,7 +639,7 @@ namespace Audio
         constexpr float spreadDistanceMaxExtent = 10.f;
         constexpr float spreadDistanceDelta = spreadDistanceMaxExtent - spreadDistanceMinExtent;
 
-        const float rayDistancePercent = (distance / Audio::s_RaycastMaxDistance);
+        const float rayDistancePercent = (distance / Audio::CVars::s_RaycastMaxDistance);
 
         const float spreadDist = spreadDistanceMinExtent + rayDistancePercent * spreadDistanceDelta;
 
@@ -700,7 +695,7 @@ namespace Audio
             // Set the pending flag to true, so the results aren't discarded.
             m_rayInfos[rayIndex].m_pending = true;
             // Set the distance in the request structure so it doesn't have the default.
-            m_rayInfos[rayIndex].m_raycastRequest.m_distance = (s_RaycastMaxDistance / 4.f);
+            m_rayInfos[rayIndex].m_raycastRequest.m_distance = (Audio::CVars::s_RaycastMaxDistance / 4.f);
         }
     }
 
@@ -814,7 +809,7 @@ namespace Audio
             // Inspect triggers and apply filter (if set)...
             TTriggerCountMap cTriggerCounts;
 
-            AZStd::string triggerFilter(g_audioCVars.m_pAudioTriggersDebugFilter->GetString());
+            auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
             AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
             for (auto& trigger : m_cTriggers)
@@ -855,7 +850,7 @@ namespace Audio
             {
                 const float fDist = vPos.GetDistance(vListenerPos);
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_DRAW_SPHERES) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
                 {
                     const SAuxGeomRenderFlags nPreviousRenderFlags = auxGeom.GetRenderFlags();
                     SAuxGeomRenderFlags nNewRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
@@ -870,7 +865,7 @@ namespace Audio
                 const float fFontSize = 1.3f;
                 const float fLineHeight = 12.0f;
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_STATES) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
                 {
                     AZ::Vector3 vSwitchPos(vScreenPos);
 
@@ -906,7 +901,7 @@ namespace Audio
                 const AZ::Color normalTextColor(0.75f, 0.75f, 0.75f, 1.f);
                 const AZ::Color dimmedTextColor(0.5f, 0.5f, 0.5f, 1.f);
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_LABEL) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
                 {
                     const TAudioObjectID nObjectID = GetID();
                     auxGeom.Draw2dLabel(
@@ -936,7 +931,7 @@ namespace Audio
                     );
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_TRIGGERS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
                 {
                     AZStd::string triggerStringFormatted;
 
@@ -968,7 +963,7 @@ namespace Audio
                         triggerStringFormatted.c_str());
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_RTPCS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
                 {
                     AZ::Vector3 vRtpcPos(vScreenPos);
 
@@ -995,7 +990,7 @@ namespace Audio
                     }
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_ENVIRONMENTS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
                 {
                     AZ::Vector3 vEnvPos(vScreenPos);
 
@@ -1046,8 +1041,8 @@ namespace Audio
         newRenderFlags.SetCullMode(e_CullModeNone);
         auxGeom.SetRenderFlags(newRenderFlags);
 
-        const bool drawRays = ((g_audioCVars.m_nDrawAudioDebug & eADDF_DRAW_OBSTRUCTION_RAYS) != 0);
-        const bool drawLabels = ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBSTRUCTION_RAY_LABELS) != 0);
+        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
+        const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
 
         size_t numRays = m_obstOccType == eAOOCT_SINGLE_RAY ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)

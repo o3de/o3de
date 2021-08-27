@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Jobs/JobManager.h>
 
@@ -126,7 +122,7 @@ void JobManagerWorkStealing::AddPendingJob(Job* job)
     }
 #endif
 
-    AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::JobManagerDetailed, job, "AzCore Job Queued Awaiting Execute");
+    AZ_PROFILE_INTERVAL_START(JobManagerDetailed, job, "AzCore Job Queued Awaiting Execute");
 
     if (job->IsCompletion())
     {
@@ -375,7 +371,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
                 {
                     //no available work, so go to sleep (or we have already been signaled by another thread and will acquire the semaphore but not actually sleep)
                     info->m_waitEvent.acquire();
-                    AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::JobManagerDetailed, info);
+                    AZ_PROFILE_INTERVAL_END(JobManagerDetailed, info);
 
                     if (m_quitRequested)
                     {
@@ -461,7 +457,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
             else
             {
                 //attempt to steal a job from another thread's queue
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "JobManagerWorkStealing::ProcessJobsInternal:WorkStealing");
+                AZ_PROFILE_SCOPE(AzCore, "JobManagerWorkStealing::ProcessJobsInternal:WorkStealing");
 
                 unsigned int numStealAttempts = 0;
                 const unsigned int maxStealAttempts = (unsigned int)m_workerThreads.size() * 3; //try every thread a few times before giving up
@@ -678,7 +674,7 @@ inline void JobManagerWorkStealing::ActivateWorker()
                 m_numAvailableWorkers.fetch_sub(1, AZStd::memory_order_acq_rel);
                 // resume the thread execution
 
-                AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::JobManagerDetailed, info, "AzCore WakeJobThread %d", info->m_workerId);
+                AZ_PROFILE_INTERVAL_START(JobManagerDetailed, info, "AzCore WakeJobThread %d", info->m_workerId);
                 info->m_waitEvent.release();
                 return;
             }

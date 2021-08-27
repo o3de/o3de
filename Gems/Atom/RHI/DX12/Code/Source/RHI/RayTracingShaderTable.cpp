@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
@@ -90,7 +85,7 @@ namespace AZ
                 uint8_t* nextRecord = RHI::AlignUp(mappedData + shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
 
                 AZStd::wstring shaderExportNameWstring;
-                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView().data(), record.m_shaderExportName.GetStringView().size());
+                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView());
                 void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
                 memcpy(mappedData, shaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
                 mappedData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;

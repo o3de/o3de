@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <RenderCommon.h>
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -78,7 +75,7 @@ namespace AZ
 
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "MeshFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
@@ -90,7 +87,7 @@ namespace AZ
             {
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "MeshFP::Simulate() Lambda");
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFP::Simulate() Lambda");
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
@@ -149,46 +146,33 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const MaterialAssignmentMap& materials,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const MaterialAssignmentMap& materials)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
 
-            // Mark skinned meshes to enable special processes to generate motion vector 
-            meshDataHandle->m_skinnedMeshWithMotion = skinnedMeshWithMotion;
-
-            // set ray tracing flag, but always disable on skinned meshes
-            // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_rayTracingEnabled = rayTracingEnabled && (skinnedMeshWithMotion == false);
-
+            meshDataHandle->m_descriptor = descriptor;
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
-            meshDataHandle->m_originalModelAsset = modelAsset;
-            meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
-            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
+            meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
+            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const Data::Instance<RPI::Material>& material,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const Data::Instance<RPI::Material>& material)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
             defaultMaterial.m_materialInstance = material;
 
-            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled, requiresCloneCallback);
+            return AcquireMesh(descriptor, materials);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -210,7 +194,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_originalModelAsset, meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -304,6 +288,30 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb)
+        {
+            if (meshHandle.IsValid())
+            {
+                MeshDataInstance& meshData = *meshHandle;
+                meshData.m_aabb = localAabb;
+                meshData.m_cullBoundsNeedsUpdate = true;
+                meshData.m_objectSrgNeedsUpdate = true;
+            }
+        };
+
+        AZ::Aabb MeshFeatureProcessor::GetLocalAabb(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_aabb;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return Aabb::CreateNull();
+            }
+        }
+
         Transform MeshFeatureProcessor::GetTransform(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
@@ -338,7 +346,7 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle)
+        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
@@ -351,24 +359,24 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride)
+        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetLodOverride(lodOverride);
+                meshHandle->SetMeshLodConfiguration(meshLodConfig);
             }
         }
 
-        RPI::Cullable::LodOverride MeshFeatureProcessor::GetLodOverride(const MeshHandle& meshHandle)
+        RPI::Cullable::LodConfiguration MeshFeatureProcessor::GetMeshLodConfiguration(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->GetLodOverride();
+                return meshHandle->GetMeshLodConfiguration();
             }
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return 0;
+                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 
@@ -377,6 +385,14 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                if (excludeFromReflectionCubeMaps)
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+                }
+                else
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
+                }
             }
         }
 
@@ -385,12 +401,12 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_rayTracingEnabled)
+                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
                     meshHandle->SetRayTracingData();
                 }
-                else if (!rayTracingEnabled && meshHandle->m_rayTracingEnabled)
+                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
@@ -400,7 +416,7 @@ namespace AZ
                 }
 
                 // set new state
-                meshHandle->m_rayTracingEnabled = rayTracingEnabled;
+                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
             }
         }
 
@@ -408,7 +424,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_visible = visible;
+                meshHandle->SetVisible(visible);
             }
         }
 
@@ -416,7 +432,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_useForwardPassIblSpecular = useForwardPassIblSpecular;
+                meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
                 meshHandle->m_objectSrgNeedsUpdate = true;
 
                 if (meshHandle->m_model)
@@ -450,7 +466,7 @@ namespace AZ
             // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_meshData)
             {
-                if (meshInstance.m_useForwardPassIblSpecular)
+                if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
                 }
@@ -462,27 +478,19 @@ namespace AZ
             : m_modelAsset(modelAsset)
             , m_parent(parent)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             if (!m_modelAsset.GetId().IsValid())
             {
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-
-            // Check if the model is in the instance database and skip the loading process in this case.
-            // The model asset id is used as instance id to indicate that it is a static and shared.
-            Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
-            if (model)
+            
+            if (!m_modelAsset.IsReady())
             {
-                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
-                // model instance with the asset id as instance id as searched above.
-                m_parent->Init(model);
-                m_modelChangedEvent.Signal(AZStd::move(model));
-                return;
+                m_modelAsset.QueueLoad();
             }
 
-            m_modelAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
         }
 
@@ -499,7 +507,7 @@ namespace AZ
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
@@ -507,8 +515,8 @@ namespace AZ
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
-            if (m_parent->m_requiresCloningCallback &&
-                m_parent->m_requiresCloningCallback(modelAsset))
+            if (m_parent->m_descriptor.m_requiresCloneCallback &&
+                m_parent->m_descriptor.m_requiresCloneCallback(modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
@@ -536,7 +544,10 @@ namespace AZ
             }
             else
             {
-                AZ_Error("MeshDataInstance::OnAssetReady", false, "Failed to create model instance for '%s'", asset.GetHint().c_str());
+                //when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
+                AZ_Error(
+                    "MeshDataInstance::OnAssetReady", RHI::IsNullRenderer(), "Failed to create model instance for '%s'",
+                    asset.GetHint().c_str());
             }
         }
 
@@ -568,19 +579,7 @@ namespace AZ
 
         void MeshDataInstance::Init(Data::Instance<RPI::Model> model)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
-            auto modelAsset = model->GetModelAsset();
-            for (const auto& modelLodAsset : modelAsset->GetLodAssets())
-            {
-                for (const auto& mesh : modelLodAsset->GetMeshes())
-                {
-                    if (mesh.GetMaterialAsset().GetStatus() != Data::AssetData::AssetStatus::Ready)
-                    {
-
-                    }
-                }
-            }
+            AZ_PROFILE_FUNCTION(AzRender);
 
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
@@ -598,10 +597,12 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_rayTracingEnabled)
+            if (m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
+
+            m_aabb = model->GetModelAsset()->GetAabb();
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
@@ -610,7 +611,7 @@ namespace AZ
 
         void MeshDataInstance::BuildDrawPacketList(size_t modelLodIndex)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
@@ -623,10 +624,12 @@ namespace AZ
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
+                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+
+                Data::Instance<RPI::Material> material = mesh.m_material;
 
                 // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -658,7 +661,7 @@ namespace AZ
                 if (!m_shaderResourceGroup)
                 {
                     auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, RPI::DefaultSupervariantIndex, objectSrgLayout->GetName());
+                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
                     if (!m_shaderResourceGroup)
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
@@ -666,13 +669,11 @@ namespace AZ
                     }
                 }
 
-                SelectMotionVectorShader(material);
-
                 // setup the mesh draw packet
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, m_shaderResourceGroup, materialAssignment.m_matModUvOverrides);
 
                 // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_useForwardPassIblSpecular }))
+                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
@@ -683,7 +684,7 @@ namespace AZ
                 m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
 
                 // stencil bits
-                uint8_t stencilRef = m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
                 stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
 
                 drawPacket.SetStencilRef(stencilRef);
@@ -719,7 +720,7 @@ namespace AZ
             static const char* UVSemantic = "UV";
             static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format NormalStreamFormat = RHI::Format::R32G32B32_FLOAT;
-            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
             static const RHI::Format BitangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format UVStreamFormat = RHI::Format::R32G32_FLOAT;
 
@@ -742,10 +743,12 @@ namespace AZ
             RPI::ShaderInputContract::StreamChannelInfo tangentStreamChannelInfo;
             tangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(TangentSemantic));
             tangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(TangentStreamFormat);
+            tangentStreamChannelInfo.m_isOptional = true;
 
             RPI::ShaderInputContract::StreamChannelInfo bitangentStreamChannelInfo;
             bitangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(BitangentSemantic));
             bitangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(BitangentStreamFormat);
+            bitangentStreamChannelInfo.m_isOptional = true;
 
             RPI::ShaderInputContract::StreamChannelInfo uvStreamChannelInfo;
             uvStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(UVSemantic));
@@ -769,7 +772,7 @@ namespace AZ
                 // retrieve the material
                 Data::Instance<RPI::Material> material = mesh.m_material;
 
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -797,19 +800,19 @@ namespace AZ
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
-                uint32_t positionBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
 
-                uint32_t normalBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
 
-                uint32_t tangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
 
-                uint32_t bitangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
 
-                uint32_t uvBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
                 const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
@@ -831,13 +834,21 @@ namespace AZ
                 subMesh.m_normalVertexBufferView = streamBufferViews[1];
                 subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
-                subMesh.m_tangentFormat = TangentStreamFormat;
-                subMesh.m_tangentVertexBufferView = streamBufferViews[2];
-                subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                if (tangentBufferByteCount > 0)
+                {
+                    subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
+                    subMesh.m_tangentFormat = TangentStreamFormat;
+                    subMesh.m_tangentVertexBufferView = streamBufferViews[2];
+                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                }
 
-                subMesh.m_bitangentFormat = BitangentStreamFormat;
-                subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
-                subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                if (bitangentBufferByteCount > 0)
+                {
+                    subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
+                    subMesh.m_bitangentFormat = BitangentStreamFormat;
+                    subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
+                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                }
 
                 if (uvBufferByteCount > 0)
                 {
@@ -957,24 +968,24 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshDataInstance::GetSortKey()
+        RHI::DrawItemSortKey MeshDataInstance::GetSortKey() const
         {
             return m_sortKey;
         }
 
-        void MeshDataInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
+        void MeshDataInstance::SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig)
         {
-            m_cullable.m_lodData.m_lodOverride = lodOverride;
+            m_cullable.m_lodData.m_lodConfiguration = meshLodConfig;
         }
 
-        RPI::Cullable::LodOverride MeshDataInstance::GetLodOverride()
+        RPI::Cullable::LodConfiguration MeshDataInstance::GetMeshLodConfiguration() const
         {
-            return m_cullable.m_lodData.m_lodOverride;
+            return m_cullable.m_lodData.m_lodConfiguration;
         }
 
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -989,14 +1000,14 @@ namespace AZ
 
         void MeshDataInstance::BuildCullable()
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
             RPI::Cullable::LodData& lodData = m_cullable.m_lodData;
 
-            const Aabb& localAabb = m_model->GetAabb();
+            const Aabb& localAabb = m_aabb;
             lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
 
             const size_t modelLodCount = m_model->GetLodCount();
@@ -1011,9 +1022,6 @@ namespace AZ
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                //[GFX TODO][ATOM-5562] - Level of detail: override lod distances and add global lod multiplier(s)
-                static const float MinimumScreenCoverage = 1.0f/1080.0f;        //mesh should cover at least a screen pixel at 1080p to be drawn
-                static const float ReductionFactor = 0.5f;
                 if (lodIndex == 0)
                 {
                     //first lod
@@ -1022,17 +1030,18 @@ namespace AZ
                 else
                 {
                     //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex-1].m_screenCoverageMin, MinimumScreenCoverage);
+                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
+
                 if (lodIndex < lodAssets.size() - 1)
                 {
                     //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(ReductionFactor * lod.m_screenCoverageMax, MinimumScreenCoverage);
+                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
                 else
                 {
                     //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = MinimumScreenCoverage;
+                    lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
                 }
 
                 lod.m_drawPackets.clear();
@@ -1068,7 +1077,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1077,7 +1086,7 @@ namespace AZ
 
             Vector3 center;
             float radius;
-            Aabb localAabb = m_model->GetAabb();
+            Aabb localAabb = m_aabb;
             localAabb.MultiplyByScale(nonUniformScale);
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
@@ -1092,29 +1101,6 @@ namespace AZ
             m_cullBoundsNeedsUpdate = false;
         }
 
-        void MeshDataInstance::SelectMotionVectorShader(Data::Instance<RPI::Material> material)
-        {
-            // Two motion vector shaders are defined in the material for static mesh (only animated by transform matrix)
-            // and skinned mesh (per vertex animation) respectively, it's because they have different input signatures
-            // (skinned mesh needs two streaming channels while static mesh only needs one) that cannot be addressed by shader option
-            // itself. Therefore this function is used to pick one to use and disable the other one depending on the type of the mesh
-            // so it won't cause errors due to missing input streaming channel.
-
-            //[GFX TODO][ATOM-4726] Replace this with a "isSkinnedMesh" external material property and a functor that enables/disables the appropriate shader
-            for (auto& shaderItem : material->GetShaderCollection())
-            {
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "StaticMeshMotionVector" } && m_skinnedMeshWithMotion)
-                {
-                    shaderItem.SetEnabled(false);
-                }
-                 
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "SkinnedMeshMotionVector" } && (!m_skinnedMeshWithMotion))
-                {
-                    shaderItem.SetEnabled(false);
-                }
-            }
-        }
-
         void MeshDataInstance::UpdateObjectSrg()
         {
             if (!m_shaderResourceGroup)
@@ -1124,7 +1110,7 @@ namespace AZ
 
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
 
-            if (reflectionProbeFeatureProcessor && (m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
+            if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
                 AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));
@@ -1206,6 +1192,12 @@ namespace AZ
             }
 
             return false;
+        }
+
+        void MeshDataInstance::SetVisible(bool isVisible)
+        {
+            m_visible = isVisible;
+            m_cullable.m_isHidden = !isVisible;
         }
     } // namespace Render
 } // namespace AZ

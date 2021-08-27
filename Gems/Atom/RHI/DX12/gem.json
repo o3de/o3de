@@ -1,10 +1,14 @@
 {
     "gem_name": "Atom_RHI_DX12",
     "display_name": "Atom RHI DX12",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
     "summary": "",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-    ]
+    ],
+    "requirements": ""
 }

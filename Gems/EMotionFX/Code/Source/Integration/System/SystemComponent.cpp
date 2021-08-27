@@ -1,17 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-
-#include "EMotionFX_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
@@ -34,6 +27,13 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/EventDataFootIK.h>
+#include <EMotionFX/Source/MotionEvent.h>
+#include <EMotionFX/Source/AnimGraphNodeGroup.h>
+#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
+#include <EMotionFX/Source/MotionEventTable.h>
+#include <EMotionFX/Source/MotionEventTrack.h>
+#include <EMotionFX/Source/AnimGraphSyncTrack.h>
+#include <EMotionFX/Source/AnimGraph.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -132,7 +132,7 @@ namespace EMotionFX
             /// Dispatch motion events to listeners via ActorNotificationBus::OnMotionEvent.
             void OnEvent(const EMotionFX::EventInfo& emfxInfo) override
             {
-                const ActorInstance* actorInstance = emfxInfo.mActorInstance;
+                const ActorInstance* actorInstance = emfxInfo.m_actorInstance;
                 if (actorInstance)
                 {
                     const AZ::EntityId owningEntityId = actorInstance->GetEntityId();
@@ -140,11 +140,11 @@ namespace EMotionFX
                     // Fill engine-compatible structure to dispatch to game code.
                     MotionEvent motionEvent;
                     motionEvent.m_entityId = owningEntityId;
-                    motionEvent.m_actorInstance = emfxInfo.mActorInstance;
-                    motionEvent.m_motionInstance = emfxInfo.mMotionInstance;
-                    motionEvent.m_time = emfxInfo.mTimeValue;
+                    motionEvent.m_actorInstance = emfxInfo.m_actorInstance;
+                    motionEvent.m_motionInstance = emfxInfo.m_motionInstance;
+                    motionEvent.m_time = emfxInfo.m_timeValue;
                     // TODO
-                    for (const auto& eventData : emfxInfo.mEvent->GetEventDatas())
+                    for (const auto& eventData : emfxInfo.m_event->GetEventDatas())
                     {
                         if (const EMotionFX::TwoStringEventData* twoStringEventData = azrtti_cast<const EMotionFX::TwoStringEventData*>(eventData.get()))
                         {
@@ -153,8 +153,8 @@ namespace EMotionFX
                             break;
                         }
                     }
-                    motionEvent.m_globalWeight = emfxInfo.mGlobalWeight;
-                    motionEvent.m_localWeight = emfxInfo.mLocalWeight;
+                    motionEvent.m_globalWeight = emfxInfo.m_globalWeight;
+                    motionEvent.m_localWeight = emfxInfo.m_localWeight;
                     motionEvent.m_isEventStart = emfxInfo.IsEventStart();
 
                     // Queue the event to flush on the main thread.
@@ -469,9 +469,9 @@ namespace EMotionFX
 
             // Initialize MCore, which is EMotionFX's standard library of containers and systems.
             MCore::Initializer::InitSettings coreSettings;
-            coreSettings.mMemAllocFunction = &EMotionFXAlloc;
-            coreSettings.mMemReallocFunction = &EMotionFXRealloc;
-            coreSettings.mMemFreeFunction = &EMotionFXFree;
+            coreSettings.m_memAllocFunction = &EMotionFXAlloc;
+            coreSettings.m_memReallocFunction = &EMotionFXRealloc;
+            coreSettings.m_memFreeFunction = &EMotionFXFree;
             if (!MCore::Initializer::Init(&coreSettings))
             {
                 AZ_Error("EMotion FX Animation", false, "Failed to initialize EMotion FX SDK Core");
@@ -480,7 +480,7 @@ namespace EMotionFX
 
             // Initialize EMotionFX runtime.
             EMotionFX::Initializer::InitSettings emfxSettings;
-            emfxSettings.mUnitType = MCore::Distance::UNITTYPE_METERS;
+            emfxSettings.m_unitType = MCore::Distance::UNITTYPE_METERS;
 
             if (!EMotionFX::Initializer::Init(&emfxSettings))
             {
@@ -490,7 +490,7 @@ namespace EMotionFX
 
             SetMediaRoot("@assets@");
             // \todo Right now we're pointing at the @devassets@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
-            // the FBX pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
+            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
             EMotionFX::GetEMotionFX().InitAssetFolderPaths();
 
             // Register EMotionFX event handler
@@ -619,8 +619,8 @@ namespace EMotionFX
             }
 
             // Process the plugins.
-            const AZ::u32 numPlugins = pluginManager->GetNumActivePlugins();
-            for (AZ::u32 i = 0; i < numPlugins; ++i)
+            const size_t numPlugins = pluginManager->GetNumActivePlugins();
+            for (size_t i = 0; i < numPlugins; ++i)
             {
                 EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
                 plugin->ProcessFrame(delta);
@@ -677,8 +677,8 @@ namespace EMotionFX
 
             const float timeDelta = delta;
             const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-            const AZ::u32 numActorInstances = actorManager->GetNumActorInstances();
-            for (AZ::u32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = actorManager->GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
 
@@ -709,7 +709,7 @@ namespace EMotionFX
                             AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                             AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().mPosition;
+                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().m_position;
                             const AZ::Vector3 positionDelta = actorInstancePosition - currentTransform.GetTranslation();
 
                             if (hasPhysicsController)
@@ -724,7 +724,7 @@ namespace EMotionFX
                             }
 
                             // Update the entity rotation.
-                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().mRotation;
+                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().m_rotation;
                             const AZ::Quaternion currentRotation = currentTransform.GetRotation();
                             if (!currentRotation.IsClose(actorInstanceRotation, AZ::Constants::FloatEpsilon))
                             {

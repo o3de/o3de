@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <lz4.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -16,6 +12,7 @@
 #include <LZ4Compressor.h>
 
 #include <AzCore/Compression/Compression.h>
+#include <AzCore/std/chrono/clocks.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzTest/AzTest.h>
@@ -46,9 +43,9 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     memset(buffer.GetBuffer(), 255, buffer.GetCapacity());
 
     size_t maxCompressedSize = buffer.GetSize() + 32U;
-    size_t compressedSize = -1;
-    size_t uncompressedSize = -1;
-    size_t consumedSize = -1;
+    size_t compressedSize = std::numeric_limits<size_t>::max();
+    size_t uncompressedSize = std::numeric_limits<size_t>::max();
+    size_t consumedSize = std::numeric_limits<size_t>::max();
     char* pCompressedBuffer = new char[maxCompressedSize];
     char* pDecompressedBuffer = new char[buffer.GetSize()];
 

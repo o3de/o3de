@@ -1,18 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
+#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
@@ -32,6 +30,12 @@ namespace AZ
                 
                 const char* const m_groupName = nullptr;
                 const char* const m_regionName = nullptr;
+
+                struct Hash
+                {
+                    AZStd::size_t operator()(const GroupRegionName& name) const;
+                };
+                bool operator==(const GroupRegionName& other) const;
             };
 
             CachedTimeRegion() = default;
@@ -64,7 +68,7 @@ namespace AZ
         class CpuProfiler
         {
         public:
-            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, CachedTimeRegion>;
+            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
             using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
             AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");
@@ -82,11 +86,24 @@ namespace AZ
             //! Ends a time region
             virtual void EndTimeRegion() = 0;
 
-            //! Flush cached regions from all threads to the passed parameter
-            virtual void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) = 0;
+            //! Get the last frame's TimeRegionMap
+            virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
+
+            //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called. 
+            [[nodiscard]] virtual bool BeginContinuousCapture() = 0;
+
+            //! Flush the CPU Profiler's saved data into the passed ring buffer .
+            [[nodiscard]] virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
+
+            virtual bool IsContinuousCaptureInProgress() const = 0;
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;
+
+            virtual bool IsProfilerEnabled() const = 0 ;
+
+            //! Used by AZ_ATOM_PROFILE_DYNAMIC to create GroupRegionNames with known lifetimes.
+            virtual const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) = 0;
         };
 
     } // namespace RPI
@@ -112,3 +129,10 @@ namespace AZ
 #define AZ_ATOM_PROFILE_FUNCTION(groupName, regionName) \
     AZ_TRACE_METHOD(); \
     AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
+
+//! Macro that allows for region names to be submitted at runtime. Use sparingly - this acquires a lock and allocates new objects within a map.
+#define AZ_ATOM_PROFILE_DYNAMIC(groupName, regionName) \
+    static_assert(AZStd::is_convertible_v<decltype(groupName), const char*>, "Runtime group names are not allowed, use a static string literal instead."); \
+    const AZ::RHI::CachedTimeRegion::GroupRegionName& AZ_JOIN(groupRegionName, __LINE__) =                                                                 \
+        AZ::RHI::CpuProfiler::Get()->InsertDynamicName(groupName, regionName);                                                                             \
+    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));

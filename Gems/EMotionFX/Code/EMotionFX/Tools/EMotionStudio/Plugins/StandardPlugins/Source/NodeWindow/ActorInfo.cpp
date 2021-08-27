@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -36,15 +32,15 @@ namespace EMStudio
         m_nodeCount = actor->GetNumNodes();
 
         // node groups
-        const uint32 numNodeGroups = actor->GetNumNodeGroups();
+        const size_t numNodeGroups = actor->GetNumNodeGroups();
         m_nodeGroups.reserve(numNodeGroups);
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             m_nodeGroups.emplace_back(actor, actor->GetNodeGroup(i));
         }
 
         // global mesh information
-        const uint32 lodLevel = actorInstance->GetLODLevel();
+        const size_t lodLevel = actorInstance->GetLODLevel();
         uint32 numPolygons;
         actor->CalcMeshTotals(lodLevel, &numPolygons, &m_totalVertices, &m_totalIndices);
     }

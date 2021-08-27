@@ -1,16 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiFaderComponent.h"
+#include "RenderGraph.h"
 #include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
@@ -18,6 +14,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <AtomCore/Instance/Instance.h>
 
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiRenderBus.h>
@@ -27,6 +26,7 @@
 #include <ITimer.h>
 
 #include "UiSerialize.h"
+#include "RenderToTextureBus.h"
 
 // BehaviorContext UiFaderNotificationBus forwarder
 class BehaviorUiFaderNotificationBusHandler
@@ -125,7 +125,7 @@ void UiFaderComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInter
         AZ::Vector2 renderTargetSize = pixelAlignedBottomRight - pixelAlignedTopLeft;
 
         bool needsResize = static_cast<int>(renderTargetSize.GetX()) != m_renderTargetWidth || static_cast<int>(renderTargetSize.GetY()) != m_renderTargetHeight;
-        if (m_renderTargetHandle == -1 || needsResize)
+        if (m_attachmentImageId.IsEmpty() || needsResize)
         {
             // We delay first creation of the render target until render time since size is not known in Activate
             // We also call this if the size has changed
@@ -133,7 +133,7 @@ void UiFaderComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInter
         }
 
         // if the render target failed to be created (zero size for example) we don't render the element at all
-        if (m_renderTargetHandle == -1)
+        if (m_attachmentImageId.IsEmpty())
         {
             return;
         }
@@ -144,7 +144,7 @@ void UiFaderComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInter
     else
     {
         // destroy previous render target, if exists
-        if (m_renderTargetHandle != -1)
+        if (!m_attachmentImageId.IsEmpty())
         {
             DestroyRenderTarget();
         }
@@ -457,52 +457,22 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // Check if the render target already exists
-    if (m_renderTargetHandle != -1)
-    {
-        // Render target exists, resize it to the given size
-        if (!gEnv->pRenderer->ResizeRenderTarget(m_renderTargetHandle, static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY())))
-        {
-            AZ_Warning("UI", false, "Failed to resize render target for UiFaderComponent");
-            DestroyRenderTarget();
-        }
-    }
-    else
-    {
-        // Create a render target that this element and its children will be rendered to.
-        m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
-                static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY()), Clr_Transparent, eTF_R8G8B8A8);
+    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    DestroyRenderTarget();
 
-        if (m_renderTargetHandle == -1)
-        {
-            AZ_Warning("UI", false, "Failed to create render target for UiFaderComponent");
-        }
-    }
-
-    // if depth surface already exists then destroy it
-    if (m_renderTargetDepthSurface)
+    // Create a render target that this element and its children will be rendered to
+    AZ::EntityId canvasEntityId;
+    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
+    EBUS_EVENT_ID_RESULT(m_attachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    if (m_attachmentImageId.IsEmpty())
     {
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-        m_renderTargetDepthSurface = nullptr;
-    }
-
-    if (m_renderTargetHandle != -1)
-    {
-        // Also create a depth surface to render the canvas to, we need depth for masking
-        // since that uses the stencil buffer. We support any combination of nesting faders and masks
-        m_renderTargetDepthSurface = gEnv->pRenderer->CreateDepthSurface(
-                static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY()));
-
-        if (!m_renderTargetDepthSurface)
-        {
-            AZ_Warning("UI", false, "Failed to create depth surface for UiFaderComponent");
-            DestroyRenderTarget();
-        }
+        AZ_Warning("UI", false, "Failed to create render target for UiFaderComponent");
     }
 
     // at this point either all render targets and depth surfaces are created or none are.
     // If all succeeded then update the render target size
-    if (m_renderTargetHandle != -1)
+    if (!m_attachmentImageId.IsEmpty())
     {
         m_renderTargetWidth = static_cast<int>(renderTargetSize.GetX());
         m_renderTargetHeight = static_cast<int>(renderTargetSize.GetY());
@@ -514,16 +484,12 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiFaderComponent::DestroyRenderTarget()
 {
-    if (m_renderTargetHandle != -1)
+    if (!m_attachmentImageId.IsEmpty())
     {
-        gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
-        m_renderTargetHandle = -1;
-    }
-
-    if (m_renderTargetDepthSurface)
-    {
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-        m_renderTargetDepthSurface = nullptr;
+        AZ::EntityId canvasEntityId;
+        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_attachmentImageId);
+        m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
 }
 
@@ -597,14 +563,20 @@ void UiFaderComponent::RenderStandardFader(LyShine::IRenderGraph* renderGraph, U
 void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElementInterface* elementInterface,
     UiRenderInterface* renderInterface, int numChildren, bool isInGame)
 {
+    // Get the render target
+    AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
+    AZ::EntityId canvasEntityId;
+    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    EBUS_EVENT_ID_RESULT(attachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_attachmentImageId);
+
     // Render the element and its children to a render target
     {
         // we always clear to transparent black - the accumulation of alpha in the render target requires it
         AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Start building the render to texture node in the render graph
-        renderGraph->BeginRenderToTexture(m_renderTargetHandle, m_renderTargetDepthSurface,
-            m_viewportTopLeft, m_viewportSize, clearColor);
+        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        lyRenderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // We don't want this fader or parent faders to affect what is rendered to the render target since we will
         // apply those fades when we render from the render target.
@@ -627,14 +599,13 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
             float desiredAlpha = renderGraph->GetAlphaFade() * m_fade;
             uint8 desiredPackedAlpha = static_cast<uint8>(desiredAlpha * 255.0f);
 
-            UCol desiredPackedColor;
-            // This is a special case. We have an input texture that already has premultiplied alpha.
-            // So we tell the shader not to premultiply the output colors and we premultiply the alpha
-            // into the vertex colors so that they are premultiplied too.
-            desiredPackedColor.r = desiredPackedColor.g = desiredPackedColor.b = desiredPackedColor.a = desiredPackedAlpha;
-            if (m_cachedPrimitive.m_vertices[0].color.dcolor != desiredPackedColor.dcolor)
+            // If the fade value has changed we need to update the alpha values in the vertex colors but we do
+            // not want to touch or recompute the RGB values
+            if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
-                // go through the cached vertices and update the color values
+                // go through all the cached vertices and update the alpha values
+                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                desiredPackedColor.a = desiredPackedAlpha;
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;
@@ -644,16 +615,17 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
 
         // Add a primitive to render a quad using the render target we have created
         {
-            // Set the texture and other render state required
-            ITexture* texture = gEnv->pRenderer->EF_GetTextureByID(m_renderTargetHandle);
-            bool isClampTextureMode = true;
-            bool isTextureSRGB = true;
-            bool isTexturePremultipliedAlpha = true;
-            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
-
-            // add a render node to render from the render target texture to the current target
-            renderGraph->AddPrimitive(&m_cachedPrimitive, texture,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            if (lyRenderGraph)
+            {
+                // Set the texture and other render state required
+                AZ::Data::Instance<AZ::RPI::Image> image = attachmentImage;
+                bool isClampTextureMode = true;
+                bool isTextureSRGB = true;
+                bool isTexturePremultipliedAlpha = true;
+                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+                lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            }
         }
     }
 }

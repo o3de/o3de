@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -58,7 +54,7 @@ namespace EMStudio
         const char* GetCompileDate() const override     { return MCORE_DATE; }
         const char* GetName() const override            { return "Motion Sets"; }
         uint32 GetClassID() const override              { return MotionSetsWindowPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override     { return "Amazon"; }
+        const char* GetCreatorName() const override     { return "O3DE"; }
         float GetVersion() const override               { return 1.0f;  }
         bool GetIsClosable() const override             { return true;  }
         bool GetIsFloatable() const override            { return true;  }
@@ -76,8 +72,8 @@ namespace EMStudio
         void SetSelectedSet(EMotionFX::MotionSet* motionSet);
         int SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
-        MotionSetManagementWindow*  GetManagementWindow()                                                       { return mMotionSetManagementWindow; }
-        MotionSetWindow*            GetMotionSetWindow()                                                        { return mMotionSetWindow; }
+        MotionSetManagementWindow*  GetManagementWindow()                                                       { return m_motionSetManagementWindow; }
+        MotionSetWindow*            GetMotionSetWindow()                                                        { return m_motionSetWindow; }
 
         int OnSaveDirtyMotionSets();
         void LoadMotionSet(AZStd::string filename);
@@ -98,22 +94,21 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
 
-        CommandCreateMotionSetCallback*         mCreateMotionSetCallback;
+        CommandCreateMotionSetCallback*         m_createMotionSetCallback;
         CommandReinitCallback*                  m_reinitCallback;
-        CommandAdjustMotionSetCallback*         mAdjustMotionSetCallback;
-        CommandMotionSetAddMotionCallback*      mMotionSetAddMotionCallback;
-        CommandMotionSetRemoveMotionCallback*   mMotionSetRemoveMotionCallback;
-        CommandMotionSetAdjustMotionCallback*   mMotionSetAdjustMotionCallback;
-        CommandLoadMotionSetCallback*           mLoadMotionSetCallback;
+        CommandAdjustMotionSetCallback*         m_adjustMotionSetCallback;
+        CommandMotionSetAddMotionCallback*      m_motionSetAddMotionCallback;
+        CommandMotionSetRemoveMotionCallback*   m_motionSetRemoveMotionCallback;
+        CommandMotionSetAdjustMotionCallback*   m_motionSetAdjustMotionCallback;
+        CommandLoadMotionSetCallback*           m_loadMotionSetCallback;
 
-        MotionSetManagementWindow*              mMotionSetManagementWindow;
-        MotionSetWindow*                        mMotionSetWindow;
+        MotionSetManagementWindow*              m_motionSetManagementWindow;
+        MotionSetWindow*                        m_motionSetWindow;
 
-        MysticQt::DialogStack*                  mDialogStack;
-        //MotionSetStringIDWindow*              mStringIDWindow;
+        MysticQt::DialogStack*                  m_dialogStack;
 
-        EMotionFX::MotionSet*                   mSelectedSet;
+        EMotionFX::MotionSet*                   m_selectedSet;
 
-        SaveDirtyMotionSetFilesCallback*        mDirtyFilesCallback;
+        SaveDirtyMotionSetFilesCallback*        m_dirtyFilesCallback;
     };
 } // namespace EMStudio

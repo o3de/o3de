@@ -1,16 +1,10 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "WhiteBoxAtomRenderMesh.h"
 
@@ -118,17 +112,8 @@ namespace WhiteBox
         AddLodBuffers(modelLodCreator);
         modelLodCreator.BeginMesh();
         modelLodCreator.SetMeshAabb(meshData.GetAabb());
-
-        // set the default material
-        if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
-        {
-            modelLodCreator.SetMeshMaterialAsset(materialAsset);
-        }
-        else
-        {
-            AZ_Error("CreateLodAsset", false, "Could not load material.");
-            return false;
-        }
+        
+        modelLodCreator.SetMeshMaterialSlot(OneMaterialSlotId);
 
         AddMeshBuffers(modelLodCreator);
         modelLodCreator.EndMesh();
@@ -160,6 +145,20 @@ namespace WhiteBox
         modelCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         modelCreator.SetName(ModelName);
         modelCreator.AddLodAsset(AZStd::move(m_lodAsset));
+        
+        if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
+        {
+            AZ::RPI::ModelMaterialSlot materialSlot;
+            materialSlot.m_stableId = OneMaterialSlotId;
+            materialSlot.m_defaultMaterialAsset = materialAsset;
+            modelCreator.AddMaterialSlot(materialSlot);
+        }
+        else
+        {
+            AZ_Error("CreateLodAsset", false, "Could not load material.");
+            return;
+        }
+
         modelCreator.End(m_modelAsset);
     }
 
@@ -178,7 +177,7 @@ namespace WhiteBox
         }
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset);
+        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
         return true;
     }
 

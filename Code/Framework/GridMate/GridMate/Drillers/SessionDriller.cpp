@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GridMate/Drillers/SessionDriller.h>
 
@@ -228,7 +224,7 @@ namespace GridMate
         // [4/15/2011]
         //=========================================================================
         void
-        SessionDriller::OnSessionError(GridSession* session, const string& errorMsg)
+        SessionDriller::OnSessionError(GridSession* session, const AZStd::string& errorMsg)
         {
             m_output->BeginTag(m_drillerTag);
             m_output->BeginTag(AZ_CRC("SessionError", 0xc689cc40));

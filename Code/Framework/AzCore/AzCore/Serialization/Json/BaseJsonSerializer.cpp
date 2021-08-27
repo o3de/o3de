@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
@@ -216,9 +212,14 @@ namespace AZ
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoading(
         void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context, ContinuationFlags flags)
     {
+        bool loadAsNewInstance = (flags & ContinuationFlags::LoadAsNewInstance) == ContinuationFlags::LoadAsNewInstance;
+        JsonDeserializer::UseTypeDeserializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
+            ? JsonDeserializer::UseTypeDeserializer::No
+            : JsonDeserializer::UseTypeDeserializer::Yes;
+
         return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer
-            ? JsonDeserializer::LoadToPointer(object, typeId, value, context)
-            : JsonDeserializer::Load(object, typeId, value, context);
+            ? JsonDeserializer::LoadToPointer(object, typeId, value, useCustom, context)
+            : JsonDeserializer::Load(object, typeId, value, loadAsNewInstance, useCustom, context);
     }
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoring(
@@ -227,11 +228,15 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
+        JsonSerializer::UseTypeSerializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
+            ? JsonSerializer::UseTypeSerializer::No
+            : JsonSerializer::UseTypeSerializer::Yes;
+
         if ((flags & ContinuationFlags::ReplaceDefault) == ContinuationFlags::ReplaceDefault && !context.ShouldKeepDefaults())
         {
             if ((flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer)
             {
-                return JsonSerializer::StoreFromPointer(output, object, nullptr, typeId, context);
+                return JsonSerializer::StoreFromPointer(output, object, nullptr, typeId, useCustom, context);
             }
             else
             {
@@ -244,19 +249,19 @@ namespace AZ
                     {
                         return result;
                     }
-                    return result.Combine(JsonSerializer::Store(output, object, nullptr, typeId, context));
+                    return result.Combine(JsonSerializer::Store(output, object, nullptr, typeId, useCustom, context));
                 }
                 else
                 {
                     void* defaultObjectPtr = AZStd::any_cast<void>(&newDefaultObject);
-                    return JsonSerializer::Store(output, object, defaultObjectPtr, typeId, context);
+                    return JsonSerializer::Store(output, object, defaultObjectPtr, typeId, useCustom, context);
                 }
             }
         }
         
         return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer ?
-            JsonSerializer::StoreFromPointer(output, object, defaultObject, typeId, context) :
-            JsonSerializer::Store(output, object, defaultObject, typeId, context);
+            JsonSerializer::StoreFromPointer(output, object, defaultObject, typeId, useCustom, context) :
+            JsonSerializer::Store(output, object, defaultObject, typeId, useCustom, context);
     }
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::LoadTypeId(Uuid& typeId, const rapidjson::Value& input,

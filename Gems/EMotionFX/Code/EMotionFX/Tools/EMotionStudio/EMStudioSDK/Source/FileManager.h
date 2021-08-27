@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -25,7 +21,7 @@
 #include <QFileInfo>
 #include "EMStudioConfig.h"
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Actor.h>
@@ -86,8 +82,8 @@ namespace EMStudio
         // motion set file dialogs
         AZStd::string LoadMotionSetFileDialog(QWidget* parent);
         AZStd::string SaveMotionSetFileDialog(QWidget* parent);
-        void SaveMotionSet(QWidget* parent, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveMotionSet(const char* filename, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(QWidget* parent, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(const char* filename, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
 
         // motion file dialogs
         AZStd::string LoadMotionFileDialog(QWidget* parent);
@@ -110,13 +106,13 @@ namespace EMStudio
 
     private:
         AZStd::vector<AZStd::string> m_savedSourceAssets;
-        QString mLastActorFolder;
-        QString mLastMotionSetFolder;
-        QString mLastAnimGraphFolder;
-        QString mLastWorkspaceFolder;
-        QString mLastNodeMapFolder;
+        QString m_lastActorFolder;
+        QString m_lastMotionSetFolder;
+        QString m_lastAnimGraphFolder;
+        QString m_lastWorkspaceFolder;
+        QString m_lastNodeMapFolder;
 
-        bool mSkipFileChangedCheck;
+        bool m_skipFileChangedCheck;
 
         void UpdateLastUsedFolder(const char* filename, QString& outLastFolder) const;
         QString GetLastUsedFolder(const QString& lastUsedFolder) const;

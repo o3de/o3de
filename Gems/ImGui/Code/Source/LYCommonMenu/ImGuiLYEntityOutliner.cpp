@@ -1,16 +1,11 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYEntityOutliner.h"
 
 #ifdef IMGUI_ENABLED
@@ -595,7 +590,7 @@ namespace ImGui
                 if (ImGui::SmallButton(targetLabel.c_str()))
                 {
                     // Send EBUS event out to Target an Entity. Up to game code to implement.
-                    ImGuiEntityOutlinerNotifcationBus::Broadcast(&IImGuiEntityOutlinerNotifcations::OnImGuiEntityOutlinerTarget, node->m_entityId);
+                    ImGuiEntityOutlinerNotificationBus::Broadcast(&IImGuiEntityOutlinerNotifications::OnImGuiEntityOutlinerTarget, node->m_entityId);
                 }
             }
 
@@ -775,8 +770,8 @@ namespace ImGui
                         {
                             AZStd::string name1 = com1->RTTI_GetTypeName();
                             AZStd::string name2 = com2->RTTI_GetTypeName();
-                            AZStd::transform(name1.begin(), name1.end(), name1.begin(), ::tolower);
-                            AZStd::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
+                            AZStd::to_lower(name1.begin(), name1.end());
+                            AZStd::to_lower(name2.begin(), name2.end());
                             return name1 < name2;
                         };
                         AZStd::sort(components.begin(), components.end(), sortByComponentName);
@@ -945,7 +940,7 @@ namespace ImGui
             rootSliceComponent->GetEntityIds(entityIds);
 
             // Save off our count for use later.
-            m_totalEntitiesFound = entityIds.size();
+            m_totalEntitiesFound = static_cast<int>(entityIds.size());
 
             // Clear the entityId to InfoNodePtr Map.
             m_entityIdToInfoNodePtrMap.clear();
@@ -1022,8 +1017,8 @@ namespace ImGui
             AZStd::string name1, name2;
             AZ::ComponentApplicationBus::BroadcastResult(name1, &AZ::ComponentApplicationBus::Events::GetEntityName, ent1->m_entityId);
             AZ::ComponentApplicationBus::BroadcastResult(name2, &AZ::ComponentApplicationBus::Events::GetEntityName, ent2->m_entityId);
-            AZStd::transform(name1.begin(), name1.end(), name1.begin(), ::tolower);
-            AZStd::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
+            AZStd::to_lower(name1.begin(), name1.end());
+            AZStd::to_lower(name2.begin(), name2.end());
             return name1 < name2;
         };
         AZStd::sort(entityInfo->m_children.begin(), entityInfo->m_children.end(), sortByEntityName);

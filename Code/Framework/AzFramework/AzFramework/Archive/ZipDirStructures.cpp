@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -108,7 +104,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
             if (*pReturnCode == Z_BUF_ERROR)
             {
                 // As long as we consumed something, keep going. Only fail permanently if we've stalled.
-                if (nAvailIn != pZStream->avail_in || nAvailOut != pZStream->avail_out)
+                if (nAvailIn != static_cast<int>(pZStream->avail_in) || nAvailOut != static_cast<int>(pZStream->avail_out))
                 {
                     *pReturnCode = Z_OK;
                 }
@@ -342,14 +338,15 @@ namespace AZ::IO::ZipDir
             else
             {
                 AZ::IO::HandleType realFileHandle = m_fileHandle;
-                size_t nFileSize = ~0;
 
                 AZ::u64 fileSize = 0;
                 if (!m_fileIOBase->Size(realFileHandle, fileSize))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
-                nFileSize = static_cast<size_t>(fileSize);
+                const size_t nFileSize = static_cast<size_t>(fileSize);
 
                 m_pInMemoryData = ZipDirStructuresInternal::CreateMemoryBlock(nFileSize, szUsage);
 
@@ -357,16 +354,18 @@ namespace AZ::IO::ZipDir
 
                 if (!m_fileIOBase->Seek(realFileHandle, 0, AZ::IO::SeekType::SeekFromStart))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
                 if (!m_fileIOBase->Read(realFileHandle, m_pInMemoryData->m_address.get(), nFileSize, true))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
 
                 return;
-            error:
-                m_nSize = 0;
             }
         }
     }
@@ -444,7 +443,7 @@ namespace AZ::IO::ZipDir
             azstrcpy(volume, AZ_ARRAY_SIZE(volume), filename);
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> drive{ AZ::IO::PathView(volume).RootName().Native() };
+        AZ::IO::FixedMaxPathString drive{ AZ::IO::PathView(volume).RootName().Native() };
         if (drive.empty())
         {
             return false;
@@ -836,18 +835,18 @@ namespace AZ::IO::ZipDir
     // conversion routines for the date/time fields used in Zip
     uint16_t DOSDate(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_year - 80) << 9)
             | (t->tm_mon << 5)
-            | t->tm_mday;
+            | t->tm_mday);
     }
 
     uint16_t DOSTime(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_hour) << 11)
             | ((t->tm_min) << 5)
-            | ((t->tm_sec) >> 1);
+            | ((t->tm_sec) >> 1));
     }
 
     // sets the current time to modification time
@@ -876,7 +875,7 @@ namespace AZ::IO::ZipDir
         // we'll need CRC32 of the file to pack it
         this->desc.lCRC32 = AZ::Crc32(pUncompressed, nSize);
 
-        this->nMethod = nCompressionMethod;
+        this->nMethod = static_cast<uint16_t>(nCompressionMethod);
     }
 
     uint64_t FileEntry::GetModificationTime()

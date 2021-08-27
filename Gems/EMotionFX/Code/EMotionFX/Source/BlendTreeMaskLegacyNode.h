@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -57,7 +53,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector< AZStd::vector<AZ::u32> > mMasks;
+            AZStd::vector< AZStd::vector<size_t> > m_masks;
         };
 
         BlendTreeMaskLegacyNode();
@@ -81,7 +77,7 @@ namespace EMotionFX
         void SetMask2(const AZStd::vector<AZStd::string>& mask2);
         void SetMask3(const AZStd::vector<AZStd::string>& mask3);
 
-        static size_t GetNumMasks() { return m_numMasks; }
+        static size_t GetNumMasks() { return s_numMasks; }
         const AZStd::vector<AZStd::string>& GetMask0() const { return m_mask0; }
         const AZStd::vector<AZStd::string>& GetMask1() const { return m_mask1; }
         const AZStd::vector<AZStd::string>& GetMask2() const { return m_mask2; }
@@ -113,6 +109,6 @@ namespace EMotionFX
         bool                                m_outputEvents2;
         bool                                m_outputEvents3;
 
-        static size_t                       m_numMasks;
+        static size_t                       s_numMasks;
     };
 }   // namespace EMotionFX

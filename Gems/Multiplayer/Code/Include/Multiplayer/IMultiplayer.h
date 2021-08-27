@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkTime/INetworkTime.h>
@@ -30,13 +27,13 @@ namespace Multiplayer
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
-        Uninitialized,   ///< Agent is uninitialized.
-        Client,          ///< A Client connected to either a server or host.
-        ClientServer,    ///< A Client that also hosts and is the authority of the session
-        DedicatedServer  ///< A Dedicated Server which does not locally host any clients
+        Uninitialized,   //!< Agent is uninitialized.
+        Client,          //!< A Client connected to either a server or host.
+        ClientServer,    //!< A Client that also hosts and is the authority of the session
+        DedicatedServer  //!< A Dedicated Server which does not locally host any clients
     };
 
-    //! Payload detailing aspects of a Connection other services may be interested in
+    //! @brief Payload detailing aspects of a Connection other services may be interested in
     struct MultiplayerAgentDatum
     {
         bool m_isInvited;
@@ -50,7 +47,22 @@ namespace Multiplayer
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
 
-    //! IMultiplayer provides insight into the Multiplayer session and its Agents
+    //! @class IMultiplayer
+    //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
+    //!
+    //! IMultiplayer is an AZ::Interface<T> that provides applications access to
+    //! multiplayer session information and events.  IMultiplayer is implemented on the
+    //! MultiplayerSystemComponent and is used to define and access information about
+    //! the type of session and the role held by the current agent. An Agent is defined
+    //! here as an actor in a session. Types of Agents included by default are a Client,
+    //! a Client Server and a Dedicated Server.
+    //! 
+    //! IMultiplayer also provides events to allow developers to receive and respond to
+    //! notifications relating to the session. These include Session Init and Shutdown
+    //! and on acquisition of a new connection. These events are only fired on Client
+    //! Server or Dedicated Server. These events are useful for services that talk to
+    //! matchmaking services that may run in an entirely different layer which may need
+    //! insight to the gameplay session.
     class IMultiplayer
     {
     public:
@@ -65,6 +77,22 @@ namespace Multiplayer
         //! Sets the type of this Multiplayer connection and calls any related callback.
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
+
+        //! Starts hosting a server
+        //! @param port The port to listen for connection on
+        //! @param isDedicated Whether the server is dedicated or client hosted
+        //! @return if the application successfully started hosting
+        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+
+        //! Connects to the specified IP as a Client
+        //! @param remoteAddress The domain or IP to connect to
+        //! @param port The port to connect to
+        //! @result if a connection was successfully created
+        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        //! @param reason The reason for terminating connections
+        virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
 
         //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
         //! @param handler The ClientDisconnectedEvent Handler to add
@@ -94,6 +122,11 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
+        //! Returns the current blend factor for client side interpolation
+        //! This value is only relevant on the client and is used to smooth between host frames
+        //! @return the current blend factor
+        virtual float GetCurrentBlendFactor() const = 0;
+
         //! Returns the network time instance bound to this multiplayer instance.
         //! @return pointer to the network time instance bound to this multiplayer instance
         virtual INetworkTime* GetNetworkTime() = 0;
@@ -101,6 +134,15 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
+
+        //! Sets user-defined filtering manager for entities.
+        //! This allows selectively choosing which entities to replicate on a per client connection.
+        //! See IFilterEntityManager for details.
+        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
+        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
+
+        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
+        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance
@@ -145,23 +187,27 @@ namespace Multiplayer
     class ScopedAlterTime final
     {
     public:
-        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId connectionId)
+        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId connectionId)
         {
             INetworkTime* time = GetNetworkTime();
             m_previousHostFrameId = time->GetHostFrameId();
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
             time->AlterTime(frameId, timeMs, connectionId);
+            m_previousBlendFactor = time->GetHostBlendFactor();
+            time->AlterBlendFactor(blendFactor);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
             time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
+            time->AlterBlendFactor(m_previousBlendFactor);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
         AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
         AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
+        float m_previousBlendFactor = DefaultBlendFactor;
     };
 
     inline const char* GetEnumString(MultiplayerAgentType value)

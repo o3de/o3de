@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -303,35 +299,35 @@ namespace MCore
          * Returns the number of dimensions in the sequence.
          * @result The number of dimensions.
          */
-        uint32 GetNumDimensions() const                                                                 { return mDimensions; }
+        uint32 GetNumDimensions() const                                                                 { return m_dimensions; }
 
         /**
          * Get the memory usage in bytes by this sequence.
          * @result The memory usage in bytes by this sequence.
          */
-        uint32 GetMemoryUsage() const                                                                   { return mMemory; }
+        uint32 GetMemoryUsage() const                                                                   { return m_memory; }
 
         /**
          * Get the current vector number.
          * @result The vector number.
          */
-        uint32 GetVectorNumber() const                                                                  { return (mN - mN0); }
+        uint32 GetVectorNumber() const                                                                  { return (m_n - m_n0); }
 
         /**
          * Get the value of current dimension, and go to the next dimension.
          * @result The value of the current dimension, and step to the next dimension.
          */
-        double GetNextDimension()                                                                       { MCORE_ASSERT(mNextDim != mDimensions); return mX[mNextDim++]; }
+        double GetNextDimension()                                                                       { MCORE_ASSERT(m_nextDim != m_dimensions); return m_x[m_nextDim++]; }
 
         /**
          * Reset the dimension stepping (by GetNextDimension()) and go to the first dimension again.
          */
-        void ResetNextDimension()                                                                       { mNextDim = 0; }
+        void ResetNextDimension()                                                                       { m_nextDim = 0; }
 
         /**
          * Restart the sequence.
          */
-        void Restart()                                                                                  { SetInstance(mN0); }
+        void Restart()                                                                                  { SetInstance(m_n0); }
 
         /**
          * Get the next values in the sequence. So update the dimension values.
@@ -352,19 +348,19 @@ namespace MCore
         /**
          * Get a value for a given dimension. (*sequence[0]) would be the value of the first dimension and (*sequence[1]) would be the value of the second dimension, etc.
          */
-        double operator[](uint32 j) const                                                           { MCORE_ASSERT(j < mDimensions); return mX[j]; }
+        double operator[](uint32 j) const                                                           { MCORE_ASSERT(j < m_dimensions); return m_x[j]; }
 
 
     private:
-        uint32      mDimensions;    /**< The number of dimensions to generate random numbers for. */
-        uint32      mNextDim;       /**< The next dimension. */
-        uint32      mMemory;        /**< */
-        uint32      mN;             /**< */
-        uint32      mN0;            /**< */
-        double*     mX;             /**< */
-        double*     mRadical;       /**< */
-        uint32*     mBase;          /**< Prime numbers. */
-        bool        mOwnBase;       /**< Specifies whether we use our own primes or user specified. */
+        uint32      m_dimensions;    /**< The number of dimensions to generate random numbers for. */
+        uint32      m_nextDim;       /**< The next dimension. */
+        uint32      m_memory;        /**< */
+        uint32      m_n;             /**< */
+        uint32      m_n0;            /**< */
+        double*     m_x;             /**< */
+        double*     m_radical;       /**< */
+        uint32*     m_base;          /**< Prime numbers. */
+        bool        m_ownBase;       /**< Specifies whether we use our own primes or user specified. */
 
         /**
          * Generates the first n number of primes.

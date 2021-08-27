@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "AzToolsFramework_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorLayerComponent.h"
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -350,7 +345,7 @@ namespace AzToolsFramework
             EntityList& entityList,
             AZ::SliceComponent::SliceReferenceToInstancePtrs& layerInstances)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             EditorLayer layer;
             LayerResult layerPrepareResult = PrepareLayerForSaving(layer, entityList, layerInstances);
             if (!layerPrepareResult.IsSuccess())
@@ -378,7 +373,7 @@ namespace AzToolsFramework
             AZ::SliceComponent::SliceAssetToSliceInstancePtrs& sliceInstances,
             AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& uniqueEntities)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             // If this layer is being loaded, it won't have a level save dependency yet, so clear that flag.
             m_mustSaveLevelWhenLayerSaves = false;
             QString fullPathName = levelPakFile;
@@ -523,7 +518,7 @@ namespace AzToolsFramework
             EntityList& entityList,
             AZ::SliceComponent::SliceReferenceToInstancePtrs& layerInstances)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             // Move the editable data into the data serialized to the layer, and not the layer component.
             layer.m_layerProperties = m_editableLayerProperties;
             layer.m_layerEntityId = GetEntityId();
@@ -645,7 +640,7 @@ namespace AzToolsFramework
             const EditorLayer& layer,
             AZ::IO::ByteContainerStream<AZStd::vector<char> >& entitySaveStream)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             m_otherLayersToSave.clear();
             m_mustSaveLevelWhenLayerSaves = false;
 
@@ -667,7 +662,7 @@ namespace AzToolsFramework
             QString levelAbsoluteFolder,
             const AZ::IO::ByteContainerStream<AZStd::vector<char> >& entitySaveStream)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             AZStd::string layerBaseFileName(m_layerFileName);
 
             // Write to a temp file first.

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include required headers
 #include "MemoryObject.h"
@@ -29,37 +25,37 @@ namespace MCore
     // constructor
     MemoryObject::MemoryObject()
     {
-        mReferenceCount.SetValue(1);
+        m_referenceCount.SetValue(1);
     }
 
 
     // destructor
     MemoryObject::~MemoryObject()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() == 0);
+        MCORE_ASSERT(m_referenceCount.GetValue() == 0);
     }
 
 
     // increase the reference count
     void MemoryObject::IncreaseReferenceCount()
     {
-        mReferenceCount.Increment();
+        m_referenceCount.Increment();
     }
 
 
     // decrease the reference count
     void MemoryObject::DecreaseReferenceCount()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() > 0);
-        mReferenceCount.Decrement();
+        MCORE_ASSERT(m_referenceCount.GetValue() > 0);
+        m_referenceCount.Decrement();
     }
 
 
     // destroy the object
     void MemoryObject::Destroy()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() > 0);
-        if (mReferenceCount.Decrement() == 1) 
+        MCORE_ASSERT(m_referenceCount.GetValue() > 0);
+        if (m_referenceCount.Decrement() == 1) 
         {
             Delete();
         }
@@ -69,7 +65,7 @@ namespace MCore
     // get the reference count
     uint32 MemoryObject::GetReferenceCount() const
     {
-        return mReferenceCount.GetValue();
+        return m_referenceCount.GetValue();
     }
 
 

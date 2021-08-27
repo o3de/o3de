@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <ATL.h>
 
@@ -24,7 +20,6 @@
 #include <ATLAudioObject.h>
 #include <IAudioSystemImplementation.h>
 
-#include <IConsole.h>
 #include <ISystem.h>
 #include <IPhysics.h>
 #include <IRenderAuxGeom.h>
@@ -153,7 +148,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         auto current = AZStd::chrono::system_clock::now();
         m_elapsedTime = AZStd::chrono::duration_cast<duration_ms>(current - m_lastUpdateTime);
@@ -510,7 +505,7 @@ namespace Audio
                 case eAMRT_LOSE_FOCUS:
                 {
                 #if !defined(AUDIO_RELEASE)
-                    if (g_audioCVars.m_nIgnoreWindowFocus == 0 && (m_nFlags & eAIS_IS_MUTED) == 0)
+                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
                 #endif // !AUDIO_RELEASE
                     {
                         auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
@@ -530,7 +525,7 @@ namespace Audio
                 case eAMRT_GET_FOCUS:
                 {
                 #if !defined(AUDIO_RELEASE)
-                    if (g_audioCVars.m_nIgnoreWindowFocus == 0 && (m_nFlags & eAIS_IS_MUTED) == 0)
+                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
                 #endif // !AUDIO_RELEASE
                     {
                         AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);
@@ -1901,9 +1896,14 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::SetImplLanguage()
     {
-        if (ICVar* pCVar = gEnv->pConsole->GetCVar("g_languageAudio"))
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::SetLanguage, pCVar->GetString());
+            AZ::CVarFixedString languageAudio;
+            if (auto result = console->GetCvarValue("g_languageAudio", languageAudio); result == AZ::GetValueResult::Success)
+            {
+                AudioSystemImplementationRequestBus::Broadcast(
+                    &AudioSystemImplementationRequestBus::Events::SetLanguage, languageAudio.data());
+            }
         }
     }
 
@@ -2016,10 +2016,10 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::DrawAudioSystemDebugInfo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         // ToDo: Update to work with Atom? LYN-3677
-        /*if (g_audioCVars.m_nDrawAudioDebug > 0)
+        /*if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
             DrawAudioObjectDebugInfo(*pAuxGeom); // needs to be called first so that the rest of the labels are printed
             // on top (Draw2dLabel doesn't provide a way set which labels are printed on top)
@@ -2117,23 +2117,23 @@ namespace Audio
     {
         m_oFileCacheMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
 
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_IMPL_MEMORY_POOL_USAGE) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::MemoryInfo))
         {
             DrawImplMemoryPoolDebugInfo(auxGeom, fPosX, fPosY);
         }
 
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_ACTIVE_OBJECTS) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveObjects))
         {
             m_oAudioObjectMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
             fPosX += 800.0f;
         }
 
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_ACTIVE_EVENTS) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveEvents))
         {
             m_oAudioEventMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
         }
 
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_DRAW_LISTENER_SPHERE) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawListener))
         {
             m_oAudioListenerMgr.DrawDebugInfo(auxGeom);
         }

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AzFramework/Archive/NestedArchive.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
@@ -45,7 +41,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -67,7 +63,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -85,7 +81,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -109,7 +105,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -126,7 +122,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -145,7 +141,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_INVALID_CALL;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return ZipDir::ZD_ERROR_INVALID_PATH;
@@ -156,7 +152,7 @@ namespace AZ::IO
     // finds the file; you don't have to close the returned handle
     auto NestedArchive::FindFile(AZStd::string_view szRelativePath) -> Handle
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> fullPath = AdjustPath(szRelativePath);
+        AZ::IO::FixedMaxPathString fullPath = AdjustPath(szRelativePath);
         if (fullPath.empty())
         {
             return nullptr;
@@ -253,7 +249,7 @@ namespace AZ::IO
 
         if (m_nFlags & FLAGS_RELATIVE_PATHS_ONLY)
         {
-            return AZStd::fixed_string<AZ::IO::MaxPathLength>{ szRelativePath };
+            return AZ::IO::FixedMaxPathString{ szRelativePath };
         }
 
         if ((szRelativePath.size() > 1 && szRelativePath[1] == ':') || (m_nFlags & FLAGS_ABSOLUTE_PATHS))

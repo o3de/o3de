@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -106,7 +102,7 @@ namespace Camera
     using EditorCameraNotificationBus = AZ::EBus<EditorCameraNotifications>;
 
     /**
-     * This bus is for requesting any camera-view-related changes
+     * This bus is for requesting any camera-view-related changes or information
      */
     class EditorCameraViewRequests : public AZ::ComponentBus
     {
@@ -119,6 +115,11 @@ namespace Camera
          * Sets this camera as the active view in the scene, otherwise restores the default editor camera if it was already active
          */
         virtual void ToggleCameraAsActiveView() = 0;
+
+        /**
+        * Gets the camera state associated with this view.
+        */
+        virtual bool GetCameraState(AzFramework::CameraState& cameraState) = 0;
     };
 
     using EditorCameraViewRequestBus = AZ::EBus<EditorCameraViewRequests>;

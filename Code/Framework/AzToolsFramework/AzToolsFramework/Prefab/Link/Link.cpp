@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
@@ -181,12 +177,17 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ::JsonSerializationResult::ResultCode applyPatchResult = AZ::JsonSerialization::ApplyPatch(
-                    sourceTemplateDomCopy,
-                    targetTemplatePrefabDom.GetAllocator(),
-                    patchesReference->get(),
-                    AZ::JsonMergeApproach::JsonPatch);
+                AZ::JsonSerializationResult::ResultCode applyPatchResult =
+                    PrefabDomUtils::ApplyPatches(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
                 linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
+
+                PrefabDomValueReference sourceTemplateName =
+                    PrefabDomUtils::FindPrefabDomValue(sourceTemplateDomCopy, PrefabDomUtils::SourceName);
+                AZ_Assert(sourceTemplateName && sourceTemplateName->get().IsString(), "A valid source template name couldn't be found");
+                PrefabDomValueReference targetTemplateName =
+                    PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::SourceName);
+                AZ_Assert(targetTemplateName && targetTemplateName->get().IsString(), "A valid target template name couldn't be found");
+
                 if (applyPatchResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
                 {
                     AZ_Error(
@@ -194,6 +195,15 @@ namespace AzToolsFramework
                         "Link::UpdateTarget - ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
+                }
+                if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Skipped)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link::UpdateTarget - Some of the patches couldn't be applied on the source template '%s' present under the  "
+                        "target Template '%s'.",
+                        sourceTemplateName->get().GetString(), targetTemplateName->get().GetString());
                 }
             }
 

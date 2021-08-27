@@ -1,19 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
 {
@@ -21,7 +18,7 @@ namespace AzFramework
     {
         AZStd::string GetPersistentName()
         {
-            AZStd::string persistentName = "Open 3D Engine";
+            AZStd::string persistentName = "O3DE";
 
             char procPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);
@@ -39,12 +36,12 @@ namespace AzFramework
         AZStd::string GetNeighborhoodName()
         {
             AZStd::string neighborhoodName;
-            
-            char localhost[MAX_COMPUTERNAME_LENGTH + 1];
+
+            wchar_t localhost[MAX_COMPUTERNAME_LENGTH + 1];
             DWORD len = AZ_ARRAY_SIZE(localhost);
-            if (GetComputerName(localhost, &len))
+            if (GetComputerNameW(localhost, &len))
             {
-                neighborhoodName = localhost;
+                AZStd::to_string(neighborhoodName, localhost);
             }
 
             return neighborhoodName;

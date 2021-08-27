@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ColliderComponentMode.h"
 #include "ColliderSubComponentMode.h"
@@ -33,10 +27,10 @@ namespace PhysX
     namespace
     {
         //! Uri's for shortcut actions.
-        const AZ::Crc32 SetDimensionsSubModeActionUri = AZ_CRC("com.amazon.action.physx.setdimensionssubmode", 0x77b70dd6);
-        const AZ::Crc32 SetOffsetSubModeActionUri = AZ_CRC("com.amazon.action.physx.setoffsetsubmode", 0xc06132e5);
-        const AZ::Crc32 SetRotationSubModeActionUri = AZ_CRC("com.amazon.action.physx.setrotationsubmode", 0xc4225918);
-        const AZ::Crc32 ResetSubModeActionUri = AZ_CRC("com.amazon.action.physx.resetsubmode", 0xb70b120e);
+        const AZ::Crc32 SetDimensionsSubModeActionUri = AZ_CRC("com.o3de.action.physx.setdimensionssubmode", 0x77b70dd6);
+        const AZ::Crc32 SetOffsetSubModeActionUri = AZ_CRC("com.o3de.action.physx.setoffsetsubmode", 0xc06132e5);
+        const AZ::Crc32 SetRotationSubModeActionUri = AZ_CRC("com.o3de.action.physx.setrotationsubmode", 0xc4225918);
+        const AZ::Crc32 ResetSubModeActionUri = AZ_CRC("com.o3de.action.physx.resetsubmode", 0xb70b120e);
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
@@ -223,7 +217,7 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format("Icons/PhysX/%s.svg", iconName));
+            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
     }

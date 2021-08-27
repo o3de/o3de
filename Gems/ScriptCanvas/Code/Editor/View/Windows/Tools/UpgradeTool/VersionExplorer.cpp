@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <QMessageBox>
 #include <QProcess>
@@ -20,8 +14,6 @@
 #include <QToolButton>
 
 #include "VersionExplorer.h"
-
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -328,10 +320,6 @@ namespace ScriptCanvasEditor
         {
             m_scriptCanvasEntity = UpgradeGraphProcess<ScriptCanvasAsset>(asset, this);
         }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            m_scriptCanvasEntity = UpgradeGraphProcess<ScriptCanvasFunctionAsset>(asset, this);
-        }
 
         if (!m_scriptCanvasEntity)
         {
@@ -362,10 +350,6 @@ namespace ScriptCanvasEditor
                 if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                 {
                     tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
-                }
-                else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                {
-                    tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasFunctionAsset>()->GetScriptCanvasData());
                 }
 
                 fileStream.Close();
@@ -652,17 +636,6 @@ namespace ScriptCanvasEditor
             scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
             AZ_Assert(scriptCanvasEntity, "The Script Canvas asset must have a valid entity");
         }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            ScriptCanvasFunctionAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasFunctionAsset>();
-            if (!scriptCanvasAsset)
-            {
-                return;
-            }
-
-            scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
-            AZ_Assert(scriptCanvasEntity, "The Script Canvas asset must have a valid entity");
-        }
 
         auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
         AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
@@ -678,9 +651,9 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        m_ui->tableWidget->insertRow(m_inspectedAssets);
+        m_ui->tableWidget->insertRow(static_cast<int>(m_inspectedAssets));
         QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.GetHint().c_str()));
-        m_ui->tableWidget->setItem(m_inspectedAssets, ColumnAsset, rowName);
+        m_ui->tableWidget->setItem(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAsset), rowName);
 
         if (!graphComponent->GetVersion().IsLatest())
         {
@@ -702,9 +675,9 @@ namespace ScriptCanvasEditor
                 AZ::SystemTickBus::ExecuteQueuedEvents();
 
                 });
-            m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnAction, rowGoToButton);
+            m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAction), rowGoToButton);
 
-            m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnStatus, spinner);
+            m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnStatus), spinner);
         }
 
         QToolButton* browseButton = new QToolButton(this);
@@ -732,7 +705,7 @@ namespace ScriptCanvasEditor
         connect(browseButton, &QPushButton::clicked, [absolutePath] {
             AzQtComponents::ShowFileOnDesktop(absolutePath);
             });
-        m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnBrowse, browseButton);
+        m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnBrowse), browseButton);
 
         ++m_inspectedAssets;
         ++m_currentAssetIndex;

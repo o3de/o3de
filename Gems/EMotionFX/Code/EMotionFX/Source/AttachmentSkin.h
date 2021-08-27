@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -41,14 +37,14 @@ namespace EMotionFX
          */
         struct EMFX_API JointMapping
         {
-            AZ::u32 m_sourceJoint; /**< The source joint in the actor where this is attached to. */
-            AZ::u32 m_targetJoint; /**< The target joint in the attachment actor instance. */
+            size_t m_sourceJoint; /**< The source joint in the actor where this is attached to. */
+            size_t m_targetJoint; /**< The target joint in the attachment actor instance. */
         };
 
         struct EMFX_API MorphMapping
         {
-            AZ::u32 m_sourceMorphIndex; /**< The source morph target index. The source is the actor instance we are attaching to. */
-            AZ::u32 m_targetMorphIndex; /**< The target morph target index. The target is the attachment actor instance. */
+            size_t m_sourceMorphIndex; /**< The source morph target index. The source is the actor instance we are attaching to. */
+            size_t m_targetMorphIndex; /**< The target morph target index. The target is the attachment actor instance. */
         };
 
         /**
@@ -96,14 +92,14 @@ namespace EMotionFX
          * @param nodeIndex The joint index inside the actor instance that represents the attachment.
          * @result A reference to the mapping information for this joint.
          */
-        MCORE_INLINE JointMapping& GetJointMapping(uint32 nodeIndex) { return m_jointMap[nodeIndex]; }
+        MCORE_INLINE JointMapping& GetJointMapping(size_t nodeIndex) { return m_jointMap[nodeIndex]; }
 
         /**
          * Get the mapping for a given joint.
          * @param nodeIndex The joint index inside the actor instance that represents the attachment.
          * @result A reference to the mapping information for this joint.
          */
-        MCORE_INLINE const JointMapping& GetJointMapping(uint32 nodeIndex) const { return m_jointMap[nodeIndex]; }
+        MCORE_INLINE const JointMapping& GetJointMapping(size_t nodeIndex) const { return m_jointMap[nodeIndex]; }
 
     protected:
         AZStd::vector<JointMapping> m_jointMap; /**< Specifies which joints we need to copy transforms from and to. */

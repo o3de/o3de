@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -33,12 +29,14 @@ namespace UnitTest
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
         MOCK_METHOD1(GetNonUniformScale, AZ::Vector3(const MeshHandle&));
+        MOCK_METHOD2(SetLocalAabb, void(const MeshHandle&, const AZ::Aabb&));
+        MOCK_CONST_METHOD1(GetLocalAabb, AZ::Aabb(const MeshHandle&));
         MOCK_METHOD2(SetSortKey, void (const MeshHandle&, AZ::RHI::DrawItemSortKey));
-        MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
-        MOCK_METHOD2(SetLodOverride, void(const MeshHandle&, AZ::RPI::Cullable::LodOverride));
-        MOCK_METHOD1(GetLodOverride, AZ::RPI::Cullable::LodOverride(const MeshHandle&));
-        MOCK_METHOD5(AcquireMesh, MeshHandle (const AZ::Data::Asset<AZ::RPI::ModelAsset>&, const AZ::Render::MaterialAssignmentMap&, bool, bool, AZ::Render::MeshFeatureProcessorInterface::RequiresCloneCallback));
-        MOCK_METHOD5(AcquireMesh, MeshHandle (const AZ::Data::Asset<AZ::RPI::ModelAsset>&, const AZ::Data::Instance<AZ::RPI::Material>&, bool, bool, AZ::Render::MeshFeatureProcessorInterface::RequiresCloneCallback));
+        MOCK_CONST_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
+        MOCK_METHOD2(SetMeshLodConfiguration, void(const MeshHandle&, const AZ::RPI::Cullable::LodConfiguration&));
+        MOCK_CONST_METHOD1(GetMeshLodConfiguration, AZ::RPI::Cullable::LodConfiguration(const MeshHandle&));
+        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Render::MaterialAssignmentMap&));
+        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
         MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));

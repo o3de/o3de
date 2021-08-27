@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -22,10 +18,9 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ConstantsLayout>()
-                    ->Version(0)
+                    ->Version(1)    // Version 1: Adding debug helper functions to Shader Resource Groups
                     ->Field("m_inputs", &ConstantsLayout::m_inputs)
                     ->Field("m_idReflection", &ConstantsLayout::m_idReflection)
-                    ->Field("m_intervals", &ConstantsLayout::m_intervals)
                     ->Field("m_sizeInBytes", &ConstantsLayout::m_sizeInBytes)
                     ->Field("m_hash", &ConstantsLayout::m_hash);
             }
@@ -47,7 +42,6 @@ namespace AZ
         {
             m_inputs.clear();
             m_idReflection.Clear();
-            m_intervals.clear();
             m_sizeInBytes = 0;
             m_hash = InvalidHash;
         }
@@ -71,11 +65,8 @@ namespace AZ
                     return false;
                 }
 
-                // The constant data size is the maximum offset + size from the start of the struct.
-                constantDataSize = AZStd::max(constantDataSize, constantDescriptor.m_constantByteOffset + constantDescriptor.m_constantByteCount);
-
-                // Add the [min, max) interval for the inline constant.
-                m_intervals.emplace_back(constantDescriptor.m_constantByteOffset, constantDescriptor.m_constantByteOffset + constantDescriptor.m_constantByteCount);
+                uint32_t end = constantDescriptor.m_constantByteOffset + constantDescriptor.m_constantByteCount;
+                constantDataSize = AZStd::max(constantDataSize, end);
 
                 ++constantInputIndex;
                 m_hash = TypeHash64(constantDescriptor.GetHash(), m_hash);
@@ -104,7 +95,10 @@ namespace AZ
 
         Interval ConstantsLayout::GetInterval(ShaderInputConstantIndex inputIndex) const
         {
-            return m_intervals[inputIndex.GetIndex()];
+            const ShaderInputConstantDescriptor& desc = GetShaderInput(inputIndex);
+            uint32_t start = desc.m_constantByteOffset;
+            uint32_t end = start + desc.m_constantByteCount;
+            return Interval(start, end);
         }
 
         const ShaderInputConstantDescriptor& ConstantsLayout::GetShaderInput(ShaderInputConstantIndex inputIndex) const
@@ -143,8 +137,8 @@ namespace AZ
             {
                 if (!m_sizeInBytes)
                 {
-                    AZ_Assert(m_intervals.empty(), "Constants size is not valid.");
-                    return m_intervals.empty();
+                    AZ_Assert(m_idReflection.IsEmpty(), "Constants size is not valid.");
+                    return m_idReflection.IsEmpty();
                 }
             }
 
@@ -153,5 +147,20 @@ namespace AZ
 
             return true;
         }
+
+        void ConstantsLayout::DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const
+        {
+            AZStd::string output;
+            for (const ShaderInputConstantIndex& constantIdx : constantList)
+            {
+                if (constantIdx.GetIndex() < m_inputs.size())
+                {
+                    output += m_inputs[constantIdx.GetIndex()].m_name.GetCStr();
+                    output += " - ";
+                }
+            }
+            AZ_Printf("RHI", output.c_str());
+        }
+
     }
 }

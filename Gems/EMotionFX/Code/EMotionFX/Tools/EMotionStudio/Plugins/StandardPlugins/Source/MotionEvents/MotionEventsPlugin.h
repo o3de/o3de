@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -48,7 +44,7 @@ namespace EMStudio
         const char* GetCompileDate() const override     { return MCORE_DATE; }
         const char* GetName() const override            { return "Motion Events"; }
         uint32 GetClassID() const override              { return MotionEventsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override     { return "Amazon"; }
+        const char* GetCreatorName() const override     { return "O3DE"; }
         float GetVersion() const override               { return 1.0f;  }
         bool GetIsClosable() const override             { return true;  }
         bool GetIsFloatable() const override            { return true;  }
@@ -60,7 +56,7 @@ namespace EMStudio
 
         void OnBeforeRemovePlugin(uint32 classID) override;
 
-        MotionEventPresetsWidget* GetPresetsWidget() const                      { return mMotionEventPresetsWidget; }
+        MotionEventPresetsWidget* GetPresetsWidget() const                      { return m_motionEventPresetsWidget; }
 
         void ValidatePluginLinks();
 
@@ -82,21 +78,21 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
-        CommandAdjustMotionCallback*    mAdjustMotionCallback;
-        CommandSelectCallback*          mSelectCallback;
-        CommandUnselectCallback*        mUnselectCallback;
-        CommandClearSelectionCallback*  mClearSelectionCallback;
+        CommandAdjustMotionCallback*    m_adjustMotionCallback;
+        CommandSelectCallback*          m_selectCallback;
+        CommandUnselectCallback*        m_unselectCallback;
+        CommandClearSelectionCallback*  m_clearSelectionCallback;
 
-        MysticQt::DialogStack*          mDialogStack;
-        MotionEventPresetsWidget*       mMotionEventPresetsWidget;
-        MotionEventWidget*              mMotionEventWidget;
+        MysticQt::DialogStack*          m_dialogStack;
+        MotionEventPresetsWidget*       m_motionEventPresetsWidget;
+        MotionEventWidget*              m_motionEventWidget;
 
-        QTableWidget*                   mMotionTable;
-        TimeViewPlugin*                 mTimeViewPlugin;
-        TrackHeaderWidget*              mTrackHeaderWidget;
-        TrackDataWidget*                mTrackDataWidget;
-        MotionWindowPlugin*             mMotionWindowPlugin;
-        MotionListWindow*               mMotionListWindow;
-        EMotionFX::Motion*              mMotion;
+        QTableWidget*                   m_motionTable;
+        TimeViewPlugin*                 m_timeViewPlugin;
+        TrackHeaderWidget*              m_trackHeaderWidget;
+        TrackDataWidget*                m_trackDataWidget;
+        MotionWindowPlugin*             m_motionWindowPlugin;
+        MotionListWindow*               m_motionListWindow;
+        EMotionFX::Motion*              m_motion;
     };
 } // namespace EMStudio

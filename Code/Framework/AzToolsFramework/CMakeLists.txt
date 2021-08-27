@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -23,7 +20,6 @@ ly_add_target(
         AzToolsFramework/aztoolsframework_files.cmake
         AzToolsFramework/aztoolsframework_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        Platform/Common/${PAL_TRAIT_COMPILER_ID}/aztoolsframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -53,6 +49,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFrameworkTestCommon STATIC
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             AzToolsFramework/aztoolsframeworktestcommon_files.cmake
         INCLUDE_DIRECTORIES
@@ -62,6 +59,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PUBLIC
                 AZ::AzTestShared
             PRIVATE
+                3rdParty::Qt::Test
                 3rdParty::googletest::GMock
                 3rdParty::GoogleBenchmark
                 AZ::AzToolsFramework
@@ -71,20 +69,25 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             Tests/aztoolsframeworktests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AzTestShared
+            PRIVATE
                 3rdParty::Qt::Test
+                AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static
                 AZ::AzTest
                 AZ::AzQtComponents
+        RUNTIME_DEPENDENCIES
+            3rdParty::Qt::Test
     )
     ly_add_googletest(
         NAME AZ::AzToolsFramework.Tests

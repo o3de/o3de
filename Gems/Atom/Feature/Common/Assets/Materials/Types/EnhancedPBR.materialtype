@@ -714,6 +714,19 @@
                     "displayName": "Double-sided",
                     "description": "Whether to render back-faces or just front-faces.",
                     "type": "Bool"
+                },
+                {
+                    "id": "alphaAffectsSpecular",
+                    "displayName": "Alpha affects specular",
+                    "description": "How much the alpha value should also affect specular reflection. This should be 0.0 for materials where light can transmit through their physical surface (like glass), but 1.0 when alpha determines the very presence of a surface (like hair or grass)",
+                    "type": "float",
+                    "min": 0.0,
+                    "max": 1.0,
+                    "defaultValue": 0.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_opacityAffectsSpecularFactor"
+                    }
                 }
             ],
             "uv": [
@@ -1015,7 +1028,7 @@
                 {
                     "id": "pdo",
                     "displayName": "Pixel Depth Offset",
-                    "description": "Whether to enable the pixel depth offset feature.",
+                    "description": "Enable PDO to offset the original pixel depths. This will affect any shaders using depth, for example, when receiving shadows.",
                     "type": "Bool",
                     "defaultValue": false,
                     "connection": {
@@ -1465,14 +1478,9 @@
             "file": "./EnhancedPBR_DepthPass_WithPS.shader",
             "tag": "DepthPass_WithPS"
         },
-        // [GFX TODO][ATOM-4726] Use an "isSkinnedMesh" external material property and a functor that enables/disables the appropriate motion-vector shader
         {
-            "file": "Shaders/MotionVector/StaticMeshMotionVector.shader",
-            "tag": "StaticMeshMotionVector"
-        },
-        {
-            "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
-            "tag": "SkinnedMeshMotionVector"
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
         },
         // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
         {
@@ -1669,4 +1677,3 @@
         "UV1": "Unwrapped"
     }
 }
-

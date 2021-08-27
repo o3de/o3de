@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -14,6 +10,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import azlmbr.asset as asset
+import azlmbr.editor as editor
 import azlmbr.legacy.general as general
 import azlmbr.bus as bus
 import azlmbr.math as math
@@ -111,7 +108,7 @@ class TestPhysXColliderSurfaceTagEmitter(EditorTestHelper):
         # Create an entity with a PhysX Collider and our PhysX Collider Surface Tag Emitter
         collider_entity = hydra.Entity("Collider Surface")
         collider_entity.create_entity(
-            entity_center_point, 
+            entity_center_point,
             ["PhysX Collider", "PhysX Collider Surface Tag Emitter"]
             )
         if collider_entity.id.IsValid():
@@ -157,23 +154,29 @@ class TestPhysXColliderSurfaceTagEmitter(EditorTestHelper):
             self.test_success = self.test_success and baseline_success
 
         # Setup collider entity with a PhysX Mesh
-        test_physx_mesh_asset_path = asset.AssetCatalogRequestBus(
+        test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", os.path.join("levels", "physics",
                                                             "c4044697_material_perfacematerialvalidation",
                                                             "test.pxmesh"), math.Uuid(), False)
-        hydra.get_set_test(collider_entity, 0, "Shape Configuration|Shape", 7)
-        hydra.get_set_test(collider_entity, 0, "Shape Configuration|Asset|PhysX Mesh", test_physx_mesh_asset_path)
+
+        # Remove/re-add component due to LYN-5496
+        collider_entity.remove_component("PhysX Collider")
+        collider_entity.add_component("PhysX Collider")
+        self.wait_for_condition(lambda: editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',
+                                                                     collider_entity.components[1]), 5.0)
+        hydra.get_set_test(collider_entity, 1, "Shape Configuration|Shape", 7)
+        hydra.get_set_test(collider_entity, 1, "Shape Configuration|Asset|PhysX Mesh", test_physx_mesh_asset_id)
 
         # Set the asset scale to match the test heights of the shapes tested
         asset_scale = math.Vector3(1.0, 1.0, 9.0)
-        collider_entity.get_set_test(0, "Shape Configuration|Asset|Configuration|Asset Scale", asset_scale)
+        collider_entity.get_set_test(1, "Shape Configuration|Asset|Configuration|Asset Scale", asset_scale)
 
         # Test:  Generate a new surface on the collider.
         # There should be one instance at the very top of the collider mesh, and none on the baseline surface
         # (We use a small query box to only check for one placed instance point)
         self.log("Starting PhysX Mesh Collider Test")
-        hydra.get_set_test(collider_entity, 1, "Configuration|Generated Tags", [surface_tag])
-        hydra.get_set_test(collider_entity, 1, "Configuration|Extended Tags", [invalid_tag])
+        hydra.get_set_test(collider_entity, 0, "Configuration|Generated Tags", [surface_tag])
+        hydra.get_set_test(collider_entity, 0, "Configuration|Extended Tags", [invalid_tag])
         top_point_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(top_point, 0.25, 1), 5.0)
         self.test_success = self.test_success and top_point_success
         baseline_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(baseline_surface_point,
@@ -184,8 +187,8 @@ class TestPhysXColliderSurfaceTagEmitter(EditorTestHelper):
         # There should be no instances at the very top of the collider mesh, and none on the baseline surface within
         # our query box as PhysX meshes are treated as hollow shells, not solid volumes.
         # (We use a small query box to only check for one placed instance point)
-        hydra.get_set_test(collider_entity, 1, "Configuration|Generated Tags", [invalid_tag])
-        hydra.get_set_test(collider_entity, 1, "Configuration|Extended Tags", [surface_tag])
+        hydra.get_set_test(collider_entity, 0, "Configuration|Generated Tags", [invalid_tag])
+        hydra.get_set_test(collider_entity, 0, "Configuration|Extended Tags", [surface_tag])
         top_point_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(top_point, 0.25, 0), 5.0)
         self.test_success = self.test_success and top_point_success
         baseline_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(baseline_surface_point,

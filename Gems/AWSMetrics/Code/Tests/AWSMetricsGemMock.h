@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -57,10 +53,14 @@ namespace AWSMetrics
 
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
+
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
         }
 
         void TearDown() override
         {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
             m_registrationContext->EnableRemoveReflection();
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
             m_registrationContext->DisableRemoveReflection();
@@ -135,7 +135,7 @@ namespace AWSMetrics
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 
     private:
         AZStd::string GetTestFolderPath()

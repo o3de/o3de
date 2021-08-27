@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -49,7 +45,7 @@ namespace ImGui
                 , bool autoExpandScale, bool startCollapsed = false, bool drawMostRecentValue = true);
 
             // How many values are in the container currently
-            int GetSize() { return m_values.size(); }
+            int GetSize() { return static_cast<int>(m_values.size()); }
 
             // What is the max size of the container
             int GetMaxSize() { return m_maxSize; }
@@ -61,7 +57,7 @@ namespace ImGui
             void PushValue(float val);
 
             // Get the last value pushed
-            float GetLastValue() { return GetValue(m_values.size() - 1); }
+            float GetLastValue() { return GetValue(static_cast<int>(m_values.size() - 1)); }
 
             // Get a Values at a particular index
             float GetValue(int index) { return index < m_values.size() ? m_values.at(index) : 0.0f; }

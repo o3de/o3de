@@ -1,126 +1,134 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <CoreLights/SphereLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    SphereLightDelegate::SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
+        : LightDelegateBase<PointLightFeatureProcessorInterface>(entityId, isVisible)
+        , m_shapeBus(shapeBus)
     {
-        SphereLightDelegate::SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
-            : LightDelegateBase<PointLightFeatureProcessorInterface>(entityId, isVisible)
-            , m_shapeBus(shapeBus)
-        {
-            InitBase(entityId);
-        }
+        InitBase(entityId);
+    }
 
-        float SphereLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
-        {
-            // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-            float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return sqrt(intensity / lightThreshold);
-        }
+    float SphereLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
+    {
+        // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
+        float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+        return sqrt(intensity / lightThreshold);
+    }
         
-        void SphereLightDelegate::HandleShapeChanged()
+    void SphereLightDelegate::HandleShapeChanged()
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-                GetFeatureProcessor()->SetBulbRadius(GetLightHandle(), GetRadius());
-            }
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            GetFeatureProcessor()->SetBulbRadius(GetLightHandle(), GetRadius());
         }
+    }
 
-        float SphereLightDelegate::GetSurfaceArea() const
+    float SphereLightDelegate::GetSurfaceArea() const
+    {
+        float radius = GetRadius();
+        return 4.0f * Constants::Pi * radius * radius;
+    }
+
+    float SphereLightDelegate::GetRadius() const
+    {
+        return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
+    }
+
+    void SphereLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    {
+        if (isSelected)
         {
-            float radius = GetRadius();
-            return 4.0f * Constants::Pi * radius * radius;
+            debugDisplay.SetColor(color);
+                
+            // Draw a sphere for the attenuation radius
+            debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
         }
+    }
 
-        float SphereLightDelegate::GetRadius() const
+    void SphereLightDelegate::SetEnableShadow(bool enabled)
+    {
+        Base::SetEnableShadow(enabled);
+
+        if (GetLightHandle().IsValid())
         {
-            return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
+            GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
         }
-
-        void SphereLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    }
+        
+    void SphereLightDelegate::SetShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (isSelected)
-            {
-                debugDisplay.SetColor(color);
-
-                // Draw a sphere for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
-            }
+            GetFeatureProcessor()->SetShadowBias(GetLightHandle(), bias);
         }
+    }
 
-        void SphereLightDelegate::SetEnableShadow(bool enabled)
+    void SphereLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            Base::SetEnableShadow(enabled);
-
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
-            }
+            GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
         }
+    }
 
-        void SphereLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
+    void SphereLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
-            }
+            GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
         }
+    }
 
-        void SphereLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
+    void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
-            }
+            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
         }
+    }
 
-        void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
+    void SphereLightDelegate::SetPredictionSampleCount(uint32_t count)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-            }
+            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
         }
+    }
 
-        void SphereLightDelegate::SetPredictionSampleCount(uint32_t count)
+    void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
-            }
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
         }
+    }
 
-        void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
+    void SphereLightDelegate::SetPcfMethod(PcfMethod method)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
-            }
+            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
         }
+    }
 
-        void SphereLightDelegate::SetPcfMethod(PcfMethod method)
+    void SphereLightDelegate::SetEsmExponent(float esmExponent)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            if (GetShadowsEnabled() && GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
-            }
+            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
         }
-
-    } // namespace Render
-} // namespace AZ
+    }
+} // namespace AZ::Render

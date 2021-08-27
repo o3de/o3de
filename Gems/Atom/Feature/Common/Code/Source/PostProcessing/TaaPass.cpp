@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PostProcessing/TaaPass.h>
 
@@ -80,7 +76,7 @@ namespace AZ::Render
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
-        Vector2 rcpInputSize = Vector2(1.0 / inputSize.m_width, 1.0 / inputSize.m_height);
+        Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
         m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
@@ -177,9 +173,17 @@ namespace AZ::Render
         // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
         AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
         auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
-        
-        attachment->m_path = attachmentImage->GetAttachmentId();
-        attachment->m_importedResource = attachmentImage;
+
+        if (attachmentImage)
+        {
+            attachment->m_path = attachmentImage->GetAttachmentId();
+            attachment->m_importedResource = attachmentImage;
+        }
+        else
+        {
+            AZ_Error("TaaPass", false, "TaaPass disabled because it is unable to create an attachment image.")
+            this->SetEnabled(false);
+        }
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)

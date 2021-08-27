@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "SetVariable.h"
 
@@ -64,47 +60,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void SetVariableNode::OnInputSignal(const SlotId& slotID)
-            {
-                if (slotID == GetSlotId(GetInputSlotName()))
-                {
-                    const Datum* sourceDatum = FindDatum(m_variableDataInSlotId);                    
-
-                    if (sourceDatum && m_variableView.IsValid())
-                    {
-                        m_variableView.AssignToDatum((*sourceDatum));
-
-                        SC_EXECUTION_TRACE_VARIABLE_CHANGE((m_variableId), (CreateVariableChange((*m_variableView.GetDatum()), m_variableId)));
-                    }
-                    
-                    Slot* resultSlot = GetSlot(m_variableDataOutSlotId);
-                    if (resultSlot && m_variableView.IsValid())
-                    {
-                        const Datum* variableDatum = m_variableView.GetDatum();
-
-                        PushOutput((*variableDatum), *resultSlot);
-
-                        // Push the data for each property slot out as well
-                        for (auto&& propertyAccount : m_propertyAccounts)
-                        {
-                            Slot* propertySlot = GetSlot(propertyAccount.m_propertySlotId);
-                            if (propertySlot && propertyAccount.m_getterFunction)
-                            {
-                                auto outputOutcome = propertyAccount.m_getterFunction((*variableDatum));
-
-                                if (!outputOutcome)
-                                {
-                                    SCRIPTCANVAS_REPORT_ERROR((*this), outputOutcome.TakeError().data());
-                                    return;
-                                }
-                                PushOutput(outputOutcome.TakeValue(), *propertySlot);
-                            }
-                        }
-                    }
-
-                    SignalOutput(GetSlotId(GetOutputSlotName()));
-                }
-            }
             VariableId SetVariableNode::GetVariableIdRead(const Slot*) const
             {
                 return m_variableId;
@@ -288,7 +243,8 @@ namespace ScriptCanvas
                     ScriptCanvas::Data::Type baseType = ScriptCanvas::Data::Type::Invalid();
                     VariableRequestBus::EventResult(baseType, GetScopedVariableId(), &VariableRequests::GetType);
 
-                    const AZStd::unordered_map<VariableId, GraphVariable>* variableMap = GetRuntimeBus()->GetVariables();
+                    const GraphVariableMapping* variableMap = nullptr;
+                    GraphRequestBus::EventResult(variableMap, GetOwningScriptCanvasId(), &GraphRequests::GetVariables);
 
                     if (variableMap && baseType.IsValid())
                     {
@@ -322,12 +278,6 @@ namespace ScriptCanvas
                     RemoveSlots();
                 }
                 VariableNodeNotificationBus::Event(GetEntityId(), &VariableNodeNotifications::OnVariableRemovedFromNode, removedVariableId);
-            }
-
-            AnnotateNodeSignal SetVariableNode::CreateAnnotationData()
-            {
-                AZ::EntityId assetNodeId = GetRuntimeBus()->FindAssetNodeIdByRuntimeNodeId(GetEntityId());
-                return AnnotateNodeSignal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), AnnotateNodeSignal::AnnotationLevel::Info, m_variableName, AZ::NamedEntityId(assetNodeId, GetNodeName()));
             }
 
             void SetVariableNode::AddPropertySlots(const Data::Type& type)

@@ -1,21 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "UiCanvasEditor_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorCommon.h"
 
 #include "PropertyHandlerDirectory.h"
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <LyShine/Bus/UiEditorChangeNotificationBus.h>
+#include <Editor/Util/PathUtil.h>
 
 #include <QBoxLayout>
 
@@ -97,7 +93,7 @@ AzToolsFramework::AssetBrowser::AssetSelectionModel PropertyAssetDirectorySelect
 
 void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string& folderPath)
 {
-    string strFolderPath = folderPath.c_str();
+    AZStd::string strFolderPath = folderPath.c_str();
     if (strFolderPath.empty())
     {
         m_folderPath.clear();
@@ -110,12 +106,14 @@ void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string
         // the project folder, which we need to omit since file IO routines
         // seem to assume this anyways.
         strFolderPath = strFolderPath.substr(strFolderPath.find('/') + 1);
-        m_folderPath = PathUtil::MakeGamePath(strFolderPath).MakeLower();
+        m_folderPath = PathUtil::MakeGamePath(strFolderPath);
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
     // For paths in gems, absolute paths are returned
     else
     {
-        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str()).MakeLower();
+        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str());
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
 }
 

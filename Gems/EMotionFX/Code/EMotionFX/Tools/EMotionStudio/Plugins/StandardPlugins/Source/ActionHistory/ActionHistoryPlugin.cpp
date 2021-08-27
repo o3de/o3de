@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ActionHistoryPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
@@ -22,20 +18,20 @@ namespace EMStudio
     ActionHistoryPlugin::ActionHistoryPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mCallback   = nullptr;
-        mList       = nullptr;
+        m_callback   = nullptr;
+        m_list       = nullptr;
     }
 
 
     ActionHistoryPlugin::~ActionHistoryPlugin()
     {
-        if (mCallback)
+        if (m_callback)
         {
-            EMStudio::GetCommandManager()->RemoveCallback(mCallback, false);
-            delete mCallback;
+            EMStudio::GetCommandManager()->RemoveCallback(m_callback, false);
+            delete m_callback;
         }
 
-        delete mList;
+        delete m_list;
     }
 
 
@@ -59,7 +55,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 
@@ -79,22 +75,22 @@ namespace EMStudio
     // Init after the parent dock window has been created.
     bool ActionHistoryPlugin::Init()
     {
-        mList = new QListWidget(mDock);
+        m_list = new QListWidget(m_dock);
 
-        mList->setFlow(QListView::TopToBottom);
-        mList->setMovement(QListView::Static);
-        mList->setViewMode(QListView::ListMode);
-        mList->setSelectionRectVisible(true);
-        mList->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mList->setSelectionMode(QAbstractItemView::SingleSelection);
-        mDock->setWidget(mList);
+        m_list->setFlow(QListView::TopToBottom);
+        m_list->setMovement(QListView::Static);
+        m_list->setViewMode(QListView::ListMode);
+        m_list->setSelectionRectVisible(true);
+        m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_list->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_dock->setWidget(m_list);
 
         // Detect item selection changes.
-        connect(mList, &QListWidget::itemSelectionChanged, this, &ActionHistoryPlugin::OnSelectedItemChanged);
+        connect(m_list, &QListWidget::itemSelectionChanged, this, &ActionHistoryPlugin::OnSelectedItemChanged);
 
         // Register the callback.
-        mCallback = new ActionHistoryCallback(mList);
-        EMStudio::GetCommandManager()->RegisterCallback(mCallback);
+        m_callback = new ActionHistoryCallback(m_list);
+        EMStudio::GetCommandManager()->RegisterCallback(m_callback);
 
         // Sync the interface with the actual command history.
         ReInit();
@@ -113,12 +109,12 @@ namespace EMStudio
         {
             const MCore::CommandManager::CommandHistoryEntry& historyItem = commandManager->GetHistoryItem(i);
 
-            historyItemString = MCore::CommandManager::CommandHistoryEntry::ToString(historyItem.mCommandGroup, historyItem.mExecutedCommand, historyItem.m_historyItemNr);
-            mList->addItem(new QListWidgetItem(historyItemString.c_str(), mList));
+            historyItemString = MCore::CommandManager::CommandHistoryEntry::ToString(historyItem.m_commandGroup, historyItem.m_executedCommand, historyItem.m_historyItemNr);
+            m_list->addItem(new QListWidgetItem(historyItemString.c_str(), m_list));
         }
 
         // Set the current history index in case the user called undo.
-        mList->setCurrentRow(commandManager->GetHistoryIndex());
+        m_list->setCurrentRow(static_cast<int>(commandManager->GetHistoryIndex()));
     }
 
 
@@ -126,17 +122,17 @@ namespace EMStudio
     void ActionHistoryPlugin::OnSelectedItemChanged()
     {
         // Get the list of selected items and make sure exactly one is selected.
-        QList<QListWidgetItem*> selected = mList->selectedItems();
+        QList<QListWidgetItem*> selected = m_list->selectedItems();
         if (selected.count() != 1)
         {
             return;
         }
 
         // Get the selected item and its index (row number in the list).
-        const uint32 index = mList->row(selected.at(0));
+        const uint32 index = m_list->row(selected.at(0));
 
         // Change the command index.
-        mCallback->OnSetCurrentCommand(index);
+        m_callback->OnSetCurrentCommand(index);
     }
 } // namespace EMStudio
 

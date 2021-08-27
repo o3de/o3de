@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FixedShapeProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
@@ -112,7 +108,8 @@ namespace AZ
         }
 
         void FixedShapeProcessor::PrepareFrame()
-        {
+        {            
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: PrepareFrame");
             m_processSrgs.clear();
             m_drawPackets.clear();
 
@@ -130,7 +127,7 @@ namespace AZ
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: ProcessObjects");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
@@ -408,15 +405,15 @@ namespace AZ
 
                 for (uint16_t ring = 0; ring < numRings - 2; ++ring)
                 {
-                    uint16_t firstVertOfThisRing = 1 + ring * numSections;
-                    uint16_t firstVertOfNextRing = 1 + (ring + 1) * numSections;
+                    uint16_t firstVertOfThisRing = static_cast<uint16_t>(1 + ring * numSections);
+                    uint16_t firstVertOfNextRing = static_cast<uint16_t>(1 + (ring + 1) * numSections);
                     for (uint16_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
 
                         // line around ring
                         indices.push_back(firstVertOfThisRing + section);
-                        indices.push_back(firstVertOfThisRing + nextSection);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
 
                         // line around section
                         indices.push_back(firstVertOfThisRing + section);
@@ -426,15 +423,15 @@ namespace AZ
 
                 // build faces for end caps (to connect "inner" vertices with poles)
                 uint16_t firstPoleVert = 0;
-                uint16_t firstVertOfFirstRing = 1 + (0) * numSections;
+                uint16_t firstVertOfFirstRing = static_cast<uint16_t>(1 + (0) * numSections);
                 for (uint16_t section = 0; section < numSections; ++section)
                 {
                     indices.push_back(firstPoleVert);
                     indices.push_back(firstVertOfFirstRing + section);
                 }
 
-                uint16_t lastPoleVert = (numRings - 1) * numSections + 1;
-                uint16_t firstVertOfLastRing = 1 + (numRings - 2) * numSections;
+                uint16_t lastPoleVert = static_cast<uint16_t>((numRings - 1) * numSections + 1);
+                uint16_t firstVertOfLastRing = static_cast<uint16_t>(1 + (numRings - 2) * numSections);
                 for (uint16_t section = 0; section < numSections; ++section)
                 {
                     indices.push_back(firstVertOfLastRing + section);
@@ -460,13 +457,13 @@ namespace AZ
                     for (uint32_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
-                        indices.push_back((uint16_t)firstVertOfThisRing + nextSection);
-                        indices.push_back((uint16_t)firstVertOfThisRing + section);
-                        indices.push_back((uint16_t)firstVertOfNextRing + nextSection);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
 
-                        indices.push_back((uint16_t)firstVertOfNextRing + section);
-                        indices.push_back((uint16_t)firstVertOfNextRing + nextSection);
-                        indices.push_back((uint16_t)firstVertOfThisRing + section);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
                     }
                 }
 
@@ -476,9 +473,9 @@ namespace AZ
                 for (uint32_t section = 0; section < numSections; ++section)
                 {
                     uint32_t nextSection = (section + 1) % numSections;
-                    indices.push_back((uint16_t)firstVertOfFirstRing + section);
-                    indices.push_back((uint16_t)firstVertOfFirstRing + nextSection);
-                    indices.push_back((uint16_t)firstPoleVert);
+                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + section));
+                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + nextSection));
+                    indices.push_back(static_cast<uint16_t>(firstPoleVert));
                 }
 
                 uint32_t lastPoleVert = (numRings - 1) * numSections + 1;
@@ -486,9 +483,9 @@ namespace AZ
                 for (uint32_t section = 0; section < numSections; ++section)
                 {
                     uint32_t nextSection = (section + 1) % numSections;
-                    indices.push_back((uint16_t)firstVertOfLastRing + nextSection);
-                    indices.push_back((uint16_t)firstVertOfLastRing + section);
-                    indices.push_back((uint16_t)lastPoleVert);
+                    indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + nextSection));
+                    indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + section));
+                    indices.push_back(static_cast<uint16_t>(lastPoleVert));
                 }
             }
         }
@@ -640,12 +637,12 @@ namespace AZ
             {
                 // Line from center of disk to outer edge
                 meshData.m_lineIndices.push_back(centerIndex);
-                meshData.m_lineIndices.push_back(firstSection + section);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + section));
 
                 // Line from outer edge to next edge
-                meshData.m_lineIndices.push_back(firstSection + section);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + section));
                 uint32_t nextSection = (section + 1) % numSections;
-                meshData.m_lineIndices.push_back(firstSection + nextSection);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
             }
 
             // Create triangle indices
@@ -655,13 +652,13 @@ namespace AZ
                 meshData.m_triangleIndices.push_back(centerIndex);
                 if (isUp)
                 {
-                    meshData.m_triangleIndices.push_back(firstSection + nextSection);
-                    meshData.m_triangleIndices.push_back(firstSection + section);
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + section));
                 }
                 else
                 {
-                    meshData.m_triangleIndices.push_back(firstSection + section);
-                    meshData.m_triangleIndices.push_back(firstSection + nextSection);
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + section));
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
                 }
             }
         }
@@ -779,7 +776,7 @@ namespace AZ
             normals.push_back(AuxGeomNormal(0.0f, 1.0f, 0.0f));
 
             // vertex indexes for start of the cone sides and for the cone point
-            uint16_t indexOfSidesStart = numSections + 1;
+            uint16_t indexOfSidesStart = static_cast<uint16_t>(numSections + 1);
             uint32_t indexOfConePoint = indexOfSidesStart + numRings * numSections;
 
             // indices for points
@@ -798,8 +795,8 @@ namespace AZ
                 // build lines between already completed cap for each section
                 for (uint16_t section = 0; section < numSections; ++section)
                 {
-                    indices.push_back(indexOfSidesStart + numRings * section);
-                    indices.push_back(indexOfConePoint);
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section));
+                    indices.push_back(static_cast<uint16_t>(indexOfConePoint));
                 }
             }
 
@@ -815,19 +812,19 @@ namespace AZ
                     // faces from end cap to close to point
                     for (uint32_t ring = 0; ring < numRings - 1; ++ring)
                     {
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring + 1);
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring);
-                        indices.push_back(indexOfSidesStart + numRings * section + ring);
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring + 1));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring));
 
-                        indices.push_back(indexOfSidesStart + numRings * section + ring);
-                        indices.push_back(indexOfSidesStart + numRings * section + ring + 1);
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring + 1);
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring + 1));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring + 1));
                     }
 
                     // faces for point (from last ring of verts to point)
-                    indices.push_back(indexOfConePoint);
-                    indices.push_back(indexOfSidesStart + numRings * nextSection + numRings - 1);
-                    indices.push_back(indexOfSidesStart + numRings * section + numRings - 1);
+                    indices.push_back(static_cast<uint16_t>(indexOfConePoint));
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + numRings - 1));
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + numRings - 1));
                 }
             }
         }
@@ -915,7 +912,7 @@ namespace AZ
             //uint16_t indexOfBottomStart = 1;
             //uint16_t indexOfTopCenter = numSections + 1;
             //uint16_t indexOfTopStart = numSections + 2;
-            uint16_t indexOfSidesStart = 2 * numSections + 2;
+            uint16_t indexOfSidesStart = static_cast<uint16_t>(2 * numSections + 2);
 
             // build point indices
             {
@@ -1388,9 +1385,9 @@ namespace AZ
             const char* litObjectShaderFilePath = "Shaders/auxgeom/auxgeomobjectlit.azshader";
 
             // constant color shader
-            m_unlitShader = RPI::LoadShader(unlitObjectShaderFilePath);
+            m_unlitShader = RPI::LoadCriticalShader(unlitObjectShaderFilePath);
             // direction light shader
-            m_litShader = RPI::LoadShader(litObjectShaderFilePath);
+            m_litShader = RPI::LoadCriticalShader(litObjectShaderFilePath);
 
             if (m_unlitShader.get() == nullptr || m_litShader == nullptr)
             {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -24,6 +20,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {
@@ -57,7 +54,7 @@ namespace AZ
             LoadShader();
         }
 
-        void FullscreenTrianglePass::OnShaderVariantReinitialized(const Shader&, const ShaderVariantId&, ShaderVariantStableId)
+        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
         }
@@ -158,7 +155,7 @@ namespace AZ
 
             m_item.m_arguments = RHI::DrawArguments(draw);
             m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_item.m_stencilRef = m_stencilRef;
+            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
 
         void FullscreenTrianglePass::FrameBeginInternal(FramePrepareParams params)
@@ -181,9 +178,16 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-            // Base viewport and scissor off of target attachment
-            m_viewportState = RHI::Viewport(0, static_cast<float>(targetImageSize.m_width), 0, static_cast<float>(targetImageSize.m_height));
-            m_scissorState = RHI::Scissor(0, 0, targetImageSize.m_width, targetImageSize.m_height);
+            
+            m_viewportState.m_maxX = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width));
+            m_viewportState.m_maxY = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height));
+            m_viewportState.m_minX = static_cast<float>(AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX));
+            m_viewportState.m_minY = static_cast<float>(AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY));
+
+            m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
+            m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
+            m_scissorState.m_minX = AZStd::min(params.m_scissorState.m_minX, m_scissorState.m_maxX);
+            m_scissorState.m_minY = AZStd::min(params.m_scissorState.m_minY, m_scissorState.m_maxY);
 
             RenderPass::FrameBeginInternal(params);
         }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/Config.h>
@@ -21,15 +17,15 @@ namespace RenderGL
     // constructor
     VertexBuffer::VertexBuffer()
     {
-        mBufferID       = MCORE_INVALIDINDEX32;
-        mNumVertices    = 0;
+        m_bufferId       = MCORE_INVALIDINDEX32;
+        m_numVertices    = 0;
     }
 
 
     // destructor
     VertexBuffer::~VertexBuffer()
     {
-        glDeleteBuffers(1, &mBufferID);
+        glDeleteBuffers(1, &m_bufferId);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
@@ -37,8 +33,8 @@ namespace RenderGL
     // activate
     void VertexBuffer::Activate()
     {
-        MCORE_ASSERT(mBufferID != MCORE_INVALIDINDEX32);
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        MCORE_ASSERT(m_bufferId != MCORE_INVALIDINDEX32);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
     }
 
 
@@ -75,13 +71,13 @@ namespace RenderGL
         }
 
         // generate the buffer and bind it
-        glGenBuffers(1, &mBufferID);
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        glGenBuffers(1, &m_bufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
         glBufferData(GL_ARRAY_BUFFER, numBytesPerVertex * numVertices, vertexData, usageGL);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // adjust the number of vertices
-        mNumVertices = numVertices;
+        m_numVertices = numVertices;
         return true;
     }
 
@@ -89,7 +85,7 @@ namespace RenderGL
     // lock the buffer
     void* VertexBuffer::Lock(ELockMode lockMode)
     {
-        if (mNumVertices == 0)
+        if (m_numVertices == 0)
         {
             return nullptr;
         }
@@ -111,8 +107,8 @@ namespace RenderGL
             lockModeGL = GL_WRITE_ONLY;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
-        void* data = glMapBuffer(GL_ARRAY_BUFFER, lockModeGL);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
+        void* data = m_glMapBuffer(GL_ARRAY_BUFFER, lockModeGL);
 
         // is the data valid?
         if (data == nullptr)
@@ -142,12 +138,12 @@ namespace RenderGL
     // unlock the buffer
     void VertexBuffer::Unlock()
     {
-        if (mNumVertices == 0)
+        if (m_numVertices == 0)
         {
             return;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }

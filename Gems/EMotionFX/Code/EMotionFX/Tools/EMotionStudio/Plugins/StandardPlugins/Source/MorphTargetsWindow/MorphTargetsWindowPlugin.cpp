@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MorphTargetsWindowPlugin.h"
 #include <AzCore/Casting/numeric_cast.h>
@@ -26,9 +22,9 @@ namespace EMStudio
     MorphTargetsWindowPlugin::MorphTargetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack = nullptr;
-        mCurrentActorInstance = nullptr;
-        mStaticTextWidget = nullptr;
+        m_dialogStack = nullptr;
+        m_currentActorInstance = nullptr;
+        m_staticTextWidget = nullptr;
 
         EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
@@ -47,7 +43,7 @@ namespace EMStudio
         Clear();
 
         // delete the dialog stack
-        delete mDialogStack;
+        delete m_dialogStack;
     }
 
 
@@ -63,19 +59,19 @@ namespace EMStudio
     bool MorphTargetsWindowPlugin::Init()
     {
         // create the static text layout
-        mStaticTextWidget = new QWidget();
-        mStaticTextLayout = new QVBoxLayout();
-        mStaticTextWidget->setLayout(mStaticTextLayout);
+        m_staticTextWidget = new QWidget();
+        m_staticTextLayout = new QVBoxLayout();
+        m_staticTextWidget->setLayout(m_staticTextLayout);
         QLabel* label = new QLabel("No morph targets to show.");
-        mStaticTextLayout->addWidget(label);
-        mStaticTextLayout->setAlignment(label, Qt::AlignCenter);
+        m_staticTextLayout->addWidget(label);
+        m_staticTextLayout->setAlignment(label, Qt::AlignCenter);
 
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack();
-        mDock->setMinimumWidth(300);
-        mDock->setMinimumHeight(100);
-        mDock->setWidget(mStaticTextWidget);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack();
+        m_dock->setMinimumWidth(300);
+        m_dock->setMinimumHeight(100);
+        m_dock->setWidget(m_staticTextWidget);
 
         GetCommandManager()->RegisterCommandCallback<CommandSelectCallback>("Select", m_callbacks, false);
         GetCommandManager()->RegisterCommandCallback<CommandUnselectCallback>("Unselect", m_callbacks, false);
@@ -87,7 +83,7 @@ namespace EMStudio
         ReInit();
 
         // connect the window activation signal to refresh if reactivated
-        connect(mDock, &QDockWidget::visibilityChanged, this, &MorphTargetsWindowPlugin::WindowReInit);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &MorphTargetsWindowPlugin::WindowReInit);
 
         // done
         return true;
@@ -97,18 +93,18 @@ namespace EMStudio
     // clear the morph target window
     void MorphTargetsWindowPlugin::Clear()
     {
-        if (mDock)
+        if (m_dock)
         {
-            mDock->setWidget(mStaticTextWidget);
+            m_dock->setWidget(m_staticTextWidget);
         }
 
         // clear the dialog stack
-        if (mDialogStack)
+        if (m_dialogStack)
         {
-            mDialogStack->Clear();
+            m_dialogStack->Clear();
         }
 
-        mMorphTargetGroups.clear();
+        m_morphTargetGroups.clear();
     }
 
     // reinit the morph target dialog, e.g. if selection changes
@@ -125,13 +121,13 @@ namespace EMStudio
         if (actorInstance == nullptr)
         {
             // set the dock contents
-            mDock->setWidget(mStaticTextWidget);
+            m_dock->setWidget(m_staticTextWidget);
 
             // clear dialog and reset the current actor instance as we cleared the window
-            if (mCurrentActorInstance)
+            if (m_currentActorInstance)
             {
                 Clear();
-                mCurrentActorInstance = nullptr;
+                m_currentActorInstance = nullptr;
             }
 
             // done
@@ -139,10 +135,10 @@ namespace EMStudio
         }
 
         // only reinit the morph targets if actor instance changed
-        if (mCurrentActorInstance != actorInstance || forceReInit)
+        if (m_currentActorInstance != actorInstance || forceReInit)
         {
             // set the current actor instance in any case
-            mCurrentActorInstance = actorInstance;
+            m_currentActorInstance = actorInstance;
 
             // arrays for the default morph targets and the phonemes
             AZStd::vector<EMotionFX::MorphTarget*>                       phonemes;
@@ -154,7 +150,7 @@ namespace EMStudio
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(actorInstance->GetLODLevel());
             if (morphSetup == nullptr)
             {
-                mDock->setWidget(mStaticTextWidget);
+                m_dock->setWidget(m_staticTextWidget);
                 return;
             }
 
@@ -162,7 +158,7 @@ namespace EMStudio
             EMotionFX::MorphSetupInstance* morphSetupInstance = actorInstance->GetMorphSetupInstance();
             if (morphSetupInstance == nullptr)
             {
-                mDock->setWidget(mStaticTextWidget);
+                m_dock->setWidget(m_staticTextWidget);
                 return;
             }
 
@@ -221,11 +217,11 @@ namespace EMStudio
             // create static text if no morph targets are available
             if (defaultMorphTargets.empty() && phonemes.empty())
             {
-                mDock->setWidget(mStaticTextWidget);
+                m_dock->setWidget(m_staticTextWidget);
             }
             else
             {
-                mDock->setWidget(mDialogStack);
+                m_dock->setWidget(m_dialogStack);
             }
 
             // adjust the slider values to the correct weights of the selected actor instance
@@ -241,11 +237,11 @@ namespace EMStudio
             return;
         }
 
-        MorphTargetGroupWidget* morphTargetGroup = new MorphTargetGroupWidget(name, mCurrentActorInstance, morphTargets, morphTargetInstances, mDialogStack);
+        MorphTargetGroupWidget* morphTargetGroup = new MorphTargetGroupWidget(name, m_currentActorInstance, morphTargets, morphTargetInstances, m_dialogStack);
         morphTargetGroup->setObjectName("EMFX.MorphTargetsWindowPlugin.MorphTargetGroupWidget");
-        mMorphTargetGroups.push_back(morphTargetGroup);
+        m_morphTargetGroups.push_back(morphTargetGroup);
 
-        mDialogStack->Add(morphTargetGroup, name);
+        m_dialogStack->Add(morphTargetGroup, name);
     }
 
 
@@ -262,7 +258,7 @@ namespace EMStudio
     // update the interface
     void MorphTargetsWindowPlugin::UpdateInterface()
     {
-        for (MorphTargetGroupWidget* group : mMorphTargetGroups)
+        for (MorphTargetGroupWidget* group : m_morphTargetGroups)
         {
             group->UpdateInterface();
         }
@@ -272,7 +268,7 @@ namespace EMStudio
     // update the morph target
     void MorphTargetsWindowPlugin::UpdateMorphTarget(const char* name)
     {
-        for (MorphTargetGroupWidget* group : mMorphTargetGroups)
+        for (MorphTargetGroupWidget* group : m_morphTargetGroups)
         {
             group->UpdateMorphTarget(name);
         }
@@ -280,7 +276,7 @@ namespace EMStudio
 
     void MorphTargetsWindowPlugin::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
     {
-        if (mCurrentActorInstance == actorInstance)
+        if (m_currentActorInstance == actorInstance)
         {
             ReInit(/*actorInstance=*/nullptr);
         }

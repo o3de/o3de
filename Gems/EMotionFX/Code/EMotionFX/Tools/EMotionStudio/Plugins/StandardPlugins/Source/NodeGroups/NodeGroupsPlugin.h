@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -49,7 +45,7 @@ namespace EMStudio
         const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Node Groups"; }
         uint32 GetClassID() const override                  { return NodeGroupsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override         { return "Amazon"; }
+        const char* GetCreatorName() const override         { return "O3DE"; }
         float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
@@ -78,22 +74,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAddNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandRemoveNodeGroupCallback);
 
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        CommandAdjustNodeGroupCallback*         mAdjustNodeGroupCallback;
-        CommandAddNodeGroupCallback*            mAddNodeGroupCallback;
-        CommandRemoveNodeGroupCallback*         mRemoveNodeGroupCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        CommandAdjustNodeGroupCallback*         m_adjustNodeGroupCallback;
+        CommandAddNodeGroupCallback*            m_addNodeGroupCallback;
+        CommandRemoveNodeGroupCallback*         m_removeNodeGroupCallback;
 
         // current selected actor
-        EMotionFX::Actor*                       mCurrentActor;
+        EMotionFX::Actor*                       m_currentActor;
 
         // the dialog stack widgets
-        NodeGroupWidget*                        mNodeGroupWidget;
-        NodeGroupManagementWidget*              mNodeGroupManagementWidget;
+        NodeGroupWidget*                        m_nodeGroupWidget;
+        NodeGroupManagementWidget*              m_nodeGroupManagementWidget;
 
         // some qt stuff
-        MysticQt::DialogStack*                  mDialogStack;
-        QLabel*                                 mInfoText;
+        MysticQt::DialogStack*                  m_dialogStack;
+        QLabel*                                 m_infoText;
     };
 } // namespace EMStudio

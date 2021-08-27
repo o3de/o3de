@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Debug/Trace.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -29,15 +25,10 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpSceneWrapper::AssImpSceneWrapper()
-            : SDKScene::SceneWrapperBase()
         {
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
-            : SDKScene::SceneWrapperBase(aiScene)
-        {
-        }
-
-        AssImpSceneWrapper::~AssImpSceneWrapper()
+            : m_assImpScene(aiScene)
         {
         }
 
@@ -69,13 +60,17 @@ namespace AZ
             // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
             // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
             // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
+
+            // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
+            // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
+            // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
+            // This is here as a bread crumb to save others times investigating issues with empty bones.
+            // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
             m_sceneFileName = fileName;
             m_assImpScene = m_importer.ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
-                | aiProcess_LimitBoneWeights //Limits the number of bones that can affect a vertex to a maximum value
-                                             //dropping the least important and re-normalizing
                 | aiProcess_GenNormals); //Generate normals for meshes
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -112,6 +107,11 @@ namespace AZ
         void AssImpSceneWrapper::Clear()
         {
             m_importer.FreeScene();
+        }
+
+        const aiScene* AssImpSceneWrapper::GetAssImpScene() const
+        {
+            return m_assImpScene;
         }
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const

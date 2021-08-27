@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiTextComponentOffsetsSelector.h"
 #include "StringUtfUtils.h"
 
@@ -35,7 +30,7 @@ void UiTextComponentOffsetsSelector::ParseBatchLine(const UiTextComponent::DrawB
     {
         // Iterate character by character over DrawBatch string contents,
         // looking for m_firstIndex and m_lastIndex.
-        Unicode::CIterator<const char*, false> pChar(drawBatch.text.c_str());
+        Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -97,7 +92,7 @@ void UiTextComponentOffsetsSelector::ParseBatchLine(const UiTextComponent::DrawB
         // on the same line or not.
         else if (!lastIndexFound)
         {
-            int substrLength = drawBatch.text.length() - firstIndexLineIndex;
+            int substrLength = static_cast<int>(drawBatch.text.length() - firstIndexLineIndex);
             AZStd::string curSubstring(drawBatch.text.substr(firstIndexLineIndex, substrLength));
             curLineWidth += drawBatch.font->GetTextSize(curSubstring.c_str(), false, m_fontContext).x;
             lineOffsetsStack.top()->right.SetX(AZStd::GetMax<float>(lineOffsetsStack.top()->right.GetX(), curLineWidth));

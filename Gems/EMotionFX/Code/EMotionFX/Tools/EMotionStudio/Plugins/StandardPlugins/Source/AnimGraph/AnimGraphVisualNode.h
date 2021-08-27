@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -38,9 +34,9 @@ namespace EMStudio
 
         void Sync() override;
 
-        MCORE_INLINE void SetEMFXNode(EMotionFX::AnimGraphNode* emfxNode)  { mEMFXNode = emfxNode; }
-        MCORE_INLINE EMotionFX::AnimGraphNode* GetEMFXNode()               { return mEMFXNode; }
-        MCORE_INLINE AnimGraphPlugin* GetAnimGraphPlugin() const          { return mPlugin; }
+        MCORE_INLINE void SetEMFXNode(EMotionFX::AnimGraphNode* emfxNode)  { m_emfxNode = emfxNode; }
+        MCORE_INLINE EMotionFX::AnimGraphNode* GetEMFXNode()               { return m_emfxNode; }
+        MCORE_INLINE AnimGraphPlugin* GetAnimGraphPlugin() const          { return m_plugin; }
         EMotionFX::AnimGraphInstance* ExtractAnimGraphInstance() const;
 
         void RenderTracks(QPainter& painter, const QColor bgColor, const QColor bgColor2, int32 heightOffset = 0);
@@ -52,8 +48,8 @@ namespace EMStudio
     protected:
         QColor AzColorToQColor(const AZ::Color& col) const;
     
-        EMotionFX::AnimGraphNode*  mEMFXNode;
-        EMotionFX::AnimGraphPose   mPose;
-        AnimGraphPlugin*           mPlugin;
+        EMotionFX::AnimGraphNode*  m_emfxNode;
+        EMotionFX::AnimGraphPose   m_pose;
+        AnimGraphPlugin*           m_plugin;
     };
 }   // namespace EMStudio

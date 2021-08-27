@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -40,6 +36,7 @@ namespace Multiplayer
     using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
     using EntityPreRenderEvent = AZ::Event<float, float>;
+    using EntityCorrectionEvent = AZ::Event<>;
 
     //! @class NetBindComponent
     //! @brief Component that provides net-binding to a networked entity.
@@ -64,10 +61,23 @@ namespace Multiplayer
         //! @}
 
         NetEntityRole GetNetEntityRole() const;
-        bool IsAuthority() const;
-        bool IsAutonomous() const;
-        bool IsServer() const;
-        bool IsClient() const;
+        
+        //! IsNetEntityRoleAuthority
+        //! @return true if this network entity is an authoritative proxy on a server (full authority); otherwise false.
+        bool IsNetEntityRoleAuthority() const;
+        
+        //! IsNetEntityRoleAutonomous
+        //! @return true if this network entity is an autonomous proxy on a client (can execute local prediction) or if this network entity is an authoritative proxy on a server but has autonomous privileges (ie: a host who is also a player); otherwise false.   
+        bool IsNetEntityRoleAutonomous() const;
+
+        //! IsNetEntityRoleServer
+        //! @return true if this network entity is a simulated proxy on a server (ie: a different server may have authority for this entity, but the entity has been replicated on this server; otherwise false.
+        bool IsNetEntityRoleServer() const;
+
+        //! IsNetEntityRoleClient
+        //! @return true if this network entity is a simulated proxy on a client; otherwise false.
+        bool IsNetEntityRoleClient() const;
+        
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
@@ -78,9 +88,19 @@ namespace Multiplayer
         AzNetworking::ConnectionId GetOwningConnectionId() const;
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
+
+        //! Return true if we're currently processing inputs.
+        //! @return true if we're within ProcessInput scope and writing to predictive state
         bool IsProcessingInput() const;
+
+        //! Return true if we're currently replaying inputs after a correction.
+        //! If this value returns true, effects, audio, and other cosmetic triggers should be suppressed
+        //! @return true if we're within correction scope and replaying inputs
+        bool IsReprocessingInput() const;
+
         void CreateInput(NetworkInput& networkInput, float deltaTime);
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
+        void ReprocessInput(NetworkInput& networkInput, float deltaTime);
 
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);
@@ -99,6 +119,7 @@ namespace Multiplayer
         void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
         void NotifyPreRender(float deltaTime, float blendFactor);
+        void NotifyCorrection();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
@@ -107,6 +128,7 @@ namespace Multiplayer
         void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
+        void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -156,6 +178,7 @@ namespace Multiplayer
         EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
         EntityPreRenderEvent  m_entityPreRenderEvent;
+        EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
@@ -168,10 +191,11 @@ namespace Multiplayer
 
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
-        bool                  m_isProcessingInput    = false;
-        bool                  m_isMigrationDataValid = false;
-        bool                  m_needsToBeStopped     = false;
-        bool                  m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_isProcessingInput    = false; // Set to true when we are processing input
+        bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
+        bool m_isMigrationDataValid = false;
+        bool m_needsToBeStopped     = false;
+        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;

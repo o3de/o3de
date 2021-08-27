@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "FileWatcherUnitTests.h"
 #include "native/FileWatcher/FileWatcher.h"
 #include "native/AssetManager/assetProcessorManager.h"
@@ -282,7 +278,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(newName3).toLower());
 
 #if !defined(AZ_PLATFORM_LINUX)
-        // final test... make sure that renaming a DIRECTORY works too. 
+        // final test... make sure that renaming a DIRECTORY works too.
         // Note that linux does not get any callbacks if just the directory is renamed (from inotify)
         QDir renamer;
         fileAddCalled = false;
@@ -317,6 +313,9 @@ void FileWatcherUnitTestRunner::StartTest()
     Q_EMIT UnitTestPassed();
 }
 
-#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+// File operations on Linux behave differently on Linux than Windows.
+// The system under test doesn't yet handle Linux's file operations, which surfaced as this test arbitrarily passing and failing.
+// This test is disabled on Linux until the system under test can handle Linux file system behavior correctly.
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS && !defined(AZ_PLATFORM_LINUX)
 REGISTER_UNIT_TEST(FileWatcherUnitTestRunner)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS

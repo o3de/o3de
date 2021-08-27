@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -22,6 +18,16 @@ namespace AZ
 {
     namespace Render
     {
+        struct MaterialConverterSettings
+        {
+            AZ_TYPE_INFO(MaterialConverterSettings, "{8D91601D-570A-4557-99C8-631DB4928040}");
+            
+            static void Reflect(AZ::ReflectContext* context);
+
+            bool m_enable = true;
+            AZStd::string m_defaultMaterial;
+        };
+
         //! Atom's implementation of converting SceneAPI data into Atom's default material: StandardPBR
         class MaterialConverterSystemComponent final
             : public AZ::Component
@@ -31,13 +37,20 @@ namespace AZ
             AZ_COMPONENT(MaterialConverterSystemComponent, "{C2338D45-6456-4521-B469-B000A13F2493}");
 
             static void Reflect(AZ::ReflectContext* context);
+            
+            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
             void Activate() override;
             void Deactivate() override;
 
             // MaterialConverterBus overrides ...
+            bool IsEnabled() const override;
             bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& out) override;
-            const char* GetMaterialTypePath() const override;
+            AZStd::string GetMaterialTypePath() const override;
+            AZStd::string GetDefaultMaterialPath() const override;
+
+        private:
+            MaterialConverterSettings m_settings;
         };
     }
 }

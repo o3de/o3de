@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 test_ly_remote_console contains all the unit test for remote console tool.
 """
@@ -145,11 +141,11 @@ class TestRemoteConsole():
 
     @mock.patch('socket.socket', mock.MagicMock())
     @mock.patch('ly_remote_console.remote_console_commands.threading', mock.MagicMock())
-    def test_HandleMessage_AutoCompleteListDone_ReadySet(self):
+    def test_HandleMessage_ConnectMessage_ReadySet(self):
         rc_instance = remote_console.RemoteConsole()
         rc_instance.on_display = mock.MagicMock()
         rc_instance.ready = mock.MagicMock()
-        msg = b'70'  # in python3 socket.recv returns byte array. 7 is AUTOCOMPLETELISTDONE
+        msg = b'I0'  # in python3 socket.recv returns byte array. I is CONNECTMESSAGE
 
         rc_instance._handle_message(msg)
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -30,17 +26,17 @@ namespace EMStudio
     public:
         struct LoadActorSettings
         {
-            bool mLoadMeshes;
-            bool mLoadCollisionMeshes;
-            bool mLoadStandardMaterialLayers;
-            bool mLoadSkinningInfo;
-            bool mLoadLimits;
-            bool mLoadGeometryLODs;
-            bool mLoadSkeletalLODs;
-            bool mLoadTangents;
-            bool mAutoGenerateTangents;
-            bool mLoadMorphTargets;
-            bool mDualQuaternionSkinning;
+            bool m_loadMeshes;
+            bool m_loadCollisionMeshes;
+            bool m_loadStandardMaterialLayers;
+            bool m_loadSkinningInfo;
+            bool m_loadLimits;
+            bool m_loadGeometryLoDs;
+            bool m_loadSkeletalLoDs;
+            bool m_loadTangents;
+            bool m_autoGenerateTangents;
+            bool m_loadMorphTargets;
+            bool m_dualQuaternionSkinning;
 
             LoadActorSettings();
         };
@@ -58,16 +54,16 @@ namespace EMStudio
     private:
         QString GetConfigFilename() const;
 
-        QCheckBox* mLoadMeshesCheckbox;
-        QCheckBox* mLoadCollisionMeshesCheckbox;
-        QCheckBox* mLoadStandardMaterialLayersCheckbox;
-        QCheckBox* mLoadSkinningInfoCheckbox;
-        QCheckBox* mLoadLimitsCheckbox;
-        QCheckBox* mLoadGeometryLODsCheckbox;
-        QCheckBox* mLoadSkeletalLODsCheckbox;
-        QCheckBox* mLoadTangentsCheckbox;
-        QCheckBox* mAutoGenerateTangentsCheckbox;
-        QCheckBox* mLoadMorphTargetsCheckbox;
-        QCheckBox* mDualQuaternionSkinningCheckbox;
+        QCheckBox* m_loadMeshesCheckbox;
+        QCheckBox* m_loadCollisionMeshesCheckbox;
+        QCheckBox* m_loadStandardMaterialLayersCheckbox;
+        QCheckBox* m_loadSkinningInfoCheckbox;
+        QCheckBox* m_loadLimitsCheckbox;
+        QCheckBox* m_loadGeometryLoDsCheckbox;
+        QCheckBox* m_loadSkeletalLoDsCheckbox;
+        QCheckBox* m_loadTangentsCheckbox;
+        QCheckBox* m_autoGenerateTangentsCheckbox;
+        QCheckBox* m_loadMorphTargetsCheckbox;
+        QCheckBox* m_dualQuaternionSkinningCheckbox;
     };
 } // namespace EMStudio

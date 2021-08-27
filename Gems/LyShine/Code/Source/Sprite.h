@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <LyShine/ISprite.h>
@@ -36,13 +32,13 @@ public: // member functions
 
     ~CSprite() override;
 
-    const string& GetPathname() const override;
-    const string& GetTexturePathname() const override;
+    const AZStd::string& GetPathname() const override;
+    const AZStd::string& GetTexturePathname() const override;
     Borders GetBorders() const override;
     void SetBorders(Borders borders) override;
     void SetCellBorders(int cellIndex, Borders borders) override;
     void Serialize(TSerialize ser) override;
-    bool SaveToXml(const string& pathname) override;
+    bool SaveToXml(const AZStd::string& pathname) override;
     bool AreBordersZeroWidth() const override;
     bool AreCellBordersZeroWidth(int index) const override;
     AZ::Vector2 GetSize() override;
@@ -76,8 +72,8 @@ public: // static member functions
 
     static void Initialize();
     static void Shutdown();
-    static CSprite* LoadSprite(const string& pathname);
-    static CSprite* CreateSprite(const string& renderTargetName);
+    static CSprite* LoadSprite(const AZStd::string& pathname);
+    static CSprite* CreateSprite(const AZStd::string& renderTargetName);
     static bool DoesSpriteTextureAssetExist(const AZStd::string& pathname);
 
     //! Replaces baseSprite with newSprite with proper ref-count handling and null-checks.
@@ -100,7 +96,7 @@ protected: // member functions
     bool CellIndexWithinRange(int cellIndex) const;
 
 private: // types
-    typedef AZStd::unordered_map<string, CSprite*, stl::hash_string_caseless<string>, stl::equality_string_caseless<string> > CSpriteHashMap;
+    typedef AZStd::unordered_map<AZStd::string, CSprite*, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > CSpriteHashMap;
 
 private: // member functions
     bool LoadFromXmlFile();
@@ -113,8 +109,8 @@ private: // data
 
     SpriteSheetCellContainer m_spriteSheetCells;  //!< Stores information for each cell defined within the sprite-sheet.
 
-    string m_pathname;
-    string m_texturePathname;
+    AZStd::string m_pathname;
+    AZStd::string m_texturePathname;
     Borders m_borders;
     AZ::Data::Instance<AZ::RPI::Image> m_image;
     int m_numSpriteSheetCellTags;                       //!< Number of Cell child-tags in sprite XML; unfortunately needed to help with serialization.

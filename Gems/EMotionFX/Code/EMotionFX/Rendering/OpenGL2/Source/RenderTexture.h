@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __RENDERGL_RENDERTEXTURE_H
 #define __RENDERGL_RENDERTEXTURE_H
@@ -53,8 +49,8 @@ namespace RenderGL
 
         void Render();
 
-        AZ::u32 GetDepthBuffer() const                                  { return mDepthBuffer; }
-        int32 GetFormat() const                                         { return mFormat; }
+        AZ::u32 GetDepthBuffer() const                                  { return m_depthBuffer; }
+        int32 GetFormat() const                                         { return m_format; }
 
         /**
          *    Formats:   GL_RGBA32F_ARB
@@ -64,11 +60,11 @@ namespace RenderGL
         bool Init(int32 format, uint32 width, uint32 height, AZ::u32 depthBuffer = 0);
 
     private:
-        int32   mFormat;        /*< . */
-        uint32  mPrevHeight;    /*< . */
-        uint32  mPrevWidth;     /*< . */
-        AZ::u32 mFrameBuffer;
-        AZ::u32 mDepthBuffer;
+        int32   m_format;        /*< . */
+        uint32  m_prevHeight;    /*< . */
+        uint32  m_prevWidth;     /*< . */
+        AZ::u32 m_frameBuffer;
+        AZ::u32 m_depthBuffer;
     };
 }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/WindowContext.h>
@@ -17,6 +13,9 @@
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 
 #include <Atom/RHI/Factory.h>
+
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/MathUtils.h>
 
 namespace AZ
 {
@@ -108,6 +107,14 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusDisconnect(m_windowHandle);
         }
 
+        void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
+        {
+            if (m_swapChain->GetDescriptor().m_verticalSyncInterval != interval)
+            {
+                m_swapChain->SetVerticalSyncInterval(interval);
+            }
+        }
+
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
             return m_swapChain->IsExclusiveFullScreenPreferred();
@@ -138,9 +145,13 @@ namespace AZ
 
             const RHI::WindowHandle windowHandle = RHI::WindowHandle(reinterpret_cast<uintptr_t>(m_windowHandle));
 
+            uint32_t syncInterval = 1;
+            AzFramework::WindowRequestBus::EventResult(
+                syncInterval, m_windowHandle, &AzFramework::WindowRequestBus::Events::GetSyncInterval);
+
             RHI::SwapChainDescriptor descriptor;
             descriptor.m_window = windowHandle;
-            descriptor.m_verticalSyncInterval = 0;
+            descriptor.m_verticalSyncInterval = syncInterval;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
             descriptor.m_dimensions.m_imageCount = 3;

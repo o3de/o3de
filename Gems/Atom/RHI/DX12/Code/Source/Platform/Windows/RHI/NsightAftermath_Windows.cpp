@@ -1,17 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-* This software contains source code provided by NVIDIA Corporation.
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
 
 
@@ -91,7 +85,7 @@ namespace Aftermath
 #if defined(USE_NSIGHT_AFTERMATH)
         AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles = static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
         GFSDK_Aftermath_ContextData* outContextData = new GFSDK_Aftermath_ContextData[cntxtHandles.size()];
-        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(cntxtHandles.size(), cntxtHandles.data(), outContextData);
+        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(static_cast<uint32_t>(cntxtHandles.size()), cntxtHandles.data(), outContextData);
         AssertOnError(result);
         for (int i = 0; i < cntxtHandles.size(); i++)
         {

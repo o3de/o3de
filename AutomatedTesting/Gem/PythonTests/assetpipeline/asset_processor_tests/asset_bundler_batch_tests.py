@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Bundler Batch Tests
 """
@@ -538,19 +534,19 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             assert os.path.isfile(bundle_file)
 
         # This asset is created both on mac and windows platform
-        file_to_check = b"engineassets/shading/defaultprobe_cm_ibldiffuse.tif.streamingimage"  # [use byte str because file is in binary]
+        file_to_check = b"engineassets/slices/defaultlevelsetup.slice"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
         file_contents = helper.extract_file_content(bundle_files["pc"], "DeltaCatalog.xml")
         # fmt:off
-        assert file_to_check in file_contents, \
+        assert file_contents.find(file_to_check), \
             f"{file_to_check} was found in DeltaCatalog.xml in pc bundle file {bundle_files['pc']}"
         # fmt:on
 
         # Extract the delta catalog file from mac archive. {file_to_check} SHOULD be present for MAC
         file_contents = helper.extract_file_content(bundle_files["mac"], "DeltaCatalog.xml")
         # fmt:off
-        assert file_to_check in file_contents, \
+        assert file_contents.find(file_to_check), \
             f"{file_to_check} was not found in DeltaCatalog.xml in darwin bundle file {bundle_files['mac']}"
         # fmt:on
 
@@ -631,7 +627,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         if os.path.exists(helper["asset_info_file_request"]):
             fs.delete([helper["asset_info_file_request"]], True, True)
 
-        test_asset = r"levels\testdependencieslevel\level.pak"
+        test_asset = r"fonts/open_sans/license.txt"
         re_pattern = re.compile(r"""field="platformFlags" value="(\d+)" """)
         all_lines = ""
 
@@ -735,6 +731,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.test_case_id("C16877174")
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877178")
@@ -905,7 +902,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             second_input_arg = asset_lists_to_string(second_asset_list)  # --secondAssetList
             output_arg = asset_lists_to_string(output_file)  # --output
 
-            def generate_compare_command(platform_arg: str) -> object:
+            def generate_compare_command(platform_arg: str, project_name : str) -> object:
                 """Creates a string containing a full Compare command. This string can be executed as-is."""
                 cmd = [helper["bundler_batch"], "compare", f"--firstassetFile={first_input_arg}", f"--output={output_arg}"]
                 if platform_arg is not None:
@@ -921,6 +918,8 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     if comp_type == "4":
                         # Extra arguments for pattern comparison
                         cmd.extend([f"--filePatternType={pattern_type}", f"--filePattern={pattern}"])
+                if workspace.project:
+                    cmd.append(f'--project-path={project_name}')
                 return cmd
             # End generate_compare_command()
 
@@ -939,6 +938,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             # End verify_asset_list_contents()
 
             def run_compare_command_and_verify(platform_arg: str, expect_pc_output: bool, expect_mac_output: bool) -> None:
+
                 # Expected asset list to equal result of comparison
                 expected_pc_asset_list = None
                 expected_mac_asset_list = None
@@ -960,7 +960,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     output_mac_asset_list = helper.platform_file_name(last_output_arg, platform)
 
                 # Build execution command
-                cmd = generate_compare_command(platform_arg)
+                cmd = generate_compare_command(platform_arg, workspace.project)
 
                 # Execute command
                 subprocess.check_call(cmd)
@@ -995,10 +995,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 f"--comparisonRulesFile={rule_file}",
                 f"--comparisonType={args[1]}",
                 r"--addComparison",
+                f"--project-path={workspace.project}",
             ]
             if args[1] == "4":
                 # If pattern comparison, append a few extra arguments
                 cmd.extend(["--filePatternType=0", "--filePattern=*.dat"])
+
             subprocess.check_call(cmd)
             assert os.path.exists(rule_file), f"Rule file {args[0]} was not created at location: {rule_file}"
 

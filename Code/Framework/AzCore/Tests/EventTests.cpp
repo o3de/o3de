@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/EBus/Event.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -244,6 +240,37 @@ namespace UnitTest
         static_assert(!AZStd::is_copy_assignable_v<AZ::Event<int32_t>>, "AZ Events should not be copy assignable");
     }
 
+    TEST_F(EventTests, TestClaimHandlers_TakesAllSourceHandlers)
+    {
+        AZ::Event<> testEvent1;
+        AZ::Event<> testEvent2;
+
+        int32_t handlerInvokeCount{};
+        auto handlerCallback = [&handlerInvokeCount]()
+        {
+            ++handlerInvokeCount;
+        };
+        AZ::Event<>::Handler testHandler1(handlerCallback);
+        AZ::Event<>::Handler testHandler2(handlerCallback);
+
+        testHandler1.Connect(testEvent1);
+        testHandler2.Connect(testEvent2);
+
+        EXPECT_TRUE(testEvent1.HasHandlerConnected());
+        EXPECT_TRUE(testEvent2.HasHandlerConnected());
+
+        testEvent1.ClaimHandlers(AZStd::move(testEvent2));
+        EXPECT_TRUE(testEvent1.HasHandlerConnected());
+        EXPECT_FALSE(testEvent2.HasHandlerConnected());
+
+        // testEvent1 should have both handlers
+        testEvent1.Signal();
+        EXPECT_EQ(2, handlerInvokeCount);
+        // testEvent2 should have neither of the handlers
+        testEvent2.Signal();
+        EXPECT_EQ(2, handlerInvokeCount);
+    }
+
     TEST_F(EventTests, HandlerMoveAssignment_ProperlyDisconnectsFromOldEvent)
     {
         AZ::Event<> testEvent1;
@@ -261,6 +288,48 @@ namespace UnitTest
         testHandler1 = AZStd::move(testHandler2);
         EXPECT_FALSE(testEvent1.HasHandlerConnected());
         EXPECT_TRUE(testEvent2.HasHandlerConnected());
+    }
+
+    TEST_F(EventTests, TestHandlerCopyConstructorOperator)
+    {
+        int32_t invokedCounter = 0;
+
+        AZ::Event<> testEvent;
+        AZ::Event<>::Handler testHandler([&invokedCounter]() { invokedCounter++; });
+
+        testHandler.Connect(testEvent);
+
+        AZ::Event<>::Handler testHandler2(testHandler);
+
+        EXPECT_TRUE(testHandler.IsConnected());
+        EXPECT_TRUE(testHandler2.IsConnected());
+
+        EXPECT_TRUE(invokedCounter == 0);
+        testEvent.Signal();
+        EXPECT_TRUE(invokedCounter == 2);
+    }
+
+    TEST_F(EventTests, TestHandlerCopyAssignmentOperator)
+    {
+        int32_t invokedCounter = 0;
+
+        AZ::Event<> testEvent;
+        AZ::Event<>::Handler testHandler([&invokedCounter]() { invokedCounter++; });
+
+        testHandler.Connect(testEvent);
+
+        AZ::Event<>::Handler testHandler2;
+
+        EXPECT_TRUE(testHandler.IsConnected());
+        EXPECT_FALSE(testHandler2.IsConnected());
+
+        testHandler2 = testHandler;
+
+        EXPECT_TRUE(testHandler2.IsConnected());
+
+        EXPECT_TRUE(invokedCounter == 0);
+        testEvent.Signal();
+        EXPECT_TRUE(invokedCounter == 2);
     }
 }
 

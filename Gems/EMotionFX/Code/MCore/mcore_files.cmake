@@ -1,22 +1,16 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
     Source/AABB.h
-    Source/AbstractData.h
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
-    Source/AlignedArray.h
-    Source/Array.h
     Source/Array2D.h
     Source/Array2D.inl
     Source/Attribute.cpp
@@ -81,9 +75,6 @@ set(FILES
     Source/File.h
     Source/FileSystem.cpp
     Source/FileSystem.h
-    Source/HashFunctions.h
-    Source/HashTable.h
-    Source/HashTable.inl
     Source/IDGenerator.cpp
     Source/IDGenerator.h
     Source/LogManager.cpp
@@ -104,15 +95,9 @@ set(FILES
     Source/MemoryTracker.cpp
     Source/MemoryTracker.h
     Source/MultiThreadManager.h
-    Source/OBB.cpp
-    Source/OBB.h
-    Source/OBB.inl
     Source/PlaneEq.cpp
     Source/PlaneEq.h
     Source/PlaneEq.inl
-    Source/Quaternion.cpp
-    Source/Quaternion.h
-    Source/Quaternion.inl
     Source/Random.cpp
     Source/Random.h
     Source/Ray.cpp
@@ -120,7 +105,6 @@ set(FILES
     Source/StaticAllocator.cpp
     Source/StaticAllocator.h
     Source/StaticString.h
-    Source/SmallArray.h
     Source/StandardHeaders.h
     Source/Stream.h
     Source/StringConversions.cpp

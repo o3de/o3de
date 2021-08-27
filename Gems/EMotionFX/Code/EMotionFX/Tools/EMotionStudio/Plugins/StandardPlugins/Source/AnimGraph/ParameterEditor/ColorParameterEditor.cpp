@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ColorParameterEditor.h"
 
@@ -67,7 +63,7 @@ namespace EMStudio
         if (!m_attributes.empty())
         {
             MCore::AttributeColor* attribute = static_cast<MCore::AttributeColor*>(m_attributes[0]);
-            m_currentValue = AZ::Color(attribute->GetValue().r, attribute->GetValue().g, attribute->GetValue().b, attribute->GetValue().a);
+            m_currentValue = AZ::Color(attribute->GetValue().m_r, attribute->GetValue().m_g, attribute->GetValue().m_b, attribute->GetValue().m_a);
         }
         else
         {

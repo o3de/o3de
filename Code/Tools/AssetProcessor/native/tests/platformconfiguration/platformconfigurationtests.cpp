@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include "native/tests/platformconfiguration/platformconfigurationtests.h"
@@ -25,6 +21,7 @@ class UnitTestPlatformConfiguration : public AssetProcessor::PlatformConfigurati
 {
     friend class GTEST_TEST_CLASS_NAME_(PlatformConfigurationUnitTests, Test_GemHandling);
     friend class GTEST_TEST_CLASS_NAME_(PlatformConfigurationUnitTests, Test_MetaFileTypes);
+    friend class GTEST_TEST_CLASS_NAME_(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtensions);
 protected:
 };
 
@@ -668,4 +665,25 @@ TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath(platformConfigPath), ";nothing to see here"));
     ASSERT_TRUE(config.AddPlatformConfigFilePaths(platformConfigList));
     ASSERT_EQ(platformConfigList.size(), 1);
+}
+
+TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtensions)
+{
+    using namespace AssetProcessor;
+
+    const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_metadata");
+    ASSERT_TRUE(configRoot);
+    UnitTestPlatformConfiguration config;
+    m_absorber.Clear();
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_TRUE(config.MetaDataFileTypesCount() == 2);
+
+    QStringList entriesToTest{ "aaa", "bbb" };
+    for (int idx = 0; idx < entriesToTest.size(); idx++)
+    {
+        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx).first, QString("%1.assetinfo").arg(entriesToTest[idx]));
+        ASSERT_EQ(config.GetMetaDataFileTypeAt(idx).second, QString("%1").arg(entriesToTest[idx]));
+    }
 }

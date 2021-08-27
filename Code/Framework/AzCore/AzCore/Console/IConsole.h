@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -98,22 +94,30 @@ namespace AZ
         //! @param commandLine the concatenated command-line string to execute
         virtual void ExecuteCommandLine(const AZ::CommandLine& commandLine) = 0;
 
+        //! Attempts to invoke a "deferred console command", which is a console command
+        //! that has failed to execute previously due to the command not being registered yet.
+        //! @return boolean true if any deferred console commands have executed, false otherwise
+        virtual bool ExecuteDeferredConsoleCommands() = 0;
+
+        //! Clear out any deferred console commands queue
+        virtual void ClearDeferredConsoleCommands() = 0;
+
         //! HasCommand is used to determine if the console knows about a command.
         //! @param command the command we are checking for
         //! @return boolean true on if the command is registered, false otherwise
-        virtual bool HasCommand(const char* command) = 0;
+        virtual bool HasCommand(AZStd::string_view command) = 0;
 
         //! FindCommand finds the console command with the specified console string.
         //! @param command the command that is being searched for
         //! @return non-null pointer to the console command if found
-        virtual ConsoleFunctorBase* FindCommand(const char* command) = 0;
+        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command) = 0;
 
         //! Finds all commands where the input command is a prefix and returns
         //! the longest matching substring prefix the results have in common.
         //! @param command The prefix string to find all matching commands for.
         //! @param matches The list of all commands that match the input prefix.
         //! @return The longest matching substring prefix the results have in common.
-        virtual AZStd::string AutoCompleteCommand(const char* command,
+        virtual AZStd::string AutoCompleteCommand(AZStd::string_view command,
                                                   AZStd::vector<AZStd::string>* matches = nullptr) = 0;
 
         //! Retrieves the value of the requested cvar.
@@ -121,7 +125,7 @@ namespace AZ
         //! @param outValue reference to the instance to write the current cvar value to
         //! @return GetValueResult::Success if the operation succeeded, or an error result if the operation failed
         template<typename RETURN_TYPE>
-        GetValueResult GetCvarValue(const char* command, RETURN_TYPE& outValue);
+        GetValueResult GetCvarValue(AZStd::string_view command, RETURN_TYPE& outValue);
 
         //! Visits all registered console functors.
         //! @param visitor the instance to visit all functors with
@@ -180,7 +184,7 @@ namespace AZ
     }
 
     template<typename RETURN_TYPE>
-    inline GetValueResult IConsole::GetCvarValue(const char* command, RETURN_TYPE& outValue)
+    inline GetValueResult IConsole::GetCvarValue(AZStd::string_view command, RETURN_TYPE& outValue)
     {
         ConsoleFunctorBase* cvarFunctor = FindCommand(command);
         if (cvarFunctor == nullptr)

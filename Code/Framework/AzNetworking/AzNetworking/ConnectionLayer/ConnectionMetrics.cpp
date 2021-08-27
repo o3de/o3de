@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/ConnectionLayer/ConnectionMetrics.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
@@ -26,6 +22,7 @@ namespace AzNetworking
         const AZ::TimeMs deltaTimeMs = currentTimeMs - m_lastLoggedTimeMs;
 
         m_atoms[m_activeAtom].m_bytesTransmitted += byteCount;
+        m_atoms[m_activeAtom].m_packetsSent++;
         m_atoms[m_activeAtom].m_timeAccumulatorMs += deltaTimeMs;
 
         if (m_atoms[m_activeAtom].m_timeAccumulatorMs >= m_maxSampleTimeMs)
@@ -34,6 +31,11 @@ namespace AzNetworking
         }
 
         m_lastLoggedTimeMs = currentTimeMs;
+    }
+
+    void DatarateMetrics::LogPacketLost()
+    {
+        m_atoms[m_activeAtom].m_packetsLost++;
     }
 
     float DatarateMetrics::GetBytesPerSecond() const
@@ -49,6 +51,18 @@ namespace AzNetworking
         const float sampleTime = float(m_atoms[sampleAtom].m_timeAccumulatorMs);
 
         return (bytesLogged * 1000.0f) / sampleTime; // (* 1000) to convert from bytes per millisecond to bytes per second
+    }
+
+    float DatarateMetrics::GetLossRatePercent() const
+    {
+        const uint32_t sampleAtom = 1 - m_activeAtom;
+
+        if (m_atoms[sampleAtom].m_packetsSent == 0)
+        {
+            return 0.0f;
+        }
+
+        return float(m_atoms[sampleAtom].m_packetsLost) / float(m_atoms[sampleAtom].m_packetsSent);
     }
 
     void ConnectionComputeRtt::LogPacketSent(PacketId packetId, AZ::TimeMs currentTimeMs)

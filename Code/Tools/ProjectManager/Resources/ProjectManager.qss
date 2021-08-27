@@ -7,6 +7,11 @@ QMainWindow {
     margin:0;
 }
 
+#ScreensCtrl {
+    min-width:1200px;
+    min-height:800px;
+}
+
 QPushButton:focus {
     outline: none;
     border:1px solid #1e70eb;
@@ -15,8 +20,7 @@ QPushButton:focus {
 QTabBar {
     background-color: transparent;
 }
-QTabWidget::tab-bar
-{
+QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
 QTabBar::tab {
@@ -27,26 +31,34 @@ QTabBar::tab {
     margin-right:40px;
     border-bottom: 3px solid transparent;
 }
-QTabBar::tab:text
-{
+QTabBar::tab:text {
     text-align:left;
 }
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
 }
-QTabBar::tab:selected
-{
+QTabBar::tab:selected {
+    background-color: transparent;
     border-bottom: 3px solid #1e70eb;
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:hover
-{
+QTabBar::tab:hover {
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:pressed
-{
+QTabBar::tab:pressed {
     color: #0e60eb;
+}
+QTabBar::focus {
+    outline: 0px;
+    outline: none;
+    outline-style: none;
+}
+QTabBar::tab:focus {
+    background-color: #525252;
+    color: #4082eb;
 }
 
 /************** General (Forms) **************/
@@ -430,8 +442,6 @@ QProgressBar {
     border: none;
     background-color: transparent;
     padding: 0px;
-    min-height: 14px;
-    font-size: 2px;
 }
 
 QProgressBar::chunk {
@@ -456,6 +466,28 @@ QProgressBar::chunk {
 
 #GemCatalogCartOverlaySectionLabel {
     font-weight: 600;
+}
+
+#GemCatalogHeaderLabel {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+#GemCatalogHeaderShowCountLabel {
+    font-size: 12px;
+    font: italic;
+    color: #FFFFFF;
+}
+
+#GemCatalogListView {
+    background-color: #333333;
+}
+
+/************** Filter tag widget **************/
+
+#FilterTagWidgetTextLabel {
+    color: #94D2FF;
+    font-size: 10px;
 }
 
 /************** Gem Catalog (Inspector) **************/

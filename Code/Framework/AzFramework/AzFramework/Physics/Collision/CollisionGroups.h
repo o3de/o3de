@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -38,7 +34,6 @@ namespace AzPhysics
 
         static const CollisionGroup None; //!< Collide with nothing
         static const CollisionGroup All; //!< Collide with everything
-        static const CollisionGroup All_NoTouchBend; //!< Collide with everything, except Touch Bendable Vegetation.
 
         //! Construct a Group with the given bitmask.
         //! The each bit in the bitmask corresponds to a CollisionLayer.
@@ -178,4 +173,9 @@ namespace AzPhysics
     private:
         AZStd::vector<Preset> m_groups;
     };
+
+    //! Retrieves a Group with the given Id of a collision group.
+    //! This will lookup the group Id to retrieve the group mask. If not found, CollisionGroup::All is returned.
+    //! @param id The Id of the group to look up the group mask.
+    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id);
 }

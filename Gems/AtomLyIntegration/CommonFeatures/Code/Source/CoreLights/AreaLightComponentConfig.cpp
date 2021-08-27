@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -21,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(5) // ATOM-14637
+                    ->Version(7) // ATOM-16034
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -36,12 +33,14 @@ namespace AZ
                     ->Field("OuterShutterAngleDegrees", &AreaLightComponentConfig::m_outerShutterAngleDegrees)
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
+                    ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
                     ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod);
+                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod)
+                    ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
                     ;
             }
         }
@@ -134,23 +133,15 @@ namespace AZ
             case PhotometricUnit::Nit:
                 return 0.0f;
             case PhotometricUnit::Ev100Luminance:
-                return -10.0f;
+                return AZStd::numeric_limits<float>::lowest();
             }
             return 0.0f;
         }
 
         float AreaLightComponentConfig::GetIntensityMax() const
         {
-            switch (m_intensityMode)
-            {
-            case PhotometricUnit::Candela:
-            case PhotometricUnit::Lumen:
-            case PhotometricUnit::Nit:
-                return 1'000'000.0f;
-            case PhotometricUnit::Ev100Luminance:
-                return 20.0f;
-            }
-            return 0.0f;
+            // While there is no hard-max, a max must be included when there is a hard min.
+            return AZStd::numeric_limits<float>::max();
         }
 
         float AreaLightComponentConfig::GetIntensitySoftMin() const
@@ -200,5 +191,22 @@ namespace AZ
 
             return m_pcfMethod != PcfMethod::BoundarySearch;
         }
+
+        bool AreaLightComponentConfig::IsEsmDisabled() const
+        {
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool AreaLightComponentConfig::IsSofteningBoundaryWidthDisabled() const
+        {
+            // softening boundary width is always available with ESM. It controls the width of the blur kernel during the ESM gaussian
+            // blur passes
+            if (!IsEsmDisabled())
+                return false;
+
+            // with PCF, softening boundary width is used with the boundary search method and NOT the bicubic pcf methods
+            return IsPcfBoundarySearchDisabled();
+        }
+
     }
 }

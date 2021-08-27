@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -23,11 +19,14 @@ namespace AZ
 {
     namespace RPI
     {
-        Data::Instance<ModelLod> ModelLod::FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset)
+        Data::Instance<ModelLod> ModelLod::FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
+            AZStd::any modelAssetAny{&modelAsset};
+
             return Data::InstanceDatabase<ModelLod>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(lodAsset.GetId()),
-                lodAsset);
+                lodAsset,
+                &modelAssetAny);
         }
 
         AZStd::array_view<ModelLod::Mesh> ModelLod::GetMeshes() const
@@ -35,10 +34,13 @@ namespace AZ
             return m_meshes;
         }
 
-        Data::Instance<ModelLod> ModelLod::CreateInternal(ModelLodAsset& lodAsset)
+        Data::Instance<ModelLod> ModelLod::CreateInternal(const Data::Asset<ModelLodAsset>& lodAsset, const AZStd::any* modelAssetAny)
         {
+            AZ_Assert(modelAssetAny != nullptr, "Invalid model asset param");
+            auto modelAsset = AZStd::any_cast<Data::Asset<ModelAsset>*>(*modelAssetAny);
+
             Data::Instance<ModelLod> lod = aznew ModelLod();
-            const RHI::ResultCode resultCode = lod->Init(lodAsset);
+            const RHI::ResultCode resultCode = lod->Init(lodAsset, *modelAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -48,11 +50,11 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode ModelLod::Init(ModelLodAsset& lodAsset)
+        RHI::ResultCode ModelLod::Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_TRACE_METHOD();
 
-            for (const ModelLodAsset::Mesh& mesh : lodAsset.GetMeshes())
+            for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
                 Mesh meshInstance;
 
@@ -104,10 +106,13 @@ namespace AZ
                     }
                 }
 
-                auto& materialAsset = mesh.GetMaterialAsset();
-                if (materialAsset.IsReady())
+                const ModelMaterialSlot& materialSlot = modelAsset->FindMaterialSlot(mesh.GetMaterialSlotId());
+
+                meshInstance.m_materialSlotStableId = materialSlot.m_stableId;
+
+                if (materialSlot.m_defaultMaterialAsset.IsReady())
                 {
-                    meshInstance.m_material = Material::FindOrCreate(materialAsset);
+                    meshInstance.m_material = Material::FindOrCreate(materialSlot.m_defaultMaterialAsset);
                 }
 
                 m_meshes.emplace_back(AZStd::move(meshInstance));
@@ -259,7 +264,7 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             streamBufferViewsOut.clear();
 
@@ -285,10 +290,11 @@ namespace AZ
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        RHI::Format formatDoesntReallyMatter = RHI::Format::R8_UNORM;
-                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
+                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
+                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
                         // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 1};
+                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
                         streamBufferViewsOut.push_back(dummyBuffer);
 
                         // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible
@@ -360,7 +366,7 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             const Mesh& mesh = m_meshes[meshIndex];
 

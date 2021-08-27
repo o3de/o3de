@@ -7,11 +7,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>This file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved.</string>
+	<string>Copyright (c) Contributors to the Open 3D Engine Project.</string>
 	<key>CFBundleSignature</key>
 	<string>ASPR</string>
 	<key>CFBundleExecutable</key>
-	<string>AssetProcessor</string>
+	<string>AssetProcessorDummy</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.Amazon.AssetProcessor</string>
 </dict>

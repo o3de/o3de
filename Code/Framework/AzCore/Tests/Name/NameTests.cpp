@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <gtest/gtest.h>
 #include <AzCore/std/utils.h>
@@ -175,7 +171,17 @@ namespace UnitTest
             azsnprintf(buffer, RandomStringBufferSize, "%d", m_random.GetRandom());
             return buffer;
         }
-        
+
+        AZ::Internal::NameData* GetNameData(AZ::Name& name)
+        {
+            return name.m_data.get();
+        }
+
+        void FreeMemoryFromNameData(AZ::Internal::NameData* nameData)
+        {
+            delete nameData;
+        }
+
         AZ::SimpleLcgRandom m_random;
     };
 
@@ -492,13 +498,20 @@ namespace UnitTest
 
     TEST_F(NameTest, ReportLeakedNames)
     {
-        AZ::Name leakedName{"hello"};
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        AZ::NameDictionary::Destroy();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        AZ::Internal::NameData* leakedNameData = nullptr;
+        {
+            AZ::Name leakedName{ "hello" };
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            AZ::NameDictionary::Destroy();
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
-        // Create the dictionary again to avoid error in TearDown()
-        AZ::NameDictionary::Create();
+            leakedNameData = GetNameData(leakedName);
+
+            // Create the dictionary again to avoid crash when the intrusive_ptr in Name tries to access NameDictionary to free it
+            AZ::NameDictionary::Create();
+        } 
+        
+        FreeMemoryFromNameData(leakedNameData); // free it to avoid memory system reporting the leak
     }
 
     TEST_F(NameTest, NullTerminatedTest)
@@ -591,7 +604,7 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT, 3);
+        RunConcurrencyTest<ThreadCreatesOneName>(AZStd::thread::hardware_concurrency(), 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_HighCollisions)
@@ -601,7 +614,7 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT, 3);
+        RunConcurrencyTest<ThreadCreatesOneName>(AZStd::thread::hardware_concurrency() / 2, 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_NoCollision)
@@ -628,7 +641,7 @@ namespace UnitTest
 
     TEST_F(NameTest, DISABLED_NameVsStringPerf_Creation)
     {
-        constexpr int CreateCount = AZ_TRAIT_UNIT_TEST_NAME_COUNT;
+        constexpr int CreateCount = 1000;
 
         char buffer[RandomStringBufferSize];
 
@@ -637,7 +650,7 @@ namespace UnitTest
         AZStd::sys_time_t stringTime;
 
         {
-            const size_t dictionaryNoiseSize = AZ_TRAIT_UNIT_TEST_NAME_COUNT;
+            const size_t dictionaryNoiseSize = 1000;
 
             AZStd::vector<AZ::Name> existingNames;
             existingNames.reserve(dictionaryNoiseSize);

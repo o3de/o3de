@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
@@ -274,11 +269,11 @@ namespace UnitTest
 
     public:
         //helper function to save an image object to a file through QtImage
-        static void SaveImageToFile(const IImageObjectPtr imageObject, const AZStd::string imageName, AZ::u32 maxMipCnt = 100)
+        static void SaveImageToFile([[maybe_unused]] const IImageObjectPtr imageObject, [[maybe_unused]] const AZStd::string imageName, [[maybe_unused]] AZ::u32 maxMipCnt = 100)
         {
     #ifndef DEBUG_OUTPUT_IMAGES
             return;
-    #endif
+    #else
             if (imageObject == nullptr)
             {
                 return;
@@ -319,6 +314,7 @@ namespace UnitTest
                 QImage qimage(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
                 qimage.save(filePath);
             }
+    #endif
         }
 
         static bool GetComparisonResult(IImageObjectPtr image1, IImageObjectPtr image2, QString& output)

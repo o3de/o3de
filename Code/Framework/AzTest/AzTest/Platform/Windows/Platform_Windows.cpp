@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/PlatformIncl.h>
 #include <string>
 #include <iostream>
 #include <AzTest/Platform.h>
+#include <AzCore/std/string/conversions.h>
 
 //-------------------------------------------------------------------------------------------------
 class ModuleHandle
@@ -155,7 +152,7 @@ namespace AZ
             va_start(mark, format);
             azvsnprintf(message, MAX_PRINT_MSG, format, mark);
             va_end(mark);
-            OutputDebugString(message);
+            AZ::Debug::Platform::OutputToDebugger(nullptr, message);
         }
 
         AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()

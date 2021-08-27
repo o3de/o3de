@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
@@ -61,6 +58,21 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AtomLyIntegration_CommonFeatures.Static
+    RUNTIME_DEPENDENCIES
+        Gem::Atom_RPI.Private
+        Gem::Atom_Feature_Common
+)
+
+# The AtomLyIntegration_CommonFeatures module is used for Clients and Servers
+ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Clients NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::GradientSignal.Clients
+)
+ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::GradientSignal.Servers
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -94,5 +106,44 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Legacy::CryCommon
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RPI.Editor
+            Gem::Atom_Feature_Common.Editor
     )
+
+    # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
+    ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
+        TARGETS
+            Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::Atom_RPI.Builders
+            Gem::GradientSignal.Builders
+    )
+    ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Tools NAMESPACE Gem
+        TARGETS
+            Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::GradientSignal.Tools
+    )
+
+    # AtomLyIntergration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
+    # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
+    # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
+    # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
+    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Tools
+        TARGETS Editor)
+    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Builders
+        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
+
+
+# Added dependencies to the Client and Server Launchers
+get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+foreach(project_name IN LISTS LY_PROJECTS_TARGET_NAME)
+    # Add gem as a dependency of the Clients Launcher
+    ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Clients
+        TARGETS ${project_name}.GameLauncher)
+    # Add gem as a dependency of the Servers Launcher
+    if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+        ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Servers
+            TARGETS ${project_name}.ServerLauncher)
+    endif()
+endforeach()

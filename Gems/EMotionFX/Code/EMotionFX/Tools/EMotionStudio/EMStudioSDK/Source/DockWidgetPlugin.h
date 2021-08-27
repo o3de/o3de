@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -45,7 +41,7 @@ namespace EMStudio
         virtual void SetInterfaceTitle(const char* name);
         void CreateBaseInterface(const char* objectName) override;
 
-        QString GetObjectName() const override                      { AZ_Assert(mDock, "mDock is null"); return mDock->objectName(); }
+        QString GetObjectName() const override                      { AZ_Assert(m_dock, "m_dock is null"); return m_dock->objectName(); }
         void SetObjectName(const QString& name) override            { GetDockWidget()->setObjectName(name); }
 
         virtual QSize GetInitialWindowSize() const                          { return QSize(500, 650); }
@@ -57,6 +53,6 @@ namespace EMStudio
     protected:
         QWidget* CreateErrorContentWidget(const char* errorMessage) const;
 
-        QPointer<QDockWidget> mDock;
+        QPointer<QDockWidget> m_dock;
     };
 }   // namespace EMStudio

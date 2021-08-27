@@ -7,7 +7,7 @@
 
         <DirectoryRef Id="TARGETDIR">
             <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME)">
+                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]">
                     <Directory Id="VersionedApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_VERSION)"/>
                 </Directory>
             </Directory>
@@ -26,10 +26,15 @@
         <DirectoryRef Id="DesktopFolder">
             <Component Id="DesktopShortcuts" Guid="{2600B54A-65FB-4507-A7CD-3CE4817C7173}">
 
-                <Shortcut Id="DesktopShortcut_Launcher"
+                <Shortcut Id="DesktopShortcut_Editor"
+                    Target="[root.bin.Windows.profile]Editor.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Editor" />
+
+                <Shortcut Id="DesktopShortcut_ProjectManager"
                     Target="[root.bin.Windows.profile]o3de.exe"
                     WorkingDirectory="root.bin.Windows.profile"
-                    Name="$(var.CPACK_PACKAGE_NAME) $(var.CPACK_PACKAGE_VERSION)" />
+                    Name="$(var.CPACK_PACKAGE_NAME) Project Manager" />
 
                 <RemoveFolder Id="DesktopFolder" On="uninstall"/>
 
@@ -46,10 +51,20 @@
         <DirectoryRef Id="VersionedApplicationProgramsFolder">
             <Component Id="StartMenuShortcuts" Guid="{E6447F0F-A46E-4A72-83D8-600707B590E8}">
 
-                <Shortcut Id="StartMenuShortcut_Launcher"
+                <Shortcut Id="StartMenuShortcut_Editor"
+                    Target="[root.bin.Windows.profile]Editor.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Editor" />
+
+                <Shortcut Id="StartMenuShortcut_MaterialEditor"
+                    Target="[root.bin.Windows.profile]MaterialEditor.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Material Editor" />
+
+                <Shortcut Id="StartMenuShortcut_ProjectManager"
                     Target="[root.bin.Windows.profile]o3de.exe"
                     WorkingDirectory="root.bin.Windows.profile"
-                    Name="$(var.CPACK_PACKAGE_NAME)" />
+                    Name="$(var.CPACK_PACKAGE_NAME) Project Manager" />
 
                 <RemoveFolder Id="RemoveVersionedApplicationProgramsFolder" Directory='VersionedApplicationProgramsFolder' On="uninstall"/>
                 <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>

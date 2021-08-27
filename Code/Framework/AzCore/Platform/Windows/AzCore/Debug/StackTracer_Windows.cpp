@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Crc.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -94,7 +91,7 @@ namespace AZ {
             {
             case CBA_EVENT:
                 evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
-                _tprintf(_T("%s"), (PTSTR)evt->desc);
+                printf("%s", evt->desc);
                 break;
 
             default:
@@ -151,7 +148,7 @@ namespace AZ {
     AZStd::mutex                g_dbgLoadingMutex;
     HANDLE                      g_currentProcess = 0;   /// We deal with only one process for now.
     CRITICAL_SECTION            g_csDbgHelpDll;         /// All dbg help functions are single threaded, so we need to control the access.
-    AZStd::fixed_vector<SymbolStorage::ModuleInfo, 256> g_moduleInfo;
+    AZStd::fixed_vector<SymbolStorage::ModuleInfo, 2048> g_moduleInfo;
     
     // reserve 4k of scratch space so that we can get some callstack information without any allocations and as little stack frame usage as possible.
     const size_t                g_scratchSpaceSize = 2048;
@@ -304,7 +301,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrRegisterDllNotification = reinterpret_cast<PLDR_REGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrRegisterDllNotification"));
 
             if (m_LdrRegisterDllNotification)
@@ -328,7 +325,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrUnregisterDllNotification = reinterpret_cast<PLDR_UNREGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrUnregisterDllNotification"));
 
             if (m_LdrUnregisterDllNotification)
@@ -613,8 +610,8 @@ namespace AZ {
                         if (GetFileVersionInfoA(szImg, dwHandle, dwSize, vData) != 0)
                         {
                             UINT len;
-                            TCHAR szSubBlock[] = _T("\\");
-                            if (VerQueryValue(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
+                            TCHAR szSubBlock[] = L"\\";
+                            if (VerQueryValueW(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
                             {
                                 fInfo = NULL;
                             }
@@ -715,7 +712,7 @@ namespace AZ {
             typedef BOOL (__stdcall * tM32N)(HANDLE hSnapshot, LPMODULEENTRY32 lpme);
 
             // try both dlls...
-            const TCHAR* dllname[] = { _T("kernel32.dll"), _T("tlhelp32.dll") };
+            const TCHAR* dllname[] = { L"kernel32.dll", L"tlhelp32.dll" };
             HINSTANCE hToolhelp = NULL;
             tCT32S pCT32S = NULL;
             tM32F pM32F = NULL;
@@ -826,7 +823,7 @@ namespace AZ {
             const SIZE_T TTBUFLEN = 8096;
             int cnt = 0;
 
-            hPsapi = LoadLibrary(_T("psapi.dll"));
+            hPsapi = LoadLibraryW(L"psapi.dll");
             if (hPsapi == NULL)
             {
                 return FALSE;
@@ -960,10 +957,10 @@ cleanup:
                 // In that scenario, we may try to load and older dbghelp.dll which could cause issues
                 // To overcome this, we try to load dbghelp.dll from the Win 10 SDK folder, if that doesn't
                 // work, load the default.
-                g_dbgHelpDll = LoadLibrary(_T(R"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)"));
+                g_dbgHelpDll = LoadLibraryW(LR"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)");
                 if (g_dbgHelpDll == NULL)
                 {
-                    g_dbgHelpDll = LoadLibrary(_T("dbghelp.dll"));
+                    g_dbgHelpDll = LoadLibrary(L"dbghelp.dll");
                 }
             }
             if (g_dbgHelpDll == NULL)
@@ -1076,7 +1073,7 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            AZ_ALIGN(CONTEXT context, 8); // Without this alignment the function randomly crashes in release.
+            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 

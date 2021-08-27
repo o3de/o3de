@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
@@ -28,6 +25,7 @@ set(FILES
     Asset/AssetJsonSerializer.h
     Asset/AssetManager.cpp
     Asset/AssetManager.h
+    Asset/AssetManager_private.h
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
@@ -102,8 +100,7 @@ set(FILES
     Debug/FrameProfilerComponent.cpp
     Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
-    Debug/ProfileModuleInit.cpp
-    Debug/ProfileModuleInit.h
+    Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.h
     Debug/ProfilerBus.h
@@ -224,6 +221,7 @@ set(FILES
     Jobs/Internal/JobManagerWorkStealing.cpp
     Jobs/Internal/JobManagerWorkStealing.h
     Jobs/Internal/JobNotify.h
+    Jobs/Job.cpp
     Jobs/Job.h
     Jobs/JobCancelGroup.h
     Jobs/JobCompletion.h
@@ -436,6 +434,7 @@ set(FILES
     Preprocessor/Sequences.h
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
@@ -464,6 +463,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.h
@@ -530,6 +531,8 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
     Serialization/Json/RegistrationContext.h
@@ -618,6 +621,16 @@ set(FILES
     Socket/AzSocket_fwd.h
     Socket/AzSocket.cpp
     Socket/AzSocket.h
+    Task/Internal/Task.cpp
+    Task/Internal/Task.inl
+    Task/Internal/Task.h
+    Task/Internal/TaskConfig.h
+    Task/TaskDescriptor.h
+    Task/TaskExecutor.cpp
+    Task/TaskExecutor.h
+    Task/TaskGraph.cpp
+    Task/TaskGraph.h
+    Task/TaskGraph.inl
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

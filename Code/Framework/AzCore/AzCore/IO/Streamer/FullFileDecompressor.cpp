@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>
@@ -371,7 +368,7 @@ namespace AZ
                 {
                     auto callback = [this, nextRequest](const FileRequest& checkRequest)
                     {
-                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                        AZ_PROFILE_FUNCTION(AzCore);
                         auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
                         AZ_Assert(check,
                             "Callback in FullFileDecompressor::PrepareReadRequest expected FileExistsCheck but got another command.");
@@ -430,7 +427,7 @@ namespace AZ
                 {
                     auto callback = [this, nextRequest](const FileRequest& checkRequest)
                     {
-                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                        AZ_PROFILE_FUNCTION(AzCore);
                         auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
                         AZ_Assert(check,
                             "Callback in FullFileDecompressor::PrepareDedicatedCache expected FileExistsCheck but got another command.");
@@ -512,7 +509,7 @@ namespace AZ
                     archiveReadRequest->SetCompletionCallback(
                         [this, readSlot = i](FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
                             FinishArchiveRead(&request, readSlot);
                         });
                     m_next->QueueRequest(archiveReadRequest);
@@ -600,7 +597,7 @@ namespace AZ
 
                     waitRequest->SetCompletionCallback([this, jobSlot](FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
                             FinishDecompression(&request, jobSlot);
                         });
 

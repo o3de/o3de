@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/JSON/error/error.h>
 
@@ -447,7 +443,7 @@ namespace AWSCore
             msg += AZStd::string::format(" at character %zu: ", result.Offset());
 
             const int snippet_size = 40;
-            int start = result.Offset() - snippet_size / 2;
+            int start = static_cast<int>(result.Offset() - snippet_size / 2);
             int length = snippet_size;
             int offset = snippet_size / 2;
             if (start < 0) {

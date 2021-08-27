@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConditionCommands.h>
@@ -163,7 +159,7 @@ namespace EMotionFX
                     (azrtti_typeid<>(conditionPrototype) != azrtti_typeid<AnimGraphTransitionCondition>()))
                 {
                     AZ::TypeId type = azrtti_typeid<>(conditionPrototype);
-                    OutputDebugString(AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
+                    AZ::Debug::Platform::OutputToDebugger(nullptr, AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
                     result.emplace_back(azrtti_typeid<>(conditionPrototype));
                 }
             }

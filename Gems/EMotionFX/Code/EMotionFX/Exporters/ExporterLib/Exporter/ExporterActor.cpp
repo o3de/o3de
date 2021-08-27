@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -56,9 +52,9 @@ namespace ExporterLib
             const AZ::u32 bufferSize = static_cast<AZ::u32>(buffer.size());
 
             EMotionFX::FileFormat::FileChunk chunkHeader;
-            chunkHeader.mChunkID = EMotionFX::FileFormat::ACTOR_CHUNK_PHYSICSSETUP;
-            chunkHeader.mVersion = 1;
-            chunkHeader.mSizeInBytes = bufferSize + sizeof(AZ::u32);
+            chunkHeader.m_chunkId = EMotionFX::FileFormat::ACTOR_CHUNK_PHYSICSSETUP;
+            chunkHeader.m_version = 1;
+            chunkHeader.m_sizeInBytes = bufferSize + sizeof(AZ::u32);
 
             ConvertFileChunk(&chunkHeader, targetEndianType);
             file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
@@ -94,9 +90,9 @@ namespace ExporterLib
             const AZ::u32 bufferSize = static_cast<AZ::u32>(buffer.size());
 
             EMotionFX::FileFormat::FileChunk chunkHeader;
-            chunkHeader.mChunkID = EMotionFX::FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP;
-            chunkHeader.mVersion = 1;
-            chunkHeader.mSizeInBytes = bufferSize + sizeof(AZ::u32);
+            chunkHeader.m_chunkId = EMotionFX::FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP;
+            chunkHeader.m_version = 1;
+            chunkHeader.m_sizeInBytes = bufferSize + sizeof(AZ::u32);
 
             ConvertFileChunk(&chunkHeader, targetEndianType);
             file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
@@ -126,9 +122,9 @@ namespace ExporterLib
 
         // Write the chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_MESHASSET;
-        chunkHeader.mSizeInBytes    = sizeof(EMotionFX::FileFormat::Actor_MeshAsset) + GetStringChunkSize(meshAssetIdString.c_str());
-        chunkHeader.mVersion        = 1;
+        chunkHeader.m_chunkId        = EMotionFX::FileFormat::ACTOR_CHUNK_MESHASSET;
+        chunkHeader.m_sizeInBytes    = sizeof(EMotionFX::FileFormat::Actor_MeshAsset) + GetStringChunkSize(meshAssetIdString.c_str());
+        chunkHeader.m_version        = 1;
         ConvertFileChunk(&chunkHeader, targetEndianType);
         file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
 

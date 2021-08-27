@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -79,16 +75,16 @@ namespace EMStudio
         void Clear();
 
         void Load(const AZStd::string& filename);
-        void Load()                                                             { Load(mFileName); }
+        void Load()                                                             { Load(m_fileName); }
         void LoadFromSettings();
         void SaveAs(const AZStd::string& filename, bool showNotification=true);
-        void Save(bool showNotification=true)                                   { SaveAs(mFileName, showNotification); }
+        void Save(bool showNotification=true)                                   { SaveAs(m_fileName, showNotification); }
 
-        bool GetIsDirty() const                                                 { return mDirtyFlag; }
-        void SetDirtyFlag(bool isDirty)                                         { mDirtyFlag = isDirty; }
-        const char* GetFileName() const                                         { return mFileName.c_str(); }
-        const AZStd::string& GetFileNameString() const                          { return mFileName; }
-        void SetFileName(const char* filename)                                  { mFileName = filename; }
+        bool GetIsDirty() const                                                 { return m_dirtyFlag; }
+        void SetDirtyFlag(bool isDirty)                                         { m_dirtyFlag = isDirty; }
+        const char* GetFileName() const                                         { return m_fileName.c_str(); }
+        const AZStd::string& GetFileNameString() const                          { return m_fileName; }
+        void SetFileName(const char* filename)                                  { m_fileName = filename; }
 
         AZ::u32 GetEventColor(const EMotionFX::EventDataSet& eventDatas) const;
 
@@ -96,10 +92,10 @@ namespace EMStudio
         bool LoadLYSerializedFormat();
         bool LoadLegacyQSettingsFormat();
 
-        AZStd::vector<MotionEventPreset*>           mEventPresets;
-        AZStd::string                               mFileName;
-        bool                                        mDirtyFlag;
-        static const AZ::u32                        m_unknownEventColor;
+        AZStd::vector<MotionEventPreset*>           m_eventPresets;
+        AZStd::string                               m_fileName;
+        bool                                        m_dirtyFlag;
+        static const AZ::u32                        s_unknownEventColor;
 
         void SaveToSettings();
         void CreateDefaultPresets();

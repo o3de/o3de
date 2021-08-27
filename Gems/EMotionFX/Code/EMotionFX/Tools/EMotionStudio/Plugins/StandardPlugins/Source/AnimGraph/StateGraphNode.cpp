@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
@@ -32,8 +28,8 @@ namespace EMStudio
     StateConnection::StateConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* sourceNode, GraphNode* targetNode, bool isWildcardConnection)
         : NodeConnection(parentGraph, modelIndex, targetNode, 0, sourceNode, 0)
     {
-        mColor                  = StateMachineColors::s_transitionColor;
-        mIsWildcardConnection   = isWildcardConnection;
+        m_color                  = StateMachineColors::s_transitionColor;
+        m_isWildcardConnection   = isWildcardConnection;
     }
 
 
@@ -53,7 +49,7 @@ namespace EMStudio
         CalcStartAndEndPoints(start, end);
 
         // Adjust the start and end points in case this is a wildcard transition.
-        if (mIsWildcardConnection)
+        if (m_isWildcardConnection)
         {
             start = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
             end += QPoint(3, 3);
@@ -134,7 +130,7 @@ namespace EMStudio
             }
         }
 
-        QColor color = mColor;
+        QColor color = m_color;
 
         if (GetIsSelected())
         {
@@ -144,26 +140,26 @@ namespace EMStudio
         {
             color = StateMachineColors::s_interruptionCandidateColor;
         }
-        else if (mIsSynced)
+        else if (m_isSynced)
         {
             color.setRgb(115, 125, 200);
         }
 
         // darken the color in case the transition is disabled
-        if (mIsDisabled)
+        if (m_isDisabled)
         {
             color = color.darker(165);
         }
 
         // lighten the color in case the transition is highlighted
-        if (mIsHighlighted)
+        if (m_isHighlighted)
         {
             color = color.lighter(150);
             painter.setOpacity(1.0);
         }
 
         // lighten the color in case the transition is connected to the currently selected node
-        if (mIsConnectedHighlighted)
+        if (m_isConnectedHighlighted)
         {
             pen->setWidth(2);
             color = color.lighter(150);
@@ -190,12 +186,12 @@ namespace EMStudio
         RenderTransition(painter, *brush, *pen,
             start, end,
             color, activeColor,
-            isSelected, /*isDashed=*/mIsDisabled,
+            isSelected, /*isDashed=*/m_isDisabled,
             showBlendState, blendWeight,
-            /*highlightHead=*/mIsHeadHighlighted && mIsWildcardConnection == false,
+            /*highlightHead=*/m_isHeadHighlighted && m_isWildcardConnection == false,
             /*gradientActiveIndicator=*/!gotInterrupted);
 
-        if (mIsHeadHighlighted)
+        if (m_isHeadHighlighted)
         {
             brush->setColor(color);
             painter.setBrush(*brush);
@@ -255,7 +251,7 @@ namespace EMStudio
                 }
 
                 // darken the color in case the transition is disabled
-                if (mIsDisabled)
+                if (m_isDisabled)
                 {
                     conditionColor = conditionColor.darker(185);
                 }
@@ -272,7 +268,7 @@ namespace EMStudio
 
             QColor actionColor = Qt::yellow;
             // darken the color in case the transition is disabled
-            if (mIsDisabled)
+            if (m_isDisabled)
             {
                 actionColor = actionColor.darker(185);
             }
@@ -303,7 +299,7 @@ namespace EMStudio
         CalcStartAndEndPoints(start, end);
 
         // check if we are dealing with a wildcard transition
-        if (mIsWildcardConnection)
+        if (m_isWildcardConnection)
         {
             start = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
             end += QPoint(3, 3);
@@ -398,10 +394,10 @@ namespace EMStudio
         const QPoint endOffset = QPoint(transition->GetVisualEndOffsetX(), transition->GetVisualEndOffsetY());
 
         QPoint start = startOffset;
-        QPoint end = mTargetNode->GetRect().topLeft() + endOffset;
-        if (mSourceNode)
+        QPoint end = m_targetNode->GetRect().topLeft() + endOffset;
+        if (m_sourceNode)
         {
-            start += mSourceNode->GetRect().topLeft();
+            start += m_sourceNode->GetRect().topLeft();
         }
         else
         {
@@ -409,12 +405,12 @@ namespace EMStudio
         }
 
         QRect sourceRect;
-        if (mSourceNode)
+        if (m_sourceNode)
         {
-            sourceRect = mSourceNode->GetRect();
+            sourceRect = m_sourceNode->GetRect();
         }
 
-        QRect targetRect = mTargetNode->GetRect();
+        QRect targetRect = m_targetNode->GetRect();
         targetRect.adjust(-2, -2, 2, 2);
 
         // calc the real start point
@@ -651,10 +647,8 @@ namespace EMStudio
         ResetBorderColor();
         SetCreateConFromOutputOnly(true);
 
-        //  mTextOptions.setAlignment( Qt::AlignCenter );
-
-        mInputPorts.Resize(1);
-        mOutputPorts.Resize(4);
+        m_inputPorts.resize(1);
+        m_outputPorts.resize(4);
     }
 
     StateGraphNode::~StateGraphNode()
@@ -665,16 +659,16 @@ namespace EMStudio
     {
         AnimGraphVisualNode::Sync();
 
-        EMotionFX::AnimGraphStateMachine* parentStateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(mEMFXNode->GetParentNode());
-        if (parentStateMachine->GetEntryState() == mEMFXNode)
+        EMotionFX::AnimGraphStateMachine* parentStateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(m_emfxNode->GetParentNode());
+        if (parentStateMachine->GetEntryState() == m_emfxNode)
         {
-            mParentGraph->SetEntryNode(this);
+            m_parentGraph->SetEntryNode(this);
         }
     }
 
     void StateGraphNode::Render(QPainter& painter, QPen* pen, bool renderShadow)
     {
-        if (!mIsVisible)
+        if (!m_isVisible)
         {
             return;
         }
@@ -688,13 +682,13 @@ namespace EMStudio
 
         bool isActive = false;
         bool gotInterrupted = false;
-        if (animGraphInstance && mEMFXNode && animGraphInstance->GetAnimGraph() == mEMFXNode->GetAnimGraph())
+        if (animGraphInstance && m_emfxNode && animGraphInstance->GetAnimGraph() == m_emfxNode->GetAnimGraph())
         {
-            AZ_Assert(azrtti_typeid(mEMFXNode->GetParentNode()) == azrtti_typeid<EMotionFX::AnimGraphStateMachine>(), "Expected a valid state machine.");
-            const EMotionFX::AnimGraphStateMachine* stateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(mEMFXNode->GetParentNode());
+            AZ_Assert(azrtti_typeid(m_emfxNode->GetParentNode()) == azrtti_typeid<EMotionFX::AnimGraphStateMachine>(), "Expected a valid state machine.");
+            const EMotionFX::AnimGraphStateMachine* stateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(m_emfxNode->GetParentNode());
 
             const AZStd::vector<EMotionFX::AnimGraphNode*>& activeStates = stateMachine->GetActiveStates(animGraphInstance);
-            if (AZStd::find(activeStates.begin(), activeStates.end(), mEMFXNode) != activeStates.end())
+            if (AZStd::find(activeStates.begin(), activeStates.end(), m_emfxNode) != activeStates.end())
             {
                 isActive = true;
 
@@ -702,7 +696,7 @@ namespace EMStudio
                 const EMotionFX::AnimGraphStateTransition* latestActiveTransition = stateMachine->GetLatestActiveTransition(animGraphInstance);
                 for (const EMotionFX::AnimGraphStateTransition* activeTransition : activeTransitions)
                 {
-                    if (activeTransition != latestActiveTransition && activeTransition->GetTargetNode() == mEMFXNode)
+                    if (activeTransition != latestActiveTransition && activeTransition->GetTargetNode() == m_emfxNode)
                     {
                         gotInterrupted = true;
                         break;
@@ -711,14 +705,14 @@ namespace EMStudio
             }
         }
 
-        mBorderColor.setRgb(0, 0, 0);
+        m_borderColor.setRgb(0, 0, 0);
         if (isActive)
         {
-            mBorderColor = StateMachineColors::s_activeColor;
+            m_borderColor = StateMachineColors::s_activeColor;
         }
         if (gotInterrupted)
         {
-            mBorderColor = StateMachineColors::s_interruptedColor;
+            m_borderColor = StateMachineColors::s_interruptedColor;
         }
 
         QColor borderColor;
@@ -731,7 +725,7 @@ namespace EMStudio
         }
         else
         {
-            borderColor = mBorderColor;
+            borderColor = m_borderColor;
         }
 
         // background color
@@ -742,16 +736,16 @@ namespace EMStudio
         }
         else
         {
-            bgColor = mBaseColor;
+            bgColor = m_baseColor;
         }
 
         // blinking red error color
         const bool hasError = GetHasError();
         if (hasError && !isSelected)
         {
-            if (mParentGraph->GetUseAnimation())
+            if (m_parentGraph->GetUseAnimation())
             {
-                borderColor = mParentGraph->GetErrorBlinkColor();
+                borderColor = m_parentGraph->GetErrorBlinkColor();
             }
             else
             {
@@ -765,18 +759,15 @@ namespace EMStudio
         QColor textColor = isSelected ? Qt::black : Qt::white;
 
         // is highlighted/hovered (on-mouse-over effect)
-        if (mIsHighlighted)
+        if (m_isHighlighted)
         {
             bgColor = bgColor.lighter(120);
             bgColor2 = bgColor2.lighter(120);
         }
 
         // draw the main rect
-        // check if we need to color all nodes or not
-        //const bool colorAllNodes = GetAlwaysColor();
-        //if (mIsProcessed || colorAllNodes || mIsSelected==true)
         {
-            QLinearGradient bgGradient(0, mRect.top(), 0, mRect.bottom());
+            QLinearGradient bgGradient(0, m_rect.top(), 0, m_rect.bottom());
             bgGradient.setColorAt(0.0f, bgColor);
             bgGradient.setColorAt(1.0f, bgColor2);
             painter.setBrush(bgGradient);
@@ -784,19 +775,19 @@ namespace EMStudio
         }
 
         // add 4px to have empty space for the visualize button
-        painter.drawRoundedRect(mRect, BORDER_RADIUS, BORDER_RADIUS);
+        painter.drawRoundedRect(m_rect, BORDER_RADIUS, BORDER_RADIUS);
 
         // if the scale is so small that we can still see the small things
-        if (mParentGraph->GetScale() > 0.3f)
+        if (m_parentGraph->GetScale() > 0.3f)
         {
             // draw the visualize area
-            if (mCanVisualize)
+            if (m_canVisualize)
             {
                 RenderVisualizeRect(painter, bgColor, bgColor2);
             }
 
             // render the tracks etc
-            if (mEMFXNode->GetHasOutputPose() && mIsProcessed)
+            if (m_emfxNode->GetHasOutputPose() && m_isProcessed)
             {
                 RenderTracks(painter, bgColor, bgColor2, 3);
             }
@@ -808,14 +799,12 @@ namespace EMStudio
         painter.setClipping(false);
 
         // render the text overlay with the pre-baked node name and port names etc.
-        const float textOpacity = MCore::Clamp<float>(mParentGraph->GetScale() * mParentGraph->GetScale() * 1.5f, 0.0f, 1.0f);
+        const float textOpacity = MCore::Clamp<float>(m_parentGraph->GetScale() * m_parentGraph->GetScale() * 1.5f, 0.0f, 1.0f);
         painter.setOpacity(textOpacity);
-        painter.setFont(mHeaderFont);
+        painter.setFont(m_headerFont);
         painter.setBrush(Qt::NoBrush);
         painter.setPen(textColor);
-        //painter.drawStaticText(mRect.left(), mRect.center().y()-6, mTitleText);
-        painter.drawStaticText(mRect.left(), aznumeric_cast<int>(mRect.center().y() - mTitleText.size().height() / 2), mTitleText);
-        //  painter.drawPixmap( mRect, mTextPixmap );
+        painter.drawStaticText(m_rect.left(), aznumeric_cast<int>(m_rect.center().y() - m_titleText.size().height() / 2), m_titleText);
         painter.setOpacity(1.0f);
 
         RenderDebugInfo(painter);
@@ -828,39 +817,38 @@ namespace EMStudio
 
     int32 StateGraphNode::CalcRequiredWidth()
     {
-        const uint32 headerWidth = mHeaderFontMetrics->horizontalAdvance(mElidedName) + 40;
+        const uint32 headerWidth = m_headerFontMetrics->horizontalAdvance(m_elidedName) + 40;
 
         // make sure the node is at least 100 units in width
         return MCore::Max<uint32>(headerWidth, 100);
     }
 
-    QRect StateGraphNode::CalcInputPortRect(uint32 portNr)
+    QRect StateGraphNode::CalcInputPortRect(AZ::u16 portNr)
     {
         MCORE_UNUSED(portNr);
-        return mRect.adjusted(10, 10, -10, -10);
+        return m_rect.adjusted(10, 10, -10, -10);
     }
 
-    QRect StateGraphNode::CalcOutputPortRect(uint32 portNr)
+    QRect StateGraphNode::CalcOutputPortRect(AZ::u16 portNr)
     {
         switch (portNr)
         {
         case 0:
-            return QRect(mRect.left(),     mRect.top(),            mRect.width(),  8);
+            return QRect(m_rect.left(),     m_rect.top(),            m_rect.width(),  8);
             break;                                                                                                  // top
         case 1:
-            return QRect(mRect.left(),     mRect.bottom() - 8,       mRect.width(),  9);
+            return QRect(m_rect.left(),     m_rect.bottom() - 8,       m_rect.width(),  9);
             break;                                                                                                  // bottom
         case 2:
-            return QRect(mRect.left(),     mRect.top(),            8,              mRect.height());
+            return QRect(m_rect.left(),     m_rect.top(),            8,              m_rect.height());
             break;                                                                                                  // left
         case 3:
-            return QRect(mRect.right() - 8,  mRect.top(),            9,              mRect.height());
+            return QRect(m_rect.right() - 8,  m_rect.top(),            9,              m_rect.height());
             break;                                                                                                  // right
         default:
             MCORE_ASSERT(false);
             return QRect();
         }
-        ;
         //MCore::LOG("CalcOutputPortRect: (%i, %i, %i, %i)", rect.top(), rect.left(), rect.bottom(), rect.right());
     }
 
@@ -869,7 +857,7 @@ namespace EMStudio
         MCORE_UNUSED(bgColor2);
 
         QColor vizBorder;
-        if (mVisualize)
+        if (m_visualize)
         {
             vizBorder = Qt::black;
         }
@@ -878,26 +866,26 @@ namespace EMStudio
             vizBorder = bgColor.darker(225);
         }
 
-        painter.setPen(mVisualizeHighlighted ? StateMachineColors::s_selectedColor : vizBorder);
+        painter.setPen(m_visualizeHighlighted ? StateMachineColors::s_selectedColor : vizBorder);
         if (!GetIsSelected())
         {
-            painter.setBrush(mVisualize ? mVisualizeColor : bgColor);
+            painter.setBrush(m_visualize ? m_visualizeColor : bgColor);
         }
         else
         {
-            painter.setBrush(mVisualize ? StateMachineColors::s_selectedColor : bgColor);
+            painter.setBrush(m_visualize ? StateMachineColors::s_selectedColor : bgColor);
         }
 
-        painter.drawRect(mVisualizeRect);
+        painter.drawRect(m_visualizeRect);
     }
 
     void StateGraphNode::UpdateTextPixmap()
     {
-        mTitleText.setTextOption(mTextOptionsCenter);
-        mTitleText.setTextFormat(Qt::PlainText);
-        mTitleText.setPerformanceHint(QStaticText::AggressiveCaching);
-        mTitleText.setTextWidth(mRect.width());
-        mTitleText.setText(mElidedName);
-        mTitleText.prepare(QTransform(), mHeaderFont);
+        m_titleText.setTextOption(m_textOptionsCenter);
+        m_titleText.setTextFormat(Qt::PlainText);
+        m_titleText.setPerformanceHint(QStaticText::AggressiveCaching);
+        m_titleText.setTextWidth(m_rect.width());
+        m_titleText.setText(m_elidedName);
+        m_titleText.prepare(QTransform(), m_headerFont);
     }
 } // namespace EMStudio

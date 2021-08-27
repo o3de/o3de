@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -56,6 +52,8 @@ namespace MCore
          * @param count The number of items to convert. Please note that the array specified by value must be large enough!
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, uint32 count = 1);
+
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, uint32 count = 1);
 
         /**
          * Swap the endian of one or more shorts.
@@ -182,6 +180,8 @@ namespace MCore
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, EEndianType sourceEndianType, uint32 count = 1);
 
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, EEndianType sourceEndianType, uint32 count = 1);
+
         /**
          * Convert one or more 16 bit short values into the endian used by our current platform.
          * @param value The value(s) to convert. The number of values to follow at the specified address must be at least the number
@@ -276,6 +276,8 @@ namespace MCore
          * @param count The number of objects to convert. This allows conversion of arrays at once.
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
+
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
 
         /**
          * Convert an 16 bit short into another endian type.

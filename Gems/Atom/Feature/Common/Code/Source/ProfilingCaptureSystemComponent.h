@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/RHI/CpuProfiler.h>
 
 namespace AZ
 {
@@ -72,8 +69,12 @@ namespace AZ
 
             // ProfilingCaptureRequestBus overrides...
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
+            bool CaptureCpuFrameTime(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+            bool BeginContinuousCpuProfilingCapture() override;
+            bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;
+            bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
             void OnTick(float deltaTime, ScriptTimePoint time) override;
@@ -84,8 +85,15 @@ namespace AZ
             AZStd::vector<AZ::RPI::Pass*> FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const;
 
             DelayedQueryCaptureHelper m_timestampCapture;
+            DelayedQueryCaptureHelper m_cpuFrameTimeStatisticsCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
+            DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
+
+            // Flag passed by reference to the CPU profiling data serialization job, blocks new continuous capture requests when set.
+            AZStd::atomic_bool m_cpuDataSerializationInProgress = false;
+            
+            AZStd::thread m_cpuDataSerializationThread;
         };
     }
 }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -87,19 +83,19 @@ namespace MCore
          * @param command The command that is linked with this history item.
          * @param commandLine The command line that is linked to this history item.
          */
-        virtual void OnAddCommandToHistory(uint32 historyIndex, CommandGroup* group, Command* command, const CommandLine& commandLine) = 0;
+        virtual void OnAddCommandToHistory(size_t historyIndex, CommandGroup* group, Command* command, const CommandLine& commandLine) = 0;
 
         /**
          * This callback is executed when a command is being removed from the command history.
          * @param historyIndex The history index of the command that is being removed.
          */
-        virtual void OnRemoveCommand(uint32 historyIndex) = 0;
+        virtual void OnRemoveCommand(size_t historyIndex) = 0;
 
         /**
          * This callback is executed when we step back or forth in the command history.
          * @param index The new history index which will be the current state the system will be in.
          */
-        virtual void OnSetCurrentCommand(uint32 index) = 0;
+        virtual void OnSetCurrentCommand(size_t index) = 0;
 
         /**
          * This callback is executed before the error array is getting cleared and the interfaces shall show some error reporting window or something similar.

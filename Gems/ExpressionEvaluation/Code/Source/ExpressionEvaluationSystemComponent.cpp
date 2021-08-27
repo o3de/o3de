@@ -1,24 +1,22 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ExpressionEvaluationSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ExpressionEngine/InternalTypes.h>
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
 #include <ExpressionEngine/Utils.h>
+#include <ExpressionEvaluationSystemComponent.h>
+#include <ExpressionPrimitivesSerializers.inl>
+#include <ElementInformationSerializer.inl>
 
 namespace ExpressionEvaluation
 {
@@ -149,6 +147,12 @@ namespace ExpressionEvaluation
                     ;
             }
         }
+
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::ExpressionTreeVariableDescriptorSerializer>()->HandlesType<ExpressionTree::VariableDescriptor>();
+            jsonContext->Serializer<AZ::ElementInformationSerializer>()->HandlesType<ElementInformation>();
+        }
     }
 
     void ExpressionEvaluationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -255,7 +259,7 @@ namespace ExpressionEvaluation
 
     AZ::Outcome<void, ParsingError> ExpressionEvaluationSystemComponent::ParseRestrictedExpressionInPlace(const AZStd::unordered_set<ExpressionParserId>& parsers, AZStd::string_view expressionString, ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         expressionTree.ClearTree();
 
@@ -517,7 +521,7 @@ namespace ExpressionEvaluation
 
     ExpressionResult ExpressionEvaluationSystemComponent::Evaluate(const ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         ExpressionResultStack resultStack;
 

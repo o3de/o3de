@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
@@ -80,6 +76,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyMetadataFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_DeleteFile);
     friend class GTEST_TEST_CLASS_NAME_(DeleteTest, DeleteFolderSharedAcrossTwoScanFolders_CorrectFileAndFolderAreDeletedFromCache);
+    friend class GTEST_TEST_CLASS_NAME_(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase);
 
     friend class AssetProcessorManagerTest;
     friend struct ModtimeScanningTest;
@@ -5244,4 +5241,60 @@ void DuplicateProcessTest::SetUp()
 
     m_sharedConnection = m_assetProcessorManager->m_stateData.get();
     ASSERT_TRUE(m_sharedConnection);
+}
+
+void MetadataFileTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+    m_config->AddMetaDataType("foo", "txt");
+}
+
+TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
+{
+
+    using namespace AzToolsFramework::AssetSystem;
+    using namespace AssetProcessor;
+
+    QDir tempPath(m_tempDir.path());
+
+    QString relFileName("Dummy.TXT");
+    QString absPath(tempPath.absoluteFilePath("subfolder1/Dummy.TXT"));
+    QString watchFolder = tempPath.absoluteFilePath("subfolder1");
+    UnitTestUtils::CreateDummyFile(absPath, "dummy");
+
+    JobEntry entry;
+    entry.m_watchFolderPath = watchFolder;
+    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_jobKey = "txt";
+    entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
+    entry.m_jobRunKey = 1;
+
+    QString productPath(m_normalizedCacheRootDir.absoluteFilePath("outputfile.TXT"));
+    UnitTestUtils::CreateDummyFile(productPath);
+
+    AssetBuilderSDK::ProcessJobResponse jobResponse;
+    jobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+    jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productPath.toUtf8().data()));
+
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, entry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, jobResponse));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    // Creating a metadata file for the source assets
+    // APM should process the source asset if a metadafile is detected
+    // We are intentionally having a source file with a different file extension casing than the one specified in the metadata rule.
+    QString metadataFile(tempPath.absoluteFilePath("subfolder1/Dummy.foo"));
+    UnitTestUtils::CreateDummyFile(metadataFile, "dummy");
+
+    // Capture the job details as the APM inspects the file.
+    JobDetails jobDetails;
+    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess, [&jobDetails](JobDetails job)
+        {
+            jobDetails = job;
+        });
+
+    m_assetProcessorManager->AssessAddedFile(tempPath.absoluteFilePath(metadataFile));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }

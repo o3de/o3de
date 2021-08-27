@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
 #define __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
@@ -57,7 +53,7 @@ namespace EMStudio
         void OnMotionExtractionFlagsUpdated();
 
         void OnSelectMotionExtractionNode();
-        void OnMotionExtractionNodeSelected(MCore::Array<SelectionItem> selection);
+        void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
 
     private:
         // callbacks
@@ -65,28 +61,28 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorCallback);
-        CommandSelectCallback*          mSelectCallback;
-        CommandUnselectCallback*        mUnselectCallback;
-        CommandClearSelectionCallback*  mClearSelectionCallback;
-        CommandAdjustActorCallback*     mAdjustActorCallback;
+        CommandSelectCallback*          m_selectCallback;
+        CommandUnselectCallback*        m_unselectCallback;
+        CommandClearSelectionCallback*  m_clearSelectionCallback;
+        CommandAdjustActorCallback*     m_adjustActorCallback;
 
         // general
-        MotionWindowPlugin*             mMotionWindowPlugin;
-        QCheckBox*                      mAutoMode;
+        MotionWindowPlugin*             m_motionWindowPlugin;
+        QCheckBox*                      m_autoMode;
 
         // flags widget
-        QWidget*                        mFlagsWidget;
-        QCheckBox*                      mCaptureHeight;
+        QWidget*                        m_flagsWidget;
+        QCheckBox*                      m_captureHeight;
 
         //
-        QVBoxLayout*                    mMainVerticalLayout;
-        QVBoxLayout*                    mChildVerticalLayout;
-        QWidget*                        mWarningWidget;
-        bool                            mWarningShowed;
+        QVBoxLayout*                    m_mainVerticalLayout;
+        QVBoxLayout*                    m_childVerticalLayout;
+        QWidget*                        m_warningWidget;
+        bool                            m_warningShowed;
 
         // motion extraction node selection
-        NodeSelectionWindow*            mMotionExtractionNodeSelectionWindow;
-        AzQtComponents::BrowseEdit*     mWarningSelectNodeLink;
+        NodeSelectionWindow*            m_motionExtractionNodeSelectionWindow;
+        AzQtComponents::BrowseEdit*     m_warningSelectNodeLink;
 
         // helper functions
         void CreateFlagsWidget();

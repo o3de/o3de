@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -46,12 +42,15 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
-            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            PrefabOperationResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            PrefabOperationResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
-            void GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
+            PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
@@ -68,8 +67,11 @@ namespace AzToolsFramework
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
-            bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
+            PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
+                const EntityList& inputEntities,
+                Instance& commonRootEntityOwningInstance,
+                EntityList& outEntities,
+                AZStd::vector<Instance*>& outInstances) const;
             EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
@@ -87,7 +89,7 @@ namespace AzToolsFramework
              */
             void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
                 const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
-                EntityIdList& duplicatedEntityIds);
+                EntityIdList& duplicatedEntityIds, AZStd::unordered_map<EntityAlias, EntityAlias>& oldAliasToNewAliasMap);
             /**
              * Duplicate a list of instances owned by a common owning instance by directly
              * copying/modifying their entries in the instance DOM

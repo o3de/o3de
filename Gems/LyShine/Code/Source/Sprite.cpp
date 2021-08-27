@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Sprite.h"
 #include <CryPath.h>
 #include <IRenderer.h>
@@ -151,9 +146,9 @@ namespace
     {
         if (ser.IsReading())
         {
-            string stringVal;
+            AZStd::string stringVal;
             ser.Value(attributeName, stringVal);
-            stringVal.replace(',', ' ');
+            AZ::StringFunc::Replace(stringVal, ',', ' ');
             char* pEnd = nullptr;
             float uVal = strtof(stringVal.c_str(), &pEnd);
             float vVal = strtof(pEnd, nullptr);
@@ -207,13 +202,13 @@ CSprite::~CSprite()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const string& CSprite::GetPathname() const
+const AZStd::string& CSprite::GetPathname() const
 {
     return m_pathname;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const string& CSprite::GetTexturePathname() const
+const AZStd::string& CSprite::GetTexturePathname() const
 {
     return m_texturePathname;
 }
@@ -278,7 +273,7 @@ void CSprite::Serialize(TSerialize ser)
 
     if (hasSpriteSheetCells && ser.BeginOptionalGroup("SpriteSheet", true))
     {
-        const int numSpriteSheetCells = ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size();
+        const int numSpriteSheetCells = static_cast<int>(ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size());
         for (int i = 0; i < numSpriteSheetCells; ++i)
         {
             ser.BeginOptionalGroup("Cell", true);
@@ -288,7 +283,7 @@ void CSprite::Serialize(TSerialize ser)
                 m_spriteSheetCells.push_back(SpriteSheetCell());
             }
 
-            string aliasTemp;
+            AZStd::string aliasTemp;
             if (ser.IsReading())
             {
                 ser.Value("alias", aliasTemp);
@@ -323,7 +318,7 @@ void CSprite::Serialize(TSerialize ser)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool CSprite::SaveToXml(const string& pathname)
+bool CSprite::SaveToXml(const AZStd::string& pathname)
 {
     // NOTE: The input pathname has to be a path that can used to save - so not an Asset ID
     // because of this we do not store the pathname
@@ -336,7 +331,7 @@ bool CSprite::SaveToXml(const string& pathname)
     ser.Value(spriteVersionNumberTag, spriteFileVersionNumber);
     Serialize(ser);
 
-    return root->saveToFile(pathname);
+    return root->saveToFile(pathname.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -373,7 +368,7 @@ AZ::Vector2 CSprite::GetSize()
         }
 
         AZ::RHI::Size size = image->GetRHIImage()->GetDescriptor().m_size;
-        return AZ::Vector2(size.m_width, size.m_height);
+        return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
     }
     else
     {
@@ -634,7 +629,7 @@ void CSprite::Shutdown()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::LoadSprite(const string& pathname)
+CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
 {
     AZStd::string spritePath;
     AZStd::string texturePath;
@@ -696,7 +691,7 @@ CSprite* CSprite::LoadSprite(const string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::CreateSprite(const string& renderTargetName)
+CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
 {
     // test if the sprite is already loaded, if so return loaded sprite
     auto result = s_loadedSprites->find(renderTargetName);

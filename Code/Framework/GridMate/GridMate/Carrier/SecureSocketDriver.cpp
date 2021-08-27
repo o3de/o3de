@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -1716,7 +1712,7 @@ namespace GridMate
         }
 
         // Calculate HMAC of buffer using the secret and peer address
-        GridMate::string addrStr = endpoint->ToAddress();
+        AZStd::string addrStr = endpoint->ToAddress();
         unsigned char result[EVP_MAX_MD_SIZE];
         unsigned int resultLen = 0;
         HMAC(EVP_sha1(), m_cookieSecret.m_currentSecret, sizeof(m_cookieSecret.m_currentSecret),
@@ -1749,7 +1745,7 @@ namespace GridMate
         }
 
         // Calculate HMAC of buffer using the secret and peer address
-        GridMate::string addrStr = endpoint->ToAddress();
+        AZStd::string addrStr = endpoint->ToAddress();
         unsigned char result[EVP_MAX_MD_SIZE];
         unsigned int resultLen = 0;
         HMAC(EVP_sha1(), m_cookieSecret.m_currentSecret, COOKIE_SECRET_LENGTH,
@@ -1813,7 +1809,7 @@ namespace GridMate
 #ifdef AZ_DebugUseSocketDebugLog
                 if (handshake)
                 {
-                    GridMate::string line = GridMate::string::format("%lld | [%08x] RawRecv %s size %d connection exists\n", AZStd::chrono::system_clock::now().time_since_epoch().count(), this, type, bytesReceived);
+                    AZStd::string line = AZStd::string::format("%lld | [%08x] RawRecv %s size %d connection exists\n", AZStd::chrono::system_clock::now().time_since_epoch().count(), this, type, bytesReceived);
                     connection->m_dbgLog += line;
             }
 #endif

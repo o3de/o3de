@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <ATLComponents.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
@@ -34,7 +31,6 @@
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {
@@ -64,7 +60,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioEventManager::CAudioEventManager()
-        : m_oAudioEventPool(g_audioCVars.m_nAudioEventPoolSize, 1)
+        : m_oAudioEventPool(Audio::CVars::s_AudioEventPoolSize, 1)
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
@@ -289,7 +285,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioObjectManager::CAudioObjectManager(CAudioEventManager& refAudioEventManager)
-        : m_cObjectPool(g_audioCVars.m_nAudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
+        : m_cObjectPool(Audio::CVars::s_AudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
         , m_fTimeSinceLastVelocityUpdateMS(0.0f)
         , m_refAudioEventManager(refAudioEventManager)
     #if !defined(AUDIO_RELEASE)
@@ -309,7 +305,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioObjectManager::Update(const float fUpdateIntervalMS, const SATLWorldPosition& rListenerPosition)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         m_fTimeSinceLastVelocityUpdateMS += fUpdateIntervalMS;
         const bool bUpdateVelocity = m_fTimeSinceLastVelocityUpdateMS > s_fVelocityUpdateIntervalMS;
@@ -322,7 +318,7 @@ namespace Audio
 
             if (pObject->HasActiveEvents())
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Audio, "Inner Per-Object CAudioObjectManager::Update");
+                AZ_PROFILE_SCOPE(Audio, "Inner Per-Object CAudioObjectManager::Update");
 
                 pObject->Update(fUpdateIntervalMS, rListenerPosition);
 
@@ -941,7 +937,7 @@ namespace Audio
     void CAudioEventListenerManager::NotifyListener(const SAudioRequestInfo* const pResultInfo)
     {
         // This should always be on the main thread!
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         auto found = AZStd::find_if(m_cListeners.begin(), m_cListeners.end(),
             [pResultInfo](const SAudioEventListener& currentListener)
@@ -1010,14 +1006,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Controls Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;
@@ -1058,14 +1054,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Preloads Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;
@@ -1787,7 +1783,7 @@ namespace Audio
         fPosX += 20.0f;
         fPosY += 17.0f;
 
-        AZStd::string triggerFilter(g_audioCVars.m_pAudioTriggersDebugFilter->GetString());
+        auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
         AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
         for (auto& audioEventPair : m_cActiveAudioEvents)
@@ -1887,7 +1883,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioObjectManager::DrawPerObjectDebugInfo(IRenderAuxGeom& rAuxGeom, const AZ::Vector3& rListenerPos) const
     {
-        AZStd::string audioObjectFilter(g_audioCVars.m_pAudioObjectsDebugFilter->GetString());
+        auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
 
         for (auto& audioObjectPair : m_cAudioObjects)
@@ -1899,7 +1895,7 @@ namespace Audio
 
             bool bDraw = AudioDebugDrawFilter(audioObjectName, audioObjectFilter);
 
-            bDraw = bDraw && (g_audioCVars.m_nShowActiveAudioObjectsOnly == 0 || audioObject->HasActiveEvents());
+            bDraw = bDraw && (!Audio::CVars::s_ShowActiveAudioObjectsOnly || audioObject->HasActiveEvents());
 
             if (bDraw)
             {
@@ -1924,7 +1920,7 @@ namespace Audio
         fPosX += 20.0f;
         fPosY += 17.0f;
 
-        AZStd::string audioObjectFilter(g_audioCVars.m_pAudioObjectsDebugFilter->GetString());
+        auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
 
         for (auto& audioObjectPair : m_cAudioObjects)
@@ -1936,7 +1932,7 @@ namespace Audio
 
             bool bDraw = AudioDebugDrawFilter(audioObjectName, audioObjectFilter);
             bool hasActiveEvents = audioObject->HasActiveEvents();
-            bDraw = bDraw && (g_audioCVars.m_nShowActiveAudioObjectsOnly == 0 || hasActiveEvents);
+            bDraw = bDraw && (!Audio::CVars::s_ShowActiveAudioObjectsOnly || hasActiveEvents);
 
             if (bDraw)
             {

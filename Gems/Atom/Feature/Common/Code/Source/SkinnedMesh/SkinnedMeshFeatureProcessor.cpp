@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h>
@@ -73,13 +69,13 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Render");
 
 #if 0 //[GFX_TODO][ATOM-13564] Temporarily disable skinning culling until we figure out how to hook up visibility & lod selection with skinning:
             //Setup the culling workgroup (it will be re-used for each view)
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "set up skinned culling workgroup");
+                AZ_PROFILE_SCOPE(AzRender, "set up skinned culling workgroup");
                 azsnprintf(m_workgroup.m_name, AZ_ARRAY_SIZE(m_workgroup.m_name), "SkinnedMeshFP workgroup");
                 m_workgroup.m_drawListMask.reset();
                 m_workgroup.m_cullPackets.clear();
@@ -122,11 +118,11 @@ namespace AZ
                     Job* processWorkgroupJob = AZ::CreateJobFunction(
                         [this, cullingSystem, viewPtr](AZ::Job& thisJob)
                         {
-                            AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "skinningMeshFP processWorkgroupJob - View: %s", viewPtr->GetName().GetCStr());
+                            AZ_PROFILE_SCOPE(AzRender, "skinningMeshFP processWorkgroupJob - View: %s", viewPtr->GetName().GetCStr());
 
                             auto dispatchSkinningComputeProgramsCallback = [this](AZStd::shared_ptr<RPI::CullingBatchResults> results) -> void
                             {
-                                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "dispatchSkinningComputePrograms");
+                                AZ_PROFILE_SCOPE(AzRender, "dispatchSkinningComputePrograms");
 
                                 //the [1][1] element of a projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
                                 //which is used to determine the (vertical) projected size in screen space            

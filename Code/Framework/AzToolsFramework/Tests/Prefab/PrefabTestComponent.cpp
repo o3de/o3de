@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Prefab/PrefabTestComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace UnitTest
 {
@@ -30,5 +27,19 @@ namespace UnitTest
     PrefabTestComponent::PrefabTestComponent(bool boolProperty)
         : m_boolProperty(boolProperty)
     {
+    }
+
+    void PrefabTestComponentWithUnReflectedTypeMember::Reflect(AZ::ReflectContext* reflection)
+    {
+        AZ::SerializeContext* serializeContext = AZ::RttiCast<AZ::SerializeContext*>(reflection);
+
+        // We reflect our member but not its type this will result in missing reflection data
+        // when we try to store or load this field
+        if (serializeContext)
+        {
+            serializeContext->Class<PrefabTestComponentWithUnReflectedTypeMember, AzToolsFramework::Components::EditorComponentBase>()
+                ->Field("UnReflectedType", &PrefabTestComponentWithUnReflectedTypeMember::m_unReflectedType)
+                ->Field("ReflectedType", &PrefabTestComponentWithUnReflectedTypeMember::m_reflectedType);
+        }
     }
 }

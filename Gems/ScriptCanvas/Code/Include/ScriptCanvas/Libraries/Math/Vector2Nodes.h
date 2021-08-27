@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -170,7 +166,7 @@ namespace ScriptCanvas
             return a.GetMin(b);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Min, k_categoryName, "{815685B8-B877-4D54-9E11-D0161185B4B9}", "returns the vector (min(A.x, B.x), min(A.y, B.y))", "A", "B");
-        
+
         AZ_INLINE Vector2Type SetX(Vector2Type source, NumberType value)
         {
             source.SetX(aznumeric_caster(value));
@@ -247,7 +243,23 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToPerpendicular, k_categoryName, "{CC4DC102-8B50-4828-BA94-0586F34E0D37}", "returns the vector (-Source.y, Source.x), a 90 degree, positive rotation", "Source");
 
-        using Registrar = RegistrarGeneric<
+        AZ_INLINE void DirectionToDefaults(Node& node)
+        {
+            SetDefaultValuesByIndex<0>::_(node, Data::Vector2Type());
+            SetDefaultValuesByIndex<1>::_(node, Data::Vector2Type());
+            SetDefaultValuesByIndex<2>::_(node, Data::NumberType(1.));
+        }
+
+        AZ_INLINE std::tuple<Vector2Type, NumberType> DirectionTo(const Vector2Type from, const Vector2Type to, NumberType optionalScale = 1.f)
+        {
+            Vector2Type r = to - from;
+            float length = r.NormalizeWithLength();
+            r.SetLength(static_cast<float>(optionalScale));
+            return std::make_tuple(r, length);
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{49A2D7F6-6CD3-420E-8A79-D46B00DB6CED}", "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
+
+        using Registrar = RegistrarGeneric <
             AbsoluteNode
             , AddNode
             , AngleNode
@@ -299,8 +311,9 @@ namespace ScriptCanvas
             , SlerpNode
             , SubtractNode
             , ToPerpendicularNode
-        >;
+            , DirectionToNode
+        > ;
 
     }
-} 
+}
 

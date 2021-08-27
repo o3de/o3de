@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -20,10 +16,7 @@
 //--------------------------------------------------------------------------------------
 //  (C) 2001-2005 ATI Research, Inc.  All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
-
-//disable warning about doubles being converted down to float
-#pragma warning (disable : 4244 )
+// Modified from original
 
 #define VM_LARGE_FLOAT 3.7e37f
 
@@ -132,7 +125,7 @@
 
 //normalize vectors
 #define VM_NORM3_UNTYPED(d, s) {double __idsq; __idsq=1.0/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
-#define VM_NORM3_UNTYPED_F32(d, s) {float __idsq; __idsq=1.0/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
+#define VM_NORM3_UNTYPED_F32(d, s) {float __idsq; __idsq=1.0f/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
 #define VM_NORM3(d, s)  VM_NORM3_UNTYPED_F32(((float *)(d)), ((float *)(s))) 
 
 #define VM_NORM4_UNTYPED(d, s) {double __idsq; __idsq=1.0/sqrt(VM_DOTPROD4_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; d[3]=s[3]*__idsq; }

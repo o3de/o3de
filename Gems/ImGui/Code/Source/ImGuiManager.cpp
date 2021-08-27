@@ -1,16 +1,11 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
@@ -282,6 +277,20 @@ void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
     InitWindowSize();
 }
 
+void ImGui::ImGuiManager::SetDpiScalingFactor(float dpiScalingFactor)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    // Set the global font scale to size our UI to the scaling factor
+    // Note: Currently we use the default, 13px fixed-size IMGUI font, so this can get somewhat blurry
+    io.FontGlobalScale = dpiScalingFactor;
+}
+
+float ImGui::ImGuiManager::GetDpiScalingFactor() const
+{
+    ImGuiIO& io = ImGui::GetIO();
+    return io.FontGlobalScale;
+}
+
 void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
@@ -400,7 +409,7 @@ void ImGuiManager::Render()
             break;
 
         case ImGuiResolutionMode::MatchToMaxRenderResolution:
-            if (backBufferWidth <= static_cast<int>(m_renderResolution.x))
+            if (backBufferWidth <= static_cast<AZ::u32>(m_renderResolution.x))
             {
                 renderRes[0] = backBufferWidth;
                 renderRes[1] = backBufferHeight;
@@ -443,7 +452,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
     // Handle Keyboard Hotkeys
-    if (inputDeviceId == InputDeviceKeyboard::Id && inputChannel.IsStateBegan())
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId) && inputChannel.IsStateBegan())
     {
         // Cycle through ImGui Menu Bar States on Home button press
         if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
@@ -468,7 +477,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Keyboard Modifier Keys
-    if (inputDeviceId == InputDeviceKeyboard::Id)
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
             || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
@@ -497,14 +506,10 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     // Handle Controller Inputs
     int inputControllerIndex = -1;
     bool controllerInput = false;
-    for (int i = 0; i < MaxControllerNumber; ++i)
+    if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
     {
-        //Allow only one controller navigating ImGui at the same time. After menu bar dismissed, other controllers could take over
-        if (inputDeviceId == InputDeviceGamepad::IdForIndexN(i))
-        {
-            inputControllerIndex = i;
-            controllerInput = true;
-        }
+        inputControllerIndex = inputDeviceId.GetIndex();
+        controllerInput = true;
     }
 
     
@@ -561,7 +566,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Mouse Inputs
-    if (inputDeviceId == InputDeviceMouse::Id)
+    if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
     {
         const int mouseButtonIndex = GetAzMouseButtonIndex(inputChannelId);
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -575,7 +580,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Touch Inputs
-    if (inputDeviceId == InputDeviceTouch::Id)
+    if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
     {
         const int touchIndex = GetAzTouchIndex(inputChannelId);
         if (0 <= touchIndex && touchIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -596,7 +601,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Virtual Keyboard Inputs
-    if (inputDeviceId == InputDeviceVirtualKeyboard::Id)
+    if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == AzFramework::InputDeviceVirtualKeyboard::Command::EditEnter)
         {
@@ -729,7 +734,14 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
     }
 
     m_menuBarStatusChanged = true;
+    m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
+
+void ImGuiManager::ToggleThroughImGuiVisibleState()
+{
+    ToggleThroughImGuiVisibleState(-1);
+}
+
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {

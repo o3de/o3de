@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "GradientSignal_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GradientSignal/GradientImageConversion.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
@@ -265,7 +259,7 @@ namespace
         for (AZStd::size_t i = 0; i < channels; ++i)
         {
             min = AZStd::min(min, Lerp(min, 
-                arr[i], IsActive(i, mask)));
+                arr[i], IsActive(static_cast<AZ::u8>(i), mask)));
         }
 
         return min;
@@ -279,7 +273,7 @@ namespace
         for (AZStd::size_t i = 0; i < channels; ++i)
         {
             max = AZStd::max(max, Lerp(max, 
-                arr[i], IsActive(i, mask)));
+                arr[i], IsActive(static_cast<AZ::u8>(i), mask)));
         }
 
         return max;
@@ -293,7 +287,7 @@ namespace
 
         for (AZStd::size_t i = 0; i < channels; ++i)
         {
-            AZ::u8 result = IsActive(i, mask);
+            AZ::u8 result = IsActive(static_cast<AZ::u8>(i), mask);
             total += result * arr[i];
             active += result;
         }
@@ -499,7 +493,7 @@ namespace GradientSignal
         newAsset->m_imageFormat = OperationHelper(settings.m_rgbTransform, newAsset->m_imageFormat, mask, settings.m_alphaTransform, newAsset->m_imageData);
         newAsset->m_imageFormat = ConvertBufferType(newAsset->m_imageData, newAsset->m_imageFormat, ExportFormatToPixelFormat(settings.m_format), 
             settings.m_autoScale, AZStd::make_pair(settings.m_scaleRangeMin, settings.m_scaleRangeMax));
-        newAsset->m_bytesPerPixel = newAsset->m_imageData.size() / aznumeric_cast<AZStd::size_t>(newAsset->m_imageWidth * newAsset->m_imageHeight);
+        newAsset->m_bytesPerPixel = static_cast<AZ::u8>(newAsset->m_imageData.size() / aznumeric_cast<AZStd::size_t>(newAsset->m_imageWidth * newAsset->m_imageHeight));
 
         return newAsset;
     }

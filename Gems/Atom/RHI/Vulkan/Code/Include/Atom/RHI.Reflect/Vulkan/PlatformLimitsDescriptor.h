@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -24,7 +20,7 @@ namespace AZ
     {
         struct FrameGraphExecuterData
         {
-            AZ_TYPE_INFO(FrameGraphExecuterData, "{648B4414-7208-4BFD-8E8F-CF2CA923ABCF}");
+            AZ_TYPE_INFO(AZ::Vulkan::FrameGraphExecuterData, "{648B4414-7208-4BFD-8E8F-CF2CA923ABCF}");
             static void Reflect(AZ::ReflectContext* context);
 
             //Cost per draw/dispatch item
@@ -49,8 +45,8 @@ namespace AZ
         {
             using Base = RHI::PlatformLimitsDescriptor;
         public:
-            AZ_RTTI(Vulkan::PlatformLimitsDescriptor, "{23673F3F-1562-4D1B-B130-553B35B48C64}", Base);
-            AZ_CLASS_ALLOCATOR(PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::Vulkan::PlatformLimitsDescriptor, "{23673F3F-1562-4D1B-B130-553B35B48C64}", Base);
+            AZ_CLASS_ALLOCATOR(AZ::Vulkan::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
             FrameGraphExecuterData m_frameGraphExecuterData;

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
@@ -38,29 +34,17 @@ namespace AZStd
     }
 } // namespace AZStd
 
-namespace MCore
-{
-    void PrintTo(const Quaternion& quaternion, ::std::ostream* os)
-    {
-        *os << "(x: " << quaternion.x
-            << ", y: " << quaternion.y
-            << ", z: " << quaternion.z
-            << ", w: " << quaternion.w
-            << ")";
-    }
-} // namespace MCore
-
 namespace EMotionFX
 {
     void PrintTo(const Transform& transform, ::std::ostream* os)
     {
         *os << "(pos: ";
-        PrintTo(transform.mPosition, os);
+        PrintTo(transform.m_position, os);
         *os << ", rot: ";
-        PrintTo(transform.mRotation, os);
+        PrintTo(transform.m_rotation, os);
 #if !defined(EMFX_SCALE_DISABLED)
         *os << ", scale: ";
-        PrintTo(transform.mScale, os);
+        PrintTo(transform.m_scale, os);
 #endif
         *os << ")";
     }

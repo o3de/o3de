@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
@@ -35,7 +31,7 @@ namespace ScriptCanvas
 
                     Current
                 };
-                
+
             public:
 
                 SCRIPTCANVAS_NODE(Any);
@@ -49,8 +45,6 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
 
-                void OnInputSignal(const SlotId& slot) override;
-
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
@@ -61,10 +55,8 @@ namespace ScriptCanvas
                 /// Translation
                 bool IsNoOp() const override;
 
-                
-
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
-                    
+
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
@@ -74,9 +66,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetInputExtensionId() const { return AZ_CRC("Output", 0xccde149e); }
 
             private:
-
                 AZStd::string GenerateInputName(int counter);
-
                 SlotId AddInputSlot();
                 void FixupStateNames();
             };

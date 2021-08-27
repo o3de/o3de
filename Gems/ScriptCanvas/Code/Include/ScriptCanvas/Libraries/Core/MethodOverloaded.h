@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -37,7 +33,9 @@ namespace ScriptCanvas
                 , public OverloadContractInterface
             {
             private:
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 friend class SerializeContextReadWriteHandler<MethodOverloaded>;
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             public:
                 static void Reflect(AZ::ReflectContext* reflectContext);
@@ -95,13 +93,15 @@ namespace ScriptCanvas
                 // \todo make execution thread sensitive, which can then support generic programming
                 Grammar::FunctionPrototype GetInputSignature() const;
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 // SerializeContextReadWriteHandler
-                void OnReadBegin();
-                void OnReadEnd();
-
-                void OnWriteBegin();
+                void OnReadBegin() {}
+                void OnReadEnd() {}
+                void OnWriteBegin() {}
                 void OnWriteEnd();
-                ////
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
+
+                void OnDeserialize() override;
 
                 void SetupMethodData(const AZ::BehaviorMethod* lookupMethod, const AZ::BehaviorClass* lookupClass);
                 void ConfigureContracts();

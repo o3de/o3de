@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 # Set resources directory for app icons
@@ -16,3 +13,27 @@ set_target_properties(AssetProcessor PROPERTIES
     RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/Images.xcassets
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AssetProcessorAppIcon
 )
+
+# We cannot use ly_add_target here because we're already including this file from inside ly_add_target
+# So we need to setup target, dependencies and install logic manually.
+add_executable(AssetProcessorDummy Platform/Mac/main_dummy.cpp)
+add_executable(AZ::AssetProcessorDummy ALIAS AssetProcessorDummy)
+
+ly_target_link_libraries(AssetProcessorDummy
+    PRIVATE
+        AZ::AzCore
+        AZ::AzFramework)
+
+ly_add_dependencies(AssetProcessor AssetProcessorDummy)
+
+# Store the aliased target into a DIRECTORY property
+set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS AZ::AssetProcessorDummy)
+
+# Store the directory path in a GLOBAL property so that it can be accessed
+# in the layout install logic. Skip if the directory has already been added
+get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+ly_install_add_install_path_setreg(AssetProcessor)

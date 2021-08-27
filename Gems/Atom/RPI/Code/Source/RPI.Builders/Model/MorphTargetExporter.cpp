@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Model/MorphTargetExporter.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
@@ -114,8 +110,8 @@ namespace AZ::RPI
     {
         AZ::Aabb meshAabb = AZ::Aabb::CreateNull();
 
-        const size_t numVertices = mesh.m_meshData->GetVertexCount();
-        for (size_t i = 0; i < numVertices; ++i)
+        const unsigned int numVertices = static_cast<unsigned int>(mesh.m_meshData->GetVertexCount());
+        for (unsigned int i = 0; i < numVertices; ++i)
         {
             meshAabb.AddPoint(mesh.m_meshData->GetPosition(i));
         }
@@ -163,12 +159,17 @@ namespace AZ::RPI
 
         // Determine the vertex index range for the morph target.
         const uint32_t numVertices = blendShapeData->GetVertexCount();
-        AZ_Assert(blendShapeData->GetVertexCount() == sourceMesh.m_meshData->GetVertexCount(),
-            "Blend shape (%s) contains more/less vertices (%d) than the neutral mesh (%d).",
-            blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+        if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount())
+        {
+            AZ_Error(ModelAssetBuilderComponent::s_builderName, false,
+                "Skipping blend shape (%s) as it contains more/less vertices (%d) than the neutral mesh (%d). "
+                "The blend shape is most likely influencing multiple meshes, which is currently not supported.",
+                blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+            return;
+        }
 
         // The start index is after any previously added deltas
-        metaData.m_startIndex = aznumeric_caster<uint32_t>(packedCompressedMorphTargetVertexData.size());
+        metaData.m_startIndex = aznumeric_cast<uint32_t>(packedCompressedMorphTargetVertexData.size());
 
 
         // Multiply normal by inverse transpose to avoid incorrect values produced by non-uniformly scaled transforms.

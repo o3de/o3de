@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -27,11 +23,6 @@
 #include <AzCore/std/utils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
 
 namespace AZStd
 {
@@ -1859,7 +1850,7 @@ namespace AZ
  *      {
  *          // do any conversion of caching of the "data" here and forward this to behavior (often the reason for this is that you can't pass everything to behavior
  *          // plus behavior can't really handle all constructs pointer to pointer, rvalues, etc. as they don't make sense for most script environments
- *          int result = 0; // set the default value for your result if the behavior if there is no implmentation
+ *          int result = 0; // set the default value for your result if the behavior if there is no implementation
  *          // The AZ_EBUS_BEHAVIOR_BINDER defines FN_EventName for each index. You can also cache it yourself (but it's slower), static int cacheIndex = GetFunctionIndex("OnEvent1"); and use that .
  *          CallResult(result, FN_OnEvent1, data);  // forward to the binding (there can be none, this is why we need to always have properly set result, when there is one)
  *          return result; // return the result like you will in any normal EBus even with result
@@ -4511,7 +4502,7 @@ namespace AZ
             params.resize(sizeof...(Args) + eBehaviorBusForwarderEventIndices::ParameterFirst);
             SetParameters<R>(&params[eBehaviorBusForwarderEventIndices::Result], nullptr);
             SetParameters<void*>(&params[eBehaviorBusForwarderEventIndices::UserData], nullptr);
-            if (sizeof...(Args) > 0)
+            if constexpr (sizeof...(Args) > 0)
             {
                 SetParameters<Args...>(&params[eBehaviorBusForwarderEventIndices::ParameterFirst], nullptr);
             }
@@ -4875,10 +4866,6 @@ namespace AZ
 
     } // namespace Internal
 } // namespace AZ
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif
 
 // pull AzStd on demand reflection
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>

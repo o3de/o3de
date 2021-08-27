@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
@@ -44,13 +40,8 @@ const QString g_ui_1_0_SettingKey = QStringLiteral("useUI_1_0");
 
 static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
 {
-#ifdef Q_OS_WIN
-    OutputDebugStringW(L"Qt: ");
-    OutputDebugStringW(reinterpret_cast<const wchar_t*>(message.utf16()));
-    OutputDebugStringW(L"\n");
-#else
-    std::wcerr << L"Qt: " << message.toStdWString() << std::endl;
-#endif
+    AZ::Debug::Platform::OutputToDebugger("Qt", message.toStdString().c_str());
+    AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
 }
 
 /*
@@ -134,11 +125,9 @@ int main(int argc, char **argv)
 {
     ComponentApplicationWrapper componentApplicationWrapper;
 
-    QApplication::setOrganizationName("Amazon");
-    QApplication::setOrganizationDomain("amazon.com");
+    QApplication::setOrganizationName("O3DE");
+    QApplication::setOrganizationDomain("o3de.org");
     QApplication::setApplicationName("O3DEWidgetGallery");
-
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);

@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
@@ -168,9 +163,9 @@ namespace AZ
             createInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
-            createInfo.stageCount = stages.size();
+            createInfo.stageCount = static_cast<uint32_t>(stages.size());
             createInfo.pStages = stages.data();
-            createInfo.groupCount = groups.size();
+            createInfo.groupCount = static_cast<uint32_t>(groups.size());
             createInfo.pGroups = groups.data();
             createInfo.maxPipelineRayRecursionDepth = descriptor->GetConfiguration().m_maxRecursionDepth;
             createInfo.layout = m_pipelineLayout;

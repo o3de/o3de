@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Libraries/Libraries.h>
 #include "Logic.h"
@@ -48,7 +44,6 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Nodes::Logic;
             AddNodeToRegistry<Logic, And>(nodeRegistry);
             AddNodeToRegistry<Logic, Any>(nodeRegistry);
-            AddNodeToRegistry<Logic, Boolean>(nodeRegistry);
             AddNodeToRegistry<Logic, Break>(nodeRegistry);
             AddNodeToRegistry<Logic, Cycle>(nodeRegistry);
             AddNodeToRegistry<Logic, Gate>(nodeRegistry);
@@ -59,7 +54,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Logic, Once>(nodeRegistry);
             AddNodeToRegistry<Logic, Or>(nodeRegistry);
             AddNodeToRegistry<Logic, OrderedSequencer>(nodeRegistry);
-            AddNodeToRegistry<Logic, Sequencer>(nodeRegistry);            
+            AddNodeToRegistry<Logic, Sequencer>(nodeRegistry);
             AddNodeToRegistry<Logic, TargetedSequencer>(nodeRegistry);
             AddNodeToRegistry<Logic, WeightedRandomSequencer>(nodeRegistry);
             AddNodeToRegistry<Logic, While>(nodeRegistry);
@@ -70,7 +65,6 @@ namespace ScriptCanvas
             return AZStd::vector<AZ::ComponentDescriptor*>({
                 ScriptCanvas::Nodes::Logic::And::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Any::CreateDescriptor(),
-                ScriptCanvas::Nodes::Logic::Boolean::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Break::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Cycle::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Gate::CreateDescriptor(),
@@ -85,7 +79,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Logic::TargetedSequencer::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::WeightedRandomSequencer::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::While::CreateDescriptor(),
-            });
+                });
         }
     }
 }

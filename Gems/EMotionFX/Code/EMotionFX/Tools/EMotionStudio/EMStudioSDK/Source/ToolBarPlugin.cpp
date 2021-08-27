@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include the required headers
 #include "EMStudioManager.h"
@@ -21,7 +17,7 @@ namespace EMStudio
     // constructor
     ToolBarPlugin::ToolBarPlugin()
         : EMStudioPlugin()
-        , mBar()
+        , m_bar()
     {
     }
 
@@ -29,10 +25,10 @@ namespace EMStudio
     // destructor
     ToolBarPlugin::~ToolBarPlugin()
     {
-        if (!mBar.isNull())
+        if (!m_bar.isNull())
         {
-            EMStudio::GetMainWindow()->removeToolBar(mBar);
-            delete mBar;
+            EMStudio::GetMainWindow()->removeToolBar(m_bar);
+            delete m_bar;
         }
     }
 
@@ -44,13 +40,13 @@ namespace EMStudio
     // check if we have a window that uses this object name
     bool ToolBarPlugin::GetHasWindowWithObjectName(const AZStd::string& objectName)
     {
-        if (mBar.isNull())
+        if (m_bar.isNull())
         {
             return false;
         }
 
         // check if the object name is equal to the one of the dock widget
-        return objectName == FromQtString(mBar->objectName());
+        return objectName == FromQtString(m_bar->objectName());
     }
 
 
@@ -72,33 +68,33 @@ namespace EMStudio
     // set the interface title
     void ToolBarPlugin::SetInterfaceTitle(const char* name)
     {
-        if (!mBar.isNull())
+        if (!m_bar.isNull())
         {
-            mBar->setWindowTitle(name);
+            m_bar->setWindowTitle(name);
         }
     }
 
     QToolBar* ToolBarPlugin::GetToolBar()
     {
-        if (!mBar.isNull())
+        if (!m_bar.isNull())
         {
-            return mBar;
+            return m_bar;
         }
 
         MainWindow* mainWindow = GetMainWindow();
 
         // create the toolbar
-        mBar = new QToolBar(GetName(), mainWindow);
-        mBar->setAllowedAreas(GetAllowedAreas());
-        mBar->setFloatable(GetIsFloatable());
-        mBar->setMovable(GetIsMovable());
-        mBar->setOrientation(GetIsVertical() ? Qt::Vertical : Qt::Horizontal);
-        mBar->setToolButtonStyle(GetToolButtonStyle());
+        m_bar = new QToolBar(GetName(), mainWindow);
+        m_bar->setAllowedAreas(GetAllowedAreas());
+        m_bar->setFloatable(GetIsFloatable());
+        m_bar->setMovable(GetIsMovable());
+        m_bar->setOrientation(GetIsVertical() ? Qt::Vertical : Qt::Horizontal);
+        m_bar->setToolButtonStyle(GetToolButtonStyle());
 
         // add the toolbar to the main window
-        mainWindow->addToolBar(GetToolBarCreationArea(), mBar);
+        mainWindow->addToolBar(GetToolBarCreationArea(), m_bar);
 
-        return mBar;
+        return m_bar;
     }
 
 }   // namespace EMStudio

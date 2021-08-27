@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -24,9 +20,9 @@ namespace EMotionFX
         : m_animGraph(nullptr)
         , m_sourceNode(nullptr)
         , m_id(AnimGraphConnectionId::Create())
-        , mSourcePort(MCORE_INVALIDINDEX16)
-        , mTargetPort(MCORE_INVALIDINDEX16)
-        , mVisited(false)
+        , m_sourcePort(MCORE_INVALIDINDEX16)
+        , m_targetPort(MCORE_INVALIDINDEX16)
+        , m_visited(false)
     {
     }
 
@@ -38,8 +34,8 @@ namespace EMotionFX
             m_animGraph = sourceNode->GetAnimGraph();
         }
 
-        mSourcePort = sourcePort;
-        mTargetPort = targetPort;
+        m_sourcePort = sourcePort;
+        m_targetPort = targetPort;
 
         SetSourceNode(sourceNode);
     }
@@ -84,7 +80,7 @@ namespace EMotionFX
     bool BlendTreeConnection::GetIsValid() const
     {
         // make sure the node and input numbers are valid
-        if (!m_sourceNode || mSourcePort == MCORE_INVALIDINDEX16 || mTargetPort == MCORE_INVALIDINDEX16)
+        if (!m_sourceNode || m_sourcePort == MCORE_INVALIDINDEX16 || m_targetPort == MCORE_INVALIDINDEX16)
         {
             return false;
         }
@@ -105,7 +101,7 @@ namespace EMotionFX
             ->Version(2)
             ->Field("id", &BlendTreeConnection::m_id)
             ->Field("sourceNodeId", &BlendTreeConnection::m_sourceNodeId)
-            ->Field("sourcePortNr", &BlendTreeConnection::mSourcePort)
-            ->Field("targetPortNr", &BlendTreeConnection::mTargetPort);
+            ->Field("sourcePortNr", &BlendTreeConnection::m_sourcePort)
+            ->Field("targetPortNr", &BlendTreeConnection::m_targetPort);
     }
 } // namespace EMotionFX

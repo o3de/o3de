@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include the required headers
 #include "ImporterCommands.h"
@@ -33,7 +29,7 @@ namespace CommandSystem
     CommandImportActor::CommandImportActor(MCore::Command* orgCommand)
         : MCore::Command("ImportActor", orgCommand)
     {
-        mPreviouslyUsedID = MCORE_INVALIDINDEX32;
+        m_previouslyUsedId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -81,10 +77,10 @@ namespace CommandSystem
         EMotionFX::Importer::ActorSettings settings;
 
         // extract default values from the command syntax automatically, if they aren't specified explicitly
-        settings.mLoadLimits                    = parameters.GetValueAsBool("loadLimits",           this);
-        settings.mLoadMorphTargets              = parameters.GetValueAsBool("loadMorphTargets",     this);
-        settings.mLoadSkeletalLODs              = parameters.GetValueAsBool("loadSkeletalLODs",     this);
-        settings.mDualQuatSkinning              = parameters.GetValueAsBool("dualQuatSkinning",     this);
+        settings.m_loadLimits                    = parameters.GetValueAsBool("loadLimits",           this);
+        settings.m_loadMorphTargets              = parameters.GetValueAsBool("loadMorphTargets",     this);
+        settings.m_loadSkeletalLoDs              = parameters.GetValueAsBool("loadSkeletalLODs",     this);
+        settings.m_dualQuatSkinning              = parameters.GetValueAsBool("dualQuatSkinning",     this);
 
         // try to load the actor
         AZStd::shared_ptr<EMotionFX::Actor> actor {EMotionFX::GetImporter().LoadActor(filename.c_str(), &settings)};
@@ -105,11 +101,11 @@ namespace CommandSystem
         }
 
         // in case we are in a redo call assign the previously used id
-        if (mPreviouslyUsedID != MCORE_INVALIDINDEX32)
+        if (m_previouslyUsedId != MCORE_INVALIDINDEX32)
         {
-            actor->SetID(mPreviouslyUsedID);
+            actor->SetID(m_previouslyUsedId);
         }
-        mPreviouslyUsedID = actor->GetID();
+        m_previouslyUsedId = actor->GetID();
 
         // select the actor automatically
         if (parameters.GetValueAsBool("autoSelect", this))
@@ -119,7 +115,7 @@ namespace CommandSystem
 
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // return the id of the newly created actor
@@ -138,7 +134,7 @@ namespace CommandSystem
         uint32 actorID = parameters.GetValueAsInt("actorID", MCORE_INVALIDINDEX32);
         if (actorID == MCORE_INVALIDINDEX32)
         {
-            actorID = mPreviouslyUsedID;
+            actorID = m_previouslyUsedId;
         }
 
         // check if we have to unselect the actors created by this command
@@ -163,7 +159,7 @@ namespace CommandSystem
         GetCommandManager()->ExecuteCommandInsideCommand("UpdateRenderActors", updateRenderActorsResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return true;
     }
@@ -207,7 +203,7 @@ namespace CommandSystem
     CommandImportMotion::CommandImportMotion(MCore::Command* orgCommand)
         : MCore::Command("ImportMotion", orgCommand)
     {
-        mOldMotionID = MCORE_INVALIDINDEX32;
+        m_oldMotionId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -259,7 +255,7 @@ namespace CommandSystem
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motion", false /* no case */))
         {
             EMotionFX::Importer::MotionSettings settings;
-            settings.mLoadMotionEvents = parameters.GetValueAsBool("loadMotionEvents", this);
+            settings.m_loadMotionEvents = parameters.GetValueAsBool("loadMotionEvents", this);
             motion = EMotionFX::GetImporter().LoadMotion(filename.c_str(), &settings);
         }
 
@@ -277,12 +273,12 @@ namespace CommandSystem
         }
 
         // in case we are in a redo call assign the previously used id
-        if (mOldMotionID != MCORE_INVALIDINDEX32)
+        if (m_oldMotionId != MCORE_INVALIDINDEX32)
         {
-            motion->SetID(mOldMotionID);
+            motion->SetID(m_oldMotionId);
         }
-        mOldMotionID = motion->GetID();
-        mOldFileName = motion->GetFileName();
+        m_oldMotionId = motion->GetID();
+        m_oldFileName = motion->GetFileName();
 
         // set the motion name
         AZStd::string motionName;
@@ -296,7 +292,7 @@ namespace CommandSystem
         }
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // reset the dirty flag
@@ -312,11 +308,11 @@ namespace CommandSystem
 
         // execute the group command
         AZStd::string commandString;
-        commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", mOldFileName.c_str());
+        commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", m_oldFileName.c_str());
         bool result = GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }

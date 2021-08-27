@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -33,8 +29,8 @@ namespace EMStudio
         MotionSetSelectionWindow(QWidget* parent, bool useSingleSelection = true, CommandSystem::SelectionList* selectionList = nullptr);
         virtual ~MotionSetSelectionWindow();
 
-        MCORE_INLINE MotionSetHierarchyWidget* GetHierarchyWidget()                                             { return mHierarchyWidget; }
-        void Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList = nullptr)     { mHierarchyWidget->Update(motionSet, selectionList); }
+        MCORE_INLINE MotionSetHierarchyWidget* GetHierarchyWidget()                                             { return m_hierarchyWidget; }
+        void Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList = nullptr)     { m_hierarchyWidget->Update(motionSet, selectionList); }
 
         void Select(const AZStd::vector<MotionSetSelectionItem>& selectedItems);
         void Select(const AZStd::vector<AZStd::string>& selectedMotionIds, EMotionFX::MotionSet* motionSet);
@@ -44,9 +40,9 @@ namespace EMStudio
         void OnSelectionChanged(AZStd::vector<MotionSetSelectionItem> selection);
 
     private:
-        MotionSetHierarchyWidget*   mHierarchyWidget;
-        QPushButton*                mOKButton;
-        QPushButton*                mCancelButton;
-        bool                        mUseSingleSelection;
+        MotionSetHierarchyWidget*   m_hierarchyWidget;
+        QPushButton*                m_okButton;
+        QPushButton*                m_cancelButton;
+        bool                        m_useSingleSelection;
     };
 } // namespace EMStudio

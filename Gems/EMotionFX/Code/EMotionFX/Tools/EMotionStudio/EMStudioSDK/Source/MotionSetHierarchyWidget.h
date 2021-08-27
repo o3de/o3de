@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -37,12 +33,12 @@ namespace EMStudio
 {
     struct EMSTUDIO_API MotionSetSelectionItem
     {
-        AZStd::string           mMotionId;
-        EMotionFX::MotionSet*   mMotionSet;
+        AZStd::string           m_motionId;
+        EMotionFX::MotionSet*   m_motionSet;
 
         MotionSetSelectionItem(const AZStd::string& motionId, EMotionFX::MotionSet* motionSet)
-            : mMotionId(motionId)
-            , mMotionSet(motionSet)
+            : m_motionId(motionId)
+            , m_motionSet(motionSet)
         {
         }
     };
@@ -62,7 +58,7 @@ namespace EMStudio
         void Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList = nullptr);
         void FireSelectionDoneSignal();
 
-        MCORE_INLINE QTreeWidget* GetTreeWidget()                               { return mHierarchy; }
+        MCORE_INLINE QTreeWidget* GetTreeWidget()                               { return m_hierarchy; }
         MCORE_INLINE AzQtComponents::FilteredSearchWidget* GetSearchWidget()    { return m_searchWidget; }
 
         void Select(const AZStd::vector<MotionSetSelectionItem>& selectedItems);
@@ -88,12 +84,12 @@ namespace EMStudio
         void RecursiveAddMotionSet(QTreeWidgetItem* parent, EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList);
         void AddMotionSetWithParents(EMotionFX::MotionSet* motionSet);
 
-        EMotionFX::MotionSet*                   mMotionSet;
-        QTreeWidget*                            mHierarchy;
+        EMotionFX::MotionSet*                   m_motionSet;
+        QTreeWidget*                            m_hierarchy;
         AzQtComponents::FilteredSearchWidget*   m_searchWidget;
         AZStd::string                           m_searchWidgetText;
-        AZStd::vector<MotionSetSelectionItem>   mSelected;
-        CommandSystem::SelectionList*           mCurrentSelectionList;
-        bool                                    mUseSingleSelection;
+        AZStd::vector<MotionSetSelectionItem>   m_selected;
+        CommandSystem::SelectionList*           m_currentSelectionList;
+        bool                                    m_useSingleSelection;
     };
 } // namespace EMStudio

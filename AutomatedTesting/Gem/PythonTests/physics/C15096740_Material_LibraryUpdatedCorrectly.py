@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Test case ID : C15096740
 Test Case Title : Verify that clearing a material library on all systems that use it,
@@ -68,7 +64,8 @@ def C15096740_Material_LibraryUpdatedCorrectly():
 
     # Constants
     library_property_path = "Configuration|Physics Material|Library"
-    default_material_path = "surfacetypemateriallibrary.physmaterial"
+    
+    default_material_path = os.path.join("assets", "physics", "surfacetypemateriallibrary.physmaterial")
     new_material_path = os.path.join("physicssurfaces", "default_phys_materials.physmaterial")
 
     helper.init_idle()
@@ -86,7 +83,7 @@ def C15096740_Material_LibraryUpdatedCorrectly():
     default_asset = Asset.find_asset_by_path(default_material_path)
     test_component.set_component_property_value(library_property_path, default_asset.id)
     default_asset.id = test_component.get_component_property_value(library_property_path)
-    Report.result(Tests.override_default_library, default_asset.get_path() == default_material_path)
+    Report.result(Tests.override_default_library, default_asset.get_path() == default_material_path.replace(os.sep, '/'))
 
     # 4) Switch it back again to the default material library.
     test_component.set_component_property_value(library_property_path, azasset.AssetId())

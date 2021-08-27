@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -19,6 +15,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <Prefab/PrefabDomUtils.h>
 
 namespace AzToolsFramework
 {
@@ -83,6 +80,15 @@ namespace AzToolsFramework
                         instances, defaultInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), context);
 
                 result.Combine(resultInstances);
+            }
+
+            PrefabDomUtils::LinkIdMetadata* subPathLinkId = context.GetMetadata().Find<PrefabDomUtils::LinkIdMetadata>();
+            if (subPathLinkId)
+            {
+                AZ::ScopedContextPath subPathSource(context, "m_linkId");
+
+                result = ContinueStoringToJsonObjectField(
+                    outputValue, "LinkId", &(instance->m_linkId), &InvalidLinkId, azrtti_typeid<decltype(instance->m_linkId)>(), context);
             }
 
             return context.Report(result,
@@ -172,7 +178,6 @@ namespace AzToolsFramework
 
             if (instance->m_containerEntity)
             {
-                instance->m_instanceEntityMapper->UnregisterEntity(instance->m_containerEntity->GetId());
                 instance->m_containerEntity.reset();
             }
 

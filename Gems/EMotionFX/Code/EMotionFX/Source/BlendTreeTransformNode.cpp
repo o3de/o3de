@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Transform.h>
@@ -37,15 +33,15 @@ namespace EMotionFX
 
     void BlendTreeTransformNode::UniqueData::Update()
     {
-        BlendTreeTransformNode* transformNode = azdynamic_cast<BlendTreeTransformNode*>(mObject);
+        BlendTreeTransformNode* transformNode = azdynamic_cast<BlendTreeTransformNode*>(m_object);
         AZ_Assert(transformNode, "Unique data linked to incorrect node type.");
 
-        const ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
+        const ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
         const Actor* actor = actorInstance->GetActor();
 
         const AZStd::string& targetJointName = transformNode->GetTargetJointName();
 
-        mNodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
         SetHasError(true);
 
         if (!targetJointName.empty())
@@ -53,7 +49,7 @@ namespace EMotionFX
             const Node* joint = actor->GetSkeleton()->FindNodeByName(targetJointName);
             if (joint)
             {
-                mNodeIndex = joint->GetNodeIndex();
+                m_nodeIndex = joint->GetNodeIndex();
                 SetHasError(false);
             }
         }
@@ -136,7 +132,7 @@ namespace EMotionFX
         }
 
         // make sure we have at least an input pose, otherwise output the bind pose
-        if (GetInputPort(INPUTPORT_POSE).mConnection == nullptr)
+        if (GetInputPort(INPUTPORT_POSE).m_connection == nullptr)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_RESULT)->GetValue();
@@ -152,48 +148,48 @@ namespace EMotionFX
         }
 
         // get the local transform from our node
-        Transform inputTransform = outputPose->GetPose().GetLocalSpaceTransform(uniqueData->mNodeIndex);
+        Transform inputTransform = outputPose->GetPose().GetLocalSpaceTransform(uniqueData->m_nodeIndex);
         Transform outputTransform = inputTransform;
 
         // process the rotation
-        if (GetInputPort(INPUTPORT_ROTATE_AMOUNT).mConnection)
+        if (GetInputPort(INPUTPORT_ROTATE_AMOUNT).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ROTATE_AMOUNT));
             const float rotateFactor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_ROTATE_AMOUNT), 0.0f, 1.0f);
             const AZ::Vector3 newAngles = MCore::LinearInterpolate<AZ::Vector3>(m_minRotation, m_maxRotation, rotateFactor);
-            outputTransform.mRotation = inputTransform.mRotation * MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(newAngles.GetX()), 
+            outputTransform.m_rotation = inputTransform.m_rotation * MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(newAngles.GetX()), 
                 MCore::Math::DegreesToRadians(newAngles.GetY()), 
                 MCore::Math::DegreesToRadians(newAngles.GetZ()));
         }
 
         // process the translation
-        if (GetInputPort(INPUTPORT_TRANSLATE_AMOUNT).mConnection)
+        if (GetInputPort(INPUTPORT_TRANSLATE_AMOUNT).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TRANSLATE_AMOUNT));
             const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_TRANSLATE_AMOUNT), 0.0f, 1.0f);
             const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minTranslation, m_maxTranslation, factor);
-            outputTransform.mPosition = inputTransform.mPosition + newValue;
+            outputTransform.m_position = inputTransform.m_position + newValue;
         }
 
         // process the scale
         EMFX_SCALECODE
         (
-            if (GetInputPort(INPUTPORT_SCALE_AMOUNT).mConnection)
+            if (GetInputPort(INPUTPORT_SCALE_AMOUNT).m_connection)
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_SCALE_AMOUNT));
                 const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_SCALE_AMOUNT), 0.0f, 1.0f);
                 const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minScale, m_maxScale, factor);
-                outputTransform.mScale = inputTransform.mScale + newValue;
+                outputTransform.m_scale = inputTransform.m_scale + newValue;
             }
         )
 
         // update the transformation of the node
-        outputPose->GetPose().SetLocalSpaceTransform(uniqueData->mNodeIndex, outputTransform);
+        outputPose->GetPose().SetLocalSpaceTransform(uniqueData->m_nodeIndex, outputTransform);
 
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -266,23 +262,15 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTransformNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minTranslation, "Min Translation", "The minimum translation value, used when the input translation amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxTranslation, "Max Translation", "The maximum translation value, used when the input translation amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minRotation, "Min Rotation", "The minimum rotation value, in degrees, used when the input rotation amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-360.0f, -360.0f, -360.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(360.0f,  360.0f,  360.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -360.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxRotation, "Max Rotation", "The maximum rotation value, in degrees, used when the input rotation amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-360.0f, -360.0f, -360.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(360.0f,  360.0f,  360.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -360.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minScale, "Min Scale", "The minimum scale value, used when the input scale amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxScale, "Max Scale", "The maximum scale value, used when the input scale amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
         ;
     }
 } // namespace EMotionFX

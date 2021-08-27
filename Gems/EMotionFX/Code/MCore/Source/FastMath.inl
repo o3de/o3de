@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // check if a float is zero
 MCORE_INLINE bool Math::IsFloatZero(float x)
@@ -314,19 +310,10 @@ MCORE_INLINE float Math::FastSqrt(float x)
 
 
 // align a value
-MCORE_INLINE void Math::Align(uint32* inOutValue, uint32 alignment)
+template<typename T>
+MCORE_INLINE T Math::Align(T inValue, T alignment)
 {
-    const uint32 modValue = *inOutValue % alignment;
-    if (modValue > 0)
-    {
-        *inOutValue += alignment - modValue;
-    }
-}
-
-// align a value
-MCORE_INLINE uint32 Math::Align(uint32 inValue, uint32 alignment)
-{
-    const uint32 modValue = inValue % alignment;
+    const T modValue = inValue % alignment;
     if (modValue > 0)
     {
         return inValue + (alignment - modValue);

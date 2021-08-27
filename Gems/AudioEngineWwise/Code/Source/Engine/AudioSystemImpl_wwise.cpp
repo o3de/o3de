@@ -1,21 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AzCore/PlatformIncl.h>
 #include <AudioSystemImpl_wwise.h>
 
 #include <platform.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -378,7 +375,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystemImpl_wwise::Update([[maybe_unused]] const float updateIntervalMS)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         if (AK::SoundEngine::IsInitialized())
         {
@@ -735,7 +732,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UpdateAudioObject(IATLAudioObjectData* const audioObjectData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         EAudioRequestStatus result = eARS_FAILURE;
 
@@ -1396,12 +1393,12 @@ namespace Audio
                 else
                 {
                     implFileEntryData->nAKBankID = AK_INVALID_BANK_ID;
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Failed to load file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of RegisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to RegisterInMemoryFile");
             }
         }
 
@@ -1427,12 +1424,12 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise Failed to unregister in memory file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of UnregisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
             }
         }
 
@@ -1783,8 +1780,8 @@ namespace Audio
             AK::MemoryMgr::CategoryStats categoryStats;
             AK::MemoryMgr::GetCategoryStats(memInfo.m_poolId, categoryStats);
 
-            memInfo.m_memoryUsed = categoryStats.uUsed;
-            memInfo.m_peakUsed = categoryStats.uPeakUsed;
+            memInfo.m_memoryUsed = static_cast<AZ::u32>(categoryStats.uUsed);
+            memInfo.m_peakUsed = static_cast<AZ::u32>(categoryStats.uPeakUsed);
             memInfo.m_numAllocs = categoryStats.uAllocs;
             memInfo.m_numFrees = categoryStats.uFrees;
         }
@@ -1793,9 +1790,9 @@ namespace Audio
         AK::MemoryMgr::GetGlobalStats(globalStats);
 
         auto& memInfo = m_debugMemoryInfo.back();
-        memInfo.m_memoryReserved = globalStats.uReserved;
-        memInfo.m_memoryUsed = globalStats.uUsed;
-        memInfo.m_peakUsed = globalStats.uMax;
+        memInfo.m_memoryReserved = static_cast<AZ::u32>(globalStats.uReserved);
+        memInfo.m_memoryUsed = static_cast<AZ::u32>(globalStats.uUsed);
+        memInfo.m_peakUsed = static_cast<AZ::u32>(globalStats.uMax);
 
         // return the memory infos...
         return m_debugMemoryInfo;
@@ -2177,16 +2174,7 @@ namespace Audio
     {
         if (language)
         {
-            AZStd::string languageSubfolder;
-
-            if (azstricmp(language, "english") == 0)
-            {
-                languageSubfolder = "english(us)";
-            }
-            else
-            {
-                languageSubfolder = language;
-            }
+            AZStd::string languageSubfolder(language);
 
             languageSubfolder += "/";
 

@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -39,8 +35,8 @@ class TestLayerSpawnerFilterStageToggle(EditorTestHelper):
         :return: None
         """
 
-        PREPROCESS_INSTANCE_COUNT = 425
-        POSTPROCESS_INSTANCE_COUNT = 430
+        PREPROCESS_INSTANCE_COUNT = 21
+        POSTPROCESS_INSTANCE_COUNT = 19
 
         # Create empty level
         self.test_success = self.create_level(
@@ -61,7 +57,6 @@ class TestLayerSpawnerFilterStageToggle(EditorTestHelper):
         vegetation_entity.add_component("Vegetation Altitude Filter")
         vegetation_entity.add_component("Vegetation Position Modifier")
 
-
         # Create a child entity under vegetation area
         child_entity = hydra.Entity("child_entity")
         components_to_add = ["Random Noise Gradient", "Gradient Transform Modifier", "Box Shape"]
@@ -71,29 +66,13 @@ class TestLayerSpawnerFilterStageToggle(EditorTestHelper):
         vegetation_entity.get_set_test(4, "Configuration|Position X|Gradient|Gradient Entity Id", child_entity.id)
         vegetation_entity.get_set_test(4, "Configuration|Position Y|Gradient|Gradient Entity Id", child_entity.id)
 
-
         # Set the min and max values for Altitude Filter
-        vegetation_entity.get_set_test(3, "Configuration|Altitude Min", 32.0)
-        vegetation_entity.get_set_test(3, "Configuration|Altitude Max", 35.0)
+        vegetation_entity.get_set_test(3, "Configuration|Altitude Min", 34.0)
+        vegetation_entity.get_set_test(3, "Configuration|Altitude Max", 38.0)
 
         # Add entity with Mesh to replicate creation of hills and a flat surface to plant on
         dynveg.create_surface_entity("Flat Surface", position, 32.0, 32.0, 1.0)
-        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("hill", position, 4.0, 4.0, 4.0)
-
-        # Disable/Re-enable Mesh component due to ATOM-14299
-        general.idle_wait(1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is still enabled")
-        else:
-            print("Mesh component was disabled")
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is now enabled")
-        else:
-            print("Mesh component is still disabled")
+        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("hill", position, 4.0)
 
         # Set the filter stage to preprocess and postprocess respectively and verify instance count
         vegetation_entity.get_set_test(0, "Configuration|Filter Stage", 1)

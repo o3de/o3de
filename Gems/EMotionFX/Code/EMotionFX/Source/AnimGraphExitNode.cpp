@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -34,7 +30,7 @@ namespace EMotionFX
 
     void AnimGraphExitNode::UniqueData::Update()
     {
-        AnimGraphExitNode* exitNode = azdynamic_cast<AnimGraphExitNode*>(mObject);
+        AnimGraphExitNode* exitNode = azdynamic_cast<AnimGraphExitNode*>(m_object);
         AZ_Assert(exitNode, "Unique data linked to incorrect node type.");
 
         if (m_previousNode && exitNode->FindChildNodeIndex(m_previousNode) == InvalidIndex32)
@@ -133,7 +129,7 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
 
             return;
@@ -161,7 +157,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -211,7 +207,7 @@ namespace EMotionFX
     void AnimGraphExitNode::RecursiveResetFlags(AnimGraphInstance* animGraphInstance, uint32 flagsToDisable)
     {
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        animGraphInstance->DisableObjectFlags(mObjectIndex, flagsToDisable);
+        animGraphInstance->DisableObjectFlags(m_objectIndex, flagsToDisable);
 
         // forward it to the node we came from
         if (uniqueData->m_previousNode && uniqueData->m_previousNode != this)

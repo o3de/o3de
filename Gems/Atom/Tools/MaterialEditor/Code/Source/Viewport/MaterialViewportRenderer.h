@@ -1,27 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AtomCore/Instance/Instance.h>
-
-#include <Atom/RPI.Public/Base.h>
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/Viewport/MaterialViewportNotificationBus.h>
-
+#include <AtomCore/Instance/Instance.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
 
@@ -49,7 +43,7 @@ namespace MaterialEditor
     class MaterialViewportRenderer
         : public AZ::Data::AssetBus::Handler
         , public AZ::TickBus::Handler
-        , public MaterialDocumentNotificationBus::Handler
+        , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
         , public MaterialViewportNotificationBus::Handler
         , public AZ::TransformNotificationBus::MultiHandler
         , public AzFramework::WindowSystemRequestBus::Handler
@@ -64,7 +58,7 @@ namespace MaterialEditor
 
     private:
 
-        // MaterialDocumentNotificationBus::Handler interface overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler interface overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // MaterialViewportNotificationBus::Handler interface overrides...

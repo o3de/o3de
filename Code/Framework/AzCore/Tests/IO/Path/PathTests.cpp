@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -181,6 +177,36 @@ namespace UnitTest
     INSTANTIATE_TEST_CASE_P(
         CompareWindowsPaths,
         WindowsPathCompareParamFixture,
+        ::testing::Values(
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("C:/test/foo", R"(c:\test/foo)"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(D:\test/bar/baz//foo)", "d:/test/bar/baz\\\\\\foo"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
+        ));
+
+    using PathHashParamFixture = PathParamFixture;
+    TEST_P(PathHashParamFixture, HashOperator_HashesCaseInsensitiveForWindowsPaths)
+    {
+        AZ::IO::Path path1{ AZStd::get<0>(GetParam()), AZ::IO::WindowsPathSeparator };
+        AZ::IO::Path path2{ AZStd::get<1>(GetParam()), AZ::IO::WindowsPathSeparator };
+        size_t path1Hash = AZStd::hash<AZ::IO::PathView>{}(path1);
+        size_t path2Hash = AZStd::hash<AZ::IO::PathView>{}(path2);
+        EXPECT_EQ(path1Hash, path2Hash) << AZStd::string::format(R"(path1 "%s" should hash to path2 "%s"\n)",
+            path1.c_str(), path2.c_str()).c_str();
+    }
+
+    TEST_P(PathHashParamFixture, HashOperator_HashesCaseSensitiveForPosixPaths)
+    {
+        AZ::IO::Path path1{ AZStd::get<0>(GetParam()), AZ::IO::PosixPathSeparator };
+        AZ::IO::Path path2{ AZStd::get<1>(GetParam()), AZ::IO::PosixPathSeparator };
+        size_t path1Hash = AZStd::hash<AZ::IO::PathView>{}(path1);
+        size_t path2Hash = AZStd::hash<AZ::IO::PathView>{}(path2);
+        EXPECT_NE(path1Hash, path2Hash) << AZStd::string::format(R"(path1 "%s" should NOT hash to path2 "%s"\n)",
+            path1.c_str(), path2.c_str()).c_str();
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        HashPaths,
+        PathHashParamFixture,
         ::testing::Values(
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("C:/test/foo", R"(c:\test/foo)"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(D:\test/bar/baz//foo)", "d:/test/bar/baz\\\\\\foo"),
@@ -392,7 +418,7 @@ namespace UnitTest
 
         // Check each operator/= and append overload for success
         {
-            AZStd::fixed_string<AZ::IO::MaxPathLength> pathString{ "foo" };
+            AZ::IO::FixedMaxPathString pathString{ "foo" };
             AZ::IO::FixedMaxPath testPath('/');
             testPath /= AZ::IO::PathView(pathString);
             testPath /= pathString;
@@ -402,7 +428,7 @@ namespace UnitTest
             EXPECT_STREQ("foo/foo/foo/foo/f", testPath.c_str());
         }
         {
-            AZStd::fixed_string<AZ::IO::MaxPathLength> pathString{ "foo" };
+            AZ::IO::FixedMaxPathString pathString{ "foo" };
             AZ::IO::FixedMaxPath testPath('/');
             testPath.Append(AZ::IO::PathView(pathString));
             testPath.Append(pathString);

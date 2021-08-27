@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -47,9 +43,9 @@ namespace EMotionFX
          * @param timeValue The time value you want to calculate a value at.
          * @param keyTrack The keyframe array to perform the search on.
          * @param numKeys The number of keyframes stored inside the keyTrack parameter buffer.
-         * @result The key number, or MCORE_INVALIDINDEX32 when no valid key could be found.
+         * @result The key number, or InvalidIndex when no valid key could be found.
          */
-        static uint32 FindKey(float timeValue, const KeyFrame<ReturnType, StorageType>* keyTrack, uint32 numKeys);
+        static size_t FindKey(float timeValue, const KeyFrame<ReturnType, StorageType>* keyTrack, size_t numKeys);
     };
 
     // include inline code

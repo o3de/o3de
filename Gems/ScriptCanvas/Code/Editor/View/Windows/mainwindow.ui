@@ -133,12 +133,12 @@
     <addaction name="action_PresetsEditor"/>
     <addaction name="separator"/>
    </widget>
-   <widget class="QMenu" name="menuUtilities">
+   <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
     <property name="title">
      <string>&amp;Utilities</string>
     </property>
     <addaction name="action_UpgradeTool"/>
-   </widget>
+   </widget> -->
    <widget class="QMenu" name="menuSettings_2">
     <property name="title">
      <string>&amp;Preferences</string>
@@ -170,7 +170,8 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView_2"/>
    <addaction name="menuTools_2"/>
-   <addaction name="menuUtilities"/>
+    <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
+   <addaction name="menuUtilities"/> -->
    <addaction name="menuSettings_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

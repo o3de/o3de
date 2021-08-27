@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -44,8 +40,7 @@ namespace AZ::IO
             //! make adjustments. For the most optimal performance align read buffers to the physicalSectorSize.
             u8 m_enableUnbufferedReads : 1;
             //! Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other applications
-            //! while in use by AZ::IO::Streamer. File sharing can negatively impact performance and is recommended for
-            //! development only. 
+            //! while in use by AZ::IO::Streamer. 
             u8 m_enableSharing : 1;
             //! If true, only information that's explicitly requested or issues are reported. If false, status information
             //! such as when drives are created and destroyed is reported as well.

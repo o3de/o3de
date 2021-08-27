@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CommandBarPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
@@ -68,7 +64,7 @@ namespace EMStudio
 
     const char* CommandBarPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
     float CommandBarPlugin::GetVersion() const
@@ -95,11 +91,11 @@ namespace EMStudio
         m_commandEdit = new QLineEdit();
         m_commandEdit->setPlaceholderText("Enter command");
         connect(m_commandEdit, &QLineEdit::returnPressed, this, &CommandBarPlugin::OnEnter);
-        m_commandEditAction = mBar->addWidget(m_commandEdit);
+        m_commandEditAction = m_bar->addWidget(m_commandEdit);
 
         m_resultEdit = new QLineEdit();
         m_resultEdit->setReadOnly(true);
-        m_commandResultAction = mBar->addWidget(m_resultEdit);
+        m_commandResultAction = m_bar->addWidget(m_resultEdit);
 
         m_globalSimSpeedSlider = new AzQtComponents::SliderDouble(Qt::Horizontal);
         m_globalSimSpeedSlider->setMaximumWidth(80);
@@ -108,9 +104,9 @@ namespace EMStudio
         m_globalSimSpeedSlider->setValue(1.0);
         m_globalSimSpeedSlider->setToolTip("The global simulation speed factor.\nA value of 1.0 means the normal speed, which is when the slider handle is in the center.\nPress the button on the right of this slider to reset to the normal speed.");
         connect(m_globalSimSpeedSlider, &AzQtComponents::SliderDouble::valueChanged, this, &CommandBarPlugin::OnGlobalSimSpeedChanged);
-        m_globalSimSpeedSliderAction = mBar->addWidget(m_globalSimSpeedSlider);
+        m_globalSimSpeedSliderAction = m_bar->addWidget(m_globalSimSpeedSlider);
 
-        m_globalSimSpeedResetAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
+        m_globalSimSpeedResetAction = m_bar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
             tr("Reset the global simulation speed factor to its normal speed"),
             this, &CommandBarPlugin::ResetGlobalSimSpeed);
 
@@ -118,7 +114,7 @@ namespace EMStudio
         m_progressText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_progressText->setAlignment(Qt::AlignRight);
         m_progressText->setStyleSheet("padding-right: 1px; color: rgb(140, 140, 140);");
-        m_progressTextAction = mBar->addWidget(m_progressText);
+        m_progressTextAction = m_bar->addWidget(m_progressText);
         m_progressTextAction->setVisible(false);
 
         m_progressBar = new QProgressBar();
@@ -126,10 +122,10 @@ namespace EMStudio
         m_progressBar->setValue(0);
         m_progressBar->setMaximumWidth(300);
         m_progressBar->setStyleSheet("padding-right: 2px;");
-        m_progressBarAction = mBar->addWidget(m_progressBar);
+        m_progressBarAction = m_bar->addWidget(m_progressBar);
         m_progressBarAction->setVisible(false);
 
-        m_lockSelectionAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
+        m_lockSelectionAction = m_bar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
             tr("Lock or unlock the selection of actor instances"),
             this, &CommandBarPlugin::OnLockSelectionButton);
 

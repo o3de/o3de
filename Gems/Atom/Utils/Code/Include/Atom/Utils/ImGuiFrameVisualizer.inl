@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 #include <imgui/imgui.h>
@@ -466,10 +462,10 @@ namespace ImGui
         }
 
         //!Draw the UI and all the nodes.
-        void Paint()
+        void Paint(bool& draw)
         {
             ImGui::SetNextWindowSize(ImVec2((float)m_windowWidth, (float)m_windowHeight), ImGuiCond_FirstUseEver);
-            if (!ImGui::Begin(m_windowName.c_str(), &m_open))
+            if (!ImGui::Begin(m_windowName.c_str(), &draw)) 
             {
                 ImGui::End();
                 return;
@@ -572,7 +568,6 @@ namespace ImGui
         AZStd::string m_windowName;
         unsigned int m_windowWidth = 1;
         unsigned int m_windowHeight = 1;
-        bool m_open = false;
         bool m_frameCapture = false;
         bool m_showGrid = true;
     };
@@ -581,7 +576,7 @@ static ImGui::ImGuiFrameVisualizerWindow* visualizerWindow = nullptr;
 namespace AZ::Render
 {
     //! Draw the frame graph.
-    inline void ImGuiFrameVisualizer::Draw([[maybe_unused]] bool draw)
+    inline void ImGuiFrameVisualizer::Draw(bool& draw)
     {
         if (!visualizerWindow)
         {
@@ -595,7 +590,7 @@ namespace AZ::Render
                 visualizerWindow->CaptureFrame(this);
                 visualizerWindow->DisableCaptureFrame();
             }
-            visualizerWindow->Paint();
+            visualizerWindow->Paint(draw);
         }
     }
 

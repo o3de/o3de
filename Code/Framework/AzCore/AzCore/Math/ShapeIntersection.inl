@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 namespace AZ
 {
@@ -134,7 +130,11 @@ namespace AZ
             //So for each plane, we can test compare the center-to-plane distance to this interval to see which side of the plane the AABB is on.
             //The AABB is not overlapping if it is fully behind any of the planes, otherwise it is overlapping.
             const Vector3 center = aabb.GetCenter();
-            const Vector3 extents = 0.5f * aabb.GetExtents();
+
+            //If the AABB contains FLT_MAX at either (or both) extremes, it would be easy to overflow here by using "0.5f * GetExtents()"
+            //or "0.5f * (GetMax() - GetMin())".  By separating into two separate multiplies before the subtraction, we can ensure
+            //that we don't overflow.
+            const Vector3 extents = (0.5f * aabb.GetMax()) - (0.5f * aabb.GetMin());
 
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
             {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -21,9 +17,11 @@
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MotionCompressionSettingsRule.h>
+#include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
 #include <SceneAPIExt/Groups/MotionGroup.h>
 
+#include <EMotionFX/CommandSystem/Source/MetaData.h>
 #include <EMotionFX/Source/MotionData/NonUniformMotionData.h>
 
 namespace EMotionFX
@@ -94,7 +92,7 @@ namespace EMotionFX
 
                 serializeContext->Class<IMotionGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(1);
 
-                serializeContext->Class<MotionGroup, IMotionGroup>()->Version(5, VersionConverter)
+                serializeContext->Class<MotionGroup, IMotionGroup>()->Version(6, VersionConverter)
                     ->Field("name", &MotionGroup::m_name)
                     ->Field("selectedRootBone", &MotionGroup::m_selectedRootBone)
                     ->Field("id", &MotionGroup::m_id)
@@ -227,6 +225,60 @@ namespace EMotionFX
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cannot convert legacy coordinate system rule.\n");
                         return false;
+                    }
+                }
+
+                // Motion meta data introduced (no more string- or object-based commands stored in the former meta data rule)
+                if (version < 6)
+                {
+                    AZ::SerializeContext::DataElementNode* ruleContainerNode = classElement.FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    if (!ruleContainerNode)
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rule container.\n");
+                        return false;
+                    }
+
+                    AZ::SerializeContext::DataElementNode* rulesNode = ruleContainerNode->FindSubElement(AZ_CRC("rules", 0x899a993c));
+                    if (!rulesNode)
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Can't find rules within rule container.\n");
+                        return false;
+                    }
+
+                    const int numRules = rulesNode->GetNumSubElements();
+                    for (int i = 0; i < numRules; ++i)
+                    {
+                        AZ::SerializeContext::DataElementNode& sharedPointerNode = rulesNode->GetSubElement(i);
+                        if (sharedPointerNode.GetNumSubElements() == 1)
+                        {
+                            AZ::SerializeContext::DataElementNode& currentRuleNode = sharedPointerNode.GetSubElement(0);
+                            if (currentRuleNode.GetId() == azrtti_typeid<Rule::MetaDataRule>())
+                            {
+                                // Read the old, command-based meta data rule and retrieve the command objects.
+                                Rule::MetaDataRule oldMetaDataRule;
+                                currentRuleNode.GetData<Rule::MetaDataRule>(oldMetaDataRule);
+                                const AZStd::vector<MCore::Command*>& commands = oldMetaDataRule.GetMetaData<const AZStd::vector<MCore::Command*>&>();
+
+                                // Apply the commands onto a temporary motion.
+                                auto motion = new EMotionFX::Motion("");
+                                motion->SetMotionData(aznew EMotionFX::NonUniformMotionData());
+                                CommandSystem::MetaData::ApplyMetaDataOnMotion(motion, commands);
+
+                                // Construct the new motion meta data rule.
+                                auto metaData = AZStd::make_shared<EMotionFX::Pipeline::Rule::MotionMetaData>(motion->GetMotionExtractionFlags(), motion->GetEventTable());
+                                auto metaDataRule = AZStd::make_shared<EMotionFX::Pipeline::Rule::MotionMetaDataRule>(metaData);
+
+                                // Add the new motion meta data rule.
+                                AZ::SceneAPI::Containers::RuleContainer ruleContainer;
+                                ruleContainerNode->GetDataHierarchy<AZ::SceneAPI::Containers::RuleContainer>(context, ruleContainer);
+                                ruleContainer.RemoveRule(i);
+                                ruleContainer.AddRule(metaDataRule);
+                                ruleContainerNode->SetData(context, ruleContainer);
+
+                                motion->Destroy();
+                                break;
+                            }
+                        }
                     }
                 }
 

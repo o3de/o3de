@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/Skeleton.h>
@@ -114,15 +110,15 @@ namespace EMotionFX
     {
         const Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
 
-        const AZ::u32 numNodes = m_actorInstance->GetNumEnabledNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = m_actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            const AZ::u32 nodeIndex = m_actorInstance->GetEnabledNode(i);
-            const AZ::u32 parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            const size_t nodeIndex = m_actorInstance->GetEnabledNode(i);
+            const size_t parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
+            if (parentIndex != InvalidIndex)
             {
-                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).mPosition;
-                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).m_position;
+                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).m_position;
                 DrawLine(offset + startPos, offset + endPos, color);
             }
         }

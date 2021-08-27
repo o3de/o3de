@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "BlendTreeBlendNNode.h"
 #include "ActorInstance.h"
@@ -35,7 +31,7 @@ namespace EMotionFX
 
     void BlendTreeBlendNNode::UniqueData::Update()
     {
-        BlendTreeBlendNNode* blendNNode = azdynamic_cast<BlendTreeBlendNNode*>(mObject);
+        BlendTreeBlendNNode* blendNNode = azdynamic_cast<BlendTreeBlendNNode*>(m_object);
         AZ_Assert(blendNNode, "Unique data linked to incorrect node type.");
 
         blendNNode->UpdateParamWeightRanges();
@@ -140,11 +136,11 @@ namespace EMotionFX
         {
             float weightRange = 0.0f;
             const float defaultWeightStep = 1.0f;
-            for (const AnimGraphNode::Port& port : mInputPorts)
+            for (const AnimGraphNode::Port& port : m_inputPorts)
             {
-                if (port.mConnection && port.mPortID != PORTID_INPUT_WEIGHT)
+                if (port.m_connection && port.m_portId != PORTID_INPUT_WEIGHT)
                 {
-                    m_paramWeights.emplace_back(port.mPortID, weightRange);
+                    m_paramWeights.emplace_back(port.m_portId, weightRange);
                     weightRange += defaultWeightStep;
                 }
             }
@@ -176,9 +172,9 @@ namespace EMotionFX
         }
 
         float weight = m_paramWeights.front().m_weightRange;
-        if (!mDisabled)
+        if (!m_disabled)
         {
-            if (mInputPorts[INPUTPORT_WEIGHT].mConnection)
+            if (m_inputPorts[INPUTPORT_WEIGHT].m_connection)
             {
                 weight = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_WEIGHT);
             }
@@ -195,8 +191,8 @@ namespace EMotionFX
             *outWeight = 0.0f;
 
             // Calculate the blend weight and get the nodes
-            *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).mConnection->GetSourceNode();
-            *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).mConnection->GetSourceNode();
+            *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).m_connection->GetSourceNode();
+            *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).m_connection->GetSourceNode();
             *outIndexA = poseIndexA;
             *outIndexB = poseIndexB;
 
@@ -231,8 +227,8 @@ namespace EMotionFX
 
                 // Search complete: the input weight is between m_paramWeights[i] and m_paramWeights[i - 1]
                 // Calculate the blend weight and get the nodes and then return
-                *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).mConnection->GetSourceNode();
-                *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).mConnection->GetSourceNode();
+                *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).m_connection->GetSourceNode();
+                *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).m_connection->GetSourceNode();
                 *outIndexA = poseIndexA;
                 *outIndexB = poseIndexB;
 
@@ -246,8 +242,8 @@ namespace EMotionFX
         *outWeight = 0.0f;
 
         // Calculate the blend weight and get the nodes
-        *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).mConnection->GetSourceNode();
-        *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).mConnection->GetSourceNode();
+        *outNodeA = GetInputPort(INPUTPORT_POSE_0 + poseIndexA).m_connection->GetSourceNode();
+        *outNodeB = GetInputPort(INPUTPORT_POSE_0 + poseIndexB).m_connection->GetSourceNode();
         *outIndexA = poseIndexA;
         *outIndexB = poseIndexB;
     }
@@ -263,7 +259,7 @@ namespace EMotionFX
 
         // check if we need to resync, this indicates the two motions we blend between changed
         bool resync = false;
-        if (uniqueData->mIndexA != poseIndexA || uniqueData->mIndexB != poseIndexB)
+        if (uniqueData->m_indexA != poseIndexA || uniqueData->m_indexB != poseIndexB)
         {
             resync = true;
             nodeA->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_RESYNC, true);
@@ -276,14 +272,14 @@ namespace EMotionFX
         for (uint32 i = 0; i < 10; ++i)
         {
             // check if this port is used
-            BlendTreeConnection* connection = mInputPorts[i].mConnection;
+            BlendTreeConnection* connection = m_inputPorts[i].m_connection;
             if (connection == nullptr)
             {
                 continue;
             }
 
             // mark this node recursively as synced
-            if (animGraphInstance->GetIsObjectFlagEnabled(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
+            if (animGraphInstance->GetIsObjectFlagEnabled(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
             {
                 connection->GetSourceNode()->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, true);
             }
@@ -311,8 +307,8 @@ namespace EMotionFX
             }
         }
 
-        uniqueData->mIndexA = poseIndexA;
-        uniqueData->mIndexB = poseIndexB;
+        uniqueData->m_indexA = poseIndexA;
+        uniqueData->m_indexB = poseIndexB;
     }
 
     // perform the calculations / actions
@@ -324,7 +320,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // if there are no connections, there is nothing to do
-        if (mDisabled || !HasRequiredInputs())
+        if (m_disabled || !HasRequiredInputs())
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -335,13 +331,13 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
 
         // output the input weight node
-        BlendTreeConnection* connection = mInputPorts[INPUTPORT_WEIGHT].mConnection;
+        BlendTreeConnection* connection = m_inputPorts[INPUTPORT_WEIGHT].m_connection;
         if (connection)
         {
             OutputIncomingNode(animGraphInstance, connection->GetSourceNode());
@@ -365,7 +361,7 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
@@ -381,7 +377,7 @@ namespace EMotionFX
             *outputPose = *poseA;
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
@@ -398,7 +394,7 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
@@ -412,31 +408,31 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
     bool BlendTreeBlendNNode::HasRequiredInputs() const
     {
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return false;
         }
 
         // If we have only one input connection and it is our weight input, that means we have no input poses.
-        return !(mConnections.size() == 1 && mInputPorts[INPUTPORT_WEIGHT].mConnection);
+        return !(m_connections.size() == 1 && m_inputPorts[INPUTPORT_WEIGHT].m_connection);
     }
 
     void BlendTreeBlendNNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (mDisabled || !HasRequiredInputs())
+        if (m_disabled || !HasRequiredInputs())
         {
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
             uniqueData->Clear();
             return;
         }
 
-        const BlendTreeConnection* weightConnection = mInputPorts[INPUTPORT_WEIGHT].mConnection;
+        const BlendTreeConnection* weightConnection = m_inputPorts[INPUTPORT_WEIGHT].m_connection;
         if (weightConnection)
         {
             UpdateIncomingNode(animGraphInstance, weightConnection->GetSourceNode(), timePassedInSeconds);
@@ -479,14 +475,14 @@ namespace EMotionFX
     void BlendTreeBlendNNode::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if the node is disabled
-        if (mDisabled || !HasRequiredInputs())
+        if (m_disabled || !HasRequiredInputs())
         {
             return;
         }
 
         // top down update the weight input
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).mConnection;
+        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).m_connection;
         if (con)
         {
             con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance)->SetGlobalWeight(uniqueData->GetGlobalWeight());
@@ -569,7 +565,7 @@ namespace EMotionFX
     void BlendTreeBlendNNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if we don't have enough inputs or are disabled, we don't need to update anything
-        if (mDisabled || !HasRequiredInputs())
+        if (m_disabled || !HasRequiredInputs())
         {
             // request the reference counted data inside the unique data
             RequestRefDatas(animGraphInstance);
@@ -581,7 +577,7 @@ namespace EMotionFX
         }
 
         // get the input weight
-        BlendTreeConnection* connection = mInputPorts[INPUTPORT_WEIGHT].mConnection;
+        BlendTreeConnection* connection = m_inputPorts[INPUTPORT_WEIGHT].m_connection;
         if (connection)
         {
             connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
@@ -736,21 +732,21 @@ namespace EMotionFX
         float* lastNonDefaultValue = nullptr;
         for (const AnimGraphNode::Port& port : inputPorts)
         {
-            if (port.mConnection && port.mPortID != PORTID_INPUT_WEIGHT)
+            if (port.m_connection && port.m_portId != PORTID_INPUT_WEIGHT)
             {
                 const float defaultRangeValue = m_paramWeights.empty() ? 0.0f : m_paramWeights.back().GetWeightRange();
-                auto portToWeightRangeIterator = portToWeightRangeTable.find(port.mPortID);
+                auto portToWeightRangeIterator = portToWeightRangeTable.find(port.m_portId);
 
                 if (portToWeightRangeIterator == portToWeightRangeTable.end())
                 {
                     // New connection just plugged
-                    m_paramWeights.emplace_back(port.mPortID, defaultRangeValue);
+                    m_paramWeights.emplace_back(port.m_portId, defaultRangeValue);
                     defaultElementsCount++;
                 }
                 else
                 {
                     // Existing connection, using existing weight range
-                    m_paramWeights.emplace_back(port.mPortID, portToWeightRangeIterator->second);
+                    m_paramWeights.emplace_back(port.m_portId, portToWeightRangeIterator->second);
 
                     // We want to fill the previous default values with uniformly distributed
                     // Weight ranges, if possible:

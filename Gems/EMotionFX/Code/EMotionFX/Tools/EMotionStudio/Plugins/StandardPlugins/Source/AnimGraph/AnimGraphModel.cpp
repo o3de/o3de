@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
@@ -156,8 +152,8 @@ namespace EMStudio
 
         // Since the UI could be loaded after anim graphs are added to the manager, we need to pull all the current ones
         // and add them to the model
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
             if (!animGraph->GetIsOwnedByRuntime() && !animGraph->GetIsOwnedByAsset())
@@ -566,9 +562,9 @@ namespace EMStudio
 
         ModelItemData modelItemData(graphInstance, animGraphObject);
         AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-        for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+        if (itModelItemData.first != itModelItemData.second)
         {
-            ModelItemData* modelItemData2 = *it;
+            ModelItemData* modelItemData2 = *itModelItemData.first;
             return createIndex(modelItemData2->m_row, 0, modelItemData2);
         }
         return QModelIndex();
@@ -594,9 +590,9 @@ namespace EMStudio
                 // Find the model index
                 ModelItemData modelItemData(animGraphInstance, animGraphObject);
                 AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-                for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+                if (itModelItemData.first != itModelItemData.second)
                 {
-                    ModelItemData* modelItemData2 = *it;
+                    ModelItemData* modelItemData2 = *itModelItemData.first;
                     return createIndex(modelItemData2->m_row, 0, modelItemData2);
                 }
             }
@@ -607,9 +603,9 @@ namespace EMStudio
             // Find the model index
             ModelItemData modelItemData(nullptr, animGraphObject);
             AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-            for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+            if (itModelItemData.first != itModelItemData.second)
             {
-                ModelItemData* modelItemData2 = *it;
+                ModelItemData* modelItemData2 = *itModelItemData.first;
                 return createIndex(modelItemData2->m_row, 0, modelItemData2);
             }
         }
@@ -910,7 +906,7 @@ namespace EMStudio
                 EMotionFX::AnimGraphInstance* animGraphInstance = modelItemData->m_animGraphInstance;
                 EMotionFX::AnimGraphStateMachine* rootStateMachine = referencedAnimGraph->GetRootStateMachine();
 
-                const uint32 rowCount = rootStateMachine->GetNumConnections() + rootStateMachine->GetNumChildNodes() + static_cast<uint32>(rootStateMachine->GetNumTransitions());
+                const int rowCount = aznumeric_caster(rootStateMachine->GetNumConnections() + rootStateMachine->GetNumChildNodes() + rootStateMachine->GetNumTransitions());
                 if (rowCount > 0)
                 {
                     const QModelIndex referenceNodeModelIndex = createIndex(modelItemData->m_row, 0, modelItemData);
@@ -981,15 +977,15 @@ namespace EMStudio
         }
 
         int childRow = 0;
-        const uint32 connectionCount = node->GetNumConnections();
-        for (uint32 i = 0; i < connectionCount; ++i)
+        const int connectionCount = aznumeric_caster(node->GetNumConnections());
+        for (int i = 0; i < connectionCount; ++i)
         {
             m_modelItemDataSet.emplace(new ModelItemData(node->GetConnection(i), animGraphInstance, currentModelItemData, childRow + i));
         }
         childRow += connectionCount;
 
-        const uint32 childNodeCount = node->GetNumChildNodes();
-        for (uint32 i = 0; i < childNodeCount; ++i)
+        const int childNodeCount = aznumeric_caster(node->GetNumChildNodes());
+        for (int i = 0; i < childNodeCount; ++i)
         {
             RecursivelyAddNode(animGraphInstance, node->GetChildNode(i), currentModelItemData, childRow + i);
         }
@@ -999,12 +995,12 @@ namespace EMStudio
         if (nodeTypeId == azrtti_typeid<EMotionFX::AnimGraphStateMachine>())
         {
             EMotionFX::AnimGraphStateMachine* stateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(node);
-            const size_t childTransitionCount = stateMachine->GetNumTransitions();
-            for (size_t i = 0; i < childTransitionCount; ++i)
+            const int childTransitionCount = aznumeric_caster(stateMachine->GetNumTransitions());
+            for (int i = 0; i < childTransitionCount; ++i)
             {
-                AddTransition(animGraphInstance, stateMachine->GetTransition(i), currentModelItemData, childRow + static_cast<int>(i));
+                AddTransition(animGraphInstance, stateMachine->GetTransition(i), currentModelItemData, childRow + i);
             }
-            childRow += static_cast<int>(childTransitionCount);
+            childRow += childTransitionCount;
         }
         else if (nodeTypeId == azrtti_typeid<EMotionFX::AnimGraphReferenceNode>())
         {
@@ -1027,26 +1023,26 @@ namespace EMStudio
             EMotionFX::AnimGraphStateMachine* rootStateMachine = referencedAnimGraph->GetRootStateMachine();
             EMotionFX::AnimGraphInstance* referencedAnimGraphInstance = referenceNode->GetReferencedAnimGraphInstance(animGraphInstance);
 
-            const uint32 rootConnectionCount = rootStateMachine->GetNumConnections();
-            for (uint32 i = 0; i < rootConnectionCount; ++i)
+            const int rootConnectionCount = aznumeric_caster(rootStateMachine->GetNumConnections());
+            for (int i = 0; i < rootConnectionCount; ++i)
             {
                 m_modelItemDataSet.emplace(new ModelItemData(rootStateMachine->GetConnection(i), referencedAnimGraphInstance, referenceNodeModelItemData, row + i));
             }
             row += rootConnectionCount;
 
-            const uint32 rootChildNodeCount = rootStateMachine->GetNumChildNodes();
-            for (uint32 i = 0; i < rootChildNodeCount; ++i)
+            const int rootChildNodeCount = aznumeric_caster(rootStateMachine->GetNumChildNodes());
+            for (int i = 0; i < rootChildNodeCount; ++i)
             {
                 RecursivelyAddNode(referencedAnimGraphInstance, rootStateMachine->GetChildNode(i), referenceNodeModelItemData, row + i);
             }
             row += rootChildNodeCount;
 
-            const size_t rootChildTransitionCount = rootStateMachine->GetNumTransitions();
-            for (size_t i = 0; i < rootChildTransitionCount; ++i)
+            const int rootChildTransitionCount = aznumeric_caster(rootStateMachine->GetNumTransitions());
+            for (int i = 0; i < rootChildTransitionCount; ++i)
             {
-                AddTransition(referencedAnimGraphInstance, rootStateMachine->GetTransition(i), referenceNodeModelItemData, row + static_cast<int>(i));
+                AddTransition(referencedAnimGraphInstance, rootStateMachine->GetTransition(i), referenceNodeModelItemData, row + i);
             }
-            row += static_cast<int>(rootChildTransitionCount);
+            row += rootChildTransitionCount;
 
             // Now we add the "alias" item
             ModelItemData* rootStateMachineItem = new ModelItemData(rootStateMachine, referencedAnimGraphInstance, nullptr, referenceNodeModelItemData->m_row);
@@ -1428,8 +1424,8 @@ namespace EMStudio
     {
         AZStd::vector<EMotionFX::AnimGraphNode*> motionNodes;
 
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 

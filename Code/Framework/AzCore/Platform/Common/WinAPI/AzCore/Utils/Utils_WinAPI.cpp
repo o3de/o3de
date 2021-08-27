@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <stdlib.h>
 
@@ -33,7 +30,8 @@ namespace AZ
             result.m_pathIncludesFilename = true;
             // Platform specific get exe path: http://stackoverflow.com/a/1024937
             // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
-            const DWORD pathLen = GetModuleFileNameA(nullptr, exeStorageBuffer, static_cast<DWORD>(exeStorageSize));
+            wchar_t pathBufferW[AZ::IO::MaxPathLength] = { 0 };
+            const DWORD pathLen = GetModuleFileNameW(nullptr, pathBufferW, static_cast<DWORD>(AZStd::size(pathBufferW)));
             const DWORD errorCode = GetLastError();
             if (pathLen == exeStorageSize && errorCode == ERROR_INSUFFICIENT_BUFFER)
             {
@@ -42,6 +40,18 @@ namespace AZ
             else if (pathLen == 0 && errorCode != ERROR_SUCCESS)
             {
                 result.m_pathStored = ExecutablePathResult::GeneralError;
+            }
+            else
+            {
+                size_t utf8PathSize = AZStd::to_string_length({ pathBufferW, pathLen });
+                if (utf8PathSize >= exeStorageSize)
+                {
+                    result.m_pathStored = ExecutablePathResult::BufferSizeNotLargeEnough;
+                }
+                else
+                {
+                    AZStd::to_string(exeStorageBuffer, exeStorageSize, pathBufferW);
+                }
             }
 
             return result;

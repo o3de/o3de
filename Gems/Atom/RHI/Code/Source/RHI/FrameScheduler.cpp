@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameScheduler.h>
@@ -141,7 +137,7 @@ namespace AZ
 
         ResultCode FrameScheduler::ImportScopeProducer(ScopeProducer& scopeProducer)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             if (!ValidateIsProcessing())
             {
@@ -181,7 +177,10 @@ namespace AZ
 
             m_compileRequest = compileRequest;
 
-            FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompile");
+                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            }
 
             FrameGraphCompileRequest frameGraphCompileRequest;
             frameGraphCompileRequest.m_frameGraph = m_frameGraph.get();
@@ -193,7 +192,10 @@ namespace AZ
             const MessageOutcome outcome = m_frameGraphCompiler->Compile(frameGraphCompileRequest);
             if (outcome.IsSuccess())
             {
-                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompileEnd");
+                    FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                }
 
                 FrameGraphLogger::Log(*m_frameGraph, compileRequest.m_logVerbosity);
 
@@ -214,7 +216,7 @@ namespace AZ
 
         void FrameScheduler::PrepareProducers()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: PrepareProducers");
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
@@ -235,7 +237,7 @@ namespace AZ
 
         void FrameScheduler::CompileProducers()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: CompileProducers");
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
@@ -247,12 +249,12 @@ namespace AZ
 
         void FrameScheduler::CompileShaderResourceGroups()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: CompileShaderResourceGroups");
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Invalidate Resources");
+                AZ_PROFILE_SCOPE(AzRender, "Invalidate Resources");
                 ResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
@@ -320,7 +322,7 @@ namespace AZ
 
         void FrameScheduler::BuildRayTracingShaderTables()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: BuildRayTracingShaderTables");
 
             for (auto rayTracingShaderTable : m_rayTracingShaderTablesToBuild)
@@ -339,7 +341,7 @@ namespace AZ
 
         ResultCode FrameScheduler::BeginFrame()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: BeginFrame");
 
             if (!ValidateIsInitialized())
@@ -374,7 +376,7 @@ namespace AZ
 
         ResultCode FrameScheduler::EndFrame()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: EndFrame");
 
             if (Validation::IsEnabled())
@@ -400,7 +402,11 @@ namespace AZ
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
-            FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: EndFrame: OnFrameEnd");
+                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+            }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
             m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
@@ -411,13 +417,13 @@ namespace AZ
 
         void FrameScheduler::ExecuteContextInternal(FrameGraphExecuteGroup& group, uint32_t index)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             FrameGraphExecuteContext* executeContext = group.BeginContext(index);
 
             {
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
-                AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzRender, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+                AZ_PROFILE_SCOPE(AzRender, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
                 scopeProducer->BuildCommandList(*executeContext);
             }
 
@@ -426,7 +432,7 @@ namespace AZ
 
         void FrameScheduler::ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: ExecuteGroupInternal");
 
             FrameGraphExecuteGroup* executeGroup = m_frameGraphExecuter->BeginGroup(groupIndex);
@@ -469,7 +475,7 @@ namespace AZ
 
         void FrameScheduler::Execute(JobPolicy overrideJobPolicy)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: Execute");
 
             const uint32_t groupCount = m_frameGraphExecuter->GetGroupCount();

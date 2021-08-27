@@ -1,12 +1,8 @@
 """
- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
- For complete copyright and license terms please see the LICENSE at the root of this
- distribution (the "License"). All use of this software is governed by the License,
- or, if provided, by the license below or the license accompanying this file. Do not
- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
  """
 
@@ -20,6 +16,7 @@ from ly_test_tools import LAUNCHERS
 
 sys.path.append (os.path.dirname (os.path.abspath (__file__)) + '/../automatedtesting_shared')
 
+import ly_test_tools.environment.file_system as file_system
 from base import TestAutomationBase
 
 @pytest.mark.SUITE_main
@@ -33,3 +30,8 @@ class TestAutomation(TestAutomationBase):
     def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform):       
+        from . import PrefabLevel_BasicWorkflow as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+

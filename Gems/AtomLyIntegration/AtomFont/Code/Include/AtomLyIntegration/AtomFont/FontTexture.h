@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -43,7 +39,7 @@ namespace AZ
         void Reset()
         {
             m_slotUsage = 0;
-            m_currentCharacter = ~0;
+            m_currentCharacter = std::numeric_limits<uint32_t>::max();
             m_horizontalAdvance = 0;
             m_characterWidth = 0;
             m_characterHeight = 0;
@@ -78,7 +74,7 @@ namespace AZ
         FontTexture();
         ~FontTexture();
 
-        int CreateFromFile(const string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCharCount = 16, int heightCharCount = 16);
+        int CreateFromFile(const AZStd::string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCharCount = 16, int heightCharCount = 16);
 
         //! Default texture slot width/height is 16x8 slots, allowing for 128 glyphs to be stored in the font texture. This was
         //! previously 16x16, allowing 256 glyphs to be stored. For reference, there are 95 printable ASCII characters, so by
@@ -133,7 +129,7 @@ namespace AZ
         // useful for special feature rendering interleaved with fonts (e.g. box behind the text)
         void CreateGradientSlot();
 
-        int WriteToFile(const string& fileName);
+        int WriteToFile(const AZStd::string& fileName);
 
         void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 

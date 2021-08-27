@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
@@ -115,7 +110,7 @@ namespace AZ
         {
             QueueCommand([this, &fence](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "SignalFence");
+                AZ_PROFILE_SCOPE(AzRender, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 dx12CommandQueue->Signal(fence.Get(), fence.GetPendingValue());
             });
@@ -143,7 +138,7 @@ namespace AZ
 
             QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
+                AZ_PROFILE_SCOPE(AzRender, "ExecuteWork");
                 AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
@@ -200,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -234,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

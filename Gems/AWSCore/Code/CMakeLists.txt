@@ -1,21 +1,20 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(pal_editor_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Private/Editor/Platform/${PAL_PLATFORM_NAME})
+ly_get_list_relative_pal_filename(pal_cafile_include_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Framework/Platform/${PAL_PLATFORM_NAME})
 
 ly_add_target(
     NAME AWSCore.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awscore_files.cmake
+         ${pal_cafile_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include/Public
@@ -74,7 +73,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME AWSCore.Editor MODULE
+        NAME AWSCore.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_shared_files.cmake
@@ -89,6 +88,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AWSCore
     )
 
+    # This target is not a real gem module
+    # It is not meant to be loaded by the ModuleManager in C++
     ly_add_target(
         NAME AWSCore.ResourceMappingTool MODULE
         NAMESPACE Gem
@@ -142,6 +143,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             FILES_CMAKE
                 awscore_editor_tests_files.cmake
                 ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+                Tests/Editor/Platform/${PAL_PLATFORM_NAME}/awscore_editor_tests_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Include/Private
@@ -164,3 +166,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
     endif()
 endif()
+
+install(DIRECTORY "Tools/ResourceMappingTool"
+    DESTINATION "Gems/AWSCore/Code/Tools"
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    PATTERN "__pycache__" EXCLUDE
+)

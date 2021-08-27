@@ -1,15 +1,12 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
-set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
+set(LY_UNITY_BUILD ON CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
@@ -261,14 +258,7 @@ function(ly_add_target)
     # IDE organization
     ly_source_groups_from_folders("${ALLFILES}")
     source_group("Generated Files" REGULAR_EXPRESSION "(${CMAKE_BINARY_DIR})") # Any file coming from the output folder
-    file(RELATIVE_PATH project_path ${LY_ROOT_FOLDER} ${CMAKE_CURRENT_SOURCE_DIR})
-    # Visual Studio cannot load a project with a FOLDER that starts with a "../" relative path
-    # Strip away any leading ../ and then add a prefix of ExternalTargets/ as that in this scenario
-    # A relative directory with ../ would be outside of the Lumberyard Engine Root therefore it is external
-    set(ide_path ${project_path})
-    if (${project_path} MATCHES [[^(\.\./)+(.*)]])
-        set(ide_path "${CMAKE_MATCH_2}")
-    endif()
+    ly_get_vs_folder_directory(${CMAKE_CURRENT_SOURCE_DIR} ide_path)
     set_property(TARGET ${project_NAME} PROPERTY FOLDER ${ide_path})
 
 
@@ -289,8 +279,6 @@ function(ly_add_target)
     foreach(prop IN ITEMS AUTOMOC AUTORCC)
         if(${ly_add_target_${prop}})
             set_property(TARGET ${ly_add_target_NAME} PROPERTY ${prop} ON)
-            # Flag this target as depending on Qt
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${ly_add_target_NAME} ON)
         endif()
     endforeach()
     if(${ly_add_target_AUTOUIC})
@@ -332,14 +320,6 @@ function(ly_add_target)
             VERBATIM
         )
 
-        detect_qt_dependency(${ly_add_target_NAME} QT_DEPENDENCY)
-        if(QT_DEPENDENCY)
-            if(NOT COMMAND ly_qt_deploy)
-                message(FATAL_ERROR "Could not find function \"ly_qt_deploy\", this function should be defined in cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Qt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
-            endif()
-
-            ly_qt_deploy(TARGET ${ly_add_target_NAME})
-        endif()
     endif()
 
     if(ly_add_target_AUTOGEN_RULES)
@@ -401,19 +381,21 @@ function(ly_delayed_target_link_libraries)
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
 
             foreach(visibility ${visibilities})
-                foreach(item ${ly_delayed_target_link_libraries_${visibility}})
+                foreach(alias_item ${ly_delayed_target_link_libraries_${visibility}})
 
-                    if(TARGET ${item})
-                        get_target_property(item_type ${item} TYPE)
+                    if(TARGET ${alias_item})
+                        get_target_property(item_type ${alias_item} TYPE)
+                        ly_de_alias_target(${alias_item} item)
                     else()
                         unset(item_type)
+                        set(item ${alias_item})
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
-                        target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
-                        target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
-                        target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
+                        target_include_directories(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>)
+                        target_link_libraries(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>)
+                        target_compile_definitions(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>)
+                        target_compile_options(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>)
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})
@@ -427,60 +409,6 @@ function(ly_delayed_target_link_libraries)
 
     endforeach()
     set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
-endfunction()
-
-#! detect_qt_dependency: Determine if a target will link directly to a Qt library
-#
-# qt deployment introspects a shared library or executable for its direct
-# dependencies on Qt libraries. In CMake, this will be true if a target, or any
-# of its link libraries which are static libraries, recursively, links to Qt.
-function(detect_qt_dependency TARGET_NAME OUTPUT_VARIABLE)
-
-    if(TARGET ${TARGET_NAME})
-        get_target_property(alias ${TARGET_NAME} ALIASED_TARGET)
-        if(alias)
-            set(TARGET_NAME ${alias})
-        endif()
-    endif()
-
-    get_property(cached_is_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME})
-    if(cached_is_qt_dependency)
-        set(${OUTPUT_VARIABLE} ${cached_is_qt_dependency} PARENT_SCOPE)
-        return()
-    endif()
-
-    if(${TARGET_NAME} MATCHES "^3rdParty::Qt::.*")
-        set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-        set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-        return()
-    endif()
-
-    get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${TARGET_NAME})
-    set(exclude_library_types SHARED_LIBRARY MODULE_LIBRARY)
-    foreach(library IN LISTS delayed_link)
-
-        if(TARGET ${library})
-            get_target_property(child_target_type ${library} TYPE)
-
-            # If the dependency to Qt has to go through a shared/module library,
-            # it is not a direct dependency
-            if (child_target_type IN_LIST exclude_library_types)
-                continue()
-            endif()
-        endif()
-
-        detect_qt_dependency(${library} child_depends_on_qt)
-        if(child_depends_on_qt)
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-            set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-            return()
-        endif()
-
-    endforeach()
-
-    set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} OFF)
-    set(${OUTPUT_VARIABLE} OFF PARENT_SCOPE)
 
 endfunction()
 
@@ -706,4 +634,39 @@ function(ly_de_alias_target target_name output_variable_name)
         message(FATAL_ERROR "Empty de_aliased for ${target_name}")
     endif()
     set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
+endfunction()
+
+#! ly_get_vs_folder_directory: Sets the Visual Studio folder name used for organizing vcxproj
+#  in the IDE
+#
+# Visual Studio cannot load projects that with a ".." relative path or contain a colon ":" as part of its FOLDER
+# Therefore if the .vcxproj is absolute, the drive letter must be removed from the folder name
+#
+# What this method does is first check if the target being added to the Visual Studio solution is within
+# the LY_ROOT_FOLDER(i.e is the LY_ROOT_FOLDER a prefix of the target source directory)
+# If it is a relative path to the target is used as the folder name
+# Otherwise the target directory would either 
+# 1. Be a path outside of the LY_ROOT_FOLDER on the same drive.
+#    In that case forming a relative path would cause it to start with ".." which will not work
+# 2. Be an path outside of the LY_ROOT_FOLDER on a different drive
+#    Here a relative path cannot be formed and therefore the path would start with "<drive>:/Path/To/Project"
+#    Which shows up as unloaded due to containing a colon
+# In this scenario the relative part of the path from the drive letter is used as the FOLDER name
+# to make sure the projects show up in the loaded .sln
+function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir)
+    # Get a relative directory to the LY_ROOT_FOLDER if possible for the Visual Studio solution hierarchy
+    # If a relative path cannot be formed, then retrieve a path with the drive letter stripped from it
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_prefix_of_engine_root)
+    if(is_target_prefix_of_engine_root)
+        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
+    else()
+        cmake_path(IS_PREFIX CMAKE_SOURCE_DIR ${absolute_target_source_dir} is_target_prefix_of_source_dir)
+        if(is_target_prefix_of_source_dir)
+            cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        else()
+            cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        endif()
+    endif()
+
+    set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
 endfunction()

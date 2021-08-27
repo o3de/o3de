@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <MetricsQueue.h>
 #include <Framework/JsonWriter.h>
@@ -138,7 +134,7 @@ namespace AWSMetrics
 
     int MetricsQueue::GetNumMetrics() const
     {
-        return m_metrics.size();
+        return static_cast<int>(m_metrics.size());
     }
 
     size_t MetricsQueue::GetSizeInBytes() const
@@ -179,7 +175,7 @@ namespace AWSMetrics
             MetricsEvent& curEvent = m_metrics.front();
 
             curNum += 1;
-            curSizeInBytes += curEvent.GetSizeInBytes();
+            curSizeInBytes += static_cast<int>(curEvent.GetSizeInBytes());
             if (curNum <= maxBatchedRecordsCount && curSizeInBytes <= maxPayloadSizeInBytes)
             {
                 m_sizeSerializedToJson -= curEvent.GetSizeInBytes();
@@ -220,7 +216,7 @@ namespace AWSMetrics
             return false;
         }
 
-        for (int metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
+        for (rapidjson::SizeType metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
         {
             MetricsEvent metrics;
             if (!metrics.ReadFromJson(doc[metricsIndex]))

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -235,7 +231,7 @@ namespace EMotionFX
          * This will NOT grow the motion entries array as reported by GetNumMotionEntries(). However, it internally pre-allocates memory to make the AddMotionEntry() calls faster.
          * @param[in] numMotionEntries The number of motion entries to peallocate
          */
-        void ReserveMotionEntries(uint32 numMotionEntries);
+        void ReserveMotionEntries(size_t numMotionEntries);
 
         /**
          * Remove all motion entries from the motion set.
@@ -253,7 +249,7 @@ namespace EMotionFX
          * @param[in] motion A pointer to the motion.
          * @result A pointer to the motion entry for the given motion. nullptr in case no motion entry has been found.
          */
-        MotionEntry* FindMotionEntry(Motion* motion) const;
+        MotionEntry* FindMotionEntry(const Motion* motion) const;
 
 
         MotionEntry* FindMotionEntryById(const AZStd::string& motionId) const;
@@ -297,14 +293,14 @@ namespace EMotionFX
          * Get the number of child motion sets.
          * @result The number of child sets.
          */
-        uint32 GetNumChildSets() const;
+        size_t GetNumChildSets() const;
 
         /**
          * Get the given child motion set.
          * @param[in] index The index of the child set to get. The index must be in range [0, GetNumChildSets()].
          * @result A pointer to the child set at the given index.
          */
-        MotionSet* GetChildSet(uint32 index) const;
+        MotionSet* GetChildSet(size_t index) const;
 
         /**
          * Gets child motion sets recursively.

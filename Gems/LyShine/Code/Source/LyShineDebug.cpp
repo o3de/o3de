@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShineDebug.h"
 #include "IConsole.h"
 #include "IRenderer.h"
@@ -120,7 +115,7 @@ static int Create2DTexture(int width, int height, byte* data, ETEX_Format format
 static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 {
     AZ::RHI::Size size = image->GetDescriptor().m_size;
-    return AZ::Vector2(size.m_width, size.m_height);
+    return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
 }
 #endif
 
@@ -1000,7 +995,7 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
@@ -1099,7 +1094,7 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);

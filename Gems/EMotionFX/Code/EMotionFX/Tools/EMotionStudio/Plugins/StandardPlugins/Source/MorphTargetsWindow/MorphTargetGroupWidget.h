@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -43,16 +39,16 @@ namespace EMStudio
 
         struct MorphTarget
         {
-            EMotionFX::MorphTarget*                     mMorphTarget;
-            EMotionFX::MorphSetupInstance::MorphTarget* mMorphTargetInstance;
-            QCheckBox*                                  mManualMode;
-            AzQtComponents::SliderDoubleCombo*          mSliderWeight = nullptr;
-            float                                       mOldWeight;
+            EMotionFX::MorphTarget*                     m_morphTarget;
+            EMotionFX::MorphSetupInstance::MorphTarget* m_morphTargetInstance;
+            QCheckBox*                                  m_manualMode;
+            AzQtComponents::SliderDoubleCombo*          m_sliderWeight = nullptr;
+            float                                       m_oldWeight;
         };
 
         void UpdateInterface();
         void UpdateMorphTarget(const char* name);
-        const MorphTarget* GetMorphTarget(size_t index){ return &mMorphTargets[index]; }
+        const MorphTarget* GetMorphTarget(size_t index){ return &m_morphTargets[index]; }
 
     public slots:
         void SetManualModeForAll(int value);
@@ -63,10 +59,10 @@ namespace EMStudio
         void ResetAll();
 
     private:
-        AZStd::string               mName;
-        EMotionFX::ActorInstance*   mActorInstance;
-        QCheckBox*                  mSelectAll;
-        AZStd::vector<MorphTarget>  mMorphTargets;
-        MorphTargetEditWindow*      mEditWindow;
+        AZStd::string               m_name;
+        EMotionFX::ActorInstance*   m_actorInstance;
+        QCheckBox*                  m_selectAll;
+        AZStd::vector<MorphTarget>  m_morphTargets;
+        MorphTargetEditWindow*      m_editWindow;
     };
 } // namespace EMStudio

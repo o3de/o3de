@@ -1,19 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/Name/Name.h>
+
+#if defined(USE_RENDERDOC)
+#include <renderdoc_app.h>
+#endif
 
 namespace AZ
 {
@@ -70,7 +70,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(Factory, "{2C0231FD-DD11-4154-A4F5-177181E26D8E}");
 
-            Factory() = default;
+            Factory();
             virtual ~Factory() = default;
 
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
@@ -96,6 +96,15 @@ namespace AZ
 
             /// Access the global factory instance.
             static Factory& Get();
+
+#if defined(USE_RENDERDOC)
+            /// Access the RenderDoc API pointer if available.
+            /// The availability of the render doc API at runtime depends on the following:
+            /// - You must not be building a packaged game/product (LY_MONOLITHIC_GAME not enabled in CMake)
+            /// - A valid renderdoc installation was found, either by auto-discovery, or by supplying ATOM_RENDERDOC_PATH as an environment variable
+            /// - The module loaded successfully at runtime, and the API function pointer was retrieved successfully
+            static RENDERDOC_API_1_1_2* GetRenderDocAPI();
+#endif
 
             /// Returns the name of the Factory.
             virtual Name GetName() = 0;

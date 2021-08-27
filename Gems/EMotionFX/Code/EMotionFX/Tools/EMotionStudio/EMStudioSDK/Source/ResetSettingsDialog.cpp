@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ResetSettingsDialog.h"
 
@@ -33,8 +29,8 @@ namespace EMStudio
     template<class ManagerType, typename GetNumFunc, typename GetEntityFunc>
     bool HasEntityInEditor(const ManagerType& manager, const GetNumFunc& getNumEntitiesFunc, const GetEntityFunc& getEntityFunc)
     {
-        const uint32 numEntities = (manager.*getNumEntitiesFunc)();
-        for (uint32 i = 0; i < numEntities; ++i)
+        const size_t numEntities = (manager.*getNumEntitiesFunc)();
+        for (size_t i = 0; i < numEntities; ++i)
         {
             const auto& entity = (manager.*getEntityFunc)(i);
             if (!entity->GetIsOwnedByRuntime())

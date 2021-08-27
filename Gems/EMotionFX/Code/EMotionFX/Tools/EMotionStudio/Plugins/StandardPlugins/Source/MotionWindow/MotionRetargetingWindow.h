@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __EMSTUDIO_MOTIONRETARGETINGWINDOW_H
 #define __EMSTUDIO_MOTIONRETARGETINGWINDOW_H
@@ -51,12 +47,11 @@ namespace EMStudio
         void UpdateMotions();
 
     private:
-        MotionWindowPlugin*                 mMotionWindowPlugin;
-        QCheckBox*                          mMotionRetargetingButton;
-        //QCheckBox*                          mRenderMotionBindPose;
-        EMotionFX::ActorInstance*           mSelectedActorInstance;
-        EMotionFX::Actor*                   mActor;
-        CommandSystem::SelectionList        mSelectionList;
+        MotionWindowPlugin*                 m_motionWindowPlugin;
+        QCheckBox*                          m_motionRetargetingButton;
+        EMotionFX::ActorInstance*           m_selectedActorInstance;
+        EMotionFX::Actor*                   m_actor;
+        CommandSystem::SelectionList        m_selectionList;
     };
 } // namespace EMStudio
 

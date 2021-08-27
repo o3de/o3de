@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,6 +23,18 @@ namespace AzNetworking
 
     //! @class ISerializer
     //! @brief Interface class for all serializers to derive from.
+    //!
+    //! ISerializer defines an abstract interface for visiting an object hierarchy and performing operations upon that hierarchy,
+    //! typically reading from or writing data to the object hierarchy for reasons of persistence or network transmission.
+    //! 
+    //! While the most common types of serializers are provided by the AzNetworking framework, users can implement custom
+    //! serializers and perform complex operations on any serializable structures. A few types native to AzNetworking, many of which
+    //! relate to packets, demonstrate this.
+    //! 
+    //! Provided serializers include NetworkInputSerializer for writing an object model into a bytestream, NetworkOutputSerializer
+    //! for writing to an object model, TrackChangesSerializer which is used to efficiently serialize objects without incurring significant
+    //! copy or comparison overhead, and HashSerializer which can be used to generate a hash of all visited data which is important for
+    //! automated desync detection. 
     class ISerializer
     {
     public:

@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include <PhysX_precompiled.h>
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -18,6 +12,7 @@
 #include <System/PhysXSystem.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXCpuDispatcher.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -135,7 +130,7 @@ namespace PhysX
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {
@@ -198,7 +193,7 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
-        m_postSimulateEvent.Signal();
+        m_postSimulateEvent.Signal(tickTime);
     }
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)
@@ -224,7 +219,7 @@ namespace PhysX
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
@@ -256,7 +251,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -317,7 +312,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(index);
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
                 }
             }
         }

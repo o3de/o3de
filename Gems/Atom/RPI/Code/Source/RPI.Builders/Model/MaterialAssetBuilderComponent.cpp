@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution(the "License").All use of this software is governed by the License,
- *or, if provided, by the license below or the license accompanying this file.Do not
- * remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
- *WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -32,8 +28,10 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -73,17 +71,42 @@ namespace AZ
 
         void MaterialAssetDependenciesComponent::ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier)
         {
-            AssetBuilderSDK::SourceFileDependency materialTypeSource;
-            // Right now, FBX importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
-            RPI::MaterialConverterBus::BroadcastResult(materialTypeSource.m_sourceFileDependencyPath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
+            bool conversionEnabled = false;
+            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
+            
+            // Right now, scene file importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
+            AZStd::string materialTypePath;
+            RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            AssetBuilderSDK::JobDependency jobDependency;
-            jobDependency.m_jobKey = "Atom Material Builder";
-            jobDependency.m_sourceFile = materialTypeSource;
-            jobDependency.m_platformIdentifier = platformIdentifier;
-            jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+            if (conversionEnabled && !materialTypePath.empty())
+            {
+                AssetBuilderSDK::SourceFileDependency materialTypeSource;
+                materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
 
-            jobDependencyList.push_back(jobDependency);
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_jobKey = "Atom Material Builder";
+                jobDependency.m_sourceFile = materialTypeSource;
+                jobDependency.m_platformIdentifier = platformIdentifier;
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+
+                jobDependencyList.push_back(jobDependency);
+            }
+        }
+        
+        void MaterialAssetDependenciesComponent::AddFingerprintInfo(AZStd::set<AZStd::string>& fingerprintInfo)
+        {
+            // This will cause scene files to be reprocessed whenever the global MaterialConverter settings change.
+
+            bool conversionEnabled = false;
+            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
+            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
+
+            if (!conversionEnabled)
+            {
+                AZStd::string defaultMaterialPath;
+                RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
+                fingerprintInfo.insert(AZStd::string::format("[MaterialConverter defaultMaterial=%s]", defaultMaterialPath.c_str()));
+            }
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -91,7 +114,31 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(14);  // [ATOM-13410]
+                    ->Version(16);  // Optional material conversion 
+            }
+        }
+        
+        Data::Asset<MaterialAsset> MaterialAssetBuilderComponent::GetDefaultMaterialAsset() const
+        {
+            AZStd::string defaultMaterialPath;
+            RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
+
+            if (defaultMaterialPath.empty())
+            {
+                return {};
+            }
+            else
+            {
+                auto defaultMaterialAssetId = RPI::AssetUtils::MakeAssetId(defaultMaterialPath, 0);
+                if (!defaultMaterialAssetId.IsSuccess())
+                {
+                    AZ_Error("MaterialAssetBuilderComponent", false, "Could not find asset '%s'", defaultMaterialPath.c_str());
+                    return {};
+                }
+                else
+                {
+                    return Data::AssetManager::Instance().CreateAsset<RPI::MaterialAsset>(defaultMaterialAssetId.GetValue(), Data::AssetLoadBehaviorNamespace::PreLoad);
+                }
             }
         }
 
@@ -99,7 +146,7 @@ namespace AZ
         {
             // [GFX TODO] I am suggesting we use the first two 16bits for different kind of assets generated from a Scene
             // For example, 0x10000 for mesh, 0x20000 for material, 0x30000 for animation, 0x40000 for scene graph and etc. 
-            // so the subid can be evaluated for reference across different assets generate within this fbx. 
+            // so the subid can be evaluated for reference across different assets generate within this scene file. 
             /*const uint32_t materialPrefix = 0x20000;
             AZ_Assert(materialPrefix > materialId, "materialId should be smaller than materialPrefix");
             return materialPrefix + materialId;*/
@@ -108,10 +155,19 @@ namespace AZ
 
         MaterialAssetBuilderComponent::MaterialAssetBuilderComponent()
         {
+            // This setting disables material output (for automated testing purposes) to allow an FBX file to be processed without including
+            // the dozens of dependencies required to process a material.  
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            bool skipAtomOutput = false;
+            if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+            {
+                return;
+            }
+
             BindToCall(&MaterialAssetBuilderComponent::BuildMaterials);
         }
-
-        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::BuildMaterials(MaterialAssetBuilderContext& context) const
+        
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::ConvertMaterials(MaterialAssetBuilderContext& context) const
         {
             const auto& scene = context.m_scene;
             const Uuid sourceSceneUuid = scene.GetSourceGuid();
@@ -153,7 +209,7 @@ namespace AZ
                     // The source data for generating material asset
                     MaterialSourceData sourceData;
 
-                    // User hook to create their materials based on the data from Fbx pipeline
+                    // User hook to create their materials based on the data from the scene pipeline
                     bool result = false;
                     RPI::MaterialConverterBus::BroadcastResult(result, &RPI::MaterialConverterBus::Events::ConvertMaterial, *materialData, sourceData);
                     if (result)
@@ -183,6 +239,64 @@ namespace AZ
             }
 
             return SceneAPI::Events::ProcessingResult::Success;
+        }
+
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::AssignDefaultMaterials(MaterialAssetBuilderContext& context) const
+        {
+            Data::Asset<MaterialAsset> defaultMaterialAsset = GetDefaultMaterialAsset();
+
+            if (!defaultMaterialAsset.GetId().IsValid())
+            {
+                AZ_Warning("MaterialAssetBuilderComponent", false, "Material conversion is disabled but no default material was provided. The model will likely be invisible by default.");
+                // Return success because it's just a warning.
+                return SceneAPI::Events::ProcessingResult::Success;
+            }
+
+            const auto& scene = context.m_scene;
+            const Uuid sourceSceneUuid = scene.GetSourceGuid();
+            const auto& sceneGraph = scene.GetGraph();
+
+            auto names = sceneGraph.GetNameStorage();
+            auto content = sceneGraph.GetContentStorage();
+            auto pairView = SceneAPI::Containers::Views::MakePairView(names, content);
+
+            auto view = SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<
+                SceneAPI::Containers::Views::BreadthFirst>(
+                    sceneGraph, sceneGraph.GetRoot(), pairView.cbegin(), true);
+
+            for (const auto& viewIt : view)
+            {
+                if (viewIt.second == nullptr)
+                {
+                    continue;
+                }
+
+                if (azrtti_istypeof<SceneAPI::DataTypes::IMaterialData>(viewIt.second.get()))
+                {
+                    auto materialData = AZStd::static_pointer_cast<const SceneAPI::DataTypes::IMaterialData>(viewIt.second);
+                    uint64_t materialUid = materialData->GetUniqueId();
+
+                    context.m_outputMaterialsByUid[materialUid] = { defaultMaterialAsset, materialData->GetMaterialName() };
+                }
+            }
+
+            return SceneAPI::Events::ProcessingResult::Success;
+        }
+
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::BuildMaterials(MaterialAssetBuilderContext& context) const
+        {
+            bool conversionEnabled = false;
+            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
+
+            if (conversionEnabled)
+            {
+                return ConvertMaterials(context);
+            }
+            else
+            {
+                return AssignDefaultMaterials(context);
+            }
+
         }
     } // namespace RPI
 } // namespace AZ

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Window/SettingsDialog/SettingsWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
@@ -19,7 +15,9 @@ namespace MaterialEditor
         : AtomToolsFramework::InspectorWidget(parent)
     {
         m_documentSettings =
-            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
+            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ_CRC_CE("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
+        m_documentSystemSettings = AZ::UserSettings::CreateFind<AtomToolsFramework::AtomToolsDocumentSystemSettings>(
+            AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
     }
 
     SettingsWidget::~SettingsWidget()
@@ -30,21 +28,35 @@ namespace MaterialEditor
     void SettingsWidget::Populate()
     {
         AddGroupsBegin();
-        AddDocumentGroup();
+        AddDocumentSystemSettingsGroup();
+        AddDocumentSettingsGroup();
         AddGroupsEnd();
     }
 
-    void SettingsWidget::AddDocumentGroup()
+    void SettingsWidget::AddDocumentSettingsGroup()
     {
         const AZStd::string groupNameId = "documentSettings";
         const AZStd::string groupDisplayName = "Document Settings";
         const AZStd::string groupDescription = "Document Settings";
 
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentGroup"));
+        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSettingsGroup"));
         AddGroup(
             groupNameId, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_documentSettings.get(), nullptr, m_documentSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
+    }
+
+    void SettingsWidget::AddDocumentSystemSettingsGroup()
+    {
+        const AZStd::string groupNameId = "documentSystemSettings";
+        const AZStd::string groupDisplayName = "Document System Settings";
+        const AZStd::string groupDescription = "Document System Settings";
+
+        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));
+        AddGroup(
+            groupNameId, groupDisplayName, groupDescription,
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
     }
 
     void SettingsWidget::Reset()

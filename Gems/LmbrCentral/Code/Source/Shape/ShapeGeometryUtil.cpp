@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "LmbrCentral_precompiled.h"
 #include "ShapeGeometryUtil.h"
 
 #include <AzCore/Math/IntersectPoint.h>
@@ -36,22 +31,20 @@ namespace LmbrCentral
         return vertices + 1;
     }
 
-    void DrawShape(
-        AzFramework::DebugDisplayRequests& debugDisplay,
-        const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
+    void DrawShape(AzFramework::DebugDisplayRequests& debugDisplay, const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
     {
         if (shapeDrawParams.m_filled)
         {
-            debugDisplay.DrawTrianglesIndexed(
-                shapeMesh.m_vertexBuffer,
-                shapeMesh.m_indexBuffer,
-                shapeDrawParams.m_shapeColor
-            );
+            if (!shapeMesh.m_vertexBuffer.empty() && !shapeMesh.m_indexBuffer.empty())
+            {
+                debugDisplay.DrawTrianglesIndexed(shapeMesh.m_vertexBuffer, shapeMesh.m_indexBuffer, shapeDrawParams.m_shapeColor);
+            }
         }
 
-        debugDisplay.DrawLines(
-            shapeMesh.m_lineBuffer,
-            shapeDrawParams.m_wireColor);
+        if (!shapeMesh.m_lineBuffer.empty())
+        {
+            debugDisplay.DrawLines(shapeMesh.m_lineBuffer, shapeDrawParams.m_wireColor);
+        }
     }
 
     /// Determine if a list of vertices constitute a simple polygon
@@ -360,10 +353,10 @@ namespace LmbrCentral
             const AZ::u32 sides, const AZ::u32 segments, const AZ::u32 capSegments,
             AZ::u32* indices)
         {
-            const auto capSegmentTipVerts = capSegments > 0 ? 1 : 0;
-            const auto totalSegments = segments + capSegments * 2;
-            const auto numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
-            const auto hasEnds = capSegments > 0;
+            const AZ::u32 capSegmentTipVerts = capSegments > 0 ? 1 : 0;
+            const AZ::u32 totalSegments = segments + capSegments * 2;
+            const AZ::u32 numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
+            const AZ::u32 hasEnds = capSegments > 0;
 
             // Start Faces (start point of tube)
             // Each starting face shares the same vertex at the beginning of the vertex buffer
@@ -372,8 +365,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = i + 1;
                     AZ::u32 b = a + 1;
@@ -390,9 +382,9 @@ namespace LmbrCentral
             // Middle Faces
             // 2 triangles per face.
             // 1 face per side.
-            for (auto i = 0; i < totalSegments; ++i)
+            for (AZ::u32 i = 0; i < totalSegments; ++i)
             {
-                for (auto j = 0; j < sides; ++j)
+                for (AZ::u32 j = 0; j < sides; ++j)
                 {
                     // 4 corners for each face
                     // a ------ d
@@ -423,7 +415,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = totalSegments * sides + i + 1;
                     AZ::u32 b = a + 1;

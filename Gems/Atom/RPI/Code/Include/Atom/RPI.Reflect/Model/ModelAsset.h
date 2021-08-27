@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -53,6 +49,12 @@ namespace AZ
 
             //! Returns the model-space axis aligned bounding box
             const AZ::Aabb& GetAabb() const;
+            
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            const ModelMaterialSlotMap& GetMaterialSlots() const;
+            
+            //! Find a material slot with the given stableId, or returns an invalid slot if it isn't found.
+            const ModelMaterialSlot& FindMaterialSlot(uint32_t stableId) const;
 
             //! Returns the number of Lods in the model
             size_t GetLodCount() const;
@@ -65,12 +67,14 @@ namespace AZ
             //!
             //! @param rayStart  The starting point of the ray.
             //! @param rayDir  The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param allowBruteForce  Allow for brute force queries while the mesh is baking (remove when ATOM-4343 is complete)
             //! @param[out] distanceNormalized  If an intersection is found, will be set to the normalized distance of the intersection
             //! (in the range 0.0-1.0) - to calculate the actual distance, multiply distanceNormalized by the magnitude of rayDir.
             //! @param[out] normal If an intersection is found, will be set to the normal at the point of collision.
             //! @return  True if the ray intersects the mesh.
             virtual bool LocalRayIntersectionAgainstModel(
-                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
+                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+                float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
             void SetReady();
@@ -99,14 +103,25 @@ namespace AZ
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
             mutable AZStd::optional<AZStd::size_t> m_modelTriangleCount;
+            
+            // Lists all of the material slots that are used by this LOD.
+            // Note the same slot can appear in multiple LODs in the model, so that LODs don't have to refer back to the model asset.
+            ModelMaterialSlotMap m_materialSlots;
+
+            // A default ModelMaterialSlot to be returned upon error conditions.
+            ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
         };
 
-        class ModelAssetHandler : public AssetHandler<ModelAsset>
+        class ModelAssetHandler
+            : public AssetHandler<ModelAsset>
         {
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
+
+            // AZ::AssetTypeInfoBus::Handler overrides
+            bool HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const override;
         };
     } //namespace RPI
 } // namespace AZ

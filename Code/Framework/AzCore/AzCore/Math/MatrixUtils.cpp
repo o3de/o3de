@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/MatrixUtils.h>
 
@@ -48,6 +44,22 @@ namespace AZ
         return &out;
     }
 
+    void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio)
+    {
+        float sinFov, cosFov;
+        SinCos(0.5f * fovY, sinFov, cosFov);
+        float yScale = cosFov / sinFov; //cot(fovY/2)
+        float xScale = yScale / aspectRatio;
+
+        out.SetElement(0, 0, xScale);
+        out.SetElement(1, 1, yScale);
+    }
+
+    float GetPerspectiveMatrixFOV(const Matrix4x4& m)
+    {
+        return 2.0f * AZStd::atan(1.0f / m.GetElement(1, 1));
+    }
+
     Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {
         AZ_Assert(right > left, "right should be greater than left");
@@ -75,7 +87,7 @@ namespace AZ
         return &out;
     }
 
-    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist)
+    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {
         AZ_Assert(right > left, "right should be greater than left");
         // valid to have matrix invert top/bottom and far/near
@@ -85,6 +97,11 @@ namespace AZ
         if (!(right > left /*&& top > bottom && farDist > nearDist*/))
         {
             return nullptr;
+        }
+
+        if (reverseDepth)
+        {
+            AZStd::swap(nearDist, farDist);
         }
 
         out.SetRow(0,   2.f/(right - left), 0.f,                    0.f,                        - (right + left) / (right - left)   );

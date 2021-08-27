@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -59,6 +55,11 @@ namespace Multiplayer
         return m_hostTimeMs;
     }
 
+    float NetworkTime::GetHostBlendFactor() const
+    {
+        return m_hostBlendFactor;
+    }
+
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
     {
         return m_rewindingConnectionId;
@@ -69,11 +70,25 @@ namespace Multiplayer
         return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
     }
 
+    void NetworkTime::ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs)
+    {
+        AZ_Assert(!IsTimeRewound(), "Forcibly setting network time is unsupported under a rewound time scope");
+        m_unalteredFrameId = frameId;
+        m_hostFrameId = frameId;
+        m_hostTimeMs = timeMs;
+        m_rewindingConnectionId = AzNetworking::InvalidConnectionId;
+    }
+
     void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
     {
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
+    }
+
+    void NetworkTime::AlterBlendFactor(float blendFactor)
+    {
+        m_hostBlendFactor = blendFactor;
     }
 
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
@@ -99,6 +114,7 @@ namespace Multiplayer
 
                     if (networkTransform != nullptr)
                     {
+                        // We're not presently factoring in interpolated position here
                         const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
@@ -128,8 +144,10 @@ namespace Multiplayer
 
         for (NetworkEntityHandle entityHandle : m_rewoundEntities)
         {
-            NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
-            netBindComponent->NotifySyncRewindState();
+            if (NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent())
+            {
+                netBindComponent->NotifySyncRewindState();
+            }
         }
         m_rewoundEntities.clear();
     }

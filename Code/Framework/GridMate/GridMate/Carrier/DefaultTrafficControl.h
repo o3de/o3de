@@ -1,20 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_DEFAULT_TRAFFIC_CONTROL_H
 #define GM_DEFAULT_TRAFFIC_CONTROL_H
 
 #include <GridMate/Carrier/TrafficControl.h>
 
 #include <GridMate/Containers/list.h>
+
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {
@@ -149,7 +147,7 @@ namespace GridMate
             StatisticData   m_sdEffectiveLastSecond;        ///< Last second statistics for effective data.
             StatisticData   m_sdEffectiveCurrentSecond; ///< Elapsing second statistics for effective data.
 
-            string          m_address;          ///< Full address for this connection. (we need for debug only)
+            AZStd::string   m_address;          ///< Full address for this connection. (we need for debug only)
             unsigned int    m_recvPacketAllowance; ///< Current allowance for number of incoming packets
             bool            m_canReceiveData; ///< Able to receive data on this connection
 

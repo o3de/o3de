@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/Config.h>
@@ -21,23 +17,23 @@ namespace RenderGL
     // default constructor
     IndexBuffer::IndexBuffer()
     {
-        mBufferID   = MCORE_INVALIDINDEX32;
-        mNumIndices = 0;
+        m_bufferId   = MCORE_INVALIDINDEX32;
+        m_numIndices = 0;
     }
 
 
     // destructor
     IndexBuffer::~IndexBuffer()
     {
-        glDeleteBuffers(1, &mBufferID);
+        glDeleteBuffers(1, &m_bufferId);
     }
 
 
     // activate
     void IndexBuffer::Activate()
     {
-        assert(mBufferID != MCORE_INVALIDINDEX32);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferID);
+        assert(m_bufferId != MCORE_INVALIDINDEX32);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferId);
     }
 
 
@@ -68,8 +64,8 @@ namespace RenderGL
         }
 
         // generate the buffer ID and bind it
-        glGenBuffers(1, &mBufferID);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferID);
+        glGenBuffers(1, &m_bufferId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, (uint32)indexSize * numIndices, indexData, usageGL);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         /*
@@ -107,7 +103,7 @@ namespace RenderGL
             }
         */
         // adjust the number of indices
-        mNumIndices = numIndices;
+        m_numIndices = numIndices;
 
         return true;
     }
@@ -116,7 +112,7 @@ namespace RenderGL
     // lock the buffer
     void* IndexBuffer::Lock(ELockMode lockMode)
     {
-        if (mNumIndices == 0)
+        if (m_numIndices == 0)
         {
             return nullptr;
         }
@@ -139,8 +135,8 @@ namespace RenderGL
         }
 
         // lock the buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferID);
-        void* data = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, lockModeGL);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferId);
+        void* data = m_glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, lockModeGL);
 
         // check for failure
         if (data == nullptr)
@@ -169,12 +165,12 @@ namespace RenderGL
     // unlock the buffer
     void IndexBuffer::Unlock()
     {
-        if (mNumIndices == 0)
+        if (m_numIndices == 0)
         {
             return;
         }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferID);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferId);
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
     }
 

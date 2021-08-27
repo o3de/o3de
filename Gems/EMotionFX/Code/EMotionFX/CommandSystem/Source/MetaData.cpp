@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Actor.h>
@@ -29,48 +25,6 @@
 
 namespace CommandSystem
 {
-
-    AZStd::vector<MCore::Command*> MetaData::GenerateMotionMetaData(EMotionFX::Motion* motion)
-    {
-        AZStd::vector<MCore::Command*> commands;
-
-        if (!motion)
-        {
-            AZ_Error("EMotionFX", false, "Cannot generate meta data for motion. Motion invalid.");
-            return commands;
-        }
-
-        // Save event tracks including motion events.
-        CommandAdjustMotion* adjustMotionCommand = aznew CommandAdjustMotion();
-        adjustMotionCommand->SetMotionExtractionFlags(motion->GetMotionExtractionFlags());
-        commands.emplace_back(adjustMotionCommand);
-
-        const size_t eventTrackCount = motion->GetEventTable()->GetNumTracks();
-        for (size_t trackIndex = 0; trackIndex < eventTrackCount; ++trackIndex)
-        {
-            const EMotionFX::MotionEventTrack* track = motion->GetEventTable()->GetTrack(trackIndex);
-
-            CommandCreateMotionEventTrack* createMotionEventTrackCommand = aznew CommandCreateMotionEventTrack();
-            createMotionEventTrackCommand->SetEventTrackName(track->GetName());
-            commands.emplace_back(createMotionEventTrackCommand);
-
-            const size_t eventCount = track->GetNumEvents();
-            for (size_t eventIndex = 0; eventIndex < eventCount; ++eventIndex)
-            {
-                const EMotionFX::MotionEvent& event = track->GetEvent(eventIndex);
-                CommandCreateMotionEvent* createMotionEventCommand = aznew CommandCreateMotionEvent();
-                commands.emplace_back(createMotionEventCommand);
-                createMotionEventCommand->SetEventTrackName(track->GetName());
-                createMotionEventCommand->SetStartTime(event.GetStartTime());
-                createMotionEventCommand->SetEndTime(event.GetEndTime());
-                createMotionEventCommand->SetEventDatas(event.GetEventDatas());
-            }
-        }
-
-        return commands;
-    }
-
-
     bool MetaData::ApplyMetaDataOnMotion(EMotionFX::Motion* motion, const AZStd::vector<MCore::Command*>& metaDataCommands)
     {
         for (MCore::Command* command : metaDataCommands)
@@ -87,15 +41,15 @@ namespace CommandSystem
     void MetaData::GenerateNodeGroupMetaData(EMotionFX::Actor* actor, AZStd::string& outMetaDataString)
     {
         AZStd::string nodeNameList;
-        const AZ::u32 numNodeGroups = actor->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = actor->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::NodeGroup* nodeGroup = actor->GetNodeGroup(i);
             outMetaDataString += AZStd::string::format("AddNodeGroup -actorID $(ACTORID) -name \"%s\"\n", nodeGroup->GetName());
 
             nodeNameList.clear();
-            const AZ::u16 numNodes = nodeGroup->GetNumNodes();
-            for (AZ::u16 n = 0; n < numNodes; ++n)
+            const size_t numNodes = nodeGroup->GetNumNodes();
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 const AZ::u16    nodeIndex = nodeGroup->GetNode(n);
                 EMotionFX::Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
@@ -117,8 +71,8 @@ namespace CommandSystem
 
     void MetaData::GeneratePhonemeMetaData(EMotionFX::Actor* actor, AZStd::string& outMetaDataString)
     {
-        const AZ::u32 numLODLevels = actor->GetNumLODLevels();
-        for (AZ::u32 lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
+        const size_t numLODLevels = actor->GetNumLODLevels();
+        for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodLevel);
             if (!morphSetup)
@@ -126,8 +80,8 @@ namespace CommandSystem
                 continue;
             }
 
-            const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-            for (uint32 i = 0; i < numMorphTargets; ++i)
+            const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+            for (size_t i = 0; i < numMorphTargets; ++i)
             {
                 EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(i);
                 if (!morphTarget)
@@ -135,7 +89,7 @@ namespace CommandSystem
                     continue;
                 }
 
-                outMetaDataString += AZStd::string::format("AdjustMorphTarget -actorID $(ACTORID) -lodLevel %i -name \"%s\" -phonemeAction \"replace\" ", lodLevel, morphTarget->GetName());
+                outMetaDataString += AZStd::string::format("AdjustMorphTarget -actorID $(ACTORID) -lodLevel %zu -name \"%s\" -phonemeAction \"replace\" ", lodLevel, morphTarget->GetName());
                 outMetaDataString += AZStd::string::format("-phonemeSets \"%s\" ", morphTarget->GetPhonemeSetString(morphTarget->GetPhonemeSets()).c_str());
                 outMetaDataString += AZStd::string::format("-rangeMin %f -rangeMax %f\n", morphTarget->GetRangeMin(), morphTarget->GetRangeMax());
             }
@@ -147,8 +101,8 @@ namespace CommandSystem
     {
         AZStd::string attachmentNodeNameList;
 
-        const AZ::u32 numNodes = actor->GetNumNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             if (!node)
@@ -199,7 +153,7 @@ namespace CommandSystem
             for (uint32 i = 0; i < actor->GetNumNodes(); ++i)
             {
                 const EMotionFX::Actor::NodeMirrorInfo& mirrorInfo = actor->GetNodeMirrorInfo(i);
-                uint16 sourceNode = mirrorInfo.mSourceNode;
+                uint16 sourceNode = mirrorInfo.m_sourceNode;
                 if (sourceNode != MCORE_INVALIDINDEX16 && sourceNode != static_cast<uint16>(i))
                 {
                     outMetaDataString += actor->GetSkeleton()->GetNode(i)->GetNameString();
@@ -279,10 +233,9 @@ namespace CommandSystem
 
         // Construct a new command group and fill it with all meta data commands.
         MCore::CommandGroup commandGroup;
-        const size_t numTokens = tokens.size();
-        for (size_t i = 0; i < numTokens; ++i)
+        for (const AZStd::string& token : tokens)
         {
-            commandGroup.AddCommandString(tokens[i].c_str());
+            commandGroup.AddCommandString(token);
         }
 
         // Execute the command group and apply the meta data.

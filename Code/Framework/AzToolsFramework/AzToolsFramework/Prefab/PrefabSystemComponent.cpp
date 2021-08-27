@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
@@ -39,12 +35,14 @@ namespace AzToolsFramework
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
+            m_prefabPublicRequestHandler.Connect();
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
+            m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
@@ -58,6 +56,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabConversionPipeline::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
+            PrefabPublicRequestHandler::Reflect(context);
 
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)
@@ -66,7 +65,6 @@ namespace AzToolsFramework
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
-
             if (jsonRegistration)
             {
                 jsonRegistration->Serializer<JsonInstanceSerializer>()->HandlesType<Instance>();
@@ -419,7 +417,6 @@ namespace AzToolsFramework
             }
 
             m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, newTemplateId));
-            newTemplate.MarkAsDirty(true);
             
             return newTemplateId;
         }
@@ -637,13 +634,16 @@ namespace AzToolsFramework
                 //member itself, so we need to move instancesValue to the correct position for the next insert
                 memberFound = instancesValue->get().FindMember(PrefabDomUtils::InstancesName);
                 instancesValue = memberFound->value;
-                instancesValue->get().SetObject();
             }
             else
             {
                 instancesValue = memberFound->value;
             }
 
+            if (!instancesValue->get().IsObject())
+            {
+                instancesValue->get().SetObject();
+            }
             // Only add the instance if it's not there already
             if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
             {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // constructor
 template <class StorageType>
@@ -23,7 +19,7 @@ MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(float value, float 
 {
     // TODO: make sure due to rounding/floating point errors the result is not negative?
     const StorageType f = (1.0f / (maxValue - minValue)) * CONVERT_VALUE;
-    mValue = (value - minValue) * f;
+    m_value = (value - minValue) * f;
 }
 
 
@@ -31,7 +27,7 @@ MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(float value, float 
 template <class StorageType>
 MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(StorageType value)
 {
-    mValue = value;
+    m_value = value;
 }
 
 
@@ -41,7 +37,7 @@ MCORE_INLINE void TCompressedFloat<StorageType>::FromFloat(float value, float mi
 {
     // TODO: make sure due to rounding/floating point errors the result is not negative?
     const StorageType f = (StorageType)(1.0f / (maxValue - minValue)) * CONVERT_VALUE;
-    mValue = (StorageType)((value - minValue) * f);
+    m_value = (StorageType)((value - minValue) * f);
 }
 
 
@@ -51,7 +47,7 @@ MCORE_INLINE void TCompressedFloat<StorageType>::UnCompress(float* output, float
 {
     // unpack and normalize
     const float f = (1.0f / (float)CONVERT_VALUE) * (maxValue - minValue);
-    *output = ((float)mValue * f) + minValue;
+    *output = ((float)m_value * f) + minValue;
 }
 
 
@@ -60,5 +56,5 @@ template <class StorageType>
 MCORE_INLINE float TCompressedFloat<StorageType>::ToFloat(float minValue, float maxValue) const
 {
     const float f = (1.0f / (float)CONVERT_VALUE) * (maxValue - minValue);
-    return ((mValue * f) + minValue);
+    return ((m_value * f) + minValue);
 }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
@@ -37,6 +33,15 @@ namespace AZ
     {
         if (m_hashes.size() < m_hashes.max_size())
         {
+            constexpr size_t MaxTagSize = TagName{}.max_size();
+            if (specialization.size() > MaxTagSize)
+            {
+                AZ_Error("Settings Registry", false, R"(Cannot append Specialization tag of "%.*s.")"
+                    " It is longer than the MaxTagNameSize of %zu", AZ_STRING_ARG(specialization),
+                    MaxTagSize);
+                return false;
+            }
+
             m_names.push_back(TagName{ specialization });
             TagName& tag = m_names.back();
             AZStd::to_lower(tag.begin(), tag.end());

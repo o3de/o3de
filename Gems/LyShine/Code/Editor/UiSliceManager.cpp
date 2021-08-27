@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "UiCanvasEditor_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorCommon.h"
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 
@@ -164,7 +158,7 @@ bool UiSliceManager::MakeNewSlice(
     bool inheritSlices,
     AZ::SerializeContext* serializeContext)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
 
     if (entities.empty())
     {
@@ -246,7 +240,7 @@ bool UiSliceManager::MakeNewSlice(
     // Setup and execute transaction for the new slice.
     //
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
+        AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
 
         using AzToolsFramework::SliceUtilities::SliceTransaction;
 
@@ -255,7 +249,7 @@ bool UiSliceManager::MakeNewSlice(
             [this, &entitiesToInclude, &commonParent, &insertBefore]
         (SliceTransaction::TransactionPtr transaction, const char* fullPath, const SliceTransaction::SliceAssetPtr& /*asset*/) -> void
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
             // Once the asset is processed and ready, we can replace the source entities with an instance of the new slice.
             UiEditorEntityContextRequestBus::Event(m_entityContextId,
                 &UiEditorEntityContextRequestBus::Events::QueueSliceReplacement,
@@ -266,7 +260,7 @@ bool UiSliceManager::MakeNewSlice(
 
         // Add entities
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
             for (const AZ::EntityId& entityId : orderedEntityList)
             {
                 SliceTransaction::Result addResult = transaction->AddEntity(entityId, !inheritSlices ? SliceTransaction::SliceAddEntityFlags::DiscardSliceAncestry : 0);
@@ -354,7 +348,7 @@ AzToolsFramework::SliceUtilities::SliceTransaction::Result SlicePreSaveCallbackF
     [[maybe_unused]] const char* fullPath,
     AzToolsFramework::SliceUtilities::SliceTransaction::SliceAssetPtr& asset)
 {
-    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
+    AZ_PROFILE_SCOPE(AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
 
     // we want to ensure that "bad" data never gets pushed to a slice
     // This mostly relates to the m_childEntityIdOrder array since this is something that

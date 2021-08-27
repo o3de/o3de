@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "UiCanvasEditor_precompiled.h"
+
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewSequence.h"
 #include "UiAnimViewSequenceManager.h"
@@ -27,6 +22,7 @@
 #include "Clipboard.h"
 
 #include "UiEditorAnimationBus.h"
+#include <Util/EditorUtils.h>
 
 #include <QApplication>
 
@@ -687,7 +683,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         return false;
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimSequence->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -695,7 +691,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -897,7 +893,7 @@ std::deque<CUiAnimViewTrack*> CUiAnimViewSequence::GetMatchingTracks(CUiAnimView
 {
     std::deque<CUiAnimViewTrack*> matchingTracks;
 
-    const string trackName = trackNode->getAttr("name");
+    const AZStd::string trackName = trackNode->getAttr("name");
 
     IUiAnimationSystem* animationSystem = nullptr;
     EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
@@ -960,11 +956,11 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
     for (unsigned int nodeIndex = 0; nodeIndex < numChildNodes; ++nodeIndex)
     {
         XmlNodeRef xmlChildNode = clipboardNode->getChild(nodeIndex);
-        const string tagName = xmlChildNode->getTag();
+        const AZStd::string tagName = xmlChildNode->getTag();
 
         if (tagName == "Node")
         {
-            const string nodeName = xmlChildNode->getAttr("name");
+            const AZStd::string nodeName = xmlChildNode->getAttr("name");
 
             int nodeType = eUiAnimNodeType_Invalid;
             xmlChildNode->getAttr("type", nodeType);
@@ -986,7 +982,7 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
         }
         else if (tagName == "Track")
         {
-            const string trackName = xmlChildNode->getAttr("name");
+            const AZStd::string trackName = xmlChildNode->getAttr("name");
 
             IUiAnimationSystem* animationSystem = nullptr;
             EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
@@ -1097,7 +1093,7 @@ void CUiAnimViewSequence::DeselectAllKeys()
     CUiAnimViewSequenceNotificationContext context(this);
 
     CUiAnimViewKeyBundle selectedKeys = GetSelectedKeys();
-    for (int i = 0; i < selectedKeys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < selectedKeys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = selectedKeys.GetKey(i);
         keyHandle.Select(false);
@@ -1241,7 +1237,7 @@ float CUiAnimViewSequence::ClipTimeOffsetForSliding(const float timeOffset)
     for (pTrackIter = tracks.begin(); pTrackIter != tracks.end(); ++pTrackIter)
     {
         CUiAnimViewTrack* pTrack = *pTrackIter;
-        for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(i);
 
@@ -1324,7 +1320,7 @@ void CUiAnimViewSequence::CloneSelectedKeys()
     std::vector<float> selectedKeyTimes;
     for (size_t k = 0; k < selectedKeys.GetKeyCount(); ++k)
     {
-        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(k);
+        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         if (pTrack != skey.GetTrack())
         {
             pTrack = skey.GetTrack();
@@ -1336,7 +1332,7 @@ void CUiAnimViewSequence::CloneSelectedKeys()
     // Now, do the actual cloning.
     for (size_t k = 0; k < selectedKeyTimes.size(); ++k)
     {
-        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(k);
+        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         skey = skey.GetTrack()->GetKeyByTime(selectedKeyTimes[k]);
 
         assert(skey.IsValid());

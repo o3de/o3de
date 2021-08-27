@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -116,7 +112,7 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::SphereShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        sphereCount);
+                        static_cast<int>(sphereCount));
 
                     sphereColliders.push_back(sphereCollider);
                     ++sphereCount;
@@ -148,9 +144,9 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::CapsuleShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        capsuleCount * 2, // Each capsule holds 2 sphere indices
-                        sphereCount + 0,  // First sphere index
-                        sphereCount + 1); // Second sphere index
+                        static_cast<int>(capsuleCount * 2), // Each capsule holds 2 sphere indices
+                        static_cast<int>(sphereCount + 0),  // First sphere index
+                        static_cast<int>(sphereCount + 1)); // Second sphere index
 
                     capsuleColliders.push_back(capsuleCollider);
                     ++capsuleCount;

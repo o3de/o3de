@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
@@ -113,7 +108,7 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            const uint16_t residentMipLevelBefore = image.GetResidentMipLevel();
+            const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
             const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), residentMipLevelAfter);
 
@@ -154,11 +149,11 @@ namespace AZ
             // Set streamed mip level to target mip level.
             if (image.GetStreamedMipLevel() < targetMipLevel)
             {
-                image.SetStreamedMipLevel(targetMipLevel);
+                image.SetStreamedMipLevel(static_cast<uint16_t>(targetMipLevel));
             }
 
             const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), targetMipLevel);
-            const uint16_t residentMipLevelBefore = image.GetResidentMipLevel();
+            const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
             const size_t imageSizeBefore = image.GetResidentSizeInBytes();
@@ -208,7 +203,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
+            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - static_cast<uint16_t>(residentMipLevel);
 
             return device.GetImageMemoryRequirements(imageDescriptor);
         }

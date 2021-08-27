@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -47,7 +43,7 @@ namespace EMStudio
         MCORE_MEMORYOBJECTCATEGORY(MotionSetManagementRemoveMotionsFailedWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const MCore::Array<EMotionFX::Motion*>& motions);
+        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions);
     };
 
 
@@ -65,10 +61,9 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::MotionSet*   mMotionSet;
-        QLineEdit*              mLineEdit;
-        QPushButton*            mOKButton;
-        //QLabel*               mErrorMsg;
+        EMotionFX::MotionSet*   m_motionSet;
+        QLineEdit*              m_lineEdit;
+        QPushButton*            m_okButton;
     };
 
 
@@ -117,8 +112,8 @@ namespace EMStudio
         void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
-        QVBoxLayout* mVLayout = nullptr;
-        QTreeWidget* mMotionSetsTree = nullptr;
+        QVBoxLayout* m_vLayout = nullptr;
+        QTreeWidget* m_motionSetsTree = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_openAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
@@ -126,6 +121,6 @@ namespace EMStudio
         QAction* m_saveAsAction = nullptr;
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;
-        MotionSetsWindowPlugin* mPlugin = nullptr;
+        MotionSetsWindowPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

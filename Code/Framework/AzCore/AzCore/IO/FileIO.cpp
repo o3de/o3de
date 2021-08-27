@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/FileIO.h>
 #include <ctype.h>
@@ -17,6 +13,7 @@
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Debug/Profiler.h>
 
 #ifndef SEEK_SET
 #  define SEEK_SET        0       /* Seek from beginning of file.  */
@@ -357,7 +354,7 @@ namespace AZ
                 m_filename = path;
             }
 
-            AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, &m_filename, 0xff0000ff, "FileIO: %s", m_filename.c_str());
+            AZ_PROFILE_INTERVAL_START_COLORED(AzCore, &m_filename, 0xff0000ff, "FileIO: %s", m_filename.c_str());
             return result;
         }
 
@@ -376,7 +373,7 @@ namespace AZ
                 FileIOBase::GetInstance()->Close(m_handle);
                 m_handle = InvalidHandle;
                 m_ownsHandle = false;
-                AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, &m_filename);
+                AZ_PROFILE_INTERVAL_END(AzCore, &m_filename);
             }
         }
 
@@ -429,7 +426,7 @@ namespace AZ
 
         void FileIOStream::Seek(OffsetType bytes, SeekMode mode)
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "FileIO Seek: %s", m_filename.c_str());
+            AZ_PROFILE_SCOPE(AzCore, "FileIO Seek: %s", m_filename.c_str());
             AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
             AZ_Assert(IsOpen(), "Cannot seek on a FileIOStream that is not open.");
 
@@ -457,7 +454,7 @@ namespace AZ
 
         SizeType FileIOStream::Read(SizeType bytes, void* oBuffer)
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "FileIO Read: %s", m_filename.c_str());
+            AZ_PROFILE_SCOPE(AzCore, "FileIO Read: %s", m_filename.c_str());
             AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
             AZ_Assert(IsOpen(), "Cannot read from a FileIOStream that is not open.");
 

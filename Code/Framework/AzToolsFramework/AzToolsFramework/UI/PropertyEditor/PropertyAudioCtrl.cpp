@@ -1,19 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "AzToolsFramework_precompiled.h"
 
-#include "PropertyAudioCtrl.h"
-#include "PropertyQTConstants.h"
+#include <UI/PropertyEditor/PropertyAudioCtrl.h>
+#include <UI/PropertyEditor/PropertyQTConstants.h>
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -39,7 +34,7 @@ namespace AzToolsFramework
         : QWidget(parent)
         , m_browseEdit(nullptr)
         , m_mainLayout(nullptr)
-        , m_propertyType(AudioPropertyType::Invalid)
+        , m_propertyType(AudioPropertyType::NumTypes)
     {
         // create the gui
         m_mainLayout = new QHBoxLayout();
@@ -101,7 +96,7 @@ namespace AzToolsFramework
             return;
         }
 
-        if (type != AudioPropertyType::Invalid)
+        if (type != AudioPropertyType::NumTypes)
         {
             m_propertyType = type;
         }
@@ -141,10 +136,11 @@ namespace AzToolsFramework
 
     void AudioControlSelectorWidget::OnOpenAudioControlSelector()
     {
-        AZStd::string resourceResult;
-        AZStd::string resourceType(GetResourceSelectorNameFromType(m_propertyType));
         AZStd::string currentValue(m_controlName.toStdString().c_str());
-        EditorRequests::Bus::BroadcastResult(resourceResult, &EditorRequests::Bus::Events::SelectResource, resourceType, currentValue);
+        AZStd::string resourceResult;
+        AudioControlSelectorRequestBus::EventResult(
+            resourceResult, m_propertyType,
+            &AudioControlSelectorRequestBus::Events::SelectResource, currentValue);
         SetControlName(QString(resourceResult.c_str()));
     }
 
@@ -172,12 +168,12 @@ namespace AzToolsFramework
         {
         case AudioPropertyType::Trigger:
             return { "AudioTrigger" };
+        case AudioPropertyType::Rtpc:
+            return { "AudioRTPC" };
         case AudioPropertyType::Switch:
             return { "AudioSwitch" };
         case AudioPropertyType::SwitchState:
             return { "AudioSwitchState" };
-        case AudioPropertyType::Rtpc:
-            return { "AudioRTPC" };
         case AudioPropertyType::Environment:
             return { "AudioEnvironment" };
         case AudioPropertyType::Preload:

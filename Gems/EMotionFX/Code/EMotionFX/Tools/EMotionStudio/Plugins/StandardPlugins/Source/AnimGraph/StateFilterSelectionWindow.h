@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -42,7 +38,7 @@ namespace EMStudio
         void ReInit(EMotionFX::AnimGraphStateMachine* stateMachine, const AZStd::vector<EMotionFX::AnimGraphNodeId>& oldNodeSelection, const AZStd::vector<AZStd::string>& oldGroupSelection);
 
         const AZStd::vector<EMotionFX::AnimGraphNodeId> GetSelectedNodeIds() const       { return m_selectedNodeIds; }
-        const AZStd::vector<AZStd::string>& GetSelectedGroupNames() const                { return mSelectedGroupNames; }
+        const AZStd::vector<AZStd::string>& GetSelectedGroupNames() const                { return m_selectedGroupNames; }
 
     protected slots:
         void OnSelectionChanged();
@@ -51,15 +47,15 @@ namespace EMStudio
         struct WidgetLookup
         {
             MCORE_MEMORYOBJECTCATEGORY(StateFilterSelectionWindow::WidgetLookup, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-            QTableWidgetItem*   mWidget;
-            AZStd::string       mName;
-            bool                mIsGroup;
+            QTableWidgetItem*   m_widget;
+            AZStd::string       m_name;
+            bool                m_isGroup;
 
             WidgetLookup(QTableWidgetItem* widget, const char* name, bool isGroup)
             {
-                mWidget     = widget;
-                mName       = name;
-                mIsGroup    = isGroup;
+                m_widget     = widget;
+                m_name       = name;
+                m_isGroup    = isGroup;
             }
         };
 
@@ -67,10 +63,10 @@ namespace EMStudio
         EMotionFX::AnimGraphNode* FindNodeByWidget(QTableWidgetItem* widget) const;
         void AddRow(uint32 rowIndex, const char* name, bool isGroup, bool isSelected, const QColor& color = QColor(255, 255, 255));
 
-        AZStd::vector<WidgetLookup>         mWidgetTable;
-        AZStd::vector<AZStd::string>        mSelectedGroupNames;
+        AZStd::vector<WidgetLookup>         m_widgetTable;
+        AZStd::vector<AZStd::string>        m_selectedGroupNames;
         AZStd::vector<EMotionFX::AnimGraphNodeId> m_selectedNodeIds;
-        QTableWidget*                       mTableWidget;
+        QTableWidget*                       m_tableWidget;
         EMotionFX::AnimGraphStateMachine*   m_stateMachine;
     };
 } // namespace EMStudio

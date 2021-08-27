@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -34,7 +30,7 @@ namespace EMotionFX
         : AnimGraphNode()
         , m_finalNodeId(AnimGraphNodeId::InvalidId)
         , m_finalNode(nullptr)
-        , mVirtualFinalNode(nullptr)
+        , m_virtualFinalNode(nullptr)
     {
         // setup output ports
         InitOutputPorts(1);
@@ -92,7 +88,7 @@ namespace EMotionFX
         // Relink input and output ports for all nodes in the blend tree with their corresponding connections.
         // This has to be done after all child nodes called InitAfterLoading() and RegisterPorts(). We're depending on the node load order here
         // and a given node might be connected to one that has not been loaded yet and thus the ports have not been created yet.
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RelinkPortConnections();
         }
@@ -106,9 +102,9 @@ namespace EMotionFX
     AnimGraphNode* BlendTree::GetRealFinalNode() const
     {
         // if there is a virtual final node, use that one
-        if (mVirtualFinalNode)
+        if (m_virtualFinalNode)
         {
-            return mVirtualFinalNode;
+            return m_virtualFinalNode;
         }
 
         // otherwise get the real final node
@@ -130,7 +126,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // if this node is disabled, output the bind pose
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -160,7 +156,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -169,7 +165,7 @@ namespace EMotionFX
     void BlendTree::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if this node is disabled, exit
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
@@ -217,7 +213,7 @@ namespace EMotionFX
     void BlendTree::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if this node is disabled, output the bind pose
-        if (mDisabled)
+        if (m_disabled)
         {
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->Clear();
@@ -247,7 +243,7 @@ namespace EMotionFX
     // rewind the nodes in the tree
     void BlendTree::Rewind(AnimGraphInstance* animGraphInstance)
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->Rewind(animGraphInstance);
         }
@@ -280,7 +276,7 @@ namespace EMotionFX
     void BlendTree::RecursiveSetUniqueDataFlag(AnimGraphInstance* animGraphInstance, uint32 flag, bool enabled)
     {
         // set flag for this node
-        animGraphInstance->SetObjectFlags(mObjectIndex, flag, enabled);
+        animGraphInstance->SetObjectFlags(m_objectIndex, flag, enabled);
 
         // get the final node
         AnimGraphNode* finalNode = GetRealFinalNode();
@@ -314,7 +310,7 @@ namespace EMotionFX
 
     void BlendTree::SetVirtualFinalNode(AnimGraphNode* node)
     {
-        mVirtualFinalNode = node;
+        m_virtualFinalNode = node;
 
         AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnVirtualFinalNodeSet, this);
     }
@@ -323,7 +319,7 @@ namespace EMotionFX
     void BlendTree::SetFinalNodeId(const AnimGraphNodeId finalNodeId)
     {
         m_finalNodeId = finalNodeId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -346,7 +342,7 @@ namespace EMotionFX
         AZStd::unordered_set<AnimGraphNode*> visitedNodes;
         AZStd::unordered_set<AZStd::pair<BlendTreeConnection*, AnimGraphNode*> > cycleConnections;
 
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             visitedNodes.clear();
             visitedNodes.emplace(childNode);
@@ -360,8 +356,8 @@ namespace EMotionFX
     void BlendTree::RecursiveFindCycles(AnimGraphNode* nextNode, AZStd::unordered_set<AnimGraphNode*>& visitedNodes, AZStd::unordered_set<AZStd::pair<BlendTreeConnection*, AnimGraphNode*> >& cycleConnections) const
     {
         AZStd::unordered_map<AnimGraphNode*, AZStd::vector<BlendTreeConnection*> > sourceNodesAndConnections;
-        const uint32 numConnections = nextNode->GetNumConnections();
-        for (uint32 j = 0; j < numConnections; ++j)
+        const size_t numConnections = nextNode->GetNumConnections();
+        for (size_t j = 0; j < numConnections; ++j)
         {
             AnimGraphNode* sourceNode = nextNode->GetConnection(j)->GetSourceNode();
             sourceNodesAndConnections[sourceNode].emplace_back(nextNode->GetConnection(j));

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Debug/Profiler.h>
@@ -157,7 +153,7 @@ namespace AZ
 
         bool StreamerContext::FinalizeCompletedRequests()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
             auto now = AZStd::chrono::system_clock::now();
@@ -222,10 +218,10 @@ namespace AZ
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
 
                     {
-                        AZ_PROFILE_SCOPE_STALL(AZ::Debug::ProfileCategory::AzCore,
+                        AZ_PROFILE_SCOPE(AzCore,
                             isInternal ? "Completion callback internal" : "Completion callback external");
                         top->m_onCompletion(*top);
-                        AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, top);
+                        AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
                     
                     if (parent)

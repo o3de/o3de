@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <assimp/scene.h>
 #include <assimp/material.h>
@@ -25,9 +21,14 @@ namespace AZ
     {
 
         AssImpMaterialWrapper::AssImpMaterialWrapper(aiMaterial* aiMaterial)
-            :SDKMaterial::MaterialWrapper(aiMaterial)
+            :m_assImpMaterial(aiMaterial)
         {
             AZ_Assert(aiMaterial, "Asset Importer Material cannot be null");
+        }
+
+        aiMaterial* AssImpMaterialWrapper::GetAssImpMaterial() const
+        {
+            return m_assImpMaterial;
         }
 
         AZStd::string AssImpMaterialWrapper::GetName() const
@@ -198,7 +199,7 @@ namespace AZ
         AZStd::string AssImpMaterialWrapper::GetTextureFileName(MaterialMapType textureType) const
         {
             /// Engine currently doesn't support multiple textures. Right now we only use first texture.
-            int textureIndex = 0;
+            unsigned int textureIndex = 0;
             aiString absTexturePath;
             switch (textureType)
             {
@@ -224,6 +225,10 @@ namespace AZ
                 if (m_assImpMaterial->GetTextureCount(aiTextureType_NORMALS) > textureIndex)
                 {
                     m_assImpMaterial->GetTexture(aiTextureType_NORMALS, textureIndex, &absTexturePath);
+                }
+                else if (m_assImpMaterial->GetTextureCount(aiTextureType_NORMAL_CAMERA) > textureIndex)
+                {
+                    m_assImpMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, textureIndex, &absTexturePath);
                 }
                 break;
             case MaterialMapType::Metallic:

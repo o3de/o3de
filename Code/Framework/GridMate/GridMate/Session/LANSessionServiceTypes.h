@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_SESSION_LANSESSIONSERVICEUTILS_H
 #define GM_SESSION_LANSESSIONSERVICEUTILS_H
 
@@ -24,7 +20,7 @@ namespace GridMate
             : m_port (0) // by default session can't be found (searched for)
         {}
 
-        string m_address; /// empty to accept any address otherwise you can provide a specific bind address.
+        AZStd::string m_address; /// empty to accept any address otherwise you can provide a specific bind address.
         /**
          * Use 0 if you don't want you session to be searchable (default)
          * Port on which we will register the LAN session (it will be used for session communication and should be different than the game/carrier one).
@@ -43,9 +39,9 @@ namespace GridMate
         {}
 
         int     m_familyType;                   ///< Socket driver specific, by default 0.
-        string  m_serverAddress;                ///< Address of the server, we empty we create a broadcast address.
+        AZStd::string  m_serverAddress;         ///< Address of the server, we empty we create a broadcast address.
         int     m_serverPort;                   ///< Server port (must be provided).
-        string  m_listenAddress;                ///< Address to bind for listening. By default is empty, which means we are listening to any address.
+        AZStd::string  m_listenAddress;         ///< Address to bind for listening. By default is empty, which means we are listening to any address.
         int     m_listenPort;                   ///< Search listen port, if not set we will use ephimeral port.
         unsigned int m_broadcastFrequencyMs;    ///< Time in MS between search broadcasts.
     };
@@ -56,7 +52,7 @@ namespace GridMate
     struct LANSearchInfo
         : public SearchInfo
     {
-        string m_serverIP; ///< server ID as we see it
+        AZStd::string m_serverIP; ///< server ID as we see it
         AZ::u16 m_serverPort; ///< server port for the session
     };
 }

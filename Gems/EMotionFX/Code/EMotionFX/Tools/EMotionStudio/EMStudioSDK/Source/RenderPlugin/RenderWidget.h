@@ -1,20 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#ifndef __EMSTUDIO_RENDERWIDGET_H
-#define __EMSTUDIO_RENDERWIDGET_H
+#pragma once
 
-//
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Math/Aabb.h>
 #include <MCore/Source/StandardHeaders.h>
 #include "../EMStudioConfig.h"
 #include <EMotionFX/Rendering/Common/Camera.h>
@@ -52,25 +47,25 @@ namespace EMStudio
 
         struct Triangle
         {
-            AZ::Vector3  mPosA;
-            AZ::Vector3  mPosB;
-            AZ::Vector3  mPosC;
+            AZ::Vector3  m_posA;
+            AZ::Vector3  m_posB;
+            AZ::Vector3  m_posC;
 
-            AZ::Vector3  mNormalA;
-            AZ::Vector3  mNormalB;
-            AZ::Vector3  mNormalC;
+            AZ::Vector3  m_normalA;
+            AZ::Vector3  m_normalB;
+            AZ::Vector3  m_normalC;
 
-            uint32          mColor;
+            uint32          m_color;
 
             Triangle() {}
             Triangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)
-                : mPosA(posA)
-                , mPosB(posB)
-                , mPosC(posC)
-                , mNormalA(normalA)
-                , mNormalB(normalB)
-                , mNormalC(normalC)
-                , mColor(color) {}
+                : m_posA(posA)
+                , m_posB(posB)
+                , m_posC(posC)
+                , m_normalA(normalA)
+                , m_normalB(normalB)
+                , m_normalC(normalC)
+                , m_color(color) {}
         };
 
 
@@ -81,16 +76,16 @@ namespace EMStudio
             AZ_CLASS_ALLOCATOR_DECL
 
             EventHandler(RenderWidget* widget)
-                : EMotionFX::EventHandler() { mWidget = widget; }
+                : EMotionFX::EventHandler() { m_widget = widget; }
             ~EventHandler() {}
 
             // overloaded
             const AZStd::vector<EMotionFX::EventTypes> GetHandledEventTypes() const override { return { EMotionFX::EVENT_TYPE_ON_DRAW_LINE, EMotionFX::EVENT_TYPE_ON_DRAW_TRIANGLE, EMotionFX::EVENT_TYPE_ON_DRAW_TRIANGLES }; }
-            MCORE_INLINE void OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)         { mWidget->AddTriangle(posA, posB, posC, normalA, normalB, normalC, color); }
-            MCORE_INLINE void OnDrawTriangles()                                                                                                                                                                                                     { mWidget->RenderTriangles(); }
+            MCORE_INLINE void OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)         { m_widget->AddTriangle(posA, posB, posC, normalA, normalB, normalC, color); }
+            MCORE_INLINE void OnDrawTriangles()                                                                                                                                                                                                     { m_widget->RenderTriangles(); }
 
         private:
-            RenderWidget*   mWidget;
+            RenderWidget*   m_widget;
         };
 
         RenderWidget(RenderPlugin* renderPlugin, RenderViewWidget* viewWidget);
@@ -103,8 +98,8 @@ namespace EMStudio
         virtual void Update() = 0;
 
         // line rendering helper functions
-        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { mTriangles.Add(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
-        MCORE_INLINE void ClearTriangles()                                                                  { mTriangles.Clear(false); }
+        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { m_triangles.emplace_back(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
+        MCORE_INLINE void ClearTriangles()                                                                  { m_triangles.clear(); }
         void RenderTriangles();
 
         // helper rendering functions
@@ -118,16 +113,16 @@ namespace EMStudio
         void UpdateCamera();
 
         // camera helper functions
-        MCORE_INLINE MCommon::Camera* GetCamera() const                                                     { return mCamera; }
-        MCORE_INLINE CameraMode GetCameraMode() const                                                       { return mCameraMode; }
-        MCORE_INLINE void SetSkipFollowCalcs(bool skipFollowCalcs)                                          { mSkipFollowCalcs = skipFollowCalcs; }
-        void ViewCloseup(const MCore::AABB& aabb, float flightTime, uint32 viewCloseupWaiting = 5);
+        MCORE_INLINE MCommon::Camera* GetCamera() const                                                     { return m_camera; }
+        MCORE_INLINE CameraMode GetCameraMode() const                                                       { return m_cameraMode; }
+        MCORE_INLINE void SetSkipFollowCalcs(bool skipFollowCalcs)                                          { m_skipFollowCalcs = skipFollowCalcs; }
+        void ViewCloseup(const AZ::Aabb& aabb, float flightTime, uint32 viewCloseupWaiting = 5);
         void ViewCloseup(bool selectedInstancesOnly, float flightTime, uint32 viewCloseupWaiting = 5);
         void SwitchCamera(CameraMode mode);
 
         // render bugger dimensions
-        MCORE_INLINE uint32 GetScreenWidth() const                                                          { return mWidth; }
-        MCORE_INLINE uint32 GetScreenHeight() const                                                         { return mHeight; }
+        MCORE_INLINE uint32 GetScreenWidth() const                                                          { return m_width; }
+        MCORE_INLINE uint32 GetScreenHeight() const                                                         { return m_height; }
 
         // helper functions for easy calling
         void OnMouseMoveEvent(QWidget* renderWidget, QMouseEvent* event);
@@ -142,43 +137,40 @@ namespace EMStudio
 
         void closeEvent(QCloseEvent* event);
 
-        RenderPlugin*                           mPlugin;
-        RenderViewWidget*                       mViewWidget;
-        MCore::Array<Triangle>                  mTriangles;
-        EventHandler                            mEventHandler;
+        RenderPlugin*                           m_plugin;
+        RenderViewWidget*                       m_viewWidget;
+        AZStd::vector<Triangle>                  m_triangles;
+        EventHandler                            m_eventHandler;
 
-        MCore::Array<EMotionFX::ActorInstance*> mSelectedActorInstances;
+        AZStd::vector<EMotionFX::ActorInstance*> m_selectedActorInstances;
 
-        MCommon::TransformationManipulator*     mActiveTransformManip;
+        MCommon::TransformationManipulator*     m_activeTransformManip;
 
         // camera helper data
-        CameraMode                              mCameraMode;
-        MCommon::Camera*                        mCamera;
-        MCommon::Camera*                        mAxisFakeCamera;
-        bool                                    mIsCharacterFollowModeActive;
-        bool                                    mSkipFollowCalcs;
-        bool                                    mNeedDisableFollowMode;
+        CameraMode                              m_cameraMode;
+        MCommon::Camera*                        m_camera;
+        MCommon::Camera*                        m_axisFakeCamera;
+        bool                                    m_isCharacterFollowModeActive;
+        bool                                    m_skipFollowCalcs;
+        bool                                    m_needDisableFollowMode;
 
         // render buffer dimensions
-        uint32                                  mWidth;
-        uint32                                  mHeight;
+        uint32                                  m_width;
+        uint32                                  m_height;
 
         // used for closeup camera flights
-        uint32                                  mViewCloseupWaiting;
-        MCore::AABB                             mViewCloseupAABB;
-        float                                   mViewCloseupFlightTime;
+        uint32                                  m_viewCloseupWaiting;
+        AZ::Aabb                                m_viewCloseupAabb;
+        float                                   m_viewCloseupFlightTime;
 
         // manipulator helper data
-        AZ::Vector3                          mOldActorInstancePos;
-        int32                                   mPrevMouseX;
-        int32                                   mPrevMouseY;
-        int32                                   mPrevLocalMouseX;
-        int32                                   mPrevLocalMouseY;
-        int32                                   mRightClickPosX;
-        int32                                   mRightClickPosY;
-        int32                                   mPixelsMovedSinceRightClick;
+        AZ::Vector3                          m_oldActorInstancePos;
+        int32                                   m_prevMouseX;
+        int32                                   m_prevMouseY;
+        int32                                   m_prevLocalMouseX;
+        int32                                   m_prevLocalMouseY;
+        int32                                   m_rightClickPosX;
+        int32                                   m_rightClickPosY;
+        int32                                   m_pixelsMovedSinceRightClick;
     };
 } // namespace EMStudio
-
-
-#endif

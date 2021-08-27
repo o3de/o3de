@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Module/Environment.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -47,7 +44,7 @@ namespace AzFramework
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Count of the number instances of this class that have been created
-        static int s_instanceCount;
+        static AZ::EnvironmentVariable<int> s_instanceCount;
 
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,7 +126,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    int InputDeviceMouseWindows::s_instanceCount = 0;
+    AZ::EnvironmentVariable<int> InputDeviceMouseWindows::s_instanceCount = nullptr;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseWindows::InputDeviceMouseWindows(InputDeviceMouse& inputDevice)
@@ -141,17 +138,25 @@ namespace AzFramework
     {
         memset(&m_lastClientRect, 0, sizeof(m_lastClientRect));
 
-        if (s_instanceCount++ == 0)
+        static const char* s_mouseCountEnvironmentVarName = "InputDeviceMouseInstanceCount";
+        s_instanceCount = AZ::Environment::FindVariable<int>(s_mouseCountEnvironmentVarName);
+        if (!s_instanceCount)
         {
+            s_instanceCount = AZ::Environment::CreateVariable<int>(s_mouseCountEnvironmentVarName, 1);
+
             // Register for raw mouse input
             RAWINPUTDEVICE rawInputDevice;
             rawInputDevice.usUsagePage = RAW_INPUT_MOUSE_USAGE_PAGE;
-            rawInputDevice.usUsage     = RAW_INPUT_MOUSE_USAGE;
-            rawInputDevice.dwFlags     = 0;
-            rawInputDevice.hwndTarget  = 0;
+            rawInputDevice.usUsage = RAW_INPUT_MOUSE_USAGE;
+            rawInputDevice.dwFlags = 0;
+            rawInputDevice.hwndTarget = 0;
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to register raw input device: mouse");
             AZ_UNUSED(result);
+        }
+        else
+        {
+            s_instanceCount.Set(s_instanceCount.Get() + 1);
         }
 
         RawInputNotificationBusWindows::Handler::BusConnect();
@@ -165,7 +170,8 @@ namespace AzFramework
         // Cleanup system cursor visibility and constraint
         SetSystemCursorState(SystemCursorState::Unknown);
 
-        if (--s_instanceCount == 0)
+        int instanceCount = s_instanceCount.Get();
+        if (--instanceCount == 0)
         {
             // Deregister from raw mouse input
             RAWINPUTDEVICE rawInputDevice;
@@ -176,6 +182,12 @@ namespace AzFramework
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: mouse");
             AZ_UNUSED(result);
+
+            s_instanceCount.Reset();
+        }
+        else
+        {
+            s_instanceCount.Set(instanceCount);
         }
     }
 

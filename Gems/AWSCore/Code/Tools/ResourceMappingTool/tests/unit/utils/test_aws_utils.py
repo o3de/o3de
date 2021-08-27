@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from typing import List
@@ -102,16 +98,52 @@ class TestAWSUtils(TestCase):
         mocked_s3_client.list_buckets.assert_called_once()
         assert not actual_buckets
 
-    def test_list_s3_buckets_return_expected_buckets(self) -> None:
+    def test_list_s3_buckets_return_empty_list_with_no_matching_region(self) -> None:
+        expected_region: str = "us-east-1"
         mocked_s3_client: MagicMock = self._mock_client.return_value
         expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
         mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
                                                                   {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": "us-east-2"},
+                                                            {"LocationConstraint": "us-west-1"}]
 
-        actual_buckets: List[str] = aws_utils.list_s3_buckets()
-        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME)
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
         mocked_s3_client.list_buckets.assert_called_once()
-        assert actual_buckets == expected_buckets
+        assert not actual_buckets
+
+    def test_list_s3_buckets_return_expected_buckets_matching_region(self) -> None:
+        expected_region: str = "us-west-2"
+        mocked_s3_client: MagicMock = self._mock_client.return_value
+        expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
+        mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
+                                                                  {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": "us-west-2"},
+                                                            {"LocationConstraint": "us-west-1"}]
+
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
+        mocked_s3_client.list_buckets.assert_called_once()
+        assert len(actual_buckets) == 1
+        assert actual_buckets[0] == expected_buckets[0]
+
+    def test_list_s3_buckets_return_expected_iad_buckets(self) -> None:
+        expected_region: str = "us-east-1"
+        mocked_s3_client: MagicMock = self._mock_client.return_value
+        expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
+        mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
+                                                                  {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": None},
+                                                            {"LocationConstraint": "us-west-1"}]
+
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
+        mocked_s3_client.list_buckets.assert_called_once()
+        assert len(actual_buckets) == 1
+        assert actual_buckets[0] == expected_buckets[0]
 
     def test_list_lambda_functions_return_empty_list(self) -> None:
         mocked_lambda_client: MagicMock = self._mock_client.return_value
@@ -256,6 +288,25 @@ class TestAWSUtils(TestCase):
         mocked_iterator.resume_token = None
         mocked_paginator.paginate.return_value = mocked_iterator
         mocked_iterator.__iter__.return_value = [{"StackResourceSummaries": []}]
+
+        actual_stack_resources: List[BasicResourceAttributes] = \
+            aws_utils.list_cloudformation_stack_resources(TestAWSUtils._expected_stack, TestAWSUtils._expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.CLOUDFORMATION_SERVICE_NAME,
+                                                  region_name=TestAWSUtils._expected_region)
+        mocked_cloudformation_client.get_paginator.assert_called_once_with(
+            aws_utils.AWSConstants.CLOUDFORMATION_LIST_STACK_RESOURCES_API_NAME)
+        mocked_paginator.paginate.assert_called_once_with(StackName=TestAWSUtils._expected_stack, PaginationConfig=ANY)
+        assert not actual_stack_resources
+
+    def test_list_cloudformation_stack_resources_return_empty_list_when_resource_has_invalid_attributes(self) -> None:
+        mocked_cloudformation_client: MagicMock = self._mock_client.return_value
+        mocked_paginator: MagicMock = MagicMock()
+        mocked_cloudformation_client.get_paginator.return_value = mocked_paginator
+        mocked_iterator: MagicMock = MagicMock()
+        mocked_iterator.resume_token = None
+        mocked_paginator.paginate.return_value = mocked_iterator
+        mocked_iterator.__iter__.return_value = [{"StackResourceSummaries": [
+            {"DummyAttribute": "DummyValue"}]}]
 
         actual_stack_resources: List[BasicResourceAttributes] = \
             aws_utils.list_cloudformation_stack_resources(TestAWSUtils._expected_stack, TestAWSUtils._expected_region)

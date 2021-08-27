@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -149,13 +145,12 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::Simulate(const RPI::FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender)
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                [[maybe_unused]] bool success = m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector());
-                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
+                m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector());
                 m_deviceBufferNeedsUpdate = false;
             }
         }
@@ -163,7 +158,7 @@ namespace AZ
         void DecalTextureArrayFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
             // Note that decals are rendered as part of the forward shading pipeline. We only need to bind the decal buffers/textures in here.
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender)
+            AZ_PROFILE_FUNCTION(AzRender);
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -299,7 +294,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId material)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
+            AZ_PROFILE_FUNCTION(AzRender);
             if (handle.IsNull())
             {
                 AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalMaterial().");
@@ -369,7 +364,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::OnAssetReady(const Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
+            AZ_PROFILE_FUNCTION(AzRender);
             const Data::AssetId& assetId = asset->GetId();
             
             const RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();

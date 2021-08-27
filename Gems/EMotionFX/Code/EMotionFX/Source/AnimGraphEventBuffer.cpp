@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AnimGraphEventBuffer.h"
 #include "EventManager.h"
@@ -28,7 +24,7 @@ namespace EMotionFX
     {
         for (EventInfo& event : m_events)
         {
-            event.mEmitter = emitterNode;
+            event.m_emitter = emitterNode;
         }
     }
 
@@ -36,9 +32,9 @@ namespace EMotionFX
     {
         for (EventInfo& curEvent : m_events)
         {
-            AnimGraphNodeData* emitterUniqueData = curEvent.mEmitter->FindOrCreateUniqueNodeData(animGraphInstance);
-            curEvent.mGlobalWeight = emitterUniqueData->GetGlobalWeight();
-            curEvent.mLocalWeight = emitterUniqueData->GetLocalWeight();
+            AnimGraphNodeData* emitterUniqueData = curEvent.m_emitter->FindOrCreateUniqueNodeData(animGraphInstance);
+            curEvent.m_globalWeight = emitterUniqueData->GetGlobalWeight();
+            curEvent.m_localWeight = emitterUniqueData->GetLocalWeight();
         }
     }
 
@@ -49,7 +45,7 @@ namespace EMotionFX
         {
             AZStd::string eventDataString;
 
-            for (const EventDataPtr& eventData : event.mEvent->GetEventDatas())
+            for (const EventDataPtr& eventData : event.m_event->GetEventDatas())
             {
                 if (eventData)
                 {
@@ -61,11 +57,11 @@ namespace EMotionFX
             }
 
             MCore::LogInfo("Event: (time=%f) (eventData=%s) (emitter=%s) (locWeight=%.4f  globWeight=%.4f)",
-                event.mTimeValue,
+                event.m_timeValue,
                 eventDataString.size() ? eventDataString.c_str() : "<none>",
-                event.mEmitter->GetName(),
-                event.mLocalWeight,
-                event.mGlobalWeight);
+                event.m_emitter->GetName(),
+                event.m_localWeight,
+                event.m_globalWeight);
         }
     }
 
@@ -80,12 +76,12 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphEventBuffer::Reserve(uint32 numEvents)
+    void AnimGraphEventBuffer::Reserve(size_t numEvents)
     {
         m_events.reserve(numEvents);
     }
 
-    void AnimGraphEventBuffer::Resize(uint32 numEvents)
+    void AnimGraphEventBuffer::Resize(size_t numEvents)
     {
         m_events.resize(numEvents);
     }
@@ -97,12 +93,12 @@ namespace EMotionFX
 
     void AnimGraphEventBuffer::AddAllEventsFrom(const AnimGraphEventBuffer& eventBuffer)
     {
-        const AZ::u32 numEventsToCopy = eventBuffer.GetNumEvents();
-        const uint32 numPrevEvents = GetNumEvents();
+        const size_t numEventsToCopy = eventBuffer.GetNumEvents();
+        const size_t numPrevEvents = GetNumEvents();
 
         Resize(GetNumEvents() + numEventsToCopy);
 
-        for (uint32 i = 0; i < numEventsToCopy; ++i)
+        for (size_t i = 0; i < numEventsToCopy; ++i)
         {
             SetEvent(numPrevEvents + i, eventBuffer.GetEvent(i));
         }
@@ -113,7 +109,7 @@ namespace EMotionFX
         m_events.clear();
     }
 
-    void AnimGraphEventBuffer::SetEvent(uint32 index, const EventInfo& eventInfo)
+    void AnimGraphEventBuffer::SetEvent(size_t index, const EventInfo& eventInfo)
     {
         m_events[index] = eventInfo;
     }

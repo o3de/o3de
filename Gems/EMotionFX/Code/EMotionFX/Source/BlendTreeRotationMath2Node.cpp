@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -37,7 +33,7 @@ namespace EMotionFX
         InitOutputPorts(1);
         SetupOutputPort("Rotation", INPUTPORT_X, MCore::AttributeQuaternion::TYPE_ID, PORTID_OUTPUT_QUATERNION);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -103,16 +99,15 @@ namespace EMotionFX
     void BlendTreeRotationMath2Node::ExecuteMathLogic(EMotionFX::AnimGraphInstance * animGraphInstance)
     {
         // If there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
 
         // If both x and y inputs have connections
-        //MCore::Quaternion x = MCore::AzQuatToEmfxQuat(m_defaultValue);
         AZ::Quaternion x = m_defaultValue;
         AZ::Quaternion y = x;
-        if (mConnections.size() == 2)
+        if (m_connections.size() == 2)
         {
 
             x = GetInputQuaternion(animGraphInstance, INPUTPORT_X)->GetValue();
@@ -121,13 +116,13 @@ namespace EMotionFX
         else // Only x or y is connected
         {
             // If only x has something plugged in
-            if (mConnections[0]->GetTargetPort() == INPUTPORT_X)
+            if (m_connections[0]->GetTargetPort() == INPUTPORT_X)
             {
                 x = GetInputQuaternion(animGraphInstance, INPUTPORT_X)->GetValue();
             }
             else // Only y has an input
             {
-                MCORE_ASSERT(mConnections[0]->GetTargetPort() == INPUTPORT_Y);
+                MCORE_ASSERT(m_connections[0]->GetTargetPort() == INPUTPORT_Y);
                 y = GetInputQuaternion(animGraphInstance, INPUTPORT_Y)->GetValue();
             }
         }
@@ -143,7 +138,7 @@ namespace EMotionFX
     void BlendTreeRotationMath2Node::SetMathFunction(EMathFunction func)
     {
         m_mathFunction = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

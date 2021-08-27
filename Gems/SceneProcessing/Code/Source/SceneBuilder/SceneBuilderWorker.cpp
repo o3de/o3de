@@ -1,22 +1,16 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
-#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
 #include <AzFramework/Application/Application.h>
@@ -55,7 +49,7 @@ namespace SceneBuilder
         if (m_cachedFingerprint.empty())
         {
             // put them in an ORDERED set so that changing the reflection
-            // or the gems loaded does not invalidate FBX files due to order of reflection changing.
+            // or the gems loaded does not invalidate scene files due to order of reflection changing.
             AZStd::set<AZStd::string> fragments;
 
             AZ::SerializeContext* context = nullptr;
@@ -73,11 +67,15 @@ namespace SceneBuilder
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>());
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
             }
+            
+            AZ::SceneAPI::SceneBuilderDependencyBus::Broadcast(&AZ::SceneAPI::SceneBuilderDependencyRequests::AddFingerprintInfo, fragments);
 
             for (const AZStd::string& element : fragments)
             {
                 m_cachedFingerprint.append(element);
             }
+            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
+            m_cachedFingerprint.append("Version 1");
         }
 
         return m_cachedFingerprint.c_str();
@@ -308,7 +306,10 @@ namespace SceneBuilder
 
         if (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true")
         {
-            BuildDebugSceneGraph(outputFolder.c_str(), productList, scene);
+            AZStd::string productName;
+            AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);
+            AzFramework::StringFunc::Path::ReplaceExtension(productName, "dbgsg");
+            AZ::SceneAPI::Utilities::DebugOutput::BuildDebugSceneGraph(outputFolder.c_str(), productList, scene, productName);
         }
 
         AZ_TracePrintf(Utilities::LogWindow, "Collecting and registering products.\n");
@@ -355,7 +356,7 @@ namespace SceneBuilder
     AZ::u32 SceneBuilderWorker::BuildSubId(const AZ::SceneAPI::Events::ExportProduct& product) const
     {
         // Instead of the just the lower 16-bits, use the full 32-bits that are available. There are production examples of
-        // uber-fbx files that contain hundreds of meshes that need to be split into individual mesh objects as an example.
+        // uber-scene files that contain hundreds of meshes that need to be split into individual mesh objects as an example.
         AZ::u32 id = static_cast<AZ::u32>(product.m_id.GetHash());
 
         if (product.m_lod.has_value())
@@ -372,67 +373,5 @@ namespace SceneBuilder
         }
 
         return id;
-    }
-
-    void WriteAndLog(AZ::IO::SystemFile& dbgFile, const char* strToWrite)
-    {
-        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "%s", strToWrite);
-        dbgFile.Write(strToWrite, strlen(strToWrite));
-        dbgFile.Write("\n", strlen("\n"));
-
-    }
-
-    void SceneBuilderWorker::BuildDebugSceneGraph(const char* outputFolder, AZ::SceneAPI::Events::ExportProductList& productList, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene) const
-    {
-        const int debugSceneGraphVersion = 1;
-        AZStd::string productName, debugSceneFile;
-
-        AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);
-        AzFramework::StringFunc::Path::ReplaceExtension(productName, "dbgsg");
-        AzFramework::StringFunc::Path::ConstructFull(outputFolder, productName.c_str(), debugSceneFile);
-        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "outputFolder %s, name %s.\n", outputFolder, productName.c_str());
-        
-        AZ::IO::SystemFile dbgFile;
-        if (dbgFile.Open(debugSceneFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-        {
-            WriteAndLog(dbgFile, AZStd::string::format("ProductName: %s", productName.c_str()).c_str());
-            WriteAndLog(dbgFile, AZStd::string::format("debugSceneGraphVersion: %d", debugSceneGraphVersion).c_str());
-            WriteAndLog(dbgFile, scene->GetName().c_str());
-
-            const AZ::SceneAPI::Containers::SceneGraph& sceneGraph = scene->GetGraph();
-            auto names = sceneGraph.GetNameStorage();
-            auto content = sceneGraph.GetContentStorage();
-            auto pairView = AZ::SceneAPI::Containers::Views::MakePairView(names, content);
-            auto view = AZ::SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<
-                AZ::SceneAPI::Containers::Views::BreadthFirst>(
-                    sceneGraph, sceneGraph.GetRoot(), pairView.cbegin(), true);
-
-            for (auto&& viewIt : view)
-            {
-                if (viewIt.second == nullptr)
-                {
-                    continue;
-                }
-
-                AZ::SceneAPI::DataTypes::IGraphObject* graphObject = const_cast<AZ::SceneAPI::DataTypes::IGraphObject*>(viewIt.second.get());
-                
-                WriteAndLog(dbgFile, AZStd::string::format("Node Name: %s", viewIt.first.GetName()).c_str());
-                WriteAndLog(dbgFile, AZStd::string::format("Node Path: %s", viewIt.first.GetPath()).c_str());
-                WriteAndLog(dbgFile, AZStd::string::format("Node Type: %s", graphObject->RTTI_GetTypeName()).c_str());
-
-                AZ::SceneAPI::Utilities::DebugOutput debugOutput;
-                viewIt.second->GetDebugOutput(debugOutput);
-
-                if (!debugOutput.GetOutput().empty())
-                {
-                    WriteAndLog(dbgFile, debugOutput.GetOutput().c_str());
-                }
-            }
-            dbgFile.Close();
-
-            static const AZ::Data::AssetType dbgSceneGraphAssetType("{07F289D1-4DC7-4C40-94B4-0A53BBCB9F0B}");
-            productList.AddProduct(productName, AZ::Uuid::CreateName(productName.c_str()), dbgSceneGraphAssetType,
-                AZStd::nullopt, AZStd::nullopt);
-        }
     }
 } // namespace SceneBuilder

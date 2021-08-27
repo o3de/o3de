@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "UiCanvasEditor_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorCommon.h"
+
+#include "UiCanvasComponent.h"
 
 #include "EditorDefs.h"
 #include "Settings.h"
@@ -251,6 +247,7 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
 
     FontNotificationBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(GetCurrentContextName());
 }
 
 ViewportWidget::~ViewportWidget()
@@ -258,6 +255,8 @@ ViewportWidget::~ViewportWidget()
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     FontNotificationBus::Handler::BusDisconnect();
     AZ::TickBus::Handler::BusDisconnect();
+    LyShinePassDataRequestBus::Handler::BusDisconnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
 
     m_uiRenderer.reset();
 
@@ -278,6 +277,8 @@ void ViewportWidget::InitUiRenderer()
     lyShine->SetUiRendererForEditor(m_uiRenderer);
 
     m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
+
+    LyShinePassDataRequestBus::Handler::BusConnect(GetViewportContext()->GetRenderScene()->GetId());
 }
 
 ViewportInteraction* ViewportWidget::GetViewportInteraction()
@@ -433,9 +434,7 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
             const QPoint pos = e->pos();
             HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
                 HierarchyMenu::Show::kCutCopyPaste |
-                HierarchyMenu::Show::kSavePrefab |
                 HierarchyMenu::Show::kNew_EmptyElement |
-                HierarchyMenu::Show::kNew_ElementFromPrefabs |
                 HierarchyMenu::Show::kDeleteElement |
                 HierarchyMenu::Show::kNewSlice |
                 HierarchyMenu::Show::kNew_InstantiateSlice |
@@ -496,29 +495,43 @@ void ViewportWidget::EnableCanvasRender()
 
 void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
 {
+    // Update
+    UiEditorMode editorMode = m_editorWindow->GetEditorMode();
+    if (editorMode == UiEditorMode::Edit)
+    {
+        UpdateEditMode(deltaTime);
+    }
+    else // if (editorMode == UiEditorMode::Preview)
+    {
+        UpdatePreviewMode(deltaTime);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+int ViewportWidget::GetTickOrder()
+{
+    return AZ::TICK_PRE_RENDER;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void ViewportWidget::OnRenderTick()
+{
     if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
     {
         return;
     }
 
-#ifdef LYSHINE_ATOM_TODO
-    gEnv->pRenderer->SetSrgbWrite(true);
-#endif
-
     const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
     ViewportIcon::SetDpiScaleFactor(dpiScale);
-
-    // Set up to render a frame to this viewport's window
-    GetViewportContext()->RenderTick();
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
     if (editorMode == UiEditorMode::Edit)
     {
-        RenderEditMode(deltaTime);
+        RenderEditMode();
     }
     else // if (editorMode == UiEditorMode::Preview)
     {
-        RenderPreviewMode(deltaTime);
+        RenderPreviewMode();
     }
 }
 
@@ -892,23 +905,65 @@ void ViewportWidget::OnFontTextureUpdated([[maybe_unused]] IFFont* font)
     m_fontTextureHasChanged = true;
 }
 
+LyShine::AttachmentImagesAndDependencies ViewportWidget::GetRenderTargets()
+{
+    LyShine::AttachmentImagesAndDependencies canvasTargets;
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetCanvasForCurrentEditorMode();
+    if (canvasEntityId.IsValid())
+    {
+        AZ::Entity* canvasEntity = nullptr;
+        EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+        AZ_Assert(canvasEntity, "Canvas entity not found by ID");
+        if (canvasEntity)
+        {
+            UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();
+            AZ_Assert(canvasComponent, "Canvas entity has no canvas component");
+            if (canvasComponent)
+            {
+                canvasComponent->GetRenderTargets(canvasTargets);
+            }
+        }
+    }
+
+    return canvasTargets;
+}
+
 QPointF ViewportWidget::WidgetToViewport(const QPointF & point) const
 {
     return point * WidgetToViewportFactor();
 }
 
-void ViewportWidget::RenderEditMode(float deltaTime)
+void ViewportWidget::UpdateEditMode(float deltaTime)
 {
-    // sort keys for different layers
-    static const int64_t backgroundKey = -0x1000;
-    static const int64_t topLayerKey = 0x1000000;
-
     if (m_fontTextureHasChanged)
     {
         // A font texture has changed since we last rendered. Force a render graph update for each loaded canvas
         m_editorWindow->FontTextureHasChanged();
         m_fontTextureHasChanged = false;
     }
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetCanvas();
+    if (!canvasEntityId.IsValid())
+    {
+        return; // this can happen if a render happens during a restart
+    }
+
+    AZ::Vector2 canvasSize;
+    EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
+
+    // Set the target size of the canvas
+    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
+
+    // Update this canvas (must be done after SetTargetCanvasSize)
+    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
+}
+
+void ViewportWidget::RenderEditMode()
+{
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+    static const int64_t topLayerKey = 0x1000000;
 
     AZ::EntityId canvasEntityId = m_editorWindow->GetCanvas();
     if (!canvasEntityId.IsValid())
@@ -944,12 +999,9 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     // Set the target size of the canvas
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
 
-    // Update this canvas (must be done after SetTargetCanvasSize)
-    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
-
     // Render this canvas
     QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-    AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+    AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1045,11 +1097,8 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     }
 }
 
-void ViewportWidget::RenderPreviewMode(float deltaTime)
+void ViewportWidget::UpdatePreviewMode(float deltaTime)
 {
-    // sort keys for different layers
-    static const int64_t backgroundKey = -0x1000;
-
     AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
     if (m_fontTextureHasChanged)
@@ -1058,6 +1107,37 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         m_editorWindow->FontTextureHasChanged();
         m_fontTextureHasChanged = false;
     }
+
+    if (canvasEntityId.IsValid())
+    {
+        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
+
+        // Get the canvas size
+        AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
+        if (canvasSize.GetX() == 0.0f && canvasSize.GetY() == 0.0f)
+        {
+            // special value of (0,0) means use the viewport size
+            canvasSize = viewportSize;
+        }
+
+        // Set the target size of the canvas
+        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
+
+        // Update this canvas (must be done after SetTargetCanvasSize)
+        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
+
+        // Execute events that have been queued during the canvas update
+        gEnv->pLyShine->ExecuteQueuedEvents();
+    }
+}
+
+void ViewportWidget::RenderPreviewMode()
+{
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
     // Rather than scaling to exactly fit we try to draw at one of these preset scale factors
     // to make it it bit more obvious that the canvas size is changing
@@ -1073,7 +1153,7 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
     if (canvasEntityId.IsValid())
     {
         QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1104,15 +1184,6 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
             }
         }
 
-        // Set the target size of the canvas
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
-
-        // Update this canvas (must be done after SetTargetCanvasSize)
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
-
-        // Execute events that have been queued during the canvas update
-        gEnv->pLyShine->ExecuteQueuedEvents();
-
         // match scale to one of the predefined scales. If the scale is so small
         // that it is less than the smallest scale then leave it as it is
         for (int i = 0; i < AZ_ARRAY_SIZE(zoomScales); ++i)
@@ -1138,14 +1209,6 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         AZ::Matrix4x4 canvasToViewportMatrix = AZ::Matrix4x4::CreateScale(scale3);
         canvasToViewportMatrix.SetTranslation(translation);
         EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetCanvasToViewportMatrix, canvasToViewportMatrix);
-
-#ifdef LYSHINE_ATOM_TODO // mask support with Atom
-        // clear the stencil buffer before rendering each canvas - required for masking
-        // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
-        // We also clear the color to a mid grey so that we can see the bounds of the canvas
-        ColorF viewportBackgroundColor(0.5f, 0.5f, 0.5f, 0); // if clearing color we want to set alpha to zero also
-        gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
-#endif
 
         m_draw2d->SetSortKey(backgroundKey);
 
@@ -1176,7 +1239,7 @@ void ViewportWidget::RenderViewportBackground()
 
     Draw2dHelper draw2d(m_draw2d.get());
     draw2d.SetImageColor(backgroundColor.GetAsVector3());
-    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(viewportSize.width(), viewportSize.height()));
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(static_cast<float>(viewportSize.width()), static_cast<float>(viewportSize.height())));
 }
 
 void ViewportWidget::SetupShortcuts()

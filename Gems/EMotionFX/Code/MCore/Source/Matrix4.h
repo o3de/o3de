@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -73,8 +69,7 @@ namespace MCore
      * [Tx Ty Tz 1] // translation <br>
      *
      */
-    MCORE_ALIGN_PRE(16)
-    class MCORE_API Matrix
+    class MCORE_API alignas(16) Matrix
     {
     public:
         /**
@@ -88,7 +83,7 @@ namespace MCore
          * The number of elements stored at the float pointer location that is used as parameter must be at least 16 floats in size.
          * @param elementData A pointer to the matrix float data, which must be 16 floats in size, or more, although only the first 16 floats are used.
          */
-        MCORE_INLINE explicit Matrix(const float* elementData)                                          { MCore::MemCopy(m16, elementData, sizeof(float) * 16); }
+        MCORE_INLINE explicit Matrix(const float* elementData)                                          { MCore::MemCopy(m_m16, elementData, sizeof(float) * 16); }
 
         /**
          * Copy constructor.
@@ -689,26 +684,11 @@ namespace MCore
          */
         void Frustum(float left, float right, float top, float bottom, float znear, float zfar);
 
-        /**
-         * Decompose a transformation matrix into translation and rotation components.
-         * The translation part is just the translation part of the matrix.
-         * The rotation AZ::Quaternion is calculated by normalizing the basis vectors and converting the
-         * 3x3 rotation part of the matrix to a AZ::Quaternion.
-         * It is allowed for the matrix to contain scaling.
-         * The matrix where you call Decompose on remains unchanged.
-         * @param outTranslation A pointer to a vector where the translation will be written to.
-         * @param outRotation A pointer to a AZ::Quaternion where the rotation will be written to.
-         * @note Please keep in mind that nullptr values for the parameters are NOT allowed.
-         */
-        void Decompose(AZ::Vector3* outTranslation, AZ::Quaternion* outRotation) const;
 
         // QR Gram-Schmidt decomposition
-        void DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot) const;
         void DecomposeQRGramSchmidt(AZ::Vector3& translation, Matrix& rot) const;
         void DecomposeQRGramSchmidt(AZ::Vector3& translation, Matrix& rot, AZ::Vector3& scale) const;
         void DecomposeQRGramSchmidt(AZ::Vector3& translation, Matrix& rot, AZ::Vector3& scale, AZ::Vector3& shear) const;
-        void DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale, AZ::Vector3& shear) const;
-        void DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale) const;
 
         static Matrix OuterProduct(const AZ::Vector4& column, const AZ::Vector4& row);
 
@@ -798,7 +778,7 @@ namespace MCore
         AZ::Matrix4x4 ToAzMatrix() const
         {
 #ifdef MCORE_MATRIX_ROWMAJOR
-            return AZ::Matrix4x4::CreateFromRowMajorFloat16(m16);
+            return AZ::Matrix4x4::CreateFromRowMajorFloat16(m_m16);
 #else
             return AZ::Matrix4x4::CreateFromColumnMajorFloat16(m16);
 #endif
@@ -926,10 +906,10 @@ namespace MCore
         // attributes
         union
         {
-            float   m16[16];        // 16 floats as 1D array
+            float   m_m16[16];        // 16 floats as 1D array
             float   m44[4][4];      // as 2D array
         };
-    } MCORE_ALIGN_POST(16);
+    };
 
 
     // include inline code

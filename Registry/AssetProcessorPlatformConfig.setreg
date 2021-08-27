@@ -24,6 +24,9 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer,vulkan,null"
+                },
                 "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },
@@ -76,7 +79,8 @@
                     "animsettings": "i_caf",
                     "Animations/SkeletonList.xml": "i_caf",
                     "cbc": "abc",
-                    "fbx.assetinfo": "fbx"
+                    "fbx.assetinfo": "fbx",
+                    "stl.assetinfo": "stl"
                 },
 
                 // ---- add any folders to scan here.  The priority order is the order they appear here
@@ -140,9 +144,6 @@
                 // note that $ has meaning to regex, so we escape it.
                 "Exclude TempFiles": {
                     "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
-                },
-                "Exclude AlembicCompressionTemplates": {
-                    "pattern": ".*\\\\/Presets\\\\/GeomCache\\\\/.*"
                 },
                 "Exclude TmpAnimationCompression": {
                     "pattern": ".*\\\\/Editor\\\\/Tmp\\\\/AnimationCompression\\\\/.*"

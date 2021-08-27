@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
@@ -64,10 +60,11 @@ namespace Multiplayer
 
     NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityId entityId, bool wasMigrated, bool takeOwnership)
         : m_entityId(entityId)
+        , m_isDelete(true)
         , m_wasMigrated(wasMigrated)
         , m_takeOwnership(takeOwnership)
     {
-        ;
+        // this is a delete entity message c-tor
     }
 
     NetworkEntityUpdateMessage& NetworkEntityUpdateMessage::operator =(NetworkEntityUpdateMessage&& rhs)
@@ -131,7 +128,7 @@ namespace Multiplayer
         }
 
         // 2-byte size header + the actual blob payload itself
-        const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(PropertyIndex) + m_data->GetSize() : 0;
+        const uint32_t sizeOfBlob = static_cast<uint32_t>((m_data != nullptr) ? sizeof(PropertyIndex) + m_data->GetSize() : 0);
 
         if (m_hasValidPrefabId)
         {

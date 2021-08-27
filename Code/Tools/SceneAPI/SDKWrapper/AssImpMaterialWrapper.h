@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 #include <SceneAPI/SDKWrapper/MaterialWrapper.h>
@@ -24,6 +20,7 @@ namespace AZ
             AZ_RTTI(AssImpMaterialWrapper, "{66992628-CFCE-441B-8849-9344A49AFAC9}", SDKMaterial::MaterialWrapper);
             AssImpMaterialWrapper(aiMaterial* aiMaterial);
             ~AssImpMaterialWrapper() override = default;
+            aiMaterial* GetAssImpMaterial() const;
             AZStd::string GetName() const override;
             AZ::u64 GetUniqueId() const override;
             AZ::Vector3 GetDiffuseColor() const override;
@@ -42,6 +39,9 @@ namespace AZ
             AZStd::optional<bool> GetUseEmissiveMap() const;
             AZStd::optional<float> GetEmissiveIntensity() const;
             AZStd::optional<bool> GetUseAOMap() const;
+
+        protected:
+            aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace AssImpSDKWrapper
 }// namespace AZ

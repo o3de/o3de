@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 // Based on boost 1.39.0
 
 #ifndef AZSTD_FUNCTION_BASE_HEADER
@@ -20,15 +16,9 @@
 #include <AzCore/std/typetraits/type_id.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_member_pointer.h>
+#include <AzCore/std/typetraits/is_const.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/createdestroy.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( push )
-#   pragma warning( disable : 4793 ) // complaint about native code generation
-#   pragma warning( disable : 4127 ) // "conditional expression is constant"
-#   pragma warning( disable : 4275 ) // non dll-interface class 'stdext::exception' used as base for dll-interface class 'std::bad_cast'
-#endif
 
 #define AZSTD_FUNCTION_TARGET_FIX(x)
 #define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor>, Type>
@@ -798,13 +788,6 @@ namespace AZStd
 #undef AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL
 //#undef aztypeid
 //#undef aztypeid_cmp
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( default : 4793 ) // complaint about native code generation
-#   pragma warning( default : 4127 ) // "conditional expression is constant"
-#   pragma warning( default : 4275 ) // non dll-interface class 'stdext::exception' used as base for dll-interface class 'std::bad_cast'
-#   pragma warning( pop )
-#endif
 
 #endif // AZSTD_FUNCTION_BASE_HEADER
 #pragma once

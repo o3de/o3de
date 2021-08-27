@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiMarkupButtonComponent.h"
 
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -37,7 +32,7 @@ namespace
     {
         // Iterate through the clickable rects to find one that contains the point
         int clickableRectIndex = -1;
-        const int numClickableRects = clickableTextRects.size();
+        const int numClickableRects = static_cast<int>(clickableTextRects.size());
         for (int i = 0; i < numClickableRects; ++i)
         {
             const auto& clickableRect = clickableTextRects[i];

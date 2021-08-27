@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 # win2012 nodes can build DX11/DX12, but can't run. Disable runtime support if d3d12.dll/d3d11.dll is not available
@@ -21,20 +18,7 @@ if(d3d12_dll)
     set(PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED TRUE)
 endif()
 
-set(PAL_TRAIT_PIX_AVAILABLE FALSE)
 unset(pix3_header CACHE)
-
-file(TO_CMAKE_PATH "$ENV{ATOM_PIX_PATH}" ATOM_PIX_PATH_CMAKE_FORMATTED)
-find_file(pix3_header
-    pix3.h
-    PATHS
-        "${ATOM_PIX_PATH_CMAKE_FORMATTED}/Include/WinPixEventRuntime"
-)
-
-mark_as_advanced(pix3_header)
-if(pix3_header)
-    set(PAL_TRAIT_PIX_AVAILABLE TRUE)
-endif()
 
 set(PAL_TRAIT_AFTERMATH_AVAILABLE FALSE)
 unset(aftermath_header CACHE)

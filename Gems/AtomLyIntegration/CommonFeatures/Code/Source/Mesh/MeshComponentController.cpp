@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Mesh/MeshComponentController.h>
 
@@ -35,23 +31,60 @@ namespace AZ
 {
     namespace Render
     {
+
+        namespace MeshComponentControllerVersionUtility
+        {
+            bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+            {
+                if (classElement.GetVersion() < 2)
+                {
+                    RPI::Cullable::LodOverride lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(classElement.FindElement(AZ_CRC("LodOverride")));
+                    static constexpr uint8_t old_NoLodOverride = AZStd::numeric_limits <RPI::Cullable::LodOverride>::max();
+                    if (lodOverride == old_NoLodOverride)
+                    {
+                        classElement.AddElementWithData(context, "LodType", RPI::Cullable::LodType::SpecificLod);
+                    }
+                }
+                return true;
+            }
+        } // namespace MeshComponentControllerVersionUtility
+
         void MeshComponentConfig::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    ->Version(1)
+                    ->Version(2, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
-                    ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
-                    ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular);
+                    ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
+                    ->Field("LodType", &MeshComponentConfig::m_lodType)
+                    ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
+                    ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
+                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
             }
+
         }
 
         bool MeshComponentConfig::IsAssetSet()
         {
             return m_modelAsset.GetId().IsValid();
+        }
+
+        bool MeshComponentConfig::LodTypeIsScreenCoverage()
+        {
+            return m_lodType == RPI::Cullable::LodType::ScreenCoverage;
+        }
+
+        bool MeshComponentConfig::LodTypeIsSpecificLOD()
+        {
+            return m_lodType == RPI::Cullable::LodType::SpecificLod;
+        }
+
+        bool MeshComponentConfig::ShowLodConfig()
+        {
+            return LodTypeIsScreenCoverage() && LodTypeIsSpecificLOD();
         }
 
         AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> MeshComponentConfig::GetLodOverrideValues()
@@ -62,7 +95,7 @@ namespace AZ
             {
                 if (m_modelAsset.IsReady())
                 {
-                    lodCount = m_modelAsset->GetLodCount();
+                    lodCount = static_cast<uint32_t>(m_modelAsset->GetLodCount());
                 }
                 else
                 {
@@ -70,15 +103,15 @@ namespace AZ
                     Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
                     if (model)
                     {
-                        lodCount = model->GetLodCount();
+                        lodCount = static_cast<uint32_t>(model->GetLodCount());
                     }
                 }
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ RPI::Cullable::NoLodOverride, "Not Set" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
 
-            for (uint32_t i = 0; i < lodCount; ++i)
+            for (uint32_t i = 1; i < lodCount; ++i)
             {
                 AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
@@ -106,7 +139,12 @@ namespace AZ
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->ConstantProperty("NoLodOverride", BehaviorConstant(RPI::Cullable::NoLodOverride))
+                behaviorContext->ConstantProperty("DefaultLodOverride", BehaviorConstant(0))
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render");
+
+                behaviorContext->ConstantProperty("DefaultLodType", BehaviorConstant(RPI::Cullable::LodType::Default))
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render");
@@ -118,12 +156,21 @@ namespace AZ
                     ->Event("SetModelAssetPath", &MeshComponentRequestBus::Events::SetModelAssetPath)
                     ->Event("SetSortKey", &MeshComponentRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &MeshComponentRequestBus::Events::GetSortKey)
+                    ->Event("SetLodType", &MeshComponentRequestBus::Events::SetLodType)
+                    ->Event("GetLodType", &MeshComponentRequestBus::Events::GetLodType)
                     ->Event("SetLodOverride", &MeshComponentRequestBus::Events::SetLodOverride)
                     ->Event("GetLodOverride", &MeshComponentRequestBus::Events::GetLodOverride)
+                    ->Event("SetMinimumScreenCoverage", &MeshComponentRequestBus::Events::SetMinimumScreenCoverage)
+                    ->Event("GetMinimumScreenCoverage", &MeshComponentRequestBus::Events::GetMinimumScreenCoverage)
+                    ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
+                    ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
+                    ->VirtualProperty("LodType", "GetLodType", "SetLodType")
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
+                    ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
+                    ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ;
             }
         }
@@ -255,6 +302,25 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
+        
+        RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
+
+        MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            return FindMaterialAssignmentIdInModel(GetModel(), lod, label);
+        }
 
         MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
         {
@@ -317,17 +383,20 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials,
-                    /*skinnedMeshWithMotion=*/false, /*rayTracingEnabled=*/true, RequiresCloning);
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
+                meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
+                meshDescriptor.m_requiresCloneCallback = RequiresCloning;
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
-                m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
+                m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
-                m_meshFeatureProcessor->SetUseForwardPassIblSpecular(m_meshHandle, m_configuration.m_useForwardPassIblSpecular);
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
@@ -416,28 +485,75 @@ namespace AZ
             return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
         }
 
+        RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const
+        {
+            return {
+                m_configuration.m_lodType,
+                m_configuration.m_lodOverride,
+                m_configuration.m_minimumScreenCoverage,
+                m_configuration.m_qualityDecayRate
+            };
+        }
+        // -----------------------
+        void MeshComponentController::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
+        }
+
+        RPI::Cullable::LodType MeshComponentController::GetLodType() const
+        {
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_lodType;
+        }
+
         void MeshComponentController::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_configuration.m_lodOverride = lodOverride; // Save for serialization
-            m_meshFeatureProcessor->SetLodOverride(m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
         }
 
         RPI::Cullable::LodOverride MeshComponentController::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_lodOverride;
+        }
+
+        void MeshComponentController::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
+        }
+
+        float MeshComponentController::GetMinimumScreenCoverage() const
+        {
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_minimumScreenCoverage;
+        }
+
+        void MeshComponentController::SetQualityDecayRate(float qualityDecayRate)
+        {
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
+        }
+
+        float MeshComponentController::GetQualityDecayRate() const
+        {
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_qualityDecayRate;
         }
 
         void MeshComponentController::SetVisibility(bool visible)
         {
             if (m_isVisible != visible)
             {
-                if (m_isVisible)
+                if (m_meshFeatureProcessor)
                 {
-                    UnregisterModel();
-                }
-                else
-                {
-                    RegisterModel();
+                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
                 }
                 m_isVisible = visible;
             }
@@ -460,10 +576,10 @@ namespace AZ
 
         Aabb MeshComponentController::GetLocalBounds()
         {
-            const Data::Instance<RPI::Model> model = GetModel();
-            if (model)
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
-                Aabb aabb = model->GetAabb();
+                Aabb aabb = m_meshFeatureProcessor->GetLocalAabb(m_meshHandle);
+
                 aabb.MultiplyByScale(m_cachedNonUniformScale);
                 return aabb;
             }

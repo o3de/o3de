@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -18,22 +14,24 @@
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
-#include <LyShine/LyShineBus.h>
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <LyShine/Bus/Tools/UiSystemToolsBus.h>
 #include <LyShine/UiComponentTypes.h>
 #include "LyShine.h"
 
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#endif
+
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator and CryStringAllocator. This will be managed
+    // LyShine depends on the LegacyAllocator. This will be managed
     // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
+    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     class LyShineSystemComponent
         : public AZ::Component
-        , protected LyShineRequestBus::Handler
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
         , protected LyShineAllocatorScope
@@ -65,7 +63,6 @@ namespace LyShine
 
         ////////////////////////////////////////////////////////////////////////
         // UiSystemBus interface implementation
-        void InitializeSystem() override;
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
         const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
@@ -97,6 +94,11 @@ namespace LyShine
 
         void BroadcastCursorImagePathname();
 
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        // Load pass template mappings for this gem
+        void LoadPassTemplateMappings();
+#endif
+
     protected:  // data
 
         CLyShine* m_pLyShine = nullptr;
@@ -109,5 +111,9 @@ namespace LyShine
 
         // We only store this in order to generate metrics on LyShine specific components
         static const AZStd::list<AZ::ComponentDescriptor*>* m_componentDescriptors;
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+#endif
     };
 }

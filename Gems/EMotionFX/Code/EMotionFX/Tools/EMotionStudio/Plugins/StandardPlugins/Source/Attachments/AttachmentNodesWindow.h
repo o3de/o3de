@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __EMSTUDIO_ATTACHMENTNODESWINDOW_H
 #define __EMSTUDIO_ATTACHMENTNODESWINDOW_H
@@ -61,7 +57,7 @@ namespace EMStudio
         // the slots
         void SelectNodesButtonPressed();
         void RemoveNodesButtonPressed();
-        void NodeSelectionFinished(MCore::Array<SelectionItem> selectionList);
+        void NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList);
         void OnItemSelectionChanged();
 
     private:
@@ -70,18 +66,18 @@ namespace EMStudio
 
     private:
         // the current actor
-        EMotionFX::Actor*           mActor;
+        EMotionFX::Actor*           m_actor;
 
         // the node selection window and node group
-        NodeSelectionWindow*        mNodeSelectionWindow;
-        CommandSystem::SelectionList    mNodeSelectionList;
-        AZStd::string               mNodeAction;
+        NodeSelectionWindow*        m_nodeSelectionWindow;
+        CommandSystem::SelectionList    m_nodeSelectionList;
+        AZStd::string               m_nodeAction;
 
         // widgets
-        QTableWidget*               mNodeTable;
-        QToolButton*                mSelectNodesButton;
-        QToolButton*                mAddNodesButton;
-        QToolButton*                mRemoveNodesButton;
+        QTableWidget*               m_nodeTable;
+        QToolButton*                m_selectNodesButton;
+        QToolButton*                m_addNodesButton;
+        QToolButton*                m_removeNodesButton;
     };
 } // namespace EMStudio
 

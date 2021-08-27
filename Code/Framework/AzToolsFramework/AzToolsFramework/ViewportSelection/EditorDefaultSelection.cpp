@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -192,7 +188,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        using namespace AzToolsFramework::ViewportInteraction;
+        using AzToolsFramework::ViewportInteraction::MouseEvent;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
         // store the current interaction for use in DrawManipulators
         m_currentInteraction = mouseInteraction;
@@ -200,28 +196,19 @@ namespace AzToolsFramework
         switch (mouseInteractionEvent.m_mouseEvent)
         {
         case MouseEvent::Down:
-            {
-                return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
         case MouseEvent::DoubleClick:
-            {
-                return false;
-            }
+            return false;
         case MouseEvent::Move:
             {
-                AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::None;
-                mouseMoveResult = m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
                 return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
             }
         case MouseEvent::Up:
-            {
-                return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
         case MouseEvent::Wheel:
-            {
-                return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
         default:
             return false;
         }

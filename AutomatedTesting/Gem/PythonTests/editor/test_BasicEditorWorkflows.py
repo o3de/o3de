@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -65,4 +61,36 @@ class TestBasicEditorWorkflows(object):
             cfg_args=[level],
             timeout=log_monitor_timeout,
             auto_test_mode=False
+        )
+
+    @pytest.mark.test_case_id("C6351273", "C6384955", "C16929880", "C15167490", "C15167491")
+    @pytest.mark.SUITE_main
+    @pytest.mark.REQUIRES_gpu
+    def test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(self, request, editor, level, launcher_platform):
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
+
+        expected_lines = [
+            "Create and load new level: True",
+            "New entity creation: True",
+            "Create entity hierarchy: True",
+            "Add component: True",
+            "Component update: True",
+            "Remove component: True",
+            "Save and Export: True",
+            "BasicEditorWorkflows_LevelEntityComponent:  result=SUCCESS",
+        ]
+
+        hydra.launch_and_validate_results(
+            request,
+            test_directory,
+            editor,
+            "BasicEditorWorkflows_LevelEntityComponentCRUD.py",
+            expected_lines,
+            cfg_args=[level],
+            timeout=log_monitor_timeout,
+            auto_test_mode=False,
+            null_renderer=False
         )

@@ -1,17 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <../Common/WinAPI/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_WinAPI.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzCore/Module/Environment.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -33,7 +30,7 @@ namespace AzFramework
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Count of the number instances of this class that have been created
-        static int s_instanceCount;
+        static AZ::EnvironmentVariable<int> s_instanceCount;
 
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +107,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    int InputDeviceKeyboardWindows::s_instanceCount = 0;
+    AZ::EnvironmentVariable<int> InputDeviceKeyboardWindows::s_instanceCount = nullptr;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceKeyboardWindows::InputDeviceKeyboardWindows(InputDeviceKeyboard& inputDevice)
@@ -120,8 +117,12 @@ namespace AzFramework
         , m_hasFocus(false)
         , m_hasTextEntryStarted(false)
     {
-        if (s_instanceCount++ == 0)
+        static const char* s_keyboardCountEnvironmentVarName = "InputDeviceKeyboardInstanceCount";
+        s_instanceCount = AZ::Environment::FindVariable<int>(s_keyboardCountEnvironmentVarName);
+        if (!s_instanceCount)
         {
+            s_instanceCount = AZ::Environment::CreateVariable<int>(s_keyboardCountEnvironmentVarName, 1);
+
             // Register for raw keyboard input
             RAWINPUTDEVICE rawInputDevice;
             rawInputDevice.usUsagePage = RAW_INPUT_KEYBOARD_USAGE_PAGE;
@@ -132,6 +133,10 @@ namespace AzFramework
             AZ_Assert(result, "Failed to register raw input device: keyboard");
             AZ_UNUSED(result);
         }
+        else
+        {
+            s_instanceCount.Set(s_instanceCount.Get() + 1);
+        }
 
         RawInputNotificationBusWindows::Handler::BusConnect();
     }
@@ -141,7 +146,8 @@ namespace AzFramework
     {
         RawInputNotificationBusWindows::Handler::BusDisconnect();
 
-        if (--s_instanceCount == 0)
+        int instanceCount = s_instanceCount.Get();
+        if (--instanceCount == 0)
         {
             // Deregister from raw keyboard input
             RAWINPUTDEVICE rawInputDevice;
@@ -152,7 +158,13 @@ namespace AzFramework
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: keyboard");
             AZ_UNUSED(result);
+
+            s_instanceCount.Reset();
         }
+        else
+        {
+            s_instanceCount.Set(instanceCount);
+        }   
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,7 +255,7 @@ namespace AzFramework
         if (stringLength != 0)
         {
             // Convert UTF-16 to UTF-8
-            AZStd::to_string(o_keyOrButtonText, buffer, stringLength);
+            AZStd::to_string(o_keyOrButtonText, { buffer, aznumeric_cast<size_t>(stringLength) });
         }
     }
 

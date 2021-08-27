@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "AssetMemoryAnalyzer_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ExportJSON.h"
 
@@ -83,7 +78,7 @@ namespace AssetMemoryAnalyzer
             writer.StartObject();
 
             writer.Key("id");
-            writer.Int(idCounter++);
+            writer.Int(static_cast<int>(idCounter++));
 
             writer.Key("label");
             writer.String(asset.m_id ? asset.m_id : "Root");
@@ -103,7 +98,7 @@ namespace AssetMemoryAnalyzer
                 {
                     writer.StartObject();
                     writer.Key("id");
-                    writer.Int(idCounter++);
+                    writer.Int(static_cast<int>(idCounter++));
 
                     writer.Key("label");
                     writer.String("<local allocations>");
@@ -124,7 +119,7 @@ namespace AssetMemoryAnalyzer
 
                         writer.StartObject();
                         writer.Key("id");
-                        writer.Int(idCounter++);
+                        writer.Int(static_cast<int>(idCounter++));
 
                         writer.Key("label");
 
@@ -132,13 +127,13 @@ namespace AssetMemoryAnalyzer
                         {
                         case AllocationCategories::HEAP:
                             writer.String(FormatUtils::FormatCodePoint(*ap.m_codePoint));
-                            heapSummary.m_allocationCount = ap.m_allocations.size();
+                            heapSummary.m_allocationCount = static_cast<uint32_t>(ap.m_allocations.size());
                             heapSummary.m_allocatedMemory = ap.m_totalAllocatedMemory;
                             break;
 
                         case AllocationCategories::VRAM:
                             writer.String(ap.m_codePoint->m_file);
-                            vramSummary.m_allocationCount = ap.m_allocations.size();
+                            vramSummary.m_allocationCount = static_cast<uint32_t>(ap.m_allocations.size());
                             vramSummary.m_allocatedMemory = ap.m_totalAllocatedMemory;
                             break;
                         }

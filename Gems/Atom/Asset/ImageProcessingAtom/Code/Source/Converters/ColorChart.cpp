@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageObjectImpl.h>
 #include <Processing/ImageToProcess.h>
@@ -81,9 +76,9 @@ namespace ImageProcessingAtom
                 for (int r = 0; r < ePS_Red; ++r)
                 {
                     SColor col;
-                    col.r = 255 * r / (ePS_Red);
-                    col.g = 255 * g / (ePS_Green);
-                    col.b = 255 * b / (ePS_Blue);
+                    col.r = static_cast<unsigned char>(255 * r / (ePS_Red));
+                    col.g = static_cast<unsigned char>(255 * g / (ePS_Green));
+                    col.b = static_cast<unsigned char>(255 * b / (ePS_Blue));
                     int l = 255 - (col.r * 3 + col.g * 6 + col.b) / 10;
                     col.r = col.g = col.b = (unsigned char)l;
                     m_mapping.push_back(col);

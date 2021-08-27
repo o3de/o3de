@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -22,6 +18,7 @@ QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QLayout)
+QT_FORWARD_DECLARE_CLASS(FlowLayout)
 
 namespace O3DE::ProjectManager
 {
@@ -42,30 +39,34 @@ namespace O3DE::ProjectManager
 
     protected:
         void NotifyCurrentScreen() override;
-        void ProjectBuildDone();
+        void SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage);
 
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
-        void HandleCopyProject(const QString& projectPath);
+        void HandleCopyProject(const ProjectInfo& projectInfo);
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);
         void QueueBuildProject(const ProjectInfo& projectInfo);
+        void UnqueueBuildProject(const ProjectInfo& projectInfo);
+
+        void ProjectBuildDone(bool success = true);
 
         void paintEvent(QPaintEvent* event) override;
 
     private:
         QFrame* CreateFirstTimeContent();
-        QFrame* CreateProjectsContent(QString buildProjectPath = "", ProjectButton** projectButton = nullptr);
-        ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
+        QFrame* CreateProjectsContent();
+        ProjectButton* CreateProjectButton(const ProjectInfo& project);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
+        bool RemoveInvalidProjects();
 
-        void StartProjectBuild(const ProjectInfo& projectInfo);
+        bool StartProjectBuild(const ProjectInfo& projectInfo);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);
         bool BuildQueueContainsProject(const QString& projectPath);
         bool WarnIfInBuildQueue(const QString& projectPath);
@@ -75,12 +76,12 @@ namespace O3DE::ProjectManager
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
+        FlowLayout* m_projectsFlowLayout = nullptr;
         QStackedWidget* m_stack = nullptr;
+        QHash<QString, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
-
-        const QString m_projectPreviewImagePath = "/preview.png";
 
         inline constexpr static int s_contentMargins = 80;
         inline constexpr static int s_spacerSize = 20;

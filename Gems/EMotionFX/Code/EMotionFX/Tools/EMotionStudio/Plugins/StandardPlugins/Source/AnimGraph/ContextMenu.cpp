@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
@@ -40,7 +36,7 @@ namespace EMStudio
         const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
         for (EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
         {
-            if (mPlugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
+            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
             {
                 isEmpty = false;
                 break;
@@ -58,7 +54,7 @@ namespace EMStudio
 
         for (const EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
         {
-            if (mPlugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
+            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
             {
                 const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
                 QAction* action = menu->addAction(nodePrototype->GetPaletteName());
@@ -76,17 +72,17 @@ namespace EMStudio
         QMenu* nodeGroupMenu = new QMenu("Node Group", menu);
         bool isNodeInNoneGroup = true;
         QAction* noneNodeGroupAction = nodeGroupMenu->addAction("None");
-        noneNodeGroupAction->setData(0); // this index is there to know it's the real none action in case one node group is also called like that
+        noneNodeGroupAction->setData(qulonglong(0)); // this index is there to know it's the real none action in case one node group is also called like that
         connect(noneNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::OnNodeGroupSelected);
         noneNodeGroupAction->setCheckable(true);
 
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
 
             QAction* nodeGroupAction = nodeGroupMenu->addAction(nodeGroup->GetName());
-            nodeGroupAction->setData(i + 1); // index of the menu added, not used
+            nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
             connect(nodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::OnNodeGroupSelected);
             nodeGroupAction->setCheckable(true);
 
@@ -148,7 +144,7 @@ namespace EMStudio
             else
             {
                 QMenu* previewMotionMenu = new QMenu("Preview Motions", menu);
-                for (uint32 i = 0; i < numMotions; ++i)
+                for (size_t i = 0; i < numMotions; ++i)
                 {
                     const char* motionId = motionNode->GetMotionId(i);
                     QAction* previewMotionAction = previewMotionMenu->addAction(motionId);
@@ -291,7 +287,7 @@ namespace EMStudio
                     {
                         menu->addSeparator();
                         QAction* action = menu->addAction("Adjust Visualization Color");
-                        connect(action, &QAction::triggered, [this, animGraphNode](bool) { mPlugin->GetActionManager().ShowNodeColorPicker(animGraphNode); });
+                        connect(action, &QAction::triggered, [this, animGraphNode](bool) { m_plugin->GetActionManager().ShowNodeColorPicker(animGraphNode); });
                     }
                 }
             }

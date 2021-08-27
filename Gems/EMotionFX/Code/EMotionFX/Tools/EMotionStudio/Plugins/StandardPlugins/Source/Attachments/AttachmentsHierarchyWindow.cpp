@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include required headers
 #include "AttachmentsHierarchyWindow.h"
@@ -28,7 +24,7 @@ namespace EMStudio
     AttachmentsHierarchyWindow::AttachmentsHierarchyWindow(QWidget* parent)
         : QWidget(parent)
     {
-        mHierarchy = nullptr;
+        m_hierarchy = nullptr;
     }
 
 
@@ -44,27 +40,27 @@ namespace EMStudio
         verticalLayout->setMargin(0);
         setLayout(verticalLayout);
 
-        mHierarchy = new QTreeWidget();
-        verticalLayout->addWidget(mHierarchy);
-        mHierarchy->setColumnCount(1);
-        mHierarchy->setHeaderHidden(true);
+        m_hierarchy = new QTreeWidget();
+        verticalLayout->addWidget(m_hierarchy);
+        m_hierarchy->setColumnCount(1);
+        m_hierarchy->setHeaderHidden(true);
 
         // set optical stuff for the tree
-        mHierarchy->setColumnWidth(0, 200);
-        mHierarchy->setColumnWidth(1, 20);
-        mHierarchy->setColumnWidth(1, 100);
-        mHierarchy->setSortingEnabled(false);
-        mHierarchy->setSelectionMode(QAbstractItemView::NoSelection);
-        mHierarchy->setMinimumWidth(150);
-        mHierarchy->setMinimumHeight(125);
-        mHierarchy->setAlternatingRowColors(true);
-        mHierarchy->setExpandsOnDoubleClick(true);
-        mHierarchy->setAnimated(true);
+        m_hierarchy->setColumnWidth(0, 200);
+        m_hierarchy->setColumnWidth(1, 20);
+        m_hierarchy->setColumnWidth(1, 100);
+        m_hierarchy->setSortingEnabled(false);
+        m_hierarchy->setSelectionMode(QAbstractItemView::NoSelection);
+        m_hierarchy->setMinimumWidth(150);
+        m_hierarchy->setMinimumHeight(125);
+        m_hierarchy->setAlternatingRowColors(true);
+        m_hierarchy->setExpandsOnDoubleClick(true);
+        m_hierarchy->setAnimated(true);
 
         // disable the move of section to have column order fixed
-        mHierarchy->header()->setSectionsMovable(false);
+        m_hierarchy->header()->setSectionsMovable(false);
 
-        verticalLayout->addWidget(mHierarchy);
+        verticalLayout->addWidget(m_hierarchy);
 
         ReInit();
     }
@@ -73,11 +69,11 @@ namespace EMStudio
     void AttachmentsHierarchyWindow::ReInit()
     {
         // clear the tree
-        mHierarchy->clear();
+        m_hierarchy->clear();
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 
@@ -92,16 +88,16 @@ namespace EMStudio
             // check if we are dealing with a root actor instance
             if (attachedTo == nullptr)
             {
-                QTreeWidgetItem* item = new QTreeWidgetItem(mHierarchy);
+                QTreeWidgetItem* item = new QTreeWidgetItem(m_hierarchy);
                 AZStd::string actorFilename;
                 AzFramework::StringFunc::Path::GetFileName(actor->GetFileNameString().c_str(), actorFilename);
                 item->setText(0, QString("%1 (ID:%2)").arg(actorFilename.c_str()).arg(actorInstance->GetID()));
                 item->setExpanded(true);
-                mHierarchy->addTopLevelItem(item);
+                m_hierarchy->addTopLevelItem(item);
 
                 // get the number of attachments and iterate through them
-                const uint32 numAttachments = actorInstance->GetNumAttachments();
-                for (uint32 j = 0; j < numAttachments; ++j)
+                const size_t numAttachments = actorInstance->GetNumAttachments();
+                for (size_t j = 0; j < numAttachments; ++j)
                 {
                     EMotionFX::Attachment* attachment = actorInstance->GetAttachment(j);
                     MCORE_ASSERT(actorInstance == attachment->GetAttachToActorInstance());
@@ -128,8 +124,8 @@ namespace EMStudio
         parent->addChild(item);
 
         // get the number of attachments and iterate through them
-        const uint32 numAttachments = actorInstance->GetNumAttachments();
-        for (uint32 i = 0; i < numAttachments; ++i)
+        const size_t numAttachments = actorInstance->GetNumAttachments();
+        for (size_t i = 0; i < numAttachments; ++i)
         {
             EMotionFX::Attachment* attachment = actorInstance->GetAttachment(i);
             MCORE_ASSERT(actorInstance == attachment->GetAttachToActorInstance());

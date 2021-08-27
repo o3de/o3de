@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
@@ -86,6 +82,10 @@ namespace AZ
             //! If validation is disabled, true is always returned.
             bool ValidateAccess(ShaderInputConstantIndex inputIndex) const;
 
+            //! Prints to the console the shader input names specified by input list of indices
+            //! Will ignore any indices outside of the inputs array bounds
+            void DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const;
+
         protected:
             ConstantsLayout() = default;
 
@@ -99,7 +99,6 @@ namespace AZ
 
             AZStd::vector<ShaderInputConstantDescriptor> m_inputs;
             IdReflectionMapForConstants m_idReflection;
-            AZStd::vector<Interval> m_intervals;
             uint32_t m_sizeInBytes = 0;
             HashValue64 m_hash = InvalidHash;
         };

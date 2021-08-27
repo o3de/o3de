@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -66,11 +62,11 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::MotionSet*           mMotionSet;
+        EMotionFX::MotionSet*           m_motionSet;
         AZStd::vector<AZStd::string>    m_existingIds;
         AZStd::string                   m_motionId;
-        QLineEdit*                      mLineEdit;
-        QPushButton*                    mOKButton;
+        QLineEdit*                      m_lineEdit;
+        QPushButton*                    m_okButton;
     };
 
 
@@ -92,19 +88,19 @@ namespace EMStudio
         void UpdateTableAndButton();
 
     private:
-        EMotionFX::MotionSet*           mMotionSet;
-        AZStd::vector<AZStd::string>    mMotionIDs;
-        AZStd::vector<AZStd::string>    mModifiedMotionIDs;
-        AZStd::vector<uint32>           mMotionToModifiedMap;
-        AZStd::vector<uint32>           mValids;
-        QTableWidget*                   mTableWidget;
-        QLineEdit*                      mStringALineEdit;
-        QLineEdit*                      mStringBLineEdit;
-        QPushButton*                    mApplyButton;
-        QLabel*                         mNumMotionIDsLabel;
-        QLabel*                         mNumModifiedIDsLabel;
-        QLabel*                         mNumDuplicateIDsLabel;
-        QComboBox*                      mComboBox;
+        EMotionFX::MotionSet*           m_motionSet;
+        AZStd::vector<AZStd::string>    m_motionIDs;
+        AZStd::vector<AZStd::string>    m_modifiedMotionIDs;
+        AZStd::vector<size_t>           m_motionToModifiedMap;
+        AZStd::vector<size_t>           m_valids;
+        QTableWidget*                   m_tableWidget;
+        QLineEdit*                      m_stringALineEdit;
+        QLineEdit*                      m_stringBLineEdit;
+        QPushButton*                    m_applyButton;
+        QLabel*                         m_numMotionIDsLabel;
+        QLabel*                         m_numModifiedIDsLabel;
+        QLabel*                         m_numDuplicateIDsLabel;
+        QComboBox*                      m_comboBox;
     };
 
 
@@ -128,7 +124,7 @@ namespace EMStudio
         void dragEnterEvent(QDragEnterEvent* event) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
 
-        MotionSetsWindowPlugin* mPlugin;
+        MotionSetsWindowPlugin* m_plugin;
     };
 
 
@@ -188,10 +184,10 @@ namespace EMStudio
         EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
 
         void GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices);
-        uint32 CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
+        size_t CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
 
     private:
-        QVBoxLayout* mVLayout = nullptr;
+        QVBoxLayout* m_vLayout = nullptr;
         MotionSetTableWidget* m_tableWidget = nullptr;
 
         QAction* m_addAction = nullptr;
@@ -200,6 +196,6 @@ namespace EMStudio
 
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;
-        MotionSetsWindowPlugin* mPlugin = nullptr;
+        MotionSetsWindowPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

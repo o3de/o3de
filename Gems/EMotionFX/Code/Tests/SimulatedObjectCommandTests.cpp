@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ActorFixture.h"
 #include <MCore/Source/CommandGroup.h>
@@ -36,7 +32,7 @@ namespace EMotionFX
             return object->GetNumSimulatedJoints();
         }
 
-        size_t CountChildJoints(const Actor* actor, size_t objectIndex, AZ::u32 jointIndex)
+        size_t CountChildJoints(const Actor* actor, size_t objectIndex, size_t jointIndex)
         {
             const AZStd::shared_ptr<SimulatedObjectSetup>& simulatedObjectSetup = actor->GetSimulatedObjectSetup();
             const SimulatedObject* object = simulatedObjectSetup->GetSimulatedObject(objectIndex);
@@ -59,7 +55,7 @@ namespace EMotionFX
         CommandSystem::CommandManager commandManager;
         MCore::CommandGroup commandGroup;
 
-        const AZ::u32 actorId = m_actor->GetID();
+        const uint32 actorId = m_actor->GetID();
         const AZStd::vector<AZStd::string> jointNames = GetTestJointNames();
 
         // 1. Add simulated object.
@@ -110,11 +106,11 @@ namespace EMotionFX
         //             --l_ankle
         //                    --l_ball
         const Skeleton* skeleton = m_actor->GetSkeleton();
-        const AZ::u32 l_upLegIdx = skeleton->FindNodeByName("l_upLeg")->GetNodeIndex();
-        const AZ::u32 l_upLegRollIdx = skeleton->FindNodeByName("l_upLegRoll")->GetNodeIndex();
-        const AZ::u32 l_loLegIdx = skeleton->FindNodeByName("l_loLeg")->GetNodeIndex();
-        const AZ::u32 l_ankleIdx = skeleton->FindNodeByName("l_ankle")->GetNodeIndex();
-        const AZ::u32 l_ballIdx = skeleton->FindNodeByName("l_ball")->GetNodeIndex();
+        const size_t l_upLegIdx = skeleton->FindNodeByName("l_upLeg")->GetNodeIndex();
+        const size_t l_upLegRollIdx = skeleton->FindNodeByName("l_upLegRoll")->GetNodeIndex();
+        const size_t l_loLegIdx = skeleton->FindNodeByName("l_loLeg")->GetNodeIndex();
+        const size_t l_ankleIdx = skeleton->FindNodeByName("l_ankle")->GetNodeIndex();
+        const size_t l_ballIdx = skeleton->FindNodeByName("l_ball")->GetNodeIndex();
         CommandSimulatedObjectHelpers::AddSimulatedJoints(actorId, {l_upLegIdx, l_upLegRollIdx, l_loLegIdx, l_ankleIdx, l_ballIdx}, 0, false, &commandGroup);
         EXPECT_TRUE(commandManager.ExecuteCommandGroup(commandGroup, result));
         const AZStd::string serialized3_2 = SerializeSimulatedObjectSetup(m_actor.get());
@@ -176,7 +172,7 @@ namespace EMotionFX
         CommandSystem::CommandManager commandManager;
         MCore::CommandGroup commandGroup;
 
-        const AZ::u32 actorId = m_actor->GetID();
+        const uint32 actorId = m_actor->GetID();
         const AZStd::vector<AZStd::string> jointNames = GetTestJointNames();
 
         // 1. Add simulated object
@@ -187,8 +183,8 @@ namespace EMotionFX
 
         // 2. Add r_upLeg simulated joints
         const Skeleton* skeleton = m_actor->GetSkeleton();
-        const AZ::u32 r_upLegIdx = skeleton->FindNodeByName("r_upLeg")->GetNodeIndex();
-        const AZ::u32 r_loLegIdx = skeleton->FindNodeByName("r_loLeg")->GetNodeIndex();
+        const size_t r_upLegIdx = skeleton->FindNodeByName("r_upLeg")->GetNodeIndex();
+        const size_t r_loLegIdx = skeleton->FindNodeByName("r_loLeg")->GetNodeIndex();
         CommandSimulatedObjectHelpers::AddSimulatedJoints(actorId, { r_upLegIdx, r_loLegIdx }, 0, false);
         EXPECT_EQ(2, CountSimulatedJoints(m_actor.get(), 0));
         const AZStd::string serializedUpLeg = SerializeSimulatedObjectSetup(m_actor.get());

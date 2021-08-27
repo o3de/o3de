@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/PlatformId/PlatformDefaults.h>
@@ -19,7 +15,7 @@ namespace AZ
 {
     inline namespace PlatformDefaults
     {
-        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformLinux, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
         const char* PlatformIdToPalFolder(AZ::PlatformId platform)
         {
@@ -31,6 +27,8 @@ namespace AZ
             {
             case AZ::PC:
                 return "PC";
+            case AZ::LINUX_ID:
+                return "Linux";
             case AZ::ANDROID_ID:
                 return "Android";
             case AZ::IOS:
@@ -60,9 +58,13 @@ namespace AZ
 
         const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform)
         {
-            if (osPlatform == PlatformCodeNameWindows || osPlatform == PlatformCodeNameLinux)
+            if (osPlatform == PlatformCodeNameWindows)
             {
                 return PlatformPC;
+            }
+            if (osPlatform == PlatformCodeNameLinux)
+            {
+                return PlatformLinux;
             }
             else if (osPlatform == PlatformCodeNameMac)
             {
@@ -205,6 +207,8 @@ namespace AZ
             {
             case PlatformId::PC:
                 platformCodes.emplace_back(PlatformCodeNameWindows);
+                break;
+            case PlatformId::LINUX_ID:
                 platformCodes.emplace_back(PlatformCodeNameLinux);
                 break;
             case PlatformId::ANDROID_ID:

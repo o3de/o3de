@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-// include the Core system
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/BoundingSphere.h>
 #include <MCore/Source/Ray.h>
@@ -92,40 +88,40 @@ namespace MCommon
         void ProcessMouseInput(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY, int32 mouseMovementX, int32 mouseMovementY, bool leftButtonPressed, bool middleButtonPressed, bool rightButtonPressed, uint32 keyboardKeyFlags = 0);
 
     protected:
-        AZ::Vector3             mRotation;
-        AZ::Quaternion          mRotationQuat;
-        AZ::Vector3             mRotationAxis;
-        AZ::Vector3             mClickPosition;
+        AZ::Vector3             m_rotation;
+        AZ::Quaternion          m_rotationQuat;
+        AZ::Vector3             m_rotationAxis;
+        AZ::Vector3             m_clickPosition;
 
         // bounding volumes for the axes
-        MCore::BoundingSphere   mInnerBoundingSphere;
-        MCore::BoundingSphere   mOuterBoundingSphere;
-        MCore::AABB             mXAxisAABB;
-        MCore::AABB             mYAxisAABB;
-        MCore::AABB             mZAxisAABB;
-        MCore::AABB             mXAxisInnerAABB;
-        MCore::AABB             mYAxisInnerAABB;
-        MCore::AABB             mZAxisInnerAABB;
+        MCore::BoundingSphere   m_innerBoundingSphere;
+        MCore::BoundingSphere   m_outerBoundingSphere;
+        MCore::AABB             m_xAxisAabb;
+        MCore::AABB             m_yAxisAabb;
+        MCore::AABB             m_zAxisAabb;
+        MCore::AABB             m_xAxisInnerAabb;
+        MCore::AABB             m_yAxisInnerAabb;
+        MCore::AABB             m_zAxisInnerAabb;
 
         // the proportions of the rotation manipulator
-        float                   mSize;
-        float                   mInnerRadius;
-        float                   mOuterRadius;
-        float                   mArrowBaseRadius;
-        float                   mAABBWidth;
-        float                   mAxisSize;
-        float                   mTextDistance;
-        float                   mInnerQuadSize;
+        float                   m_size;
+        float                   m_innerRadius;
+        float                   m_outerRadius;
+        float                   m_arrowBaseRadius;
+        float                   m_aabbWidth;
+        float                   m_axisSize;
+        float                   m_textDistance;
+        float                   m_innerQuadSize;
 
         // orientation information
-        float                   mSignX;
-        float                   mSignY;
-        float                   mSignZ;
-        bool                    mXAxisVisible;
-        bool                    mYAxisVisible;
-        bool                    mZAxisVisible;
+        float                   m_signX;
+        float                   m_signY;
+        float                   m_signZ;
+        bool                    m_xAxisVisible;
+        bool                    m_yAxisVisible;
+        bool                    m_zAxisVisible;
 
         // store the projection mode of the current render widget
-        MCommon::Camera::ProjectionMode mCurrentProjectionMode;
+        MCommon::Camera::ProjectionMode m_currentProjectionMode;
     };
 } // namespace MCommon

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/Handle.h>
@@ -45,8 +41,6 @@ namespace AZ
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::IndirectCommandTiers);
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
 
         //! Arguments when setting an indirect Vertex Buffer View command.
         struct IndirectBufferViewArguments
@@ -87,8 +81,6 @@ namespace AZ
             /// Arguments when the command is a Vertex Buffer View type.
             IndirectBufferViewArguments m_vertexBufferArgs;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         AZ_FORCE_INLINE bool operator==(const IndirectCommandDescriptor& lhs, const IndirectCommandDescriptor& rhs)
         {

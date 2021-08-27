@@ -1,19 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "SharedMemory_Windows.h"
 
 #include <AzCore/IPC/SharedMemory.h>
 #include <AzCore/std/parallel/spin_mutex.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ
 {
@@ -24,16 +22,18 @@ namespace AZ
     {
     }
 
-    void SharedMemory_Windows::ComposeMutexName(char* dest, size_t length, const char* name)
+    void ComposeName(AZStd::fixed_wstring<256>& dest, const char* name, const wchar_t* suffix)
     {
-        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
-        azsnprintf(dest, length, "%s_Mutex", name);
+        AZStd::to_wstring(dest, name);
+        dest += L"_";
+        dest += suffix;
     }
 
     SharedMemory_Common::CreateResult SharedMemory_Windows::Create(const char* name, unsigned int size, bool openIfCreated)
     {
-        char fullName[256];
-        ComposeMutexName(fullName, AZ_ARRAY_SIZE(fullName), name);
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
+        AZStd::fixed_wstring<256> fullName;
+        ComposeName(fullName, name, L"Mutex");
 
         // Security attributes
         SECURITY_ATTRIBUTES secAttr;
@@ -45,7 +45,7 @@ namespace AZ
         SetSecurityDescriptorDacl(secAttr.lpSecurityDescriptor, TRUE, 0, FALSE);
 
         // Obtain global mutex
-        m_globalMutex = CreateMutex(&secAttr, FALSE, fullName);
+        m_globalMutex = CreateMutexW(&secAttr, FALSE, fullName.c_str());
         DWORD error = GetLastError();
         if (m_globalMutex == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
@@ -54,8 +54,8 @@ namespace AZ
         }
 
         // Create the file mapping.
-        azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
-        m_mapHandle = CreateFileMapping(INVALID_HANDLE_VALUE, &secAttr, PAGE_READWRITE, 0, size, fullName);
+        ComposeName(fullName, name, L"Data");
+        m_mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, &secAttr, PAGE_READWRITE, 0, size, fullName.c_str());
         error = GetLastError();
         if (m_mapHandle == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
@@ -68,10 +68,11 @@ namespace AZ
 
     bool SharedMemory_Windows::Open(const char* name)
     {
-        char fullName[256];
-        ComposeMutexName(fullName, AZ_ARRAY_SIZE(fullName), name);
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
+        AZStd::fixed_wstring<256> fullName;
+        ComposeName(fullName, name, L"Mutex");
 
-        m_globalMutex = OpenMutex(SYNCHRONIZE, TRUE, fullName);
+        m_globalMutex = OpenMutex(SYNCHRONIZE, TRUE, fullName.c_str());
         AZ_Warning("AZSystem", m_globalMutex != NULL, "Failed to open OS mutex [%s]\n", m_name);
         if (m_globalMutex == NULL)
         {
@@ -79,8 +80,8 @@ namespace AZ
             return false;
         }
 
-        azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
-        m_mapHandle = OpenFileMapping(FILE_MAP_WRITE, false, fullName);
+        ComposeName(fullName, name, L"Data");
+        m_mapHandle = OpenFileMapping(FILE_MAP_WRITE, false, fullName.c_str());
         if (m_mapHandle == NULL)
         {
             AZ_TracePrintf("AZSystem", "OpenFileMapping %s failed with error %d\n", m_name, GetLastError());

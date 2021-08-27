@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LogWindowPlugin.h"
 #include "LogWindowCallback.h"
@@ -24,7 +20,7 @@ namespace EMStudio
     LogWindowPlugin::LogWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mLogCallback = nullptr;
+        m_logCallback = nullptr;
     }
 
 
@@ -32,8 +28,8 @@ namespace EMStudio
     LogWindowPlugin::~LogWindowPlugin()
     {
         // remove the callback from the log manager (automatically deletes from memory as well)
-        const uint32 index = MCore::GetLogManager().FindLogCallback(mLogCallback);
-        if (index != MCORE_INVALIDINDEX32)
+        const size_t index = MCore::GetLogManager().FindLogCallback(m_logCallback);
+        if (index != InvalidIndex)
         {
             MCore::GetLogManager().RemoveLogCallback(index);
         }
@@ -64,7 +60,7 @@ namespace EMStudio
     // get the creator name
     const char* LogWindowPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 
@@ -87,7 +83,7 @@ namespace EMStudio
     bool LogWindowPlugin::Init()
     {
         // create the widget
-        QWidget* windowWidget = new QWidget(mDock);
+        QWidget* windowWidget = new QWidget(m_dock);
 
         // create the layout
         QVBoxLayout* windowWidgetLayout = new QVBoxLayout();
@@ -95,7 +91,7 @@ namespace EMStudio
         windowWidgetLayout->setMargin(3);
 
         // create the find widget
-        mSearchWidget = new AzQtComponents::FilteredSearchWidget(windowWidget);
+        m_searchWidget = new AzQtComponents::FilteredSearchWidget(windowWidget);
         AddFilter(tr("Fatal"), MCore::LogCallback::LOGLEVEL_FATAL, true);
         AddFilter(tr("Error"), MCore::LogCallback::LOGLEVEL_ERROR, true);
         AddFilter(tr("Warning"), MCore::LogCallback::LOGLEVEL_WARNING, true);
@@ -107,13 +103,13 @@ namespace EMStudio
         AddFilter(tr("Detailed Info"), MCore::LogCallback::LOGLEVEL_DETAILEDINFO, false);
         AddFilter(tr("Debug"), MCore::LogCallback::LOGLEVEL_DEBUG, false);
     #endif
-        connect(mSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &LogWindowPlugin::OnTextFilterChanged);
-        connect(mSearchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &LogWindowPlugin::OnTypeFilterChanged);
+        connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &LogWindowPlugin::OnTextFilterChanged);
+        connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &LogWindowPlugin::OnTypeFilterChanged);
 
         // create the filter layout
         QHBoxLayout* topLayout = new QHBoxLayout();
         topLayout->addWidget(new QLabel("Filter:"));
-        topLayout->addWidget(mSearchWidget);
+        topLayout->addWidget(m_searchWidget);
         topLayout->addStretch();
         topLayout->setSpacing(6);
 
@@ -121,18 +117,18 @@ namespace EMStudio
         windowWidgetLayout->addLayout(topLayout);
 
         // create and add the table and callback
-        mLogCallback = new LogWindowCallback(nullptr);
-        windowWidgetLayout->addWidget(mLogCallback);
+        m_logCallback = new LogWindowCallback(nullptr);
+        windowWidgetLayout->addWidget(m_logCallback);
 
         // set the layout
         windowWidget->setLayout(windowWidgetLayout);
 
         // set the table as content
-        mDock->setWidget(windowWidget);
+        m_dock->setWidget(windowWidget);
 
         // create the callback
-        mLogCallback->SetLogLevels(MCore::LogCallback::LOGLEVEL_ALL);
-        MCore::GetLogManager().AddLogCallback(mLogCallback);
+        m_logCallback->SetLogLevels(MCore::LogCallback::LOGLEVEL_ALL);
+        MCore::GetLogManager().AddLogCallback(m_logCallback);
 
         // return true because the plugin is correctly initialized
         return true;
@@ -142,7 +138,7 @@ namespace EMStudio
     // find changed
     void LogWindowPlugin::OnTextFilterChanged(const QString& text)
     {
-        mLogCallback->SetFind(text);
+        m_logCallback->SetFind(text);
     }
 
 
@@ -154,7 +150,7 @@ namespace EMStudio
         {
             newFilter |= filter.metadata.toInt();
         }
-        mLogCallback->SetFilter(newFilter);
+        m_logCallback->SetFilter(newFilter);
     }
 
 
@@ -163,7 +159,7 @@ namespace EMStudio
         AzQtComponents::SearchTypeFilter filter(tr("Level"), name);
         filter.metadata = static_cast<int>(level);
         filter.enabled = enabled;
-        mSearchWidget->AddTypeFilter(filter);
+        m_searchWidget->AddTypeFilter(filter);
     }
 
 } // namespace EMStudio

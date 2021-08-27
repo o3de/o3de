@@ -1,13 +1,9 @@
 
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -144,20 +140,25 @@ namespace AZ
                 return m_asyncUploadQueue;
             }
             
+            const NSCache* GetSamplerCache() const
+            {
+                return m_samplerCache;
+            }
+            
             BufferMemoryAllocator& GetArgBufferConstantBufferAllocator() { return m_argumentBufferConstantsAllocator;}
             BufferMemoryAllocator& GetArgumentBufferAllocator() { return m_argumentBufferAllocator;}
             
             NullDescriptorManager& GetNullDescriptorManager();
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
-            
+            void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+
         private:
-            Device() = default;
+            Device();
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-            RHI::ResultCode PostInitInternal(const RHI::DeviceDescriptor& params) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
@@ -166,6 +167,7 @@ namespace AZ
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             //////////////////////////////////////////////////////////////////////////
@@ -194,6 +196,7 @@ namespace AZ
             RHI::HeapMemoryUsage m_argumentBufferAllocatorMemoryUsage;
             
             NullDescriptorManager m_nullDescriptorManager;
+            NSCache* m_samplerCache;
         };
     }
 }

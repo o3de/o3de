@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -71,12 +67,18 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline const BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::GetPrevious() const
+    {
+        return GetValueForTime(GetCurrentTimeForProperty() - HostFrameId(1));
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
         const HostFrameId frameTime = GetCurrentTimeForProperty();
         if (frameTime < m_headTime)
         {
-            AZ_Assert(false, "Trying to mutate a rewindable in the past");
+            AZ_Assert(false, "Trying to mutate a rewindable value in the past");
         }
         else if (m_headTime < frameTime)
         {

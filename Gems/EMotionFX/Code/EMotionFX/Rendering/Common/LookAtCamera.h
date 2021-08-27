@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __MCOMMON_LOOKATCAMERA_H
 #define __MCOMMON_LOOKATCAMERA_H
@@ -70,29 +66,29 @@ namespace MCommon
          * Set the target position. Note that the camera needs an update after setting a new target.
          * @param[in] target The new camera target.
          */
-        MCORE_INLINE void SetTarget(const AZ::Vector3& target)   { mTarget = target; }
+        MCORE_INLINE void SetTarget(const AZ::Vector3& target)   { m_target = target; }
 
         /**
          * Get the target position.
          * @return The current camera target.
          */
-        MCORE_INLINE AZ::Vector3 GetTarget() const               { return mTarget; }
+        MCORE_INLINE AZ::Vector3 GetTarget() const               { return m_target; }
 
         /**
          * Set the up vector for the camera. Note that the camera needs an update after setting a new up vector.
          * @param[in] up The new camera up vector.
          */
-        MCORE_INLINE void SetUp(const AZ::Vector3& up)           { mUp = up; }
+        MCORE_INLINE void SetUp(const AZ::Vector3& up)           { m_up = up; }
 
         /**
          * Get the camera up vector.
          * @return The current up vector.
          */
-        MCORE_INLINE AZ::Vector3 GetUp() const                   { return mUp; }
+        MCORE_INLINE AZ::Vector3 GetUp() const                   { return m_up; }
 
     protected:
-        AZ::Vector3 mTarget; /**< The camera target. */
-        AZ::Vector3 mUp;     /**< The up vector of the camera. */
+        AZ::Vector3 m_target; /**< The camera target. */
+        AZ::Vector3 m_up;     /**< The up vector of the camera. */
     };
 } // namespace MCommon
 

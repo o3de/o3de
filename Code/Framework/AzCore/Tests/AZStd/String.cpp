@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UserTypes.h"
 
 #include <AzCore/std/string/string.h>
@@ -632,10 +628,6 @@ namespace UnitTest
         }
     }
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning( disable: 4428 )   // universal-character-name encountered in source
-#endif // AZ_COMPILER_MSVC
     TEST_F(String, Algorithms)
     {
         string str = string::format("%s %d", "BlaBla", 5);
@@ -682,6 +674,7 @@ namespace UnitTest
         string str1;
         to_string(str1, wstr);
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
+        EXPECT_EQ(8, to_string_length(wstr));
 
         str1 = string::format("%ls", wstr.c_str());
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
@@ -693,6 +686,32 @@ namespace UnitTest
 
         wstr1 = wstring::format(L"%hs", str.c_str());
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
+
+        // wstring to char buffer
+        char strBuffer[9];
+        to_string(strBuffer, 9, wstr1.c_str());
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+        EXPECT_EQ(8, to_string_length(wstr1));
+
+        // wstring to char with unicode
+        wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
+        EXPECT_EQ(13, to_string_length(ws1InfinityEscaped));
+
+        // wchar_t buffer to char buffer
+        wchar_t wstrBuffer[9] = L"BLABLA 5";
+        memset(strBuffer, 0, AZ_ARRAY_SIZE(strBuffer));
+        to_string(strBuffer, 9, wstrBuffer);
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+
+        // string to wchar_t buffer
+        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        to_wstring(wstrBuffer, 9, str1.c_str());
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
+
+        // char buffer to wchar_t buffer
+        memset(wstrBuffer, L' ', AZ_ARRAY_SIZE(wstrBuffer)); // to check that the null terminator is properly placed
+        to_wstring(wstrBuffer, 9, strBuffer);
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
 
         // wchar UTF16/UTF32 to/from Utf8
         wstr1 = L"this is a \u20AC \u00A3 test"; // that's a euro and a pound sterling
@@ -1118,11 +1137,6 @@ namespace UnitTest
         EXPECT_FALSE(other2.Valid());
     }
 
-    // StringAlgorithmTest-End
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC
-
     TEST_F(String, ConstString)
     {
         string_view cstr1;
@@ -1444,17 +1458,17 @@ namespace UnitTest
         constexpr double               v15 = 0;
         constexpr const char*          v16 = "Hello";
         constexpr const wchar_t*       v17 = L"Hello";
-        constexpr void*                v18 = 0;
+        constexpr void*                v18 = nullptr;
 
         // This shouldn't give a compile error
         AZStd::string::format(
-            "%i  %c %uc  %c %c %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
+           "%i %c %uc " AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR AZ_TRAIT_FORMAT_STRING_PRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_PRINTF_STRING AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING " %p",
             v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
 
         // This shouldn't give a compile error
         AZStd::wstring::format(
-            L"%i  %c %uc  %c %lc  %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
-              v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
+          L"%i %c %uc " AZ_TRAIT_FORMAT_STRING_WPRINTF_CHAR AZ_TRAIT_FORMAT_STRING_WPRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING " %p",
+            v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18);
 
         class WrappedInt
         {

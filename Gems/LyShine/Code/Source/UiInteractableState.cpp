@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "LyShine_precompiled.h"
 #include "UiInteractableState.h"
 
 #include <AzCore/Math/Crc.h>
@@ -26,6 +21,7 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
+#include <CryCommon/LyShine/ILyShine.h>
 
 #include <IRenderer.h>
 #include "EditorPropertyTypes.h"
@@ -579,7 +575,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
             fontFamily = gEnv->pCryFont->LoadFontFamily(fileName.c_str());
             if (!fontFamily)
             {
-                string errorMsg = "Error loading a font from ";
+                AZStd::string errorMsg = "Error loading a font from ";
                 errorMsg += fileName.c_str();
                 errorMsg += ".";
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
@@ -620,7 +616,7 @@ UiInteractableStateFont::FontEffectComboBoxVec UiInteractableStateFont::Populate
     // NOTE: Curently, in order for this to work, when the font is changed we need to do
     // "RefreshEntireTree" to get the combo box list refreshed.
     unsigned int numEffects = m_fontFamily ? m_fontFamily->normal->GetNumEffects() : 0;
-    for (int i = 0; i < numEffects; ++i)
+    for (unsigned int i = 0; i < numEffects; ++i)
     {
         const char* name = m_fontFamily->normal->GetEffectName(i);
         result.push_back(AZStd::make_pair(i, name));

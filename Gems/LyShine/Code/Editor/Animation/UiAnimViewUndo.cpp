@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "UiCanvasEditor_precompiled.h"
+
 #include "UiAnimViewUndo.h"
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewSequence.h"
@@ -551,7 +546,7 @@ void CUndoAnimNodeReparent::AddParentsInChildren(CUiAnimViewAnimNode* pCurrentNo
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const string& oldName)
+CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const AZStd::string& oldName)
     : m_pNode(pNode)
     , m_newName(pNode->GetName())
     , m_oldName(oldName)
@@ -561,13 +556,13 @@ CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const strin
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Undo([[maybe_unused]] bool bUndo)
 {
-    m_pNode->SetName(m_oldName);
+    m_pNode->SetName(m_oldName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Redo()
 {
-    m_pNode->SetName(m_newName);
+    m_pNode->SetName(m_newName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////

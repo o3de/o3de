@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetDataStream.h>
 
@@ -31,7 +27,7 @@ namespace AZ::Data
 
     void AssetDataStream::Open(const AZStd::vector<AZ::u8>& data)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(!m_isOpen, "Attempting to open the stream when it is already open.");
 
@@ -49,7 +45,7 @@ namespace AZ::Data
 
     void AssetDataStream::Open(AZStd::vector<AZ::u8>&& data)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(!m_isOpen, "Attempting to open the stream when it is already open.");
 
@@ -66,7 +62,7 @@ namespace AZ::Data
         AZStd::chrono::milliseconds deadline, AZ::IO::IStreamerTypes::Priority priority,
         OnCompleteCallback loadCallback)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(!m_isOpen, "Attempting to open the stream when it is already open.");
         AZ_Assert(!m_curReadRequest, "Queueing an asset stream load while one is still in progress.");
@@ -84,7 +80,7 @@ namespace AZ::Data
             // Set up the callback that will process the asset data once the raw file load is finished.
             auto streamerCallback = [this, loadCallback](AZ::IO::FileRequestHandle fileHandle)
             {
-                AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "AZ::Data::LoadAssetDataStreamCallback %s",
+                AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetDataStreamCallback %s",
                     m_filePath.c_str());
 
                 // Get the results 
@@ -187,13 +183,13 @@ namespace AZ::Data
         // the real interval we want to record below won't show up unless this is here.
         /**/
         {
-            AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::AzCore, this + 1, "AssetDataStream: %s", streamName);
-            AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, this + 1);
+            AZ_PROFILE_INTERVAL_START(AzCore, this + 1, "AssetDataStream: %s", streamName);
+            AZ_PROFILE_INTERVAL_END(AzCore, this + 1);
         }
         /**/
 
         // Start a timespan marker to track the full load time for the requested asset.
-        AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::AzCore, this, "AssetLoad: %s", streamName);
+        AZ_PROFILE_INTERVAL_START(AzCore, this, "AssetLoad: %s", streamName);
 
         // Lock the allocator to ensure it remains active from Open to Close.
         m_bufferAllocator->LockAllocator();
@@ -220,7 +216,7 @@ namespace AZ::Data
         ClearInternalStateData();
 
         // End the load time timespan marker for this asset.
-        AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, this);
+        AZ_PROFILE_INTERVAL_END(AzCore, this);
     }
 
     void AssetDataStream::RequestCancel()
@@ -235,7 +231,7 @@ namespace AZ::Data
 
     void AssetDataStream::Seek(AZ::IO::OffsetType bytes, AZ::IO::GenericStream::SeekMode mode)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ::IO::OffsetType requestedOffset = 0;
 
         switch (mode)
@@ -265,7 +261,7 @@ namespace AZ::Data
 
     AZ::IO::SizeType AssetDataStream::Read(AZ::IO::SizeType bytes, void* oBuffer)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         if (m_curOffset >= m_loadedSize)
         {
             return 0;

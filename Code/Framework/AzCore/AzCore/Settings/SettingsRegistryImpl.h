@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -52,6 +48,12 @@ namespace AZ
         [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) override;
         void ClearNotifiers();
 
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) override;
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) override;
+        void ClearMergeEvents();
+
         bool Get(bool& result, AZStd::string_view path) const override;
         bool Get(s64& result, AZStd::string_view path) const override;
         bool Get(u64& result, AZStd::string_view path) const override;
@@ -93,7 +95,7 @@ namespace AZ
         using RegistryFileList = AZStd::fixed_vector<RegistryFile, MaxRegistryFolderEntries>;
 
         template<typename T>
-        bool SetValueInternal(AZStd::string_view path, T value, SettingsRegistryInterface::Type type);
+        bool SetValueInternal(AZStd::string_view path, T value);
         template<typename T>
         bool GetValueInternal(T& result, AZStd::string_view path) const;
         VisitResponse Visit(Visitor& visitor, StackedString& path, AZStd::string_view valueName,
@@ -104,9 +106,15 @@ namespace AZ
             const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
         bool ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations);
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
+
+        void SignalNotifier(AZStd::string_view jsonPath, Type type);
         
         mutable AZStd::recursive_mutex m_settingMutex;
+        mutable AZStd::recursive_mutex m_notifierMutex;
         NotifyEvent m_notifiers;
+        PreMergeEvent m_preMergeEvent;
+        PostMergeEvent m_postMergeEvent;
+
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;

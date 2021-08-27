@@ -1,25 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <AzCore/Math/Obb.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Obb.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 using namespace AZ;
 
-namespace UnitTest
+namespace UnitTest::ObbTests
 {
     const Vector3 position(1.0f, 2.0f, 3.0f);
     const Quaternion rotation = Quaternion::CreateRotationZ(Constants::QuarterPi);
@@ -155,4 +151,4 @@ namespace UnitTest
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(2.4f, 0.5f, 1.5f)), 0.5532f, 1e-3f);
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(1.1f, 7.3f, 5.8f)), 1.3612f, 1e-3f);
     }
-}
+} // namespace UnitTest::ObbTests

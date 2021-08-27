@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #if defined(EMOTIONFXANIMATION_EDITOR)
 #include <AzCore/Serialization/SerializeContext.h>
 #include <MCore/Source/MCoreSystem.h>
@@ -25,14 +21,14 @@ namespace EMotionFX
         AZ::EnvironmentVariable<EMotionFXAllocatorInitializer> PipelineComponent::s_eMotionFXAllocatorInitializer = nullptr;
 
         PipelineComponent::PipelineComponent()
-            : m_EMotionFXInited(false)
+            : m_eMotionFxInited(false)
         {
 
         }
 
         void PipelineComponent::Activate()
         {
-            if (!m_EMotionFXInited)
+            if (!m_eMotionFxInited)
             {
                 // Start EMotionFX allocator or increase the reference counting
                 s_eMotionFXAllocatorInitializer = AZ::Environment::CreateVariable<EMotionFXAllocatorInitializer>(EMotionFXAllocatorInitializer::EMotionFXAllocatorInitializerTag);
@@ -46,7 +42,7 @@ namespace EMotionFX
 
                 // Initialize EMotion FX runtime.
                 EMotionFX::Initializer::InitSettings emfxSettings;
-                emfxSettings.mUnitType = MCore::Distance::UNITTYPE_METERS;
+                emfxSettings.m_unitType = MCore::Distance::UNITTYPE_METERS;
 
                 if (!EMotionFX::Initializer::Init(&emfxSettings))
                 {
@@ -56,15 +52,15 @@ namespace EMotionFX
 
                 // Initialize the EMotionFX command system.
                 m_commandManager = AZStd::make_unique<CommandSystem::CommandManager>();
-                m_EMotionFXInited = true;
+                m_eMotionFxInited = true;
             }
         }
 
         void PipelineComponent::Deactivate()
         {
-            if (m_EMotionFXInited)
+            if (m_eMotionFxInited)
             {
-                m_EMotionFXInited = false;
+                m_eMotionFxInited = false;
                 m_commandManager.reset();
                 EMotionFX::Initializer::Shutdown();
                 MCore::Initializer::Shutdown();

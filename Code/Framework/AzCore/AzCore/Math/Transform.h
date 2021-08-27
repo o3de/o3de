@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,30 +13,9 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
-    class TransformSerializer
-        : public SerializeContext::IDataSerializer
-    {
-    public:
-        // number of floats in the serialized representation, 4 for rotation, 1 for scale and 3 for translation
-        static constexpr int NumFloats = 8;
-
-        // number of floats in version 1, which used 4 for rotation, 3 for scale and 3 for translation
-        static constexpr int NumFloatsVersion1 = 10;
-
-        // number of floats in version 0, which stored a 3x4 matrix
-        static constexpr int NumFloatsVersion0 = 12;
-
-        size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
-        size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
-        size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian) override;
-        bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian) override;
-        bool CompareValueData(const void* lhs, const void* rhs) override;
-    };
-
     //! Limits for transform scale values.
     //! The scale should not be zero to avoid problems with inverting.
     //! @{

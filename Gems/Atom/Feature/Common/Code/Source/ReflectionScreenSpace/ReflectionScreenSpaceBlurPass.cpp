@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ReflectionScreenSpaceBlurPass.h"
 #include "ReflectionScreenSpaceBlurChildPass.h"
@@ -56,7 +52,7 @@ namespace AZ
 
             // load shaders
             AZStd::string verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
-            Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadShader(verticalBlurShaderFilePath);
+            Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadCriticalShader(verticalBlurShaderFilePath);
             if (verticalBlurShader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath.c_str());
@@ -64,7 +60,7 @@ namespace AZ
             }
 
             AZStd::string horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
-            Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadShader(horizontalBlurShaderFilePath);
+            Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadCriticalShader(horizontalBlurShaderFilePath);
             if (horizontalBlurShader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath.c_str());
@@ -194,8 +190,8 @@ namespace AZ
                 RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(1);
                 uint32_t mipLevel = attachmentIndex + 1;
                 RHI::ImageViewDescriptor outputViewDesc;
-                outputViewDesc.m_mipSliceMin = mipLevel;
-                outputViewDesc.m_mipSliceMax = mipLevel;
+                outputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
+                outputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
                 outputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
                 outputAttachmentBinding.SetAttachment(reflectionImageAttachment);
 

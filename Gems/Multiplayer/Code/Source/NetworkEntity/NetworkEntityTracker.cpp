@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
@@ -22,6 +18,7 @@ namespace Multiplayer
         ++m_addChangeDirty;
         AZ_Assert(m_entityMap.end() == m_entityMap.find(netEntityId), "Attempting to add the same entity to the entity map multiple times");
         m_entityMap[netEntityId] = entity;
+        m_netEntityIdMap[entity->GetId()] = netEntityId;
     }
 
     NetworkEntityHandle NetworkEntityTracker::Get(NetEntityId netEntityId)
@@ -34,6 +31,16 @@ namespace Multiplayer
     {
         AZ::Entity* entity = GetRaw(netEntityId);
         return ConstNetworkEntityHandle(entity, netEntityId, this);
+    }
+
+    NetEntityId NetworkEntityTracker::Get(const AZ::EntityId& entityId) const
+    {
+        auto found = m_netEntityIdMap.find(entityId);
+        if (found != m_netEntityIdMap.end())
+        {
+            return found->second;
+        }
+        return Multiplayer::InvalidNetEntityId;
     }
 
     bool NetworkEntityTracker::Exists(NetEntityId netEntityId) const
@@ -54,12 +61,22 @@ namespace Multiplayer
     void NetworkEntityTracker::erase(NetEntityId netEntityId)
     {
         ++m_deleteChangeDirty;
-        m_entityMap.erase(netEntityId);
+
+        auto found = m_entityMap.find(netEntityId);
+        if (found != m_entityMap.end())
+        {
+            m_netEntityIdMap.erase(found->second->GetId());            
+            m_entityMap.erase(found);
+        }
     }
 
     NetworkEntityTracker::EntityMap::iterator NetworkEntityTracker::erase(EntityMap::iterator iter)
     {
         ++m_deleteChangeDirty;
+        if (iter != m_entityMap.end())
+        {
+            m_netEntityIdMap.erase(iter->second->GetId());
+        }
         return m_entityMap.erase(iter);
     }
 

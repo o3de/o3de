@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -50,7 +46,7 @@ namespace EMStudio
         void Init();
         void UpdateInterface();
 
-        QTableWidget* GetMotionEventPresetsTable()                                                          { return mTableWidget; }
+        QTableWidget* GetMotionEventPresetsTable()                                                          { return m_tableWidget; }
 
     public slots:
         void ReInit();
@@ -97,12 +93,12 @@ namespace EMStudio
             }
         };
 
-        DragTableWidget* mTableWidget = nullptr;
+        DragTableWidget* m_tableWidget = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
         QAction* m_saveAction = nullptr;
         QAction* m_saveAsAction = nullptr;
         QAction* m_loadAction = nullptr;
-        MotionEventsPlugin* mPlugin = nullptr;
+        MotionEventsPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

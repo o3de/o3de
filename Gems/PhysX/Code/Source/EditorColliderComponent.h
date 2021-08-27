@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -62,8 +58,8 @@ namespace PhysX
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_CLASS_ALLOCATOR(PhysX::EditorProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysX::EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorProxyShapeConfig() = default;
@@ -88,9 +84,12 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
+    private:
         bool ShowingSubdivisionLevel() const;
-
+        AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
+
+        Physics::ShapeType m_lastShapeType = Physics::ShapeType::PhysicsAsset;
     };
 
     class EditorColliderComponentDescriptor;

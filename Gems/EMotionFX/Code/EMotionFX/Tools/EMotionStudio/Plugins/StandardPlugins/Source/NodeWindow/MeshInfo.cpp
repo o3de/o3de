@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -24,7 +20,7 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(MeshInfo, EMStudio::UIAllocator, 0)
 
-    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh)
+    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, size_t lodLevel, EMotionFX::Mesh* mesh)
         : m_lod(lodLevel)
     {
         // vertices, indices and polygons etc.
@@ -37,7 +33,7 @@ namespace EMStudio
 
         if (m_orgVerticesCount)
         {
-            m_vertexDupeRatio = mesh->GetNumVertices() / (float)mesh->GetNumOrgVertices();
+            m_vertexDupeRatio = (float)mesh->GetNumVertices() / (float)mesh->GetNumOrgVertices();
         }
         else
         {
@@ -48,15 +44,15 @@ namespace EMStudio
         mesh->CalcMaxNumInfluences(m_verticesByInfluences);
         
         // sub meshes
-        const uint32 numSubMeshes = mesh->GetNumSubMeshes();
-        for (uint32 i = 0; i < numSubMeshes; ++i)
+        const size_t numSubMeshes = mesh->GetNumSubMeshes();
+        for (size_t i = 0; i < numSubMeshes; ++i)
         {
             EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(i);
             m_submeshes.emplace_back(actor, lodLevel, subMesh);
         }
 
         // vertex attribute layers
-        const uint32 numVertexAttributeLayers = mesh->GetNumVertexAttributeLayers();
+        const size_t numVertexAttributeLayers = mesh->GetNumVertexAttributeLayers();
         AZStd::string tmpString;
         for (uint32 i = 0; i < numVertexAttributeLayers; ++i)
         {
@@ -93,7 +89,7 @@ namespace EMStudio
                 tmpString = AZStd::string::format("Unknown data (TypeID=%d)", attributeLayerType);
             }
 
-            if (attributeLayer->GetNameString().size() > 0)
+            if (!attributeLayer->GetNameString().empty())
             {
                 tmpString += AZStd::string::format(" [%s]", attributeLayer->GetName());
             }
@@ -103,8 +99,8 @@ namespace EMStudio
 
 
         // shared vertex attribute layers
-        const uint32 numSharedVertexAttributeLayers = mesh->GetNumSharedVertexAttributeLayers();
-        for (uint32 i = 0; i < numSharedVertexAttributeLayers; ++i)
+        const size_t numSharedVertexAttributeLayers = mesh->GetNumSharedVertexAttributeLayers();
+        for (size_t i = 0; i < numSharedVertexAttributeLayers; ++i)
         {
             EMotionFX::VertexAttributeLayer* attributeLayer = mesh->GetSharedVertexAttributeLayer(i);
 
@@ -118,7 +114,7 @@ namespace EMStudio
                 tmpString = AZStd::string::format("Unknown data (TypeID=%d)", attributeLayerType);
             }
 
-            if (attributeLayer->GetNameString().size() > 0)
+            if (!attributeLayer->GetNameString().empty())
             {
                 tmpString += AZStd::string::format(" [%s]", attributeLayer->GetName());
             }

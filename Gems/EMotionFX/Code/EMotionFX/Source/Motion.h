@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-// include the required headers
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "PlayBackInfo.h"
@@ -120,7 +116,7 @@ namespace EMotionFX
          * Set the event table.
          * @param newTable The new motion event table for the Motion to use.
          */
-        void SetEventTable(MotionEventTable* newTable);
+        void SetEventTable(AZStd::unique_ptr<MotionEventTable> eventTable);
 
         /**
          * Set the motion framerate.
@@ -254,22 +250,22 @@ namespace EMotionFX
         void SetMotionData(MotionData* motionData, bool delOldFromMem=true);
 
     protected:
-        MotionData*                 m_motionData;           /**< The motion data, which can in theory be any data representation/compression. */
-        AZStd::string               mFileName;              /**< The filename of the motion. */
+        MotionData*                 m_motionData = nullptr; /**< The motion data, which can in theory be any data representation/compression. */
+        AZStd::string               m_fileName;              /**< The filename of the motion. */
         PlayBackInfo                m_defaultPlayBackInfo;  /**< The default/fallback motion playback info which will be used when no playback info is passed to the Play() function. */
-        MotionEventTable*           mEventTable;            /**< The event table, which contains all events, and will make sure events get executed. */
-        MCore::Distance::EUnitType  mUnitType;              /**< The type of units used. */
-        MCore::Distance::EUnitType  mFileUnitType;          /**< The type of units used, inside the file that got loaded. */
-        void*                       mCustomData;            /**< A pointer to custom user data that is linked with this motion object. */
-        float                       mMotionFPS;             /**< The number of keyframes per second. */
-        uint32                      mNameID;                /**< The ID represention the name or description of this motion. */
-        uint32                      mID;                    /**< The unique identification number for the motion. */
-        EMotionExtractionFlags      mExtractionFlags;       /**< The motion extraction flags, which define behavior of the motion extraction system when applied to this motion. */
-        bool                        mDirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to the motion since the last file save operation. */
-        bool                        mAutoUnregister;        /**< Automatically unregister the motion from the motion manager when this motion gets deleted? Default is true. */
+        AZStd::unique_ptr<MotionEventTable> m_eventTable;   /**< The event table, which contains all events, and will make sure events get executed. */
+        MCore::Distance::EUnitType  m_unitType;              /**< The type of units used. */
+        MCore::Distance::EUnitType  m_fileUnitType;          /**< The type of units used, inside the file that got loaded. */
+        void*                       m_customData = nullptr; /**< A pointer to custom user data that is linked with this motion object. */
+        float                       m_motionFps = 30.0f; /**< The number of keyframes per second. */
+        uint32                      m_nameId = MCORE_INVALIDINDEX32; /**< The ID represention the name or description of this motion. */
+        uint32                      m_id = MCORE_INVALIDINDEX32; /**< The unique identification number for the motion. */
+        EMotionExtractionFlags      m_extractionFlags;       /**< The motion extraction flags, which define behavior of the motion extraction system when applied to this motion. */
+        bool                        m_dirtyFlag = false; /**< The dirty flag which indicates whether the user has made changes to the motion since the last file save operation. */
+        bool                        m_autoUnregister = true; /**< Automatically unregister the motion from the motion manager when this motion gets deleted? Default is true. */
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                        mIsOwnedByRuntime;
+        bool                        m_isOwnedByRuntime;
 #endif // EMFX_DEVELOPMENT_BUILD
     };
 } // namespace EMotionFX

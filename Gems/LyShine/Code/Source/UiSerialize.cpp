@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiSerialize.h"
 
 #include <LyShine/UiAssetTypes.h>
@@ -36,67 +31,6 @@
 
 namespace UiSerialize
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    class CryStringTCharSerializer
-        : public AZ::SerializeContext::IDataSerializer
-    {
-        /// Return the size of binary buffer necessary to store the value in binary format
-        size_t  GetRequiredBinaryBufferSize(const void* classPtr) const
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            return string->length() + 1;
-        }
-
-        /// Store the class data into a stream.
-        size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            const char* data = string->c_str();
-
-            return static_cast<size_t>(stream.Write(string->length() + 1, reinterpret_cast<const void*>(data)));
-        }
-
-        size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            size_t len = in.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-            in.Read(in.GetLength(), reinterpret_cast<void*>(buffer));
-
-            AZStd::string outText = buffer;
-            azfree(buffer);
-
-            return static_cast<size_t>(out.Write(outText.size(), outText.data()));
-        }
-
-        size_t TextToData(const char* text, unsigned int textVersion, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            (void)textVersion;
-
-            size_t len = strlen(text) + 1;
-            stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            return static_cast<size_t>(stream.Write(len, reinterpret_cast<const void*>(text)));
-        }
-
-        bool Load(void* classPtr, AZ::IO::GenericStream& stream, unsigned int /*version*/, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            CryStringT<char>* string = reinterpret_cast<CryStringT<char>*>(classPtr);
-
-            size_t len = stream.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-
-            stream.Read(len, reinterpret_cast<void*>(buffer));
-
-            *string = buffer;
-            azfree(buffer);
-            return true;
-        }
-
-        bool CompareValueData(const void* lhs, const void* rhs) override
-        {
-            return AZ::SerializeContext::EqualityCompareHelper<CryStringT<char> >::CompareValues(lhs, rhs);
-        }
-    };
-
     //////////////////////////////////////////////////////////////////////////
     void UiOffsetsScriptConstructor(UiTransform2dInterface::Offsets* thisPtr, AZ::ScriptDataContext& dc)
     {
@@ -558,14 +492,6 @@ namespace UiSerialize
 
         if (serializeContext)
         {
-            serializeContext->Class<CryStringT<char> >()->
-                Serializer(&AZ::Serialize::StaticInstance<CryStringTCharSerializer>::s_instance);
-
-            serializeContext->Class<PrefabFileObject>()
-                ->Version(2, &PrefabFileObject::VersionConverter)
-                ->Field("RootEntity", &PrefabFileObject::m_rootEntityId)
-                ->Field("Entities", &PrefabFileObject::m_entities);
-
             serializeContext->Class<AnimationData>()
                 ->Version(1)
                 ->Field("SerializeString", &AnimationData::m_serializeData);
@@ -610,54 +536,6 @@ namespace UiSerialize
                 ->Event("GetIgnoreDefaultLayoutCells", &UiLayoutBus::Events::GetIgnoreDefaultLayoutCells)
                 ->Event("SetIgnoreDefaultLayoutCells", &UiLayoutBus::Events::SetIgnoreDefaultLayoutCells);
         }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool PrefabFileObject::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-    {
-        if (classElement.GetVersion() == 1)
-        {
-            // this is an old UI prefab (prior to UI Slices). We need to move all of the owned child entities into a
-            // separate list and have the references to them be via entity ID
-
-            // Find the m_rootEntity in the PrefabFileObject, in the old format this is an entity,
-            // we will replace it with an entityId
-            int rootEntityIndex = classElement.FindElement(AZ_CRC("RootEntity", 0x3cead042));
-            if (rootEntityIndex == -1)
-            {
-                return false;
-            }
-            AZ::SerializeContext::DataElementNode& rootEntityNode = classElement.GetSubElement(rootEntityIndex);
-
-            // All UI element entities will be copied to this container and then added to the m_childEntities list
-            AZStd::vector<AZ::SerializeContext::DataElementNode> copiedEntities;
-
-            // recursively process the root element and all of its child elements, copying their child entities to the
-            // entities container and replacing them with EntityIds
-            if (!UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(context, rootEntityNode, -1, copiedEntities))
-            {
-                return false;
-            }
-
-            // Create the child entities member (which is a generic vector)
-            using entityVector = AZStd::vector<AZ::Entity*>;
-            AZ::SerializeContext::ClassData* classData = AZ::SerializeGenericTypeInfo<entityVector>::GetGenericInfo()->GetClassData();
-            int entitiesIndex = classElement.AddElement(context, "Entities", *classData);
-            if (entitiesIndex == -1)
-            {
-                return false;
-            }
-            AZ::SerializeContext::DataElementNode& entitiesNode = classElement.GetSubElement(entitiesIndex);
-
-            // now add all of the copied entities to the entities vector node
-            for (AZ::SerializeContext::DataElementNode& entityElement : copiedEntities)
-            {
-                entityElement.SetName("element");   // all elements in the Vector should have this name
-                entitiesNode.AddElement(entityElement);
-            }
-        }
-
-        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

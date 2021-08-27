@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
 #define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
@@ -604,8 +600,8 @@ namespace AzToolsFramework
          * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
-         * In many cases before a modifcation on an entity takes place, it is first packaged into 
-         * undo/redo commands. Running the modification's redo command separete from the undo/redo 
+         * In many cases before a modification on an entity takes place, it is first packaged into 
+         * undo/redo commands. Running the modification's redo command separate from the undo/redo 
          * system simulates its execution, and avoids some code duplication.
          */
         virtual void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) = 0;
@@ -844,9 +840,6 @@ namespace AzToolsFramework
          * \return the path of the icon image
          */
         virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
-
-        /// Resource Selector hook, returns a path for a resource.
-        virtual AZStd::string SelectResource(const AZStd::string& /*resourceType*/, const AZStd::string& /*previousValue*/) { return AZStd::string(); }
 
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name

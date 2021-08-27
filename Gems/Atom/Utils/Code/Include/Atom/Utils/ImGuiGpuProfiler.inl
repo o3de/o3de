@@ -1,20 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+
+#include <AzCore/std/sort.h>
 
 #include <inttypes.h>
 
@@ -91,6 +90,38 @@ namespace AZ
                 }
                 drawList->AddText(font, font->FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, size.x);
             }
+
+            inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
+            {
+                AZStd::string imageBindStrings;
+                for (const auto& flag : AZ::RHI::ImageBindFlagsMembers)
+                {
+                    if (flag.m_value != AZ::RHI::ImageBindFlags::None && AZ::RHI::CheckBitsAll(imageBindFlags, flag.m_value))
+                    {
+                        imageBindStrings.append(flag.m_string);
+                        imageBindStrings.append(", ");
+                    }
+                }
+                return imageBindStrings;
+            }
+
+            inline static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
+            {
+                AZStd::string bufferBindStrings;
+                for (const auto& flag : AZ::RHI::BufferBindFlagsMembers)
+                {
+                    if (flag.m_value != AZ::RHI::BufferBindFlags::None && AZ::RHI::CheckBitsAll(bufferBindFlags, flag.m_value))
+                    {
+                        bufferBindStrings.append(flag.m_string);
+                        bufferBindStrings.append(", ");
+                    }
+                }
+                return bufferBindStrings;
+            }
+
+            static constexpr u64 KB = 1024;
+            static constexpr u64 MB = 1024 * KB;
+            static constexpr u64 GB = 1024 * MB;
         } // namespace GpuProfilerImGuiHelper 
 
         // --- PassEntry ---
@@ -803,8 +834,10 @@ namespace AZ
                             {
                                 // Check whether it should be sorted by name.
                                 const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
                                 bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
                                     (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                AZ_POP_DISABLE_WARNING
 
                                 if (ImGui::Selectable("Pass Names", sortByName))
                                 {
@@ -980,7 +1013,7 @@ namespace AZ
             const uint32_t countNumerical = static_cast<uint32_t>(count);
             const uint32_t offset = static_cast<uint32_t>(m_sortType) - startNumerical;
 
-            if (offset < countNumerical && offset >= 0u)
+            if (offset < countNumerical)
             {
                 // Change the sorting order.
                 m_sortType = static_cast<ProfilerSortType>(((offset + 1u) % countNumerical) + startNumerical);
@@ -1029,6 +1062,220 @@ namespace AZ
             }
         }
 
+        // --- ImGuiGpuMemoryView ---
+
+        inline void ImGuiGpuMemoryView::SortTable(ImGuiTableSortSpecs* sortSpecs)
+        {
+            const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+            const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
+
+            // Sort by the appropriate column in the table
+            switch (columnToSort)
+            {
+            case (0): // Sorting by parent pool name
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
+                        const auto lhsParentPool = lhs.m_parentPoolName.GetStringView();
+                        const auto rhsParentPool = rhs.m_parentPoolName.GetStringView();
+                        return ascending ? lhsParentPool < rhsParentPool : lhsParentPool > rhsParentPool;
+                    });
+                break;
+            case (1): // Sort by buffer/image name
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
+                        const auto lhsName = lhs.m_bufImgName.GetStringView();
+                        const auto rhsName = rhs.m_bufImgName.GetStringView();
+                        return ascending ? lhsName < rhsName : lhsName > rhsName;
+                    });
+                break;
+            case (2): // Sort by memory usage
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
+                        const float lhsSize = static_cast<float>(lhs.m_sizeInBytes);
+                        const float rhsSize = static_cast<float>(rhs.m_sizeInBytes);
+                        return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
+                    });
+                break;
+            }
+            sortSpecs->SpecsDirty = false;
+        }
+
+        inline void ImGuiGpuMemoryView::DrawTable()
+        {
+            if (ImGui::BeginTable("Table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            {
+                ImGui::TableSetupColumn("Parent pool");
+                ImGui::TableSetupColumn("Name");
+                ImGui::TableSetupColumn("Size (MB)");
+                ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
+                ImGui::TableHeadersRow();
+                ImGui::TableNextColumn();
+
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                if (sortSpecs && sortSpecs->SpecsDirty)
+                {
+                    SortTable(sortSpecs);
+                }
+
+                // Draw each row in the table
+                for (const auto& tableRow : m_tableRows)
+                {
+                    // Don't draw the row if none of the row's text fields pass the filter
+                    if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
+                        && !m_nameFilter.PassFilter(tableRow.m_bufImgName.GetCStr())
+                        && !m_nameFilter.PassFilter(tableRow.m_bindFlags.c_str()))
+                    {
+                        continue;
+                    }
+
+                    ImGui::Text(tableRow.m_parentPoolName.GetCStr());
+                    ImGui::TableNextColumn();
+                    ImGui::Text(tableRow.m_bufImgName.GetCStr());
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::TableNextColumn();
+                    ImGui::Text(tableRow.m_bindFlags.c_str());
+                    ImGui::TableNextColumn();
+                }
+            }
+            ImGui::EndTable();
+        }
+
+        inline void ImGuiGpuMemoryView::UpdateTableRows()
+        {
+            // Update the table according to the latest filters applied
+            m_tableRows.clear();
+            for (const auto& pool : m_savedPools)
+            {
+                Name poolName = pool.m_name.IsEmpty() ? Name("Unnamed pool") : pool.m_name;
+
+                // Ignore transient pools
+                if (!m_includeTransientAttachments && pool.m_name.GetStringView().contains("Transient"))
+                {
+                    continue;
+                }
+
+                if (m_includeBuffers)
+                {
+                    for (const auto& buf : pool.m_buffers)
+                    {
+                        const Name bufName = buf.m_name.IsEmpty() ? Name("Unnamed Buffer") : buf.m_name;
+                        const AZStd::string flags = GpuProfilerImGuiHelper::GetBufferBindStrings(buf.m_bindFlags);
+                        m_tableRows.push_back({ poolName, bufName, buf.m_sizeInBytes, flags });
+                    }
+                }
+
+                if (m_includeImages)
+                {
+                    for (const auto& img : pool.m_images)
+                    {
+                        const Name imgName = img.m_name.IsEmpty() ? Name("Unnamed Image") : img.m_name;
+                        const AZStd::string flags = GpuProfilerImGuiHelper::GetImageBindStrings(img.m_bindFlags);
+                        m_tableRows.push_back({ poolName, imgName, img.m_sizeInBytes, flags });
+                    }
+                }
+            }
+        }
+
+        inline void ImGuiGpuMemoryView::DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap)
+        {
+            if (ImGui::BeginChild("PieChart", {150, 150}, true))
+            {
+                ImDrawList* drawList = ImGui::GetWindowDrawList();
+                const auto [wx, wy] = ImGui::GetWindowPos();
+                const auto [windowWidth, windowHeight] = ImGui::GetWindowSize();
+                const ImVec2 center = { wx + windowWidth / 2, wy + windowHeight / 2 };
+                const float radius = windowWidth / 2 - 10;
+
+                // Draw the pie chart
+                drawList->AddCircleFilled(center, radius, ImGui::GetColorU32({.3, .3, .3, 1}));
+                const float usagePercent = 1.0f * heap.m_memoryUsage.m_residentInBytes / heap.m_memoryUsage.m_budgetInBytes;
+                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * usagePercent); // Clockwise starting from rightmost point
+                drawList->PathArcTo(center, 0, 0, 0); // To center
+                drawList->PathArcTo(center, radius, 0, 0); // Back to starting position
+                drawList->PathFillConvex(ImGui::GetColorU32({ .039, .8, 0.556, 1 }));
+                ImGui::Text("%.2f%%", usagePercent * 100);
+            }
+            ImGui::EndChild();
+        }
+
+        inline void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
+        {
+            // Enable GPU memory instrumentation while the window is open. Called every draw frame, but just a bitwise operation so overhead should be low.
+            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+            AZ_Assert(rhiSystem != nullptr, "Error in drawing GPU memory window: RHI System Interface was nullptr");
+            rhiSystem->ModifyFrameSchedulerStatisticsFlags(AZ::RHI::FrameSchedulerStatisticsFlags::GatherMemoryStatistics, draw);
+
+            if (!draw)
+            {
+                return;
+            }
+             
+            ImGui::SetNextWindowSize({ 600, 600 }, ImGuiCond_Once);
+            if (ImGui::Begin("Gpu Memory Profiler", &draw, ImGuiViewportFlags_None))
+            {
+                if (ImGui::Button("Capture"))
+                {
+                    // Collect and save new GPU memory usage data
+                    const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+                    if (memoryStatistics) 
+                    {
+                        m_tableRows.clear();
+                        m_savedPools = memoryStatistics->m_pools;
+                        m_savedHeaps = memoryStatistics->m_heaps;
+
+                        // Collect the data into TableRows, ignoring depending on flags 
+                        UpdateTableRows();
+                    }
+                }
+
+                if (ImGui::Checkbox("Show buffers", &m_includeBuffers)
+                    || ImGui::Checkbox("Show images", &m_includeImages)
+                    || ImGui::Checkbox("Show transient attachments", &m_includeTransientAttachments))
+                {
+                    UpdateTableRows(); 
+                }
+
+                ImGui::Text("Overall heap usage:");
+                for (const auto& savedHeap : m_savedHeaps)
+                {
+                    if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / m_savedHeaps.size(), 250 }), ImGuiWindowFlags_NoScrollbar)
+                    {
+                        ImGui::Text(savedHeap.m_name.GetCStr());
+                        ImGui::Columns(2, "HeapData", true);
+
+                        ImGui::Text("Resident (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_residentInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::NextColumn();
+
+                        ImGui::Text("Reserved (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_reservedInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::NextColumn();
+
+                        ImGui::Text("Budget (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_budgetInBytes / GpuProfilerImGuiHelper::MB);
+
+                        ImGui::Columns(1, "PieChartColumn");
+                        DrawPieChart(savedHeap);
+                    }
+                    ImGui::EndChild();
+                    ImGui::SameLine(ImGui::GetWindowWidth() / m_savedHeaps.size());
+                }
+                ImGui::NewLine();
+                ImGui::Separator();
+
+                m_nameFilter.Draw("Search");
+                DrawTable();
+            }
+            ImGui::End();
+        }
+
         // --- ImGuiGpuProfiler ---
 
         inline void ImGuiGpuProfiler::Draw(bool& draw, RHI::Ptr<RPI::ParentPass> rootPass)
@@ -1049,6 +1296,8 @@ namespace AZ
                 {
                     rootPass->SetPipelineStatisticsQueryEnabled(m_drawPipelineStatisticsView);
                 }
+                ImGui::Spacing();
+                ImGui::Checkbox("Enable GpuMemoryView", &m_drawGpuMemoryView);
             });
 
             // Draw the PipelineStatistics window.
@@ -1056,6 +1305,9 @@ namespace AZ
 
             // Draw the PipelineStatistics window.
             m_pipelineStatisticsView.DrawPipelineStatisticsWindow(m_drawPipelineStatisticsView, rootPassEntryRef, m_passEntryDatabase, rootPass);
+
+            // Draw the GpuMemory window.
+            m_gpuMemoryView.DrawGpuMemoryWindow(m_drawGpuMemoryView);
 
             //closing window
             if (wasDraw && !draw)

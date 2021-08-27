@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __EMFX_SELECTIONCOMMANDS_H
 #define __EMFX_SELECTIONCOMMANDS_H
@@ -23,7 +19,7 @@
 namespace CommandSystem
 {
     MCORE_DEFINECOMMAND_START(CommandSelect, "Select object", true)
-    SelectionList mData;
+    SelectionList m_data;
 public:
     static const char* s_SelectCmdName;
     static bool Select(MCore::Command* command, const MCore::CommandLine& parameters, AZStd::string& outResult, bool unselect);
@@ -48,7 +44,7 @@ public:
     MCORE_DEFINECOMMAND_1_END
 
     // helper functions
-    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const MCore::Array<EMotionFX::ActorInstance*>& selectedActorInstances);
+    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const AZStd::vector<EMotionFX::ActorInstance*>& selectedActorInstances);
     bool COMMANDSYSTEM_API CheckIfHasMotionSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasAnimGraphSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasActorSelectionParameter(const MCore::CommandLine& parameters, bool ignoreInstanceParameters = false);

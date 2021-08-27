@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -78,7 +74,7 @@ namespace AZ
 
             // load shader
             // Note: the shader may not be available on all platforms
-            Data::Instance<RPI::Shader> shader = RPI::LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader");
+            Data::Instance<RPI::Shader> shader = RPI::LoadCriticalShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader");
             if (shader)
             {
                 m_probeGridRenderData.m_drawListTag = shader->GetDrawListTag();
@@ -115,7 +111,7 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             // update pipeline states
             if (m_needUpdatePipelineStates)
@@ -153,7 +149,7 @@ namespace AZ
             // if the volumes changed we need to re-sort the probe list
             if (m_probeGridSortRequired)
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "Sort diffuse probe grids");
+                AZ_PROFILE_SCOPE(AzRender, "Sort diffuse probe grids");
 
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<DiffuseProbeGrid> const& probe1, AZStd::shared_ptr<DiffuseProbeGrid> const& probe2) -> bool
@@ -177,6 +173,27 @@ namespace AZ
                 AZ_Assert(diffuseProbeGrid.use_count() > 1, "DiffuseProbeGrid found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 diffuseProbeGrid->Simulate(probeGridIndex);
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnBeginPrepareRender()
+        {
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                diffuseProbeGrid->ResetCullingVisibility();
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnEndPrepareRender()
+        {
+            // re-build the list of visible real-time diffuse probe grids
+            m_visibleRealTimeDiffuseProbeGrids.clear();
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                if (diffuseProbeGrid->GetIsVisible())
+                {
+                    m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                }
             }
         }
 
@@ -218,6 +235,17 @@ namespace AZ
             if (itEntry != m_realTimeDiffuseProbeGrids.end())
             {
                 m_realTimeDiffuseProbeGrids.erase(itEntry);
+            }
+
+            // remove from side list of visible real-time grids
+            itEntry = AZStd::find_if(m_visibleRealTimeDiffuseProbeGrids.begin(), m_visibleRealTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+            {
+                return (entry == probeGrid);
+            });
+
+            if (itEntry != m_visibleRealTimeDiffuseProbeGrids.end())
+            {
+                m_visibleRealTimeDiffuseProbeGrids.erase(itEntry);
             }
 
             probeGrid = nullptr;
@@ -577,13 +605,6 @@ namespace AZ
                 RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
                 const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
                 for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
-
-                RPI::PassHierarchyFilter renderPassFilter(AZ::Name("DiffuseProbeGridRenderPass"));
-                const AZStd::vector<RPI::Pass*>& renderPasses = RPI::PassSystemInterface::Get()->FindPasses(renderPassFilter);
-                for (RPI::Pass* pass : renderPasses)
                 {
                     pass->SetEnabled(false);
                 }

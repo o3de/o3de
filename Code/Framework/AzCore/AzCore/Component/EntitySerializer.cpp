@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -85,21 +81,17 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(),
                     inputValue, "Components", context);
 
+            static TypeId genericComponentWrapperTypeId("{68D358CA-89B9-4730-8BA6-E181DEA28FDE}");
             for (auto& [componentKey, component] : componentMap)
             {
-                entityInstance->m_components.emplace_back(component);
+                // if underlying type is genericComponentWrapperTypeId, the template is null and the component should not be addded
+                if (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
+                {
+                    entityInstance->m_components.emplace_back(component);
+                }
             }
 
             result.Combine(componentLoadResult);
-        }
-
-        {
-            JSR::ResultCode dependencyReadyLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isDependencyReady,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(),
-                    inputValue, "IsDependencyReady", context);
-
-            result.Combine(dependencyReadyLoadResult);
         }
 
         {
@@ -186,20 +178,6 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(), context);
 
             result.Combine(resultComponents);
-        }
-
-        {
-            AZ::ScopedContextPath subPathDependencyReady(context, "m_isDependencyReady");
-            const bool* dependencyReady = &entityInstance->m_isDependencyReady;
-            const bool* dependencyReadyDefault =
-                defaultEntityInstance ? &defaultEntityInstance->m_isDependencyReady : nullptr;
-
-            JSR::ResultCode resultDependencyReady =
-                ContinueStoringToJsonObjectField(outputValue, "IsDependencyReady",
-                    dependencyReady, dependencyReadyDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(), context);
-
-            result.Combine(resultDependencyReady);
         }
 
         {

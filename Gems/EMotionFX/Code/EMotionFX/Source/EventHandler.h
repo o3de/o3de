@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -125,7 +121,7 @@ namespace EMotionFX
         {
             MCORE_UNUSED(eventInfo);
             // find the event index in the array
-            //          const uint32 eventIndex  = GetEventManager().FindEventTypeIndex( eventInfo.mEventTypeID );
+            //          const uint32 eventIndex  = GetEventManager().FindEventTypeIndex( eventInfo.m_eventTypeID );
 
             // get the name of the event
             //          const char* eventName = (eventIndex != MCORE_INVALIDINDEX32) ? GetEventManager().GetEventTypeString( eventIndex ) : "<unknown>";
@@ -277,7 +273,7 @@ namespace EMotionFX
 
         /**
          * This event gets triggered once the given motion instance gets added to the motion queue.
-         * This happens when you set the PlayBackInfo::mPlayNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
+         * This happens when you set the PlayBackInfo::m_playNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
          * will not directly start playing the motion (OnStartMotionInstance), but will add it to the motion queue instead.
          * The motion queue will then start playing the motion instance once it should.
          * @param motionInstance The motion instance that gets added to the motion queue.
@@ -320,7 +316,7 @@ namespace EMotionFX
 
         /**
          * Perform a ray intersection test and return the intersection info.
-         * The first event handler registered that sets the IntersectionInfo::mIsValid to true will be outputting to the outIntersectInfo parameter.
+         * The first event handler registered that sets the IntersectionInfo::m_isValid to true will be outputting to the outIntersectInfo parameter.
          * @param start The start point, in world space.
          * @param end The end point, in world space.
          * @param outIntersectInfo The resulting intersection info.
@@ -334,7 +330,7 @@ namespace EMotionFX
         virtual void OnStateEnd(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)                                                   { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(state); }
         virtual void OnStartTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)                            { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(transition); }
         virtual void OnEndTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)                              { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(transition); }
-        virtual void OnSetVisualManipulatorOffset(AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset)         { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(paramIndex); MCORE_UNUSED(offset); }
+        virtual void OnSetVisualManipulatorOffset(AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset)         { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(paramIndex); MCORE_UNUSED(offset); }
 
         virtual void OnInputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue)   { AZ_UNUSED(node); AZ_UNUSED(newInputPorts); AZ_UNUSED(memberName); AZ_UNUSED(memberValue); }
         virtual void OnOutputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) { AZ_UNUSED(node); AZ_UNUSED(newOutputPorts); AZ_UNUSED(memberName); AZ_UNUSED(memberValue); }
@@ -399,8 +395,8 @@ namespace EMotionFX
         */
         virtual const AZStd::vector<EventTypes> GetHandledEventTypes() const = 0;
 
-        void SetMotionInstance(MotionInstance* motionInstance)          { mMotionInstance = motionInstance; }
-        MCORE_INLINE MotionInstance* GetMotionInstance()                { return mMotionInstance; }
+        void SetMotionInstance(MotionInstance* motionInstance)          { m_motionInstance = motionInstance; }
+        MCORE_INLINE MotionInstance* GetMotionInstance()                { return m_motionInstance; }
 
         /**
          * The method that processes an event.
@@ -499,7 +495,7 @@ namespace EMotionFX
 
         /**
          * This event gets triggered once the given motion instance gets added to the motion queue.
-         * This happens when you set the PlayBackInfo::mPlayNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
+         * This happens when you set the PlayBackInfo::m_playNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
          * will not directly start playing the motion (OnStartMotionInstance), but will add it to the motion queue instead.
          * The motion queue will then start playing the motion instance once it should.
          * @param info The playback information used to play this motion instance.
@@ -507,6 +503,6 @@ namespace EMotionFX
         virtual void OnQueueMotionInstance(PlayBackInfo* info)      { MCORE_UNUSED(info); }
 
     protected:
-        MotionInstance* mMotionInstance = nullptr;
+        MotionInstance* m_motionInstance = nullptr;
     };
 }   // namespace EMotionFX

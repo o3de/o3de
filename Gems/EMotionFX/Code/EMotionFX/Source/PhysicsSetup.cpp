@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -303,14 +299,20 @@ namespace EMotionFX
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
             capsule->m_height = boneDirection.GetLength();
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             capsule->m_height = boneLength;
             const float radius = AZ::GetMin(rootMeanSquareDistanceFromBone, minRadiusRatio * boneLength);
             capsule->m_radius = radius;
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
             box->m_dimensions = AZ::Vector3(2.0f * rootMeanSquareDistanceFromBone, 2.0f * rootMeanSquareDistanceFromBone, boneLength);
         }
@@ -494,7 +496,7 @@ namespace EMotionFX
             : Transform::CreateIdentity();
 
         // if there are child nodes, point the bone direction to the average of their positions
-        const uint32 numChildNodes = node->GetNumChildNodes();
+        const size_t numChildNodes = node->GetNumChildNodes();
         if (numChildNodes > 0)
         {
             AZ::Vector3 meanChildPosition = AZ::Vector3::CreateZero();
@@ -502,21 +504,21 @@ namespace EMotionFX
             // weight by the number of descendants of each child node, so that things like jiggle bones and twist bones
             // have little influence on the bone direction.
             float totalSubChildren = 0.0f;
-            for (uint32 childNumber = 0; childNumber < numChildNodes; childNumber++)
+            for (size_t childNumber = 0; childNumber < numChildNodes; childNumber++)
             {
-                const uint32 childIndex = node->GetChildIndex(childNumber);
+                const size_t childIndex = node->GetChildIndex(childNumber);
                 const Node* childNode = skeleton->GetNode(childIndex);
                 const float numSubChildren = static_cast<float>(1 + childNode->GetNumChildNodesRecursive());
                 totalSubChildren += numSubChildren;
-                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).mPosition);
+                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).m_position);
             }
 
-            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.mPosition;
+            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.m_position;
         }
         // otherwise, point the bone direction away from the parent
         else
         {
-            boneDirection = nodeBindTransform.mPosition - parentBindTransform.mPosition;
+            boneDirection = nodeBindTransform.m_position - parentBindTransform.m_position;
         }
 
         return boneDirection;

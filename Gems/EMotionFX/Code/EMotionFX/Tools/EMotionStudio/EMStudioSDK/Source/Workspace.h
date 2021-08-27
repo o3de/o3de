@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -39,9 +35,9 @@ namespace EMStudio
 
         void Reset();
 
-        void SetFilename(const char* filename)                              { mFilename = filename; mDirtyFlag = true; }
-        const AZStd::string& GetFilenameString() const                      { return mFilename; }
-        const char* GetFilename() const                                     { return mFilename.c_str(); }
+        void SetFilename(const char* filename)                              { m_filename = filename; m_dirtyFlag = true; }
+        const AZStd::string& GetFilenameString() const                      { return m_filename; }
+        const char* GetFilename() const                                     { return m_filename.c_str(); }
 
         /**
          * Set the dirty flag which indicates whether the user has made changes to the motion. This indicator should be set to true
@@ -61,7 +57,7 @@ namespace EMStudio
         void AddFile(AZStd::string* inOutCommands, const char* command, const AZStd::string& filename, const char* additionalParameters = nullptr) const;
         bool SaveToFile(const char* filename) const;
 
-        AZStd::string   mFilename;
-        bool            mDirtyFlag;
+        AZStd::string   m_filename;
+        bool            m_dirtyFlag;
     };
 } // namespace EMStudio

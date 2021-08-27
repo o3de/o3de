@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/ReadSplitter.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
@@ -222,7 +219,7 @@ namespace AZ
                 subRequest->CreateRead(pending.m_request, pending.m_output, bufferSize, data->m_path, pending.m_offset, readSize, data->m_sharedRead);
                 subRequest->SetCompletionCallback([this](FileRequest&)
                     {
-                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                        AZ_PROFILE_FUNCTION(AzCore);
                         QueuePendingRequest();
                     });
                 m_next->QueueRequest(subRequest);
@@ -306,7 +303,7 @@ namespace AZ
                         offset, readSize, data->m_sharedRead);
                     subRequest->SetCompletionCallback([this, bufferSlot]([[maybe_unused]] FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
 
                             BufferCopyInformation& copyInfo = m_bufferCopyInformation[bufferSlot];
                             memcpy(copyInfo.m_target, GetBufferSlot(bufferSlot) + copyInfo.m_bufferOffset, copyInfo.m_size);

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
@@ -593,7 +589,7 @@ TEST(AudioFlagsTest, AudioFlags_OneFlag_OneFlagIsSet)
 {
     const AZ::u8 flagBit = 1 << 4;
     Audio::Flags<AZ::u8> testFlags(flagBit);
-    EXPECT_FALSE(testFlags.AreAnyFlagsActive(~flagBit));
+    EXPECT_FALSE(testFlags.AreAnyFlagsActive(static_cast<AZ::u8>(~flagBit)));
     EXPECT_TRUE(testFlags.AreAnyFlagsActive(flagBit));
     EXPECT_TRUE(testFlags.AreAnyFlagsActive(flagBit | 1));
     EXPECT_TRUE(testFlags.AreAllFlagsActive(flagBit));
@@ -607,7 +603,7 @@ TEST(AudioFlagsTest, AudioFlags_MultipleFlags_MultipleFlagsAreSet)
 {
     const AZ::u8 flagBits = (1 << 5) | (1 << 2) | (1 << 3);
     Audio::Flags<AZ::u8> testFlags(flagBits);
-    EXPECT_FALSE(testFlags.AreAnyFlagsActive(~flagBits));
+    EXPECT_FALSE(testFlags.AreAnyFlagsActive(static_cast<AZ::u8>(~flagBits)));
     EXPECT_TRUE(testFlags.AreAnyFlagsActive(flagBits));
     EXPECT_TRUE(testFlags.AreAllFlagsActive(flagBits));
     EXPECT_FALSE(testFlags.AreAllFlagsActive(flagBits | 1));

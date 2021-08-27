@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Object.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/vector.h>
@@ -36,6 +33,8 @@ namespace AZ
             /// The mutex used to guard the object collector data.
             using MutexType = NullMutex;
         };
+
+        using ObjectCollectorNotifyFunction = AZStd::function<void()>;
 
         /**
          * Deferred-releases reference-counted objects at a specific latency. Example: Use to batch-release
@@ -88,6 +87,9 @@ namespace AZ
             /// Must not be called at collection time.
             size_t GetObjectCount() const;
 
+            /// Notifies after the current set of pending objects is released.
+            void Notify(ObjectCollectorNotifyFunction notifyFunction);
+
         private:
             void QueueForCollectInternal(ObjectPtrType object);
 
@@ -95,6 +97,7 @@ namespace AZ
             {
                 AZStd::vector<ObjectPtrType> m_objects;
                 uint64_t m_collectIteration;
+                AZStd::vector<ObjectCollectorNotifyFunction> m_notifies;
             };
 
             inline bool IsGarbageReady(size_t collectIteration)
@@ -109,6 +112,7 @@ namespace AZ
             mutable typename Traits::MutexType m_mutex;
             AZStd::vector<ObjectPtrType> m_pendingObjects;
             AZStd::vector<Garbage> m_pendingGarbage;
+            AZStd::vector<ObjectCollectorNotifyFunction> m_pendingNotifies;
         };
 
         template <typename Traits>
@@ -169,10 +173,44 @@ namespace AZ
         template <typename Traits>
         void ObjectCollector<Traits>::Collect(bool forceFlush)
         {
+            AZ_ATOM_PROFILE_FUNCTION("DX12", "ObjectCollector: Collect");
             m_mutex.lock();
             if (m_pendingObjects.size())
             {
                 m_pendingGarbage.push_back({ AZStd::move(m_pendingObjects), m_currentIteration });
+            }
+
+            if (!m_pendingNotifies.empty())
+            {
+                if (!m_pendingGarbage.empty())
+                {
+                    // find the newest garbage entry and add any pending notifies
+                    Garbage& latestGarbage = m_pendingGarbage.front();
+                    size_t latestGarbageAge = m_currentIteration - latestGarbage.m_collectIteration;
+
+                    // check the rest of the entries to see if they are newer
+                    for (size_t i = 1; i < m_pendingGarbage.size(); ++i)
+                    {
+                        size_t age = m_currentIteration - m_pendingGarbage[i].m_collectIteration;
+                        if (age < latestGarbageAge)
+                        {
+                            latestGarbage = m_pendingGarbage[i];
+                            latestGarbageAge = age;
+                        }
+                    }
+
+                    latestGarbage.m_notifies.insert(latestGarbage.m_notifies.end(), m_pendingNotifies.begin(), m_pendingNotifies.end());
+                }
+                else
+                {
+                    // garbage queue is empty, notify now
+                    for (auto& notifyFunction : m_pendingNotifies)
+                    {
+                        notifyFunction();
+                    }
+                }
+
+                m_pendingNotifies.clear();
             }
             m_mutex.unlock();
 
@@ -191,6 +229,12 @@ namespace AZ
                         }
                     }
                     objectCount += garbage.m_objects.size();
+
+                    for (auto& notifyFunction : garbage.m_notifies)
+                    {
+                        notifyFunction();
+                    }
+
                     garbage = AZStd::move(m_pendingGarbage.back());
                     m_pendingGarbage.pop_back();
                 }
@@ -216,6 +260,14 @@ namespace AZ
             }
 
             return objectCount;
+        }
+
+        template <typename Traits>
+        void ObjectCollector<Traits>::Notify(ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_mutex.lock();
+            m_pendingNotifies.push_back(notifyFunction);
+            m_mutex.unlock();
         }
     }
 }

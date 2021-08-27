@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "SharedMemory_Mac.h"
 #include <AzCore/IPC/SharedMemory.h>
@@ -33,20 +29,19 @@ namespace AZ
         return errno;
     }
 
-    void SharedMemory_Mac::ComposeMutexName(char* dest, size_t length, const char* name)
+    void ComposeName(char* dest, size_t length, const char* name, const char* suffix)
     {
-        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
-
         // sem_open doesn't support paths bigger than 31, so call it s_Mtx.
         // While this is enough for Profiler, maybe the code should be smarter
         // and trim the name instead
-        azsnprintf(dest, length, "/tmp/%s_Mtx", name);
+        azsnprintf(dest, length, "/tmp/%s_%s", name, suffix);
     }
 
     SharedMemory_Common::CreateResult SharedMemory_Mac::Create(const char* name, unsigned int size, bool openIfCreated)
     {
         char fullName[256];
-        ComposeMutexName(fullName, AZ_ARRAY_SIZE(fullName), name);
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
+        ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Mtx");
 
         m_globalMutex = sem_open(fullName, O_CREAT | O_EXCL, 0600, 1);
         int error = errno;
@@ -63,7 +58,7 @@ namespace AZ
         }
 
         // Create the file mapping.
-        azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
+        ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Data");
         m_mapHandle = shm_open(fullName, O_RDWR | O_CREAT | O_EXCL, 0600);
         error = errno;
         if (error == EEXIST)
@@ -84,7 +79,8 @@ namespace AZ
     bool SharedMemory_Mac::Open(const char* name)
     {
         char fullName[256];
-        ComposeMutexName(fullName, AZ_ARRAY_SIZE(fullName), name);
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
+        ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Mtx");
 
         m_globalMutex = sem_open(fullName, 0);
         AZ_Warning("AZSystem", m_globalMutex != nullptr, "Failed to open OS mutex [%s]\n", m_name);
@@ -94,7 +90,7 @@ namespace AZ
             return false;
         }
 
-        azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
+        ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Data");
         m_mapHandle = shm_open(fullName, O_RDWR, 0600);
         if (m_mapHandle == -1)
         {

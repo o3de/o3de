@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AnimGraphFixture.h"
 #include <EMotionFX/Source/Actor.h>
@@ -91,10 +87,10 @@ namespace EMotionFX
         Transform outputRoot = GetOutputTransform();
         Transform expected = Transform::CreateIdentity();
         expected.Set(AZ::Vector3::CreateZero(), expectedRotation);
-        bool success = AZ::IsClose(expected.mRotation.GetW(), outputRoot.mRotation.GetW(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetX(), outputRoot.mRotation.GetX(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetY(), outputRoot.mRotation.GetY(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetZ(), outputRoot.mRotation.GetZ(), 0.0001f);
+        bool success = AZ::IsClose(expected.m_rotation.GetW(), outputRoot.m_rotation.GetW(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetX(), outputRoot.m_rotation.GetX(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetY(), outputRoot.m_rotation.GetY(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetZ(), outputRoot.m_rotation.GetZ(), 0.0001f);
 
         m_rotationMathNode->SetMathFunction(EMotionFX::BlendTreeRotationMath2Node::MATHFUNCTION_INVERSE_MULTIPLY);
         
@@ -103,10 +99,10 @@ namespace EMotionFX
         outputRoot = GetOutputTransform();
         expected.Identity();
         expected.Set(AZ::Vector3::CreateZero(), expectedRotation);
-        success = success && AZ::IsClose(expected.mRotation.GetW(), outputRoot.mRotation.GetW(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetX(), outputRoot.mRotation.GetX(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetY(), outputRoot.mRotation.GetY(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetZ(), outputRoot.mRotation.GetZ(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetW(), outputRoot.m_rotation.GetW(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetX(), outputRoot.m_rotation.GetX(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetY(), outputRoot.m_rotation.GetY(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetZ(), outputRoot.m_rotation.GetZ(), 0.0001f);
 
 
         ASSERT_TRUE(success);

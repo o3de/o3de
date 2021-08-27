@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
@@ -210,12 +206,12 @@ namespace EMStudio
         // If found motion entry, add select and play motion command strings to command group.
         EMotionFX::Motion* motion = motionEntry->GetMotion();
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
-        defaultPlayBackInfo->mBlendInTime = 0.0f;
-        defaultPlayBackInfo->mBlendOutTime = 0.0f;
+        defaultPlayBackInfo->m_blendInTime = 0.0f;
+        defaultPlayBackInfo->m_blendOutTime = 0.0f;
         commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
 
-        const AZ::u32 motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByName(motion->GetName());
-        commandString = AZStd::string::format("Select -motionIndex %d", motionIndex);
+        const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByName(motion->GetName());
+        commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
         commandGroup.AddCommandString(commandString);
 
         commandString = AZStd::string::format("PlayMotion -filename \"%s\" %s", motion->GetFileName(), commandParameters.c_str());
@@ -476,8 +472,8 @@ namespace EMStudio
             const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
 
             // In case no motion set was selected yet, use the first available. The activate graph callback will update the UI.
-            const AZ::u32 numMotionSets = motionManager.GetNumMotionSets();
-            for (AZ::u32 i = 0; i < numMotionSets; ++i)
+            const size_t numMotionSets = motionManager.GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* currentMotionSet = motionManager.GetMotionSet(i);
                 if (!currentMotionSet->GetIsOwnedByRuntime())
@@ -498,7 +494,7 @@ namespace EMStudio
     void AnimGraphActionManager::ActivateGraphForSelectedActors(EMotionFX::AnimGraph* animGraph, EMotionFX::MotionSet* motionSet)
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         if (numActorInstances == 0)
         {
@@ -511,7 +507,7 @@ namespace EMStudio
         commandGroup.AddCommandString("RecorderClear -force true");
 
         // Activate the anim graph each selected actor instance.
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
             if (actorInstance->GetIsOwnedByRuntime())

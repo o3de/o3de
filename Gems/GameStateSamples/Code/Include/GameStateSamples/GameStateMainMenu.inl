@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -304,7 +300,7 @@ namespace GameStateSamples
 
                 // Add all the levels into the UI as buttons
 
-                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, levelNames.size());
+                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, static_cast<int>(levelNames.size()));
                 for (int i = 0; i < levelNames.size(); ++i)
                 {
                     AZ::IO::PathView level(levelNames[i].c_str());
@@ -338,7 +334,7 @@ namespace GameStateSamples
                 {
                     // Get the level name (strip folder names from the path)
                     const char* levelPath = levelSystem->GetLevelInfo(i)->GetName();
-                    const int levelPathLength = strlen(levelPath);
+                    const int levelPathLength = static_cast<int>(strlen(levelPath));
                     const char* levelName = levelPath;
                     for (int j = 0; j < levelPathLength; ++j)
                     {

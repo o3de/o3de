@@ -1,21 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 namespace PhysX
 {
-    // BaseActorData START ****************************************************
-    inline BaseActorData::BaseActorData(BaseActorType type, physx::PxActor* actor) :
-        m_sanity(s_sanityValue), m_actorType(type)
+    inline ActorData::ActorData(physx::PxActor* actor)
     {
         auto nullUserData = [](physx::PxActor* actorToSet)
         {
@@ -27,36 +21,26 @@ namespace PhysX
         actor->userData = this;
     }
 
-    inline BaseActorData::BaseActorData(BaseActorData&& other) :
-        m_sanity(s_sanityValue), m_actorType(other.m_actorType), m_actor(AZStd::move(other.m_actor))
+    inline ActorData::ActorData(ActorData&& other)
+        : m_sanity(other.m_sanity)
+        , m_actor(AZStd::move(other.m_actor))
+        , m_payload(AZStd::move(other.m_payload))
     {
         m_actor->userData = this;
     }
 
-    inline BaseActorData& BaseActorData::operator=(BaseActorData&& other)
+    inline ActorData& ActorData::operator=(ActorData&& other)
     {
-        m_sanity = s_sanityValue;
-        m_actorType = other.m_actorType;
+        m_sanity = other.m_sanity;
         m_actor = AZStd::move(other.m_actor);
         m_actor->userData = this;
+        m_payload = AZStd::move(other.m_payload);
         return *this;
     }
 
-    inline bool BaseActorData::IsValid() const
+    inline bool ActorData::IsValid() const
     {
-        return m_sanity == s_sanityValue;
-    }
-
-    inline BaseActorType BaseActorData::GetType() const
-    {
-        return m_actorType;
-    }
-    // BaseActorData END ******************************************************
-
-
-    // ActorData START ********************************************************
-    inline ActorData::ActorData(physx::PxActor* actor) : BaseActorData(BaseActorType::PHYSX_DEFAULT, actor)
-    {
+        return m_sanity == SanityValue;
     }
 
     inline void ActorData::Invalidate()
@@ -153,5 +137,4 @@ namespace PhysX
             return nullptr;
         }
     }
-    // ActorData END ********************************************************
 } //namespace PhysX

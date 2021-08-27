@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphHierarchyWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendNodeSelectionWindow.h>
@@ -26,27 +22,27 @@ namespace EMStudio
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mHierarchyWidget = new AnimGraphHierarchyWidget(this);
+        m_hierarchyWidget = new AnimGraphHierarchyWidget(this);
 
         // create the ok and cancel buttons
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mCancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_cancelButton   = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
-        layout->addWidget(mHierarchyWidget);
+        layout->addWidget(m_hierarchyWidget);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
         setMinimumSize(QSize(400, 400));
 
-        mOKButton->setEnabled(false);
+        m_okButton->setEnabled(false);
 
-        connect(mOKButton, &QPushButton::clicked, this, &BlendNodeSelectionWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &BlendNodeSelectionWindow::reject);
-        connect(mHierarchyWidget, &AnimGraphHierarchyWidget::OnSelectionDone, this, &BlendNodeSelectionWindow::OnNodeSelected);
-        connect(mHierarchyWidget, &AnimGraphHierarchyWidget::OnSelectionChanged, this, &BlendNodeSelectionWindow::OnSelectionChanged);
+        connect(m_okButton, &QPushButton::clicked, this, &BlendNodeSelectionWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &BlendNodeSelectionWindow::reject);
+        connect(m_hierarchyWidget, &AnimGraphHierarchyWidget::OnSelectionDone, this, &BlendNodeSelectionWindow::OnNodeSelected);
+        connect(m_hierarchyWidget, &AnimGraphHierarchyWidget::OnSelectionChanged, this, &BlendNodeSelectionWindow::OnSelectionChanged);
     }
 
 
@@ -58,7 +54,7 @@ namespace EMStudio
 
     void BlendNodeSelectionWindow::OnNodeSelected()
     {
-        if (mUseSingleSelection)
+        if (m_useSingleSelection)
         {
             accept();
         }
@@ -70,7 +66,7 @@ namespace EMStudio
         AZ_UNUSED(selected);
         AZ_UNUSED(deselected);
 
-        mOKButton->setEnabled(mHierarchyWidget->HasSelectedItems());
+        m_okButton->setEnabled(m_hierarchyWidget->HasSelectedItems());
     }
 
 } // namespace EMStudio

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 /**
  * Based on Fast-Delegate v. 1.5 from Don Clugston. http://www.codeproject.com/cpp/FastDelegate.asp
@@ -295,9 +291,7 @@ namespace AZStd
         template <>
         struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 2* sizeof(int) >
         {
-#if defined(AZ_COMPILER_MSVC)
-# pragma warning(push)
-# pragma warning(disable: 4121) // alignment of a member was sensitive to packing
+            AZ_PUSH_DISABLE_WARNING(4121, "-Wunknown-warning-option") // alignment of a member was sensitive to packing
             // GenericClass* (X::*ProbeFunc) changes it's size. From Microsoft:
             //          Jason Shirk [MSFT]
             //          This is a known bug/issue. Unfortunately, we can't fix it in X86 product
@@ -306,7 +300,6 @@ namespace AZStd
             //              We have addressed the issue for all future platforms (including IA64) where
             //              binary compatibility isn't yet an issue.
             // We can fix this warning by adding forward decl class __single_inheritance CLASS; if the XFuncType is member function.
-#endif
             template <class X, class XFuncType, class GenericMemFuncType>
             inline static GenericClass* Convert(X* pthis, XFuncType function_to_bind, GenericMemFuncType& bound_func)
             {
@@ -334,11 +327,7 @@ namespace AZStd
                 u.s.codeptr = u2.s.codeptr;
                 return (pthis->*u.ProbeFunc)();
             }
-
-#if defined(AZ_COMPILER_MSVC)
-# pragma warning(default: 4121) // alignment of a member was sensitive to packing
-# pragma warning(pop)
-#endif
+            AZ_POP_DISABLE_WARNING
         };
 
         // Nasty hack for Microsoft and Intel (IA32 and Itanium)

@@ -1,27 +1,24 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
+
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Pass/RasterPass.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
 namespace AZ
@@ -64,11 +61,10 @@ namespace AZ
 
             if (shaderAsset)
             {
-                auto supervariantIndex = DefaultSupervariantIndex;
-                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass, supervariantIndex);
+                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
                 if (srgLayout)
                 {
-                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, supervariantIndex, srgLayout->GetName());
+                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                     AZ_Assert(
                         m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'", GetPathName().GetCStr(),
@@ -108,7 +104,7 @@ namespace AZ
             m_flags.m_hasDrawListTag = true;
         }
 
-        void RasterPass::SetPipelineStateDataIndex(u32 index)
+        void RasterPass::SetPipelineStateDataIndex(uint32_t index)
         {
             m_pipelineStateDataIndex.m_index = index;
         }
@@ -116,6 +112,11 @@ namespace AZ
         ShaderResourceGroup* RasterPass::GetShaderResourceGroup()
         {
             return m_shaderResourceGroup.get();
+        }
+
+        uint32_t RasterPass::GetDrawItemCount()
+        {
+            return m_drawItemCount;
         }
 
         // --- Pass behaviour overrides ---
@@ -138,10 +139,19 @@ namespace AZ
                 m_viewportState = params.m_viewportState;
             }
 
-            // -- View & DrawList --
-            const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(GetPipelineViewTag());
-            m_drawListView = {};
+            UpdateDrawList();
 
+            RenderPass::FrameBeginInternal(params);
+        }
+
+        void RasterPass::UpdateDrawList()
+        {
+             // DrawLists from dynamic draw
+            AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
+
+            // Get DrawList from view
+            const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(GetPipelineViewTag());
+            RHI::DrawListView viewDrawList;
             if (!views.empty())
             {
                 const ViewPtr& view = views.front();
@@ -150,10 +160,43 @@ namespace AZ
                 AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
 
                 // Draw List 
-                m_drawListView = view->GetDrawList(m_drawListTag);
+                viewDrawList = view->GetDrawList(m_drawListTag);
             }
 
-            RenderPass::FrameBeginInternal(params);
+            // clean up data
+            m_drawListView = {};
+            m_combinedDrawList.clear();
+            m_drawItemCount = 0;
+
+            // draw list from view was sorted and if it's the only draw list then we can use it directly
+            if (viewDrawList.size() > 0 && drawLists.size() == 0)
+            {
+                m_drawListView = viewDrawList;
+                m_drawItemCount += static_cast<uint32_t>(viewDrawList.size());
+                PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
+                return;
+            }
+
+            // add view's draw list to drawLists too
+            drawLists.push_back(viewDrawList);
+
+            // combine draw items from mutiple draw lists to one draw list and sort it.
+            for (auto drawList : drawLists)
+            {
+                m_drawItemCount += static_cast<uint32_t>(drawList.size());
+            }
+            PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
+            m_combinedDrawList.resize(m_drawItemCount);
+            RHI::DrawItemProperties* currentBuffer = m_combinedDrawList.data();
+            for (auto drawList : drawLists)
+            {
+                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DrawItemProperties));
+                currentBuffer += drawList.size();
+            }
+            SortDrawList(m_combinedDrawList);
+
+            // have the final draw list point to the combined draw list.
+            m_drawListView = m_combinedDrawList;
         }
 
         // --- DrawList and PipelineView Tags ---
@@ -168,12 +211,12 @@ namespace AZ
         void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(static_cast<u32>(m_drawListView.size()));
+            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()));
         }
 
         void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             if (m_shaderResourceGroup == nullptr)
             {
@@ -187,7 +230,7 @@ namespace AZ
 
         void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             RHI::CommandList* commandList = context.GetCommandList();
 

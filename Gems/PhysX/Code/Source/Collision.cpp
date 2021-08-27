@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <PhysX_precompiled.h>
 #include <Source/Collision.h>
 #include <PhysX/Utils.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -42,21 +37,6 @@ namespace PhysX
                 pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
                 return physx::PxFilterFlag::eDEFAULT;
             }
-
-//Enable/Disable this macro in the TouchBending Gem wscript
-#ifdef TOUCHBENDING_LAYER_BIT
-            //If any of the actors is in the TouchBend layer then we are not interested
-            //in contact data, nor interested in eNOTIFY_* callbacks.
-            const AZ::u64 touchBendLayerMask = AzPhysics::CollisionLayer::TouchBend.GetMask();
-            const AZ::u64 layer0 = Combine(filterData0.word0, filterData0.word1);
-            const AZ::u64 layer1 = Combine(filterData1.word0, filterData1.word1);
-            if (layer0 == touchBendLayerMask || layer1 == touchBendLayerMask)
-            {
-                pairFlags = physx::PxPairFlag::eSOLVE_CONTACT |
-                    physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
-                return physx::PxFilterFlag::eDEFAULT;
-            }
-#endif //TOUCHBENDING_LAYER_BIT
 
             // generate contacts for all that were not filtered above
             pairFlags =
@@ -93,22 +73,6 @@ namespace PhysX
                     physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
                 return physx::PxFilterFlag::eDEFAULT;
             }
-
-//Enable/Disable this macro in the TouchBending Gem wscript
-#ifdef TOUCHBENDING_LAYER_BIT
-            //If any of the actors is in the TouchBend layer then we are not interested
-            //in contact data, nor interested in eNOTIFY_* callbacks.
-            const AZ::u64 layer0 = Combine(filterData0.word0, filterData0.word1);
-            const AZ::u64 layer1 = Combine(filterData1.word0, filterData1.word1);
-            const AZ::u64 touchBendLayerMask = AzPhysics::CollisionLayer::TouchBend.GetMask();
-            if (layer0 == touchBendLayerMask || layer1 == touchBendLayerMask)
-            {
-                pairFlags = physx::PxPairFlag::eSOLVE_CONTACT |
-                    physx::PxPairFlag::eDETECT_DISCRETE_CONTACT |
-                    physx::PxPairFlag::eDETECT_CCD_CONTACT;
-                return physx::PxFilterFlag::eDEFAULT;
-            }
-#endif
 
             // generate contacts for all that were not filtered above
             pairFlags =

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <IRenderer.h>
@@ -20,7 +16,10 @@
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
+
+#include "LyShinePassDataBus.h"
 
 #if !defined(_RELEASE)
 #define LYSHINE_INTERNAL_UNIT_TEST
@@ -44,7 +43,9 @@ class CLyShine
     , public AzFramework::InputChannelEventListener
     , public AzFramework::InputTextEventListener
     , public AZ::TickBus::Handler
+    , public AZ::RPI::ViewportContextNotificationBus::Handler
     , protected AZ::Render::Bootstrap::NotificationBus::Handler
+    , protected LyShinePassDataRequestBus::Handler
 {
 public:
 
@@ -60,18 +61,18 @@ public:
     IDraw2d* GetDraw2d() override;
 
     AZ::EntityId CreateCanvas() override;
-    AZ::EntityId LoadCanvas(const string& assetIdPathname) override;
+    AZ::EntityId LoadCanvas(const AZStd::string& assetIdPathname) override;
     AZ::EntityId CreateCanvasInEditor(UiEntityContext* entityContext) override;
-    AZ::EntityId LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext) override;
+    AZ::EntityId LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext) override;
     AZ::EntityId ReloadCanvasFromXml(const AZStd::string& xmlString, UiEntityContext* entityContext) override;
     AZ::EntityId FindCanvasById(LyShine::CanvasId id) override;
-    AZ::EntityId FindLoadedCanvasByPathName(const string& assetIdPathname) override;
+    AZ::EntityId FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname) override;
 
     void ReleaseCanvas(AZ::EntityId canvas, bool forEditor) override;
     void ReleaseCanvasDeferred(AZ::EntityId canvas) override;
 
-    ISprite* LoadSprite(const string& pathname) override;
-    ISprite* CreateSprite(const string& renderTargetName) override;
+    ISprite* LoadSprite(const AZStd::string& pathname) override;
+    ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
 
     void PostInit() override;
@@ -115,9 +116,16 @@ public:
     int GetTickOrder() override;
     // ~TickEvents
 
+    // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
+    void OnRenderTick() override;
+
     // AZ::Render::Bootstrap::NotificationBus
     void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
     // ~AZ::Render::Bootstrap::NotificationBus
+
+    // LyShinePassDataRequestBus
+    LyShine::AttachmentImagesAndDependencies GetRenderTargets() override;
+    // ~LyShinePassDataRequestBus
 
     // Get the UIRenderer for the game (which is owned by CLyShine). This is not exposed outside the gem.
     UiRenderer* GetUiRenderer();

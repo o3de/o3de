@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include required headers
 #include "Matrix4.h"
@@ -90,9 +86,9 @@ namespace MCore
         Matrix r;
 
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = r.m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = r.m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -215,9 +211,9 @@ namespace MCore
     Matrix& Matrix::operator *= (const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -691,9 +687,9 @@ namespace MCore
     void Matrix::MultMatrix(const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1250,9 +1246,9 @@ namespace MCore
     void Matrix::MultMatrix4x3(const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1340,9 +1336,9 @@ namespace MCore
     void Matrix::MultMatrix(const Matrix& left, const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = left.m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = left.m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1427,9 +1423,9 @@ namespace MCore
     void Matrix::MultMatrix4x3(const Matrix& left, const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = left.m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = left.m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -2056,10 +2052,10 @@ namespace MCore
     void Matrix::Log() const
     {
         MCore::LogDetailedInfo("");
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[0], m16[1], m16[2], m16[3]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[4], m16[5], m16[6], m16[7]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[8], m16[9], m16[10], m16[11]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[12], m16[13], m16[14], m16[15]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[0], m_m16[1], m_m16[2], m_m16[3]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[4], m_m16[5], m_m16[6], m_m16[7]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[8], m_m16[9], m_m16[10], m_m16[11]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[12], m_m16[13], m_m16[14], m_m16[15]);
         MCore::LogDetailedInfo("");
     }
 
@@ -2252,27 +2248,6 @@ namespace MCore
     }
 
 
-
-    // simple decompose a matrix into translation and rotation
-    void Matrix::Decompose(AZ::Vector3* outTranslation, AZ::Quaternion* outRotation) const
-    {
-        // make a copy of the matrix
-        Matrix mat(*this);
-
-        // normalize the basis vectors
-        mat.SetRight(SafeNormalize(mat.GetRight()));
-        mat.SetUp(SafeNormalize(mat.GetUp()));
-        mat.SetForward(SafeNormalize(mat.GetForward()));
-
-        // extract the translation from the matrix
-        *outTranslation = mat.GetTranslation();
-
-        // convert the normalized 3x3 rotation part into a AZ::Quaternion
-        *outRotation = MCore::MCoreMatrixToQuaternion(*this);
-    }
-
-
-
     // calculate a rotation matrix from two vectors
     void Matrix::SetRotationMatrixTwoVectors(const AZ::Vector3& from, const AZ::Vector3& to)
     {
@@ -2369,30 +2344,6 @@ namespace MCore
     }
 
 
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale, AZ::Vector3& shear) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix, scale, shear);
-        rot = MCore::MCoreMatrixToQuaternion(*this);
-    }
-
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix, scale);
-        rot = MCore::MCoreMatrixToQuaternion(rotMatrix);
-    }
-
-
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix);
-        rot = MCore::MCoreMatrixToQuaternion(rotMatrix);
-    }
 
 
     //

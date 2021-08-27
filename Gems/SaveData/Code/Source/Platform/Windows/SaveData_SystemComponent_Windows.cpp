@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,8 +10,9 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <shlobj.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +100,7 @@ namespace SaveData
     AZStd::string GetExecutableName()
     {
         char moduleFileName[AZ_MAX_PATH_LEN];
-        GetModuleFileNameA(nullptr, moduleFileName, AZ_MAX_PATH_LEN);
+        AZ::Utils::GetExecutablePath(moduleFileName, AZ_MAX_PATH_LEN);
 
         const AZStd::string moduleFileNameString(moduleFileName);
         const size_t executableNameStart = moduleFileNameString.find_last_of('\\') + 1;

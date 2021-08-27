@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -239,6 +235,17 @@ namespace AZ
              * then in each DataElement you can attach the appropriate group attribute.
              */
             ClassBuilder*  ClassElement(Crc32 elementIdCrc, const char* description);
+
+
+             /**
+             * Declare element with attributes that belong to the class SerializeContext::Class, this is a logical structure, you can have one or more GroupElementToggles.
+             * T must be a boolean variable that will enable and disable each DataElement attached to this structure.
+             * \param description - Descriptive name of the field that will typically appear in a tooltip.
+             * \param memberVariable - reference to the member variable so we can bind to serialization data.
+             */
+            template<class T>
+            ClassBuilder* GroupElementToggle(const char* description, T memberVariable);
+
 
             /**
              * Declare element with an associated UI handler that does not represent a specific class member variable.
@@ -520,6 +527,15 @@ namespace AZ
     }
 
     //=========================================================================
+    // ClassElement
+    //=========================================================================
+    template<class T>
+    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
+    {
+        return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
+    }
+
+    //=========================================================================
     // UIElement
     //=========================================================================
     inline EditContext::ClassBuilder*
@@ -640,26 +656,25 @@ namespace AZ
         using ElementType = typename AZStd::Utils::if_c<AZStd::is_enum<typename ElementTypeInfo::Type>::value, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>::type;
         AZ_Assert(m_classData->m_typeId == AzTypeInfo<typename ElementTypeInfo::ClassType>::Uuid(), "Data element (%s) belongs to a different class!", AzTypeInfo<typename ElementTypeInfo::ValueType>::Name());
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
         const SerializeContext::ClassData* classData = m_context->m_serializeContext.FindClassData(AzTypeInfo<typename ElementTypeInfo::ValueType>::Uuid());
         if (classData && classData->m_editData)
         {
             return DataElement<T>(uiId, memberVariable, classData->m_editData->m_name, classData->m_editData->m_description);
         }
-        else if (AZStd::is_enum<ElementType>::value && AzTypeInfo<ElementType>::Name() != nullptr)
+        else
         {
-            auto enumIter = m_context->m_enumData.find(AzTypeInfo<ElementType>::Uuid());
-            if (enumIter != m_context->m_enumData.end())
+            if constexpr (AZStd::is_enum<ElementType>::value)
             {
-                return DataElement<T>(uiId, memberVariable, enumIter->second.m_name, enumIter->second.m_description);
+                if (AzTypeInfo<ElementType>::Name() != nullptr)
+                {
+                    auto enumIter = m_context->m_enumData.find(AzTypeInfo<ElementType>::Uuid());
+                    if (enumIter != m_context->m_enumData.end())
+                    {
+                        return DataElement<T>(uiId, memberVariable, enumIter->second.m_name, enumIter->second.m_description);
+                    }
+                }
             }
         }
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif
         
         const char* typeName = AzTypeInfo<typename ElementTypeInfo::ValueType>::Name();
         return DataElement<T>(uiId, memberVariable, typeName, typeName);

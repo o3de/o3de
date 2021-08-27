@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -62,15 +58,23 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
         inline constexpr static qreal s_buttonFontSize = 10.0;
 
-    private:
+        // Feature tags
+        inline constexpr static int s_featureTagFontSize = 10;
+        inline constexpr static int s_featureTagBorderMarginX = 3;
+        inline constexpr static int s_featureTagBorderMarginY = 3;
+        inline constexpr static int s_featureTagSpacing = 7;
+
+    protected:
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
         void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const;
 
         QAbstractItemModel* m_model = nullptr;
 
+    private:
         // Platform icons
         void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);
         inline constexpr static int s_platformIconSize = 12;

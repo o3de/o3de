@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -134,7 +130,7 @@ namespace EMotionFX
                     return;
                 }
 
-                serializeContext->Class<MotionSamplingRule, IRule>()->Version(3)
+                serializeContext->Class<MotionSamplingRule, IRule>()->Version(4)
                     ->Field("motionDataType", &MotionSamplingRule::m_motionDataType)
                     ->Field("sampleRateMethod", &MotionSamplingRule::m_sampleRateMethod)
                     ->Field("customSampleRate", &MotionSamplingRule::m_customSampleRate)
@@ -156,7 +152,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MotionSamplingRule::m_sampleRateMethod, "Sample rate", "Either use the Fbx sample rate or use a custom sample rate. The sample rate is automatically limited to the rate from Fbx.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                            ->EnumAttribute(SampleRateMethod::FromFbx, "From Fbx")
+                            ->EnumAttribute(SampleRateMethod::FromSourceScene, "From Source Scene")
                             ->EnumAttribute(SampleRateMethod::Custom, "Custom sample rate")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MotionSamplingRule::m_keepDuration, "Keep duration", "When enabled this keep the duration the same as the Fbx motion duration, even if no joints are animated. "
                             "When this option is disabled and the motion doesn't animate any joints then the resulting motion will have a duration of zero seconds.")
@@ -204,7 +200,7 @@ namespace EMotionFX
 
             AZ::Crc32 MotionSamplingRule::GetVisibilityCustomSampleRate() const
             {
-                return m_sampleRateMethod == SampleRateMethod::FromFbx ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+                return m_sampleRateMethod == SampleRateMethod::FromSourceScene ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
             }
 
             AZ::Crc32 MotionSamplingRule::GetVisibilityAllowedSizePercentage() const

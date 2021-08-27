@@ -1,17 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <ProjectSettingsScreen.h>
-#include <FormBrowseEditWidget.h>
+#include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <PathValidator.h>
 #include <PythonBindingsInterface.h>
@@ -37,19 +33,18 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout(this);
+        m_verticalLayout = new QVBoxLayout();
 
         // you cannot remove content margins in qss
         m_verticalLayout->setContentsMargins(0, 0, 0, 0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
-        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
+        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
-        m_projectPath = new FormBrowseEditWidget(tr("Project Location"), "", this);
-        m_projectPath->lineEdit()->setReadOnly(true);
-        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
+        m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
+        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
         projectSettingsFrame->setLayout(m_verticalLayout);
@@ -83,6 +78,8 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        // currently we don't have separate fields for changing the project name and display name 
+        projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }
@@ -112,26 +109,34 @@ namespace O3DE::ProjectManager
         m_projectName->setErrorLabelVisible(!projectNameIsValid);
         return projectNameIsValid;
     }
+
     bool ProjectSettingsScreen::ValidateProjectPath()
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
-        else
+        else if (path.exists() && !path.isEmpty())
         {
-            QDir path(m_projectPath->lineEdit()->text());
-            if (path.exists() && !path.isEmpty())
-            {
-                projectPathIsValid = false;
-                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
-            }
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
         }
 
         m_projectPath->setErrorLabelVisible(!projectPathIsValid);
         return projectPathIsValid;
+    }
+
+    void ProjectSettingsScreen::OnProjectNameUpdated()
+    {
+        ValidateProjectName();
+    }
+
+    void ProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        Validate();
     }
 
     bool ProjectSettingsScreen::Validate()

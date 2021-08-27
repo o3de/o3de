@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // the constructor
 template <class ReturnType, class StorageType>
@@ -27,29 +23,29 @@ KeyFrameFinder<ReturnType, StorageType>::~KeyFrameFinder()
 
 // returns the keyframe number to use for interpolation
 template <class ReturnType, class StorageType>
-uint32 KeyFrameFinder<ReturnType, StorageType>::FindKey(float timeValue, const KeyFrame<ReturnType, StorageType>* keyTrack, uint32 numKeys)
+size_t KeyFrameFinder<ReturnType, StorageType>::FindKey(float timeValue, const KeyFrame<ReturnType, StorageType>* keyTrack, size_t numKeys)
 {
-    // if we haven't got any keys, return MCORE_INVALIDINDEX32, which means no key found
+    // if we haven't got any keys, return InvalidIndex, which means no key found
     if (numKeys == 0)
     {
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
-    uint32 low      = 0;
-    uint32 high     = numKeys - 1;
+    size_t low      = 0;
+    size_t high     = numKeys - 1;
     float lowValue  = keyTrack[low].GetTime();
     float highValue = keyTrack[high].GetTime();
 
     // these can go if you're sure the value is going to be valid (between the min and max key's values)
     if (timeValue < lowValue || timeValue >= highValue)
     {
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
     for (;; )
     {
         // calculate the interpolated index
-        const uint32 mid = low + (int)((timeValue - lowValue) / (highValue - lowValue) * (high - low));
+        const size_t mid = low + (int)((timeValue - lowValue) / (highValue - lowValue) * (high - low));
 
         if (keyTrack[mid].GetTime() <= timeValue)
         {

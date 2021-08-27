@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzCore/Math/Color.h>
 
@@ -58,10 +54,10 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::AnimGraph*   mAnimGraph;
-        AZStd::string           mNodeGroup;
-        QLineEdit*              mLineEdit;
-        QPushButton*            mOKButton;
+        EMotionFX::AnimGraph*   m_animGraph;
+        AZStd::string           m_nodeGroup;
+        QLineEdit*              m_lineEdit;
+        QPushButton*            m_okButton;
     };
 
     class NodeGroupWindow
@@ -95,36 +91,29 @@ namespace EMStudio
 
         void contextMenuEvent(QContextMenuEvent* event) override;
 
-        uint32 FindGroupIndexByWidget(QObject* widget) const;
+        int FindGroupIndexByWidget(QObject* widget) const;
         //bool ValidateName(EMotionFX::AnimGraphNodeGroup* nodeGroup, const char* newName) const;
 
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphAddNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphAdjustNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphRemoveNodeGroupCallback);
 
-        CommandAnimGraphAddNodeGroupCallback*      mCreateCallback;
-        CommandAnimGraphAdjustNodeGroupCallback*   mAdjustCallback;
-        CommandAnimGraphRemoveNodeGroupCallback*   mRemoveCallback;
+        CommandAnimGraphAddNodeGroupCallback*      m_createCallback;
+        CommandAnimGraphAdjustNodeGroupCallback*   m_adjustCallback;
+        CommandAnimGraphRemoveNodeGroupCallback*   m_removeCallback;
 
         struct WidgetLookup
         {
-            MCORE_MEMORYOBJECTCATEGORY(NodeGroupWindow::WidgetLookup, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-            QObject*    mWidget;
-            uint32      mGroupIndex;
-
-            WidgetLookup(QObject* widget, uint32 index)
-            {
-                mWidget     = widget;
-                mGroupIndex = index;
-            }
+            QObject*    m_widget;
+            int         m_groupIndex;
         };
 
-        AnimGraphPlugin*               mPlugin;
-        QTableWidget*                   mTableWidget;
-        QVBoxLayout*                    mVerticalLayout;
-        QAction*                        mAddAction;
+        AnimGraphPlugin*               m_plugin;
+        QTableWidget*                   m_tableWidget;
+        QVBoxLayout*                    m_verticalLayout;
+        QAction*                        m_addAction;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         AZStd::string                   m_searchWidgetText;
-        MCore::Array<WidgetLookup>      mWidgetTable;
+        AZStd::vector<WidgetLookup>      m_widgetTable;
     };
 } // namespace EMStudio

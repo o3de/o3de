@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "Atom_RHI_Vulkan_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -55,7 +50,11 @@ namespace AZ
             const auto& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
 
-             AZ_Assert(image.GetNativeImage() != VK_NULL_HANDLE, "Image has not been initialized.");
+            // this can happen when image has been invalidated/released right before re-compiling the image
+            if (image.GetNativeImage() == VK_NULL_HANDLE)
+            {
+                return RHI::ResultCode::Fail;
+            }
 
             RHI::Format viewFormat = descriptor.m_overrideFormat;
             // If an image is not owner of native image, it is a swapchain image.
@@ -118,8 +117,8 @@ namespace AZ
             const auto& device = static_cast<const Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
 
-            const uint16_t width = imgDesc.m_size.m_width;
-            const uint16_t height = imgDesc.m_size.m_height;
+            const uint16_t width = static_cast<uint16_t>(imgDesc.m_size.m_width);
+            const uint16_t height = static_cast<uint16_t>(imgDesc.m_size.m_height);
             const uint16_t depth = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_depthSliceMax - imgViewDesc.m_depthSliceMin), static_cast<uint16_t>(imgDesc.m_size.m_depth - 1)) + 1;
             const uint16_t samples = imgDesc.m_multisampleState.m_samples;
             const uint16_t arrayLayers = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_arraySliceMax - imgViewDesc.m_arraySliceMin), static_cast<uint16_t>(imgDesc.m_arraySize - 1)) + 1;
@@ -234,7 +233,7 @@ namespace AZ
                     // https://www.khronos.org/registry/vulkan/specs/1.1/html/chap11.html#VkImageSubresourceRange
                 {
                     range.m_arraySliceMin = descriptor.m_depthSliceMin;
-                    range.m_arraySliceMax = AZStd::GetMin<uint32_t>(descriptor.m_depthSliceMax, imageDesc.m_size.m_depth - 1);
+                    range.m_arraySliceMax = AZStd::GetMin<uint16_t>(descriptor.m_depthSliceMax, static_cast<uint16_t>(imageDesc.m_size.m_depth - 1));
                     break;
                 }
                 case VK_IMAGE_VIEW_TYPE_3D:

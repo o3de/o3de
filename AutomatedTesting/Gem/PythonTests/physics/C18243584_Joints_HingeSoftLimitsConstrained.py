@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 # Test case ID : C18243584
@@ -56,6 +52,7 @@ def C18243584_Joints_HingeSoftLimitsConstrained():
     """
     import os
     import sys
+    import math
 
     import ImportPathHelper as imports
 
@@ -93,22 +90,51 @@ def C18243584_Joints_HingeSoftLimitsConstrained():
     Report.info_vector3(lead.position, "lead initial position:")
     Report.info_vector3(follower.position, "follower initial position:")
     leadInitialPosition = lead.position
-    followerInitialPosition = follower.position
+        
+    # 4) Wait for the follower to move above the lead or Timeout
+    normalizedStartPos = JointsHelper.getRelativeVector(lead.position, follower.position)
+    normalizedStartPos = normalizedStartPos.GetNormalizedSafe()
 
-    # 4) Wait for several seconds
-    general.idle_wait(4.0) # wait for lead and follower to move
+    class WaitCondition:
+        TARGET_ANGLE = math.radians(45)
+        TARGET_MAX_ANGLE = math.radians(180)
 
+        angleAchieved = 0.0
+        followerMovedAbove45Deg = False #this is expected to be true to pass the test
+        followerMovedAbove180Deg = True #this is expected to be false to pass the test            
+
+        def checkConditionMet(self):
+            #calculate the current follower-lead vector
+            normalVec = JointsHelper.getRelativeVector(lead.position, follower.position)
+            normalVec = normalVec.GetNormalizedSafe()
+            #dot product + acos to get the angle
+            currentAngle = math.acos(normalizedStartPos.Dot(normalVec))
+            #if the angle is now less then last time, it is no longer rising, so end the test.
+            if currentAngle < self.angleAchieved:
+                return True
+            
+            self.angleAchieved = currentAngle
+            self.followerMovedAbove45Deg = currentAngle > self.TARGET_ANGLE
+            self.followerMovedAbove180Deg = currentAngle > self.TARGET_MAX_ANGLE
+            return False
+
+        def isFollowerPositionCorrect(self):
+            return self.followerMovedAbove45Deg and not self.followerMovedAbove180Deg
+
+    waitCondition = WaitCondition()
+
+    MAX_WAIT_TIME = 5.0 #seconds
+    conditionMet = helper.wait_for_condition(lambda: waitCondition.checkConditionMet(), MAX_WAIT_TIME)
+    
     # 5) Check to see if lead and follower behaved as expected
-    Report.info_vector3(lead.position, "lead position after 1 second:")
-    Report.info_vector3(follower.position, "follower position after 1 second:")
+    Report.info_vector3(lead.position, "lead position after test:")
+    Report.info_vector3(follower.position, "follower position after test:")
 
     leadPositionDelta = lead.position.Subtract(leadInitialPosition)
     leadRemainedStill = JointsHelper.vector3SmallerThanScalar(leadPositionDelta, FLOAT_EPSILON)
     Report.critical_result(Tests.check_lead_position, leadRemainedStill)
 
-    followerMovedInXOnly = ((follower.position.x > leadInitialPosition.x) > FLOAT_EPSILON and
-                        (follower.position.z - leadInitialPosition.z) > FLOAT_EPSILON)
-    Report.critical_result(Tests.check_follower_position, followerMovedInXOnly)
+    Report.critical_result(Tests.check_follower_position, conditionMet and waitCondition.isFollowerPositionCorrect())
 
     # 6) Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)

@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import imghdr
@@ -331,7 +328,7 @@ android_gradle_plugin={android_gradle_plugin_version}
 NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
     externalNativeBuild {{
         cmake {{
-            buildStagingDirectory "."
+            buildStagingDirectory "{native_build_path}"
             version "{cmake_version}"
             path "{absolute_cmakelist_path}"
         }}
@@ -375,9 +372,12 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR = """
     }}
 
     compile{config}Sources.dependsOn copyNativeArtifacts{config}
+"""
+
+CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_DEPENDENCY_FORMAT_STR = """
 
     copyNativeArtifacts{config}.mustRunAfter {{
-        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
     }}
 """
 
@@ -386,7 +386,13 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
+    
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
+
+    syncLYLayoutMode{config}.mustRunAfter {{
+        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+    }}
+
 """
 
 
@@ -447,8 +453,8 @@ class AndroidProjectGenerator(object):
 
     def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
-                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False,
-                 overwrite_existing=True):
+                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, is_test_project=False,
+                 overwrite_existing=True, unity_build_enabled=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
 
@@ -509,6 +515,8 @@ class AndroidProjectGenerator(object):
 
         self.include_assets_in_apk = include_assets_in_apk
 
+        self.native_build_path = native_build_path
+
         self.asset_mode = asset_mode
 
         self.asset_type = asset_type
@@ -518,6 +526,8 @@ class AndroidProjectGenerator(object):
         self.is_test_project = is_test_project
 
         self.overwrite_existing = overwrite_existing
+
+        self.unity_build_enabled = unity_build_enabled
 
     def execute(self):
         """
@@ -756,6 +766,9 @@ class AndroidProjectGenerator(object):
         template_engine_root = common.normalize_path_for_settings(self.engine_root)
         template_third_party_path = common.normalize_path_for_settings(self.third_party_path)
         template_ndk_path = common.normalize_path_for_settings(os.path.join(self.android_sdk_path, self.android_ndk.location))
+        template_unity_build = 1 if self.unity_build_enabled else 0
+
+        native_build_path = pathlib.Path(self.native_build_path).resolve().as_posix() if self.native_build_path else '.'
 
         gradle_build_env = dict()
 
@@ -766,7 +779,7 @@ class AndroidProjectGenerator(object):
 
         gradle_build_env['TARGET_TYPE'] = 'application'
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
-        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), absolute_cmakelist_path=absolute_cmakelist_path)
+        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
         gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
@@ -784,7 +797,8 @@ class AndroidProjectGenerator(object):
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
-                f'"-DLY_3RDPARTY_PATH={template_third_party_path}"']
+                f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
+                f'"-DLY_UNITY_BUILD={template_unity_build}"']
 
             if not self.is_test_project:
                 cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')
@@ -827,25 +841,28 @@ class AndroidProjectGenerator(object):
                                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
-                # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
+                    CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
+                                                                     python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
+                                                                     asset_type=self.asset_type,
+                                                                     project_path=self.project_path.as_posix(),
+                                                                     asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
+                                                                     asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
+                                                                     config=native_config)
+                # Copy over settings registry files from the Registry folder with build output directory
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
                                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='**/Registry/*.setreg')
-
-            if self.include_assets_in_apk:
-                if not self.is_test_project:
+                if self.include_assets_in_apk:
+                    # This is a dependency of the layout sync only if we are including assets in the APK
                     gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                        CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
-                                                                         python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
-                                                                         asset_type=self.asset_type,
-                                                                         project_path=self.project_path.as_posix(),
-                                                                         asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
-                                                                         config=native_config)
-            else:
-                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''
+                        CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_DEPENDENCY_FORMAT_STR.format(config=native_config)
+
+
+
+
             if self.signing_config:
                 gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self.signing_config else ''
             else:

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -503,7 +499,7 @@ namespace AZ
             //   outSH -> output SH coefficient array
             void EvalSHRotationFast(const float R[9], const uint32_t maxBand, const float* inSH, float* outSH)
             {
-                if (maxBand >= 0 && maxBand <= 2)
+                if (maxBand <= 2)
                 {
                     ZHF3(R, maxBand, inSH, outSH);
                 }
@@ -518,10 +514,7 @@ namespace AZ
             //   outSH -> output SH coefficient array
             void EvalSHRotation(const float R[9], const uint32_t maxBand, const double* inSH, double* outSH)
             {
-                if (maxBand >= 0)
-                {
-                    WignerD(R, maxBand, inSH, outSH);
-                }
+                WignerD(R, maxBand, inSH, outSH);
             }
 
             // Fast evaluation for first 3 bands

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DispatchRaysItem.h>
@@ -56,7 +52,7 @@ namespace AZ
             // load the ray tracing shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracing.azshader";
-            m_rayTracingShader = RPI::LoadShader(shaderFilePath);
+            m_rayTracingShader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_rayTracingShader == nullptr)
             {
                 return;
@@ -68,7 +64,7 @@ namespace AZ
 
             // closest hit shader
             AZStd::string closestHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingClosestHit.azshader";
-            m_closestHitShader = RPI::LoadShader(closestHitShaderFilePath);
+            m_closestHitShader = RPI::LoadCriticalShader(closestHitShaderFilePath);
 
             auto closestHitShaderVariant = m_closestHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
@@ -76,7 +72,7 @@ namespace AZ
 
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
-            m_missShader = RPI::LoadShader(missShaderFilePath);
+            m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
 
             auto missShaderVariant = m_missShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing missShaderDescriptor;
@@ -135,7 +131,7 @@ namespace AZ
             }
 
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
             {
                 // no diffuse probe grids
                 return;
@@ -152,9 +148,9 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().size()));
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
 
-            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // TLAS
                 {
@@ -259,7 +255,7 @@ namespace AZ
                 rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
                 rayTracingFeatureProcessor->GetSubMeshCount())
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
@@ -307,7 +303,7 @@ namespace AZ
                 m_rayTracingShaderTable)
             {
                 // submit the DispatchRaysItem for each DiffuseProbeGrid
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),

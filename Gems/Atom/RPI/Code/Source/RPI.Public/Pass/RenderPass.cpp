@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
@@ -62,6 +58,11 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
+                if (!binding.m_attachment)
+                {
+                    continue;
+                }
+
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
@@ -96,6 +97,10 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
+                {
+                    continue;
+                }
+                if (!binding.m_attachment)
                 {
                     continue;
                 }
@@ -185,14 +190,8 @@ namespace AZ
             {
                 SetScopeId(RHI::ScopeId(GetPathName()));
             }
-            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
-            // Read the attachment for one frame. The reference can be released afterwards
-            if (m_attachmentReadback)
-            {
-                m_attachmentReadback->FrameBegin(params);
-                m_attachmentReadback = nullptr;
-            }
+            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
             // Read back the ScopeQueries submitted from previous frames
             ReadbackScopeQueryResults();
@@ -202,6 +201,8 @@ namespace AZ
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
             CollectSrgs();
+
+            PassSystemInterface::Get()->IncrementFrameRenderPassCount();
         }
 
 
@@ -409,31 +410,6 @@ namespace AZ
         {
             m_viewTag = viewTag;
             m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
-        }
-
-        void RenderPass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const PassAttachment* attachment)
-        {
-            m_attachmentReadback = readback;
-
-            uint32_t bindingIndex = 0;
-            for (auto& binding : m_attachmentBindings)
-            {
-                if (attachment == binding.m_attachment)
-                {
-                    RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
-                    if (type == RHI::AttachmentType::Buffer || type == RHI::AttachmentType::Image)
-                    {
-                        RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
-
-                        // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
-                        AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
-                            bindingIndex, GetName().GetCStr());
-                        m_attachmentReadback->ReadPassAttachment(binding.m_attachment.get(), AZ::Name(readbackName));
-                        return;
-                    }
-                }
-                bindingIndex++;
-            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const

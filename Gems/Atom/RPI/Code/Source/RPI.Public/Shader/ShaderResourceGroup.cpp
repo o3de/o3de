@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI.Reflect/ShaderDataMappings.h>
 
@@ -38,6 +34,19 @@ namespace AZ
 
             AZStd::string idString = AZStd::string::format("%s_%u_%s", srgLayout->GetUniqueId().c_str(), supervariantIndex.GetIndex(), srgName.GetCStr());
             return Data::InstanceId::CreateData(idString.data(), idString.size());
+        }
+
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
+            const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& srgName)
+        {
+            // retrieve the supervariantIndex by searching for the default supervariant name, this will
+            // allow the shader asset to properly handle the RPI::ShaderSystem supervariant
+            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(AZ::Name(""));
+
+            SrgInitParams initParams{ supervariantIndex, srgName };
+            auto anyInitParams = AZStd::any(initParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
+                Data::InstanceId::CreateRandom(), shaderAsset, &anyInitParams);
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
@@ -89,7 +98,7 @@ namespace AZ
             {
                 return RHI::ResultCode::Fail;
             }
-            m_shaderResourceGroup->SetName(srgName);
+            m_shaderResourceGroup->SetName(m_pool->GetRHIPool()->GetName());
             m_data = RHI::ShaderResourceGroupData(m_layout);
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 

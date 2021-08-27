@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -31,8 +27,8 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObject, AnimGraphAllocator, 0)
 
     AnimGraphObject::AnimGraphObject()
-        : mAnimGraph(nullptr)
-        , mObjectIndex(MCORE_INVALIDINDEX32)
+        : m_animGraph(nullptr)
+        , m_objectIndex(MCORE_INVALIDINDEX32)
     {
     }
 
@@ -40,7 +36,7 @@ namespace EMotionFX
     AnimGraphObject::AnimGraphObject(AnimGraph* animGraph)
         : AnimGraphObject()
     {
-        mAnimGraph = animGraph;
+        m_animGraph = animGraph;
     }
 
 
@@ -93,7 +89,7 @@ namespace EMotionFX
 
 
     // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
-    uint32 AnimGraphObject::SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const
+    size_t AnimGraphObject::SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const
     {
         AnimGraphObjectData* data = animGraphInstance->FindOrCreateUniqueObjectData(this);
         if (data)
@@ -107,7 +103,7 @@ namespace EMotionFX
 
 
     // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
-    uint32 AnimGraphObject::LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer)
+    size_t AnimGraphObject::LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer)
     {
         AnimGraphObjectData* data = animGraphInstance->FindOrCreateUniqueObjectData(this);
         if (data)
@@ -120,25 +116,25 @@ namespace EMotionFX
 
 
     // collect internal objects
-    void AnimGraphObject::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphObject::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        outObjects.Add(const_cast<AnimGraphObject*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphObject*>(this));
     }
 
     void AnimGraphObject::InvalidateUniqueDatas()
     {
         AnimGraphObject* object = this;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             object->InvalidateUniqueData(animGraphInstance);
         }
     }
 
     void AnimGraphObject::InvalidateUniqueData(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(mObjectIndex);
+        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(m_objectIndex);
         if (uniqueData)
         {
             uniqueData->Invalidate();
@@ -147,7 +143,7 @@ namespace EMotionFX
 
     void AnimGraphObject::ResetUniqueData(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(mObjectIndex);
+        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(m_objectIndex);
         if (uniqueData)
         {
             uniqueData->Reset();
@@ -157,10 +153,10 @@ namespace EMotionFX
     void AnimGraphObject::ResetUniqueDatas()
     {
         AnimGraphObject* object = this;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             object->ResetUniqueData(animGraphInstance);
         }
     }
@@ -169,7 +165,7 @@ namespace EMotionFX
     void AnimGraphObject::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         MCORE_UNUSED(timePassedInSeconds);
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
     }
 
     void AnimGraphObject::Reinit()
@@ -224,7 +220,7 @@ namespace EMotionFX
 
 
     // decrease internal attribute indices for index values higher than the specified parameter
-    void AnimGraphObject::DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan)
+    void AnimGraphObject::DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan)
     {
         MCORE_UNUSED(decreaseEverythingHigherThan);
         // currently no implementation for the base object type, but this will come later
@@ -234,15 +230,15 @@ namespace EMotionFX
     // does the init for all anim graph instances in the parent animgraph
     void AnimGraphObject::InitInternalAttributesForAllInstances()
     {
-        if (mAnimGraph == nullptr)
+        if (m_animGraph == nullptr)
         {
             return;
         }
 
-        const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numInstances; ++i)
         {
-            InitInternalAttributes(mAnimGraph->GetAnimGraphInstance(i));
+            InitInternalAttributes(m_animGraph->GetAnimGraphInstance(i));
         }
     }
 

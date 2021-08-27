@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
@@ -35,10 +31,11 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
 
+        Device();
+
     private:
 
         AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
-        AZ::RHI::ResultCode PostInitInternal(const AZ::RHI::DeviceDescriptor&) override { return AZ::RHI::ResultCode::Success; }
 
         void ShutdownInternal() override {}
 
@@ -58,12 +55,16 @@ namespace UnitTest
         }
 
         void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
-        
+
+        AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
+
         void PreShutdown() override {}
 
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
 
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
+
+        void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
     };
 
     AZ::RHI::Ptr<AZ::RHI::Device> MakeTestDevice();

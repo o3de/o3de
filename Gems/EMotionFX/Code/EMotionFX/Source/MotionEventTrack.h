@@ -1,24 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-// include the required headers
+#include <AzCore/std/containers/vector.h>
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
 #include "MotionEvent.h"
-#include <MCore/Source/StringIdPool.h>
-
-#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -43,15 +36,15 @@ namespace EMotionFX
      * The handling of those events is done by the MotionEventHandler class that you specify to the MotionEventManager singleton.
      */
     class EMFX_API MotionEventTrack
-        : public BaseObject
     {
         friend class MotionEvent;
 
     public:
-        AZ_RTTI(MotionEventTrack, "{D142399D-C7DF-4E4A-A099-7E4E662F1E81}", BaseObject)
+        AZ_RTTI(MotionEventTrack, "{D142399D-C7DF-4E4A-A099-7E4E662F1E81}")
         AZ_CLASS_ALLOCATOR_DECL
 
-        MotionEventTrack() {}
+        MotionEventTrack() = default;
+        virtual ~MotionEventTrack() = default;
 
         /**
          * The constructor.
@@ -172,8 +165,6 @@ namespace EMotionFX
         const char* GetName() const;
         const AZStd::string& GetNameString() const;
 
-        uint32 GetNameID() const;
-        void SetNameID(uint32 id);
         void SetIsEnabled(bool enabled);
         bool GetIsEnabled() const;
 
@@ -187,23 +178,22 @@ namespace EMotionFX
         void ReserveNumEvents(size_t numEvents);
 
     protected:
-        /// The collection of motion events.
         AZStd::vector<MotionEvent> m_events;
+        AZStd::string m_name;
 
         /// The motion where this track belongs to.
-        Motion* mMotion;
-
-        /// The name ID.
-        MCore::StringIdPoolIndex mNameID;
+        Motion* m_motion;
 
         /// Is this track enabled?
-        bool mEnabled;
-        bool mDeletable;
+        bool m_enabled = true;
+        bool m_deletable = true;
 
     private:
         void ProcessEventsImpl(float startTime, float endTime, ActorInstance* actorInstance, const MotionInstance* motionInstance, const AZStd::function<void(EMotionFX::EventInfo&)>& processFunc);
 
         template <typename Functor>
         void ExtractEvents(float startTime, float endTime, const MotionInstance* motionInstance, const Functor& processFunc, bool handleLoops = true) const;
+
+        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
     };
 } // namespace EMotionFX

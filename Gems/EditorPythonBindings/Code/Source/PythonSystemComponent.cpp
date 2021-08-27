@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +10,7 @@
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 
 #include <Source/PythonCommon.h>
+#include <Source/PythonSymbolsBus.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
@@ -29,6 +26,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -39,10 +37,11 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
 
 namespace Platform
 {
-    // Implemented in each different platform's implentation files, as it differs per platform.
+    // Implemented in each different platform's implementation files, as it differs per platform.
     bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
 }
@@ -228,6 +227,37 @@ namespace RedirectOutput
 
 namespace EditorPythonBindings
 {
+    // A stand in bus to capture the log symbol queue events
+    // so that when/if the PythonLogSymbolsComponent becomes
+    // active it can write out the python symbols to disk
+    class PythonSystemComponent::SymbolLogHelper final
+        : public PythonSymbolEventBus::Handler
+    {
+    public:
+        SymbolLogHelper()
+        {
+            PythonSymbolEventBus::Handler::BusConnect();
+        }
+
+        ~SymbolLogHelper()
+        {
+            PythonSymbolEventBus::ExecuteQueuedEvents();
+            PythonSymbolEventBus::Handler::BusDisconnect();
+        }
+
+        void LogClass(const AZStd::string, const AZ::BehaviorClass*) override {}
+        void LogClassWithName(const AZStd::string, const AZ::BehaviorClass*, const AZStd::string) override {}
+        void LogClassMethod(
+            const AZStd::string,
+            const AZStd::string,
+            const AZ::BehaviorClass*,
+            const AZ::BehaviorMethod*) override {}
+        void LogBus(const AZStd::string, const AZStd::string, const AZ::BehaviorEBus*) override {}
+        void LogGlobalMethod(const AZStd::string, const AZStd::string, const AZ::BehaviorMethod*) override {}
+        void LogGlobalProperty(const AZStd::string, const AZStd::string, const AZ::BehaviorProperty*) override {}
+        void Finalize() override {}
+    };
+
     void PythonSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -241,8 +271,8 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
         }
@@ -288,10 +318,10 @@ namespace EditorPythonBindings
             ReleaseFunction m_releaseFunction;
         };
         ReleaseInitalizeWaiterScope scope([this]()
-        {
-            m_initalizeWaiter.release(m_initalizeWaiterCount);
-            m_initalizeWaiterCount = 0;
-        });
+            {
+                m_initalizeWaiter.release(m_initalizeWaiterCount);
+                m_initalizeWaiterCount = 0;
+            });
 
         if (Py_IsInitialized())
         {
@@ -329,6 +359,11 @@ namespace EditorPythonBindings
         result = StopPythonInterpreter();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostFinalize);
         return result;
+    }
+
+    bool PythonSystemComponent::IsPythonActive()
+    {
+        return Py_IsInitialized() != 0;
     }
 
     void PythonSystemComponent::WaitForInitialization()
@@ -469,8 +504,6 @@ namespace EditorPythonBindings
         }
     }
 
-
-
     bool PythonSystemComponent::StartPythonInterpreter(const PythonPathStack& pythonPathStack)
     {
         AZStd::unordered_set<AZStd::string> pyPackageSites(pythonPathStack.begin(), pythonPathStack.end());
@@ -501,6 +534,7 @@ namespace EditorPythonBindings
             // ignore system location for sites site-packages
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
+            Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
@@ -516,6 +550,11 @@ namespace EditorPythonBindings
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
+
+            if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
+            {
+                m_symbolLogHelper = AZStd::make_shared<PythonSystemComponent::SymbolLogHelper>();
+            }
 
             // print Python version using AZ logging
             const int verRet = PyRun_SimpleStringFlags("import sys \nprint (sys.version) \n", nullptr);
@@ -579,6 +618,9 @@ namespace EditorPythonBindings
 
         if (!script.empty())
         {
+            AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+                &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByString, script);
+
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
@@ -639,26 +681,24 @@ namespace EditorPythonBindings
     void PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
     {
         AZStd::vector<AZStd::string_view> args;
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilename, filename);
         ExecuteByFilenameWithArgs(filename, args);
     }
 
-    void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
+    bool PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
     {
+        AZ_TracePrintf("python", "Running automated test: %.*s (testcase %.*s)", AZ_STRING_ARG(filename), AZ_STRING_ARG(testCase))
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);
-        if (evalResult == Result::Okay)
-        {
-            // all good, the test script will need to exit the application now
-            return;
-        }
-        else
-        {
-            // something went wrong with executing the test script
-            AZ::Debug::Trace::Terminate(0xF);
-        }
+        return evalResult == Result::Okay;
     }
 
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameWithArgs, filename, args);
         EvaluateFile(filename, args);
     }
 

@@ -1,23 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentNotificationBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWidget>
@@ -48,7 +43,7 @@ namespace ShaderManagementConsole
     class ShaderManagementConsoleBrowserWidget
         : public QWidget
         , public AzToolsFramework::AssetBrowser::AssetBrowserModelNotificationBus::Handler
-        , public ShaderManagementConsoleDocumentNotificationBus::Handler
+        , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -68,7 +63,7 @@ namespace ShaderManagementConsole
         // AssetBrowserModelNotificationBus::Handler implementation
         void EntryAdded(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
 
-        // ShaderManagementConsoleDocumentNotificationBus::Handler implementation
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler implementation
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
     };
 } // namespace ShaderManagementConsole

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -42,7 +38,7 @@ namespace AZ
             float m_cosInnerConeAngle = 0.0f; // cosine of inner cone angle
             float m_cosOuterConeAngle = 0.0f; // cosine of outer cone angle
             float m_bulbPositionOffset = 0.0f; // Distance from the light disk surface to the tip of the cone of the light. m_bulbRadius * tanf(pi/2 - m_outerConeAngle).
-            uint16_t m_shadowIndex = -1; // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
+            uint16_t m_shadowIndex = std::numeric_limits<uint16_t>::max(); // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
             uint16_t m_padding; // Explicit padding.
         };
 
@@ -88,6 +84,8 @@ namespace AZ
 
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.
@@ -100,10 +98,13 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the shadowmap Pcf (percentage closer filtering) method.
             virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+            //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
+            virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
 
             //! Sets all of the the disk data for the provided LightHandle.
             virtual void SetDiskData(LightHandle handle, const DiskLightData& data) = 0;
-            
+
+
         };
     } // namespace Render
 } // namespace AZ

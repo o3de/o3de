@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "DelayNodeable.h"
 #include <ScriptCanvas/Utils/SerializationUtils.h>
@@ -53,7 +49,7 @@ namespace ScriptCanvas
 
             void DelayNodeable::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+                AZ_PROFILE_FUNCTION(ScriptCanvas);
                 SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
                 m_currentTime -= static_cast<float>(deltaTime);
                 if (m_currentTime <= 0.f)
@@ -86,12 +82,12 @@ namespace ScriptCanvas
 
             void DelayNodeable::Reset(Data::NumberType countdownSeconds, Data::BooleanType looping, Data::NumberType holdTime)
             {
-                InitiateCountdown(true, countdownSeconds, looping, holdTime);
+                InitiateCountdown(true, static_cast<float>(countdownSeconds), looping, static_cast<float>(holdTime));
             }
 
             void DelayNodeable::Start(Data::NumberType countdownSeconds, Data::BooleanType looping, Data::NumberType holdTime)
             {
-                InitiateCountdown(false, countdownSeconds, looping, holdTime);
+                InitiateCountdown(false, static_cast<float>(countdownSeconds), looping, static_cast<float>(holdTime));
             }
         }
     }

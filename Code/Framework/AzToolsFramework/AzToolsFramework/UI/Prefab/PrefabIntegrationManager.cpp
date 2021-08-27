@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Component/TransformBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -28,6 +25,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <QApplication>
 #include <QFileDialog>
@@ -259,11 +257,11 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
         {
-            auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
+            auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
 
-            if (!createPrefabOutcome.IsSuccess())
+            if (!instantiatePrefabOutcome.IsSuccess())
             {
-                WarnUserOfError("Prefab Instantiation Error", createPrefabOutcome.GetError());
+                WarnUserOfError("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
             }
         }
 
@@ -351,7 +349,7 @@ namespace AzToolsFramework
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, prefabFilePath.data());
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabInDisk(selectedEntities, prefabFilePath.data());
 
             if (!createPrefabOutcome.IsSuccess())
             {
@@ -366,12 +364,25 @@ namespace AzToolsFramework
 
             if (hasUserSelectedValidSourceFile)
             {
-                // Get position (center of viewport). If no viewport is available, (0,0,0) will be used.
-                AZ::Vector3 viewportCenterPosition = AZ::Vector3::CreateZero();
-                EditorRequestBus::BroadcastResult(viewportCenterPosition, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                AZ::EntityId parentId;
+                AZ::Vector3 position = AZ::Vector3::CreateZero();
+
+                EntityIdList selectedEntities;
+                ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+                // if one entity is selected, instantiate prefab as its child and place it at same position as parent
+                if (selectedEntities.size() == 1)
+                {
+                    parentId = selectedEntities.front();
+                    AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
+                }
+                // otherwise instantiate it at root level and center of viewport
+                else
+                {
+                    EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                }
 
                 // Instantiating from context menu always puts the instance at the root level
-                auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, AZ::EntityId(), viewportCenterPosition);
+                auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, parentId, position);
 
                 if (!createPrefabOutcome.IsSuccess())
                 {
@@ -423,7 +434,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::GenerateSuggestedFilenameFromEntities(const EntityIdList& entityIds, AZStd::string& outName)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::string suggestedName;
 
@@ -504,7 +515,7 @@ namespace AzToolsFramework
             while (true)
             {
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
                     saveAs = QFileDialog::getSaveFileName(nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Prefabs (*.prefab)"));
                 }
 
@@ -588,15 +599,6 @@ namespace AzToolsFramework
 
         bool PrefabIntegrationManager::QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath)
         {
-            QWidget* mainWindow = nullptr;
-            EditorRequests::Bus::BroadcastResult(mainWindow, &EditorRequests::Bus::Events::GetMainWindow);
-
-            if (mainWindow == nullptr)
-            {
-                AZ_Assert(false, "Prefab - Could not detect Editor main window to generate the asset picker.");
-                return false;
-            }
-
             AssetSelectionModel selection;
 
             // Note, stringfilter will match every source file CONTAINING ".prefab".
@@ -624,7 +626,7 @@ namespace AzToolsFramework
             selection.SetDisplayFilter(compositeFilterPtr);
             selection.SetSelectionFilter(compositeFilterPtr);
 
-            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, mainWindow);
+            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
 
             if (!selection.IsValid())
             {
@@ -849,7 +851,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::GatherAllReferencedEntities(EntityIdSet& entitiesWithReferences, AZ::SerializeContext& serializeContext)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::vector<AZ::EntityId> floodQueue;
             floodQueue.reserve(entitiesWithReferences.size());
@@ -941,7 +943,7 @@ namespace AzToolsFramework
         bool PrefabIntegrationManager::QueryAndPruneMissingExternalReferences(EntityIdSet& entities, EntityIdSet& selectedAndReferencedEntities,
             bool& useReferencedEntities, bool defaultMoveExternalRefs)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             useReferencedEntities = false;
 
             AZStd::string includedEntities;
@@ -976,19 +978,14 @@ namespace AzToolsFramework
             {
                 if (!defaultMoveExternalRefs)
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                     const AZStd::string message = AZStd::string::format(
                         "Entity references may not be valid if the entity IDs change or if the entities do not exist when the prefab is instantiated.\r\n\r\nSelected Entities\n%s\nReferenced Entities\n%s\n",
                         includedEntities.c_str(),
                         referencedEntities.c_str());
 
-                    QWidget* mainWindow = nullptr;
-                    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
-                        mainWindow,
-                        &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
-
-                    QMessageBox msgBox(mainWindow);
+                    QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
                     msgBox.setWindowTitle("External Entity References");
                     msgBox.setText("The prefab contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Tests/UI/UIFixture.h>
 #include <Tests/UI/AnimGraphUIFixture.h>
@@ -86,7 +82,7 @@ namespace EMotionFX
         const AnimGraph* targetAnimGraph = (animGraph ? animGraph : m_animGraphPlugin->GetActiveAnimGraph()); //AnimGraph to add Node to
         const AZStd::string cmd = "AnimGraphCreateNode AnimGraphID " + AZStd::to_string(targetAnimGraph->GetID()) + " -type " + type + " " + args;
         
-        AZ::u32 nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
+        size_t nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
 
         AZStd::string result;
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(cmd, result)) << result.c_str();
@@ -116,7 +112,7 @@ namespace EMotionFX
 
         const EMotionFX::AnimGraphNode* currentNode = GetActiveNodeGraph()->GetModelIndex().data(EMStudio::AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
-        const int numNodesAfter = currentNode->GetNumChildNodes();
+        const size_t numNodesAfter = currentNode->GetNumChildNodes();
         if (numNodesAfter == 0)
         {
             return nullptr;

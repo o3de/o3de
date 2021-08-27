@@ -1,16 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
@@ -28,7 +25,6 @@ class AWSCoreResourceMappingToolActionTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
-        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -38,20 +34,12 @@ class AWSCoreResourceMappingToolActionTest
     }
 };
 
-TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootFolder_ExpectOneError)
+TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootPath_ExpectErrorsAndResult)
 {
-    m_localFileIO->ClearAlias("@engroot@");
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreResourceMappingToolAction testAction("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
-}
-
-TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_UnableToFindExpectedFileOrFolder_ExpectFiveErrorsAndEmptyResult)
-{
     AZ_TEST_START_TRACE_SUPPRESSION;
-    AWSCoreResourceMappingToolAction testAction("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     EXPECT_TRUE(testAction.GetToolLaunchCommand() == "");
-    EXPECT_TRUE(testAction.GetToolLogPath() == "");
+    EXPECT_TRUE(testAction.GetToolLogFilePath() == "");
     EXPECT_TRUE(testAction.GetToolReadMePath() == "");
+    AZ_TEST_STOP_TRACE_SUPPRESSION(3);
 }

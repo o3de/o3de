@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -26,7 +22,6 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-
     AZ::Outcome<void, AZStd::string> IsExposable(const AZ::BehaviorMethod& method);
 
     Grammar::FunctionPrototype ToSignature(const AZ::BehaviorMethod& method);
@@ -35,7 +30,8 @@ namespace ScriptCanvas
     {
         namespace Core
         {
-            class Method : public Node
+            class Method
+                : public Node
             {
             public:
                 AZ_COMPONENT(Method, "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}", Node);
@@ -49,6 +45,8 @@ namespace ScriptCanvas
                 bool BranchesOnResult() const;
 
                 size_t GenerateFingerprint() const override;
+
+                bool CanAcceptNullInput(const Slot& executionSlot, const Slot& inputSlot) const override;
 
                 bool GetBranchOnResultCheckName(AZStd::string& exposedName, Grammar::LexicalScope& lexicalScope) const;
 
@@ -109,7 +107,11 @@ namespace ScriptCanvas
 
                 SlotId GetBusSlotId() const;
 
+                void OnDeserialize();
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
                 virtual bool IsMethodOverloaded() const { return false; }
 
@@ -154,8 +156,6 @@ namespace ScriptCanvas
 
                 bool IsExpectingResult() const;
 
-                AZ_INLINE AZStd::vector<SlotId>& ModResultSlotIds() { return m_resultSlotIDs; }
-
                 virtual void OnInitializeOutputPost(const MethodOutputConfig&) {}
 
                 virtual void OnInitializeOutputPre(MethodOutputConfig&) {}
@@ -181,12 +181,13 @@ namespace ScriptCanvas
                 NamespacePath m_namespaces;
                 const AZ::BehaviorMethod* m_method = nullptr;
                 const AZ::BehaviorClass* m_class = nullptr;
+                AZStd::vector<SlotId> m_inputSlots;
                 AZStd::vector<SlotId> m_resultSlotIDs;
                 AZStd::recursive_mutex m_mutex; // post-serialization
-                bool m_warnOnMissingFunction = true;
+                bool m_warnOnMissingFunction = false;
                 Method(const Method&) = delete;
             };
 
-        } 
-    } 
-} 
+        }
+    }
+}

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AzCore/RTTI/TypeInfo.h"
 #include <AzCore/Math/UuidSerializer.h>
@@ -19,24 +15,30 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
 {
     JsonSerializationResult::ResultCode JsonDeserializer::DeserializerDefaultCheck(BaseJsonSerializer* serializer, void* object,
-        const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context)
+        const Uuid& typeId,const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context)
     {
         using namespace AZ::JsonSerializationResult;
 
         bool isExplicitDefault = IsExplicitDefault(value);
         bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
             BaseJsonSerializer::OperationFlags::ManualDefault;
-        return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+        bool initializeNewInstance = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
+            BaseJsonSerializer::OperationFlags::InitializeNewInstance;
+
+        return
+            !isExplicitDefault || (isExplicitDefault && manuallyDefaults) || (isExplicitDefault && isNewInstance && initializeNewInstance)
             ? serializer->Load(object, typeId, value, context)
             : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
     }
 
-    JsonSerializationResult::ResultCode JsonDeserializer::Load(void* object, const Uuid& typeId, const rapidjson::Value& value,
+    JsonSerializationResult::ResultCode JsonDeserializer::Load(
+        void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, UseTypeDeserializer custom,
         JsonDeserializerContext& context)
     {
         using namespace AZ::JsonSerializationResult;
@@ -47,10 +49,10 @@ namespace AZ
                 "Target object for Json Serialization is pointing to nothing during loading.");
         }
 
-        BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
-        if (serializer)
+        if (BaseJsonSerializer* serializer
+            = (custom == UseTypeDeserializer::Yes ? context.GetRegistrationContext()->GetSerializerForType(typeId) : nullptr))
         {
-            return DeserializerDefaultCheck(serializer, object, typeId, value, context);
+            return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
         }
 
         const SerializeContext::ClassData* classData = context.GetSerializeContext()->FindClassData(typeId);
@@ -69,10 +71,13 @@ namespace AZ
                 // type itself has not been reflected using EnumBuilder. Treat it as an enum.
                 return LoadEnum(object, *classData, value, context);
             }
-            serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
-            if (serializer)
+            
+            if (BaseJsonSerializer* serializer
+                = (custom == UseTypeDeserializer::Yes)
+                    ? context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId())
+                    : nullptr)
             {
-                return DeserializerDefaultCheck(serializer, object, typeId, value, context);
+                return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
             }
         }
 
@@ -100,7 +105,7 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonDeserializer::LoadToPointer(void* object, const Uuid& typeId,
-        const rapidjson::Value& value, JsonDeserializerContext& context)
+        const rapidjson::Value& value, UseTypeDeserializer useCustom, JsonDeserializerContext& context)
     {
         using namespace JsonSerializationResult;
 
@@ -133,7 +138,7 @@ namespace AZ
             const SerializeContext::ClassData* resolvedClassData = context.GetSerializeContext()->FindClassData(resolvedTypeId);
             if (resolvedClassData)
             {
-                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, context);
+                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, true, useCustom, context);
 
                 *objectPtr = resolvedClassData->m_azRtti->Cast(*objectPtr, typeId);
 
@@ -170,11 +175,11 @@ namespace AZ
             }
             AZ_Assert(classElement.m_azRtti->GetTypeId() == classElement.m_typeId,
                 "Type id mismatch during deserialization of a json file. (%s vs %s)");
-            return LoadToPointer(object, classElement.m_typeId, value, context);
+            return LoadToPointer(object, classElement.m_typeId, value, UseTypeDeserializer::Yes, context);
         }
         else
         {
-            return Load(object, classElement.m_typeId, value, context);
+            return Load(object, classElement.m_typeId, value, false, UseTypeDeserializer::Yes, context);
         }
     }
 
@@ -570,11 +575,23 @@ namespace AZ
             if (loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ||
                 loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds)
             {
-                AZStd::string_view message = loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds ?
-                    "Unable to resolve provided type because the same name points to multiple types." :
-                    "Unable to resolve provided type.";
-                status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
-                return ResolvePointerResult::FullyProcessed;
+                    auto typeField = pointerData.FindMember(JsonSerialization::TypeIdFieldIdentifier);
+                    if (typeField != pointerData.MemberEnd() && typeField->value.IsString())
+                    {
+                        const char* format = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type: %.*s." : 
+                            "Unable to resolve provided type %.*s because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, 
+                            AZStd::string::format(format, typeField->value.GetStringLength(), typeField->value.GetString()));
+                    }
+                    else
+                    {
+                        const char* message = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type." :
+                            "Unable to resolve provided type because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
+                    }
+                    return ResolvePointerResult::FullyProcessed;
             }
 
             if (loadedTypeId.m_typeId != objectType)
@@ -591,7 +608,9 @@ namespace AZ
                 }
                 else
                 {
-                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, "Serialization information for target type not found.");
+                    using ReporterString = AZStd::fixed_string<1024>;
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                        ReporterString::format("Serialization information for target type %s not found.", loadedTypeId.m_typeId.ToString<ReporterString>().c_str()));
                     return ResolvePointerResult::FullyProcessed;
                 }
                 objectType = loadedTypeId.m_typeId;

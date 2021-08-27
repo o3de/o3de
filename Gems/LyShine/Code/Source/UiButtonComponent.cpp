@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiButtonComponent.h"
 #include "Sprite.h"
 
@@ -225,48 +220,9 @@ bool UiButtonComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1 to 2:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() < 2)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SelectedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "PressedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "DisabledSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "SelectedColor", "SelectedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "PressedColor", "PressedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "DisabledColor", "DisabledAlpha"))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 2 to 3:
     // - Need to convert CryString ActionName elements to AZStd::string
-    if (classElement.GetVersion() < 3)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "ActionName"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() >= 3, "Unsupported UiButtonComponent version: %d", classElement.GetVersion());
 
     // conversion from version 3 to 4:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -60,12 +56,7 @@ class TestMenus(object):
             "Rotate Action triggered",
             "Scale Action triggered",
             "Global Preferences Action triggered",
-            "Graphics Settings Action triggered",
             "Editor Settings Manager Action triggered",
-            "Very High Action triggered",
-            "High Action triggered",
-            "Medium Action triggered",
-            "Low Action triggered",
             "Customize Keyboard Action triggered",
             "Export Keyboard Settings Action triggered",
             "Import Keyboard Settings Action triggered",
@@ -89,12 +80,11 @@ class TestMenus(object):
         expected_lines = [
             "Center on Selection Action triggered",
             "Show Quick Access Bar Action triggered",
-            "Wireframe Action triggered",
+            "Configure Layout Action triggered",
             "Go to Position Action triggered",
             "Center on Selection Action triggered",
             "Go to Location Action triggered",
             "Remember Location Action triggered",
-            "Change Move Speed Action triggered",
             "Switch Camera Action triggered",
             "Show/Hide Helpers Action triggered",
             "Refresh Style Action triggered",

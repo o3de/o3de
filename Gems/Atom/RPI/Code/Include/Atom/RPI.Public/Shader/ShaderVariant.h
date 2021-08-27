@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -23,10 +19,12 @@ namespace AZ
         //! the RHI::PipelineStateType of the parent Shader instance. For shaders on the raster
         //! pipeline, the RHI::DrawFilterTag is also provided.
         class ShaderVariant final
+            : public Data::AssetBus::MultiHandler
         {
             friend class Shader;
         public:
             ShaderVariant() = default;
+            virtual ~ShaderVariant();
             AZ_DEFAULT_COPY_MOVE(ShaderVariant);
 
             //! Fills a pipeline state descriptor with settings provided by the ShaderVariant. (Note that
@@ -50,12 +48,21 @@ namespace AZ
 
             ShaderVariantStableId GetStableId() const { return m_shaderVariantAsset->GetStableId(); }
 
+            const Data::Asset<ShaderAsset>& GetShaderAsset() const { return m_shaderAsset; }
+            const Data::Asset<ShaderVariantAsset>& GetShaderVariantAsset() const { return m_shaderVariantAsset; }
+
         private:
             // Called by Shader. Initializes runtime data from asset data. Returns whether the call succeeded.
             bool Init(
-                const ShaderAsset& shaderAsset,
-                Data::Asset<ShaderVariantAsset> shaderVariantAsset,
+                const Data::Asset<ShaderAsset>& shaderAsset,
+                const Data::Asset<ShaderVariantAsset>& shaderVariantAsset,
                 SupervariantIndex supervariantIndex);
+
+            // AssetBus overrides...
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+
+            //! A reference to the shader asset that this is a variant of.
+            Data::Asset<ShaderAsset> m_shaderAsset;
 
             // Cached state from the asset to avoid an indirection.
             RHI::PipelineStateType m_pipelineStateType = RHI::PipelineStateType::Count;
@@ -66,6 +73,7 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> m_shaderVariantAsset;
 
             const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset.
+            SupervariantIndex m_supervariantIndex;
         };
     }
 }

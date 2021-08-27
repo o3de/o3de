@@ -1,71 +1,50 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import logging
 import os
 import pytest
-import time
 import typing
-
 from datetime import datetime
+
 import ly_test_tools.log.log_monitor
 
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
-from AWS.common.aws_utils import aws_utils
-from AWS.common.aws_credentials import aws_credentials
-from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
+from AWS.common import constants
+from .aws_metrics_custom_thread import AWSMetricsThread
+
+# fixture imports
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
 from .aws_metrics_utils import aws_metrics_utils
 
 AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
-GAME_LOG_NAME = 'Game.log'
 
 logger = logging.getLogger(__name__)
 
 
-def setup(launcher: ly_test_tools.launchers.Launcher,
-          cdk: cdk,
-          asset_processor: asset_processor,
-          resource_mappings: resource_mappings,
-          context_variable: str = '') -> typing.Tuple[ly_test_tools.log.log_monitor.LogMonitor, str, str]:
+def setup(launcher: pytest.fixture,
+          asset_processor: pytest.fixture) -> pytest.fixture:
     """
-    Set up the CDK application and start the log monitor.
+    Set up the resource mapping configuration and start the log monitor.
     :param launcher: Client launcher for running the test level.
-    :param cdk: CDK application for deploying the AWS resources.
     :param asset_processor: asset_processor fixture.
-    :param resource_mappings: resource_mappings fixture.
-    :param context_variable: context_variable for enable optional CDK feature.
     :return log monitor object, metrics file path and the metrics stack name.
     """
-    logger.info(f'Cdk stack names:\n{cdk.list()}')
-    stacks = cdk.deploy(context_variable=context_variable)
-    resource_mappings.populate_output_keys(stacks)
-
     asset_processor.start()
     asset_processor.wait_for_idle()
 
-    metrics_file_path = os.path.join(launcher.workspace.paths.project(), 'user',
-                                     AWS_METRICS_FEATURE_NAME, 'metrics.json')
-    remove_file(metrics_file_path)
-
-    file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
-    remove_file(file_to_monitor)
+    file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), constants.GAME_LOG_NAME)
 
     # Initialize the log monitor.
     log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
-    return log_monitor, metrics_file_path, stacks[0]
+    return log_monitor
 
 
-def monitor_metrics_submission(log_monitor: ly_test_tools.log.log_monitor.LogMonitor) -> None:
+def monitor_metrics_submission(log_monitor: pytest.fixture) -> None:
     """
     Monitor the messages and notifications for submitting metrics.
     :param log_monitor: Log monitor to check the log messages.
@@ -73,6 +52,7 @@ def monitor_metrics_submission(log_monitor: ly_test_tools.log.log_monitor.LogMon
     expected_lines = [
         '(Script) - Submitted metrics without buffer.',
         '(Script) - Submitted metrics with buffer.',
+        '(Script) - Flushed the buffered metrics.',
         '(Script) - Metrics is sent successfully.'
     ]
 
@@ -93,87 +73,148 @@ def monitor_metrics_submission(log_monitor: ly_test_tools.log.log_monitor.LogMon
         f'unexpected_lines values: {unexpected_lines}')
 
 
-def remove_file(file_path: str) -> None:
+def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: pytest.fixture, stack_name: str) -> None:
     """
-    Remove a local file and its directory.
-    :param file_path: Path to the local file.
+    Verify that the metrics events are delivered to the S3 bucket and can be queried.
+    :param aws_metrics_utils: aws_metrics_utils fixture.
+    :param resource_mappings: resource_mappings fixture.
+    :param stack_name: name of the CloudFormation stack.
     """
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    aws_metrics_utils.verify_s3_delivery(
+        resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName')
+    )
+    logger.info('Metrics are sent to S3.')
 
-    file_dir = os.path.dirname(file_path)
-    if os.path.exists(file_dir) and len(os.listdir(file_dir)) == 0:
-        os.rmdir(file_dir)
+    aws_metrics_utils.run_glue_crawler(
+        resource_mappings.get_resource_name_id('AWSMetrics.EventsCrawlerName'))
 
+    # Remove the events_json table if exists so that the sample query can create a table with the same name.
+    aws_metrics_utils.delete_table(f'{stack_name}-eventsdatabase', 'events_json')
+    aws_metrics_utils.run_named_queries(f'{stack_name}-AthenaWorkGroup')
+    logger.info('Query metrics from S3 successfully.')
+
+
+def verify_operational_metrics(aws_metrics_utils: pytest.fixture, stack_name: str, start_time: datetime) -> None:
+    """
+    Verify that operational health metrics are delivered to CloudWatch.
+    aws_metrics_utils: aws_metrics_utils fixture.
+    stack_name: name of the CloudFormation stack.
+    start_time: Time when the game launcher starts.
+    """
+    aws_metrics_utils.verify_cloud_watch_delivery(
+        'AWS/Lambda',
+        'Invocations',
+        [{'Name': 'FunctionName',
+          'Value': f'{stack_name}-AnalyticsProcessingLambda'}],
+        start_time)
+    logger.info('AnalyticsProcessingLambda metrics are sent to CloudWatch.')
+
+    aws_metrics_utils.verify_cloud_watch_delivery(
+        'AWS/Lambda',
+        'Invocations',
+        [{'Name': 'FunctionName',
+          'Value': f'{stack_name}-EventsProcessingLambda'}],
+        start_time)
+    logger.info('EventsProcessingLambda metrics are sent to CloudWatch.')
+
+
+def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixture,
+                                                resource_mappings: pytest.fixture, start_application: bool) -> None:
+    """
+    Update the Kinesis analytics application to start or stop it.
+    :param aws_metrics_utils: aws_metrics_utils fixture.
+    :param resource_mappings: resource_mappings fixture.
+    :param start_application: whether to start or stop the application.
+    """
+    if start_application:
+        aws_metrics_utils.start_kinesis_data_analytics_application(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
+    else:
+        aws_metrics_utils.stop_kinesis_data_analytics_application(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.usefixtures('automatic_process_killer')
-@pytest.mark.parametrize('project', ['AutomatedTesting'])
-@pytest.mark.parametrize('level', ['AWS/Metrics'])
+@pytest.mark.usefixtures('aws_credentials')
+@pytest.mark.usefixtures('resource_mappings')
+@pytest.mark.parametrize('assume_role_arn', [constants.ASSUME_ROLE_ARN])
 @pytest.mark.parametrize('feature_name', [AWS_METRICS_FEATURE_NAME])
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.parametrize('level', ['AWS/Metrics'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
-@pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
-@pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
-class TestAWSMetrics_Windows(object):
-    def test_AWSMetrics_RealTimeAnalytics_MetricsSentToCloudWatch(self,
-                                                                  level: str,
-                                                                  launcher: ly_test_tools.launchers.Launcher,
-                                                                  asset_processor: pytest.fixture,
-                                                                  workspace: pytest.fixture,
-                                                                  aws_utils: aws_utils,
-                                                                  aws_credentials: aws_credentials,
-                                                                  resource_mappings: resource_mappings,
-                                                                  cdk: cdk,
-                                                                  aws_metrics_utils: aws_metrics_utils,
-                                                                  ):
+@pytest.mark.parametrize('project', ['AutomatedTesting'])
+@pytest.mark.parametrize('region_name', [constants.AWS_REGION])
+@pytest.mark.parametrize('resource_mappings_filename', [constants.AWS_RESOURCE_MAPPING_FILE_NAME])
+@pytest.mark.parametrize('session_name', [constants.SESSION_NAME])
+@pytest.mark.parametrize('stacks', [[f'{constants.AWS_PROJECT_NAME}-{AWS_METRICS_FEATURE_NAME}-{constants.AWS_REGION}']])
+class TestAWSMetricsWindows(object):
+    """
+    Test class to verify the real-time and batch analytics for metrics.
+    """
+    def test_realtime_and_batch_analytics(self,
+                                          level: str,
+                                          launcher: pytest.fixture,
+                                          asset_processor: pytest.fixture,
+                                          workspace: pytest.fixture,
+                                          aws_utils: pytest.fixture,
+                                          resource_mappings: pytest.fixture,
+                                          stacks: typing.List,
+                                          aws_metrics_utils: pytest.fixture):
         """
-        Tests that the submitted metrics are sent to CloudWatch for real-time analytics.
+        Verify that the metrics events are sent to CloudWatch and S3 for analytics.
         """
-        log_monitor, metrics_file_path, stack_name = setup(launcher, cdk, asset_processor, resource_mappings)
+        # Start Kinesis analytics application on a separate thread to avoid blocking the test.
+        kinesis_analytics_application_thread = AWSMetricsThread(target=update_kinesis_analytics_application_status,
+                                                                args=(aws_metrics_utils, resource_mappings, True))
+        kinesis_analytics_application_thread.start()
 
-        # Start the Kinesis Data Analytics application for real-time analytics.
-        analytics_application_name = f'{stack_name}-AnalyticsApplication'
-        aws_metrics_utils.start_kinesis_data_analytics_application(analytics_application_name)
+        # Clear the analytics bucket objects before sending new metrics.
+        aws_metrics_utils.empty_bucket(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
 
+        log_monitor = setup(launcher, asset_processor)
+
+        # Kinesis analytics application needs to be in the running state before we start the game launcher.
+        kinesis_analytics_application_thread.join()
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
-
+        start_time = datetime.utcnow()
         with launcher.start(launch_ap=False):
-            start_time = datetime.utcnow()
             monitor_metrics_submission(log_monitor)
-            # Verify that operational health metrics are delivered to CloudWatch.
-            aws_metrics_utils.verify_cloud_watch_delivery(
-                'AWS/Lambda',
-                'Invocations',
-                [{'Name': 'FunctionName',
-                  'Value': f'{stack_name}-AnalyticsProcessingLambda'}],
-                start_time)
-            logger.info('Operational health metrics sent to CloudWatch.')
 
+            # Verify that real-time analytics metrics are delivered to CloudWatch.
             aws_metrics_utils.verify_cloud_watch_delivery(
                 AWS_METRICS_FEATURE_NAME,
                 'TotalLogins',
                 [],
                 start_time)
-            logger.info('Real-time metrics sent to CloudWatch.')
+            logger.info('Real-time metrics are sent to CloudWatch.')
 
-        # Stop the Kinesis Data Analytics application.
-        aws_metrics_utils.stop_kinesis_data_analytics_application(analytics_application_name)
+        # Run time-consuming operations on separate threads to avoid blocking the test.
+        operational_threads = list()
+        operational_threads.append(
+            AWSMetricsThread(target=query_metrics_from_s3,
+                             args=(aws_metrics_utils, resource_mappings, stacks[0])))
+        operational_threads.append(
+            AWSMetricsThread(target=verify_operational_metrics,
+                             args=(aws_metrics_utils, stacks[0], start_time)))
+        operational_threads.append(
+            AWSMetricsThread(target=update_kinesis_analytics_application_status,
+                             args=(aws_metrics_utils, resource_mappings, False)))
+        for thread in operational_threads:
+            thread.start()
+        for thread in operational_threads:
+            thread.join()
 
-    def test_AWSMetrics_UnauthorizedUser_RequestRejected(self,
-                                                         level: str,
-                                                         launcher: ly_test_tools.launchers.Launcher,
-                                                         cdk: cdk,
-                                                         aws_credentials: aws_credentials,
-                                                         asset_processor: pytest.fixture,
-                                                         resource_mappings: resource_mappings,
-                                                         workspace: pytest.fixture):
+    def test_unauthorized_user_request_rejected(self,
+                                                level: str,
+                                                launcher: pytest.fixture,
+                                                asset_processor: pytest.fixture,
+                                                workspace: pytest.fixture):
         """
-        Tests that unauthorized users cannot send metrics events to the AWS backed backend.
+        Verify that unauthorized users cannot send metrics events to the AWS backed backend.
         """
-        log_monitor, metrics_file_path, stack_name = setup(launcher, cdk, asset_processor, resource_mappings)
+        log_monitor = setup(launcher, asset_processor)
+
         # Set invalid AWS credentials.
         launcher.args = ['+LoadLevel', level, '+cl_awsAccessKey', 'AKIAIOSFODNN7EXAMPLE',
                          '+cl_awsSecretKey', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY']
@@ -186,52 +227,3 @@ class TestAWSMetrics_Windows(object):
                 halt_on_unexpected=True)
             assert result, 'Metrics events are sent successfully by unauthorized user'
             logger.info('Unauthorized user is rejected to send metrics.')
-
-    def test_AWSMetrics_BatchAnalytics_MetricsDeliveredToS3(self,
-                                                            level: str,
-                                                            launcher: ly_test_tools.launchers.Launcher,
-                                                            cdk: cdk,
-                                                            aws_credentials: aws_credentials,
-                                                            asset_processor: pytest.fixture,
-                                                            resource_mappings: resource_mappings,
-                                                            aws_utils: aws_utils,
-                                                            aws_metrics_utils: aws_metrics_utils,
-                                                            workspace: pytest.fixture):
-        """
-        Tests that the submitted metrics are sent to the data lake for batch analytics.
-        """
-        log_monitor, metrics_file_path, stack_name = setup(launcher, cdk, asset_processor, resource_mappings,
-                                                           context_variable='batch_processing=true')
-
-        analytics_bucket_name = aws_metrics_utils.get_analytics_bucket_name(stack_name)
-
-        launcher.args = ['+LoadLevel', level]
-        launcher.args.extend(['-rhi=null'])
-
-        with launcher.start(launch_ap=False):
-            start_time = datetime.utcnow()
-            monitor_metrics_submission(log_monitor)
-            # Verify that operational health metrics are delivered to CloudWatch.
-            aws_metrics_utils.verify_cloud_watch_delivery(
-                'AWS/Lambda',
-                'Invocations',
-                [{'Name': 'FunctionName',
-                  'Value': f'{stack_name}-EventsProcessingLambda'}],
-                start_time)
-            logger.info('Operational health metrics sent to CloudWatch.')
-
-        aws_metrics_utils.verify_s3_delivery(analytics_bucket_name)
-        logger.info('Metrics sent to S3.')
-
-        # Run the glue crawler to populate the AWS Glue Data Catalog with tables.
-        aws_metrics_utils.run_glue_crawler(f'{stack_name}-EventsCrawler')
-        # Run named queries on the table to verify the batch analytics.
-        aws_metrics_utils.run_named_queries(f'{stack_name}-AthenaWorkGroup')
-        logger.info('Query metrics from S3 successfully.')
-
-        # Kinesis Data Firehose buffers incoming data before it delivers it to Amazon S3. Sleep for the
-        # default interval (60s) to make sure that all the metrics are sent to the bucket before cleanup.
-        time.sleep(60)
-        # Empty the S3 bucket. S3 buckets can only be deleted successfully when it doesn't contain any object.
-        aws_metrics_utils.empty_s3_bucket(analytics_bucket_name)
-

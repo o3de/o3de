@@ -1,17 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "UiCanvasEditor_precompiled.h"
 
 //----- UI_ANIMATION_REVISIT - this is required to compile since something we include still uses MFC
 
@@ -995,10 +989,10 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
         CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByIndex(k);
-            QString fullname = QtUtil::ToQString(pSequence->GetName());
+            QString fullname = pSequence->GetName();
             m_sequencesComboBox->addItem(fullname);
         }
     }
@@ -1138,7 +1132,7 @@ void CUiAnimViewDialog::OnSequenceChanged(CUiAnimViewSequence* pSequence)
 
     if (pSequence)
     {
-        m_currentSequenceName = QtUtil::ToQString(pSequence->GetName());
+        m_currentSequenceName = pSequence->GetName();
 
         pSequence->Reset(true);
         SaveZoomScrollSettings();
@@ -1476,7 +1470,7 @@ void CUiAnimViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(m_animationContext->GetTime());
     }
@@ -1547,7 +1541,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
         m_wndCurveEditor->SetFPS(fps);
     }
@@ -1560,7 +1554,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::SaveLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("UiAnimView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
@@ -1575,7 +1569,7 @@ void CUiAnimViewDialog::SaveLayouts()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::ReadLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("UiAnimView");
     if (settings.contains("layout"))
     {
@@ -1739,7 +1733,7 @@ void CUiAnimViewDialog::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldNa
     {
         if (m_currentSequenceName == QString(pOldName))
         {
-            m_currentSequenceName = QtUtil::ToQString(pNode->GetName());
+            m_currentSequenceName = pNode->GetName();
         }
 
         ReloadSequencesComboBox();

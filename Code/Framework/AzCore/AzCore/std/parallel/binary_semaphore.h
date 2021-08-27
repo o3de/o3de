@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef AZSTD_BINARY_SEMAPHORE_H
 #define AZSTD_BINARY_SEMAPHORE_H
 
@@ -42,13 +38,13 @@ namespace AZStd
 
         binary_semaphore(bool initialState = false)
         {
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
         binary_semaphore(const char* name, bool initialState = false)
         {
             (void)name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
 

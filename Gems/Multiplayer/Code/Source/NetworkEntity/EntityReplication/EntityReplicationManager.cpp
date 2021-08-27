@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
@@ -189,16 +185,14 @@ namespace Multiplayer
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
 
-        uint32_t elementsAdded = 0;
-        for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end() && elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount(); )
+        uint32_t proxySendCount = 0;
+        for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end();)
         {
-            EntityReplicator* replicator = GetEntityReplicator(*iter);
             bool clearPendingSend = true;
-            if (replicator)
+            if (EntityReplicator* replicator = GetEntityReplicator(*iter))
             {
                 NetEntityId entityId = replicator->GetEntityHandle().GetNetEntityId();
-                PropertyPublisher* propPublisher = replicator->GetPropertyPublisher();
-                if (propPublisher)
+                if (PropertyPublisher* propPublisher = replicator->GetPropertyPublisher())
                 {
                     // don't have too many replicators pending creation outstanding at a time
                     bool canSend = true;
@@ -224,19 +218,17 @@ namespace Multiplayer
                             m_remoteEntitiesPendingCreation.insert(entityId);
                         }
 
-                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous)
+                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous ||
+                            replicator->GetBoundLocalNetworkRole() == NetEntityRole::Autonomous)
                         {
                             toSendList.push_back(replicator);
                         }
-                        else
+                        else if (proxySendCount < m_replicationWindow->GetMaxProxyEntityReplicatorSendCount())
                         {
-                            if (elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount())
-                            {
-                                toSendList.push_back(replicator);
-                            }
+                            toSendList.push_back(replicator);
+                            ++proxySendCount;
                         }
                     }
-                    ++elementsAdded;
                 }
             }
 
@@ -532,6 +524,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
     (
+        AzNetworking::IConnection* invokingConnection, 
         EntityReplicator* entityReplicator,
         AzNetworking::PacketId packetId,
         NetEntityId netEntityId,
@@ -565,6 +558,12 @@ namespace Multiplayer
 
         NetBindComponent* netBindComponent = replicatorEntity.GetNetBindComponent();
         AZ_Assert(netBindComponent != nullptr, "No NetBindComponent");
+
+        if (createEntity)
+        {
+            // Always set our invoking connectionId for any newly created entities, since this connection now 'owns' them from a rewind perspective
+            netBindComponent->SetOwningConnectionId(invokingConnection->GetConnectionId());
+        }
 
         const bool changeNetworkRole = (netBindComponent->GetNetEntityRole() != localNetworkRole);
         if (changeNetworkRole)
@@ -752,7 +751,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandleEntityUpdateMessage
     (
-        [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
+        AzNetworking::IConnection* invokingConnection,
         const AzNetworking::IPacketHeader& packetHeader,
         const NetworkEntityUpdateMessage& updateMessage
     )
@@ -777,7 +776,7 @@ namespace Multiplayer
             return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
         }
 
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), updateMessage.GetData()->GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -802,7 +801,7 @@ namespace Multiplayer
         }
 
         // This may implicitly create a replicator for us
-        bool handled = HandlePropertyChangeMessage(entityReplicator, packetHeader.GetPacketId(), updateMessage.GetEntityId(), updateMessage.GetNetworkRole(), outputSerializer, prefabEntityId);
+        bool handled = HandlePropertyChangeMessage(invokingConnection, entityReplicator, packetHeader.GetPacketId(), updateMessage.GetEntityId(), updateMessage.GetNetworkRole(), outputSerializer, prefabEntityId);
         AZ_Assert(handled, "Failed to handle NetworkEntityUpdateMessage message");
 
         return handled;
@@ -1110,7 +1109,7 @@ namespace Multiplayer
                 // Send an update packet if it needs one
                 propPublisher->GenerateRecord();
                 bool needsNetworkPropertyUpdate = propPublisher->PrepareSerialization();
-                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), message.m_propertyUpdateData.GetCapacity());
+                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
                 if (needsNetworkPropertyUpdate)
                 {
                     // Write out entity state into the buffer
@@ -1129,15 +1128,16 @@ namespace Multiplayer
         }
     }
 
-    bool EntityReplicationManager::HandleEntityMigration([[maybe_unused]] AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message)
+    bool EntityReplicationManager::HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message)
     {
         EntityReplicator* replicator = GetEntityReplicator(message.m_entityId);
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
-                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), message.m_propertyUpdateData.GetSize());
+                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
+                    invokingConnection, 
                     replicator,
                     AzNetworking::InvalidPacketId,
                     message.m_entityId,

@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "StandaloneTools_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 
@@ -179,10 +173,7 @@ namespace AreaChart
 
     void AreaChart::ConfigureVerticalAxis(QString label, unsigned int minimumHeight)
     {
-        if (minimumHeight >= 0)
-        {
-            SetMinimumValueRange(minimumHeight);
-        }
+        SetMinimumValueRange(minimumHeight);
 
         if (m_verticalAxis == nullptr)
         {
@@ -237,14 +228,14 @@ namespace AreaChart
     
     void AreaChart::AddPoint(size_t seriesId, int position, unsigned int value)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         LinePoint linePoint(position,value);
         AddPoint(seriesId,linePoint);
     }
     
     void AreaChart::AddPoint(size_t seriesId, const LinePoint& linePoint)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!IsValidSeriesId(seriesId))
         {
             AZ_Error("AreaChart", false, "Invalid SeriesId given.");
@@ -329,7 +320,7 @@ namespace AreaChart
                 // Need to handle the areas right at the edge of the polygons
                 for (int i = -1; i <= 1; ++i)
                 {
-                    if ((counter+i) < 0 || (counter + i) >= m_hitAreas.size())
+                    if ((counter + i) >= m_hitAreas.size())
                     {
                         continue;
                     }
@@ -425,7 +416,7 @@ namespace AreaChart
     
     void AreaChart::paintEvent(QPaintEvent* event)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         (void)event;
         
         if (m_sizingDirty)
@@ -441,7 +432,7 @@ namespace AreaChart
 
         if (m_regenGraph)
         {
-            AZ_PROFILE_TIMER("Standalone Tools", "Generating Graph Data");
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             m_regenGraph = false;
 
             if (m_verticalAxis)

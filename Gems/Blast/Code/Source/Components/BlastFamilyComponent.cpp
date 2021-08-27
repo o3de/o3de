@@ -1,15 +1,10 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <Components/BlastFamilyComponent.h>
 
@@ -192,7 +187,7 @@ namespace Blast
 
     void BlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
 
@@ -204,7 +199,7 @@ namespace Blast
 
     void BlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         // cleanup collision handlers
         for (auto& itr : m_collisionHandlers)
@@ -221,7 +216,7 @@ namespace Blast
 
     void BlastFamilyComponent::Spawn()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (!m_blastAsset.IsReady())
         {
@@ -286,9 +281,13 @@ namespace Blast
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
-        m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
-            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
+
+        if (m_meshDataComponent)
+        {
+            m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
+                m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
+        }
 
         // Spawn the family
         m_family->Spawn(transform);
@@ -298,7 +297,7 @@ namespace Blast
 
     void BlastFamilyComponent::Despawn()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         m_isSpawned = false;
 
@@ -415,7 +414,7 @@ namespace Blast
 
     void BlastFamilyComponent::OnCollisionBegin(const AzPhysics::CollisionEvent& collisionEvent)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (const auto* body : {collisionEvent.m_body1, collisionEvent.m_body2})
         {
@@ -494,7 +493,7 @@ namespace Blast
 
     void BlastFamilyComponent::ApplyStressDamage()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_solver)
         {
@@ -540,7 +539,11 @@ namespace Blast
 
     void BlastFamilyComponent::OnActorCreated([[maybe_unused]] const BlastFamily& family, const BlastActor& actor)
     {
-        m_actorRenderManager->OnActorCreated(actor);
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorCreated(actor);
+        }
+
         m_solver->notifyActorCreated(*actor.GetTkActor().getActorLL());
         
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -576,13 +579,17 @@ namespace Blast
         }
 
         m_solver->notifyActorDestroyed(*actor.GetTkActor().getActorLL());
-        m_actorRenderManager->OnActorDestroyed(actor);
+
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorDestroyed(actor);
+        }
     }
 
     // Update positions of entities with render meshes corresponding to their right dynamic bodies.
     void BlastFamilyComponent::SyncMeshes()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_actorRenderManager)
         {

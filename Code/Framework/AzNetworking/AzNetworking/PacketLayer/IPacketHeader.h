@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -28,6 +24,19 @@ namespace AzNetworking
 
     //! @class IPacketHeader
     //! @brief A packet header that lets us deduce packet type for any incoming packet.
+    //! 
+    //! IPacketHeader defines an abstract interface for a descriptor of all AzNetworking::IPacket sent through AzNetworking. The
+    //! PacketHeader is used to identify and describe the contents of a Packet so that transport logic can identify what
+    //! additional processing steps need to be taken (if any) and what type of Packet is being inspected.
+    //! 
+    //! The PacketFlags portion of the header represents the first byte of the header.  While it can be encrypted it is
+    //! otherwise not exposed to additional processing (such as an AzNetworking::ICompressor).  PacketFlags are a bitfield use to provide up
+    //! front information about the state of the packet. Currently there is only one flag to indicate if the Packet is
+    //! compressed or not.
+    //! 
+    //! The remainder of the header contains the PacketType and the PacketId. While the PacketFlags byte is exempt from most
+    //! additional forms of processing, the remainder of the header is not.
+    
     class IPacketHeader
     {
     public:

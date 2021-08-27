@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 
@@ -18,24 +14,12 @@
 
 #include <AzFramework/Physics/CollisionBus.h>
 
-//This bit is defined in the TouchBending Gem wscript.
-//Make sure the bit has a valid value.
-#ifdef TOUCHBENDING_LAYER_BIT
-#if (TOUCHBENDING_LAYER_BIT < 1) || (TOUCHBENDING_LAYER_BIT > 63)
-#error Invalid Bit Definition For the TouchBending Layer Bit
-#endif
-#endif //#ifdef TOUCHBENDING_LAYER_BIT
-
 namespace AzPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(CollisionLayer, AZ::SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(CollisionLayers, AZ::SystemAllocator, 0);
 
     const CollisionLayer CollisionLayer::Default = 0;
-
-#ifdef TOUCHBENDING_LAYER_BIT
-    const CollisionLayer CollisionLayer::TouchBend = TOUCHBENDING_LAYER_BIT;
-#endif
 
     void CollisionLayer::Reflect(AZ::ReflectContext* context)
     {

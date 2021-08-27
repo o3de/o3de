@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,16 +23,16 @@ namespace CommandSystem
     public:
         using RelocateFilenameFunction = AZStd::function<void(AZStd::string&)>;
         RelocateFilenameFunction m_relocateFilenameFunction;
-        uint32 mOldAnimGraphID;
-        bool mOldWorkspaceDirtyFlag;
+        uint32 m_oldAnimGraphId;
+        bool m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // create a new anim graph
     MCORE_DEFINECOMMAND_START(CommandCreateAnimGraph, "Create a anim graph", true)
 public:
-    uint32              mPreviouslyUsedID;
-    bool                mOldWorkspaceDirtyFlag;
+    uint32              m_previouslyUsedId;
+    bool                m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
@@ -44,18 +40,18 @@ public:
     MCORE_DEFINECOMMAND_START(CommandRemoveAnimGraph, "Remove a anim graph", true)
 public:
     AZStd::vector<AZStd::pair<AZStd::string, uint32>> m_oldFileNamesAndIds;
-    bool                             mOldWorkspaceDirtyFlag;
+    bool                             m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // Activate the given anim graph.
     MCORE_DEFINECOMMAND_START(CommandActivateAnimGraph, "Activate a anim graph", true)
 public:
-    uint32                          mActorInstanceID;
-    uint32                          mOldAnimGraphUsed;
-    uint32                          mOldMotionSetUsed;
-    float                           mOldVisualizeScaleUsed;
-    bool                            mOldWorkspaceDirtyFlag;
+    uint32                          m_actorInstanceId;
+    uint32                          m_oldAnimGraphUsed;
+    uint32                          m_oldMotionSetUsed;
+    float                           m_oldVisualizeScaleUsed;
+    bool                            m_oldWorkspaceDirtyFlag;
     static const char*              s_activateAnimGraphCmdName;
     MCORE_DEFINECOMMAND_END
 

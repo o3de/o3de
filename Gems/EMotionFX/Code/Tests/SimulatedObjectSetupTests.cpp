@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -160,8 +156,8 @@ namespace SimulatedObjectSetupTests
 
     struct AddSimulatedJointAndChildrenParams
     {
-        AZ::u32 jointIndex;
-        size_t expectedSimulatedJointCount;
+        AZ::u32 m_jointIndex;
+        size_t m_expectedSimulatedJointCount;
     };
 
     class AddSimulatedJointAndChildrenFixture
@@ -181,8 +177,8 @@ namespace SimulatedObjectSetupTests
         SimulatedObjectSetup setup(&actor);
         SimulatedObject* object = setup.AddSimulatedObject();
 
-        object->AddSimulatedJointAndChildren(GetParam().jointIndex);
-        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().expectedSimulatedJointCount);
+        object->AddSimulatedJointAndChildren(GetParam().m_jointIndex);
+        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
     INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,

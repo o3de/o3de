@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +10,7 @@
 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace
 {
@@ -109,11 +106,17 @@ namespace
         {
             // Set the text for window title, message, buttons.
             info = (DlgInfo*)lParam;
-            SetWindowText(hDlg, info->m_title.c_str());
-            SetWindowText(GetDlgItem(hDlg, 0), info->m_message.c_str());
+            AZStd::wstring titleW;
+            AZStd::to_wstring(titleW, info->m_title.c_str());
+            SetWindowTextW(hDlg, titleW.c_str());
+            AZStd::wstring messageW;
+            AZStd::to_wstring(messageW, info->m_message.c_str());
+            SetWindowTextW(GetDlgItem(hDlg, 0), messageW.c_str());
             for (int i = 0; i < info->m_options.size(); i++)
             {
-                SetWindowText(GetDlgItem(hDlg, i + 1), info->m_options[i].c_str());
+                AZStd::wstring optionW;
+                AZStd::to_wstring(optionW, info->m_options[i].c_str());
+                SetWindowTextW(GetDlgItem(hDlg, i + 1), optionW.c_str());
             }
         }
             break;
@@ -247,6 +250,11 @@ namespace AZ
     {
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
+            if (m_mode == NativeUI::Mode::DISABLED)
+            {
+                return {};
+            }
+
             if (options.size() >= MAX_ITEMS)
             {
                 AZ_Assert(false, "Cannot create dialog box with more than %d buttons", (MAX_ITEMS - 1));

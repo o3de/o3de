@@ -1,17 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-// Description : Implementation of the Crytek package files management
 
 
 #include <AzCore/base.h>
@@ -19,6 +13,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
@@ -100,7 +95,7 @@ namespace AZ::IO::ArchiveInternal
             }
             return convertedPath;
         }
-        return AZStd::make_optional<AZStd::fixed_string<AZ::IO::MaxPathLength>>(sourcePath);
+        return AZStd::make_optional<AZ::IO::FixedMaxPathString>(sourcePath);
     }
 
     struct CCachedFileRawData
@@ -212,7 +207,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     size_t ArchiveInternal::CZipPseudoFile::FRead(void* pDest, size_t nSize, size_t nCount, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!GetFile())
         {
@@ -241,7 +236,7 @@ namespace AZ::IO::ArchiveInternal
             return 0;
         }
 
-        if (nReadBytes != nTotal)
+        if (static_cast<size_t>(nReadBytes) != nTotal)
         {
             AZ_Warning("Archive", false, "FRead did not read expected number of byte from file, only %zu of %lld bytes read", nTotal, nReadBytes);
             nTotal = (size_t)nReadBytes;
@@ -277,7 +272,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     void* ArchiveInternal::CZipPseudoFile::GetFileData(size_t& nFileSize, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!GetFile())
         {
@@ -353,17 +348,12 @@ namespace AZ::IO::ArchiveInternal
             return EOF;
         }
         int c = EOF;
-        int i;
-        for (i = 0; i < 1; i++)
+        if (m_nCurSeek == GetFileSize())
         {
-            if (i + m_nCurSeek == GetFileSize())
-            {
-                return c;
-            }
-            c = pData[i + m_nCurSeek];
-            break;
+            return c;
         }
-        m_nCurSeek += i + 1;
+        c = pData[m_nCurSeek];
+        m_nCurSeek += 1;
         return c;
     }
 }
@@ -620,7 +610,7 @@ namespace AZ::IO
 
     const char* Archive::AdjustFileName(AZStd::string_view src, char* dst, size_t dstSize, uint32_t, bool)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> srcPath{ src };
+        AZ::IO::FixedMaxPathString srcPath{ src };
         return AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(srcPath.c_str(), dst, dstSize) ? dst : nullptr;
     }
 
@@ -691,7 +681,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     AZ::IO::HandleType Archive::FOpen(AZStd::string_view pName, const char* szMode, uint32_t nInputFlags)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         const size_t pathLen = pName.size();
         if (pathLen == 0 || pathLen >= MaxPath)
@@ -699,7 +689,7 @@ namespace AZ::IO
             return AZ::IO::InvalidHandle;
         }
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %.*s Archive: %p",
+        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
             aznumeric_cast<int>(pName.size()), pName.data(), this);
 
         SAutoCollectFileAccessTime accessTime(this);
@@ -722,7 +712,7 @@ namespace AZ::IO
         }
 
         const bool fileWritable = (nOSFlags & (AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeUpdate)) != AZ::IO::OpenMode::Invalid;
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %s Archive: %p", szFullPath->c_str(), this);
+        AZ_PROFILE_SCOPE(Game, "File: %s Archive: %p", szFullPath->c_str(), this);
         if (fileWritable)
         {
             // we need to open the file for writing, but we failed to do so.
@@ -1100,8 +1090,8 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRaw(void* pData, size_t nSize, size_t nCount, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "Size: %d Archive: %p", nSize, this);
+        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_SCOPE(Game, "Size: %d Archive: %p", nSize, this);
         SAutoCollectFileAccessTime accessTime(this);
 
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1118,7 +1108,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRawAll(void* pData, size_t nFileSize, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1136,7 +1126,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     void* Archive::FGetCachedFileData(AZ::IO::HandleType fileHandle, size_t& nFileSize)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1797,11 +1787,11 @@ namespace AZ::IO
         AZ_Assert(m_pZip, "ZipFile is nullptr");
         AZ_Assert(m_pFileEntry && m_pZip->IsOwnerOf(m_pFileEntry), "ZipFile is not owner of m_pFileEntry");
 
-        if (nDataSize != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
+        if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
         {
             return false;
         }
-        else if (nDataSize != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
+        else if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
         {
             return false;
         }
@@ -2413,14 +2403,14 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     bool Archive::RemoveFile(AZStd::string_view pName)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> szFullPath{ pName };
+        AZ::IO::FixedMaxPathString szFullPath{ pName };
         return AZ::IO::FileIOBase::GetDirectInstance()->Remove(szFullPath.c_str()) == AZ::IO::ResultCode::Success;
     }
 
     //////////////////////////////////////////////////////////////////////////
     bool Archive::RemoveDir(AZStd::string_view pName)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> szFullPath{ pName };
+        AZ::IO::FixedMaxPathString szFullPath{ pName };
 
         if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(szFullPath.c_str()))
         {

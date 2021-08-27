@@ -1,23 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/Device.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
-#include <Source/Viewport/MaterialViewportWidget.h>
 #include <Source/Viewport/MaterialViewportRenderer.h>
+#include <Source/Viewport/MaterialViewportWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QAbstractEventDispatcher>
@@ -48,6 +45,12 @@ namespace MaterialEditor
             dispatcher->installNativeEventFilter(this);
         }
 
+        // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
+        // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
+        viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
+
         m_renderer = AZStd::make_unique<MaterialViewportRenderer>(GetViewportContext()->GetWindowContext());
         GetControllerList()->Add(m_renderer->GetController());
     }
@@ -61,5 +64,3 @@ namespace MaterialEditor
         return false;
     }
 } // namespace MaterialEditor
-
-#include <Source/Viewport/moc_MaterialViewportWidget.cpp>

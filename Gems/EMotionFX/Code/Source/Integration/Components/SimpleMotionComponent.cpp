@@ -1,17 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-
-#include "EMotionFX_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -21,6 +14,9 @@
 
 #include <Integration/Components/SimpleMotionComponent.h>
 #include <MCore/Source/AttributeString.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionInstance.h>
 
 namespace EMotionFX
 {
@@ -448,18 +444,18 @@ namespace EMotionFX
             }
             //init the PlaybackInfo based on our config
             EMotionFX::PlayBackInfo info;
-            info.mNumLoops = cfg.m_loop ? EMFX_LOOPFOREVER : 1;
-            info.mRetarget = cfg.m_retarget;
-            info.mPlayMode = cfg.m_reverse ? EMotionFX::EPlayMode::PLAYMODE_BACKWARD : EMotionFX::EPlayMode::PLAYMODE_FORWARD;
-            info.mFreezeAtLastFrame = info.mNumLoops == 1;
-            info.mMirrorMotion = cfg.m_mirror;
-            info.mPlaySpeed = cfg.m_playspeed;
-            info.mPlayNow = true;
-            info.mDeleteOnZeroWeight = deleteOnZeroWeight;
-            info.mCanOverwrite = false;
-            info.mBlendInTime = cfg.m_blendInTime;
-            info.mBlendOutTime = cfg.m_blendOutTime;
-            info.mInPlace = cfg.m_inPlace;
+            info.m_numLoops = cfg.m_loop ? EMFX_LOOPFOREVER : 1;
+            info.m_retarget = cfg.m_retarget;
+            info.m_playMode = cfg.m_reverse ? EMotionFX::EPlayMode::PLAYMODE_BACKWARD : EMotionFX::EPlayMode::PLAYMODE_FORWARD;
+            info.m_freezeAtLastFrame = info.m_numLoops == 1;
+            info.m_mirrorMotion = cfg.m_mirror;
+            info.m_playSpeed = cfg.m_playspeed;
+            info.m_playNow = true;
+            info.m_deleteOnZeroWeight = deleteOnZeroWeight;
+            info.m_canOverwrite = false;
+            info.m_blendInTime = cfg.m_blendInTime;
+            info.m_blendOutTime = cfg.m_blendOutTime;
+            info.m_inPlace = cfg.m_inPlace;
             return actorInstance->GetMotionSystem()->PlayMotion(motionAsset->m_emfxMotion.get(), &info);
         }
 

@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import logging
@@ -22,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 def check_path_exists(file_path: str) -> bool:
     return pathlib.Path(file_path).exists()
+
+
+def create_directory(dir_path: str) -> bool:
+    try:
+        pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
+        return True
+    except FileExistsError:
+        logger.warning(f"Failed to create directory at {dir_path}")
+        return False
 
 
 def get_current_directory_path() -> str:
@@ -44,10 +49,10 @@ def find_files_with_suffix_under_directory(dir_path: str, suffix: str) -> List[s
     return results
 
 
-def normalize_file_path(file_path: str) -> str:
+def normalize_file_path(file_path: str, strict: bool = True) -> str:
     if file_path:
         try:
-            return str(pathlib.Path(file_path).resolve(True))
+            return str(pathlib.Path(file_path).resolve(strict))
         except (FileNotFoundError, RuntimeError):
             logger.warning(f"Failed to normalize file path {file_path}, return empty string instead")
     return ""

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "AssetCollectionAsyncLoaderTestComponent.h"
 
 #include <AzCore/RTTI/ReflectContext.h>
@@ -17,7 +13,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 // Included so we can deduce the asset type from asset paths.
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -48,7 +44,7 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Test")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.png")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c), AZ_CRC("Layer", 0xe4db211a) }))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::LineEdit, &AssetCollectionAsyncLoaderTestComponent::m_pathToAssetListJson, "", "Path To Asset List")
@@ -242,7 +238,7 @@ namespace AZ
 
         uint32_t AssetCollectionAsyncLoaderTestComponent::GetCountOfPendingAssets() const
         {
-            return m_pendingAssets.size();
+            return static_cast<uint32_t>(m_pendingAssets.size());
         }
 
         bool AssetCollectionAsyncLoaderTestComponent::ValidateAssetWasLoaded(const AZStd::string& assetPath) const

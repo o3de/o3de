@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -27,6 +23,7 @@
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
+#include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
@@ -85,6 +82,10 @@ namespace AZ
                     if (existingRules.find(azrtti_typeid<CoordinateSystemRule>()) == existingRules.end())
                     {
                         modifiers.push_back(azrtti_typeid<CoordinateSystemRule>());
+                    }
+                    if (existingRules.find(SceneData::TangentsRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(SceneData::TangentsRule::TYPEINFO_Uuid());
                     }
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))

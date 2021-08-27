@@ -1,37 +1,29 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <QApplication>
-#include <QMenu>
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QDesktopServices>
-
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <AtomToolsFramework/Util/Util.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
+#include <Window/ShaderManagementConsoleBrowserInteractions.h>
 
-#include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
+#include <QApplication>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
 
 namespace ShaderManagementConsole
 {
@@ -84,7 +76,7 @@ namespace ShaderManagementConsole
         {
             if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
-                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
             }
             else
             {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,7 +12,7 @@
 #include "EMotionFXConfig.h"
 #include "MeshDeformer.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -78,7 +74,7 @@ namespace EMotionFX
          * @param node The node to use for the reinitialize, so the node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level the mesh deformers work on.
          */
-        void ReinitializeDeformers(Actor* actor, Node* node, uint32 lodLevel);
+        void ReinitializeDeformers(Actor* actor, Node* node, size_t lodLevel);
 
         /**
          * Add a given deformer to the back of the stack.
@@ -91,7 +87,7 @@ namespace EMotionFX
          * @param pos The position to insert the deformer.
          * @param meshDeformer The deformer to store at this position.
          */
-        void InsertDeformer(uint32 pos, MeshDeformer* meshDeformer);
+        void InsertDeformer(size_t pos, MeshDeformer* meshDeformer);
 
         /**
          * Remove a given deformer.
@@ -105,7 +101,7 @@ namespace EMotionFX
          * @param deformerTypeID The type ID of the deformer, which is returned by MeshDeformer::GetType().
          * @result Returns the number of deformers that have been removed.
          */
-        uint32 RemoveAllDeformersByType(uint32 deformerTypeID);
+        size_t RemoveAllDeformersByType(uint32 deformerTypeID);
 
         /**
          * Remove all deformers from this mesh deformer stack.
@@ -119,7 +115,7 @@ namespace EMotionFX
          * @param enabled Set to true when you want to enable these deformers, or false if you want to disable them.
          * @result Returns the number of deformers that have been enabled or disabled.
          */
-        uint32 EnableAllDeformersByType(uint32 deformerTypeID, bool enabled);
+        size_t EnableAllDeformersByType(uint32 deformerTypeID, bool enabled);
 
         /**
          * Creates an exact clone (copy) of this deformer stack, including all deformers (which will also be cloned).
@@ -138,14 +134,14 @@ namespace EMotionFX
          * Get the number of deformers in the stack.
          * @result The number of deformers in the stack.
          */
-        uint32 GetNumDeformers() const;
+        size_t GetNumDeformers() const;
 
         /**
          * Get a given deformer.
          * @param nr The deformer number to get.
          * @result A pointer to the deformer.
          */
-        MeshDeformer* GetDeformer(uint32 nr) const;
+        MeshDeformer* GetDeformer(size_t nr) const;
 
         /**
          * Check if the stack contains a deformer of a given type.
@@ -160,11 +156,11 @@ namespace EMotionFX
          * @param occurrence In case there are multiple controllers of the same type, 0 means it returns the first one, 1 means the second, etc.
          * @result A pointer to the mesh deformer of the given type, or nullptr when not found.
          */
-        MeshDeformer* FindDeformerByType(uint32 deformerTypeID, uint32 occurrence = 0) const;
+        MeshDeformer* FindDeformerByType(uint32 deformerTypeID, size_t occurrence = 0) const;
 
     private:
-        MCore::Array<MeshDeformer*> mDeformers;     /**< The stack of deformers. */
-        Mesh*                       mMesh;          /**< Pointer to the mesh to which the modifier stack belongs to.*/
+        AZStd::vector<MeshDeformer*> m_deformers;     /**< The stack of deformers. */
+        Mesh*                       m_mesh;          /**< Pointer to the mesh to which the modifier stack belongs to.*/
 
         /**
          * Constructor.

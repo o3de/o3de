@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FileIOBaseTestTypes.h"
 
@@ -909,14 +905,14 @@ namespace UnitTest
         EXPECT_EQ(2, m_entity->GetComponents().size());
     }
 
-    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToMissingDescriptor)
+    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToUnregisteredDescriptor)
     {
         CreateComponents_ABCDE();
 
         // delete ComponentB's descriptor
         ComponentDescriptorBus::Event(azrtti_typeid<ComponentB>(), &ComponentDescriptorBus::Events::ReleaseDescriptor);
 
-        EXPECT_EQ(Entity::DependencySortResult::MissingDescriptor, m_entity->EvaluateDependencies());
+        EXPECT_EQ(Entity::DependencySortResult::DescriptorNotRegistered, m_entity->EvaluateDependencies());
     }
 
     TEST_F(ComponentDependency, StableSort_GetsSameResultsEveryTime)
@@ -1195,154 +1191,6 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
     }
 
-    class FrameProfilerComponentTest
-        : public AllocatorsFixture
-        , public FrameProfilerBus::Handler
-    {
-    public:
-        FrameProfilerComponentTest()
-            : AllocatorsFixture()
-        {
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // FrameProfilerDrillerBus
-        void OnFrameProfilerData(const FrameProfiler::ThreadDataArray& data) override
-        {
-            for (size_t iThread = 0; iThread < data.size(); ++iThread)
-            {
-                const FrameProfiler::ThreadData& td = data[iThread];
-                FrameProfiler::ThreadData::RegistersMap::const_iterator regIt = td.m_registers.begin();
-                size_t numRegisters = m_numRegistersReceived;
-                for (; regIt != td.m_registers.end(); ++regIt)
-                {
-                    const FrameProfiler::RegisterData& rd = regIt->second;
-
-                    AZ_TEST_ASSERT(rd.m_function != NULL);
-                    if (strstr(rd.m_function, "ChildFunction") || strstr(rd.m_function, "Profile1")) // filter only the test registers
-                    {
-                        ++m_numRegistersReceived;
-
-                        EXPECT_GT(rd.m_line, 0);
-                        EXPECT_TRUE(rd.m_name == nullptr || strstr(rd.m_name, "Child1") || strstr(rd.m_name, "Custom name"));
-                        AZ::u32 unitTestCrc = AZ_CRC("UnitTest", 0x8089cea8);
-                        EXPECT_EQ(unitTestCrc, rd.m_systemId);
-                        EXPECT_EQ(ProfilerRegister::PRT_TIME, rd.m_type);
-
-                        EXPECT_FALSE(rd.m_frames.empty());
-                        const FrameProfiler::FrameData& fd = rd.m_frames.back();
-                        EXPECT_GT(fd.m_frameId, 0u);
-                        EXPECT_GT(fd.m_timeData.m_time, 0);
-                        EXPECT_GT(fd.m_timeData.m_calls, 0);
-                    }
-                }
-
-                if (numRegisters < m_numRegistersReceived)
-                {
-                    // we have received valid test registers for this thread, add it to the list
-                    ++m_numThreads;
-                }
-            }
-        }
-        //////////////////////////////////////////////////////////////////////////
-
-        int ChildFunction(int input)
-        {
-            AZ_PROFILE_TIMER("UnitTest", nullptr, NamedRegister);
-            int result = 5;
-            for (int i = 0; i < 10000; ++i)
-            {
-                result += i % (input + 3);
-            }
-            AZ_PROFILE_TIMER_END(NamedRegister);
-            return result;
-        }
-
-        int ChildFunction1(int input)
-        {
-            AZ_PROFILE_TIMER("UnitTest", "Child1");
-            int result = 5;
-            for (int i = 0; i < 10000; ++i)
-            {
-                result += i % (input + 1);
-            }
-            return result;
-        }
-
-        int Profile1(int numIterations)
-        {
-            AZ_PROFILE_TIMER("UnitTest", "Custom name");
-            int result = 0;
-            for (int i = 0; i < numIterations; ++i)
-            {
-                result += ChildFunction(i);
-            }
-
-            result += ChildFunction1(numIterations / 3);
-            return result;
-        }
-
-        void run()
-        {
-            FrameProfilerBus::Handler::BusConnect();
-
-            ComponentApplication app;
-            ComponentApplication::Descriptor desc;
-            desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false;  // we already created a memory driller for the test (AllocatorsFixture)
-            ComponentApplication::StartupParameters startupParams;
-            startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-            Entity* systemEntity = app.Create(desc, startupParams);
-            systemEntity->CreateComponent<FrameProfilerComponent>();
-
-            systemEntity->Init();
-            systemEntity->Activate(); // start frame component
-
-            m_numThreads = 0;
-            m_numRegistersReceived = 0;
-
-            // tick to frame 1 and collect all the samples
-            app.Tick();
-            EXPECT_EQ(0, m_numThreads);
-            EXPECT_EQ(0, m_numRegistersReceived);
-
-            int numIterations = 10000;
-            {
-                AZStd::thread t1(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t2(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t3(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t4(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-
-                t1.join();
-                t2.join();
-                t3.join();
-                t4.join();
-            }
-
-            // tick to frame 2 and collect all the samples
-            app.Tick();
-
-            EXPECT_EQ(4, m_numThreads);
-            EXPECT_EQ(m_numThreads * 3, m_numRegistersReceived);
-
-            FrameProfilerBus::Handler::BusDisconnect();
-
-            app.Destroy();
-        }
-
-        size_t m_numRegistersReceived;
-        size_t m_numThreads;
-    };
-
-#if AZ_TRAIT_DISABLE_FAILED_FRAMEPROFILER_TEST
-    TEST_F(FrameProfilerComponentTest, DISABLED_Test)
-#else
-    TEST_F(FrameProfilerComponentTest, Test)
-#endif
-    {
-        run();
-    }
-
     class SimpleEntityRefTestComponent
         : public Component
     {
@@ -1555,7 +1403,9 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Components, EntityIdGeneration)
+    // Temporary disabled. This will be re-enabled in the short term upon completion of SPEC-7384 and
+    // fixed in the long term upon completion of SPEC-4849
+    TEST_F(Components, DISABLED_EntityIdGeneration)
     {
         // Generate 1 million ids across 100 threads, and ensure that none collide
         AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;

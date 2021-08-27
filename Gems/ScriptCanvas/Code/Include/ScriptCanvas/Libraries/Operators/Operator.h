@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,7 +23,7 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
-            class OperatorBase 
+            class OperatorBase
                 : public ScriptCanvas::Node
             {
             public:
@@ -46,7 +42,7 @@ namespace ScriptCanvas
                 {
                     SourceType m_sourceType = SourceType::SourceInput;
 
-                    DynamicDataType m_dynamicDataType  = DynamicDataType::Any;
+                    DynamicDataType m_dynamicDataType = DynamicDataType::Any;
 
                     AZStd::string m_name;
                     AZStd::string m_tooltip;
@@ -108,7 +104,7 @@ namespace ScriptCanvas
 
                 virtual void OnInputSlotAdded(const SlotId& inputSlotId) { AZ_UNUSED(inputSlotId); };
                 virtual void OnDataInputSlotConnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}
-                virtual void OnDataInputSlotDisconnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}                
+                virtual void OnDataInputSlotDisconnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}
 
                 AZ::BehaviorMethod* GetOperatorMethod(const char* methodName);
 
@@ -125,13 +121,6 @@ namespace ScriptCanvas
                 virtual void OnDisplayTypeChanged([[maybe_unused]] ScriptCanvas::Data::Type dataType) {}
                 virtual void OnSourceConnected([[maybe_unused]] const SlotId& slotId) {}
                 virtual void OnSourceDisconnected([[maybe_unused]] const SlotId& slotId) {}
-
-                //! Implements the operator's behavior, the vector of Datums represents the list of operands.
-                virtual void Evaluate(const OperatorOperands& operands, Datum& result)
-                {
-                    AZ_UNUSED(operands);
-                    AZ_UNUSED(result);
-                }
 
             private:
                 OperatorConfiguration m_operatorConfiguration;
@@ -185,32 +174,6 @@ namespace ScriptCanvas
                     }
                 }
             };
-
-            // Base class for an small helper object that wraps the function to invoke
-            class OperationHelper
-            {
-            public:
-
-                Datum operator()(const AZStd::vector<Datum>& operands, Datum& result)
-                {
-                    AZStd::vector<Datum>::const_iterator operand = operands.begin();
-                    result = *operand;
-                    for (++operand; operand != operands.end(); ++operand)
-                    {
-                        result = Operator(result, *operand);
-                    }
-
-                    return result;
-                }
-
-            protected:
-                virtual Datum Operator(const Datum&, const Datum&) = 0;
-            };
-
-// Helper macro to invoke an operator function for a specialized type
-#define CallOperatorFunction(Operator, DataType, Type) \
-    if (DataType == Data::FromAZType(azrtti_typeid<Type>())) {  Operator<Type> operation; operation(operands, result); }
-
         }
     }
 }

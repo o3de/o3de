@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import argparse
@@ -16,7 +13,7 @@ import pathlib
 import sys
 import logging
 
-from o3de import manifest
+from o3de import manifest, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -29,8 +26,16 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
         return None
     return proj_json
 
-def edit_project_props(proj_path, proj_name, new_origin, new_display,
-                       new_summary, new_icon, new_tags, delete_tags, replace_tags) -> int:
+def edit_project_props(proj_path: pathlib.Path = None,
+                       proj_name: str = None,
+                       new_name: str = None,
+                       new_origin: str = None,
+                       new_display: str = None,
+                       new_summary: str = None,
+                       new_icon: str = None,
+                       new_tags: str or list = None,
+                       delete_tags: str or list = None,
+                       replace_tags: str or list = None) -> int:
     proj_json = get_project_props(proj_name, proj_path)
     
     if not proj_json:
@@ -38,6 +43,11 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
 
     if new_origin:
         proj_json['origin'] = new_origin
+    if new_name:
+        if not utils.validate_identifier(new_name):
+            logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {new_name}')
+            return 1
+        proj_json['project_name'] = new_name 
     if new_display:
         proj_json['display_name'] = new_display
     if new_summary:
@@ -61,19 +71,20 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
         tag_list = replace_tags.split() if isinstance(replace_tags, str) else replace_tags
         proj_json['user_tags'] = tag_list
 
-    manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')
-    return 0
+
+    return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
 
 def _edit_project_props(args: argparse) -> int:
     return edit_project_props(args.project_path,
                               args.project_name,
-                               args.project_origin,
-                               args.project_display,
-                               args.project_summary,
-                               args.project_icon,
-                               args.add_tags,
-                               args.delete_tags,
-                               args.replace_tags)
+                              args.project_new_name,
+                              args.project_origin,
+                              args.project_display,
+                              args.project_summary,
+                              args.project_icon,
+                              args.add_tags,
+                              args.delete_tags,
+                              args.replace_tags)
 
 def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=True)
@@ -82,6 +93,8 @@ def add_parser_args(parser):
     group.add_argument('-pn', '--project-name', type=str, required=False,
                        help='The name of the project.')
     group = parser.add_argument_group('properties', 'arguments for modifying individual project properties.')
+    group.add_argument('-pnn', '--project-new-name', type=str, required=False,
+                       help='Sets the name for the project.')
     group.add_argument('-po', '--project-origin', type=str, required=False,
                        help='Sets description or url for project origin (such as project host, repository, owner...etc).')
     group.add_argument('-pd', '--project-display', type=str, required=False,

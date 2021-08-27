@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -29,6 +25,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         typedef AZ::Outcome<void, AZStd::string> PrefabOperationResult;
+        typedef AZ::Outcome<AZ::EntityId, AZStd::string> InstantiatePrefabResult;
         typedef AZ::Outcome<bool, AZStd::string> PrefabRequestResult;
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> PrefabEntityResult;
 
@@ -43,22 +40,34 @@ namespace AzToolsFramework
             AZ_RTTI(PrefabPublicInterface, "{931AAE9D-C775-4818-9070-A2DA69489CBE}");
 
             /**
-             * Create a prefab out of the entities provided, at the path provided.
+             * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) = 0;
+            virtual PrefabOperationResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+
+            /**
+             * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
+             * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * @param entityIds The entities that should form the new prefab (along with their descendants).
+             * @param filePath The absolute path for the new prefab file.
+             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual PrefabOperationResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
              * @param parent The entity the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.
@@ -84,8 +93,9 @@ namespace AzToolsFramework
              * 
              * @param entityId The entity to patch.
              * @param parentUndoBatch The undo batch the undo nodes should be parented to.
+             * @return Returns Success if the node was generated correctly, or an error message otherwise.
              */
-            virtual void GenerateUndoNodesForEntityChangeAndUpdateCache(
+            virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
             
             /**

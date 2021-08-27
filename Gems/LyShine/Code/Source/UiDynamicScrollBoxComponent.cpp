@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiDynamicScrollBoxComponent.h"
 
 #include "UiElementComponent.h"
@@ -1184,7 +1179,7 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
         }
         else
         {
-            int numHeaders = m_sections.size();
+            int numHeaders = static_cast<int>(m_sections.size());
             int numItems = m_numElements - numHeaders;
             newSize = numHeaders * m_prototypeElementSize[ElementType::SectionHeader] + numItems * m_prototypeElementSize[ElementType::Item];
         }
@@ -1206,7 +1201,7 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
             }
             else
             {
-                int numHeaders = m_sections.size();
+                int numHeaders = static_cast<int>(m_sections.size());
                 int numItems = m_numElements - numHeaders;
                 newSize = numHeaders * m_estimatedElementSize[ElementType::SectionHeader] + numItems * m_estimatedElementSize[ElementType::Item];
             }
@@ -1560,7 +1555,7 @@ float UiDynamicScrollBoxComponent::GetFixedSizeElementOffset(int index) const
         int numHeaders = 0;
         int numItems = 0;
 
-        int numSections = m_sections.size();
+        int numSections = static_cast<int>(m_sections.size());
         if (numSections > 0)
         {
             if (index > m_sections[numSections - 1].m_headerElementIndex)

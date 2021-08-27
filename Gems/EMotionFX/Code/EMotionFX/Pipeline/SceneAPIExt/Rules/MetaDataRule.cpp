@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -167,10 +163,10 @@ namespace EMotionFX
                         createMotionEventCommand->SetStartTime(commandLine.GetValueAsFloat("startTime", 0.0f));
                         createMotionEventCommand->SetEndTime(commandLine.GetValueAsFloat("endTime", 0.0f));
 
-                        const AZ::u32 eventTypeIndex = commandLine.FindParameterIndex("eventType");
-                        const AZ::u32 parametersIndex = commandLine.FindParameterIndex("parameters");
-                        const AZ::u32 mirrorTypeIndex = commandLine.FindParameterIndex("mirrorType");
-                        if (eventTypeIndex == MCORE_INVALIDINDEX32 || parametersIndex == MCORE_INVALIDINDEX32 || mirrorTypeIndex == MCORE_INVALIDINDEX32)
+                        const size_t eventTypeIndex = commandLine.FindParameterIndex("eventType");
+                        const size_t parametersIndex = commandLine.FindParameterIndex("parameters");
+                        const size_t mirrorTypeIndex = commandLine.FindParameterIndex("mirrorType");
+                        if (eventTypeIndex == InvalidIndex || parametersIndex == InvalidIndex || mirrorTypeIndex == InvalidIndex)
                         {
                             // Note: We have noticed some bad data issue in internal assets. The parameters could contain \r\n inside of the parameter string, which would result in the mirror type missing.
                             // Those are already been fixed in the command line object code, but we don't want to support the bad data in here by creating another loophole. Instead, we want the user to fix

@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -146,7 +143,7 @@ namespace AZ
                 resultCode = MapBufferInternal(mapRequest, mapResponse);
                 if (resultCode == ResultCode::Success)
                 {
-                    memcpy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
+                    BufferCopy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
                     UnmapBufferInternal(*initRequest.m_buffer);
                 }
             }
@@ -165,7 +162,8 @@ namespace AZ
             {
                 return ResultCode::InvalidArgument;
             }
-
+            
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
@@ -219,6 +217,11 @@ namespace AZ
         const BufferPoolDescriptor& BufferPool::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        void BufferPool::BufferCopy(void* destination, const void* source, size_t num)
+        {
+            memcpy(destination, source, num);
         }
 
         ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)

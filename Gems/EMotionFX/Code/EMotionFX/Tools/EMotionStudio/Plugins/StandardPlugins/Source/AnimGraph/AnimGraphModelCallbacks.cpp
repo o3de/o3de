@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConditionCommands.h>
@@ -33,7 +29,7 @@ namespace EMStudio
     {
         CommandSystem::CommandLoadAnimGraph* commandLoadAnimGraph = static_cast<CommandSystem::CommandLoadAnimGraph*>(command);
 
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandLoadAnimGraph->mOldAnimGraphID);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandLoadAnimGraph->m_oldAnimGraphId);
         if (animGraph)
         {
             m_animGraphModel.Add(animGraph);
@@ -59,7 +55,7 @@ namespace EMStudio
     {
         CommandSystem::CommandCreateAnimGraph* commandCreateAnimGraph = static_cast<CommandSystem::CommandCreateAnimGraph*>(command);
 
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandCreateAnimGraph->mPreviouslyUsedID);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandCreateAnimGraph->m_previouslyUsedId);
         m_animGraphModel.Add(animGraph);
 
         EMotionFX::AnimGraphStateMachine* rootStateMachine = animGraph->GetRootStateMachine();
@@ -168,7 +164,7 @@ namespace EMStudio
     bool AnimGraphModel::CommandDidActivateAnimGraphPostUndoCallback::Undo(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         CommandSystem::CommandActivateAnimGraph* commandActivateAnimGraph = static_cast<CommandSystem::CommandActivateAnimGraph*>(command);
-        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->mActorInstanceID);
+        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->m_actorInstanceId);
 
         if (actorInstance)
         {
@@ -185,14 +181,14 @@ namespace EMStudio
     bool AnimGraphModel::CommandDidActivateAnimGraphCallback::Execute(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         CommandSystem::CommandActivateAnimGraph* commandActivateAnimGraph = static_cast<CommandSystem::CommandActivateAnimGraph*>(command);
-        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->mActorInstanceID);
+        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->m_actorInstanceId);
         
         if (actorInstance)
         {
             EMotionFX::AnimGraphInstance* currentAnimGraphInstance = actorInstance->GetAnimGraphInstance();
             EMotionFX::AnimGraph* currentAnimGraph = currentAnimGraphInstance->GetAnimGraph();
             EMotionFX::AnimGraph* oldAnimGraph = nullptr;
-            oldAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandActivateAnimGraph->mOldAnimGraphUsed);
+            oldAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandActivateAnimGraph->m_oldAnimGraphUsed);
 
             if (currentAnimGraphInstance)
             {
@@ -213,7 +209,7 @@ namespace EMStudio
     bool AnimGraphModel::CommandDidActivateAnimGraphCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         CommandSystem::CommandActivateAnimGraph* commandActivateAnimGraph = static_cast<CommandSystem::CommandActivateAnimGraph*>(command);
-        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->mActorInstanceID);
+        EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(commandActivateAnimGraph->m_actorInstanceId);
 
         // TODO: do this better, we need to find the animgraphinstance that we are undoing after the undo finishes
         if (actorInstance)
@@ -258,7 +254,7 @@ namespace EMStudio
         }
 
         CommandSystem::CommandAnimGraphCreateNode* commandCreateNode = static_cast<CommandSystem::CommandAnimGraphCreateNode*>(command);
-        EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(commandCreateNode->mNodeId);
+        EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(commandCreateNode->m_nodeId);
         return m_animGraphModel.NodeAdded(node);
     }
 
@@ -397,7 +393,7 @@ namespace EMStudio
             {
                 // In this case is a BlendTreeConnection, we dont keep items in the model for it. We just
                 // need to mark the target node as changed
-                EMotionFX::BlendTreeConnection* connection = targetNode->FindConnection(commandCreateConnection->GetTargetPort());
+                EMotionFX::BlendTreeConnection* connection = targetNode->FindConnection(aznumeric_caster(commandCreateConnection->GetTargetPort()));
                 return m_animGraphModel.ConnectionAdded(targetNode, connection);
             }
             else
@@ -660,10 +656,10 @@ namespace EMStudio
     {
         CommandSystem::CommandAnimGraphSetEntryState* commandSetEntryState = static_cast<CommandSystem::CommandAnimGraphSetEntryState*>(command);
         
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandSetEntryState->mAnimGraphID);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(commandSetEntryState->m_animGraphId);
         if (animGraph)
         {
-            EMotionFX::AnimGraphNode* entryNode = animGraph->RecursiveFindNodeById(commandSetEntryState->mOldEntryStateNodeId);
+            EMotionFX::AnimGraphNode* entryNode = animGraph->RecursiveFindNodeById(commandSetEntryState->m_oldEntryStateNodeId);
             if (entryNode)
             {
                 static const QVector<int> entryStateRole = { AnimGraphModel::ROLE_NODE_ENTRY_STATE };

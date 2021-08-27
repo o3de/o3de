@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <gtest/gtest.h>
 
@@ -50,18 +46,6 @@ namespace EMotionFX
 
     class LODSystemMock : public SystemMock
     {
-    public:
-        CCamera& GetViewCamera() override
-        {
-            return m_camera;
-        }
-        void SetViewCameraPosition(Vec3& vec)
-        {
-            m_camera.SetPosition(vec);
-        }
-
-        protected:
-            CCamera m_camera;
     };
 
     class LODSkinnedMeshColorFixture
@@ -106,7 +90,6 @@ namespace EMotionFX
         Mesh* lodMesh = actor->GetMesh(0, 0);
         StandardMaterial* dummyMat = StandardMaterial::Create("Dummy Material");
         actor->AddMaterial(0, dummyMat); // owns the material
-        actor->SetNumLODLevels(numLODs);
 
         for (int i = 1; i < numLODs; ++i)
         {
@@ -211,7 +194,6 @@ namespace EMotionFX
         EXPECT_EQ(actorInstance->GetLODLevel(), 0);
 
         Vec3 newVec{ 0,30,0 };
-        m_data.m_system.SetViewCameraPosition(newVec);
 
         // Tick!
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.0f, AZ::ScriptTimePoint{});
@@ -221,7 +203,6 @@ namespace EMotionFX
         EXPECT_EQ(actorInstance->GetLODLevel(), 3);
 
         newVec.y = 50;
-        m_data.m_system.SetViewCameraPosition(newVec);
 
         // Tick!
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.0f, AZ::ScriptTimePoint{});

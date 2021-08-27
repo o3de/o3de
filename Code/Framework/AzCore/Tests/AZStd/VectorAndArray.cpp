@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UserTypes.h"
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -40,12 +36,23 @@ using namespace UnitTestInternal;
 /**
  * Validate a vector for certain number of elements.
  */
-#define AZ_TEST_VALIDATE_VECTOR(_Vector, _NumElements)                                                        \
-    EXPECT_TRUE(_Vector.validate());                                                                       \
-    EXPECT_EQ(_NumElements, _Vector.size());                                                           \
-    EXPECT_TRUE((_NumElements > 0) ? !_Vector.empty() : _Vector.empty());                                  \
-    EXPECT_TRUE((_NumElements > 0) ? _Vector.capacity() >= _NumElements : true);                           \
-    EXPECT_TRUE((_NumElements > 0) ? _Vector.begin() != _Vector.end() : _Vector.begin() == _Vector.end()); \
+#define AZ_TEST_VALIDATE_VECTOR(_Vector, _NumElements)  \
+    EXPECT_NE(_NumElements, 0);                         \
+    EXPECT_TRUE(_Vector.validate());                    \
+    EXPECT_EQ(_NumElements, _Vector.size());            \
+    EXPECT_TRUE(!_Vector.empty());                      \
+    EXPECT_TRUE(_Vector.capacity() >= _NumElements);    \
+    EXPECT_TRUE(_Vector.begin() != _Vector.end());      \
+    EXPECT_NE(nullptr, _Vector.data())
+
+ /**
+  * Validate a vector for 0 number of elements. The above macro creates expressions that are always true for size == 0
+  */
+#define AZ_TEST_VALIDATE_VECTOR_0(_Vector)          \
+    EXPECT_TRUE(_Vector.validate());                \
+    EXPECT_EQ(0, _Vector.size());        \
+    EXPECT_TRUE(_Vector.empty());                   \
+    EXPECT_TRUE(_Vector.begin() == _Vector.end());  \
     EXPECT_NE(nullptr, _Vector.data())
 
 namespace UnitTest
@@ -316,7 +323,7 @@ namespace UnitTest
 
         // erase
         int_vector1.erase(int_vector1.begin(), int_vector1.end());
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0); // Zero elements but valid capacity.
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1); // Zero elements but valid capacity.
 
         int_vector1.push_back(10);
         int_vector1.push_back(20);
@@ -328,11 +335,11 @@ namespace UnitTest
 
         // clear
         int_vector1.clear();
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0); // Zero elements but valid capacity.
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1); // Zero elements but valid capacity.
 
         // swap
         int_vector1.swap(int_vector);
-        AZ_TEST_VALIDATE_VECTOR(int_vector, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector);
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
@@ -528,11 +535,11 @@ namespace UnitTest
 
         // Default vector (integral type).
         fixed_vector<int, 50> int_vector_default;
-        AZ_TEST_VALIDATE_VECTOR(int_vector_default, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector_default);
 
         // Default vector (non-integral type).
         fixed_vector<MyClass, 10> myclass_vector_default;
-        AZ_TEST_VALIDATE_VECTOR(myclass_vector_default, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(myclass_vector_default);
 
         // Create a vector (using fill ctor, with memset optimization to set the values)
         typedef fixed_vector<char, 10> char_10_type;
@@ -637,7 +644,7 @@ namespace UnitTest
 
         // erase
         int_vector1.erase(int_vector1.begin(), int_vector1.end());
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1);
 
         int_vector1.push_back(10);
         int_vector1.push_back(20);
@@ -649,11 +656,11 @@ namespace UnitTest
 
         // clear
         int_vector1.clear();
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1);
 
         // swap
         int_vector1.swap(int_vector);
-        AZ_TEST_VALIDATE_VECTOR(int_vector, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector);
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
@@ -967,7 +974,7 @@ namespace UnitTest
         AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 12);
 
         deep_vec_2.clear();
-        AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(deep_vec_2);
     }
 #endif // AZ_UNIT_TEST_SKIP_STD_VECTOR_AND_ARRAY_TESTS
 

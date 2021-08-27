@@ -1,23 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <iostream>
-
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-
 #include <Libraries/Libraries.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -26,6 +22,9 @@
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Serialization/DatumSerializer.h>
+#include <ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h>
+#include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
@@ -58,9 +57,9 @@ namespace ScriptCanvasSystemComponentCpp
 
 namespace ScriptCanvas
 {
-
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        VersionData::Reflect(context);
         Nodeable::Reflect(context);
         ReflectLibraries(context);
 
@@ -88,11 +87,17 @@ namespace ScriptCanvas
             }
         }
 
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::DatumSerializer>()->HandlesType<Datum>();
+            jsonContext->Serializer<AZ::BehaviorContextObjectSerializer>()->HandlesType<BehaviorContextObject>();
+            jsonContext->Serializer<AZ::RuntimeVariableSerializer>()->HandlesType<RuntimeVariable>();
+        }
+
 #if defined(SC_EXECUTION_TRACE_ENABLED)
         ExecutionLogData::Reflect(context);
         ExecutionLogAsset::Reflect(context);
 #endif//defined(SC_EXECUTION_TRACE_ENABLED)
-
     }
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -149,7 +154,7 @@ namespace ScriptCanvas
 
         ModPerformanceTracker()->CalculateReports();
         Execution::PerformanceTrackingReport report = ModPerformanceTracker()->GetGlobalReport();
-        
+
         const double ready = aznumeric_caster(report.timing.initializationTime);
         const double instant = aznumeric_caster(report.timing.executionTime);
         const double latent = aznumeric_caster(report.timing.latentTime);
@@ -362,11 +367,11 @@ namespace ScriptCanvas
         auto dataRegistry = ScriptCanvas::GetDataRegistry();
         for (const auto& classIter : behaviorContext->m_classes)
         {
-           auto createability = GetCreatibility(serializeContext, classIter.second);
-           if (createability.first != DataRegistry::Createability::None)
-           {
-               dataRegistry->RegisterType(classIter.second->m_typeId, createability.second, createability.first);
-           }
+            auto createability = GetCreatibility(serializeContext, classIter.second);
+            if (createability.first != DataRegistry::Createability::None)
+            {
+                dataRegistry->RegisterType(classIter.second->m_typeId, createability.second, createability.first);
+            }
         }
     }
 

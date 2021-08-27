@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 RemoteConsole: Used to interact with Lumberyard Launchers through the Remote Console to execute console commands.
 """
@@ -31,7 +27,8 @@ CONSOLE_MESSAGE_MAP = {
     'COMMAND': BASE_MSG_TYPE + 5,
     'AUTOCOMPLETELIST': BASE_MSG_TYPE + 6,
     'AUTOCOMPLETELISTDONE': BASE_MSG_TYPE + 7,
-    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22
+    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22,
+    'CONNECTMESSAGE': BASE_MSG_TYPE + 25,
 }
 
 
@@ -299,14 +296,7 @@ class RemoteConsole:
                     self.handlers[key].set()
                     continue
 
-        # The very first connection using the socket will return all of the auto complete items, turned off so no one
-        # wouldn't need to see them
-        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELIST']:
-            pass
-
-        # The after the autocompletelists finishes we will be ready to send console commands we determine that by
-        # looking at for an autocompletelistdone message
-        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELISTDONE']:
+        elif message_type == CONSOLE_MESSAGE_MAP['CONNECTMESSAGE']:
             self.ready.set()
 
         # cleanup expect_log_line handers if the matching string was found or timeout happened.

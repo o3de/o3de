@@ -1,19 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 
 namespace EMotionFX
 {
@@ -33,6 +32,14 @@ namespace EMotionFX
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::SceneAPI::Events::ProcessingResult BuildMotionData(MotionDataBuilderContext& context);
+
+        private:
+            //! Get the bind pose transform in local space.
+            AZ::SceneAPI::DataTypes::MatrixType GetLocalSpaceBindPose(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph,
+                const AZ::SceneAPI::Containers::SceneGraph::NodeIndex rootBoneNodeIndex,
+                const AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex,
+                const AZ::SceneAPI::DataTypes::ITransform* transform,
+                const AZ::SceneAPI::DataTypes::IBoneData* bone) const;
         };
     } // namespace Pipeline
 } // namespace EMotionFX

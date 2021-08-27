@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -44,6 +40,9 @@ namespace Camera
         float GetNearClipDistance() const;
         AZ::EntityId GetEditorEntityId() const;
 
+        AZ::u32 GetPerspectiveParameterVisibility() const;
+        AZ::u32 GetOrthographicParameterVisibility() const;
+
         // Reflected members
         float m_fov = DefaultFoV;
         float m_nearClipDistance = DefaultNearPlaneDistance;
@@ -53,6 +52,8 @@ namespace Camera
         bool m_specifyFrustumDimensions = false;
         AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
         bool m_makeActiveViewOnActivation = true;
+        bool m_orthographic = false;
+        float m_orthographicHalfWidth = 5.f;
     };
 
     class CameraComponentController
@@ -68,9 +69,6 @@ namespace Camera
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
 
-        void ActivateAtomView();
-        void DeactivateAtomView();
-
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -82,6 +80,7 @@ namespace Camera
         void Deactivate();
         void SetConfiguration(const CameraComponentConfig& config);
         const CameraComponentConfig& GetConfiguration() const;
+        AZ::RPI::ViewportContextPtr GetViewportContext();
 
         // CameraBus::Handler interface
         AZ::EntityId GetCameras() override;
@@ -93,19 +92,26 @@ namespace Camera
         float GetFarClipDistance() override;
         float GetFrustumWidth() override;
         float GetFrustumHeight() override;
+        bool IsOrthographic() override;
+        float GetOrthographicHalfWidth() override;
         void SetFovDegrees(float fov) override;
         void SetFovRadians(float fov) override;
         void SetNearClipDistance(float nearClipDistance) override;
         void SetFarClipDistance(float farClipDistance) override;
         void SetFrustumWidth(float width) override;
         void SetFrustumHeight(float height) override;
+        void SetOrthographic(bool orthographic) override;
+        void SetOrthographicHalfWidth(float halfWidth) override;
+
         void MakeActiveView() override;
+        bool IsActiveView() override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // AZ::RPI::ViewportContextNotificationBus::Handler interface
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
@@ -113,6 +119,8 @@ namespace Camera
     private:
         AZ_DISABLE_COPY(CameraComponentController);
 
+        void ActivateAtomView();
+        void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
 
@@ -124,6 +132,7 @@ namespace Camera
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
         AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
         bool m_updatingTransformFromEntity = false;
+        bool m_isActiveView = false;
 
         // Cry view integration
         IView* m_view = nullptr;

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -21,11 +17,6 @@ namespace AZ
         namespace GraphData
         {
             namespace DataTypes = AZ::SceneAPI::DataTypes;
-
-            const AZStd::string MaterialData::s_DiffuseMapName = "Diffuse";
-            const AZStd::string MaterialData::s_SpecularMapName = "Specular";
-            const AZStd::string MaterialData::s_BumpMapName = "Bump";
-            const AZStd::string MaterialData::s_emptyString = "";
 
             MaterialData::MaterialData()
                 : m_isNoDraw(false)
@@ -76,7 +67,7 @@ namespace AZ
                     return result->second;
                 }
 
-                return s_emptyString;
+                return m_emptyString;
             }
 
             void MaterialData::SetNoDraw(bool isNoDraw)

@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from typing import (Dict, List)
@@ -486,6 +482,7 @@ class TestViewEditController(TestCase):
         mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
         mock_file_utils.find_files_with_suffix_under_directory.assert_called_once()
         self._mocked_view_edit_page.set_config_files.assert_called_with(expected_config_files)
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     @patch("controller.view_edit_controller.file_utils")
     @patch("controller.view_edit_controller.json_utils")
@@ -500,7 +497,7 @@ class TestViewEditController(TestCase):
         mock_file_utils.join_path.assert_called_once()
         mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
         mock_file_utils.find_files_with_suffix_under_directory.assert_not_called()
-        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
+        assert len(self._test_view_edit_controller.set_notification_frame_text_sender.emit.mock_calls) == 2
 
     @patch("controller.view_edit_controller.file_utils")
     def test_page_rescan_button_post_notification_when_find_files_throw_exception(

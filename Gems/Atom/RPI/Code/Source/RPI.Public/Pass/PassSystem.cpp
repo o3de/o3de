@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -21,7 +17,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -193,7 +189,7 @@ namespace AZ
         void PassSystem::BuildPasses()
         {
             m_state = PassSystemState::BuildingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
@@ -243,7 +239,7 @@ namespace AZ
         void PassSystem::InitializePasses()
         {
             m_state = PassSystemState::InitializingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
@@ -290,7 +286,7 @@ namespace AZ
                     return;
                 }
 
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 PassValidationResults validationResults;
                 m_rootPass->Validate(validationResults);
@@ -302,6 +298,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -310,14 +307,19 @@ namespace AZ
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
 
+            ResetFrameStatistics();
             ProcessQueuedChanges();
 
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
-            m_rootPass->FrameBegin(params);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Pass: FrameBegin");
+                m_rootPass->FrameBegin(params);
+            }
         }
 
         void PassSystem::FrameEnd()
@@ -395,6 +397,29 @@ namespace AZ
         void PassSystem::ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler)
         {
             handler.Connect(m_loadTemplatesEvent);
+        }
+
+        void PassSystem::ResetFrameStatistics()
+        {
+            m_frameStatistics.m_numRenderPassesExecuted = 0;
+            m_frameStatistics.m_totalDrawItemsRendered = 0;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = 0;
+        }
+
+        PassSystemFrameStatistics PassSystem::GetFrameStatistics()
+        {
+            return m_frameStatistics;
+        }
+
+        void PassSystem::IncrementFrameDrawItemCount(u32 numDrawItems)
+        {
+            m_frameStatistics.m_totalDrawItemsRendered += numDrawItems;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = AZStd::max(m_frameStatistics.m_maxDrawItemsRenderedInAPass, numDrawItems);
+        }
+
+        void PassSystem::IncrementFrameRenderPassCount()
+        {
+            ++m_frameStatistics.m_numRenderPassesExecuted;
         }
 
         // --- Pass Factory Functions --- 

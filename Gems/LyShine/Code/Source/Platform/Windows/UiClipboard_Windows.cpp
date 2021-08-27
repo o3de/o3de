@@ -1,20 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 // UiClipboard is responsible setting and getting clipboard data for the UI elements in a platform-independent way.
 
-#include "LyShine_precompiled.h"
 #include "UiClipboard.h"
 #include <AzCore/PlatformIncl.h>
-#include <StringUtils.h>
+#include <AzCore/std/string/conversions.h>
 
 bool UiClipboard::SetText(const AZStd::string& text)
 {
@@ -25,7 +20,8 @@ bool UiClipboard::SetText(const AZStd::string& text)
         {
             if (text.length() > 0)
             {
-                auto wstr = CryStringUtils::UTF8ToWStr(text.c_str());
+                AZStd::wstring wstr;
+                AZStd::to_wstring(wstr, text.c_str());
                 const SIZE_T buffSize = (wstr.size() + 1) * sizeof(WCHAR);
                 if (HGLOBAL hBuffer = GlobalAlloc(GMEM_MOVEABLE, buffSize))
                 {
@@ -51,7 +47,7 @@ AZStd::string UiClipboard::GetText()
         if (HANDLE hText = GetClipboardData(CF_UNICODETEXT))
         {
             const WCHAR* text = static_cast<const WCHAR*>(GlobalLock(hText));
-            outText = CryStringUtils::WStrToUTF8(text);
+            AZStd::to_string(outText, text);
             GlobalUnlock(hText);
         }
         CloseClipboard();

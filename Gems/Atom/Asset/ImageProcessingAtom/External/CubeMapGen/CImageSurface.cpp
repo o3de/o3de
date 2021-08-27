@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 //--------------------------------------------------------------------------------------
 //CImageSurface
@@ -17,13 +13,9 @@
 //--------------------------------------------------------------------------------------
 // (C) 2005 ATI Research, Inc., All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
-// modifications by Amazon
-
-#include <ImageProcessing_precompiled.h>
+// Modified from original
 
 #include "CImageSurface.h"
-
 
 namespace ImageProcessingAtom
 {
@@ -143,7 +135,7 @@ namespace ImageProcessingAtom
         mantissa >>= (23 - 10);
 
         //assemble s10e5 number using logical operations
-        rawf16Data = (signVal << 15) | (exponent << 10) | mantissa;
+        rawf16Data = static_cast<uint16>((signVal << 15) | (exponent << 10) | mantissa);
 
         //return re-assembled raw data as a 32 bit float
         return rawf16Data;
@@ -281,7 +273,7 @@ namespace ImageProcessingAtom
 
         SAFE_DELETE_ARRAY(m_ImgData);   //safe delete old image data
 
-        m_ImgData = new(std::nothrow) CP_ITYPE[m_Width * m_Height * m_NumChannels];   //assume tight data packing
+        m_ImgData = new CP_ITYPE[m_Width * m_Height * m_NumChannels];   //assume tight data packing
         if (!m_ImgData)
         {
             FatalError(L"Unable to allocate data for image in CImageSurface::Init.");
@@ -394,7 +386,7 @@ namespace ImageProcessingAtom
                     if (k < 3)  //only apply gamma and scale to RGB channels
                     {
                         //degamma texel val, by raising to the power gamma 
-                        texelVal = pow(texelVal, a_Gamma);
+                        texelVal = static_cast<CP_ITYPE>(pow(texelVal, a_Gamma));
 
                         //scale texel val in linear space (after degamma)
                         texelVal *= a_Scale;
@@ -522,7 +514,7 @@ namespace ImageProcessingAtom
                         texelVal *= a_Scale;
 
                         //apply gamma to texel val by raising the texelVal to the power of (1/gamma)
-                        texelVal = pow(texelVal, 1.0f / a_Gamma);
+                        texelVal = static_cast<CP_ITYPE>(pow(texelVal, 1.0f / a_Gamma));
                     }
 
                     //write out texture value

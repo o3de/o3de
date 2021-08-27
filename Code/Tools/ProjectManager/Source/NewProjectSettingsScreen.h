@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -24,9 +20,12 @@ QT_FORWARD_DECLARE_CLASS(QFrame)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
+
     class NewProjectSettingsScreen
         : public ProjectSettingsScreen
     {
+        Q_OBJECT
+
     public:
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
@@ -36,8 +35,19 @@ namespace O3DE::ProjectManager
 
         void NotifyCurrentScreen() override;
 
+        void SelectProjectTemplate(int index, bool blockSignals = false);
+
+    signals:
+        void OnTemplateSelectionChanged(int oldIndex, int newIndex);
+
+    protected:
+        void OnProjectNameUpdated() override;
+        void OnProjectPathUpdated() override;
+
     private:
+        QString GetDefaultProjectName();
         QString GetDefaultProjectPath();
+        QString GetProjectAutoPath();
         QFrame* CreateTemplateDetails(int margin);
         void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
@@ -46,6 +56,8 @@ namespace O3DE::ProjectManager
         QLabel* m_templateSummary;
         TagContainerWidget* m_templateIncludedGems;
         QVector<ProjectTemplateInfo> m_templates;
+        int m_selectedTemplateIndex = -1;
+        bool m_userChangedProjectPath = false;
 
         inline constexpr static int s_spacerSize = 20;
         inline constexpr static int s_templateDetailsContentMargin = 20;

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,7 +12,7 @@
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <QWidget>
 #include <QDialog>
@@ -67,30 +63,30 @@ namespace EMStudio
 
 
     private:
-        SceneManagerPlugin*     mPlugin;
-        QTableWidget*           mSourceList;
-        QTableWidget*           mCurrentList;
-        QTableWidget*           mMappingTable;
-        QPushButton*            mButtonOpen;
-        QPushButton*            mButtonSave;
-        QPushButton*            mButtonClear;
-        QPushButton*            mButtonGuess;
-        QLineEdit*              mLeftEdit;
-        QLineEdit*              mRightEdit;
+        SceneManagerPlugin*     m_plugin;
+        QTableWidget*           m_sourceList;
+        QTableWidget*           m_currentList;
+        QTableWidget*           m_mappingTable;
+        QPushButton*            m_buttonOpen;
+        QPushButton*            m_buttonSave;
+        QPushButton*            m_buttonClear;
+        QPushButton*            m_buttonGuess;
+        QLineEdit*              m_leftEdit;
+        QLineEdit*              m_rightEdit;
         AzQtComponents::FilteredSearchWidget* m_searchWidgetCurrent;
         AzQtComponents::FilteredSearchWidget* m_searchWidgetSource;
-        QIcon*                  mBoneIcon;
-        QIcon*                  mNodeIcon;
-        QIcon*                  mMeshIcon;
-        QIcon*                  mMappedIcon;
-        MCore::Array<uint32>    mCurrentBoneList;
-        AZStd::vector<uint32>   mSourceBoneList;
-        AZStd::vector<uint32>   mMap;
+        QIcon*                  m_boneIcon;
+        QIcon*                  m_nodeIcon;
+        QIcon*                  m_meshIcon;
+        QIcon*                  m_mappedIcon;
+        AZStd::vector<size_t>    m_currentBoneList;
+        AZStd::vector<size_t>   m_sourceBoneList;
+        AZStd::vector<size_t>   m_map;
 
         void FillCurrentListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillSourceListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillMappingTable(EMotionFX::Actor* currentActor, EMotionFX::Actor* sourceActor);
-        void PerformMapping(uint32 currentNodeIndex, uint32 sourceNodeIndex);
+        void PerformMapping(size_t currentNodeIndex, size_t sourceNodeIndex);
         void RemoveCurrentSelectedMapping();
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);

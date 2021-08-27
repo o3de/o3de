@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 
 #include <SceneAPIExt/Rules/MetaDataRule.h>
+#include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Groups/IMotionGroup.h>
 #include <RCExt/Motion/MotionGroupExporter.h>
 #include <RCExt/ExportContexts.h>
@@ -77,7 +74,7 @@ namespace EMotionFX
             result += SceneEvents::Process<MotionDataBuilderContext>(dataBuilderContext, AZ::RC::Phase::Filling);
             result += SceneEvents::Process<MotionDataBuilderContext>(dataBuilderContext, AZ::RC::Phase::Finalizing);
 
-            // Check if there is meta data and apply it to the motion.
+            // Legacy meta data: Check if there is legacy (XML) event data rule and apply it.
             AZStd::vector<MCore::Command*> metaDataCommands;
             if (Rule::MetaDataRule::LoadMetaData(motionGroup, metaDataCommands))
             {
@@ -85,6 +82,14 @@ namespace EMotionFX
                 {
                     AZ_Error("EMotionFX", false, "Applying meta data to '%s' failed.", filename.c_str());
                 }
+            }
+
+            // Apply motion meta data.
+            AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData> motionMetaData;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule>(motionGroup, motionMetaData))
+            {
+                motion->SetEventTable(motionMetaData->GetClonedEventTable(motion));
+                motion->SetMotionExtractionFlags(motionMetaData->GetMotionExtractionFlags());
             }
 
             ExporterLib::SaveMotion(filename, motion, MCore::Endian::ENDIAN_LITTLE);

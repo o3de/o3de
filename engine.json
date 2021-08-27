@@ -15,10 +15,11 @@
         "Gems/AtomTressFX",
         "Gems/AudioEngineWwise",
         "Gems/AudioSystem",
-        "Gems/AutomatedLauncherTesting",
         "Gems/AWSClientAuth",
         "Gems/AWSCore",
+        "Gems/AWSGameLift",
         "Gems/AWSMetrics",
+        "Gems/BarrierInput",
         "Gems/Blast",
         "Gems/Camera",
         "Gems/CameraFramework",
@@ -53,7 +54,6 @@
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
         "Gems/PBSreferenceMaterials",
-        "Gems/PhysicsEntities",
         "Gems/PhysX",
         "Gems/PhysXDebug",
         "Gems/PhysXSamples",
@@ -62,7 +62,6 @@
         "Gems/PrimitiveAssets",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
-        "Gems/RADTelemetry",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
@@ -77,13 +76,13 @@
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
         "Gems/SurfaceData",
+        "Gems/Terrain",
         "Gems/TestAssetBuilder",
         "Gems/TextureAtlas",
         "Gems/TickBusOrderViewer",
         "Gems/Twitch",
         "Gems/UiBasics",
         "Gems/Vegetation",
-        "Gems/Vegetation_Gem_Assets",
         "Gems/VideoPlaybackFramework",
         "Gems/VirtualGamepad",
         "Gems/WhiteBox"
@@ -92,7 +91,9 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/AssetGem",
         "Templates/DefaultGem",
-        "Templates/DefaultProject"
+        "Templates/DefaultProject",
+        "Templates/MinimalProject"
     ]
 }

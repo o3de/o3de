@@ -1,26 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Purpose:
 //  - Create and update a texture with the most recently used glyphs
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
-#include <CryCommon/UnicodeIterator.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/std/string/conversions.h>
 
 //-------------------------------------------------------------------------------------------------
 AZ::FontTexture::FontTexture()
@@ -49,7 +44,7 @@ AZ::FontTexture::~FontTexture()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontTexture::CreateFromFile(const string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCellCount, int heightCellCount)
+int AZ::FontTexture::CreateFromFile(const AZStd::string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCellCount, int heightCellCount)
 {
     if (!m_glyphCache.LoadFontFromFile(fileName))
     {
@@ -260,10 +255,10 @@ int AZ::FontTexture::PreCacheString(const char* string, int* updated, float size
     uint16_t slotUsage = m_slotUsage++;
     int updateCount = 0;
 
-    uint32_t character;
-    for (Unicode::CIterator<const char*, false> it(string); *it; ++it)
+    AZStd::wstring stringW;
+    AZStd::to_wstring(stringW, string);
+    for (wchar_t character : stringW)
     {
-        character = *it;
         TextureSlot* slot = GetCharSlot(character, clampedGlyphSize);
 
         if (!slot)
@@ -501,8 +496,8 @@ int AZ::FontTexture::UpdateSlot(int slotIndex, uint16_t slotUsage, uint32_t char
         return 0;
     }
 
-    slot->m_characterWidth = width;
-    slot->m_characterHeight = height;
+    slot->m_characterWidth = static_cast<uint8_t>(width);
+    slot->m_characterHeight = static_cast<uint8_t>(height);
 
     // Add a pixel along width and height to avoid artifacts being rendered
     // from a previous glyph in this slot due to bilinear filtering. The source
@@ -524,8 +519,8 @@ void AZ::FontTexture::CreateGradientSlot()
     assert(slot->m_currentCharacter == (uint32_t)~0);      // 0 needs to be unused spot
 
     slot->Reset();
-    slot->m_characterWidth = m_cellWidth - 2;
-    slot->m_characterHeight = m_cellHeight - 2;
+    slot->m_characterWidth = static_cast<uint8_t>(m_cellWidth - 2);
+    slot->m_characterHeight = static_cast<uint8_t>(m_cellHeight - 2);
     slot->SetNotReusable();
 
     int x = slot->m_textureSlot % m_widthCellCount;
@@ -538,7 +533,7 @@ void AZ::FontTexture::CreateGradientSlot()
     {
         for (uint32_t dwX = 0; dwX < slot->m_characterWidth; ++dwX)
         {
-            buffer[dwX + dwY * m_width] = dwY * 255 / (slot->m_characterHeight - 1);
+            buffer[dwX + dwY * m_width] = static_cast<uint8_t>(dwY * 255 / (slot->m_characterHeight - 1));
         }
     }
 }

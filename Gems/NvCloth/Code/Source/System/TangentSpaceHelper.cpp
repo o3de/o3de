@@ -1,22 +1,20 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <System/TangentSpaceHelper.h>
 
+#include <AzCore/Debug/Profiler.h>
+
 namespace NvCloth
 {
     namespace
     {
-        const float Tolerance = 0.0001f;
+        const float Tolerance = 1e-7f;
     }
 
     bool TangentSpaceHelper::CalculateNormals(
@@ -24,7 +22,7 @@ namespace NvCloth
         const AZStd::vector<SimIndexType>& indices,
         AZStd::vector<AZ::Vector3>& outNormals)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if ((indices.size() % 3) != 0)
         {
@@ -38,7 +36,8 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outNormals.resize(vertexCount);
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the normals per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -89,7 +88,7 @@ namespace NvCloth
         AZStd::vector<AZ::Vector3>& outTangents,
         AZStd::vector<AZ::Vector3>& outBitangents)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if ((indices.size() % 3) != 0)
         {
@@ -119,8 +118,10 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -175,7 +176,7 @@ namespace NvCloth
         AZStd::vector<AZ::Vector3>& outBitangents,
         AZStd::vector<AZ::Vector3>& outNormals)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if ((indices.size() % 3) != 0)
         {
@@ -197,9 +198,12 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        outNormals.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)

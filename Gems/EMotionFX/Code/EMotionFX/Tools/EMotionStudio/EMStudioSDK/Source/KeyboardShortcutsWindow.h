@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -43,18 +39,18 @@ namespace EMStudio
         void keyPressEvent(QKeyEvent* event) override;
         void UpdateInterface();
 
-        QKeySequence                                mKey;
-        bool                                        mConflictDetected;
-        MysticQt::KeyboardShortcutManager::Action*  mConflictAction;
+        QKeySequence                                m_key;
+        bool                                        m_conflictDetected;
+        MysticQt::KeyboardShortcutManager::Action*  m_conflictAction;
 
     private slots:
         void ResetToDefault();
     private:
-        QLabel*                                     mLabel;
-        QLabel*                                     mConflictKeyLabel;
-        QPushButton*                                mOKButton;
-        MysticQt::KeyboardShortcutManager::Action*  mOrgAction;
-        MysticQt::KeyboardShortcutManager::Group*   mOrgGroup;
+        QLabel*                                     m_label;
+        QLabel*                                     m_conflictKeyLabel;
+        QPushButton*                                m_okButton;
+        MysticQt::KeyboardShortcutManager::Action*  m_orgAction;
+        MysticQt::KeyboardShortcutManager::Group*   m_orgGroup;
     };
 
 
@@ -83,13 +79,13 @@ namespace EMStudio
         void OnAssignNewKey();
 
     private:
-        QTableWidget*                               mTableWidget;
-        QListWidget*                                mListWidget;
-        QHBoxLayout*                                mHLayout;
-        int                                         mSelectedGroup;
-        MysticQt::KeyboardShortcutManager::Action*  mContextMenuAction;
-        int                                         mContextMenuActionIndex;
-        ShortcutReceiverDialog*                     mShortcutReceiverDialog;
+        QTableWidget*                               m_tableWidget;
+        QListWidget*                                m_listWidget;
+        QHBoxLayout*                                m_hLayout;
+        int                                         m_selectedGroup;
+        MysticQt::KeyboardShortcutManager::Action*  m_contextMenuAction;
+        int                                         m_contextMenuActionIndex;
+        ShortcutReceiverDialog*                     m_shortcutReceiverDialog;
 
         void contextMenuEvent(QContextMenuEvent* event) override;
     };

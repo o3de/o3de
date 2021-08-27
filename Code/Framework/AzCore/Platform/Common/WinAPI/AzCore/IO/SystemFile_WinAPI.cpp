@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
@@ -32,7 +28,6 @@ namespace
     //=========================================================================
     DWORD GetAttributes(const char* fileName)
     {
-#ifdef _UNICODE
         wchar_t fileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         if (mbstowcs_s(&numCharsConverted, fileNameW, fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
@@ -43,9 +38,6 @@ namespace
         {
             return INVALID_FILE_ATTRIBUTES;
         }
-#else //!_UNICODE
-        return GetFileAttributes(fileName);
-#endif // !_UNICODE
     }
 
     //=========================================================================
@@ -55,7 +47,6 @@ namespace
     //=========================================================================
     BOOL SetAttributes(const char* fileName, DWORD fileAttributes)
     {
-#ifdef _UNICODE
         wchar_t fileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         if (mbstowcs_s(&numCharsConverted, fileNameW, fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
@@ -66,9 +57,6 @@ namespace
         {
             return FALSE;
         }
-#else //!_UNICODE
-        return SetFileAttributes(fileName, fileAttributes);
-#endif // !_UNICODE
     }
 
     //=========================================================================
@@ -80,7 +68,6 @@ namespace
     //   * GetLastError() on Windows-like platforms
     //   * errno on Unix platforms
     //=========================================================================
-#if defined(_UNICODE)
     bool CreateDirRecursive(wchar_t* dirPath)
     {
         if (CreateDirectoryW(dirPath, nullptr))
@@ -116,53 +103,6 @@ namespace
         }
         return false;
     }
-#else
-    bool CreateDirRecursive(char* dirPath)
-    {
-        if (CreateDirectory(dirPath, nullptr))
-        {
-            return true;    // Created without error
-        }
-        DWORD error = GetLastError();
-        if (error == ERROR_PATH_NOT_FOUND)
-        {
-            // try to create our parent hierarchy
-            for (size_t i = strlen(dirPath); i > 0; --i)
-            {
-                if (dirPath[i] == '/' || dirPath[i] == '\\')
-                {
-                    char delimiter = dirPath[i];
-                    dirPath[i] = 0; // null-terminate at the previous slash
-                    bool ret = CreateDirRecursive(dirPath);
-                    dirPath[i] = delimiter; // restore slash
-                    if (ret)
-                    {
-                        // now that our parent is created, try to create again
-                        if (CreateDirectory(dirPath, nullptr))
-                        {
-                            return true;
-                        }
-                        DWORD creationError = GetLastError();
-                        if (creationError == ERROR_ALREADY_EXISTS)
-                        {
-                            DWORD attributes = GetFileAttributes(dirPath);
-                            return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-                        }
-                        return false;
-                    }
-                    return false;
-                }
-            }
-            // if we reach here then there was no parent folder to create, so we failed for other reasons
-        }
-        else if (error == ERROR_ALREADY_EXISTS)
-        {
-            DWORD attributes = GetFileAttributes(dirPath);
-            return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-        return false;
-    }
-#endif
 
     static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = INVALID_HANDLE_VALUE;
 }
@@ -212,7 +152,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
         CreatePath(m_fileName.c_str());
     }
 
-#   ifdef _UNICODE
     wchar_t fileNameW[AZ_MAX_PATH_LEN];
     size_t numCharsConverted;
     m_handle = INVALID_HANDLE_VALUE;
@@ -220,9 +159,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
     {
         m_handle = CreateFileW(fileNameW, dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
     }
-#   else //!_UNICODE
-    m_handle = CreateFile(m_fileName.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
-#   endif // !_UNICODE
 
     if (m_handle == INVALID_HANDLE_VALUE)
     {
@@ -421,7 +357,6 @@ namespace Platform
         HANDLE hFile;
         int lastError;
 
-#ifdef _UNICODE
         wchar_t filterW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         hFile = INVALID_HANDLE_VALUE;
@@ -429,39 +364,28 @@ namespace Platform
         {
             hFile = FindFirstFile(filterW, &fd);
         }
-#else // !_UNICODE
-        hFile = FindFirstFile(filter, &fd);
-#endif // !_UNICODE
 
         if (hFile != INVALID_HANDLE_VALUE)
         {
             const char* fileName;
 
-#ifdef _UNICODE
             char fileNameA[AZ_MAX_PATH_LEN];
             fileName = NULL;
             if (wcstombs_s(&numCharsConverted, fileNameA, fd.cFileName, AZ_ARRAY_SIZE(fileNameA) - 1) == 0)
             {
                 fileName = fileNameA;
             }
-#else // !_UNICODE
-            fileName = fd.cFileName;
-#endif // !_UNICODE
 
             cb(fileName, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0);
 
             // List all the other files in the directory.
-            while (FindNextFile(hFile, &fd) != 0)
+            while (FindNextFileW(hFile, &fd) != 0)
             {
-#ifdef _UNICODE
                 fileName = NULL;
                 if (wcstombs_s(&numCharsConverted, fileNameA, fd.cFileName, AZ_ARRAY_SIZE(fileNameA) - 1) == 0)
                 {
                     fileName = fileNameA;
                 }
-#else // !_UNICODE
-                fileName = fd.cFileName;
-#endif // !_UNICODE
 
                 cb(fileName, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0);
             }
@@ -487,16 +411,12 @@ namespace Platform
     {
         HANDLE handle = nullptr;
 
-#ifdef _UNICODE
         wchar_t fileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         if (mbstowcs_s(&numCharsConverted, fileNameW, fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
         {
             handle = CreateFileW(fileNameW, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
         }
-#else // !_UNICODE
-        handle = CreateFileA(fileName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-#endif // !_UNICODE
 
         if (handle == INVALID_HANDLE_VALUE)
         {
@@ -528,16 +448,12 @@ namespace Platform
         WIN32_FILE_ATTRIBUTE_DATA data = { 0 };
         BOOL result = FALSE;
 
-#ifdef _UNICODE
         wchar_t fileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         if (mbstowcs_s(&numCharsConverted, fileNameW, fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
         {
             result = GetFileAttributesExW(fileNameW, GetFileExInfoStandard, &data);
         }
-#else // !_UNICODE
-        result = GetFileAttributesExA(fileName, GetFileExInfoStandard, &data);
-#endif // !_UNICODE
 
         if (result)
         {
@@ -557,7 +473,6 @@ namespace Platform
 
     bool Delete(const char* fileName)
     {
-#ifdef _UNICODE
         wchar_t fileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
         if (mbstowcs_s(&numCharsConverted, fileNameW, fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
@@ -572,20 +487,12 @@ namespace Platform
         {
             return false;
         }
-#else // !_UNICODE
-        if (DeleteFile(fileName) == 0)
-        {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
-            return false;
-        }
-#endif // !_UNICODE
 
         return true;
     }
 
     bool Rename(const char* sourceFileName, const char* targetFileName, bool overwrite)
     {
-#ifdef _UNICODE
         wchar_t sourceFileNameW[AZ_MAX_PATH_LEN];
         wchar_t targetFileNameW[AZ_MAX_PATH_LEN];
         size_t numCharsConverted;
@@ -602,13 +509,6 @@ namespace Platform
         {
             return false;
         }
-#else // !_UNICODE
-        if (MoveFileEx(sourceFileName, targetFileName, overwrite ? MOVEFILE_REPLACE_EXISTING : 0) == 0)
-        {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, sourceFileName, (int)GetLastError());
-            return false;
-        }
-#endif // !_UNICODE
 
         return true;
     }
@@ -643,7 +543,6 @@ namespace Platform
     {
         if (dirName)
         {
-#if defined(_UNICODE)
             wchar_t dirPath[AZ_MAX_PATH_LEN];
             size_t numCharsConverted;
             if (mbstowcs_s(&numCharsConverted, dirPath, dirName, AZ_ARRAY_SIZE(dirPath) - 1) == 0)
@@ -655,18 +554,6 @@ namespace Platform
                 }
                 return success;
             }
-#else
-            char dirPath[AZ_MAX_PATH_LEN];
-            if (azstrcpy(dirPath, AZ_ARRAY_SIZE(dirPath), dirName) == 0)
-            {
-                bool success = CreateDirRecursive(dirPath);
-                if (!success)
-                {
-                    EBUS_EVENT(FileIOEventBus, OnError, nullptr, dirName, (int)GetLastError());
-                }
-                return success;
-            }
-#endif
         }
         return false;
     }
@@ -675,16 +562,12 @@ namespace Platform
     {
         if (dirName)
         {
-#if defined(_UNICODE)
             wchar_t dirNameW[AZ_MAX_PATH_LEN];
             size_t numCharsConverted;
             if (mbstowcs_s(&numCharsConverted, dirNameW, dirName, AZ_ARRAY_SIZE(dirNameW) - 1) == 0)
             {
                 return RemoveDirectory(dirNameW) != 0;
             }
-#else
-            return RemoveDirectory(dirName) != 0;
-#endif
         }
 
         return false;

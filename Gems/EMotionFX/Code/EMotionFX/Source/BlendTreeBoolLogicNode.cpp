@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -37,7 +33,7 @@ namespace EMotionFX
         SetupOutputPort("Float", OUTPUTPORT_VALUE, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_VALUE);
         SetupOutputPort("Bool", OUTPUTPORT_BOOL, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_BOOL);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -125,7 +121,7 @@ namespace EMotionFX
     void BlendTreeBoolLogicNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
@@ -135,7 +131,7 @@ namespace EMotionFX
 
         // if both x and y inputs have connections
         bool x, y;
-        if (mConnections.size() == 2)
+        if (m_connections.size() == 2)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_X));
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_Y));
@@ -146,7 +142,7 @@ namespace EMotionFX
         else // only x or y is connected
         {
             // if only x has something plugged in
-            if (mConnections[0]->GetTargetPort() == INPUTPORT_X)
+            if (m_connections[0]->GetTargetPort() == INPUTPORT_X)
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_X));
                 x = GetInputNumberAsBool(animGraphInstance, INPUTPORT_X);
@@ -154,7 +150,7 @@ namespace EMotionFX
             }
             else // only y has an input
             {
-                MCORE_ASSERT(mConnections[0]->GetTargetPort() == INPUTPORT_Y);
+                MCORE_ASSERT(m_connections[0]->GetTargetPort() == INPUTPORT_Y);
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_Y));
                 x = m_defaultValue;
                 y = GetInputNumberAsBool(animGraphInstance, INPUTPORT_Y);
@@ -178,7 +174,7 @@ namespace EMotionFX
     void BlendTreeBoolLogicNode::SetFunction(EFunction func)
     {
         m_functionEnum = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

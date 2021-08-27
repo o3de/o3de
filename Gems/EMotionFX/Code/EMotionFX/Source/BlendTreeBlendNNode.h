@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -53,7 +49,7 @@ namespace EMotionFX
         AZ_RTTI(BlendTreeBlendNNode, "{CBFFDE41-008D-45A1-AC2A-E9A25C8CE62A}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_POSE_0    = 0,
             INPUTPORT_POSE_1    = 1,
@@ -69,7 +65,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_POSE_0 = 0,
             PORTID_INPUT_POSE_1 = 1,
@@ -98,8 +94,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mIndexA = InvalidIndex32;
-            uint32 mIndexB = InvalidIndex32;
+            uint32 m_indexA = InvalidIndex32;
+            uint32 m_indexB = InvalidIndex32;
         };
 
         BlendTreeBlendNNode();

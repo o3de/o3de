@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Debug/Trace.h>
 
@@ -16,6 +12,8 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <stdio.h>
 
@@ -26,7 +24,7 @@ namespace AZ
     LPTOP_LEVEL_EXCEPTION_FILTER g_previousExceptionHandler = nullptr;
 #endif
 
-    const int g_maxMessageLength = 4096;
+    constexpr int g_maxMessageLength = 4096;
 
     namespace Debug
     {
@@ -62,19 +60,18 @@ namespace AZ
                 TerminateProcess(GetCurrentProcess(), exitCode);
             }
 
-            void OutputToDebugger(const char* window, const char* message)
+            void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
             {
-                AZ_UNUSED(window);
-#ifdef _UNICODE
-                wchar_t messageW[g_maxMessageLength];
-                size_t numCharsConverted;
-                if (mbstowcs_s(&numCharsConverted, messageW, message, g_maxMessageLength - 1) == 0)
+                AZStd::fixed_wstring<g_maxMessageLength> tmpW;
+                if(window)
                 {
-                    OutputDebugStringW(messageW);
+                    AZStd::to_wstring(tmpW, window);
+                    tmpW += L": ";
+                    OutputDebugStringW(tmpW.c_str());
+                    tmpW.clear();
                 }
-#else // !_UNICODE
-                OutputDebugString(message);
-#endif // !_UNICODE
+                AZStd::to_wstring(tmpW, message);
+                OutputDebugStringW(tmpW.c_str());
             }
         }
     }

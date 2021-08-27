@@ -1,19 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -22,9 +21,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
-
-#include <Source/Window/MaterialBrowserWidget.h>
-#include <Source/Window/ui_MaterialBrowserWidget.h>
+#include <Window/MaterialBrowserWidget.h>
+#include <Window/ui_MaterialBrowserWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QAction>
@@ -95,14 +93,14 @@ namespace MaterialEditor
             }
         });
 
-        MaterialDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
     }
 
     MaterialBrowserWidget::~MaterialBrowserWidget()
     {
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
-        MaterialDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
@@ -148,13 +146,13 @@ namespace MaterialEditor
         {
             if (entry)
             {
-                if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialExtension))
+                if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension))
                 {
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
+                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
                 }
-                else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialTypeExtension))
+                else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
                 {
-                    //ignore MaterialTypeExtension
+                    //ignore AZ::RPI::MaterialTypeSourceData::Extension
                 }
                 else
                 {
@@ -167,7 +165,7 @@ namespace MaterialEditor
     void MaterialBrowserWidget::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         if (!absolutePath.empty())
         {
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
@@ -234,4 +232,4 @@ namespace MaterialEditor
 
 } // namespace MaterialEditor
 
-#include <Source/Window/moc_MaterialBrowserWidget.cpp>
+#include <Window/moc_MaterialBrowserWidget.cpp>

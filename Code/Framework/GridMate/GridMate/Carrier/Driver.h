@@ -1,23 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_DRIVER_H
 #define GM_DRIVER_H
 
 #include <GridMate/Types.h>
 
-#include <GridMate/String/string.h>
-
 #include <AzCore/std/delegate/delegate.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace GridMate
 {
@@ -143,8 +138,8 @@ namespace GridMate
 
         /// @{ Address conversion functionality. They MUST implemented thread safe. Generally this is not a problem since they just part local data.
         ///  Create address from ip and port. If ip == NULL we will assign a broadcast address.
-        virtual string          IPPortToAddress(const char* ip, unsigned int port) const = 0;
-        virtual bool            AddressToIPPort(const string& address, string& ip, unsigned int& port) const = 0;
+        virtual AZStd::string   IPPortToAddress(const char* ip, unsigned int port) const = 0;
+        virtual bool            AddressToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port) const = 0;
         /// @}
 
         /**
@@ -154,7 +149,7 @@ namespace GridMate
          * \note Driver address allocates internal resources, use it only when you intend to communicate. Otherwise operate with
          * the string address.
          */
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const string& address) = 0;
+        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) = 0;
 
         /**
          * Returns true if the driver can accept new data (ex, has buffer space).
@@ -192,11 +187,11 @@ namespace GridMate
 
         virtual ~DriverAddress() {}
 
-        virtual string ToString() const = 0;
+        virtual AZStd::string ToString() const = 0;
 
-        virtual string ToAddress() const = 0;
+        virtual AZStd::string ToAddress() const = 0;
 
-        virtual string GetIP() const = 0;
+        virtual AZStd::string GetIP() const = 0;
 
         virtual unsigned int  GetPort() const = 0;
 

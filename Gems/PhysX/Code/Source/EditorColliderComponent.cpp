@@ -1,16 +1,10 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -61,7 +55,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_pxAsset, "PhysX Mesh", "PhysX mesh collider asset")
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
-                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in FBX Settings")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration", "Configuration of asset shape")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
@@ -94,7 +88,7 @@ namespace PhysX
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
                         ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
@@ -120,6 +114,22 @@ namespace PhysX
                     ;
             }
         }
+    }
+
+    AZ::u32 EditorProxyShapeConfig::OnShapeTypeChanged()
+    {
+        //reset the physics asset if the shape type was Physics Asset
+        if (m_shapeType != Physics::ShapeType::PhysicsAsset &&
+            m_lastShapeType == Physics::ShapeType::PhysicsAsset)
+        {
+            //clean up any reference to a physics assets, and re-initialize to an empty Pipeline::MeshAsset asset.
+            m_physicsAsset.m_pxAsset.Reset();
+            m_physicsAsset.m_pxAsset = AZ::Data::Asset<Pipeline::MeshAsset>(AZ::Data::AssetLoadBehavior::QueueLoad);
+
+            m_physicsAsset.m_configuration = Physics::PhysicsAssetShapeConfiguration();
+        }
+        m_lastShapeType = m_shapeType;
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()
@@ -192,9 +202,9 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/component/physx/collider")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -786,7 +796,7 @@ namespace PhysX
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const uint lastSlash = assetPath.rfind('/');
+                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);
@@ -837,7 +847,7 @@ namespace PhysX
 
                 if (shapeConfiguration)
                 {
-                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, shapeIndex);
+                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, static_cast<AZ::u32>(shapeIndex));
                 }
             }
         }
@@ -923,7 +933,7 @@ namespace PhysX
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
 
                 m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
-                    overallScale, shapeIndex);
+                    overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
             case Physics::ShapeType::Sphere:

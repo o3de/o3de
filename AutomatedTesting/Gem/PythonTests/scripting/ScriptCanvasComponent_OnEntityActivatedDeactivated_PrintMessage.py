@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
@@ -97,11 +93,11 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
             if entity_dict["name"] == "Controller":
                 sc_component.get_property_tree()
                 sc_component.set_component_property_value(
-                    "Properties|Variable Fields|Variables|[0]|Name,Value|Datum|Datum|EntityToActivate",
+                    "Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate",
                     entity_to_activate.id,
                 )
                 sc_component.set_component_property_value(
-                    "Properties|Variable Fields|Variables|[1]|Name,Value|Datum|Datum|EntityToDeactivate",
+                    "Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate",
                     entity_to_deactivate.id,
                 )
             return entity

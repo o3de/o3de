@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -42,6 +38,10 @@
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AzCore/Console/IConsole.h>
+#include <BootstrapSystemComponent_Traits_Platform.h>
+
+AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
 
 namespace AZ
 {
@@ -54,8 +54,7 @@ namespace AZ
                 if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
                 {
                     serialize->Class<BootstrapSystemComponent, Component>()
-                        ->Version(0)
-                        ->Field("DefaultRenderPipelineAssetFile", &BootstrapSystemComponent::m_defaultPipelineAssetPath)
+                        ->Version(1)
                     ;
 
                     if (EditContext* ec = serialize->GetEditContext())
@@ -64,8 +63,6 @@ namespace AZ
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::Default, &BootstrapSystemComponent::m_defaultPipelineAssetPath, "Default RenderPipeline Asset",
-                            "The asset file path of default render pipeline for default window")
                         ;
                     }
                 }
@@ -318,13 +315,15 @@ namespace AZ
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
                 // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
                 AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-                AzFramework::AssetSystemRequestBus::BroadcastResult(
-                    status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_defaultPipelineAssetPath);
-                AZ_Assert(status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown, "Could not compile the default render pipeline at '%s'", m_defaultPipelineAssetPath.c_str());
+                const AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                AzFramework::AssetSystemRequestBus::BroadcastResult(status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, pipelineName.data());
+                
+                AZ_Assert(status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown, "Could not compile the default render pipeline at '%s'", pipelineName.c_str());
 
-                Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(m_defaultPipelineAssetPath.c_str(), RPI::AssetUtils::TraceLevel::Error);
+                Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
                     RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDescriptor, *viewportContext->GetWindowContext().get());

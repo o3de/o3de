@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -83,7 +79,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
@@ -95,7 +91,7 @@ namespace AZ
             m_currentFrameIndex = (m_currentFrameIndex + 1) % aznumeric_cast<uint32_t>(m_frameFences.size());
 
             {
-                AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzRender, "Wait and Reset Fence");
+                AZ_PROFILE_SCOPE(AzRender, "Wait and Reset Fence");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueueContext: Wait on Fences");
 
                 //Synchronize the CPU with the GPU by waiting on the fence until signalled by the GPU. CPU can only go upto

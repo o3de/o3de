@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/AnimGraphBindPoseNode.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
@@ -40,7 +36,7 @@ namespace EMotionFX
             m_blendTree->AddChildNode(paramNode);
             paramNode->InitAfterLoading(m_animGraph.get());
             paramNode->InvalidateUniqueData(m_animGraphInstance);
-            m_blend2Node->AddConnection(paramNode, paramNode->FindOutputPortByName("weightParam")->mPortID, BlendTreeBlend2Node::PORTID_INPUT_WEIGHT);
+            m_blend2Node->AddConnection(paramNode, static_cast<uint16>(paramNode->FindOutputPortByName("weightParam")->m_portId), BlendTreeBlend2Node::PORTID_INPUT_WEIGHT);
         }
 
         void ConstructGraph()
@@ -130,8 +126,8 @@ namespace EMotionFX
             blendNNode->SetName(blendNNodeName);
             blendTree->AddChildNode(blendNNode);
 
-            const int motionNodeCount = 5;
-            for (AZ::u32 i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 5;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 motionNode->SetName(AZStd::string::format("Motion %i (%s)", i, blendNNodeName).c_str());
@@ -176,7 +172,7 @@ namespace EMotionFX
             finalNode->AddConnection(blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
             // Creates 5x blend N nodes as input for the blend N node created here. Each of these five blend N nodes have 5x input motions.
-            for (AZ::u32 i = 0; i < 5; ++i)
+            for (uint16 i = 0; i < 5; ++i)
             {
                 BlendTreeBlendNNode* inputNode = CreateBlendNNode(testBlendTree, parameterNode, AZStd::string::format("InputBlendNode%i", i).c_str());
                 blendNNode->AddConnection(inputNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, i);

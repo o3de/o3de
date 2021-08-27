@@ -1,110 +1,86 @@
-[path.configuration]
-repo_dir = "${repo_dir}"
-working_dir = "${working_dir}"
-bin_dir = "${runtime_bin_dir}"
-tests_dir = "${tests_dir}"
-temp_dir = "${temp_dir}"
-target_mappings_dir = "${source_target_mapping_dir}"
-test_type_dir = "${test_type_dir}"
-dependencies_dir = "${target_dependency_dir}"
-
-[sourcetree.configuration.filters.autogen]
-# E.g. matches input /Foo/{Bar}.FooBar.xml with output /Baz/{Bar}.BazBar.cpp
-input_output_pairer = "(.*)\\..*"
-[sourcetree.configuration.filters.autogen.input]
-exclude_filter = [".jinja"]
-[sourcetree.configuration.filters.source]
-exclude_filter = [".cmake"]
-[sourcetree.configuration.testtype.enumerated]
-file = "All.tests"
-# The table to read from the test enumeration file that contains the test targets
-target_table = "google.test"
-[sourcetree.configuration.dependency]
-# E.g. matches WhiteBox.Editor.Static\n(Gem::WhiteBox.Editor.Static) or WhiteBox.Editor.Static
-target_dependency_file_matcher = "target\\.(.*)\\.(dependers)?"
-# E.g. matches target.WhiteBox.Editor.Static (for dependency) target.WhiteBox.Editor.Static.dependers (for dependers)
-target_vertex_matcher = "(?:(.*)\\n|(.*)"
-
-[spartia.configuration]
-test_impact_Data_file = "TestImpactData.spartia"
-test_run_coverage_file = "{test_dir}\\{test_target}.coverage.xml"
-test_run_results_file = "{test_dir}\\{test_target}.results.xml"
-test_enumeration_file = "{temp_dir}\\{test_target}.enum"
-test_shard_selection_file = "{temp_dir}\\{test_target}.filter.{shard_id}"
-exclude_filter = [
-{ target = "AssetBundler.Tests", tests = ["*"] },
-{ target = "AssetProcessor.Tests", tests = ["*"] },
-{ target = "CryRenderD3D11.Tests", tests = ["*"] },
-{ target = "CryRenderD3D12.Tests", tests = ["*"] },
-{ target = "LyzardApplicationDescriptors.Tests", tests = ["*"] },
-{ target = "EMotionFX.Editor.Tests", tests = ["UIFixture.*", "SimulatedObjectModelTestsFixture.*", "TestParametersFixture.*", "CanSeeJointsFixture.*", "LODSkinnedMeshFixtureTests/LODSkinnedMeshFixture.CheckLODLevels/*"] },
-{ target = "EMotionFX.Tests", tests = ["UIFixture.*", "SimulatedObjectModelTestsFixture.*", "TestParametersFixture.*", "CanSeeJointsFixture.*"] },
-{ target = "AzCore.Tests", tests = ["AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE.AllocatorLeak"] },
-]
-[spartia.configuration.shard]
-# Long tests that will be sharded
-include_filter = [
-{ target = "AzCore.Tests", policy = "fixture_contiguous" },
-{ target = "AzToolsFramework.Tests", policy = "fixture_contiguous" },
-{ target = "Framework.Tests", policy = "test_interleaved" },
-{ target = "LmbrCentral.Editor.Tests", policy = "test_interleaved" },
-{ target = "EditorLib.Tests", policy = "test_interleaved" },
-{ target = "PhysX.Tests", policy = "test_interleaved" },
-{ target = "Atom_RPI.Tests", policy = "test_interleaved" },
-{ target = "Atom_RHI.Tests", policy = "test_interleaved" },
-{ target = "AzManipulatorFramework.Tests", policy = "test_interleaved" },
-{ target = "WhiteBox.Editor.Tests", policy = "test_interleaved" },
-{ target = "AzManipulatorTestFramework.Tests", policy = "test_interleaved" },
-{ target = "AtomCore.Tests", policy = "test_interleaved" },
-{ target = "ImageProcessingAtom.Editor.Tests", policy = "test_interleaved" },
-{ target = "EditorPythonBindings.Tests", policy = "test_interleaved" },
-{ target = "Atom_Utils.Tests", policy = "test_interleaved" },
-{ target = "AudioEngineWwise.Editor.Tests", policy = "test_interleaved" },
-{ target = "Multiplayer.Tests", policy = "test_interleaved" },
-{ target = "LmbrCentral.Tests", policy = "test_interleaved" },
-{ target = "LyMetricsShared.Tests", policy = "fixture_contiguous" },
-{ target = "PhysX.Editor.Tests", policy = "test_interleaved" },
-{ target = "ComponentEntityEditorPlugin.Tests", policy = "test_interleaved" },
-{ target = "DeltaCataloger.Tests", policy = "test_interleaved" },
-{ target = "GradientSignal.Tests", policy = "test_interleaved" },
-{ target = "LyShine.Tests", policy = "test_interleaved" },
-{ target = "EMotionFX.Editor.Tests", policy = "test_interleaved" },
-{ target = "EMotionFX.Tests", policy = "test_interleaved" },
-{ target = "CrySystem.Tests", policy = "test_interleaved" },
-]
-[spartia.configuration.instrumentation]
-abs_bin = "${instrumentation_bin}"
-[spartia.configuration.instrumentation.errors]
-# AzCppCoverage error codes
-incorrect_args = -1618178468
-[spartia.configuration.instrumentation.test_coverage]
-args = "--export_type cobertura:\"{test_run_coverage_file}\""
-[spartia.configuration.instrumentation.test_selection]
-args = "--gtest_filter={test_selection}"
-[spartia.configuration.instrumentation.test_enumeration]
-args = "--gtest_list_tests"
-[spartia.configuration.instrumentation.test_results]
-args = "--gtest_output=xml:\"{test_run_results_file}\""
-[spartia.configuration.instrumentation.test_results.errors]
-test_success = 0
-test_failures = 1
-[spartia.configuration.instrumentation.binary_type.dynlib]
-abs_bin = "{bin_dir}\\AzTestRunner.exe"
-args = "\"{bin_dir}\\{test_target}.dll\" AzRunUnitTests"
-[spartia.configuration.instrumentation.binary_type.dynlib.test_enumeration]
-args = "--stdout_to_file \"{test_enumeration_file}\" {test_enumeration}"
-[spartia.configuration.instrumentation.binary_type.dynlib.test_shard_selection]
-args = "--args_from_file \"{test_shard_selection_file}\""
-[spartia.configuration.instrumentation.binary_type.dynlib.errors]
-# AzTestRunner error codes
-failed_to_find_target_bin = 102
-incorrect_args = 101
-known_errors = [ 103, 104]
-[spartia.configuration.instrumentation.binary_type.executable]
-abs_bin = "{bin_dir}\\{test_target}.exe"
-[spartia.configuration.instrumentation.binary_type.executable.test_enumeration]
-args = "--stdout_to_file \"{test_enumeration_file}\" {test_enumeration}"
-[spartia.configuration.instrumentation.binary_type.executable.test_shard_selection]
-args = "--args_from_file \"{test_shard_selection_file}\""
-[spartia.configuration.test_run.seed]
-instrumentation_args = "--modules \"{bin_dir}\" --excluded_modules \"{binary_type.dynlib.abs_bin}\" --sources \"{repo_dir}\" --no_breakpoints {test_coverage} -- "
+{
+  "meta": {
+    "platform": "${platform}",
+    "timestamp": "${timestamp}",
+    "build_config": "${build_config}"
+  },
+  "jenkins": {
+    "use_test_impact_analysis": ${use_tiaf}
+  },
+  "repo": {
+    "root": "${repo_dir}",
+    "tiaf_bin": "${tiaf_bin}"
+  },
+  "workspace": {
+    "temp": {
+      "root": "${temp_dir}",
+      "relative_paths": {
+        "artifact_dir": "RuntimeArtifact",
+        "enumeration_cache_dir": "EnumerationCache"
+      }
+    },
+    "active": {
+      "root": "${active_dir}",
+      "relative_paths": {
+        "test_impact_data_file": "TestImpactData.spartia"
+      }
+    },
+    "historic": {
+      "root": "${historic_dir}",
+      "relative_paths": {
+        "data": "historic_data.json"
+      }
+    }
+  },
+  "artifacts": {
+    "static": {
+      "build_target_descriptor": {
+        "dir": "${source_target_mapping_dir}",
+        "target_sources": {
+          "static": {
+            "include_filters": [
+              ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
+            ]
+          },
+          "autogen": {
+            "input_output_pairer": "(.*)\\..*",
+            "input": {
+              "include_filters": [
+                ".xml"
+              ]
+            }
+          } 
+        }
+      },
+      "dependency_graph_data": {
+        "dir": "${target_dependency_dir}",
+        "matchers": {
+          "target_dependency_file": "target\\.(.*)\\.(dependers)?",
+          "target_vertex": "(?:(.*)\\n|(.*)"
+        }
+      },
+      "test_target_meta": {
+        "file": "${test_target_type_file}"
+      },
+      "gem_target": {
+        "file": "${gem_target_file}"
+      }
+    }
+  },
+  "test_engine": {
+    "test_runner": {
+        "bin": "${test_runner_bin}"
+    },
+    "instrumentation": {
+      "bin": "${instrumentation_bin}"
+    }
+  },
+  "target": {
+    "dir": "${bin_dir}",
+    "exclude": [
+     
+    ],
+    "shard": [
+    ]
+  }
+}

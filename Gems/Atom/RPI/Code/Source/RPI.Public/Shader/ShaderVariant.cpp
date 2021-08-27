@@ -1,19 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
 namespace AZ
@@ -21,15 +19,27 @@ namespace AZ
     namespace RPI
     {
         bool ShaderVariant::Init(
-            const ShaderAsset& shaderAsset,
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset,
+            const Data::Asset<ShaderAsset>& shaderAsset,
+            const Data::Asset<ShaderVariantAsset>& shaderVariantAsset,
             SupervariantIndex supervariantIndex)
         {            
-            m_pipelineStateType = shaderAsset.GetPipelineStateType();
-            m_pipelineLayoutDescriptor = shaderAsset.GetPipelineLayoutDescriptor(supervariantIndex);
+            m_pipelineStateType = shaderAsset->GetPipelineStateType();
+            m_pipelineLayoutDescriptor = shaderAsset->GetPipelineLayoutDescriptor(supervariantIndex);
             m_shaderVariantAsset = shaderVariantAsset;
-            m_renderStates = &shaderAsset.GetRenderStates(supervariantIndex);
+            m_renderStates = &shaderAsset->GetRenderStates(supervariantIndex);
+            m_supervariantIndex = supervariantIndex;
+
+            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusConnect(shaderAsset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(shaderVariantAsset.GetId());
+
+            m_shaderAsset = shaderAsset;
             return true;
+        }
+
+        ShaderVariant::~ShaderVariant()
+        {
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void ShaderVariant::ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const
@@ -69,6 +79,26 @@ namespace AZ
             default:
                 AZ_Assert(false, "Unexpected PipelineStateType");
                 break;
+            }
+        }
+
+
+        void ShaderVariant::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderVariant::OnAssetReloaded %s", this, asset.GetHint().c_str());
+
+            if (asset.GetAs<ShaderVariantAsset>())
+            {
+                Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(m_shaderAsset, shaderVariantAsset, m_supervariantIndex);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
+            }
+
+            if (asset.GetAs<ShaderAsset>())
+            {
+                Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(shaderAsset, m_shaderVariantAsset, m_supervariantIndex);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
             }
         }
 

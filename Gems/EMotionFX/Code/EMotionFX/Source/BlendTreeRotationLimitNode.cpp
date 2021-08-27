@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -159,13 +155,13 @@ namespace EMotionFX
     void BlendTreeRotationLimitNode::ExecuteMathLogic(EMotionFX::AnimGraphInstance * animGraphInstance)
     {
         // If there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
 
         m_constraintTransformRotationAngles.SetTwistAxis(m_twistAxis);
-        m_constraintTransformRotationAngles.GetTransform().mRotation = GetInputQuaternion(animGraphInstance, INPUTPORT_ROTATION)->GetValue();
+        m_constraintTransformRotationAngles.GetTransform().m_rotation = GetInputQuaternion(animGraphInstance, INPUTPORT_ROTATION)->GetValue();
 
         m_constraintTransformRotationAngles.SetMaxRotationAngles(AZ::Vector2(GetRotationLimitY().m_max, GetRotationLimitX().m_max));
         m_constraintTransformRotationAngles.SetMinRotationAngles(AZ::Vector2(GetRotationLimitY().m_min, GetRotationLimitX().m_min));
@@ -173,7 +169,7 @@ namespace EMotionFX
         m_constraintTransformRotationAngles.SetMaxTwistAngle(GetRotationLimitZ().m_max);
         m_constraintTransformRotationAngles.Execute();
 
-        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_RESULT_QUATERNION)->SetValue(m_constraintTransformRotationAngles.GetTransform().mRotation);
+        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_RESULT_QUATERNION)->SetValue(m_constraintTransformRotationAngles.GetTransform().m_rotation);
     }
 
     void BlendTreeRotationLimitNode::Reflect(AZ::ReflectContext* context)

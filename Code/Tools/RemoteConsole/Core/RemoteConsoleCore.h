@@ -1,23 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Socket/AzSocket_fwd.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
 
-#include <CryThread.h>
 
 extern const int defaultRemoteConsolePort;
 
@@ -62,6 +60,7 @@ enum EConsoleEventType
 
     eCET_Strobo_FrameInfoStart,
     eCET_Strobo_FrameInfoAdd,
+    eCET_ConnectMessage,
 };
 
 struct SRemoteEventFactory;
@@ -150,6 +149,30 @@ private:
 
 typedef AZStd::list<IRemoteEvent*> TEventBuffer;
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// SRemoteThreadedObject
+//
+// Simple runnable-like threaded object
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct SRemoteThreadedObject
+{
+    virtual ~SRemoteThreadedObject() = default;
+
+    void Start(const char* name);
+
+    void WaitForThread();
+
+    virtual void Run() = 0;
+    virtual void Terminate() = 0;
+
+private:
+    void ThreadFunction();
+
+    AZStd::thread m_thread;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // SRemoteServer
 //
@@ -158,10 +181,10 @@ typedef AZStd::list<IRemoteEvent*> TEventBuffer;
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct SRemoteClient;
 struct SRemoteServer
-    : public CrySimpleThread<>
+    : public SRemoteThreadedObject
 {
     SRemoteServer()
-        : m_socket(AZ_SOCKET_INVALID) { m_stopEvent.Set(); }
+        : m_socket(AZ_SOCKET_INVALID) {}
 
     void StartServer();
     void StopServer();
@@ -169,10 +192,8 @@ struct SRemoteServer
     void AddEvent(IRemoteEvent* pEvent);
     void GetEvents(TEventBuffer& buffer);
 
-    // CrySimpleThread
     void Terminate() override;
     void Run() override;
-    // ~CrySimpleThread
 
 private:
     bool WriteBuffer(SRemoteClient* pClient,  char* buffer, int& size);
@@ -193,9 +214,9 @@ private:
     typedef AZStd::vector<SRemoteClientInfo> TClients;
     TClients m_clients;
     AZSOCKET m_socket;
-    CryMutex m_lock;
+    AZStd::recursive_mutex m_mutex;
     TEventBuffer m_eventBuffer;
-    CryEvent m_stopEvent;
+    AZStd::condition_variable_any m_stopCondition;
     volatile bool m_bAcceptClients;
     friend struct SRemoteClient;
 };
@@ -208,7 +229,7 @@ private:
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct SRemoteClient
-    : public CrySimpleThread<>
+    : public SRemoteThreadedObject
 {
     SRemoteClient(SRemoteServer* pServer)
         : m_pServer(pServer)
@@ -217,10 +238,8 @@ struct SRemoteClient
     void StartClient(AZSOCKET socket);
     void StopClient();
 
-    // CrySimpleThread
     void Terminate() override;
     void Run() override;
-    // ~CrySimpleThread
 
 private:
     bool RecvPackage(char* buffer, int& size);

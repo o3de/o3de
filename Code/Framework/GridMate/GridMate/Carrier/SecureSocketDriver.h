@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_SECURE_SOCKET_DRIVER_H
 #define GM_SECURE_SOCKET_DRIVER_H
 
@@ -27,7 +23,7 @@
 //#define AZ_DebugSecureSocket AZ_TracePrintf
 //#define AZ_DebugSecureSocketConnection(window, fmt, ...) \
 //{\
-//    GridMate::string line = GridMate::string::format(fmt, __VA_ARGS__);\
+//    AZStd::string line = AZStd::string::format(fmt, __VA_ARGS__);\
 //    this->m_dbgLog += line;\
 //}
 
@@ -230,7 +226,7 @@ namespace GridMate
             int m_dbgDgramsReceived;
             int m_dbgPort;
 #ifdef AZ_DebugUseSocketDebugLog
-            GridMate::string m_dbgLog;
+            AZStd::string m_dbgLog;
 #endif
         };
 
@@ -266,7 +262,7 @@ namespace GridMate
         AZ::u32 m_maxTempBufferSize;
         AZStd::queue<DatagramAddr> m_globalInQueue;
         AZStd::unordered_map<SocketDriverAddress, Connection*, SocketDriverAddress::Hasher> m_connections;
-        AZStd::unordered_map<string, int> m_ipToNumConnections;
+        AZStd::unordered_map<AZStd::string, int> m_ipToNumConnections;
         SecureSocketDesc m_desc;
         AZStd::chrono::system_clock::time_point m_lastTimerCheck;       ///Time last timers were checked
     };

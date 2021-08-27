@@ -1,15 +1,11 @@
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -148,15 +144,16 @@ namespace AssetBuilderSDK
     {
         Platform_NONE       = 0x00,
         Platform_PC         = 0x01,
-        Platform_ANDROID    = 0x02,
-        Platform_IOS        = 0x04,
-        Platform_MAC        = 0x08,
+        Platform_LINUX      = 0x02,
+        Platform_ANDROID    = 0x04,
+        Platform_IOS        = 0x08,
+        Platform_MAC        = 0x10,
         Platform_PROVO      = 0x20,
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
         //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
-        AllPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
+        AllPlatforms = Platform_PC | Platform_LINUX | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
     //! Map data structure to holder parameters that are passed into a job for ProcessJob requests.

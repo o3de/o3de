@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CoreNodes.h"
 
@@ -104,13 +100,9 @@ namespace ScriptCanvas
         void Core::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Core;
-            AddNodeToRegistry<Core, Error>(nodeRegistry);
-            AddNodeToRegistry<Core, ErrorHandler>(nodeRegistry);
             AddNodeToRegistry<Core, Method>(nodeRegistry);
             AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
-            AddNodeToRegistry<Core, BehaviorContextObjectNode>(nodeRegistry);
             AddNodeToRegistry<Core, Start>(nodeRegistry);            
-            AddNodeToRegistry<Core, ScriptCanvas::Nodes::Core::String>(nodeRegistry);
             AddNodeToRegistry<Core, EBusEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, AzEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, ExtractProperty>(nodeRegistry);
@@ -129,13 +121,9 @@ namespace ScriptCanvas
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
-                ScriptCanvas::Nodes::Core::Error::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ErrorHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::BehaviorContextObjectNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                
-                ScriptCanvas::Nodes::Core::String::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::EBusEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::AzEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ExtractProperty::CreateDescriptor(),

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -106,7 +102,6 @@ namespace AzNetworking
         bool Disconnect(DisconnectReason reason, TerminationEndpoint endpoint) override;
         void SetConnectionMtu(uint32_t connectionMtu) override;
         uint32_t GetConnectionMtu() const override;
-        void SetConnectionQuality(const ConnectionQuality& connectionQuality) override;
         // @}
 
         //! Sets the registered socket file descriptor for this TcpConnection in the associated ConnectionSet instance.

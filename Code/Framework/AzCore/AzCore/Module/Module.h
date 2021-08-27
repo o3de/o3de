@@ -1,19 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef AZCORE_MODULE_INCLUDE_H
 #define AZCORE_MODULE_INCLUDE_H 1
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Interface/Interface.h>
@@ -82,9 +77,6 @@ namespace AZ
 
     protected:
         AZStd::list<AZ::ComponentDescriptor*> m_descriptors;
-
-    private:
-        AZ::Debug::ProfileModuleInitializer m_moduleProfilerInit;
     };
 } // namespace AZ
 
@@ -102,19 +94,26 @@ namespace AZ
 ///
 /// \param MODULE_NAME      Name of module.
 /// \param MODULE_CLASSNAME Name of AZ::Module class (include namespace).
+///
+/// Execute any deferred console commands after linking any new deferred functors
+/// This allows deferred console commands defined within the module to now execute
+/// at this point now that the module has been loaded
 #if defined(AZ_MONOLITHIC_BUILD)
 #   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME) \
     extern "C" AZ::Module * CreateModuleClass_##MODULE_NAME() { return aznew MODULE_CLASSNAME; }
 #else
 #   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)                                \
     AZ_DECLARE_MODULE_INITIALIZATION                                                             \
-    extern "C" AZ_DLL_EXPORT AZ::Module * CreateModuleClass()                                    \
+    extern "C" AZ_DLL_EXPORT AZ::Module* CreateModuleClass()                                     \
     {                                                                                            \
-        AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();       \
-        AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);                  \
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)               \
+        {                                                                                        \
+             console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
+             console->ExecuteDeferredConsoleCommands();                                          \
+        }                                                                                        \
         return aznew MODULE_CLASSNAME;                                                           \
     }                                                                                            \
-    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module * module) { delete module; }
+    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }
 #endif
 
 #endif // AZCORE_MODULE_INCLUDE_H

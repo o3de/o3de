@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_LARGE_WORLDS_TEST_SUPPORTED)
@@ -19,7 +16,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -36,7 +32,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_sandbox"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -52,7 +47,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_filter"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -67,7 +61,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_modifier"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -82,7 +75,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_regression"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -97,7 +89,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_area"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -112,7 +103,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_misc"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -127,7 +117,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_surfacetagemitter"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -141,9 +130,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Main
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 1500
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/test_LandscapeCanvas_Main.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -156,9 +143,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 1500
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/test_LandscapeCanvas_Periodic.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -172,8 +157,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal
-        TIMEOUT 1500
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/test_GradientSignal_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor

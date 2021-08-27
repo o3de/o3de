@@ -10,6 +10,11 @@
                 {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "PassRequests": [
@@ -23,6 +28,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthInputOutput"
                             }
                         }
                     ],

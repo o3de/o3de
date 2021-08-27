@@ -1,15 +1,11 @@
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AnimGraphFixture.h"
 #include <EMotionFX/Source/AnimGraph.h>
@@ -26,7 +22,7 @@
 #include <EMotionFX/Source/Parameter/BoolParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/MotionData/NonUniformMotionData.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {
@@ -57,8 +53,8 @@ namespace EMotionFX
             m_blendTree->AddChildNode(finalNode);
             finalNode->AddConnection(m_blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
-            const int motionNodeCount = 2;
-            for (int i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 2;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 m_blendTree->AddChildNode(motionNode);
@@ -172,15 +168,15 @@ namespace EMotionFX
         const AZStd::vector<EMotionFX::AnimGraphNode::Port>& parameterNodeOutputPorts = parameterNode->GetOutputPorts();
         for (const EMotionFX::AnimGraphNode::Port& port : parameterNodeOutputPorts)
         {
-            uint32 paramIndex = parameterNode->GetParameterIndex(port.mPortID);
+            uint32 paramIndex = parameterNode->GetParameterIndex(port.m_portId);
             if (paramIndex == boolXParamIndexOutcome.GetValue())
             {
-                boolXOutputPortIndex = port.mPortID;
+                boolXOutputPortIndex = port.m_portId;
                 portIndicesFound++;
             }
             else if (paramIndex == boolYParamIndexOutcome.GetValue())
             {
-                boolYOutputPortIndex = port.mPortID;
+                boolYOutputPortIndex = port.m_portId;
                 portIndicesFound++;
             }
         }

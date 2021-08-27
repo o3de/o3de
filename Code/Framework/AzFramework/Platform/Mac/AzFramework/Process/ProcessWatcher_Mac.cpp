@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,17 +10,24 @@
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
+
 #include <AzFramework/StringFunc/StringFunc.h>
+
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <iostream>
 #include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <time.h>
+#include <unistd.h>
+
+extern char **environ;
 
 namespace AzFramework
 {
@@ -45,7 +48,7 @@ namespace AzFramework
             // result == 0 means child PID is still running, nothing to check
             if (result == -1)
             {
-                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d). assuming process either failed to launch or terminated unexpectedly\n", errno);
+                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d(%s)). assuming process either failed to launch or terminated unexpectedly\n", errno, strerror(errno));
                 exitCode = 0;
             }
             else if (result == childProcessId)
@@ -94,7 +97,7 @@ namespace AzFramework
         /*! Executes a command in the child process after the fork operation has been executed.
          * This function will never return. If the execvp command fails this will call _exit with
          * the errno value as the return value since continuing execution after a execvp command
-         * is invalid (it will be running the parent's code and in its address space and will 
+         * is invalid (it will be running the parent's code and in its address space and will
          * cause many issues).
          *
          * \param commandAndArgs - Array of strings that has the command to execute in index 0 with any args for the command following. Last element must be a null pointer.
@@ -121,16 +124,16 @@ namespace AzFramework
 
             switch (processLaunchInfo.m_processPriority)
             {
-            case PROCESSPRIORITY_BELOWNORMAL:
-                nice(1);
-                // also reduce disk impact:
-                setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
-                break;
-            case PROCESSPRIORITY_IDLE:
-                nice(20);
-                // also reduce disk impact:
-                setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
-                break;
+                case PROCESSPRIORITY_BELOWNORMAL:
+                    nice(1);
+                    // also reduce disk impact:
+                    setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
+                    break;
+                case PROCESSPRIORITY_IDLE:
+                    nice(20);
+                    // also reduce disk impact:
+                    setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
+                    break;
             }
 
             startupInfo.SetupHandlesForChildProcess();
@@ -280,42 +283,32 @@ namespace AzFramework
         }
         commandAndArgs[commandTokens.size()] = nullptr;
 
-        char** environmentVariables = nullptr;
-        int numEnvironmentVars = 0;
+        constexpr int MaxEnvVariables = 128;
+        using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
+        EnvironmentVariableContainer environmentVariables;
+        for (char **env = ::environ; *env; env++)
+        {
+            environmentVariables.push_back(*env);
+        }
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
-            // Adding one more as exec expects the array to have a nullptr as the last element
-            environmentVariables = new char*[numEnvironmentVars + 1];
-            for (int i = 0; i < numEnvironmentVars; i++)
+            for (AZStd::string& processLaunchEnv : *processLaunchInfo.m_environmentVariables)
             {
-                const AZStd::string& envVarString = processLaunchInfo.m_environmentVariables->at(i);
-                environmentVariables[i] = new char[envVarString.size() + 1];
-                environmentVariables[i][0] = '\0';
-                azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
+                environmentVariables.push_back(processLaunchEnv.data());
             }
-            environmentVariables[numEnvironmentVars] = NULL;
         }
+        environmentVariables.push_back(nullptr);
 
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
-            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo);
+            ExecuteCommandAsChild(commandAndArgs, environmentVariables.data(), processLaunchInfo, processData.m_startupInfo);
         }
 
         processData.m_childProcessId = child_pid;
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
-
-        if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }
 
         for (int i = 0; i < commandTokens.size(); i++)
         {

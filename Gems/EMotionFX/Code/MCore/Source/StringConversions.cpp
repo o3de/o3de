@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -34,7 +30,7 @@ namespace MCore
         // find the last letter index from the right
         size_t lastIndex = AZStd::string::npos;
         const size_t numCharacters = prefixString.size();
-        for (size_t i = numCharacters - 1; i >= 0; --i)
+        for (int i = static_cast<int>(numCharacters) - 1; i >= 0; --i)
         {
             if (!AZStd::is_digit(prefixString[i]))
             {
@@ -50,7 +46,7 @@ namespace MCore
         AzFramework::StringFunc::TrimWhiteSpace(nameWithoutLastDigits, false /* leading */, true /* trailing */);
 
         // generate the unique name
-        uint32 nameIndex = 0;
+        size_t nameIndex = 0;
         AZStd::string uniqueName = nameWithoutLastDigits + "0";
         while (validationFunction(uniqueName) == false)
         {

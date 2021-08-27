@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -106,8 +102,9 @@ namespace AZ
                 //! @param sourceGuid The guid assigned to the source file (not the manifest).
                 //! @param requester The application making the request to load the file. This can be used to optimize the type and amount of data
                 //! to load.
+                //! @param loadingComponentUuid The UUID assigned to the loading component.
                 static AZStd::shared_ptr<Containers::Scene> LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath,
-                    const Uuid&sourceGuid, RequestingApplication requester);
+                    const Uuid& sourceGuid, RequestingApplication requester, const Uuid& loadingComponentUuid);
 
                 //! Utility function to determine if a given file path points to a scene manifest file (.assetinfo).
                 //! @param filePath A relative or absolute path to the file to check.

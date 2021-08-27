@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PostProcessing/BloomCompositePass.h>
 #include <PostProcess/Bloom/BloomSettings.h>
@@ -137,8 +133,8 @@ namespace AZ
             inBinding.m_connectedBinding = &parentInBinding;
 
             RHI::ImageViewDescriptor inViewDesc;
-            inViewDesc.m_mipSliceMin = mipLevel;
-            inViewDesc.m_mipSliceMax = mipLevel;
+            inViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
+            inViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
 
             pass->AddAttachmentBinding(inBinding);
@@ -155,8 +151,8 @@ namespace AZ
             if (mipLevel != 0)
             {
                 RHI::ImageViewDescriptor outViewDesc;
-                outViewDesc.m_mipSliceMin = mipLevel - 1;
-                outViewDesc.m_mipSliceMax = mipLevel - 1;
+                outViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel - 1);
+                outViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel - 1);
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
             }
             

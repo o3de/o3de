@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -20,6 +16,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/NamedEntityId.h>
@@ -27,11 +24,13 @@
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
+#define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
+
 namespace AZ
 {
     class Entity;
     class ReflectContext;
-    
+
     template<typename t_Attribute, typename t_Container>
     bool ReadAttribute(t_Attribute& resultOut, AttributeId id, const t_Container& attributes)
     {
@@ -46,7 +45,7 @@ namespace ScriptCanvas
     // The actual value in each location initialized to GraphOwnerId is populated with the owning entity at editor-time, Asset Processor-time, or runtime, as soon as the owning entity is known.
     using GraphOwnerIdType = AZ::EntityId;
     static const GraphOwnerIdType GraphOwnerId = AZ::EntityId(0xacedc0de);
-    
+
     // A place holder identifier for unique runtime graph on Entity that is running more than one instance of the same graph.
     // This allows multiple instances of the same graph to be addressed individually on the same entity.
     // The actual value in each location initialized to UniqueId is populated at run-time.
@@ -57,7 +56,7 @@ namespace ScriptCanvas
 
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
-    
+
     class Node;
     class Edge;
 
@@ -97,7 +96,7 @@ namespace ScriptCanvas
 
     struct VersionData
     {
-        AZ_TYPE_INFO(VersionData, "{14C629F6-467B-46FE-8B63-48FDFCA42175}");
+        AZ_TYPE_INFO(VersionData, "{52036892-DA63-4199-AC6A-9BAFE6B74EFC}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -200,7 +199,7 @@ namespace ScriptCanvas
 
     using PropertyFields = AZStd::vector<AZStd::pair<AZStd::string_view, SlotId>>;
 
-    using NamedActiveEntityId = AZ::NamedEntityId;    
+    using NamedActiveEntityId = AZ::NamedEntityId;
     using NamedNodeId = NamedId<AZ::EntityId>;
     using NamedSlotId = NamedId<SlotId>;
 
@@ -209,7 +208,26 @@ namespace ScriptCanvas
     using EBusBusId = AZ::Crc32;
     using ScriptCanvasId = AZ::EntityId;
     enum class AzEventIdentifier : size_t {};
-    
+
+    struct RuntimeVariable
+    {
+        AZ_TYPE_INFO(RuntimeVariable, "{6E969359-5AF5-4ECA-BE89-A96AB30A624E}");
+        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZStd::any value;
+
+        RuntimeVariable() = default;
+        RuntimeVariable(const RuntimeVariable&) = default;
+        RuntimeVariable(RuntimeVariable&&) = default;
+        explicit RuntimeVariable(const AZStd::any& source);
+        explicit RuntimeVariable(AZStd::any&& source);
+
+        RuntimeVariable& operator=(const RuntimeVariable&) = default;
+        RuntimeVariable& operator=(RuntimeVariable&&) = default;
+    };
+
     struct NamespacePathHasher
     {
         AZ_FORCE_INLINE size_t operator()(const NamespacePath& path) const
@@ -250,6 +268,17 @@ namespace ScriptCanvas
     };
 
     using ScriptCanvasSettingsRequestBus = AZ::EBus<ScriptCanvasSettingsRequests>;
+
+    class ScopedAuxiliaryEntityHandler
+    {
+    public:
+        ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity);
+        ~ScopedAuxiliaryEntityHandler();
+
+    private:
+        bool m_wasAdded = false;
+        AZ::Entity* m_buildEntity = nullptr;
+    };
 }
 
 namespace AZStd

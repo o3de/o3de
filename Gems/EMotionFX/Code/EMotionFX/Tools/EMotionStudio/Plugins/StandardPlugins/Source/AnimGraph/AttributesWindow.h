@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -86,9 +82,9 @@ namespace EMStudio
         virtual ~PasteConditionsWindow();
         bool GetIsConditionSelected(size_t index) const;
     private:
-        QPushButton*                mOKButton;
-        QPushButton*                mCancelButton;
-        AZStd::vector<QCheckBox*>   mCheckboxes;
+        QPushButton*                m_okButton;
+        QPushButton*                m_cancelButton;
+        AZStd::vector<QCheckBox*>   m_checkboxes;
     };
 
 
@@ -106,9 +102,9 @@ namespace EMStudio
         // copy & paste
         struct CopyPasteConditionObject
         {
-            AZStd::string   mContents;
-            AZStd::string   mSummary;
-            AZ::TypeId      mConditionType;
+            AZStd::string   m_contents;
+            AZStd::string   m_summary;
+            AZ::TypeId      m_conditionType;
         };
 
         struct CopyPasteClipboard
@@ -160,8 +156,8 @@ namespace EMStudio
 
         void PasteTransition(bool pasteTransitionProperties, bool pasteConditions);
 
-        AnimGraphPlugin*                        mPlugin;
-        QScrollArea*                            mScrollArea;
+        AnimGraphPlugin*                        m_plugin;
+        QScrollArea*                            m_scrollArea;
         QPersistentModelIndex                   m_displayingModelIndex;
 
         QWidget*                                m_mainReflectedWidget;
@@ -191,7 +187,7 @@ namespace EMStudio
         QLayout*                                m_actionsLayout;
         AZStd::vector<CachedWidgets>            m_actionsCachedWidgets;
 
-        PasteConditionsWindow*                  mPasteConditionsWindow;
+        PasteConditionsWindow*                  m_pasteConditionsWindow;
 
         CopyPasteClipboard                      m_copyPasteClipboard;        
 

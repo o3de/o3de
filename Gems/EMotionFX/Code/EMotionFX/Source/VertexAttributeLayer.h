@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -76,7 +72,7 @@ namespace EMotionFX
          * Get the number of attributes inside this layer.
          * @result The number of attributes.
          */
-        MCORE_INLINE uint32 GetNumAttributes() const        { return mNumAttributes; }
+        MCORE_INLINE uint32 GetNumAttributes() const        { return m_numAttributes; }
 
         /**
          * Check if this class also stores original vertex data or not.
@@ -86,7 +82,7 @@ namespace EMotionFX
          * The initialization to the original data happens inside the ResetToOriginalData method.
          * @result Returns true when this class also stores the original (undeformed) data, next to the current (deformed) data.
          */
-        MCORE_INLINE bool GetKeepOriginals() const          { return mKeepOriginals; }
+        MCORE_INLINE bool GetKeepOriginals() const          { return m_keepOriginals; }
 
         /**
          * Reset the layer data to it's original data.
@@ -133,9 +129,9 @@ namespace EMotionFX
 
 
     protected:
-        uint32  mNumAttributes;     /**< The number of attributes inside this layer. */
-        uint32  mNameID;            /**< The name ID. */
-        bool    mKeepOriginals;     /**< Should we store a copy of the original data as well? */
+        uint32  m_numAttributes;     /**< The number of attributes inside this layer. */
+        uint32  m_nameId;            /**< The name ID. */
+        bool    m_keepOriginals;     /**< Should we store a copy of the original data as well? */
 
         /**
          * The constructor.

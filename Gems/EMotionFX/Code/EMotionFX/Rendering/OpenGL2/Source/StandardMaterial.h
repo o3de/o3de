@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __RENDERGL_STANDARD_MATERIAL_H
 #define __RENDERGL_STANDARD_MATERIAL_H
@@ -45,17 +41,17 @@ namespace RenderGL
     protected:
         void UpdateShader();
 
-        bool                            mAttributes[NUM_ATTRIBUTES];
-        bool                            mAttributesUpdated;
+        bool                            m_attributes[NUM_ATTRIBUTES];
+        bool                            m_attributesUpdated;
 
-        GLSLShader*                     mActiveShader;
-        MCore::Array<GLSLShader*>       mShaders;
-        AZ::Matrix4x4                   mBoneMatrices[200];
-        EMotionFX::Material*            mMaterial;
+        GLSLShader*                     m_activeShader;
+        AZStd::vector<GLSLShader*>       m_shaders;
+        AZ::Matrix4x4                   m_boneMatrices[200];
+        EMotionFX::Material*            m_material;
 
-        Texture*                        mDiffuseMap;
-        Texture*                        mSpecularMap;
-        Texture*                        mNormalMap;
+        Texture*                        m_diffuseMap;
+        Texture*                        m_specularMap;
+        Texture*                        m_normalMap;
     };
 } // namespace RenderGL
 

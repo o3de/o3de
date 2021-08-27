@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -78,7 +74,7 @@ namespace AzToolsFramework
     Picking::RegisteredBoundId ManipulatorManager::UpdateBound(
         const ManipulatorId manipulatorId, const Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (manipulatorId == InvalidManipulatorId)
         {
@@ -128,7 +124,7 @@ namespace AzToolsFramework
 
     void ManipulatorManager::RefreshMouseOverState(const ViewportInteraction::MousePick& mousePick)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!Interacting())
         {
@@ -146,7 +142,7 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (const auto& pair : m_manipulatorIdToPtrMap)
         {
@@ -159,7 +155,7 @@ namespace AzToolsFramework
     AZStd::shared_ptr<BaseManipulator> ManipulatorManager::PerformRaycast(
         const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         Picking::RaySelectInfo raySelection;
         raySelection.m_origin = rayOrigin;
@@ -259,7 +255,7 @@ namespace AzToolsFramework
     ManipulatorManager::ConsumeMouseMoveResult ManipulatorManager::ConsumeViewportMouseMove(
         const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_activeManipulator)
         {
@@ -283,7 +279,7 @@ namespace AzToolsFramework
 
     void ManipulatorManager::OnEntityInfoUpdatedVisibility(const AZ::EntityId entityId, const bool visible)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (auto& pair : m_manipulatorIdToPtrMap)
         {

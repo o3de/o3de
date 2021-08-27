@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef __MYSTICQT_DIALOGSTACK_H
 #define __MYSTICQT_DIALOGSTACK_H
@@ -18,7 +14,7 @@
 #include "MysticQtConfig.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QScrollArea>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #endif
 
 // forward declarations
@@ -32,6 +28,8 @@ QT_FORWARD_DECLARE_CLASS(QSplitter)
 
 namespace MysticQt
 {
+    class DialogStackSplitter;
+
     /**
      *
      *
@@ -40,7 +38,6 @@ namespace MysticQt
         : public QScrollArea
     {
         Q_OBJECT
-        MCORE_MEMORYOBJECTCATEGORY(DialogStack, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MYSTICQT);
 
     public:
         DialogStack(QWidget* parent = nullptr);
@@ -65,34 +62,31 @@ namespace MysticQt
     private:
         struct Dialog
         {
-            MCORE_MEMORYOBJECTCATEGORY(DialogStack::Dialog, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MYSTICQT);
-            Dialog();
-            ~Dialog();
-            QPushButton*    mButton;
-            QWidget*        mFrame;
-            QWidget*        mWidget;
-            QWidget*        mDialogWidget;
-            QSplitter*      mSplitter;
-            bool            mClosable;
-            bool            mMaximizeSize;
-            bool            mStretchWhenMaximize;
-            int             mMinimumHeightBeforeClose;
-            int             mMaximumHeightBeforeClose;
-            QLayout*        mLayout;
-            QLayout*        mDialogLayout;
+            QPushButton*    m_button = nullptr;
+            QWidget*        m_frame = nullptr;
+            QWidget*        m_widget = nullptr;
+            QWidget*        m_dialogWidget = nullptr;
+            DialogStackSplitter* m_splitter = nullptr;
+            bool            m_closable = true;
+            bool            m_maximizeSize = false;
+            bool            m_stretchWhenMaximize = false;
+            int             m_minimumHeightBeforeClose = 0;
+            int             m_maximumHeightBeforeClose = 0;
+            QLayout*        m_layout = nullptr;
+            QLayout*        m_dialogLayout = nullptr;
         };
 
     private:
-        uint32 FindDialog(QPushButton* pushButton);
+        size_t FindDialog(QPushButton* pushButton);
         void Open(QPushButton* button);
         void Close(QPushButton* button);
         void UpdateScrollBars();
 
     private:
-        QSplitter*              mRootSplitter;
-        MCore::Array<Dialog>    mDialogs;
-        int32                   mPrevMouseX;
-        int32                   mPrevMouseY;
+        DialogStackSplitter*    m_rootSplitter;
+        AZStd::vector<Dialog>   m_dialogs;
+        int32                   m_prevMouseX;
+        int32                   m_prevMouseY;
     };
 }   // namespace MysticQt
 

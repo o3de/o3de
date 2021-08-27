@@ -1,13 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ShaderAssetBuilder.h"
 
@@ -27,7 +24,7 @@
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -142,8 +139,7 @@ namespace AZ
 
                 AssetBuilderSDK::JobDescriptor jobDescriptor;
                 jobDescriptor.m_priority = 2;
-                // [GFX TODO][ATOM-2830] Set 'm_critical' back to 'false' once proper fix for Atom startup issues are in 
-                jobDescriptor.m_critical = true;
+                jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                 jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
@@ -230,11 +226,9 @@ namespace AZ
 
             if (!hasRasterProgram && !hasComputeProgram && !hasRayTracingProgram)
             {
-                AZStd::string entryPointNames = ShaderBuilderUtility::GetAcceptableDefaultEntryPointNames(azslData);
                 return AZ::Failure(
-                    AZStd::string::format( "Shader asset descriptor has a program variant that does not define any entry points. Either declare entry "
-                    "points in the .shader file, or use one of the available default names (not case-sensitive): [%s]",
-                    entryPointNames.c_str()));
+                    AZStd::string( "Shader asset descriptor has a program variant that does not define any entry points."
+                        " Please declare entry points in the .shader file."));
             }
 
             return AZ::Success(attributeMaps);
@@ -482,21 +476,18 @@ namespace AZ
                         }
                     }
 
-                    // Discover entry points & type of programs.
-                    MapOfStringToStageType shaderEntryPoints;
                     if (shaderSourceData.m_programSettings.m_entryPoints.empty())
                     {
-                        AZ_TracePrintf(
-                            ShaderAssetBuilderName,
-                            "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                        ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslData.m_functions, shaderEntryPoints);
+                        AZ_Error( ShaderAssetBuilderName, false, "ProgramSettings must specify entry points.");
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                        return;
                     }
-                    else
+
+                    // Discover entry points & type of programs.
+                    MapOfStringToStageType shaderEntryPoints;
+                    for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
                     {
-                        for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
-                        {
-                            shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
-                        }
+                        shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
                     }
 
                     bool hasRasterProgram = false;
