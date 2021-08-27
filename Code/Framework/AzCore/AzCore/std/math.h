@@ -33,6 +33,9 @@ namespace AZStd
 
     // from c++20 standard
     template<typename T>
+}
+namespace AZStd::Internal
+{
     constexpr T __lerp(T a, T b, T t) noexcept
     {
         if ((a <= 0 && b >= 0) || (a >= 0 && b <= 0))
@@ -54,16 +57,20 @@ namespace AZStd
             return x < b ? x : b;
         }
     }
+}
 
+namespace AZStd
+{
     constexpr float lerp(float a, float b, float t) noexcept
     {
-        return __lerp(a, b, t);
+        return Internal::lerp(a, b, t);
     }
 
     constexpr double lerp(double a, double b, double t) noexcept
     {
-        return __lerp(a, b, t);
+        return Internal::lerp(a, b, t);
     }
+
 
     constexpr long double lerp(long double a, long double b, long double t) noexcept
     {
