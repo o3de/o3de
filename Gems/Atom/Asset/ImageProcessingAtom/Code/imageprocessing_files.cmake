@@ -134,3 +134,7 @@ set(FILES
     Source/Thumbnail/ImageThumbnailSystemComponent.cpp
     Source/Thumbnail/ImageThumbnailSystemComponent.h
 )
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Source/Compressors/PVRTC.cpp
+)
