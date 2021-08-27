@@ -23,7 +23,7 @@ namespace UnitTest
     {
         using AZStd::lerp;
         using ::testing::Eq;
-        using T = gtest_TypeParam_;
+        using T = TypeParam;
 
         constexpr T inf = AZStd::numeric_limits<T>::infinity();
         constexpr T maxNumber = AZStd::numeric_limits<T>::max();
