@@ -1,7 +1,8 @@
-# Resource object code (Python 3)
-# Created by: object code
-# Created by: The Resource Compiler for Qt version 5.15.2
-# WARNING! All changes made in this file will be lost!
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
 
 from PySide2 import QtCore
 
