@@ -6,7 +6,9 @@
  *
  */
 
+#include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <xcb/xcb.h>
 
 namespace AzFramework
 {
@@ -15,16 +17,49 @@ namespace AzFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(NativeWindowImpl_Linux, AZ::SystemAllocator, 0);
-        NativeWindowImpl_Linux() = default;
-        ~NativeWindowImpl_Linux() override = default;
+        NativeWindowImpl_Linux();
+        ~NativeWindowImpl_Linux() override;
 
         // NativeWindow::Implementation overrides...
         void InitWindow(const AZStd::string& title,
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
+        void Activate() override;
+        void Deactivate() override;
         NativeWindowHandle GetWindowHandle() const override;
         uint32_t GetDisplayRefreshRate() const override;
+    private:
+        xcb_connection_t*     m_xcbConnection = NULL;
+        xcb_window_t          m_xcbWindow = 0;
     };
+
+    NativeWindowImpl_Linux::NativeWindowImpl_Linux() 
+        : NativeWindow::Implementation()
+    {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+            if (auto xcbConnectionManager = AzFramework::LinuxXcbConnectionManagerInterface::Get();
+                xcbConnectionManager != nullptr)
+            {
+                m_xcbConnection = xcbConnectionManager->GetXcbConnection();
+            }
+            AZ_Error("AtomVulkan_RHI", m_xcbConnection!=nullptr, "Unable to get XCB Connection");
+
+#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+            #error "Linux Window Manager Wayland not supported."
+            return RHI::ResultCode::Unimplemented;
+#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB
+            #error "Linux Window Manager XLIB not supported."
+            return RHI::ResultCode::Unimplemented;
+#else
+            #error "Linux Window Manager not recognized."
+            return RHI::ResultCode::Unimplemented;
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+    }
+
+    NativeWindowImpl_Linux::~NativeWindowImpl_Linux()
+    {
+    }
+
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
@@ -35,14 +70,74 @@ namespace AzFramework
                                             const WindowGeometry& geometry,
                                             [[maybe_unused]]const WindowStyleMasks& styleMasks)
     {
+        if (m_xcbConnection == NULL)
+        {
+            return;
+        }
+        // Get the parent window 
+        const xcb_setup_t* xcbSetup = xcb_get_setup(m_xcbConnection);
+        xcb_screen_t * xcbRootScreen = xcb_setup_roots_iterator(xcbSetup).data;
+        xcb_window_t xcbParentWindow = xcbRootScreen->root;
+
+        m_xcbWindow = xcb_generate_id(m_xcbConnection);
+
+        uint16_t borderWidth = 0;
+        const uint32_t mask = styleMasks.m_platformAgnosticStyleMask;
+        if ((mask & WindowStyleMasks::WINDOW_STYLE_BORDERED) ||
+            (mask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE))
+        {
+            borderWidth = 4;
+        }
+
+        xcb_create_window(m_xcbConnection,
+                          0, //depth
+                          m_xcbWindow, // Window ID
+                          xcbParentWindow,  // parent.
+                          aznumeric_cast<int16_t>(geometry.m_posX),     // X
+                          aznumeric_cast<int16_t>(geometry.m_posY),     // Y
+                          aznumeric_cast<int16_t>(geometry.m_width),    // Width
+                          aznumeric_cast<int16_t>(geometry.m_height),   // Height
+                          borderWidth,                                  // Border Width
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,        // Class
+                          xcbRootScreen->root_visual,
+                          0,
+                          NULL);
+
         m_width = geometry.m_width;
         m_height = geometry.m_height;
     }
 
+    void NativeWindowImpl_Linux::Activate()
+    {
+        if (m_xcbConnection==NULL)
+        {
+            return;
+        }
+        if (!m_activated) // nothing to do if window was already activated
+        {
+            m_activated = true;
+
+            xcb_map_window(m_xcbConnection, m_xcbWindow);
+        }
+    }
+
+    void NativeWindowImpl_Linux::Deactivate()
+    {
+        if (m_xcbConnection==NULL)
+        {
+            return;
+        }
+        if (m_activated) // nothing to do if window was already deactivated
+        {
+            m_activated = false;
+
+            xcb_unmap_window(m_xcbConnection, m_xcbWindow);
+        }
+    }    
+
     NativeWindowHandle NativeWindowImpl_Linux::GetWindowHandle() const
     {
-        AZ_Assert(false, "NativeWindow not implemented for Linux");
-        return nullptr;
+        return reinterpret_cast<NativeWindowHandle>(m_xcbWindow);
     }
 
     uint32_t NativeWindowImpl_Linux::GetDisplayRefreshRate() const
