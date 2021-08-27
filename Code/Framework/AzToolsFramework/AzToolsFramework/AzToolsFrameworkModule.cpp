@@ -51,6 +51,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <Entity/EditorEntityUtilityComponent.h>
 
 namespace AzToolsFramework
 {
@@ -67,6 +68,7 @@ namespace AzToolsFramework
             Components::EditorSelectionAccentSystemComponent::CreateDescriptor(),
             EditorEntityContextComponent::CreateDescriptor(),
             EditorEntityFixupComponent::CreateDescriptor(),
+            EditorEntityUtilityComponent::CreateDescriptor(),
             SliceMetadataEntityContextComponent::CreateDescriptor(),
             SliceRequestComponent::CreateDescriptor(),
             Prefab::PrefabSystemComponent::CreateDescriptor(),
