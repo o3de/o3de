@@ -8,14 +8,12 @@
 
 
 // Description : Classes to deal with commands
-
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H
-#define CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H
 #pragma once
 
 #include <QString>
-
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/conversions.h>
+#include <CryCommon/LegacyAllocator.h>
 #include "Util/EditorUtils.h"
 
 inline AZStd::string ToString(const QString& s)
@@ -23,8 +21,20 @@ inline AZStd::string ToString(const QString& s)
     return s.toUtf8().data();
 }
 
+
 class CCommand
 {
+    static inline bool FromString(int32 &val, const char* s) {
+        if(!s)
+        {
+            return false;
+        }
+        val = (int)strtol(s, nullptr, 10);
+        if(val==0 && errno!=0) {
+            return false;
+        }
+        return true;
+    }
 public:
     CCommand(
         const AZStd::string& module,
@@ -85,7 +95,7 @@ public:
             return m_args[i];
         }
     private:
-        DynArray<AZStd::string> m_args;
+        AZStd::vector<AZStd::string,AZ::StdLegacyAllocator> m_args;
         unsigned char m_stringFlags;    // This is needed to quote string parameters when logging a command.
     };
 
@@ -115,7 +125,7 @@ protected:
     static inline AZStd::string ToString_(const char* val)
     { return val; }
     template <typename T>
-    static bool FromString_(T& t, const char* s) { return ::FromString(t, s); }
+    static bool FromString_(T& t, const char* s) { return FromString(t, s); }
     static inline bool FromString_(const char*& val, const char* s)
     { return (val = s) != 0; }
 
@@ -789,4 +799,3 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
     }
     return "";
 }
-#endif // CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H

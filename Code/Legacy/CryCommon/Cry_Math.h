@@ -18,7 +18,7 @@
 #include "Cry_ValidNumber.h"
 #include <CryEndian.h>  // eLittleEndian
 #include <CryHalf.inl>
-#include <MetaUtils.h>
+//#include <MetaUtils.h>
 #include <float.h>
 ///////////////////////////////////////////////////////////////////////////////
 // Forward declarations                                                      //

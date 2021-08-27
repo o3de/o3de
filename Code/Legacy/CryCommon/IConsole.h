@@ -6,12 +6,10 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ICONSOLE_H
-#define CRYINCLUDE_CRYCOMMON_ICONSOLE_H
 #pragma once
 
 #include <CryCommon/platform.h>
+#include <AzCore/std/containers/vector.h>
 
 struct SFunctor;
 
@@ -455,24 +453,6 @@ struct IConsole
     virtual const char* FindKeyBind(const char* sCmd) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // Hashing of cvars (for anti-cheat). Separates setting of range, calculation,
-    // and retrieval of result so calculation can be done at a known safe point
-    // (e.g end of frame) when we know cvars won't be modified or in temporary state
-
-    // Get Number of cvars that can be hashed
-    virtual int GetNumCheatVars() = 0;
-    // Set the range of cvars
-    virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar) = 0;
-    // Calculate the hash from current cvars
-    virtual void CalcCheatVarHash() = 0;
-    // Since hash is calculated async, check if it's completed
-    virtual bool IsHashCalculated() = 0;
-    // Get the hash calculated
-    virtual uint64 GetCheatVarHash() = 0;
-    virtual void PrintCheatVars(bool bUseLastHashRange) = 0;
-    virtual char* GetCheatVarAt(uint32 nOffset) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // Console variable sink.
     // Adds a new console variables sink callback.
     virtual void AddConsoleVarSink(IConsoleVarSink* pSink) = 0;
@@ -645,19 +625,6 @@ struct ICVar
     virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // Returns the number of registered on change functos.
-    virtual uint64 GetNumberOfOnChangeFunctors() const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Returns the functors with the specified id.
-    virtual const SFunctor& GetOnChangeFunctor(uint64 nFunctorId) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Removes an on change functor
-    // returns true if removal was successful.
-    virtual bool RemoveOnChangeFunctor(uint64 nFunctorId) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.
     virtual ConsoleVarFunc GetOnChangeCallback() const = 0;
 
@@ -685,5 +652,3 @@ struct ICVar
     // Set the data probe string value of the variable
     virtual void SetDataProbeString(const char* pDataProbeString) = 0;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_ICONSOLE_H
