@@ -14,10 +14,7 @@
 
 #include "VectorMacros.h"
 #include <ImageBuilderBaseType.h>
-
-#ifndef WCHAR 
-#define WCHAR wchar_t
-#endif //WCHAR 
+#include <AzCore/PlatformIncl.h>
 
 #ifndef SAFE_DELETE 
 #define SAFE_DELETE(p)       { if(p) { delete (p);   (p)=NULL; } }
