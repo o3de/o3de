@@ -35,23 +35,23 @@ namespace UnitTest
 
             m_cameraSystem = AZStd::make_shared<AzFramework::CameraSystem>();
 
-            m_translateCameraInputChannels.m_leftChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_A");
-            m_translateCameraInputChannels.m_rightChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_D");
-            m_translateCameraInputChannels.m_forwardChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_W");
-            m_translateCameraInputChannels.m_backwardChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_S");
-            m_translateCameraInputChannels.m_upChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_E");
-            m_translateCameraInputChannels.m_downChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_Q");
-            m_translateCameraInputChannels.m_boostChannelId = AzFramework::InputChannelId("keyboard_key_modifier_shift_l");
+            m_translateCameraInputChannelIds.m_leftChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_A");
+            m_translateCameraInputChannelIds.m_rightChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_D");
+            m_translateCameraInputChannelIds.m_forwardChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_W");
+            m_translateCameraInputChannelIds.m_backwardChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_S");
+            m_translateCameraInputChannelIds.m_upChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_E");
+            m_translateCameraInputChannelIds.m_downChannelId = AzFramework::InputChannelId("keyboard_key_alphanumeric_Q");
+            m_translateCameraInputChannelIds.m_boostChannelId = AzFramework::InputChannelId("keyboard_key_modifier_shift_l");
 
             m_firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
             m_firstPersonTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, m_translateCameraInputChannels);
+                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, m_translateCameraInputChannelIds);
 
             auto orbitCamera =
                 AZStd::make_shared<AzFramework::OrbitCameraInput>(AzFramework::InputChannelId("keyboard_key_modifier_alt_l"));
             auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
             auto orbitTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation, m_translateCameraInputChannels);
+                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation, m_translateCameraInputChannelIds);
 
             orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
             orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
@@ -77,7 +77,7 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
         }
 
-        AzFramework::TranslateCameraInputChannels m_translateCameraInputChannels;
+        AzFramework::TranslateCameraInputChannelIds m_translateCameraInputChannelIds;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
     };
@@ -112,7 +112,7 @@ namespace UnitTest
             });
 
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannels.m_forwardChannelId, AzFramework::InputChannel::State::Began });
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began });
 
         EXPECT_TRUE(activationBegan);
     }
@@ -208,9 +208,9 @@ namespace UnitTest
             });
 
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannels.m_forwardChannelId, AzFramework::InputChannel::State::Began });
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannels.m_forwardChannelId, AzFramework::InputChannel::State::Ended });
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Ended });
 
         EXPECT_TRUE(activationBegan);
         EXPECT_TRUE(activationEnded);
@@ -226,7 +226,7 @@ namespace UnitTest
             });
 
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannels.m_forwardChannelId, AzFramework::InputChannel::State::Began });
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began });
 
         m_cameraSystem->m_cameras.Clear();
 
