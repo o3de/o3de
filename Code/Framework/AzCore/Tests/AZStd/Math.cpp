@@ -12,15 +12,23 @@
 namespace UnitTest
 {
     template<typename T>
-    static void performTests()
+    class StdMathTest
+        : public ::testing::Test
+    {
+    };
+    
+    using MathTestConfigs = ::testing::Types<float, double, long double>;
+    TYPED_TEST_CASE(StdMathTest, MathTestConfigs);
+
+    TYPED_TEST(StdMathTest, LerpOperations)
     {
         using ::testing::Eq;
         using AZStd::lerp;
 
-        constexpr T inf = std::numeric_limits<T>::infinity();
-        constexpr T maxNumber = std::numeric_limits<T>::max();
-        constexpr T eps = std::numeric_limits<T>::epsilon();
-        constexpr T a = T(42);
+        constexpr T inf = AZtd::numeric_limits<T>::infinity();
+        constexpr T maxNumber = AZtd::numeric_limits<T>::max();
+        constexpr T eps = AZtd::numeric_limits<T>::epsilon();
+        constexpr T a{ 42 };
 
         // Following the properties defined in the c++ standard p0811r3 proposal
 
@@ -38,11 +46,5 @@ namespace UnitTest
         //consistency: lerp(a,a,t)==a
         EXPECT_THAT(lerp(a, a, T(0.5)), Eq(a));
         EXPECT_THAT(lerp(eps, eps, T(0.5)), Eq(eps));
-    }
-    TEST(StdMath, LerpOperations)
-    {
-        performTests<float>();
-        performTests<double>();
-        performTests<long double>();
     }
 } // namespace UnitTest
