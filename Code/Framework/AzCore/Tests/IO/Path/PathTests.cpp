@@ -641,7 +641,8 @@ namespace UnitTest
             PathViewLexicallyProximateParams{ '\\', "C:\\a\\b", "C:\\a\\d\\c", "..\\..\\b", false },
             PathViewLexicallyProximateParams{ '\\', "C:a\\b", "C:\\a\\b", "C:a\\b", false },
             PathViewLexicallyProximateParams{ '\\', "C:\\a\\b", "C:a\\b", "C:\\a\\b", false },
-            PathViewLexicallyProximateParams{ '\\', "E:\\a\\b", "F:\\a\\b", "E:\\a\\b", false }
+            PathViewLexicallyProximateParams{ '\\', "E:\\a\\b", "F:\\a\\b", "E:\\a\\b", false },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/asset.txt", "D:\\o3de\\Project\\Cache", "asset.txt", true }
         )
     );
 

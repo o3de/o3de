@@ -287,11 +287,8 @@ namespace AZ
             const char* assetAliasPath = GetAlias("@assets@");
             if (path && assetAliasPath)
             {
-                AZStd::string assetsAlias(assetAliasPath);
-                AZStd::string pathString = path;
-                AZStd::to_lower(assetsAlias.begin(), assetsAlias.end());
-                AZStd::to_lower(pathString.begin(), pathString.end());
-                if (AZ::IO::PathView(pathString.c_str()).IsRelativeTo(assetsAlias.c_str()))
+                const AZ::IO::PathView pathView(path);
+                if (pathView.IsRelativeTo(assetAliasPath))
                 {
                     AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
                         "Attempted write location: %s", path);
@@ -712,12 +709,14 @@ namespace AZ
                 const char* assetAliasPath = GetAlias("@assets@");
                 const char* rootAliasPath = GetAlias("@root@");
                 const char* projectPlatformCacheAliasPath = GetAlias("@projectplatformcache@");
+
                 const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
                     (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
                     (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
                 if (lowercasePath)
                 {
-                    AZStd::to_lower(resolvedPath, resolvedPath + resolvedPathLen);
+                    // Lowercase the part of the path after the alias
+                    AZStd::to_lower(resolvedPath + aliasValue.size(), resolvedPath + resolvedPathLen);
                 }
                 // Replace any backslashes with posix slashes
                 AZStd::replace(resolvedPath, resolvedPath + resolvedPathLen, AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);

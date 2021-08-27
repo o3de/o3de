@@ -1164,7 +1164,8 @@ namespace AZ::IO
             };
             if (pathParser.InRootName() && pathParserBase.InRootName())
             {
-                if (*pathParser != *pathParserBase)
+                if (int res = Internal::ComparePathSegment(*pathParser, *pathParserBase, pathParser.m_preferred_separator);
+                    res != 0)
                 {
                     pathResult.m_path = AZStd::string_view{};
                     return;
@@ -1194,7 +1195,8 @@ namespace AZ::IO
         // Find the first mismatching element
         auto pathParser = parser::PathParser::CreateBegin(path.m_path, path.m_preferred_separator);
         auto pathParserBase = parser::PathParser::CreateBegin(base.m_path, base.m_preferred_separator);
-        while (pathParser && pathParserBase && pathParser.m_parser_state == pathParserBase.m_parser_state && *pathParser == *pathParserBase)
+        while (pathParser && pathParserBase && pathParser.m_parser_state == pathParserBase.m_parser_state &&
+            Internal::ComparePathSegment(*pathParser, *pathParserBase, pathParser.m_preferred_separator) == 0)
         {
             ++pathParser;
             ++pathParserBase;
@@ -1554,12 +1556,22 @@ namespace AZ::IO
         // Check if the other path has a root name and
         // that the root name doesn't match the current path root name
         // The scenario where this would occur was if the current path object had a path of
-        // "C:"foo and the other path object had a path "F:bar".
+        // "C:foo" and the other path object had a path "F:bar".
         // As the root names are different the other path replaces current path in it's entirety
         auto postRootNameIter = Internal::ConsumeRootName(m_path.begin(), m_path.end(), m_preferred_separator);
         auto otherPostRootNameIter = Internal::ConsumeRootName(first, last, m_preferred_separator);
         AZStd::string_view rootNameView{ m_path.begin(), postRootNameIter };
-        if (first != otherPostRootNameIter && !AZStd::equal(rootNameView.begin(), rootNameView.end(), first, otherPostRootNameIter))
+
+        // The RootName can only ever be two characters long which is "<drive letter>:"
+        auto ToLower = [](const char element) constexpr -> char
+        {
+            return element >= 'A' && element <= 'Z' ? (element - 'A') + 'a' : element;
+        };
+        auto compareRootName = [ToLower = AZStd::move(ToLower), path_separator = m_preferred_separator](const char lhs, const char rhs) constexpr
+        {
+            return path_separator == PosixPathSeparator ? lhs == rhs : ToLower(lhs) == ToLower(rhs);
+        };
+        if (first != otherPostRootNameIter && !AZStd::equal(rootNameView.begin(), rootNameView.end(), first, otherPostRootNameIter, compareRootName))
         {
             m_path.assign(first, last);
             return *this;
