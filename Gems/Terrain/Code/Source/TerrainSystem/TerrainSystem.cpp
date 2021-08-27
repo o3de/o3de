@@ -38,7 +38,7 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 
     if (priority1 != priority2)
     {
-        priority1 > priority2;
+        return priority1 > priority2;
     }
 
     return layer1id > layer2id;
