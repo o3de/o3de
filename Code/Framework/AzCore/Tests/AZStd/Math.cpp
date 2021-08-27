@@ -46,5 +46,11 @@ namespace UnitTest
         //consistency: lerp(a,a,t)==a
         EXPECT_THAT(lerp(a, a, T(0.5)), Eq(a));
         EXPECT_THAT(lerp(eps, eps, T(0.5)), Eq(eps));
+
+	//a few generic tests taken from MathUtilTests.cpp
+        EXPECT_EQ(T(2.5), lerp(T(2), T(4), T(0.25)));
+        EXPECT_EQ(T(6.0), lerp(T(2), T(4), T(2.0)));
+        EXPECT_EQ(T(3.5), lerp(T(2), T(4), T(0.75)));
+        EXPECT_EQ(T(0.0), lerp(T(2), T(4), T(-1.0)));
     }
 } // namespace UnitTest

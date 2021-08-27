@@ -31,7 +31,8 @@ namespace AZStd
     using std::tan;
     using std::trunc;
 
-}
+} // namespace AZStd
+
 // from c++20 standard
 namespace AZStd::Internal
 {
@@ -57,7 +58,7 @@ namespace AZStd::Internal
             return x < b ? x : b;
         }
     }
-}
+} // namespace AZStd::Internal
 
 namespace AZStd
 {
