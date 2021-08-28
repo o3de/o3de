@@ -388,11 +388,11 @@ namespace SliceBuilder
             bool sliceWritable = AZ::IO::SystemFile::IsWritable(fullPath.c_str());
             if (!m_settings.m_enableSliceConversion || !sliceWritable)
             {
-                static const char* const s_OutOfDate = "This slice file is out of date: ";
-                static const char* const s_ToEnable = "To enable automatic upgrades:";
-                static const char* const s_FixSettings1 = "In the settings file ";
-                static const char* const s_FixSettings2 = ", Set 'EnableSliceConversion' to true and restart the Asset Processor";
-                static const char* const s_FixReadOnly = "Make sure the slice file isn't marked read-only. If using perforce, check out the slice file.";
+                [[maybe_unused]] static const char* const s_OutOfDate = "This slice file is out of date: ";
+                [[maybe_unused]] static const char* const s_ToEnable = "To enable automatic upgrades:";
+                [[maybe_unused]] static const char* const s_FixSettings1 = "In the settings file ";
+                [[maybe_unused]] static const char* const s_FixSettings2 = ", Set 'EnableSliceConversion' to true and restart the Asset Processor";
+                [[maybe_unused]] static const char* const s_FixReadOnly = "Make sure the slice file isn't marked read-only. If using perforce, check out the slice file.";
 
                 // The Slice isn't marked as read only but Slice Upgrades aren't Enabled in the builder settings file
                 if(!m_settings.m_enableSliceConversion && sliceWritable)
@@ -512,10 +512,10 @@ namespace SliceBuilder
                 // To avoid potential data loss, only delete the old file if there is a data patching error detected
                 if (m_sliceDataPatchError)
                 {
-                    static const char* const s_overrideWarning = "At least one Data Patch Upgrade wasn't completed:";
-                    static const char* const s_checkLogs = "Please check the slice processing log for more information.";
-                    static const char* const s_originalSliceAvailable = "The original slice file has been preserved at: ";
-                    static const char* const s_recomendReload = "It's recomended that this slice be loaded into the editor and repaired before upgrading.";
+                    [[maybe_unused]] static const char* const s_overrideWarning = "At least one Data Patch Upgrade wasn't completed:";
+                    [[maybe_unused]] static const char* const s_checkLogs = "Please check the slice processing log for more information.";
+                    [[maybe_unused]] static const char* const s_originalSliceAvailable = "The original slice file has been preserved at: ";
+                    [[maybe_unused]] static const char* const s_recomendReload = "It's recomended that this slice be loaded into the editor and repaired before upgrading.";
 
                     AZ_Warning(s_sliceBuilder, false, "%s\n%s\n%s%s\n%s", s_overrideWarning, s_checkLogs, s_originalSliceAvailable, oldPath.c_str(), s_recomendReload);
                 }

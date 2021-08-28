@@ -549,7 +549,7 @@ namespace ScriptCanvas
         {
             using namespace ExecutionInterpretedAPICpp;
             // Lua: usernodeable, keyCount
-            const int argsCount = lua_gettop(lua);
+            [[maybe_unused]] const int argsCount = lua_gettop(lua);
             AZ_Assert(argsCount == 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "InitializeNodeableOutKeys: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
