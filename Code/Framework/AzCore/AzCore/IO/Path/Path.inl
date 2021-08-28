@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/AzCore_Traits_Platform.h>
 
 // extern instantiations of Path templates to prevent implicit instantiations
 namespace AZ::IO
@@ -92,6 +93,16 @@ namespace AZ::IO::Internal
     constexpr auto ConsumeRootName(InputIt entryBeginIter, InputIt entryEndIter, const char preferredSeparator)
         -> AZStd::enable_if_t<AZStd::Internal::is_forward_iterator_v<InputIt>, InputIt>
     {
+    #if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+        const AZStd::string_view path{ entryBeginIter, entryEndIter };
+        const auto positionOfPathSeparator = path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR);
+        if (positionOfPathSeparator == AZStd::string_view::npos)
+        {
+            return entryBeginIter;
+        }
+        const AZStd::string_view rootName{ path.substr(0, positionOfPathSeparator + 1) };
+        return AZStd::next(entryBeginIter, rootName.size());
+    #else
         if (preferredSeparator == '/')
         {
             // If the preferred separator is forward slash the parser is in posix path
@@ -162,6 +173,7 @@ namespace AZ::IO::Internal
 
             return entryBeginIter;
         }
+    #endif
     }
 
     //! Returns an iterator past the end of the consumed path separator(s)
@@ -185,6 +197,10 @@ namespace AZ::IO::Internal
     template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
     static constexpr bool IsAbsolute(InputIt first, EndIt last, const char preferredSeparator)
     {
+    #if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+        const AZStd::string_view path{ first, last };
+        return path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR) != AZStd::string_view::npos;
+    #else
         size_t pathSize = AZStd::distance(first, last);
 
         // If the preferred separator is a forward slash
@@ -204,6 +220,7 @@ namespace AZ::IO::Internal
 
             return first != ConsumeRootName(first, last, preferredSeparator);
         }
+    #endif
     }
     static constexpr bool IsAbsolute(AZStd::string_view pathView, const char preferredSeparator)
     {
