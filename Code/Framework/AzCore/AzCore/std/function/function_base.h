@@ -591,8 +591,8 @@ namespace AZStd
 
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
-            type_result.type.const_qualified = is_const<Functor>::value;
-            type_result.type.volatile_qualified = is_volatile<Functor>::value;
+            type_result.type.const_qualified = std::is_const<Functor>::value;
+            type_result.type.volatile_qualified = std::is_volatile<Functor>::value;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             return static_cast<Functor*>(type_result.obj_ptr);
         }
@@ -608,7 +608,7 @@ namespace AZStd
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
             type_result.type.const_qualified = true;
-            type_result.type.volatile_qualified = is_volatile<Functor>::value;
+            type_result.type.volatile_qualified = std::is_volatile<Functor>::value;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             // GCC 2.95.3 gets the CV qualifiers wrong here, so we
             // can't do the static_cast that we should do.
