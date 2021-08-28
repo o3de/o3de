@@ -90,7 +90,7 @@ namespace AZ
             // Register draw list tags declared from content.
             for (const Name& drawListName : descriptor.m_drawListTags)
             {
-                RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
+                [[maybe_unused]] RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
 
                 AZ_Warning("RHISystem", drawListTag.IsValid(), "Failed to register draw list tag '%s'. Registry at capacity.", drawListName.GetCStr());
             }

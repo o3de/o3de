@@ -14,8 +14,8 @@
 
 namespace AZ::IO
 {
-    static constexpr char SchedulerName[] = "Scheduler";
-    static constexpr char ImmediateReadsName[] = "Immediate reads";
+    [[maybe_unused]] static constexpr char SchedulerName[] = "Scheduler";
+    [[maybe_unused]] static constexpr char ImmediateReadsName[] = "Immediate reads";
 
     Scheduler::Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment, u64 sizeAlignment, u64 granularity)
     {

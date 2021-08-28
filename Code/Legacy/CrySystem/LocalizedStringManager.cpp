@@ -32,8 +32,8 @@
 #define MAX_CELL_COUNT 32
 
 // CVAR names
-const char c_sys_localization_debug[] = "sys_localization_debug";
-const char c_sys_localization_encode[] = "sys_localization_encode";
+[[maybe_unused]] const char c_sys_localization_debug[] = "sys_localization_debug";
+[[maybe_unused]] const char c_sys_localization_encode[] = "sys_localization_encode";
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 
@@ -1754,7 +1754,7 @@ void CLocalizedStringsManager::ReloadData()
 void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32)
 {
     pLanguage->m_vLocalizedStrings.push_back(pEntry);
-    int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
+    [[maybe_unused]] int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
     pLanguage->m_keysMap[keyCRC32] = pEntry;
 
     if (m_cvarLocalizationDebug >= 2)
