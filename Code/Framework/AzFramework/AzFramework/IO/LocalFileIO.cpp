@@ -680,8 +680,9 @@ namespace AZ
                     return pathView.starts_with(alias.first);
                 });
 
-            auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? AZStd::pair<AZStd::string_view, AZStd::string_view>(*found)
-                                                                     : AZStd::pair<AZStd::string_view, AZStd::string_view>{};
+            using string_view_pair = AZStd::pair<AZStd::string_view, AZStd::string_view>;
+            auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? string_view_pair(*found)
+                                                                     : string_view_pair{};
 
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
             AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");

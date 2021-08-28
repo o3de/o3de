@@ -32,7 +32,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
     BRIEF_DOCS "Defines the dependencies the runtime dependencies of a target has"
     FULL_DOCS [[
-        Property which is queried through generation expressions at the moment
+        Property which is queried through generator expressions at the moment
         the target is declared so a custom command that will do the copies can
         be generated later. Custom commands need to be declared in the same folder
         the target is declared, however, runtime dependencies need all targets
