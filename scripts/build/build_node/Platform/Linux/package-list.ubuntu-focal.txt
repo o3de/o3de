@@ -1,8 +1,8 @@
-# Package list for Ubuntu 20.04
+ Package list for Ubuntu 20.04
 
 # Build Tools Packages
-cmake/3.20.1-0kitware1ubuntu20.04.1     # For cmake
-clang-6.0                               # For Ninja Build System
+cmake/3.21.2-0kitware1ubuntu20.04.1     # For cmake
+clang-12                                # For Ninja Build System
 ninja-build                             # For the compiler and its dependencies
 
 # Build Libraries
@@ -12,7 +12,6 @@ libxcb-xinput0                          # For Qt plugins at runtime
 libfontconfig1-dev                      # For Qt plugins at runtime
 libcurl4-openssl-dev                    # For HttpRequestor
 libsdl2-dev                             # for WWise/Audio
+libxkbcommon-dev
 zlib1g-dev
 mesa-common-dev
-
-
