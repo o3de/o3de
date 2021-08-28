@@ -45,8 +45,8 @@ namespace AZ
             }
         }
 
-        static constexpr char DecompBoundName[] = "Decompression bound";
-        static constexpr char ReadBoundName[] = "Read bound";
+        [[maybe_unused]] static constexpr char DecompBoundName[] = "Decompression bound";
+        [[maybe_unused]] static constexpr char ReadBoundName[] = "Read bound";
 
         bool FullFileDecompressor::DecompressionInformation::IsProcessing() const
         {

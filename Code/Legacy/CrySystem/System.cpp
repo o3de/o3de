@@ -1465,7 +1465,7 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
         if (gEnv && gEnv->pTimer)
         {
             const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-            const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
+            [[maybe_unused]] const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
             CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
                 m_systemGlobalState, systemGlobalState,
                 CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),

@@ -17,9 +17,9 @@ namespace AZ
     namespace IO
     {
         static constexpr char ContextName[] = "Context";
-        static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
-        static constexpr char LatePredictionName[] = "Early completions";
-        static constexpr char MissedDeadlinesName[] = "Missed deadlines";
+        [[maybe_unused]] static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
+        [[maybe_unused]] static constexpr char LatePredictionName[] = "Early completions";
+        [[maybe_unused]] static constexpr char MissedDeadlinesName[] = "Missed deadlines";
 
         StreamerContext::~StreamerContext()
         {

@@ -257,8 +257,8 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         {
             float a = 1.0f;
             memset(&a, 0, sizeof(a));
-            float* b = &a;
-            float c = 3;
+            [[maybe_unused]] float* b = &a;
+            [[maybe_unused]] float c = 3;
             CryLog("%f", (c / *b));
         }
         break;
