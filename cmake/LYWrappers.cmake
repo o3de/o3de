@@ -29,6 +29,20 @@ define_property(TARGET PROPERTY GEM_MODULE
     ]]
 )
 
+define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES
+    BRIEF_DOCS "Defines the runtime dependencies of a target"
+    FULL_DOCS [[
+        Property which is queried through generation expressions at the moment
+        the target is declared so a custom command that will do the copies can
+        be generated later. Custom commands need to be declared in the same folder
+        the target is declared, however, runtime dependencies need all targets
+        to be declared, so it is done towards the end of CMake parsing. When 
+        runtime dependencies are processed, this target property is filled so the
+        right dependencies are set for the custom command. 
+        This property contains all the files that are going to be copied to the output
+        when the target gets built.
+    ]]
+)
 
 #! ly_add_target: adds a target and provides parameters for the common configurations.
 #
@@ -310,15 +324,34 @@ function(ly_add_target)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
+    # Custom commands need to be declared in the same folder as the target that they use. 
+    # Not all the targets will require runtime dependencies, but we will generate at least an
+    # empty file for them.
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
     if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
-        add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
+        # the stamp file will be the one that triggers the execution of the custom rule. At the end
+        # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
+        # Adding a config as part of the name since the stamp file is added to the VS project.
+        # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
+        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
+        add_custom_command(
+            OUTPUT ${STAMP_OUTPUT_FILE}
+            DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES>>"
             COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
-            DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
-            MESSAGE "Copying runtime dependencies..."
+            COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
             VERBATIM
         )
+
+        # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
+        # stamp file on each configuration so it gets properly excluded by the generator
+        unset(stamp_files_per_config)
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
+            set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
+            list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
+        endforeach()
+        target_sources(${ly_add_target_NAME} PRIVATE ${stamp_files_per_config})
 
     endif()
 
