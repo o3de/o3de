@@ -329,23 +329,23 @@ namespace PhysX
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            jointHandle = sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
+            jointHandle = sceneInterface->AddJoint(GenericPhysicsFixture::m_testSceneHandle, &jointConfiguration, this->m_parentBodyHandle, this->m_childBodyHandle);
         }
 
         EXPECT_NE(jointHandle, AzPhysics::InvalidJointHandle);
 
         // run physics to trigger the the move of parent body
-        TestUtils::UpdateScene(m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
+        TestUtils::UpdateScene(GenericPhysicsFixture::m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
 
         AZ::Vector3 childCurrentPos;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            auto* childBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, m_childBodyHandle);
+            auto* childBody = sceneInterface->GetSimulatedBodyFromHandle(GenericPhysicsFixture::m_testSceneHandle, this->m_childBodyHandle);
             childCurrentPos = childBody->GetPosition();
         }
 
-        EXPECT_GT(childCurrentPos.GetX(), m_childInitialPos.GetX());
+        EXPECT_GT(childCurrentPos.GetX(), this->m_childInitialPos.GetX());
     }
 #endif // ENABLE_JOINTS_TYPED_TEST_CASE
 }
