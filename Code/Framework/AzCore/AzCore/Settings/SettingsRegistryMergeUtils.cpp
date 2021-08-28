@@ -550,7 +550,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
 
-            // Set the user directory with the provided path or using project/user as default
+            // Set the log directory with the provided path or using project/user/log as default
             auto projectLogPathKey = FixedValueString::format("%s/project_log_path", BootstrapSettingsRootKey);
             AZ::IO::FixedMaxPath projectLogPath;
             if (!registry.Get(projectLogPath.Native(), projectLogPathKey))
@@ -640,7 +640,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
 
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // Setup the cache and user paths when to platform specific locations when running on non-host platforms
+        // Setup the cache, user, and log paths to platform specific locations when running on non-host platforms
         path = engineRoot;
         if (AZStd::optional<AZ::IO::FixedMaxPathString> nonHostCacheRoot = Utils::GetDefaultAppRootPath();
             nonHostCacheRoot)
@@ -656,13 +656,16 @@ namespace AZ::SettingsRegistryMergeUtils
         if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
             devWriteStorage)
         {
-            registry.Set(FilePathKey_DevWriteStorage, *devWriteStorage);
-            registry.Set(FilePathKey_ProjectUserPath, *devWriteStorage);
+            const AZ::IO::FixedMaxPath devWriteStoragePath(*devWriteStorage);
+            registry.Set(FilePathKey_DevWriteStorage, devWriteStoragePath.LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectUserPath, (devWriteStoragePath / "user").LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectLogPath, (devWriteStoragePath / "user/log").LexicallyNormal().Native());
         }
         else
         {
             registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
             registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectLogPath, (path / "user/log").LexicallyNormal().Native());
         }
 #endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
