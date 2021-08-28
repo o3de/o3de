@@ -682,10 +682,6 @@ namespace AZ
 
             auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? AZStd::pair<AZStd::string_view, AZStd::string_view>(*found)
                                                                      : AZStd::pair<AZStd::string_view, AZStd::string_view>{};
-            if (pathView.size() < aliasKey.size())
-            {
-
-            }
 
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
             AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");

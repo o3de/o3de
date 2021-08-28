@@ -29,8 +29,8 @@ define_property(TARGET PROPERTY GEM_MODULE
     ]]
 )
 
-define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES
-    BRIEF_DOCS "Defines the runtime dependencies of a target"
+define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
+    BRIEF_DOCS "Defines the dependencies the runtime dependencies of a target has"
     FULL_DOCS [[
         Property which is queried through generation expressions at the moment
         the target is declared so a custom command that will do the copies can
@@ -337,7 +337,7 @@ function(ly_add_target)
         set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
         add_custom_command(
             OUTPUT ${STAMP_OUTPUT_FILE}
-            DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES>>"
+            DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
             COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
             COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
             VERBATIM

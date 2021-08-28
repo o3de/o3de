@@ -486,8 +486,8 @@ endfunction()"
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
-            unset(runtime_source)
-            ly_get_runtime_dependency_command(runtime_command runtime_source ${runtime_dependency})
+            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
+            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()
