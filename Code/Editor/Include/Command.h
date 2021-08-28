@@ -87,7 +87,7 @@ public:
                 return false;
             }
         }
-        int GetArgCount() const
+        size_t GetArgCount() const
         { return m_args.size(); }
         const AZStd::string& GetArg(int i) const
         {
