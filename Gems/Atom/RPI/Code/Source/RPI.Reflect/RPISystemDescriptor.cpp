@@ -25,7 +25,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<RPISystemDescriptor>()
-                    ->Version(6) // ATOM-15472
+                    ->Version(7) // ATOM-16237
                     ->Field("CommonSrgsShaderAssetPath", &RPISystemDescriptor::m_commonSrgsShaderAssetPath)
                     ->Field("ImageSystemDescriptor", &RPISystemDescriptor::m_imageSystemDescriptor)
                     ->Field("GpuQuerySystemDescriptor", &RPISystemDescriptor::m_gpuQuerySystemDescriptor)
