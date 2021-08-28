@@ -299,7 +299,7 @@ class TestMaterialEditorBasicTests(object):
             generic_launcher,
             "hydra_AtomMaterialEditor_BasicTests.py",
             run_python="--runpython",
-            timeout=80,
+            timeout=EDITOR_TIMEOUT,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,

@@ -67,6 +67,7 @@ def run():
     material_editor.save_document_as_child(document_id, target_path)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path), 2.0)
     print(f"New asset created: {os.path.exists(target_path)}")
+    time.sleep(2.0)
 
     # Verify if the newly created document is open
     new_document_id = material_editor.open_material(target_path)
@@ -101,6 +102,7 @@ def run():
     expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
     material_editor.set_property(document_id, property_name, expected_color)
     material_editor.save_document(document_id)
+    time.sleep(2.0)
 
     # 7) Test Case: Saving as a New Material
     # Assign new color to the material file and save the document as copy
