@@ -353,6 +353,8 @@ endfunction()
 #! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt
 function(ly_setup_o3de_install)
 
+    install(CODE "cmake_minimum_required(VERSION 3.20)")
+
     ly_setup_subdirectories()
     ly_setup_cmake_install()
     ly_setup_runtime_dependencies()

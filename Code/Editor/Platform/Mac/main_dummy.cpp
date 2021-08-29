@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     processLaunchInfo.m_environmentVariables = &envVars;
     processLaunchInfo.m_showWindow = true;
 
-    AZStd::unique_ptr<AzFramework::ProcessWatcher> processWatcher(AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
+    AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
 
     application.Destroy();
 

@@ -6,9 +6,6 @@
 #
 #
 
-cmake_policy(PUSH)
-cmake_policy(SET CMP0012 NEW)
-
 cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/bin/Mac/@config@/@runtime_output_filename@")
 
 if(@runtime_output_filename@ MATCHES ".app")
@@ -17,12 +14,6 @@ if(@runtime_output_filename@ MATCHES ".app")
         codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
     endif()
 
-    codesign_file(${file_path} @entitlement_file@)
-
-else()
-
-    codesign_file(${file_path} @entitlement_file@)
-
 endif()
 
-cmake_policy(POP)
+codesign_file("${file_path}" "@entitlement_file@")

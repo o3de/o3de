@@ -6,9 +6,6 @@
 #
 #
 
-cmake_policy(PUSH)
-cmake_policy(SET CMP0012 NEW)
-
 function(fixup_qt_framework lib_name framework_path)
 
     file(REMOVE_RECURSE
@@ -107,13 +104,14 @@ function(codesign_python_framework_binaries framework_path)
         cmake_path(SET path_var "${file}")
         cmake_path(GET path_var EXTENSION LAST_ONLY extension)
         set(should_codesign FALSE)
+        set(extension_skip_list ".dylib" ".so" ".7m")
         if (NOT extension)
             set(should_codesign TRUE)
-        elseif(${extension} STREQUAL ".dylib" OR ${extension} STREQUAL ".so" OR ${extension} STREQUAL ".7m")
+        elseif(extension IN_LIST extension_skip_list)
             set(should_codesign TRUE)
         endif()
         if(${should_codesign})
-            codesign_file(${file} "none")
+            codesign_file("${file}" "none")
         endif()
     endforeach()
 
@@ -135,15 +133,14 @@ function(ly_copy source_file target_directory)
 
         # Our Qt and Python frameworks aren't in the correct bundle format to be codesigned.
         if("${target_filename}" MATCHES "(Qt[^\\.]+)\\.[Ff]ramework")
-            fixup_qt_framework(${CMAKE_MATCH_1} ${target_directory}/${target_filename})
+            fixup_qt_framework(${CMAKE_MATCH_1} "${target_directory}/${target_filename}")
         elseif("${target_filename}" MATCHES "Python.framework")
-            fixup_python_framework(${target_directory}/${target_filename})
-            codesign_python_framework_binaries(${target_directory}/${target_filename})
+            fixup_python_framework("${target_directory}/${target_filename}")
+            codesign_python_framework_binaries("${target_directory}/${target_filename}")
         endif()
 
-        codesign_file(${target_directory}/${target_filename} "none")
+        codesign_file("${target_directory}/${target_filename}" "none")
     endif()
 
 endfunction()
 
-cmake_policy(POP)

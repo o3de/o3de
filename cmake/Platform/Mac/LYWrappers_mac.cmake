@@ -15,7 +15,8 @@ function(ly_apply_platform_properties target)
         INSTALL_RPATH "@executable_path/;@executable_path/../Frameworks"
     )
 
-    if((NOT INSTALLED_ENGINE) AND (LY_ENABLE_HARDENED_RUNTIME))
+    get_property(is_imported TARGET ${target} PROPERTY IMPORTED)
+    if((NOT is_imported) AND (LY_ENABLE_HARDENED_RUNTIME))
         get_property(target_type TARGET ${target} PROPERTY TYPE)
         if ((${target_type} STREQUAL "MODULE_LIBRARY") OR (${target_type} STREQUAL "SHARED_LIBRARY") OR (${target_type} STREQUAL "EXECUTABLE"))
             set_target_properties(${target} PROPERTIES
