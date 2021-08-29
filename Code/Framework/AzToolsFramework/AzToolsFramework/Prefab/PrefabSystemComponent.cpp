@@ -462,7 +462,7 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != 0;
+                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
                 AZ_Assert(result,
                     "Prefab - PrefabSystemComponent::RemoveTemplate - "
                     "Failed to remove Template with Id '%llu' on file path '%s' "

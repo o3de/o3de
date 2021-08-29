@@ -78,7 +78,7 @@ namespace AzFramework
             FD_ZERO(&set);
             FD_SET(handle->GetHandle(), &set);
 
-            int numReady = select(handle->GetHandle() + 1, &set, NULL, NULL, NULL);
+            int numReady = select(handle->GetHandle() + 1, &set, nullptr, nullptr, nullptr);
 
             // if numReady == -1 and errno == EINTR then the child process died unexpectedly and
             // the handle was closed. Not something to assert about in regards to trying to read

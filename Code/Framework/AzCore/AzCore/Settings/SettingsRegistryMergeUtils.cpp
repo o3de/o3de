@@ -1001,7 +1001,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
             AZ::SettingsRegistryInterface::VisitResponse Traverse(
                 AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::VisitAction action,
-                AZ::SettingsRegistryInterface::Type type)
+                AZ::SettingsRegistryInterface::Type type) override
             {
                 // Pass the pointer path to the inclusion filter if available
                 if (m_dumperSettings.m_includeFilter && !m_dumperSettings.m_includeFilter(path))
@@ -1055,7 +1055,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     AZ::SettingsRegistryInterface::VisitResponse::Done;
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
             {
                 m_result = m_result && WriteName(valueName) && m_writer.Bool(value);
             }
@@ -1070,12 +1070,12 @@ namespace AZ::SettingsRegistryMergeUtils
                 m_result = m_result && WriteName(valueName) && m_writer.Uint64(value);
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value)
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value) override
             {
                 m_result = m_result && WriteName(valueName) && m_writer.Double(value);
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
             {
                 m_result = m_result && WriteName(valueName) && m_writer.String(value.data(), aznumeric_caster(value.size()));
             }
