@@ -744,7 +744,7 @@ void CLog::LogToConsolePlus(const char* szFormat, ...)
 
 
 //////////////////////////////////////////////////////////////////////
-static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
+[[maybe_unused]] static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
 {
     char* s = (char*)rStr.c_str();
     char* d = s;

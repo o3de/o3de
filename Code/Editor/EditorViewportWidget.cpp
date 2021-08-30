@@ -1528,7 +1528,7 @@ AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
             &AZ::RPI::ViewProviderBus::Events::GetView
         );
 
-        const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
+        [[maybe_unused]] const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
         AZ_Error("EditorViewportWidget", isViewEntityCorrect,
             "GetCurrentViewEntityId called while the current view is being changed. "
             "You may get inconsistent results if you make use of the returned entity ID. "

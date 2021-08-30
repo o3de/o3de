@@ -388,7 +388,7 @@ namespace AZ
                 for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo : shaderVariantList.m_shaderVariants)
                 {
                     AZStd::string variantInfoAsJsonString;
-                    const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
+                    [[maybe_unused]] const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
                     AZ_Assert(convertSuccess, "Failed to convert VariantInfo to json string");
 
                     AssetBuilderSDK::JobDescriptor jobDescriptor;
@@ -755,7 +755,7 @@ namespace AZ
 
             const AZStd::string& variantJsonString = jobParameters.at(ShaderVariantJobVariantParam);
             RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
+            [[maybe_unused]] const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
             AZ_Assert(fromJsonStringSuccess, "Failed to convert json string to VariantInfo");
 
             RPI::ShaderSourceData shaderSourceDescriptor;

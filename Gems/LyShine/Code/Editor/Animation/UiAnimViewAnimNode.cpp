@@ -178,8 +178,8 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
                     AZ::Component* oldComponent = oldComponents[componentIndex];
                     AZ::Component* newComponent = newComponents[componentIndex];
 
-                    AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
-                    AZ::Uuid newComponentType = newComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid newComponentType = newComponent->RTTI_GetType();
 
                     AZ_Assert(oldComponentType == newComponentType, "Components have different types");
 
