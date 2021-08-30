@@ -10,6 +10,7 @@
 #ifndef AZSTD_FUNCTION_BASE_HEADER
 #define AZSTD_FUNCTION_BASE_HEADER
 
+#include <AzCore/std/allocator.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/function/function_fwd.h>

@@ -129,6 +129,8 @@ set(FILES
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.h
     Source/Compressors/CryTextureSquisher/ColorTypes.h
+    Source/Compressors/ISPCTextureCompressor.cpp
+    Source/Compressors/ISPCTextureCompressor.h
     Source/Thumbnail/ImageThumbnail.cpp
     Source/Thumbnail/ImageThumbnail.h
     Source/Thumbnail/ImageThumbnailSystemComponent.cpp
