@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Debug/Trace.h>
@@ -27,6 +26,7 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentExport.h>
@@ -73,9 +73,7 @@ namespace SliceBuilder
             AzFramework::StringFunc::Path::Join(relativePath.c_str(), settingsAssetInfo.m_relativePath.c_str(), sliceBuilderSettingsPath, true, true);
 
             // Attempt to load the Slice Builder Settings file
-            AZ::IO::LocalFileIO localFileIO;
-            AZ::IO::Path sliceBuilderSettingsIoPath(sliceBuilderSettingsPath);
-            auto result = AzFramework::FileFunc::ReadJsonFile(sliceBuilderSettingsIoPath, &localFileIO);
+            auto result = AZ::JsonSerializationUtils::ReadJsonFile(sliceBuilderSettingsPath);
             if (result.IsSuccess())
             {
                 AZ::JsonSerializationResult::ResultCode serializaionResult = AZ::JsonSerialization::Load(m_settings, result.GetValue());
