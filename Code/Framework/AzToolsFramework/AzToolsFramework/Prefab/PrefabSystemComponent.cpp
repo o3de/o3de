@@ -69,7 +69,8 @@ namespace AzToolsFramework
             {
                 behaviorContext->EBus<PrefabSystemComponentBus>("PrefabSystemComponentBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    ->Attribute(AZ::Script::Attributes::Module, "types")
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Event("CreatePrefab", &PrefabSystemComponentBus::Events::CreatePrefabTemplate)
                 ;
             }
@@ -158,6 +159,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
+                AZ_Warning("PrefabSystemComponent", entity, "EntityId %s was not found and will not be added to the prefab", entityId.ToString().c_str());
+
                 if (entity)
                 {
                     entities.push_back(entity);
@@ -165,7 +168,13 @@ namespace AzToolsFramework
             }
             
             auto prefab = CreatePrefab(entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), nullptr, shouldCreateLinks);
-            
+
+            if (!prefab)
+            {
+                AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());
+                return InvalidTemplateId;
+            }
+
             return prefab->GetTemplateId();
         }
 
