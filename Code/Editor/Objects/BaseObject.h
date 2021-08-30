@@ -408,10 +408,6 @@ public:
     CBaseObject* GetParent() const { return m_parent; };
     //! Scans hierarchy up to determine if we child of specified node.
     virtual bool IsChildOf(CBaseObject* node);
-    //! Get all child objects
-    void GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj = nullptr) const;
     //! Clone Children
     void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.

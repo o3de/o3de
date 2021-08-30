@@ -10,7 +10,6 @@
 #include <Cry_Geo.h>
 #include <Include/IPlugin.h>
 #include <IRenderer.h>
-#include <ISerialize.h>
 #include <QtWidgets/QMainWindow>
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ILyShine.h>

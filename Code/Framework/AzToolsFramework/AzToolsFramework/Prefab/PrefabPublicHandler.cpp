@@ -1259,12 +1259,12 @@ namespace AzToolsFramework
                     auto& containerEntity = *containerEntityPtr.release();
                     auto editorPrefabComponent = containerEntity.FindComponent<EditorPrefabComponent>();
                     containerEntity.Deactivate();
-                    const bool editorPrefabComponentRemoved = containerEntity.RemoveComponent(editorPrefabComponent);
+                    [[maybe_unused]] const bool editorPrefabComponentRemoved = containerEntity.RemoveComponent(editorPrefabComponent);
                     AZ_Assert(editorPrefabComponentRemoved, "Remove EditorPrefabComponent failed.");
                     delete editorPrefabComponent;
                     containerEntity.Activate();
 
-                    const bool containerEntityAdded = parentInstance.AddEntity(containerEntity);
+                    [[maybe_unused]] const bool containerEntityAdded = parentInstance.AddEntity(containerEntity);
                     AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
 
                     EntityIdList entityIds;
@@ -1281,7 +1281,7 @@ namespace AzToolsFramework
                         [&](AZStd::unique_ptr<AZ::Entity> entityPtr)
                     {
                         auto& entity = *entityPtr.release();
-                        const bool entityAdded = parentInstance.AddEntity(entity);
+                        [[maybe_unused]] const bool entityAdded = parentInstance.AddEntity(entity);
                         AZ_Assert(entityAdded, "Add target Instance's entity to its parent Instance failed.");
 
                         entityIds.emplace_back(entity.GetId());

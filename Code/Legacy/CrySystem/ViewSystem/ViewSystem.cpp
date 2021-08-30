@@ -617,16 +617,16 @@ void CViewSystem::GetMemoryUsage(ICrySizer* s) const
     s->AddContainer(m_views);
 }
 
-void CViewSystem::Serialize(TSerialize ser)
-{
-    TViewMap::iterator iter = m_views.begin();
-    TViewMap::iterator iterEnd = m_views.end();
-    while (iter != iterEnd)
-    {
-        iter->second->Serialize(ser);
-        ++iter;
-    }
-}
+//void CViewSystem::Serialize(TSerialize ser)
+//{
+//    TViewMap::iterator iter = m_views.begin();
+//    TViewMap::iterator iterEnd = m_views.end();
+//    while (iter != iterEnd)
+//    {
+//        iter->second->Serialize(ser);
+//        ++iter;
+//    }
+//}
 
 void CViewSystem::PostSerialize()
 {
