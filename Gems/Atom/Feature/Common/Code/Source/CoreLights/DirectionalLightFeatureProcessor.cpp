@@ -325,11 +325,11 @@ namespace AZ
         DirectionalLightFeatureProcessorInterface::LightHandle DirectionalLightFeatureProcessor::AcquireLight()
         {
             const uint16_t index = m_lightData.GetFreeSlotIndex();
-            const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
+            [[maybe_unused]] const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
             AZ_Assert(index == shadowPropIndex, "light index is illegal.");
             for (const auto& viewIt : m_cameraViewNames)
             {
-                const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
+                [[maybe_unused]] const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
                 AZ_Assert(index == shadowIndex, "light index is illegal.");
             }
 

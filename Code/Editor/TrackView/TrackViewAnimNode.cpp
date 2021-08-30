@@ -1942,7 +1942,7 @@ void CTrackViewAnimNode::OnSelectionChanged(const bool selected)
 {
     if (m_animNode)
     {
-        const AnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const AnimNodeType animNodeType = GetType();
         AZ_Assert(animNodeType == AnimNodeType::AzEntity, "Expected AzEntity for selection changed");
 
         const EAnimNodeFlags flags = (EAnimNodeFlags)m_animNode->GetFlags();
