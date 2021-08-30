@@ -230,7 +230,12 @@ namespace ScriptCanvasEditor
 
         /////
         EditorGraphUpgradeMachine m_upgradeSM;
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        enum UpgradeRequest
+        {
+            IfOutOfDate,
+            Forced
+        };
+        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////

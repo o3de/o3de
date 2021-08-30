@@ -131,8 +131,15 @@ namespace ScriptCanvasEditor
 
         void OnSystemTick() override;
 
+        bool GetVerbose() const;
+
+        void SetVerbose(bool isVerbose);
+
         AZStd::shared_ptr<IState> m_currentState = nullptr;
         AZStd::vector<AZStd::shared_ptr<IState>> m_states;
+
+    private:
+        bool m_isVerbose = true;
     };
 
     //! This state machine will collect and share a variety of data from the EditorGraph
@@ -347,14 +354,14 @@ namespace ScriptCanvasEditor
     {
         if (m_verbose)
         {
-            char sBuffer[1024];
+            char sBuffer[2048];
             va_list ArgList;
             va_start(ArgList, format);
             azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
             sBuffer[sizeof(sBuffer) - 1] = '\0';
             va_end(ArgList);
 
-            AZ_TracePrintf("Script Canvas", "%s\n", sBuffer);
+            AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "%s\n", sBuffer);
         }
     }
 }

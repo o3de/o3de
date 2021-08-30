@@ -57,6 +57,8 @@ namespace ScriptCanvas
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
+    constexpr const AZStd::string_view k_VersionExplorerWindow = "VersionExplorerWindow";
+
     class Node;
     class Edge;
 

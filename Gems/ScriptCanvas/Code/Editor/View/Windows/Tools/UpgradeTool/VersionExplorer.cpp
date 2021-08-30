@@ -6,40 +6,89 @@
  *
  */
 
+
+#include <QDateTime>
+#include <QDir>
 #include <QMessageBox>
 #include <QProcess>
-#include <QDir>
 #include <QScrollBar>
-#include <QDateTime>
 #include <QToolButton>
-
-#include "VersionExplorer.h"
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
-
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
-
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ui_VersionExplorer.h>
-
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
+
+namespace VersionExplorerCpp
+{
+    class FileEventHandler
+        : public AZ::IO::FileIOEventBus::Handler
+    {
+    public:
+        int m_errorCode = 0;
+        AZStd::string m_fileName;
+
+        FileEventHandler()
+        {
+            BusConnect();
+        }
+
+        ~FileEventHandler()
+        {
+            BusDisconnect();
+        }
+
+        void OnError(const AZ::IO::SystemFile* /*file*/, const char* fileName, int errorCode) override
+        {
+            m_errorCode = errorCode;
+
+            if (fileName)
+            {
+                m_fileName = fileName;
+            }
+        }
+    };
+}
 
 namespace ScriptCanvasEditor
 {
+    EditorKeepAlive::EditorKeepAlive()
+    {
+        ISystem* system = nullptr;
+        CrySystemRequestBus::BroadcastResult(system, &CrySystemRequestBus::Events::GetCrySystem);
+
+        m_edKeepEditorActive = system->GetIConsole()->GetCVar("ed_KeepEditorActive");
+
+        if (m_edKeepEditorActive)
+        {
+            m_keepEditorActive = m_edKeepEditorActive->GetIVal();
+            m_edKeepEditorActive->Set(1);
+        }
+    }
+
+    EditorKeepAlive::~EditorKeepAlive()
+    {
+        if (m_edKeepEditorActive)
+        {
+            m_edKeepEditorActive->Set(m_keepEditorActive);
+        }
+    }
+
     VersionExplorer::VersionExplorer(QWidget* parent /*= nullptr*/)
         : AzQtComponents::StyledDialog(parent)
         , m_ui(new Ui::VersionExplorer())
@@ -80,14 +129,14 @@ namespace ScriptCanvasEditor
     {
         if (m_ui->verbose->isChecked())
         {
-            char sBuffer[1024];
+            char sBuffer[2048];
             va_list ArgList;
             va_start(ArgList, format);
             azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
             sBuffer[sizeof(sBuffer) - 1] = '\0';
             va_end(ArgList);
 
-            AZ_TracePrintf("Script Canvas", "%s\n", sBuffer);
+            AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "%s\n", sBuffer);
         }
     }
 
@@ -143,6 +192,7 @@ namespace ScriptCanvasEditor
                 // Make the backup
                 if (result == OperationResult::BackupSuccess)
                 {
+                    Log("SystemTick::ProcessState::Upgrade: Backup Success %s ", m_inProgressAsset->GetHint().c_str());
                     QList<QTableWidgetItem*> items = m_ui->tableWidget->findItems(m_inProgressAsset->GetHint().c_str(), Qt::MatchFlag::MatchExactly);
                     if (!items.isEmpty())
                     {
@@ -159,6 +209,7 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
+                    Log("SystemTick::ProcessState::Upgrade: Backup Failed %s ", m_inProgressAsset->GetHint().c_str());
                     GraphUpgradeComplete(*m_inProgressAsset, result);
                 }
 
@@ -184,6 +235,7 @@ namespace ScriptCanvasEditor
         m_state = ProcessState::Upgrade;
         m_inProgressAsset = m_assetsToUpgrade.begin();
 
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
     }
 
@@ -207,7 +259,7 @@ namespace ScriptCanvasEditor
         {
             if (AZ::IO::FileIOBase::GetInstance()->CreatePath(backupPath.c_str()) != AZ::IO::ResultCode::Success)
             {
-                AZ_Error("Script Canvas", false, "Failed to create backup folder %s", backupPath.c_str());
+                AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Failed to create backup folder %s", backupPath.c_str());
                 return OperationResult::BackupFail_CreateFolder;
             }
         }
@@ -243,7 +295,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            // The file no longer exists, we'll need to skip it.
+            AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Failed to find file: %s", asset.GetHint().c_str());
             return OperationResult::BackupFail_FileNotFound;
         }
 
@@ -262,94 +314,104 @@ namespace ScriptCanvasEditor
 
         if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Error)
         {
-            AZ_TracePrintf("Script Canvas", "Backed up: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
+            Log("VersionExplorer::BackupGraph: Backed up: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
+            return OperationResult::BackupSuccess;
         }
         else
         {
-            AZ_TracePrintf("Script Canvas", "Error creating backup: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
+            AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Error creating backup: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
             return OperationResult::BackupFail;
         }
-
-        return OperationResult::BackupSuccess;
-    }
-
-    // Upgrade
-
-    template <typename AssetType>
-    AZ::Entity* UpgradeGraphProcess(const AZ::Data::Asset<AZ::Data::AssetData>& asset, VersionExplorer* /*versionExplorer*/)
-    {
-        AssetType* scriptCanvasAsset = asset.GetAs<AssetType>();
-        AZ_Assert(scriptCanvasAsset, "Unable to get the asset of type: %s", azrtti_typeid<AssetType>().template ToString<AZStd::string>().c_str());
-
-        if (!scriptCanvasAsset)
-        {
-            return nullptr;
-        }
-
-        AZ::Entity* scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
-        AZ_Assert(scriptCanvasEntity, "The Script Canvas asset must have a valid entity");
-        if (!scriptCanvasEntity)
-        {
-            return nullptr;
-        }
-
-
-        AZ::Entity* queryEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(queryEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
-        if (queryEntity)
-        {
-            if (queryEntity->GetState() == AZ::Entity::State::Active)
-            {
-                queryEntity->Deactivate();
-            }
-
-            scriptCanvasEntity = queryEntity;
-        }
-
-        if (scriptCanvasEntity->GetState() == AZ::Entity::State::Constructed)
-        {
-            scriptCanvasEntity->Init();
-        }
-
-        if (scriptCanvasEntity->GetState() == AZ::Entity::State::Init)
-        {
-            scriptCanvasEntity->Activate();
-        }
-
-        auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
-        AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
-
-        if (graphComponent)
-        {
-            graphComponent->UpgradeGraph(asset);
-        }
-
-        return scriptCanvasEntity;
     }
 
     void VersionExplorer::UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
         m_inProgress = true;
 
+        Log("UpgradeGraph %s ", m_inProgressAsset->GetHint().c_str());
         m_ui->spinner->SetText(QObject::tr("Upgrading: %1").arg(asset.GetHint().c_str()));
-
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+        m_scriptCanvasEntity = nullptr;
 
         UpgradeNotifications::Bus::Handler::BusConnect();
 
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
-            m_scriptCanvasEntity = UpgradeGraphProcess<ScriptCanvasAsset>(asset, this);
+            ScriptCanvasAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
+            AZ_Assert(scriptCanvasAsset, "Unable to get the asset of ScriptCanvasAsset, but received type: %s"
+                , azrtti_typeid<ScriptCanvasAsset>().template ToString<AZStd::string>().c_str());
+
+            if (!scriptCanvasAsset)
+            {
+                return;
+            }
+
+            AZ::Entity* scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
+            AZ_Assert(scriptCanvasEntity, "VersionExplorer::UpgradeGraph The Script Canvas asset must have a valid entity");
+            if (!scriptCanvasEntity)
+            {
+                return;
+            }
+
+            AZ::Entity* queryEntity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(queryEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
+            if (queryEntity)
+            {
+                if (queryEntity->GetState() == AZ::Entity::State::Active)
+                {
+                    queryEntity->Deactivate();
+                }
+
+                scriptCanvasEntity = queryEntity;
+            }
+
+            if (scriptCanvasEntity->GetState() == AZ::Entity::State::Constructed)
+            {
+                scriptCanvasEntity->Init();
+            }
+
+            if (scriptCanvasEntity->GetState() == AZ::Entity::State::Init)
+            {
+                scriptCanvasEntity->Activate();
+            }
+
+            auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
+            AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
+
+            if (graphComponent)
+            {
+                graphComponent->UpgradeGraph
+                    ( asset
+                    , m_ui->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
+                    , m_ui->verbose->isChecked());
+
+                m_scriptCanvasEntity = scriptCanvasEntity;
+            }
         }
 
-        if (!m_scriptCanvasEntity)
-        {
-            AZ_Assert(m_scriptCanvasEntity, "The ScriptCanvas asset should have an entity");
-            return;
-        }
+        AZ_Assert(m_scriptCanvasEntity, "The ScriptCanvas asset should have an entity");
     }
 
     void VersionExplorer::OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool /*skipped*/ /*= false*/)
+    {
+        AZStd::string relativePath, fullPath;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
+        bool fullPathFound = false;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
+        if (!fullPathFound)
+        {
+            AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Full source path not found for %s", relativePath.c_str());
+        }
+
+        auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
+        AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(fullPath);
+        streamer->SetRequestCompleteCallback(flushRequest, [this, asset]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+        {
+            this->OnSourceFileReleased(asset);
+        });
+        streamer->QueueRequest(flushRequest);
+    }
+
+    void VersionExplorer::OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZStd::string relativePath, fullPath;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
@@ -370,7 +432,8 @@ namespace ScriptCanvasEditor
             {
                 if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                 {
-                    tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
+                    ScriptCanvasEditor::ScriptCanvasAssetHandler handler;
+                    tmpFilesaved = handler.SaveAssetData(asset, &fileStream);
                 }
 
                 fileStream.Close();
@@ -378,7 +441,7 @@ namespace ScriptCanvasEditor
 
             using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
             SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, fullPath.c_str(), true,
-                [this, &asset, fullPath, tmpFileName, tmpFilesaved](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& info)
+                [this, asset, fullPath, tmpFileName, tmpFilesaved](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& info)
                 {
                     if (!info.IsReadOnly())
                     {
@@ -427,64 +490,35 @@ namespace ScriptCanvasEditor
 
                         }
                     }
-                    //if (!info.IsReadOnly())
-                    //{
-                    //    if (tmpFilesaved)
-                    //    {
-                    //        auto normTarget = fullPath;
-                    //        AzFramework::StringFunc::Path::Normalize(normTarget);
-
-                    //        auto moveResult = AZ::IO::SmartMove(tmpFileName.c_str(), normTarget.c_str());
-                    //        if (moveResult.GetResultCode() == AZ::IO::ResultCode::Success)
-                    //        {
-                    //            // Bump the slice asset up in the asset processor's queue.
-                    //            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, fullPath.c_str());
-
-                    //            AZ::SystemTickBus::QueueFunction([this, asset]() { GraphUpgradeComplete(asset); });
-                    //        }
-                    //        else
-                    //        {
-                    //            AZ::SystemTickBus::QueueFunction([this, asset, tmpFileName, fullPath]() { RetryMove(asset, tmpFileName, fullPath); });
-                    //        }
-
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    QWidget* mainWindow = nullptr;
-                    //    AzToolsFramework::EditorRequests::Bus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-                    //    QMessageBox::warning(mainWindow, QObject::tr("Unable to Modify Script Canvas asset"),
-                    //        QObject::tr("File is not writable."), QMessageBox::Ok, QMessageBox::Ok);
-                    //}
                 });
         }
     }
 
-    void VersionExplorer::PerformMove(AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target)
+    void VersionExplorer::PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target)
     {
+        VersionExplorerCpp::FileEventHandler fileEventHandler;
+
         auto moveResult = AZ::IO::SmartMove(source.c_str(), target.c_str());
         if (moveResult.GetResultCode() == AZ::IO::ResultCode::Success)
         {
             // Bump the slice asset up in the asset processor's queue.
             AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
-
             AZ::SystemTickBus::QueueFunction([this, asset]() { GraphUpgradeComplete(asset); });
         }
         else
         {
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
             AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
-            streamer->SetRequestCompleteCallback(flushRequest, [this, &asset, &source, &target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+            streamer->SetRequestCompleteCallback(flushRequest, [this, asset, &source, &target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
                     // Continue saving.
                     AZ::SystemTickBus::QueueFunction([this, asset, source, target]() { RetryMove(asset, source, target); });
                 });
             streamer->QueueRequest(flushRequest);
-
         }
     }
 
-    void VersionExplorer::GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>& asset, OperationResult result /*= OperationResult::Success*/)
+    void VersionExplorer::GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result )
     {
         m_inProgress = false;
 
@@ -493,8 +527,6 @@ namespace ScriptCanvasEditor
             m_scriptCanvasEntity->Deactivate();
             m_scriptCanvasEntity = nullptr;
         }
-
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
         GraphUpgradeCompleteUIUpdate(asset, result);
 
@@ -513,10 +545,10 @@ namespace ScriptCanvasEditor
         else
         {
             m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
-
             m_inProgress = false;
             m_state = ProcessState::Inactive;
             AZ::SystemTickBus::Handler::BusDisconnect();
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
 
         m_isUpgradingSingleGraph = false;
@@ -527,19 +559,19 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void VersionExplorer::GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData>& asset, OperationResult result /*= OperationResult::Success*/)
+    void VersionExplorer::GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result /*= OperationResult::Success*/)
     {
         QString text = asset.GetHint().c_str();
         QList<QTableWidgetItem*> items = m_ui->tableWidget->findItems(text, Qt::MatchFlag::MatchExactly);
+
         if (!items.isEmpty())
         {
             for (auto* item : items)
             {
                 int row = item->row();
-
                 QTableWidgetItem* label = m_ui->tableWidget->item(row, ColumnAsset);
-
                 QString assetName = asset.GetHint().c_str();
+
                 if (label->text().compare(assetName) == 0)
                 {
                     m_ui->tableWidget->removeCellWidget(row, ColumnAction);
@@ -562,25 +594,22 @@ namespace ScriptCanvasEditor
                         {
                             doneButton->setToolTip("Failed to create the backup folder");
                         }
-
                     }
 
                     m_ui->tableWidget->setCellWidget(row, ColumnStatus, doneButton);
                 }
-
-
             }
         }
     }
 
     void VersionExplorer::FinalizeUpgrade()
     {
+        Log("FinalizeUpgrade!");
         m_inProgress = false;
         m_assetsToUpgrade.clear();
 
         m_ui->upgradeAllButton->setEnabled(false);
         m_ui->onlyShowOutdated->setEnabled(true);
-
 
         // Manual correction
         size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
@@ -592,7 +621,6 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Handler::BusDisconnect();
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         UpgradeNotifications::Bus::Handler::BusDisconnect();
-
         AZ::Interface<IUpgradeRequests>::Get()->SetIsUpgrading(false);
     }
 
@@ -641,14 +669,12 @@ namespace ScriptCanvasEditor
     {
         m_currentAssetIndex = 0;
         m_ui->progressBar->setValue(0);
-
         DoScan();
     }
 
     void VersionExplorer::InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo)
     {
         Log("InspectAsset: %s", asset.GetHint().c_str());
-
         AZ::Entity* scriptCanvasEntity = nullptr;
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
@@ -724,7 +750,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetNameUtf8, info, watchFolder);
         if (!result)
         {
-            AZ_Error("AssetProvider", false, "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
+            AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
         }
 
         QString absolutePath = QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str());
@@ -867,8 +893,13 @@ namespace ScriptCanvasEditor
 
     }
 
-    void VersionExplorer::CaptureLogFromTraceBus(const char* /*window*/, const char* message)
+    bool VersionExplorer::CaptureLogFromTraceBus(const char* window, const char* message)
     {
+        if (m_ui->updateReportingOnly->isChecked() && window != ScriptCanvas::k_VersionExplorerWindow)
+        {
+            return true;
+        }
+
         AZStd::string msg = message;
         if (msg.ends_with("\n"))
         {
@@ -876,39 +907,33 @@ namespace ScriptCanvasEditor
         }
 
         m_logs.push_back(msg);
+        return m_ui->updateReportingOnly->isChecked();
     }
 
     bool VersionExplorer::OnPreError(const char* window, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* message)
     {
         AZStd::string msg = AZStd::string::format("(Error): %s", message);
-        CaptureLogFromTraceBus(window, msg.c_str());
-
-        return false;
+        return CaptureLogFromTraceBus(window, msg.c_str());
     }
 
     bool VersionExplorer::OnPreWarning(const char* window, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* message)
     {
         AZStd::string msg = AZStd::string::format("(Warning): %s", message);
-        CaptureLogFromTraceBus(window, msg.c_str());
-
-        return false;
+        return CaptureLogFromTraceBus(window, msg.c_str());
     }
 
     bool VersionExplorer::OnException(const char* message)
     {
         AZStd::string msg = AZStd::string::format("(Exception): %s", message);
-        CaptureLogFromTraceBus("Script Canvas", msg.c_str());
-
-        return false;
+        return CaptureLogFromTraceBus("Script Canvas", msg.c_str());
     }
 
     bool VersionExplorer::OnPrintf(const char* window, const char* message)
     {
-        CaptureLogFromTraceBus(window, message);
-        return false;
+        return CaptureLogFromTraceBus(window, message);
     }
 
-    void VersionExplorer::RetryMove(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target)
+    void VersionExplorer::RetryMove(const AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target)
     {
         auto normTarget = target;
         AzFramework::StringFunc::Path::Normalize(normTarget);
@@ -924,15 +949,12 @@ namespace ScriptCanvasEditor
         {
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
             AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
-            streamer->SetRequestCompleteCallback(flushRequest, [this, &asset, &source, &target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+            streamer->SetRequestCompleteCallback(flushRequest, [this, asset, &source, &target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
                     // Continue saving.
                     AZ::SystemTickBus::QueueFunction([this, asset, source, target]() { RetryMove(asset, source, target); });
                 });
             streamer->QueueRequest(flushRequest);
-
-
-            //AZ::SystemTickBus::QueueFunction([this, asset, source, target]() { RetryMove(asset, source, target); });
         }
     }
 
