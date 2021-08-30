@@ -437,7 +437,7 @@ namespace ScriptCanvasEditor
 
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(assetToUpgrade.m_relativePath);
-                streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                streamer->SetRequestCompleteCallback(flushRequest, []([[maybe_unused]] AZ::IO::FileRequestHandle request)
                     {
                     });
                 streamer->QueueRequest(flushRequest);

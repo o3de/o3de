@@ -54,8 +54,6 @@ namespace ScriptCanvas
         auto lhsIter = lhs.begin();
         auto rhsIter = rhs.begin();
 
-        const bool isCaseSensitive = false;
-
         for (; lhsIter != lhs.end(); ++lhsIter, ++rhsIter)
         {
             if (!AZ::StringFunc::Equal(lhsIter->c_str(), rhsIter->c_str()))

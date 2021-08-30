@@ -786,7 +786,7 @@ namespace ScriptCanvasEditor
                 rowGoToButton->setEnabled(false);
 
                 m_inProgressAsset = AZStd::find_if(m_assetsToUpgrade.begin(), m_assetsToUpgrade.end()
-                    , [this, asset](const UpgradeAssets::value_type& assetToUpgrade)
+                    , [asset](const UpgradeAssets::value_type& assetToUpgrade)
                 {
                     return assetToUpgrade.GetId() == asset.GetId();
                 });
@@ -872,7 +872,6 @@ namespace ScriptCanvasEditor
 
         const QTextCursor oldCursor = m_ui->textEdit->textCursor();
         QScrollBar* scrollBar = m_ui->textEdit->verticalScrollBar();
-        const int oldScrollValue = scrollBar->value();
 
         m_ui->textEdit->moveCursor(QTextCursor::End);
         QTextCursor textCursor = m_ui->textEdit->textCursor();

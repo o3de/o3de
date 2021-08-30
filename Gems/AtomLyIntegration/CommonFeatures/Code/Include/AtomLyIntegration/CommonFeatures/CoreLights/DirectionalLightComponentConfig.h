@@ -115,12 +115,18 @@ namespace AZ
 
             PcfMethod m_pcfMethod = PcfMethod::Bicubic;
 
+            //! Whether not to enable the receiver plane bias.
+            //! This uses partial derivatives to reduce shadow acne when using large pcf kernels.
+            bool m_receiverPlaneBiasEnabled = true;
+
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsPcfBoundarySearchDisabled() const;
+            bool IsSofteningBoundaryWidthDisabled() const;
+            bool IsEsmDisabled() const;
         };
     } // namespace Render
 } // namespace AZ

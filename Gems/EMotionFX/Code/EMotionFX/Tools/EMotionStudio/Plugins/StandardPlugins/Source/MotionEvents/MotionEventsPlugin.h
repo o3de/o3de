@@ -87,7 +87,6 @@ namespace EMStudio
         MotionEventPresetsWidget*       m_motionEventPresetsWidget;
         MotionEventWidget*              m_motionEventWidget;
 
-        QTableWidget*                   m_motionTable;
         TimeViewPlugin*                 m_timeViewPlugin;
         TrackHeaderWidget*              m_trackHeaderWidget;
         TrackDataWidget*                m_trackDataWidget;

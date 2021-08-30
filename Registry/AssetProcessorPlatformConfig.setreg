@@ -24,6 +24,9 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer,vulkan,null"
+                },
                 "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },

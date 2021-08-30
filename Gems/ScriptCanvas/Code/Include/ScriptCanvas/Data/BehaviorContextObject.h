@@ -260,7 +260,7 @@ namespace ScriptCanvas
 
     AZ_INLINE BehaviorContextObject* BehaviorContextObject::CreateDefaultBuffer(const AZ::BehaviorClass& behaviorClass)
     {
-        AZ_ALIGN(char buffer[AZStd::Internal::ANY_SBO_BUF_SIZE], 32);
+        alignas(32) char buffer[AZStd::Internal::ANY_SBO_BUF_SIZE];
         AZ::BehaviorObject object = InvokeConstructor(behaviorClass, AZStd::addressof(buffer));
         auto bco = aznew BehaviorContextObject(object.m_address, GetAnyTypeInfoObject(behaviorClass), Owned);
         behaviorClass.m_destructor(object.m_address, behaviorClass.m_userData);

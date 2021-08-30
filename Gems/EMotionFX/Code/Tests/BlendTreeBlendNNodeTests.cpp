@@ -332,9 +332,7 @@ namespace EMotionFX
                 EXPECT_NEAR(durationA, durationN, epsilon);
 
                 // Node B gets synced to the blend N node which got synced to node A.
-                const float timeRatio = durationA / durationB;
                 const float timeRatio2 = durationB / durationA;
-                const float factorA = AZ::Lerp(1.0f, timeRatio, blendWeight);
                 const float factorB = AZ::Lerp(timeRatio2, 1.0f, blendWeight);
                 const float primaryMotionPlaySpeed = m_motionNodes[motionIndexA]->GetDefaultPlaySpeed();
                 const float interpolatedSpeed = AZ::Lerp(playSpeedA, primaryMotionPlaySpeed, blendWeight);

@@ -28,6 +28,7 @@ namespace ImageProcessingAtom
             QImage qimage(filename.c_str());
             if (qimage.isNull())
             {
+                AZ_Error("ImageProcessing", false, "Failed to load [%s] via QImage", filename.c_str());
                 return NULL;
             }
 

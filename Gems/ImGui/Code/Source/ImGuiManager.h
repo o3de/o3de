@@ -81,7 +81,6 @@ namespace ImGui
 
     private:
         ImGuiContext* m_imguiContext = nullptr;
-        int m_fontTextureId = -1;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
 

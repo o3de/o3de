@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/Profiler.h>
-
 #include <GridMate/Replica/SystemReplicas.h>
 #include <GridMate/Replica/Tasks/ReplicaMarshalTasks.h>
 #include <GridMate/Replica/ReplicaDrillerEvents.h>

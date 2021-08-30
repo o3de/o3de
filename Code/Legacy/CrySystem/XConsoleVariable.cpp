@@ -129,40 +129,6 @@ uint64 CXConsoleVariableBase::AddOnChangeFunctor(const SFunctor& pChangeFunctor)
     return newId;
 }
 
-uint64 CXConsoleVariableBase::GetNumberOfOnChangeFunctors() const
-{
-    return m_changeFunctors.size();
-}
-
-const SFunctor& CXConsoleVariableBase::GetOnChangeFunctor(uint64 nFunctorId) const
-{
-    auto predicate = [nFunctorId](const std::pair<int, SFunctor>& entry) -> bool { return entry.first == nFunctorId; };
-    auto changeFunctor = std::find_if(m_changeFunctors.begin(), m_changeFunctors.end(), predicate);
-    if (changeFunctor != m_changeFunctors.end())
-    {
-        return (*changeFunctor).second;
-    }
-
-    static SFunctor sDummyFunctor;
-    assert(false && "[CXConsoleVariableBase::GetOnChangeFunctor] Trying to get a functor for an id that does not exist.");
-
-    return sDummyFunctor;
-}
-
-bool CXConsoleVariableBase::RemoveOnChangeFunctor(const uint64 nFunctorId)
-{
-    auto predicate = [nFunctorId](const std::pair<int, SFunctor>& entry) -> bool { return entry.first == nFunctorId; };
-    auto changeFunctor = std::find_if(m_changeFunctors.begin(), m_changeFunctors.end(), predicate);
-
-    if (changeFunctor != m_changeFunctors.end())
-    {
-        m_changeFunctors.erase(changeFunctor);
-        return true;
-    }
-
-    return false;
-}
-
 ConsoleVarFunc CXConsoleVariableBase::GetOnChangeCallback() const
 {
     return m_pChangeFunc;

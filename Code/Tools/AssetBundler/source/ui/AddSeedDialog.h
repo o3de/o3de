@@ -47,7 +47,6 @@ namespace AssetBundler
 
         QSharedPointer<Ui::AddSeedDialog> m_ui;
         QString m_platformSpecificCachePath;
-        bool m_isAddSeedDialog = false;
 
         AZStd::string m_fileName;
 

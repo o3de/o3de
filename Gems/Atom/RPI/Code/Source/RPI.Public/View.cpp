@@ -30,8 +30,10 @@ namespace AZ
     namespace RPI
     {
         // fixed-size software occlusion culling buffer
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         const uint32_t MaskedSoftwareOcclusionCullingWidth = 1920;
         const uint32_t MaskedSoftwareOcclusionCullingHeight = 1080;
+#endif
 
         ViewPtr View::CreateView(const AZ::Name& name, UsageFlags usage)
         {
@@ -237,7 +239,7 @@ namespace AZ
 
         void View::FinalizeDrawLists()
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             m_drawListContext.FinalizeLists();
             SortFinalizedDrawLists();
         }

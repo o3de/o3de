@@ -299,7 +299,7 @@ namespace AZ
             //work function
             void Process() override
             {
-                AZ_PROFILE_FUNCTION(AzRender);
+                AZ_PROFILE_FUNCTION(RPI);
 
                 const View::UsageFlags viewFlags = m_jobData->m_view->GetUsageFlags();
                 const RHI::DrawListMask drawListMask = m_jobData->m_view->GetDrawListMask();
@@ -312,7 +312,7 @@ namespace AZ
                     bool nodeIsContainedInFrustum = ShapeIntersection::Contains(m_jobData->m_frustum, nodeData.m_bounds);
 
 #ifdef AZ_CULL_PROFILE_VERBOSE
-                    AZ_PROFILE_SCOPE(AzRender, "process node (view: %s, skip fine cull: %d",
+                    AZ_PROFILE_SCOPE(RPI, "process node (view: %s, skip fine cull: %d",
                         m_view->GetName().GetCStr(), nodeIsContainedInFrustum ? 1 : 0);
 #endif
 
@@ -385,7 +385,7 @@ namespace AZ
 
                     if (m_jobData->m_debugCtx->m_debugDraw && (m_jobData->m_view->GetName() == m_jobData->m_debugCtx->m_currentViewSelectionName))
                     {
-                        AZ_PROFILE_SCOPE(AzRender, "debug draw culling");
+                        AZ_PROFILE_SCOPE(RPI, "debug draw culling");
 
                         AuxGeomDrawPtr auxGeomPtr = AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_jobData->m_scene);
                         if (auxGeomPtr)
@@ -507,7 +507,7 @@ namespace AZ
 
         void CullingScene::ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob)
         {
-            AZ_PROFILE_SCOPE(AzRender, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
+            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
 
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
@@ -596,9 +596,9 @@ namespace AZ
             jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
 #endif
 
-            auto nodeVisitorLambda = [this, jobData, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            auto nodeVisitorLambda = [jobData, &parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
-                AZ_PROFILE_SCOPE(AzRender, "nodeVisitorLambda()");
+                AZ_PROFILE_SCOPE(RPI, "nodeVisitorLambda()");
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
                 AZ_Assert(worklist.size() < worklist.capacity(), "we should always have room to push a node on the queue");
 
@@ -645,7 +645,7 @@ namespace AZ
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 #endif
 
             const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
@@ -663,7 +663,7 @@ namespace AZ
             auto addLodToDrawPacket = [&](const Cullable::LodData::Lod& lod)
             {
 #ifdef AZ_CULL_PROFILE_VERBOSE
-                AZ_PROFILE_SCOPE(AzRender, "add draw packets: %zu", lod.m_drawPackets.size());
+                AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
 #endif
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
                 for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
@@ -672,20 +672,25 @@ namespace AZ
                 }
             };
 
-            if (lodData.m_lodOverride == Cullable::NoLodOverride)
+            switch (lodData.m_lodConfiguration.m_lodType)
             {
-                for (const Cullable::LodData::Lod& lod : lodData.m_lods)
-                {
-                    //Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
-                    if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                case Cullable::LodType::SpecificLod:
+                    if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lod);
+                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
                     }
-                }
-            }
-            else if(lodData.m_lodOverride < lodData.m_lods.size())
-            {
-                addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodOverride));
+                    break;
+                case Cullable::LodType::ScreenCoverage:
+                default:
+                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                    {
+                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                        {
+                            addLodToDrawPacket(lod);
+                        }
+                    }
+                    break;
             }
 
             return numVisibleDrawPackets;
