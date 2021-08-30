@@ -33,6 +33,7 @@ namespace Multiplayer
         MultiplayerEditorConnection();
         ~MultiplayerEditorConnection() = default;
 
+        bool IsHandshakeComplete() const { return true; };
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerInit& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReady& packet);
         
@@ -40,7 +41,7 @@ namespace Multiplayer
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnConnect(AzNetworking::IConnection* connection) override;
-        bool OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
+        AzNetworking::PacketDispatchResult OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
         void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
         //! @}

@@ -168,7 +168,7 @@ namespace Multiplayer
         ;
     }
 
-    bool MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    AzNetworking::PacketDispatchResult MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }

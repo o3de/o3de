@@ -59,8 +59,8 @@ public:
         }
         const QString iconsDir = gSettings.searchPaths[EDITOR_PATH_UI_ICONS][0];
         CFileUtil::ScanDirectory(iconsDir, "*.png", pngFiles);
-        m_iconImages.reserve(pngFiles.size());
-        m_iconFiles.reserve(pngFiles.size());
+        m_iconImages.reserve(static_cast<int>(pngFiles.size()));
+        m_iconFiles.reserve(static_cast<int>(pngFiles.size()));
         for (size_t i = 0; i < pngFiles.size(); ++i)
         {
             const QString path = Path::Make(iconsDir, pngFiles[i].filename);

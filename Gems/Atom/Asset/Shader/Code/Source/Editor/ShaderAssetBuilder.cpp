@@ -462,7 +462,7 @@ namespace AZ
                     {
                         finalShaderOptionGroupLayout = shaderOptionGroupLayout;
                         shaderAssetCreator.SetShaderOptionGroupLayout(finalShaderOptionGroupLayout);
-                        const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
+                        [[maybe_unused]] const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
                         AZ_TracePrintf(
                             ShaderAssetBuilderName, "Note: This shader uses %u of %u available shader variant key bits. \n",
                             usedShaderOptionBits, RPI::ShaderVariantKeyBitCount);

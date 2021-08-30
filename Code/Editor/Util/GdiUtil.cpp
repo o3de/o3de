@@ -28,7 +28,7 @@ QColor ScaleColor(const QColor& c, float aScale)
     const float g = static_cast<float>(aColor.green()) * aScale;
     const float b = static_cast<float>(aColor.blue()) * aScale;
 
-    return QColor(CLAMP(static_cast<int>(r), 0, 255), CLAMP(static_cast<int>(g), 0, 255), CLAMP(static_cast<int>(b), 0, 255));
+    return QColor(AZStd::clamp(static_cast<int>(r), 0, 255), AZStd::clamp(static_cast<int>(g), 0, 255), AZStd::clamp(static_cast<int>(b), 0, 255));
 }
 
 CAlphaBitmap::CAlphaBitmap()
