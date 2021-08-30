@@ -56,8 +56,9 @@ namespace AWSCore
         /// Called by the AWS SDK to queue a callback for execution.
         bool SubmitToThread(std::function<void()>&& callback) override
         {
-            ExecuterJob* job = aznew ExecuterJob(callback, true, m_context);
+            const auto job = aznew ExecuterJob(callback, true, m_context);
             job->Start();
+            return true;
         }
 
     };

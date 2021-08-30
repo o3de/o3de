@@ -43,7 +43,7 @@ public:
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider()
     {
-        m_handlerCounter++;
+        ++m_handlerCounter;
         return m_credentialsProvider;
     }
 
@@ -79,7 +79,7 @@ public:
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider()
     {
-        m_handlerCounter++;
+        ++m_handlerCounter;
         return m_credentialsProvider;
     }
 
@@ -115,7 +115,7 @@ public:
 
 TEST_F(AWSCredentialBusTest, GetCredentialsProvider_CallFromMultithread_GetExpectedCredentialsProviderAndNumberOfCalls)
 {
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
     for (int index = 0; index < testThreadNumber; index++)
@@ -125,7 +125,7 @@ TEST_F(AWSCredentialBusTest, GetCredentialsProvider_CallFromMultithread_GetExpec
             AWSCredentialRequestBus::BroadcastResult(result, &AWSCredentialRequests::GetCredentialsProvider);
             ASSERT_TRUE(result.result);
             EXPECT_TRUE(result.result == m_handlerOne->m_credentialsProvider);
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 

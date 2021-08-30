@@ -23,6 +23,11 @@ class AWSApiClientJobConfigTest
     , public AWSCredentialRequestBus::Handler
 {
 public:
+    AWSApiClientJobConfigTest()
+        : m_credentialHandlerCounter(0)
+    {
+    }
+
     void SetUp() override
     {
         AWSNativeSDKInit::InitializationManager::InitAwsApi();

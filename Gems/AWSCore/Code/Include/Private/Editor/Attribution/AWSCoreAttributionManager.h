@@ -8,7 +8,6 @@
 
 #pragma once
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/containers/vector.h>
 
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

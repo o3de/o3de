@@ -8,7 +8,6 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AWSCoreBus.h>
 #include <Framework/ServiceClientJobConfig.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 #include <TestFramework/AWSCoreFixture.h>

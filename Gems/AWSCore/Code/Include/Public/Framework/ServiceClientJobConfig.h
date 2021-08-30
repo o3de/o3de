@@ -20,7 +20,7 @@ namespace AWSCore
     {
 
     public:
-        virtual const AZStd::string GetServiceUrl() = 0;
+        virtual AZStd::string GetServiceUrl() = 0;
     };
 
     /// Encapsulates what code needs to know about a service in order to 
@@ -81,9 +81,6 @@ namespace AWSCore
 
         /// Initialize an ServiceClientJobConfig object.
         ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
-        ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
         /// will cause a default value to be used.
@@ -102,7 +99,7 @@ namespace AWSCore
 
         /// This implementation assumes the caller will cache this value as 
         /// needed. See it's use in ServiceRequestJobConfig.
-        const AZStd::string GetServiceUrl() override
+        AZStd::string GetServiceUrl() override
         {
             if (endpointOverride.has_value())
             {

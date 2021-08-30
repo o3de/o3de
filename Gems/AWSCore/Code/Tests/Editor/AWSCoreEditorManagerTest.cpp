@@ -9,7 +9,6 @@
 #include <AzTest/AzTest.h>
 
 #include <Editor/AWSCoreEditorManager.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
 

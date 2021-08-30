@@ -9,19 +9,15 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManagerBus.h>
-#include <AzCore/Jobs/JobCancelGroup.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzTest/AzTest.h>
 
 #include <AWSCoreSystemComponent.h>
-#include <Configuration/AWSCoreConfiguration.h>
 #include <Credential/AWSCredentialManager.h>
 #include <Framework/AWSApiJob.h>
-#include <ResourceMapping/AWSResourceMappingManager.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
@@ -39,7 +35,7 @@ public:
         AWSCoreNotificationsBus::Handler::BusConnect();
     }
 
-    ~AWSCoreNotificationsBusMock()
+    ~AWSCoreNotificationsBusMock() override
     {
         AWSCoreNotificationsBus::Handler::BusDisconnect();
     }
@@ -95,6 +91,9 @@ protected:
     }
 
 public:
+    AWSCoreSystemComponentTest()
+        : m_entity(nullptr) {}
+
     AZStd::unique_ptr<AWSCoreSystemComponent> m_coreSystemsComponent;
     AZ::Entity* m_entity;
     AWSCoreNotificationsBusMock m_notifications;
@@ -122,13 +121,13 @@ TEST_F(AWSCoreSystemComponentTest, ComponentActivateTest)
 
 TEST_F(AWSCoreSystemComponentTest, GetDefaultJobContext_Call_JobContextIsNotNullptr)
 {
-    auto actualContext = m_coreSystemsComponent->GetDefaultJobContext();
+    const auto actualContext = m_coreSystemsComponent->GetDefaultJobContext();
     EXPECT_TRUE(actualContext);
 }
 
 TEST_F(AWSCoreSystemComponentTest, GetDefaultConfig_Call_GetConfigWithExpectedValue)
 {
-    auto actualDefaultConfig = m_coreSystemsComponent->GetDefaultConfig();
+    const auto actualDefaultConfig = m_coreSystemsComponent->GetDefaultConfig();
     EXPECT_TRUE(actualDefaultConfig->userAgent == "/O3DE_AwsApiJob");
     EXPECT_TRUE(actualDefaultConfig->requestTimeoutMs == 30000);
     EXPECT_TRUE(actualDefaultConfig->connectTimeoutMs == 30000);

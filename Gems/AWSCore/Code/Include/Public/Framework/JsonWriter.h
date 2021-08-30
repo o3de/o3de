@@ -161,7 +161,7 @@ namespace AWSCore
         }
 
         /// Write JSON format content directly to the writer's output stream.
-        /// This can be used to efficently output static content.
+        /// This can be used to efficiently output static content.
         bool WriteJson(const Ch* json)
         {
             if (json)
@@ -182,7 +182,7 @@ namespace AWSCore
         }
 
         /// Write an object. The object can implement a WriteJson function
-        /// or you can provide an GobalWriteJson template function 
+        /// or you can provide an GlobalWriteJson template function 
         /// specialization.
         template<class ObjectType>
         bool Object(const ObjectType& obj)

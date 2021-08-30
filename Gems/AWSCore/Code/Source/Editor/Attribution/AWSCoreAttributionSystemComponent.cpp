@@ -10,7 +10,6 @@
 #include <Editor/Attribution/AWSCoreAttributionSystemComponent.h>
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>

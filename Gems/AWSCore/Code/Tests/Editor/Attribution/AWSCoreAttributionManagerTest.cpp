@@ -18,9 +18,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
-#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Jobs/JobManager.h>
-#include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -91,7 +89,7 @@ namespace AWSAttributionUnitTest
             ON_CALL(*this, EnumerateModules(testing::_)).WillByDefault(testing::Invoke(this, &ModuleManagerRequestBusMock::EnumerateModulesMock));
         }
 
-        ~ModuleManagerRequestBusMock()
+        ~ModuleManagerRequestBusMock() override
         {
             AZ::ModuleManagerRequestBus::Handler::BusDisconnect();
         }
@@ -103,19 +101,19 @@ namespace AWSAttributionUnitTest
         MOCK_METHOD1(IsModuleLoaded, bool(const char* modulePath));
     };
 
-    class AWSCredentialRquestsBusMock
+    class AWSCredentialRequestsBusMock
         : public AWSCore::AWSCredentialRequestBus::Handler
     {
     public:
-        AWSCredentialRquestsBusMock()
+        AWSCredentialRequestsBusMock()
         {
-            m_provider = std::make_shared<Aws::Auth::SimpleAWSCredentialsProvider>("TestAccessKey", "TestSecreKey", "TestSession");
+            m_provider = std::make_shared<Aws::Auth::SimpleAWSCredentialsProvider>("TestAccessKey", "TestSecretKey", "TestSession");
             AWSCore::AWSCredentialRequestBus::Handler::BusConnect();
             ON_CALL(*this, GetCredentialsProvider()).WillByDefault(testing::Return(m_provider));
             ON_CALL(*this, GetCredentialHandlerOrder()).WillByDefault(testing::Return(CredentialHandlerOrder::DEFAULT_CREDENTIAL_HANDLER));
         }
 
-        ~AWSCredentialRquestsBusMock()
+        ~AWSCredentialRequestsBusMock() override
         {
             AWSCore::AWSCredentialRequestBus::Handler::BusDisconnect();
             m_provider.reset();
@@ -156,7 +154,7 @@ namespace AWSAttributionUnitTest
     {
     public:
 
-        virtual ~AttributionManagerTest() = default;
+        ~AttributionManagerTest() override = default;
 
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
@@ -166,7 +164,7 @@ namespace AWSAttributionUnitTest
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
         ModuleManagerRequestBusMock m_moduleManagerRequestBusMock;
-        AWSCredentialRquestsBusMock m_credentialRequestBusMock;
+        AWSCredentialRequestsBusMock m_credentialRequestBusMock;
 
         void SetUp() override
         {

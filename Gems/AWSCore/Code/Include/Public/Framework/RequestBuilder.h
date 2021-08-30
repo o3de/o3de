@@ -36,8 +36,7 @@ namespace AWSCore
     class RequestBuilder
     {
     public:
-        RequestBuilder() = default;
-
+        RequestBuilder();
         /// Converts the provided object to JSON and sends it as the
         /// body of the request. The object can implement the following
         /// function to enable serialization:
@@ -79,7 +78,7 @@ namespace AWSCore
             return true;
         }
 
-        const Aws::String& GetRequestUrl()
+        const Aws::String& GetRequestUrl() const
         {
             return m_requestUrl;
         }
@@ -111,7 +110,7 @@ namespace AWSCore
         bool AddQueryParameter(const char* name, unsigned value);
         bool AddQueryParameter(const char* name, uint64_t value);
 
-        Aws::Http::HttpMethod GetHttpMethod()
+        Aws::Http::HttpMethod GetHttpMethod() const
         {
             return m_httpMethod;
         }
@@ -121,7 +120,7 @@ namespace AWSCore
             m_httpMethod = httpMethod;
         }
 
-        const AZStd::string& GetErrorMessage()
+        const AZStd::string& GetErrorMessage() const
         {
             return m_errorMessage;
         }

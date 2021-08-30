@@ -9,7 +9,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <aws/core/auth/AWSCredentials.h>
 #include <aws/dynamodb/DynamoDBClient.h>
 #include <aws/dynamodb/model/GetItemRequest.h>
 #include <aws/dynamodb/model/GetItemResult.h>
@@ -71,7 +70,7 @@ namespace AWSCore
             [](DynamoDBGetItemRequestJob* job) // OnSuccess handler
             {
                 auto item = job->result.GetItem();
-                if (item.size() > 0)
+                if (!item.empty())
                 {
                     DynamoDBAttributeValueMap result;
                     for (const auto& itermPair : item)

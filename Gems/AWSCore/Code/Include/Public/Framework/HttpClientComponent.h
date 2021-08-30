@@ -12,10 +12,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-
 
 #include <Framework/AWSApiClientJob.h>
 
@@ -29,8 +26,10 @@ namespace AWSCore
         : public AZ::ComponentBus
     {
     public:
-        virtual ~HttpClientComponentRequests() {}
-        virtual void MakeHttpRequest(AZStd::string url, AZStd::string method, AZStd::string jsonBody) {}
+        ~HttpClientComponentRequests() override = default;
+        virtual void MakeHttpRequest(AZStd::string url, AZStd::string method, AZStd::string jsonBody)
+        {
+        }
     };
 
     using HttpClientComponentRequestBus = AZ::EBus<HttpClientComponentRequests>;
@@ -39,9 +38,14 @@ namespace AWSCore
         : public AZ::ComponentBus
     {
     public:
-        virtual ~HttpClientComponentNotifications() {}
-        virtual void OnHttpRequestSuccess(int responseCode, AZStd::string responseBody) {}
-        virtual void OnHttpRequestFailure(int responseCode) {}
+        ~HttpClientComponentNotifications() override = default;
+        virtual void OnHttpRequestSuccess(int responseCode, AZStd::string responseBody)
+        {
+        }
+
+        virtual void OnHttpRequestFailure(int responseCode)
+        {
+        }
     };
 
     using HttpClientComponentNotificationBus = AZ::EBus<HttpClientComponentNotifications>;
@@ -55,7 +59,7 @@ namespace AWSCore
     {
     public:
         AZ_COMPONENT(HttpClientComponent, "{23ECDBDF-129A-4670-B9B4-1E0B541ACD61}");
-        virtual ~HttpClientComponent() = default;
+        ~HttpClientComponent() override = default;
 
         void Init() override;
         void Activate() override;
