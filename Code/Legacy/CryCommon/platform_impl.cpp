@@ -18,6 +18,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
 
+
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define PLATFORM_IMPL_H_SECTION_TRAITS 1

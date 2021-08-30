@@ -54,7 +54,7 @@ namespace AZ
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             QueueCommand([=](void* queue) 
             {
-                AZ_PROFILE_SCOPE(AzRender, "ExecuteWork");
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
@@ -109,7 +109,7 @@ namespace AZ
         {
             // The queue doesn't have an explicit way to signal a fence, so
             // we submit an empty work batch with only a fence to signal.
-            QueueCommand([this, &fence](void* queue)
+            QueueCommand([&fence](void* queue)
             {
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(

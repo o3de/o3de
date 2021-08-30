@@ -253,7 +253,6 @@ namespace AZ
             }
 
             const auto& scene = context.m_scene;
-            const Uuid sourceSceneUuid = scene.GetSourceGuid();
             const auto& sceneGraph = scene.GetGraph();
 
             auto names = sceneGraph.GetNameStorage();

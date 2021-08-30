@@ -166,7 +166,7 @@ namespace ScriptCanvas
                                 } 
                             },
                             {
-                                [this]()
+                                []()
                                 {
                                     DisallowReentrantExecutionContract* reentrantContract = aznew DisallowReentrantExecutionContract();
                                     return reentrantContract;

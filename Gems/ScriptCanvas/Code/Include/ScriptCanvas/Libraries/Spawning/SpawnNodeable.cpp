@@ -101,7 +101,7 @@ namespace ScriptCanvas::Nodeables::Spawning
             return;
         }
 
-        auto preSpawnCB = [this, translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
+        auto preSpawnCB = [translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();

@@ -681,7 +681,6 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
-    const char RestrictedPlatformDir[] = "restricted";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)

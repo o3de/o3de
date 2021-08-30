@@ -1229,7 +1229,7 @@ namespace UnitTest
         string_view subView2 = view2.substr(10);
         EXPECT_EQ("Haystack", subView2);
         AZ_TEST_START_TRACE_SUPPRESSION;
-        string_view assertSubView = view2.substr(view2.size() + 1);
+        [[maybe_unused]] string_view assertSubView = view2.substr(view2.size() + 1);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // compare
@@ -1472,7 +1472,7 @@ namespace UnitTest
 
         class WrappedInt
         {
-            int val;
+            [[maybe_unused]] int val;
         };
 
         using ValidFormatArg = AZStd::string::_Format_Internal::ValidFormatArg;
@@ -1751,6 +1751,7 @@ namespace UnitTest
         static constexpr basic_string_view<TypeParam> elementView1(compileTimeString1);
         static constexpr basic_string_view<TypeParam> elementView2(compileTimeString2);
         static_assert(elementView1.data(), "string_view.data() should be non-nullptr");
+        static_assert(elementView2.data(), "string_view.data() should be non-nullptr");
     }
 
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_SizeOperatorsConstexpr)
@@ -1779,7 +1780,7 @@ namespace UnitTest
     {
         using TypeParam = char;
         // null terminated compile time string
-        auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+        [[maybe_unused]] auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
         {
             return "HelloWorld";
         };
@@ -2131,7 +2132,6 @@ namespace UnitTest
         constexpr AZStd::fixed_string<128> test3{ AZStd::fixed_string<128>{}.insert(0, "Brown") };
         constexpr AZStd::fixed_string<128> test4{ AZStd::fixed_string<128>{ "App" }.insert(0, AZStd::string_view("Blue")) };
         constexpr AZStd::fixed_string<128> test5{ AZStd::fixed_string<128>{ "App" }.insert(0, test1, 2, 2) };
-        constexpr AZStd::string_view redView("Red");
         constexpr AZStd::fixed_string<128> test6{ AZStd::fixed_string<128>{ "App" }.insert(size_t(0), 5, 'X') };
         constexpr AZStd::fixed_string<128> test7{ AZStd::fixed_string<128>{ "App" }.insert(0, "GreenTea", 5) };
         auto MakeFixedStringWithInsertWithIteratorPos1 = []() constexpr

@@ -97,11 +97,6 @@ namespace
         }
     }
 
-    const char* PyGetGameFolder()
-    {
-        return Path::GetEditingGameDataFolder().c_str();
-    }
-
     AZStd::string PyGetGameFolderAsString()
     {
         return Path::GetEditingGameDataFolder();

@@ -1336,7 +1336,7 @@ namespace AZ
         inline PassEntry* ImGuiGpuProfiler::CreatePassEntries(RHI::Ptr<RPI::ParentPass> rootPass)
         {
             AZStd::unordered_map<Name, PassEntry> passEntryDatabase;
-            const auto addPassEntry = [&passEntryDatabase, this](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
+            const auto addPassEntry = [&passEntryDatabase](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
             {
                 // If parent a nullptr, it's assumed to be the rootpass.
                 if (parent == nullptr)

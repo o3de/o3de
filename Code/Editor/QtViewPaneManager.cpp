@@ -240,14 +240,13 @@ static bool SkipTitleBarOverdraw(QtViewPane* pane)
     return !pane->m_options.isDockable;
 }
 
-DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
+DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, [[maybe_unused]] QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
     : AzQtComponents::StyledDockWidget(pane->m_name, SkipTitleBarOverdraw(pane),
 #if AZ_TRAIT_OS_PLATFORM_APPLE
           pane->m_options.detachedWindow ? nullptr : parent)
 #else
           parent)
 #endif
-    , m_settings(settings)
     , m_mainWindow(parent)
     , m_pane(pane)
     , m_advancedDockManager(advancedDockManager)

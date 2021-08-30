@@ -1281,43 +1281,6 @@ ILINE Vec3_tpl<F> operator * (const Matrix34_tpl<F>& m, const Vec3_tpl<F>& p)
     return tp;
 }
 
-
-template<class F1, class F2>
-ILINE Matrix34_tpl<F1> operator*(const Matrix34_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    Matrix34_tpl<F1> m;
-    m.m00 = l.m00 * r.x;
-    m.m01 = l.m01 * r.y;
-    m.m02 = l.m02 * r.z;
-    m.m03 = l.m03;
-    m.m10 = l.m10 * r.x;
-    m.m11 = l.m11 * r.y;
-    m.m12 = l.m12 * r.z;
-    m.m13 = l.m13;
-    m.m20 = l.m20 * r.x;
-    m.m21 = l.m21 * r.y;
-    m.m22 = l.m22 * r.z;
-    m.m23 = l.m23;
-    return m;
-}
-template<class F1, class F2>
-ILINE Matrix34_tpl<F1>& operator *= (Matrix34_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    l.m00 *= r.x;
-    l.m01 *= r.y;
-    l.m02 *= r.z;
-    l.m10 *= r.x;
-    l.m11 *= r.y;
-    l.m12 *= r.z;
-    l.m20 *= r.x;
-    l.m21 *= r.y;
-    l.m22 *= r.z;
-    return l;
-}
 template<class F1, class F2>
 ILINE Matrix34_tpl<F1> operator + (const Matrix34_tpl<F1>& l, const Matrix34_tpl<F2>& r)
 {

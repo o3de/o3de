@@ -125,7 +125,7 @@ namespace MaterialEditor
                 QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -156,7 +156,7 @@ namespace MaterialEditor
                 AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -285,7 +285,7 @@ namespace MaterialEditor
                 });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path, this]()
+            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                         [](bool, const SourceControlFileInfo&) {});

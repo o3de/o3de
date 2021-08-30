@@ -205,7 +205,7 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    IRenderer::DynUiPrimitive m_cachedPrimitive;
+    DynUiPrimitive m_cachedPrimitive;
 
 #ifndef _RELEASE
     //! This variable is only used to prevent spamming a warning message each frame (for nested stencil masks)

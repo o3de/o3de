@@ -603,8 +603,6 @@ namespace ImageProcessingAtom
                 const bool isCompressing = isSourceFormatUncompressed ? true : false;
                 const EPixelFormat outputFormat = isCompressing ? destinationFormat : sourceFormat;
 
-                const uint32_t imageWidth = m_image->Get()->GetWidth(0);
-                const uint32_t imageHeight = m_image->Get()->GetHeight(0);
                 ICompressorPtr compressor = ICompressor::FindCompressor(outputFormat, m_input->m_presetSetting.m_destColorSpace, isCompressing);
 
                 // find out if the compressor has a preference to any specific colorspace
@@ -871,7 +869,7 @@ namespace ImageProcessingAtom
         return process;
     }
 
-    void ImageConvertProcess::CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr cubemapImage)
+    void ImageConvertProcess::CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
     {
         const AZStd::string& platformId = m_input->m_platform;
         AZStd::string_view filePath;

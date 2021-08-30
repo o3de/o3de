@@ -67,10 +67,8 @@ namespace LUAEditor
         OnBreakpointLineDeleted.clear();
     }
 
-    void LUAEditorBreakpointWidget::paintEvent(QPaintEvent* paintEvent)
+    void LUAEditorBreakpointWidget::paintEvent([[maybe_unused]] QPaintEvent* paintEvent)
     {
-        paintEvent;
-
         QPainter p(this);
 
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);

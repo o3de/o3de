@@ -113,7 +113,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
 

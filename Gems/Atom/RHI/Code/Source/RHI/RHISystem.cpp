@@ -19,6 +19,8 @@
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 
+AZ_DEFINE_BUDGET(RHI);
+
 namespace AZ
 {
     namespace RHI
@@ -34,7 +36,7 @@ namespace AZ
             m_device = InitInternalDevice();
         }
     
-        void RHISystem::Init(const RHISystemDescriptor& descriptor)
+        void RHISystem::Init()
         {
             m_cpuProfiler.Init();
 
@@ -84,14 +86,6 @@ namespace AZ
                 
             frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
             m_frameScheduler.Init(*m_device, frameSchedulerDescriptor);
-
-            // Register draw list tags declared from content.
-            for (const Name& drawListName : descriptor.m_drawListTags)
-            {
-                RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
-
-                AZ_Warning("RHISystem", drawListTag.IsValid(), "Failed to register draw list tag '%s'. Registry at capacity.", drawListName.GetCStr());
-            }
         }
 
         RHI::Ptr<RHI::Device> RHISystem::InitInternalDevice()
@@ -193,11 +187,11 @@ namespace AZ
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
 
             {
-                AZ_PROFILE_SCOPE(AzRender, "main per-frame work");
+                AZ_PROFILE_SCOPE(RHI, "main per-frame work");
                 m_frameScheduler.BeginFrame();
 
                 frameGraphCallback(m_frameScheduler);

@@ -19,9 +19,12 @@
 #include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
+#include <CryCommon/IFont.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -164,60 +167,6 @@ SSystemCVars g_cvars;
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
 
-#if defined(ANDROID)
-namespace
-{
-    struct Callstack
-    {
-        Callstack()
-            : addrs(NULL)
-            , ignore(0)
-            , count(0)
-        {
-        }
-        Callstack(void** addrs, size_t ignore, size_t count)
-        {
-            this->addrs = addrs;
-            this->ignore = ignore;
-            this->count = count;
-        }
-        void** addrs;
-        size_t ignore;
-        size_t count;
-    };
-
-    static _Unwind_Reason_Code trace_func(struct _Unwind_Context* context, void* arg)
-    {
-        Callstack* cs = static_cast<Callstack*>(arg);
-        if (cs->count)
-        {
-            void* ip = (void*) _Unwind_GetIP(context);
-            if (ip)
-            {
-                if (cs->ignore)
-                {
-                    cs->ignore--;
-                }
-                else
-                {
-                    cs->addrs[0] = ip;
-                    cs->addrs++;
-                    cs->count--;
-                }
-            }
-        }
-        return _URC_NO_REASON;
-    }
-
-    static int Backtrace(void** addrs, size_t ignore, size_t size)
-    {
-        Callstack cs(addrs, ignore, size);
-        _Unwind_Backtrace(trace_func, (void*) &cs);
-        return size - cs.count;
-    }
-}
-#endif
-
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -255,7 +204,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
     m_env.pTimer = &m_Time;
-    m_env.pNameTable = &m_nameTable;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
@@ -659,8 +607,6 @@ ISystem* CSystem::GetCrySystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SleepIfNeeded()
 {
-    FUNCTION_PROFILER_FAST(this, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     ITimer* const pTimer = gEnv->pTimer;
     static bool firstCall = true;
 
@@ -738,7 +684,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    FUNCTION_PROFILER_LEGACYONLY(GetISystem(), PROFILE_SYSTEM);
     AZ_TRACE_METHOD();
 
     m_nUpdateCounter++;
@@ -832,8 +777,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //limit frame rate if vsync is turned off
     //for consoles this is done inside renderthread to be vsync dependent
     {
-        FRAME_PROFILER_LEGACYONLY("FRAME_CAP", gEnv->pSystem, PROFILE_SYSTEM);
-        AZ_TRACE_METHOD_NAME("FrameLimiter");
         static ICVar* pSysMaxFPS = NULL;
         static ICVar* pVSync = NULL;
 
@@ -882,7 +825,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //update console system
     if (m_env.pConsole)
     {
-        FRAME_PROFILER("SysUpdate:Console", this, PROFILE_SYSTEM);
         m_env.pConsole->Update();
     }
 
@@ -898,7 +840,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     // Run movie system pre-update
     if (!bNoUpdate)
     {
-        FRAME_PROFILER("SysUpdate:UpdateMovieSystem", this, PROFILE_SYSTEM);
         UpdateMovieSystem(updateFlags, fMovieFrameTime, true);
     }
 
@@ -914,7 +855,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     if (!m_bNoUpdate)
     {
         const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-        FRAME_PROFILER("SysUpdate:UpdateMovieSystem", this, PROFILE_SYSTEM);
         UpdateMovieSystem(updateFlags, fMovieFrameTime, false);
     }
 
@@ -922,7 +862,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     // Update sound system
     if (!m_bNoUpdate)
     {
-        FRAME_PROFILER("SysUpdate:UpdateAudioSystems", this, PROFILE_SYSTEM);
         UpdateAudioSystems();
     }
 
@@ -949,10 +888,7 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
         m_updateTimes.push_back(std::make_pair(cur_time, updateTime));
     }
 
-    {
-        FRAME_PROFILER("SysUpdate - SystemEventDispatcher::Update", this, PROFILE_SYSTEM);
-        m_pSystemEventDispatcher->Update();
-    }
+    m_pSystemEventDispatcher->Update();
 
     if (!gEnv->IsEditing() && m_eRuntimeState == ESYSTEM_EVENT_LEVEL_GAMEPLAY_START)
     {
@@ -973,8 +909,6 @@ bool CSystem::UpdateLoadtime()
 
 void CSystem::UpdateAudioSystems()
 {
-    AZ_TRACE_METHOD();
-    FRAME_PROFILER_LEGACYONLY("SysUpdate:Audio", this, PROFILE_SYSTEM);
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::ExternalUpdate);
 }
 
@@ -1044,15 +978,12 @@ IXmlUtils* CSystem::GetXmlUtils()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFilename);
-
     return m_pXMLUtils->LoadXmlFromFile(sFilename, bReuseStrings);
 }
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
-    LOADING_TIME_PROFILE_SECTION
     return m_pXMLUtils->LoadXmlFromBuffer(buffer, size, bReuseStrings, bSuppressWarnings);
 }
 
@@ -1262,9 +1193,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 {
-    uint32 callstackCapacity = callstackLength;
-    uint32 nNumStackFramesToSkip = 1;
-
     memset(callstack, 0, sizeof(void*) * callstackLength);
 
 #if !defined(ANDROID)
@@ -1272,6 +1200,8 @@ void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 #endif
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
+    uint32 nNumStackFramesToSkip = 1;
+    uint32 callstackCapacity = callstackLength;
     if (callstackCapacity > 0x40)
     {
         callstackCapacity = 0x40;
@@ -1720,10 +1650,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-        const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+        [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
         CRY_ASSERT(bytesCopied == rawInputSize);
 
-        RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+        [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
         CRY_ASSERT(rawInput);
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);

@@ -130,12 +130,8 @@ namespace LUAEditor
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     }
 
-    QVariant CompletionModel::headerData(int section, Qt::Orientation orientation, int role) const
+    QVariant CompletionModel::headerData([[maybe_unused]] int section, [[maybe_unused]] Qt::Orientation orientation, [[maybe_unused]] int role) const
     {
-        section;
-        orientation;
-        role;
-
         return QVariant();
     }
 

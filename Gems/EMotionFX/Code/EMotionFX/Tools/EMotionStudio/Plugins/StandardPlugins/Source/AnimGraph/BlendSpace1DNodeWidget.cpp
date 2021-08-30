@@ -364,8 +364,6 @@ namespace EMStudio
 
         const int rectLeft = m_drawRect.left();
         const int rectRight = m_drawRect.right();
-        const int rectBottom = m_drawRect.bottom();
-        const int xValueTop = rectBottom + 4;
         const int xAxisLabelTop = m_drawCenterY + 15;
         const char numFormat = 'g';
         const int  numPrecision = 4;

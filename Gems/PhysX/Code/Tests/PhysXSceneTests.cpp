@@ -558,7 +558,7 @@ namespace PhysX
         // add a static simulated body - this is not expected to be reported as an active actor
         AzPhysics::StaticRigidBodyConfiguration staticConfig;
         staticConfig.m_colliderAndShapeData = shapeColliderData;
-        AzPhysics::SimulatedBodyHandle staticSphereHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
+        sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
 
         // add a rigid body - this is expect to be reported as an active actor
         AzPhysics::RigidBodyConfiguration rigidConfig;

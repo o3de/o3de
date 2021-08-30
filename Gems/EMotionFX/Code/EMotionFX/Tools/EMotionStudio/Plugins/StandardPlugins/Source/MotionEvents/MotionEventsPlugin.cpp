@@ -32,7 +32,6 @@ namespace EMStudio
         , m_dialogStack(nullptr)
         , m_motionEventPresetsWidget(nullptr)
         , m_motionEventWidget(nullptr)
-        , m_motionTable(nullptr)
         , m_timeViewPlugin(nullptr)
         , m_trackHeaderWidget(nullptr)
         , m_trackDataWidget(nullptr)
