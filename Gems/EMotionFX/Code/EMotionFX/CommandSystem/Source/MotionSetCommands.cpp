@@ -997,7 +997,7 @@ namespace CommandSystem
                 else
                 {
                     AZStd::string result;
-                    const bool success = GetCommandManager()->ExecuteCommand(AZStd::string::format("Unselect -motionName %s", selectedMotion->GetName()), result);
+                    [[maybe_unused]] const bool success = GetCommandManager()->ExecuteCommand(AZStd::string::format("Unselect -motionName %s", selectedMotion->GetName()), result);
                     AZ_Error("EMotionFX", success, result.c_str());
                 }
             }

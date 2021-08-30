@@ -372,7 +372,7 @@ namespace AZ
                 return;
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -396,7 +396,7 @@ namespace AZ
             }
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
 

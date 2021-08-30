@@ -98,7 +98,7 @@ namespace ImageProcessingAtom
             else
             {
                 IImageObjectPtr dstImage = nullptr;
-                const PixelFormatInfo* compressedInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(compressedFmt);
+                [[maybe_unused]] const PixelFormatInfo* compressedInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(compressedFmt);
                 if (isSrcUncompressed)
                 {
                     AZ::u64 startTime = AZStd::GetTimeUTCMilliSecond();

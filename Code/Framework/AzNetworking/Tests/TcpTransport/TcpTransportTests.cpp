@@ -33,11 +33,11 @@ namespace UnitTest
             ;
         }
 
-        bool OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
+        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
         {
             EXPECT_TRUE((packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
                      || (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::HeartbeatPacket)));
-            return false;
+            return PacketDispatchResult::Failure;
         }
 
         void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId)

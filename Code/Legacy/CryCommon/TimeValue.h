@@ -164,8 +164,6 @@ public:
     ILINE bool operator==(const CTimeValue& inRhs) const { return m_lValue == inRhs.m_lValue; };
     ILINE bool operator!=(const CTimeValue& inRhs) const { return m_lValue != inRhs.m_lValue; };
 
-    AUTO_STRUCT_INFO
-
     void GetMemoryStatistics(class ICrySizer*) const { /*nothing*/}
 
 private: // ----------------------------------------------------------

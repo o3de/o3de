@@ -12,7 +12,6 @@
 #include "AnimSplineTrack.h"
 #include "CompoundSplineTrack.h"
 #include "BoolTrack.h"
-#include "IPostEffectGroup.h"
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 #include "Maestro/Types/AnimValueType.h"
@@ -236,7 +235,7 @@ CAnimNode* CAnimPostFXNode::CreateNode(const int id, AnimNodeType nodeType)
         retNode = aznew CAnimPostFXNode(id, nodeType, pDesc);
         static_cast<CAnimPostFXNode*>(retNode)->m_nodeType = nodeType;
     }
-    
+
     return retNode;
 }
 

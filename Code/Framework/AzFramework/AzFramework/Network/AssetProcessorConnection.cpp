@@ -177,7 +177,7 @@ namespace AzFramework
         //trying to connect, if any error occurs start the disconnect thread
         void AssetProcessorConnection::ConnectThread()
         {
-            static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
+            [[maybe_unused]] static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
 
             //check for join before doing an op
             if (m_connectThread.m_join)
