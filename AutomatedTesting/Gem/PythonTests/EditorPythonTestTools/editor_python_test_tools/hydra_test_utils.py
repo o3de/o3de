@@ -56,7 +56,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
         editor.args.extend(["--autotest_mode"])
     if null_renderer:
         editor.args.extend(["-rhi=Null"])
- 
+
     with editor.start():
 
         editorlog_file = os.path.join(editor.workspace.paths.project_log(), log_file_name)
