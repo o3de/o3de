@@ -36,67 +36,33 @@ class TestAutomation(TestAutomationBase):
         self._run_prefab_test(request, workspace, editor, test_module)
 
 
-TEST_DIRECTORY = os.path.dirname(__file__)
-LOG_MONITOR_TIMEOUT = 180
-PREFAB_TEST_LEVEL_FOLDER = "Prefab"
-PREFAB_TEST_BASE_LEVEL_NAME = "Base"
-PREFAB_TEST_BASE_LEVEL_FILE_PATH = os.path.join(PREFAB_TEST_LEVEL_FOLDER, PREFAB_TEST_BASE_LEVEL_NAME)
-
-
-def test_Prefab_BasicWorkflow(request, editor, level, 
-                              test_file_name, expected_lines, timeout=LOG_MONITOR_TIMEOUT):
-    hydra.launch_and_validate_results(
-        request, TEST_DIRECTORY, editor, 
-        test_file_name, expected_lines, 
-        unexpected_lines=UnexpectedResults, cfg_args=[level], auto_test_mode=False, enable_prefab_system=True,
-        timeout=timeout,
-    )
-
-
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.parametrize("level", [PREFAB_TEST_BASE_LEVEL_FILE_PATH])
-class TestPrefabBasicWorkflows(object):
+class TestPrefabBasicWorkflows(TestAutomationBase):
 
-    def test_Prefab_BasicWorkflow_CreatePrefab(self, request, editor, launcher_platform, level):
-        expected_lines = [
-            Results.create_entity_succeeded,
-            Results.create_prefab_succeeded,
-        ]
+    def _run_prefab_test(self, request, workspace, editor, test_module, batch_mode=True, autotest_mode=True):
+        self._run_test(request, workspace, editor, test_module, 
+            extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"], 
+            batch_mode=batch_mode,
+            autotest_mode=autotest_mode)
 
-        test_Prefab_BasicWorkflow(request, editor, level, 
-            "Prefab_BasicWorkflow_CreatePrefab.py", expected_lines)
+
+    def test_Prefab_BasicWorkflow_CreatePrefab(self, request, workspace, editor, launcher_platform):
+        from . import Prefab_BasicWorkflow_CreatePrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
         
 
-    def test_Prefab_BasicWorkflow_InstantiatePrefab(self, request, editor, launcher_platform, level):
-        expected_lines = [
-            Results.instantiate_prefab_succeeded,
-            Results.instantiated_prefab_at_expected_position,
-        ]
-
-        test_Prefab_BasicWorkflow(request, editor, level, 
-            "Prefab_BasicWorkflow_InstantiatePrefab.py", expected_lines)
+    def test_Prefab_BasicWorkflow_InstantiatePrefab(self, request, workspace, editor, launcher_platform):
+        from . import Prefab_BasicWorkflow_InstantiatePrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
 
 
-    def test_Prefab_BasicWorkflow_CreateAndDeletePrefab(self, request, editor, launcher_platform, level):
-        expected_lines = [
-            Results.create_entity_succeeded,
-            Results.create_prefab_succeeded,
-            Results.delete_prefab_succeeded,
-            Results.delete_prefab_entities_and_descendants_succeeded, 
-        ]
-
-        test_Prefab_BasicWorkflow(request, editor, level, 
-            "Prefab_BasicWorkflow_CreateAndDeletePrefab.py", expected_lines)
+    def test_Prefab_BasicWorkflow_CreateAndDeletePrefab(self, request, workspace, editor, launcher_platform):
+        from . import Prefab_BasicWorkflow_CreateAndDeletePrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
 
 
-    def test_Prefab_BasicWorkflow_CreateAndReparentPrefab(self, request, editor, launcher_platform, level):
-        expected_lines = [
-            Results.create_entity_succeeded,
-            Results.create_prefab_succeeded,
-            Results.reparent_prefab_succeeded,
-        ]
-
-        test_Prefab_BasicWorkflow(request, editor, level, 
-            "Prefab_BasicWorkflow_CreateAndReparentPrefab.py", expected_lines)
+    def test_Prefab_BasicWorkflow_CreateAndReparentPrefab(self, request, workspace, editor, launcher_platform):
+        from . import Prefab_BasicWorkflow_CreateAndReparentPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

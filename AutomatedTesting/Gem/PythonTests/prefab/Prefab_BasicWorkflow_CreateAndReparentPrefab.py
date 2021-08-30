@@ -5,39 +5,44 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
+def Test():
 
-import editor_python_test_tools.pyside_utils as pyside_utils
-import prefab.Prefab_Operations as prefab
+    CAR_PREFAB_FILE_NAME = 'CAR_prefab'
+    WHEEL_PREFAB_FILE_NAME = 'WHEEL_prefab'
 
-
-class PrefabBasicWorkflowCreateAndReparentPrefabTest(EditorTestHelper):
-
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="Prefab_BasicWorkflow_CreateAndReparentPrefab", args=["level"])
-
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
-    async def run_test(self):
-        self.test_success = self.open_level(self.args["level"])
+    async def run_test():
+
+        import prefab.Prefab_Operations as prefab
+        import prefab.Prefab_Test_Utils as prefab_test_utils
+
+        prefab_test_utils.open_base_tests_level()
 
         # Create a new Entity at the root level
-        car_entity_id = prefab.create_entity(entity_name='CAR_entity')
+        car_entity_id = prefab.create_entity()
         car_prefab_entity_ids = [car_entity_id]
 
         # Checks for car prefab creation passed or not 
-        created_car_prefab_container_entity_id = prefab.create_prefab(car_prefab_entity_ids, 'CAR_prefab')
+        created_car_prefab_container_entity_id = prefab.create_prefab(
+            car_prefab_entity_ids, CAR_PREFAB_FILE_NAME)
 
         # Create another new Entity at the root level
-        wheel_entity_id = prefab.create_entity(entity_name='WHEEL_entity')
+        wheel_entity_id = prefab.create_entity()
         wheel_prefab_entity_ids = [wheel_entity_id]
 
         # Checks for wheel prefab creation passed or not 
-        created_wheel_prefab_container_entity_id = prefab.create_prefab(wheel_prefab_entity_ids, 'WHEEL_prefab')
+        created_wheel_prefab_container_entity_id = prefab.create_prefab(
+            wheel_prefab_entity_ids, WHEEL_PREFAB_FILE_NAME)
 
         # Checks for prefab reparenting passed or not 
         await prefab.reparent_prefab(created_wheel_prefab_container_entity_id, created_car_prefab_container_entity_id)
 
 
-test = PrefabBasicWorkflowCreateAndReparentPrefabTest()
-test.run()
+    run_test()
+
+
+if __name__ == "__main__":
+    from editor_python_test_tools.utils import Report
+    Report.start_test(Test)

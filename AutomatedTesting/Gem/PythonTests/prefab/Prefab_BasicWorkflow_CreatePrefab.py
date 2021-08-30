@@ -5,29 +5,28 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
+def Test():
 
-import editor_python_test_tools.pyside_utils as pyside_utils
-import prefab.Prefab_Operations as prefab
+    CAR_PREFAB_FILE_NAME = 'CAR_prefab'
 
+    def run_test():
 
-class PrefabBasicWorkflowCreatePrefabTest(EditorTestHelper):
+        import prefab.Prefab_Operations as prefab
+        import prefab.Prefab_Test_Utils as prefab_test_utils
 
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="Prefab_BasicWorkflow_CreatePrefab", args=["level"])
-
-
-    @pyside_utils.wrap_async
-    async def run_test(self):
-        self.test_success = self.open_level(self.args["level"])
+        prefab_test_utils.open_base_tests_level()
 
         # Create a new Entity at the root level
-        car_entity_id = prefab.create_entity(entity_name='CAR_entity')
+        car_entity_id = prefab.create_entity()
         car_prefab_entity_ids = [car_entity_id]
 
-        # Checks for prefab creation passed or not 
-        prefab.create_prefab(car_prefab_entity_ids, 'CAR_prefab')
+        # Checks for prefab creation passed or not
+        prefab.create_prefab(car_prefab_entity_ids, CAR_PREFAB_FILE_NAME)
 
 
-test = PrefabBasicWorkflowCreatePrefabTest()
-test.run()
+    run_test()
+
+
+if __name__ == "__main__":
+    from editor_python_test_tools.utils import Report
+    Report.start_test(Test)

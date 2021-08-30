@@ -7,12 +7,30 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 
+from azlmbr.entity import EntityId
+from azlmbr.math import Vector3
+from editor_python_test_tools.utils import Report
+from editor_python_test_tools.utils import TestHelper as helper
+
 import azlmbr.bus as bus
+import azlmbr.components as components
 import azlmbr.editor as editor
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 
-from prefab.Prefab_Test_Results import Results
+
+class UtilsResults:
+    unique_name_entity_found = (
+        "Entity with a unique name found",
+        "Entity with a unique name *not* found")
+
+    prefab_at_expected_position = (
+        "prefab is at expected position",
+        "prefab is *not* at expected position")
+
+    entity_children_count_matched = (
+        "Entity with a unique name found",
+        "Entity with a unique name *not* found")
 
 
 def get_prefab_file_name(prefab_name):
@@ -31,21 +49,36 @@ def find_entities_by_name(entity_name):
 
 def find_entity_by_unique_name(entity_name):
     entities = find_entities_by_name(entity_name)
-    if len(entities) is not 1:
-        print(Results.entity_not_have_unique_name)
-        print(f'Name {entity_name} has been used for multiple entities. It is *not* a unique name.')
+    unique_name_entity_found = len(entities) is 1
+    Report.result(UtilsResults.unique_name_entity_found, unique_name_entity_found)
+
+    if unique_name_entity_found:
+        return entities[0]
+    else:
+        Report.info(f"{len(entities)} entities with name '{entity_name}' found")
         return EntityId()
 
-    return entities[0]
+
+def check_entity_at_position(entity_id, expected_prefab_position):
+    actual_prefab_position = components.TransformBus(bus.Event, "GetWorldTranslation", entity_id)
+    is_at_position = actual_prefab_position.IsClose(expected_prefab_position)
+    Report.result(UtilsResults.prefab_at_expected_position, is_at_position)
+
+    if not is_at_position:
+        Report.info(f"Entity '{entity_id.ToString()}'\'s expected position: {expected_prefab_position.ToString()}, actual position: {actual_prefab_position.ToString()}")
+    
+    return is_at_position
 
 
 def check_entity_children_count(entity_id, expected_children_count):
     children_entity_ids = editor.EditorEntityInfoRequestBus(bus.Event, 'GetChildren', entity_id)
-    if len(children_entity_ids) is expected_children_count:
-        print(Results.entity_has_expected_children_count)
-    else:
-        print(Results.entity_not_have_expected_children_count)
-        print(f"Entity {entity_id} actual children count: {len(children_entity_ids)}. Expected children count: {expected_children_count}")
+    entity_children_count_matched = len(children_entity_ids) is expected_children_count
+    Report.result(UtilsResults.entity_children_count_matched, entity_children_count_matched)
+
+    if not entity_children_count_matched:
+        Report.info(f"Entity '{entity_id.ToString()}' actual children count: {len(children_entity_ids)}. Expected children count: {expected_children_count}")
+
+    return entity_children_count_matched
 
 
 def get_children_by_name(parent_entity_id, entity_name):
@@ -59,5 +92,12 @@ def get_children_by_name(parent_entity_id, entity_name):
 
     return result
 
+
 def wait_for_propagation():
     general.idle_wait_frames(1)
+
+
+def open_base_tests_level():
+    helper.init_idle()
+    helper.open_level("Prefab", "Base")
+
