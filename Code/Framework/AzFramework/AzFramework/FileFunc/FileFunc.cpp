@@ -126,9 +126,9 @@ namespace AzFramework
             *      1. Key exists, value is identical -> do nothing
             *          This can occur if a user modifies a config file while the tooling is open.
             *          Example:
-            *              1) Load Project Configurator.
+            *              1) Load Project Manager.
             *              2) Modify your bootstrap.cfg to a different project.
-            *              3) Tell Project Configurator to set your project to the project you set in #2.
+            *              3) Tell Project Manager to set your project to the project you set in #2.
             *      2. Key exists, value is missing -> stomps over key with new key value pair.
             *      3. Key exists, value is different -> stomps over key with new key value pair. Ignores previous values.
             *      4. Key does not exist, header is not required -> insert "key=value" at the end of file.
