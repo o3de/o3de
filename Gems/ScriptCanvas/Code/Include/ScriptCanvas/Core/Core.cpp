@@ -139,6 +139,7 @@ namespace ScriptCanvas
             serializeContext->Class<VersionData>()
                 ->Field("_grammarVersion", &VersionData::grammarVersion)
                 ->Field("_runtimeVersion", &VersionData::runtimeVersion)
+                ->Field("_fileVersion", &VersionData::fileVersion)
                 ;
         }
     }
@@ -154,5 +155,6 @@ namespace ScriptCanvas
     {
         grammarVersion = GrammarVersion::Current;
         runtimeVersion = RuntimeVersion::Current;
+        fileVersion = FileVersion::Current;
     }
 }

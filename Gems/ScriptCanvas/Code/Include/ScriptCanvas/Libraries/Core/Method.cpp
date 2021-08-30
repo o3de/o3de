@@ -681,6 +681,13 @@ namespace ScriptCanvas
                             outType = eventType;
                             return true;
                         }
+                        
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find event: %s, in bus: %s, anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
@@ -693,6 +700,12 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find free method: %s anywhere in BehaviorContext"
+                            , methodName.c_str());
+                        return false;
                     }
                     break;
 
@@ -709,14 +722,26 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find method or property: %s in class %s: , anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
-                    default:
-                        AZ_Warning("Script Canvas", !m_warnOnMissingFunction, "unsupported method type in method");
+                    default:    
                         break;
                     }
                 }
+
+                AZ_Warning("Script Canvas"
+                    , !m_warnOnMissingFunction
+                    , "Could not find overloaded method: %s, class or event name: %s, anywhere in BehaviorContext"
+                    , methodName.c_str()
+                    , m_className.c_str());
 
                 return false;
             }

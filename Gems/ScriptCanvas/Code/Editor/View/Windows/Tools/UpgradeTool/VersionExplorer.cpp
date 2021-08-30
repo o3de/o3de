@@ -674,6 +674,9 @@ namespace ScriptCanvasEditor
 
     void VersionExplorer::InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo)
     {
+        ++m_inspectedAssets;
+        ++m_currentAssetIndex;
+
         Log("InspectAsset: %s", asset.GetHint().c_str());
         AZ::Entity* scriptCanvasEntity = nullptr;
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
@@ -694,10 +697,9 @@ namespace ScriptCanvasEditor
 
         bool onlyShowOutdatedGraphs = m_ui->onlyShowOutdated->isChecked();
         bool forceUpgrade = m_ui->forceUpgrade->isChecked();
-
+                
         if (!forceUpgrade && onlyShowOutdatedGraphs && graphComponent->GetVersion().IsLatest())
         {
-            ++m_currentAssetIndex;
             ScanComplete(asset);
             Log("InspectAsset: %s, is at latest", asset.GetHint().c_str());
             return;
@@ -754,15 +756,11 @@ namespace ScriptCanvasEditor
         }
 
         QString absolutePath = QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str());
-
         connect(browseButton, &QPushButton::clicked, [absolutePath] {
             AzQtComponents::ShowFileOnDesktop(absolutePath);
             });
+
         m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnBrowse), browseButton);
-
-        ++m_inspectedAssets;
-        ++m_currentAssetIndex;
-
         ScanComplete(asset);
     }
 
