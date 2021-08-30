@@ -59,11 +59,6 @@ def C4976207_PhysXRigidBodies_KinematicBehavior():
     # Setup path
     import os
     import sys
-    import ImportPathHelper as imports
-
-    imports.init()
-
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     from editor_python_test_tools.utils import Report
@@ -132,8 +127,5 @@ def C4976207_PhysXRigidBodies_KinematicBehavior():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976207_PhysXRigidBodies_KinematicBehavior)

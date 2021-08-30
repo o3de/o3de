@@ -72,9 +72,7 @@ def C4976197_RigidBodies_InitialAngularVelocity():
     import sys
     import math
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -177,8 +175,5 @@ def C4976197_RigidBodies_InitialAngularVelocity():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976197_RigidBodies_InitialAngularVelocity)

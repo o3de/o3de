@@ -42,9 +42,7 @@ def C5959764_ForceRegion_ForceRegionImpulsesCapsule():
     # Setup path
     import os, sys
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -167,8 +165,5 @@ def C5959764_ForceRegion_ForceRegionImpulsesCapsule():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5959764_ForceRegion_ForceRegionImpulsesCapsule)

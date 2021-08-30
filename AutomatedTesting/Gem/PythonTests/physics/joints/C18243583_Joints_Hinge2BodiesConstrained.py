@@ -52,11 +52,6 @@ def C18243583_Joints_Hinge2BodiesConstrained():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -116,8 +111,5 @@ def C18243583_Joints_Hinge2BodiesConstrained():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C18243583_Joints_Hinge2BodiesConstrained)

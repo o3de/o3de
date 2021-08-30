@@ -62,11 +62,6 @@ def C15308217_NoCrash_LevelSwitch():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -106,8 +101,5 @@ def C15308217_NoCrash_LevelSwitch():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C15308217_NoCrash_LevelSwitch)

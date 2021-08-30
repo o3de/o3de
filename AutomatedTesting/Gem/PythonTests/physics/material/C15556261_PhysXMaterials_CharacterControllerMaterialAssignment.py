@@ -79,11 +79,6 @@ def C15556261_PhysXMaterials_CharacterControllerMaterialAssignment():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
@@ -202,8 +197,5 @@ def C15556261_PhysXMaterials_CharacterControllerMaterialAssignment():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C15556261_PhysXMaterials_CharacterControllerMaterialAssignment)

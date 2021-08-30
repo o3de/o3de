@@ -55,9 +55,7 @@ def C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody():
     Second force region: Name = "Force Region Simple Drag"  Applies a drag force on both spheres
     Setup path
     """
-    import ImportPathHelper as imports
 
-    imports.init()
 
 
     import azlmbr.legacy.general as general
@@ -175,8 +173,5 @@ def C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody)

@@ -19,7 +19,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def C12905528_ForceRegion_WithNonTriggerCollider():
     """
     Summary:
      Create entity with PhysX Force Region component. Check that user is warned if new PhysX Collider component is
@@ -43,13 +43,10 @@ def run():
 
     :return: None
     """
-    # Helper file Imports
-    import ImportPathHelper as imports
-
+    import azlmbr.legacy.general as general
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
 
-    imports.init()
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
 
@@ -66,11 +63,14 @@ def run():
     Report.result(Tests.add_physx_force_region, test_entity.has_component("PhysX Force Region"))
 
     # 4) Start the Tracer to catch any errors and warnings
+    Report.info("Starting warning monitoring")
     with Tracer() as section_tracer:
         # 5) Add the PhysX Collider component
         test_entity.add_component("PhysX Collider")
         Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Collider"))
-
+        general.idle_wait_frames(1)
+    Report.info("Ending warning monitoring")
+    
     # ) Verify there is warning in the logs
     success_condition = section_tracer.has_warnings
     # Checking if warning exist and the exact warning is caught in the expected lines in Test file
@@ -78,4 +78,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C12905528_ForceRegion_WithNonTriggerCollider)

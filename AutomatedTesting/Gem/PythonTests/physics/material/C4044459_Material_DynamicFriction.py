@@ -82,11 +82,6 @@ def C4044459_Material_DynamicFriction():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -191,8 +186,5 @@ def C4044459_Material_DynamicFriction():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4044459_Material_DynamicFriction)

@@ -51,11 +51,6 @@ def C18243588_Joints_Ball2BodiesConstrained():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -114,8 +109,5 @@ def C18243588_Joints_Ball2BodiesConstrained():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C18243588_Joints_Ball2BodiesConstrained)

@@ -40,9 +40,7 @@ def C19723164_ShapeColliders_WontCrashEditor():
     :return: None
     """
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
@@ -96,8 +94,5 @@ def C19723164_ShapeColliders_WontCrashEditor():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C19723164_ShapeColliders_WontCrashEditor)

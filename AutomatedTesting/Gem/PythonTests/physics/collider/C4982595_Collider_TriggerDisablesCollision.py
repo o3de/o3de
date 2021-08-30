@@ -75,11 +75,6 @@ def C4982595_Collider_TriggerDisablesCollision():
     # Setup path
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.components
@@ -234,8 +229,5 @@ def C4982595_Collider_TriggerDisablesCollision():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4982595_Collider_TriggerDisablesCollision)

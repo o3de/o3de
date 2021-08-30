@@ -67,11 +67,6 @@ def C5340400_RigidBody_ManualMomentOfInertia():
     # Setup path
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     from editor_python_test_tools.utils import Report
@@ -160,8 +155,5 @@ def C5340400_RigidBody_ManualMomentOfInertia():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5340400_RigidBody_ManualMomentOfInertia)

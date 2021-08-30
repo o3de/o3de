@@ -44,9 +44,7 @@ def C19578021_ShapeCollider_CanBeAdded():
     :return: None
     """
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -90,8 +88,5 @@ def C19578021_ShapeCollider_CanBeAdded():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C19578021_ShapeCollider_CanBeAdded)

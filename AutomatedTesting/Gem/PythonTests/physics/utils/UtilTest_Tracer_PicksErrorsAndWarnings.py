@@ -30,11 +30,6 @@ def run():
     
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.utils import Report

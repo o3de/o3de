@@ -51,9 +51,7 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
     import os
     import sys
 
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -134,8 +132,5 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain)

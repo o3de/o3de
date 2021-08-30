@@ -5,10 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import ImportPathHelper as imports
-
-imports.init()
-
 from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
 import azlmbr.bus

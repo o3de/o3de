@@ -66,11 +66,6 @@ def C4976243_Collision_SameCollisionGroupDiffCollisionLayers():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -127,8 +122,5 @@ def C4976243_Collision_SameCollisionGroupDiffCollisionLayers():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976243_Collision_SameCollisionGroupDiffCollisionLayers)

@@ -47,9 +47,7 @@ def C19578018_ShapeColliderWithNoShapeComponent():
     """
 
     # Built-in Imports
-    import ImportPathHelper as imports
 
-    imports.init()
 
     # Helper Imports
     from editor_python_test_tools.utils import Report
@@ -92,8 +90,5 @@ def C19578018_ShapeColliderWithNoShapeComponent():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C19578018_ShapeColliderWithNoShapeComponent)

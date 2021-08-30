@@ -65,11 +65,6 @@ def C5689531_Warning_TerrainSliceTerrainComponent():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
@@ -115,8 +110,5 @@ def C5689531_Warning_TerrainSliceTerrainComponent():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5689531_Warning_TerrainSliceTerrainComponent)

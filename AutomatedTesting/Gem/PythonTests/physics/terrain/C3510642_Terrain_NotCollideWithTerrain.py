@@ -65,11 +65,6 @@ def C3510642_Terrain_NotCollideWithTerrain():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
@@ -168,8 +163,5 @@ def C3510642_Terrain_NotCollideWithTerrain():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C3510642_Terrain_NotCollideWithTerrain)

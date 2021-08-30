@@ -42,14 +42,12 @@ def C4976236_AddPhysxColliderComponent():
     """
 
     # Helper file Imports
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
-    from asset_utils import Asset
+    from editor_python_test_tools.asset_utils import Asset
     
     helper.init_idle()
     # 1) Load the level
@@ -84,8 +82,5 @@ def C4976236_AddPhysxColliderComponent():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976236_AddPhysxColliderComponent)

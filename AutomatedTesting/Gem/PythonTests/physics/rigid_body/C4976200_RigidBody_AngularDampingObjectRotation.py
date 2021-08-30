@@ -61,9 +61,7 @@ def C4976200_RigidBody_AngularDampingObjectRotation():
     import sys
     import math
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -285,8 +283,5 @@ def C4976200_RigidBody_AngularDampingObjectRotation():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976200_RigidBody_AngularDampingObjectRotation)
