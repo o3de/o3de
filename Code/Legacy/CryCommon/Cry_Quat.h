@@ -888,9 +888,6 @@ struct Quat_tpl
     {
         return CreateNlerp(IDENTITY, *this, scale);
     }
-
-
-    AUTO_STRUCT_INFO
 };
 
 
@@ -1409,8 +1406,6 @@ struct QuatT_tpl
     {
         return QuatT_tpl<F>(t * scale, q.GetScaled(scale));
     }
-
-    AUTO_STRUCT_INFO
 };
 
 typedef QuatT_tpl<f32>  QuatT; //always 32 bit
@@ -1690,8 +1685,6 @@ struct QuatTS_tpl
     ILINE Vec3_tpl<F> GetRow0() const { return q.GetRow0(); }
     ILINE Vec3_tpl<F> GetRow1() const { return q.GetRow1(); }
     ILINE Vec3_tpl<F> GetRow2() const { return q.GetRow2(); }
-
-    AUTO_STRUCT_INFO
 };
 
 typedef QuatTS_tpl<f32>  QuatTS; //always 64 bit
@@ -1947,8 +1940,6 @@ struct QuatTNS_tpl
     ILINE Vec3_tpl<F> GetRow0() const { return q.GetRow0(); }
     ILINE Vec3_tpl<F> GetRow1() const { return q.GetRow1(); }
     ILINE Vec3_tpl<F> GetRow2() const { return q.GetRow2(); }
-
-    AUTO_STRUCT_INFO
 };
 
 typedef QuatTNS_tpl<f32> QuatTNS;
@@ -2097,8 +2088,6 @@ struct DualQuat_tpl
         nq *= norm;
         dq *= norm;
     }
-
-    AUTO_STRUCT_INFO
 };
 
 #ifndef MAX_API_NUM

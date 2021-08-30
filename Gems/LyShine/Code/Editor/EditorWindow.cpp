@@ -2112,8 +2112,8 @@ int EditorWindow::GetCanvasMaxHierarchyDepth(const LyShine::EntityArray& rootChi
         return depth;
     }
 
-    int numChildrenCurLevel = rootChildElements.size();
-    int numChildrenNextLevel = 0;
+    size_t numChildrenCurLevel = rootChildElements.size();
+    size_t numChildrenNextLevel = 0;
     std::list<AZ::Entity*> elementList(rootChildElements.begin(), rootChildElements.end());
     while (!elementList.empty())
     {

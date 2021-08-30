@@ -706,7 +706,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     if (includeChildren)
     {
-        children.push_back(*includeChildren);
+        children.insert(children.end(),includeChildren->begin(),includeChildren->end());
     }
 
     // First, check if base name is unique
@@ -1862,7 +1862,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 
     // Notify LyShine render pass that it needs to rebuild
     QueueRttPassRebuild();
-    
+
     return attachmentImage->GetAttachmentId();
 }
 
@@ -4101,7 +4101,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
 
         canvasComponent->m_editorToGameEntityIdMap = *previousRemapTable;
         ReuseOrGenerateNewIdsAndFixRefs(&entityContainer, canvasComponent->m_editorToGameEntityIdMap, context);
-        
+
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
             canvasComponent->m_entityContext->GetContextId(),
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity, false, nullptr);

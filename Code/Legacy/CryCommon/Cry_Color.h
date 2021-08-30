@@ -14,9 +14,9 @@
 #define CRYINCLUDE_CRYCOMMON_CRY_COLOR_H
 #pragma once
 
-#include <CryHeaders.h>
 #include <platform.h>
 #include <AzCore/std/containers/array.h>
+#include "Cry_Math.h"
 
 ILINE float FClamp(float X, float Min, float Max)
 {
@@ -362,8 +362,6 @@ struct Color_tpl
         AZStd::array<T, 4> primitiveArray = { { r, g, b, a } };
         return primitiveArray;
     }
-
-    AUTO_STRUCT_INFO
 };
 
 

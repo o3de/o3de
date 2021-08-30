@@ -15,6 +15,9 @@
 #pragma once
 #include <AzCore/std/containers/map.h>
 
+#include <CryCommon/TimeValue.h>
+#include <CryCommon/StaticInstance.h>
+
 #include "IMovieSystem.h"
 #include "IShader.h"
 

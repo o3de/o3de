@@ -10,7 +10,6 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ITimer.h>
-#include <VectorSet.h>
 #include <LyShine/ILyShine.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>

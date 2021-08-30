@@ -24,7 +24,6 @@
 
 #include "Cry_Math.h"
 #include <StlUtils.h>
-#include <Tarray.h>
 #include <CryPodArray.h>
 #include <Cry_Vector3.h>
 #include <Cry_Quat.h>
@@ -36,7 +35,6 @@
 struct AABB;
 struct SVF_P3F;
 struct SVF_P3F_C4B_T2F;
-struct SVF_P3F_C4B_T2S;
 struct SVF_P3S_C4B_T2S;
 struct SPipTangents;
 
@@ -237,7 +235,6 @@ public:
     void AddObject(const AABB&) {}
     void AddObject(const SVF_P3F&) {}
     void AddObject(const SVF_P3F_C4B_T2F&) {}
-    void AddObject(const SVF_P3F_C4B_T2S&) {}
     void AddObject(const SVF_P3S_C4B_T2S&) {}
     void AddObject(const SPipTangents&) {}
     void AddObject([[maybe_unused]] const AZ::Vector3& rObj) {}
@@ -298,26 +295,6 @@ public:
             {
                 this->AddObject(*it);
             }
-        }
-    }
-
-    template<typename T, typename I, typename S>
-    void AddObject(const DynArray<T, I, S>& rVector)
-    {
-        if (rVector.empty())
-        {
-            this->AddObject(rVector.begin(), rVector.get_alloc_size());
-            return;
-        }
-
-        if (!this->AddObject(rVector.begin(), rVector.get_alloc_size()))
-        {
-            return;
-        }
-
-        for (typename DynArray<T, I, S>::const_iterator it = rVector.begin(); it != rVector.end(); ++it)
-        {
-            this->AddObject(*it);
         }
     }
 

@@ -12,6 +12,8 @@
 #pragma once
 
 #include "AnimNode.h"
+#include <CryCommon/IMaterial.h>
+#include <CryCommon/StlUtils.h>
 
 class CAnimMaterialNode
     : public CAnimNode
@@ -43,7 +45,7 @@ public:
     virtual void SetKeyValueRange(float fMin, float fMax){ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
 
     virtual void InitializeTrack(IAnimTrack* pTrack, const CAnimParamType& paramType);
-    
+
 
     static void Reflect(AZ::ReflectContext* context);
 protected:

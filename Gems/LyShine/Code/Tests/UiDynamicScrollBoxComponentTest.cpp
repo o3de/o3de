@@ -93,7 +93,7 @@ namespace UnitTest
         static int FindDescendantCount(const AZ::Entity* entity)
         {
             LyShine::EntityArray children = entity->FindComponent<UiElementComponent>()->GetChildElements();
-            int numDescendants = children.size();
+            int numDescendants = static_cast<int>(children.size());
             for(const AZ::Entity* child : children)
             {
                 numDescendants += FindDescendantCount(child);
@@ -105,7 +105,7 @@ namespace UnitTest
         static int FindCanvasElementCount(UiCanvasComponent* uiCanvasComponent)
         {
             const LyShine::EntityArray childEntities = uiCanvasComponent->GetChildElements();
-            int numCanvasElements = childEntities.size();
+            int numCanvasElements = static_cast<int>(childEntities.size());
             for (const AZ::Entity* childEntity : childEntities)
             {
                 numCanvasElements += FindDescendantCount(childEntity);
