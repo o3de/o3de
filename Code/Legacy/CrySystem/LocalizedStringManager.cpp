@@ -32,8 +32,11 @@
 #define MAX_CELL_COUNT 32
 
 // CVAR names
-[[maybe_unused]] const char c_sys_localization_debug[] = "sys_localization_debug";
-[[maybe_unused]] const char c_sys_localization_encode[] = "sys_localization_encode";
+#if !defined(_RELEASE)
+const char c_sys_localization_debug[] = "sys_localization_debug";
+const char c_sys_localization_encode[] = "sys_localization_encode";
+#endif // !defined(_RELEASE)
+
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 

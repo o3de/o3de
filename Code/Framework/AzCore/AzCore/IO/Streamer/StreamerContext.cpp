@@ -17,10 +17,11 @@ namespace AZ
     namespace IO
     {
         static constexpr char ContextName[] = "Context";
-        [[maybe_unused]] static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
-        [[maybe_unused]] static constexpr char LatePredictionName[] = "Early completions";
-        [[maybe_unused]] static constexpr char MissedDeadlinesName[] = "Missed deadlines";
-
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
+        static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
+        static constexpr char LatePredictionName[] = "Early completions";
+        static constexpr char MissedDeadlinesName[] = "Missed deadlines";
+#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
