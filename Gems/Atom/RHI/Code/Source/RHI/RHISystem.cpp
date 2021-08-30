@@ -36,7 +36,7 @@ namespace AZ
             m_device = InitInternalDevice();
         }
     
-        void RHISystem::Init(const RHISystemDescriptor& descriptor)
+        void RHISystem::Init()
         {
             m_cpuProfiler.Init();
 
@@ -86,14 +86,6 @@ namespace AZ
                 
             frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
             m_frameScheduler.Init(*m_device, frameSchedulerDescriptor);
-
-            // Register draw list tags declared from content.
-            for (const Name& drawListName : descriptor.m_drawListTags)
-            {
-                [[maybe_unused]] RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
-
-                AZ_Warning("RHISystem", drawListTag.IsValid(), "Failed to register draw list tag '%s'. Registry at capacity.", drawListName.GetCStr());
-            }
         }
 
         RHI::Ptr<RHI::Device> RHISystem::InitInternalDevice()

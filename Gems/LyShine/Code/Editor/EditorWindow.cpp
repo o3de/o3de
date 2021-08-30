@@ -14,6 +14,7 @@
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/Bus/UiEditorCanvasBus.h>
@@ -32,7 +33,6 @@
 #include <QClipboard>
 #include <QUndoGroup>
 #include <QScrollBar>
-#include <QFileDialog>
 
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_STATE_KEY     (QString("Edit Mode State") + " " + FileHelpers::GetAbsoluteGameDir())
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_GEOM_KEY      (QString("Edit Mode Geometry") + " " + FileHelpers::GetAbsoluteGameDir())
@@ -706,7 +706,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
             dir.append(canvasMetadata.m_canvasDisplayName.c_str());
         }
 
-        QString filename = QFileDialog::getSaveFileName(nullptr,
+        QString filename = AzQtComponents::FileDialog::GetSaveFileName(nullptr,
             QString(),
             dir,
             "*." UICANVASEDITOR_CANVAS_EXTENSION,
