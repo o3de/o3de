@@ -49,14 +49,16 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
-             * Return the container entity id of the prefab created if creation succeeded.
+             * Return an outcome object with an container entity id of the prefab created if creation succeeded;
+             * on failure, it comes with an error message detailing the cause of the error.
              */
             virtual CreatePrefabResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZStd::string_view filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
-             * Return the container entity id of the prefab instantiated if instantiation succeeded.
+             * Return an outcome object with an container entity id of the prefab instantiated if instantiation succeeded; 
+             * on failure, it comes with an error message detailing the cause of the error.
              */
             virtual InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
@@ -64,7 +66,7 @@ namespace AzToolsFramework
             /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't
              * all belong to the same instance.
-             * Return whether the deletion succeeded or not.
+             * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
         };

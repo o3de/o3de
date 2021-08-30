@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def Test():
 
-    CAR_PREFAB_FILE_NAME = 'CAR_prefab'
+    CAR_PREFAB_FILE_NAME = 'car_prefab'
 
     def run_test():
 
