@@ -128,7 +128,7 @@ namespace AZ
             }
 
             // make directories from bottom to top.
-            AZ::OSString buf;
+            AZStd::string buf;
             size_t pathLength = strlen(resolvedPath);
             buf.reserve(pathLength);
             for (size_t pos = 0; pos < pathLength; ++pos)

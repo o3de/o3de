@@ -497,8 +497,7 @@ bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
     bool bReleaseResources)
 {
-    LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
-    m_bLevelLoaded = false;
+     m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current

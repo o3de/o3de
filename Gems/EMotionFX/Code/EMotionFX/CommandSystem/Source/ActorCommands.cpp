@@ -145,7 +145,6 @@ namespace CommandSystem
 
             AZStd::vector<AZStd::string> nodeNames;
             AzFramework::StringFunc::Tokenize(attachmentNodes.c_str(), nodeNames, ";", false, true);
-            const size_t numNodeNames = nodeNames.size();
 
             // Remove the given nodes from the attachment node list by unsetting the flag.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))
@@ -224,7 +223,6 @@ namespace CommandSystem
 
             AZStd::vector<AZStd::string> nodeNames;
             AzFramework::StringFunc::Tokenize(nodesExcludedFromBounds.c_str(), nodeNames, ";", false, true);
-            const size_t numNodeNames = nodeNames.size();
 
             // Remove the selected nodes from the bounding volume calculations.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))

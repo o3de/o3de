@@ -2330,7 +2330,6 @@ namespace AZ::IO
             // we only want to record ASSET access
             // assets are identified as things which start with no alias, or with the @assets@ alias
             auto assetPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(szFilename);
-            constexpr AZStd::string_view assetsAlias{ "@assets@" };
             if (assetPath && assetPath->Native().starts_with("@assets@"))
             {
                 IResourceList* pList = GetResourceList(m_eRecordFileOpenList);

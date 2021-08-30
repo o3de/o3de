@@ -136,7 +136,6 @@ protected:
     void DrawFrameTicks(QPainter* dc);
 
 private:
-    bool m_bAutoDelete;
     QRect m_rcClient;
     QRect m_rcTimeline;
     float m_fTimeMarker;

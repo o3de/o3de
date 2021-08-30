@@ -114,7 +114,6 @@ namespace UnitTest
         const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
@@ -929,7 +928,7 @@ namespace UnitTest
         PlatformNameList platforms = BuilderSettingManager::Instance()->GetPlatformList();
 
     #ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-        ASSERT_TRUE(platforms.size() == 4);
+        EXPECT_THAT(platforms, testing::UnorderedPointwise(testing::Eq(), {"pc", "linux", "mac", "ios", "android"}));
     #endif //AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
     }
 

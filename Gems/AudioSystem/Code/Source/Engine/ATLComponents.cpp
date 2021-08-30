@@ -284,10 +284,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioObjectManager::CAudioObjectManager(CAudioEventManager& refAudioEventManager)
+    CAudioObjectManager::CAudioObjectManager([[maybe_unused]] CAudioEventManager& refAudioEventManager)
         : m_cObjectPool(Audio::CVars::s_AudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
         , m_fTimeSinceLastVelocityUpdateMS(0.0f)
-        , m_refAudioEventManager(refAudioEventManager)
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
@@ -1777,7 +1776,6 @@ namespace Audio
         static float const fItemPlayingColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
         static float const fItemLoadingColor[4] = { 0.9f, 0.2f, 0.2f, 0.9f };
         static float const fItemOtherColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
-        static float const fNoImplColor[4] = { 1.0f, 0.6f, 0.6f, 0.9f };
 
         rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f, fHeaderColor, false, "Audio Events [%zu]", m_cActiveAudioEvents.size());
         fPosX += 20.0f;

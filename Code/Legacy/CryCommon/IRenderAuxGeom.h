@@ -6,16 +6,12 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IRENDERAUXGEOM_H
-#define CRYINCLUDE_CRYCOMMON_IRENDERAUXGEOM_H
 #pragma once
 
-
-struct SAuxGeomRenderFlags;
-
+#include "Cry_Color.h"
 #include "IRenderer.h"
 
+struct SAuxGeomRenderFlags;
 
 enum EBoundingBoxDrawStyle
 {
@@ -833,6 +829,3 @@ inline CRenderAuxGeomRenderFlagsRestore::~CRenderAuxGeomRenderFlagsRestore()
 {
     m_pRender->SetRenderFlags(m_backuppedRenderFlags);
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_IRENDERAUXGEOM_H

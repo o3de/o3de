@@ -27,6 +27,8 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiLayoutManagerBus.h>
 
+#include <CryCommon/StlUtils.h>
+
 #include "UiTransform2dComponent.h"
 
 #include "IConsole.h"

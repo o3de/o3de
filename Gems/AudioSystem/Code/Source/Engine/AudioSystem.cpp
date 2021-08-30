@@ -17,7 +17,6 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;
@@ -293,7 +292,7 @@ namespace Audio
         PushRequestBlocking(request);
 
         m_audioSystemThread.Deactivate();
-        const bool bSuccess = m_oATL.ShutDown();
+        m_oATL.ShutDown();
         m_bSystemInitialized = false;
     }
 

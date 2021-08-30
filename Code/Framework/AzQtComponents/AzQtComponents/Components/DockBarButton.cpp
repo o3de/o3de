@@ -141,7 +141,6 @@ namespace AzQtComponents
         }
 
         QRect buttonRect = style->subControlRect(QStyle::CC_ToolButton, option, QStyle::SC_ToolButton, widget);
-        QRect menuRect = style->subControlRect(QStyle::CC_ToolButton, option, QStyle::SC_ToolButtonMenu, widget);
 
         painter->save();
 

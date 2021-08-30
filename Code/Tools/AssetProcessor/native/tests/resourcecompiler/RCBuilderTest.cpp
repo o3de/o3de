@@ -447,7 +447,6 @@ TEST_F(RCBuilderTest, ProcessLegacyRCJob_ProcessStandardSingleJob_Valid)
 TEST_F(RCBuilderTest, ProcessLegacyRCJob_ProcessCopySingleJob_Valid)
 {
     AZStd::string                       name = "test";
-    AZ::Uuid                            builderUuid = AZ::Uuid::CreateRandom();
     AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
@@ -506,7 +505,6 @@ TEST_F(RCBuilderTest, MatchTempFileToSkip_SkipRCFiles_false)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Valid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -536,7 +534,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Valid)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Failed)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -564,7 +561,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Failed)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardCopySingleJob_Valid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -590,7 +586,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardCopySingleJob_Valid)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardSkippedSingleJob_Invalid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;

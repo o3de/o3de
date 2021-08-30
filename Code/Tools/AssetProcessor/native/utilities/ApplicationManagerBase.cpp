@@ -1209,7 +1209,7 @@ void ApplicationManagerBase::InitFileProcessor()
     AssetProcessor::ThreadController<AssetProcessor::FileProcessor>* fileProcessorHelper = new AssetProcessor::ThreadController<AssetProcessor::FileProcessor>();
 
     addRunningThread(fileProcessorHelper);
-    m_fileProcessor.reset(fileProcessorHelper->initialize([this, &fileProcessorHelper]()
+    m_fileProcessor.reset(fileProcessorHelper->initialize([this]()
     {
         return new AssetProcessor::FileProcessor(m_platformConfiguration);
     }));

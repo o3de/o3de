@@ -122,7 +122,7 @@ namespace AzManipulatorTestFramework
 
     MouseInteractionEvent CreateMouseInteractionEvent(const MouseInteraction& mouseInteraction, MouseEvent event)
     {
-        return MouseInteractionEvent(mouseInteraction, event);
+        return MouseInteractionEvent(mouseInteraction, event, /*captured=*/false);
     }
 
     void DispatchMouseInteractionEvent(const MouseInteractionEvent& event)

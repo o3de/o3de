@@ -841,7 +841,7 @@ namespace Audio
 
                     streamer->SetRequestCompleteCallback(
                         audioFileEntry->m_asyncStreamRequest,
-                        [this](AZ::IO::FileRequestHandle request)
+                        [](AZ::IO::FileRequestHandle request)
                         {
                             AZ_PROFILE_FUNCTION(Audio);
                             AudioFileCacheManagerNotficationBus::QueueBroadcast(

@@ -426,7 +426,6 @@ namespace AZ
 
         void FileIOStream::Seek(OffsetType bytes, SeekMode mode)
         {
-            AZ_PROFILE_SCOPE(AzCore, "FileIO Seek: %s", m_filename.c_str());
             AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
             AZ_Assert(IsOpen(), "Cannot seek on a FileIOStream that is not open.");
 
@@ -454,7 +453,6 @@ namespace AZ
 
         SizeType FileIOStream::Read(SizeType bytes, void* oBuffer)
         {
-            AZ_PROFILE_SCOPE(AzCore, "FileIO Read: %s", m_filename.c_str());
             AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
             AZ_Assert(IsOpen(), "Cannot read from a FileIOStream that is not open.");
 

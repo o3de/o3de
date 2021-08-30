@@ -23,6 +23,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/PackedVector3.h>
 
+AZ_DECLARE_BUDGET(AzRender);
+
 namespace AZ
 {
     namespace Render

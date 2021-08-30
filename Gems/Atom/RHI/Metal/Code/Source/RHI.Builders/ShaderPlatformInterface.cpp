@@ -252,9 +252,7 @@ namespace AZ
 
             // Output file
             AZStd::string shaderMSLOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
-            
-            bool outputFileWriteResult = false;
-            
+
             // Stage profile name parameter
             const AZStd::string shaderModelVersion = "6_2";
             

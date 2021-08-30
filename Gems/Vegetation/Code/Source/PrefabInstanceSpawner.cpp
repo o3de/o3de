@@ -325,7 +325,7 @@ namespace Vegetation
 
         // Create a callback for SpawnAllEntities that will set the transform of the root entity to the correct position / rotation / scale
         // for our spawned instance.
-        auto preSpawnCB = [this, world](
+        auto preSpawnCB = [world](
              [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();

@@ -49,8 +49,6 @@ namespace EMStudio
     private:
         MotionWindowPlugin*                 m_motionWindowPlugin;
         QCheckBox*                          m_motionRetargetingButton;
-        EMotionFX::ActorInstance*           m_selectedActorInstance;
-        EMotionFX::Actor*                   m_actor;
         CommandSystem::SelectionList        m_selectionList;
     };
 } // namespace EMStudio

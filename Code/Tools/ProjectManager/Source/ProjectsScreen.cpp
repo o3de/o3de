@@ -403,7 +403,7 @@ namespace O3DE::ProjectManager
                     constexpr int waitTimeInMs = 3000;
                     QTimer::singleShot(
                         waitTimeInMs, this,
-                        [this, button]
+                        [button]
                         {
                             if (button)
                             {
