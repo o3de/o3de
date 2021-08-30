@@ -72,6 +72,7 @@
 // Shape components
 #include "Shape/SphereShapeComponent.h"
 #include "Shape/DiskShapeComponent.h"
+#include "Shape/AxisAlignedBoxShapeComponent.h"
 #include "Shape/BoxShapeComponent.h"
 #include "Shape/QuadShapeComponent.h"
 #include "Shape/CylinderShapeComponent.h"
@@ -201,6 +202,7 @@ namespace LmbrCentral
             TagComponent::CreateDescriptor(),
             SphereShapeComponent::CreateDescriptor(),
             DiskShapeComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeComponent::CreateDescriptor(),
             BoxShapeComponent::CreateDescriptor(),
             QuadShapeComponent::CreateDescriptor(),
             CylinderShapeComponent::CreateDescriptor(),
@@ -214,6 +216,7 @@ namespace LmbrCentral
             RandomTimedSpawnerComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),
             QuadShapeDebugDisplayComponent::CreateDescriptor(),
             CapsuleShapeDebugDisplayComponent::CreateDescriptor(),
