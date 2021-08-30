@@ -45,9 +45,9 @@ namespace EMotionFX
 
             struct EMFX_API ExtractFrameContext
             {
-                size_t m_frameIndex = ~0;
-                size_t m_nextFrameIndex = ~0;
-                size_t m_prevFrameIndex = ~0;
+                size_t m_frameIndex = InvalidIndex;
+                size_t m_nextFrameIndex = InvalidIndex;
+                size_t m_prevFrameIndex = InvalidIndex;
                 FrameDatabase* m_data = nullptr;
                 MotionInstance* m_motionInstance = nullptr;
                 const Pose* m_pose = nullptr;
