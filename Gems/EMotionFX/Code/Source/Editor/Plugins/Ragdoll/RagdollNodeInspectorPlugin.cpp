@@ -86,7 +86,7 @@ namespace EMotionFX
         }
         else
         {
-            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."));
         }
 
         return true;

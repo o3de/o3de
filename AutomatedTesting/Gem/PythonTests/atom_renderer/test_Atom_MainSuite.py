@@ -303,5 +303,6 @@ class TestMaterialEditorBasicTests(object):
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
+            null_renderer=True,
             log_file_name="MaterialEditor.log",
         )

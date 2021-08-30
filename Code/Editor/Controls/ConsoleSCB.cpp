@@ -298,7 +298,6 @@ Lines CConsoleSCB::s_pendingLines;
 CConsoleSCB::CConsoleSCB(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::Console())
-    , m_richEditTextLength(0)
     , m_backgroundTheme(gSettings.consoleBackgroundColorTheme)
 {
     m_lines = s_pendingLines;

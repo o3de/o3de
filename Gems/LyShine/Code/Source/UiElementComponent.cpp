@@ -561,7 +561,7 @@ LyShine::EntityArray UiElementComponent::FindAllChildrenIntersectingRect(const A
         // Check children of this child first
         // child elements do not have to be contained in the parent element's bounds
         LyShine::EntityArray childMatches = childElementComponent->FindAllChildrenIntersectingRect(bound0, bound1, isInGame);
-        result.push_back(childMatches);
+        result.insert(result.end(),childMatches.begin(),childMatches.end());
 
         bool isSelectable = true;
         if (!isInGame)
@@ -943,7 +943,7 @@ bool UiElementComponent::GetAreElementAndAncestorsEnabled()
     {
         return m_parentElementComponent->GetAreElementAndAncestorsEnabled();
     }
-    
+
     return true;
 }
 
@@ -1327,7 +1327,7 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
         serializeContext->Class<ChildEntityIdOrderEntry>()
             // Persistent IDs for this are simply the entity id
             ->PersistentId([](const void* instance) -> AZ::u64
-            { 
+            {
                 const ChildEntityIdOrderEntry* entry = reinterpret_cast<const ChildEntityIdOrderEntry*>(instance);
                 return static_cast<AZ::u64>(entry->m_entityId);
             })
@@ -1680,7 +1680,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                             entityIdLoaded = true;
                         }
                     }
-                    
+
                     if (entityIdLoaded)
                     {
                         oldChildrenDataPatchFound = true;
@@ -1812,7 +1812,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                 m_childEntityIdOrder.push_back({elementChanged.second, m_childEntityIdOrder.size()});
             }
         }
- 
+
         // sort the added elements by index
         AZStd::sort(elementsAdded.begin(), elementsAdded.end());
         for (auto& elementAdded : elementsAdded)

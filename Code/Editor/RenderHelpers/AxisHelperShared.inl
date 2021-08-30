@@ -191,7 +191,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
     {
         if (axis)
         {
-            float col[4] = { 1, 0, 0, 1 };
             if (axis == AXIS_X || axis == AXIS_XY || axis == AXIS_XZ || axis == AXIS_XYZ)
             {
                 colX = colSelected;
@@ -436,7 +435,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
             {
                 dc.SetColor(QColor(128, 32, 32), 0.4f);
             }
-            Vec3 org = worldTM.GetTranslation();
             dc.DrawBall(Vec3(0.0f),  m_size * kSelectionBallScale);
         }
 

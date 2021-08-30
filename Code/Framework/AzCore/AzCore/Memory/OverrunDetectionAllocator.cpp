@@ -511,7 +511,7 @@ AZ::OverrunDetectionSchemaImpl::OverrunDetectionSchemaImpl(const OverrunDetectio
 {
     m_platformAllocator.reset(new Internal::PlatformOverrunDetectionSchema);
 
-    auto info = m_platformAllocator->GetSystemInformation();
+    [[maybe_unused]] auto info = m_platformAllocator->GetSystemInformation();
     AZ_Assert(info.m_pageSize == Internal::ODS_PAGE_SIZE, "System page size %d does not equal expected page size %d", info.m_pageSize, Internal::ODS_PAGE_SIZE);
     AZ_Assert(info.m_minimumAllocationSize == Internal::ODS_ALLOCATION_SIZE, "System minimum allocation size %d does not equal expected size %d", info.m_minimumAllocationSize, Internal::ODS_ALLOCATION_SIZE);
 

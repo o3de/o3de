@@ -419,9 +419,9 @@ namespace AZ::IO::ZipDir
         }
 
         // defining file attributes for opening files using constants to avoid the need to include windows headers
-        constexpr int FileFlagNoBufferinf = 0x20000000;
+        constexpr int FileFlagNoBuffering = 0x20000000;
         constexpr int FileAttributeNormal = 0x00000080;
-        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileAttributeNormal | FileAttributeNormal))
+        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileFlagNoBuffering | FileAttributeNormal))
         {
             m_nSize = aznumeric_cast<int64_t>(m_unbufferedFile.Length());
             return true;

@@ -203,9 +203,6 @@ namespace EMStudio
         QAction*                m_saveAllAction;
         QAction*                m_mergeActorAction;
         QAction*                m_saveSelectedActorsAction;
-#ifdef EMFX_DEVELOPMENT_BUILD
-        QAction*                m_saveSelectedActorAsAttachmentsAction;
-#endif
 
         // application mode
         QComboBox*              m_applicationMode;

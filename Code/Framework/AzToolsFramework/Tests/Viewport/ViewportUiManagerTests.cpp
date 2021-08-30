@@ -168,7 +168,7 @@ namespace UnitTest
         m_viewportManagerWrapper.GetMockRenderOverlay()->setVisible(true);
 
         auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+        m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
         m_viewportManagerWrapper.GetViewportManager()->Update();
 
         m_viewportManagerWrapper.GetViewportManager()->SetClusterVisible(clusterId, false);

@@ -1095,62 +1095,6 @@ struct ISystem
     using CrySystemNotificationBus = AZ::EBus<CrySystemNotifications>;
 };
 
-#if defined(USE_DISK_PROFILER)
-
-struct DiskOperationInfo
-{
-    DiskOperationInfo()
-        : m_nSeeksCount(0)
-        , m_nFileOpenCount(0)
-        , m_nFileReadCount(0)
-        , m_dOperationSize(0.)
-        , m_dOperationTime(0.) {}
-    int m_nSeeksCount;
-    int m_nFileOpenCount;
-    int m_nFileReadCount;
-    double m_dOperationTime;
-    double m_dOperationSize;
-
-    DiskOperationInfo& operator -= (const DiskOperationInfo& rv)
-    {
-        m_nSeeksCount -= rv.m_nSeeksCount;
-        m_nFileOpenCount -= rv.m_nFileOpenCount;
-        m_nFileReadCount -= rv.m_nFileReadCount;
-        m_dOperationSize -= rv.m_dOperationSize;
-        m_dOperationTime -= rv.m_dOperationTime;
-        return *this;
-    }
-
-    DiskOperationInfo& operator += (const DiskOperationInfo& rv)
-    {
-        m_nSeeksCount += rv.m_nSeeksCount;
-        m_nFileOpenCount += rv.m_nFileOpenCount;
-        m_nFileReadCount += rv.m_nFileReadCount;
-        m_dOperationSize += rv.m_dOperationSize;
-        m_dOperationTime += rv.m_dOperationTime;
-        return *this;
-    }
-
-    DiskOperationInfo operator - (const DiskOperationInfo& rv)
-    {
-        DiskOperationInfo res(*this);
-        return res -= rv;
-    }
-
-    DiskOperationInfo operator + (const DiskOperationInfo& rv)
-    {
-        DiskOperationInfo res(*this);
-        return res += rv;
-    }
-};
-
-#endif
-
-#define LOADING_TIME_PROFILE_SECTION
-#define LOADING_TIME_PROFILE_SECTION_ARGS(...)
-#define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...)
-
 //////////////////////////////////////////////////////////////////////////
 // CrySystem DLL Exports.
 //////////////////////////////////////////////////////////////////////////
@@ -1370,9 +1314,6 @@ namespace Detail
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
         uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) { (void)pChangeFunctor; return 0; }
-        uint64 GetNumberOfOnChangeFunctors() const { return 0; }
-        const SFunctor& GetOnChangeFunctor([[maybe_unused]] uint64 nFunctorIndex) const { InvalidAccess(); SFunctor* pNull = nullptr; return *pNull; }
-        bool RemoveOnChangeFunctor([[maybe_unused]] const uint64 nElement) { return true; }
         ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
         void GetMemoryUsage([[maybe_unused]] class ICrySizer* pSizer) const {}
         int GetRealIVal() const { return GetIVal(); }

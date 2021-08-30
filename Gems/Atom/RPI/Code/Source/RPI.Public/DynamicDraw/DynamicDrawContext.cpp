@@ -25,8 +25,7 @@ namespace AZ
         namespace
         {
             constexpr const char* PerContextSrgName = "PerContextSrg";
-            constexpr const char* PerDrawSrgName = "PerDrawSrg";
-        };
+        }
                
         void DynamicDrawContext::MultiStates::UpdateHash(const DrawStateOptions& drawStateOptions)
         {

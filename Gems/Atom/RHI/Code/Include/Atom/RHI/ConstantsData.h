@@ -248,7 +248,6 @@ namespace AZ
             AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t elementSize = sizeof(T);
             const size_t elementOffset = arrayIndex * elementSize;
-            const size_t elementCount = DivideByMultiple(constantBytes.size(), elementSize);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::ArrayElement, elementOffset, elementSize))
             {
                 return *reinterpret_cast<const T*>(&constantBytes[elementOffset]);

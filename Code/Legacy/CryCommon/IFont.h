@@ -19,6 +19,7 @@
 #include <smartptr.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
 struct ISystem;

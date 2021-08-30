@@ -43,8 +43,6 @@ namespace Blast
         const Nv::Blast::ExtPxChunk* pxChunks = blastFamily.GetPxAsset().getChunks();
         const NvBlastChunk* chunks = tkAsset->getChunks();
         const uint32_t pxChunkCount = blastFamily.GetPxAsset().getChunkCount();
-        const uint32_t chunkCount = tkAsset->getChunkCount();
-        const uint32_t nodeCount = tkActor.getGraphNodeCount();
 
         AZ_Assert(pxChunks, "ExtPxAsset asset has a null chunk array.");
         AZ_Assert(chunks, "TkActor's asset has a null chunk array.");
@@ -183,8 +181,6 @@ namespace Blast
     bool BlastActorFactoryImpl::VisibleChunksHasStaticActor(
         const BlastFamily& blastFamily, const AZStd::vector<uint32_t>& chunkIndices) const
     {
-        const uint32_t chunkCount = blastFamily.GetPxAsset().getChunkCount();
-
         const Nv::Blast::ExtPxChunk* pxChunks = blastFamily.GetPxAsset().getChunks();
         if (!pxChunks)
         {

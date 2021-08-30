@@ -362,6 +362,10 @@ QTabBar::tab:focus {
     color: #1e70eb;
 }
 
+#firstTimeContent > QPushButton:focus {
+    border: 1px solid #1e70eb;
+}
+
 #firstTimeContent > QPushButton:pressed {
     border: 1px solid #0e60eb;
     color: #0e60eb;
@@ -402,7 +406,8 @@ QTabBar::tab:focus {
 }
 
 #projectButton > #labelButton:hover,
-#projectButton > #labelButton:pressed  {
+#projectButton > #labelButton:pressed,
+#projectButton > #labelButton:focus {
     border:1px solid #1e70eb;
 }
 

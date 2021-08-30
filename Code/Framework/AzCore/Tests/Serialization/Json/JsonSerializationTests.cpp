@@ -560,7 +560,6 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
-        TemplatedClass<int> instance;
         ResultCode result = AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(),
             nullptr, nullptr, azrtti_typeid<int>(), *m_serializationSettings);
 

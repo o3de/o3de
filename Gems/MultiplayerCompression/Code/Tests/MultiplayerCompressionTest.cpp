@@ -53,7 +53,7 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     MultiplayerCompression::LZ4Compressor lz4Compressor;
     startTime = AZStd::chrono::system_clock::now();
     AzNetworking::CompressorError compressStatus = lz4Compressor.Compress(buffer.GetBuffer(), buffer.GetSize(), pCompressedBuffer, maxCompressedSize, compressedSize);
-    const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(compressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(compressedSize < maxCompressedSize);
@@ -61,13 +61,11 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     //Run and test decompress
     startTime = AZStd::chrono::system_clock::now();
     AzNetworking::CompressorError decompressStatus = lz4Compressor.Decompress(pCompressedBuffer, compressedSize, pDecompressedBuffer, buffer.GetSize(), consumedSize, uncompressedSize);
-    const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(decompressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(uncompressedSize = buffer.GetSize());
     EXPECT_TRUE(memcmp(pDecompressedBuffer, buffer.GetBuffer(), uncompressedSize) == 0);
-
-    const AZ::u64 unmarshalTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     delete [] pCompressedBuffer;
     delete [] pDecompressedBuffer;

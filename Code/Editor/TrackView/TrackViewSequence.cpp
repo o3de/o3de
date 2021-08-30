@@ -135,9 +135,7 @@ CTrackViewKeyHandle CTrackViewSequence::FindSingleSelectedKey()
 
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::OnEntityComponentPropertyChanged(AZ::ComponentId changedComponentId)
-{
-    const AZ::EntityId entityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
-   
+{  
     // find the component node for this changeComponentId if it exists
     for (int i = m_pAnimSequence->GetNodeCount(); --i >= 0;)
     {
