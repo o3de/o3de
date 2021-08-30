@@ -412,7 +412,7 @@ namespace AZ
                 {
                     RHI::Format format = slot.m_bufferViewDesc->m_elementFormat;
                     AZStd::string formatLocation = AZStd::string::format("BufferViewDescriptor on Slot [%s] in PassTemplate [%s]", slot.m_name.GetCStr(), passTemplate->m_name.GetCStr());
-                    RHI::FormatCapabilities capabilities = RHI::GetCapabilities(slot.m_scopeAttachmentUsage, slot.GetAttachmentAccess(), RHI::AttachmentType::Image);
+                    RHI::FormatCapabilities capabilities = RHI::GetCapabilities(slot.m_scopeAttachmentUsage, slot.GetAttachmentAccess(), RHI::AttachmentType::Buffer);
                     slot.m_bufferViewDesc->m_elementFormat = RHI::ValidateFormat(format, formatLocation.c_str(), slot.m_formatFallbacks, capabilities);
                 }
             }

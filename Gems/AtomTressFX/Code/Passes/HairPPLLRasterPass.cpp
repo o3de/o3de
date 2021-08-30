@@ -101,7 +101,6 @@ namespace AZ
                 }
 
                 // Output
-                AttachBufferToSlot(Name{ "PPLLIndexCounter" }, m_featureProcessor->GetPerPixelCounterBuffer());
                 AttachBufferToSlot(Name{ "PerPixelLinkedList" }, m_featureProcessor->GetPerPixelListBuffer());
             }
 
@@ -143,7 +142,7 @@ namespace AZ
 
                 // Per Pass Srg
                 {
-                    // Need to use 'PerPass' naming as currently RasterPass assumes specific naming!
+                    // Using 'PerPass' naming since currently RasterPass assumes that the pass Srg is always named 'PassSrg'
                     // [To Do] - RasterPass should use srg slot index and not name - currently this will
                     //  result in a crash in one of the Atom existing MSAA passes that requires further dive. 
                     // m_shaderResourceGroup = UtilityClass::CreateShaderResourceGroup(m_shader, "HairPerPassSrg", "Hair Gem");
@@ -256,17 +255,10 @@ namespace AZ
                     newObject->BindPerObjectSrgForRaster();
                     BuildDrawPacket(newObject);
                 }
-                // Clear the objects, hence this is only done once per object/shader lifetime
-                m_newRenderObjects.clear();
 
-                // Reset the hair PPLL items current index.
-                // [To Do] Hair - using be pass data driven avoid th following code
-                if (auto ppllCounterBuffer = m_featureProcessor->GetPerPixelCounterBuffer())
-                {   
-                    uint32_t sourceData = 0;
-                    bool updateSuccess = ppllCounterBuffer->UpdateData(&sourceData, sizeof(uint32_t), 0);
-                    AZ_Error("Hair Gem", updateSuccess, "HairPPLLRasterPass::CompileResources could not reset PPLL counter");
-                }
+                // Clear the new added objects - BuildDrawPacket should only be carried out once per
+                // object/shader lifetime
+                m_newRenderObjects.clear();
 
                 // Refresh current view every frame
                 if (!(m_currentView = GetView()) || !m_currentView->HasDrawListTag(m_drawListTag))
