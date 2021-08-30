@@ -1,0 +1,39 @@
+
+set(FILES
+    Include/MotionMatching/MotionMatchingBus.h
+    Source/MotionMatchingModuleInterface.h
+    Source/MotionMatchingSystemComponent.cpp
+    Source/MotionMatchingSystemComponent.h
+    Source/Allocators.cpp
+    Source/Allocators.h
+    Source/Behavior.cpp
+    Source/Behavior.h
+    Source/BehaviorInstance.cpp
+    Source/BehaviorInstance.h
+    Source/BlendTreeMotionMatchNode.cpp
+    Source/BlendTreeMotionMatchNode.h
+    Source/DirectionFrameData.cpp
+    Source/DirectionFrameData.h
+    Source/Frame.cpp
+    Source/Frame.h
+    Source/FrameData.cpp
+    Source/FrameData.h
+    Source/FrameDatabase.cpp
+    Source/FrameDatabase.h
+    Source/KdTree.cpp
+    Source/KdTree.h
+    Source/LocomotionBehavior.cpp
+    Source/LocomotionBehavior.h
+    Source/MotionMatchEventData.cpp
+    Source/MotionMatchEventData.h
+    Source/MotionMatchSystem.cpp
+    Source/MotionMatchSystem.h
+    Source/PositionFrameData.cpp
+    Source/PositionFrameData.h
+    Source/TrajectoryFrameData.cpp
+    Source/TrajectoryFrameData.h
+    Source/TrajectoryHistory.cpp
+    Source/TrajectoryHistory.h
+    Source/VelocityFrameData.cpp
+    Source/VelocityFrameData.h
+)
