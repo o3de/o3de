@@ -145,10 +145,10 @@ namespace AWSCore
     AWS_API_REQUEST_TRAITS_TEMPLATE_DEFINITION_HELPER
         typename AWS_API_REQUEST_TRAITS_TEMPLATE_INSTANCE_HELPER::AsyncFunctionType AWS_API_REQUEST_TRAITS_TEMPLATE_INSTANCE_HELPER::AsyncFunction = _AsyncFunction;
 
-    /// Macro that simplifies the declaration of an AwsRequstJob that has a result.
+    /// Macro that simplifies the declaration of an AwsRequestJob that has a result.
 #define AWS_API_REQUEST_JOB(SERVICE, REQUEST) AWSCore::AwsApiRequestJob<AWS_API_REQUEST_TRAITS(SERVICE, REQUEST)>
 
-/// Macro that simplifies the declaration of an AwsRequstJob that has no result.
+    /// Macro that simplifies the declaration of an AwsRequestJob that has no result.
 #define AWS_API_REQUEST_JOB_NO_RESULT(SERVICE, REQUEST) AWSCore::AwsApiRequestJob<AWS_API_REQUEST_TRAITS_NO_RESULT(SERVICE, REQUEST)>
 
 /// An Az::Job that that executes a specific AWS request.
@@ -201,7 +201,7 @@ namespace AWSCore
         }
 
         /// Determines if the request was successful.
-        bool WasSuccess()
+        bool WasSuccess() const
         {
             return m_wasSuccess;
         }
@@ -256,8 +256,6 @@ namespace AWSCore
         /// are made to the request object. Override to defer the preparation
         /// of request data until your running on the job's worker thread,
         /// instead of setting the request data before calling Start.
-        ///
-        /// \param true if the request should be made.
         virtual bool PrepareRequest()
         {
             return true;
@@ -284,7 +282,8 @@ namespace AWSCore
 
         /// A specialization of AwsApiRequestJob that lets you provide functions
         /// that are called on success or failure of the request.
-        class Function : public AwsApiRequestJob
+        class Function
+            : public AwsApiRequestJob
         {
 
         public:

@@ -16,11 +16,11 @@ namespace AWSCore
 {
     inline void ConfigureJsonServiceRequest(HttpRequestJob& request, AZStd::string jsonBody)
     {
-        size_t len = jsonBody.length();
+        const size_t len = jsonBody.length();
 
         if (len > 0)
         {
-            AZStd::string lenStr = AZStd::string::format("%zu", len);
+            const AZStd::string lenStr = AZStd::string::format("%zu", len);
             request.SetContentLength(lenStr);
             request.SetContentType("application/json");
             request.SetBody(std::move(jsonBody));
@@ -35,15 +35,15 @@ namespace AWSCore
         // Assumes that API Gateway URLs have either of the following two forms:
         // https://{custom_domain_name}/{region}.{stage}.{rest-api-id}/{path}
         // https://{rest-api-id}.execute-api.{region}.amazonaws.com/{stage}/{path}
-        const int ExpectedUrlSections = 3;
+        constexpr int ExpectedUrlSections = 3;
 
         AZStd::vector<AZStd::string> urlSections;
-        AZStd::string url(serviceUrl.c_str());
+        const AZStd::string url(serviceUrl.c_str());
         AZStd::tokenize(url, AZStd::string("/"), urlSections);
 
         if (urlSections.size() > ExpectedUrlSections)
         {
-            int i = static_cast<int>(urlSections[ExpectedUrlSections - 1].find('.'));
+            const int i = static_cast<int>(urlSections[ExpectedUrlSections - 1].find('.'));
             if (i != -1)
             {
                 // Handle APIGateway URLs with custom domains:
@@ -54,7 +54,7 @@ namespace AWSCore
             {
                 // API Gateway URLs have the form:
                 // https://{rest-api-id}.execute-api.{region}.amazonaws.com/{stage}/{path}
-                const int RegionIndex = 2;
+                constexpr int RegionIndex = 2;
 
                 AZStd::vector<AZStd::string> domainSections;
                 AZStd::tokenize(urlSections[ExpectedUrlSections - 2], AZStd::string("."), domainSections);

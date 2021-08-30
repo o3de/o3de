@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <aws/core/auth/AWSCredentials.h>
 #include <Framework/AWSApiJobConfig.h>
 
 // Forward declarations
@@ -24,30 +24,24 @@ namespace Aws
     {
         class HttpClient;
     }
-    namespace Auth
-    {
-        class AWSCredentials;
-    }
-
 }
 
 namespace AWSCore
 {
-
     /// Provides configuration for AWS jobs using a specific client type.
     template<class ClientType>
     class IAwsApiClientJobConfig
         : public virtual IAwsApiJobConfig
     {
-
     public:
         //! Returns the created AWS client for the Job
         virtual std::shared_ptr<ClientType> GetClient() = 0;
     };
 
-    // warning C4250: 'AWSCore::AwsApiClientJobConfig<ClientType>': inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
-    // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
-    // This is the expected and desired behavior. The warning is superfluous.
+    // warning C4250: 'AWSCore::AwsApiClientJobConfig<ClientType>': inherits
+    // 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance Thanks to
+    // http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the
+    // explanation This is the expected and desired behavior. The warning is superfluous.
     AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
     /// Configuration for AWS jobs using a specific client type.
     template<class ClientType>
@@ -55,7 +49,6 @@ namespace AWSCore
         : public AwsApiJobConfig
         , public virtual IAwsApiClientJobConfig<ClientType>
     {
-
     public:
         AZ_CLASS_ALLOCATOR(AwsApiClientJobConfig, AZ::SystemAllocator, 0);
 
@@ -63,9 +56,6 @@ namespace AWSCore
         using InitializerFunction = AZStd::function<void(AwsApiClientJobConfigType& config)>;
 
         /// Initialize an AwsApiClientJobConfig object.
-        ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
         ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
@@ -83,10 +73,10 @@ namespace AWSCore
             }
         }
 
-        virtual ~AwsApiClientJobConfig() = default;
+        ~AwsApiClientJobConfig() override = default;
 
         /// Gets a client initialized used currently applied settings. If
-        /// any settings change after first use, code must call 
+        /// any settings change after first use, code must call
         /// ApplySettings before those changes will take effect.
         std::shared_ptr<ClientType> GetClient() override
         {
@@ -112,7 +102,7 @@ namespace AWSCore
             }
             else
             {
-                // If no explict credenitals are provided then AWS C++ SDK will perform standard search
+                // If no explicit credentials are provided then AWS C++ SDK will perform standard search
                 return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
             }
         }

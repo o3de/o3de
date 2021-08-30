@@ -15,7 +15,7 @@ namespace AWSCore
     {
         constexpr char AwsAttributionServiceResultResponseKey[] = "statusCode";
 
-        bool AWSAtrributionSuccessResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
+        bool AWSAttributionSuccessResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
             if (strcmp(key, AwsAttributionServiceResultResponseKey) == 0)
             {

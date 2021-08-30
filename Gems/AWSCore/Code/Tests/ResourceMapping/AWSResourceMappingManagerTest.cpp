@@ -11,7 +11,6 @@
 #include <AzTest/AzTest.h>
 
 #include <Configuration/AWSCoreConfiguration.h>
-#include <ResourceMapping/AWSResourceMappingConstants.h>
 #include <ResourceMapping/AWSResourceMappingManager.h>
 #include <TestFramework/AWSCoreFixture.h>
 
@@ -204,7 +203,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
             AZStd::string actualAccountId;
             AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
             EXPECT_FALSE(actualAccountId.empty());
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 

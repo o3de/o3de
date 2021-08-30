@@ -16,7 +16,7 @@ namespace AWSCore
     namespace ServiceAPI
     {
         //! Struct for storing the success response.
-        struct AWSAtrributionSuccessResponse
+        struct AWSAttributionSuccessResponse
         {
             //! Identify the expected property type and provide a location where the property value can be stored.
             //! @param key Name of the property.
@@ -58,7 +58,7 @@ namespace AWSCore
                 AttributionMetric metric;
             };
 
-            AWSAtrributionSuccessResponse result;
+            AWSAttributionSuccessResponse result;
             Parameters parameters; //! Request parameter.
         };
 

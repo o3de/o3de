@@ -44,9 +44,6 @@ namespace AWSCore
 
         /// Initialize an ServiceRequestJobConfig object.
         ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
-        ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
         /// will cause a default value to be used.
@@ -75,7 +72,7 @@ namespace AWSCore
             return (m_requestUrl.length() > 0);
         }
 
-        std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider()
+        std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider() override
         {
             ServiceClientJobConfigType::EnsureSettingsApplied();
             return m_credentialsProvider;

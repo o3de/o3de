@@ -10,7 +10,6 @@
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
 #include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -21,7 +20,6 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
-#include <ResourceMapping/AWSResourceMappingUtils.h>
 #include <Credential/AWSCredentialBus.h>
 
 #include <QSysInfo>
@@ -71,7 +69,8 @@ namespace AWSCore
         AZStd::string editorAWSPreferencesFilePath =
             AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        if (!fileIO->ResolvePath(
+                editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), AZ_ARRAY_SIZE(resolvedPathAWSPreference)))
         {
             AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
             return;
@@ -202,7 +201,11 @@ namespace AWSCore
                 // Resolve path to editor_aws_preferences.setreg
                 AZStd::string editorPreferencesFilePath = AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
                 AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath {};
-                fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), resolvedPath.size());
+                if (!fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), AZ_ARRAY_SIZE(resolvedPath)))
+                {
+                    AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPath.data());
+                    return;
+                }
 
                 AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
                 dumperSettings.m_prettifyOutput = true;

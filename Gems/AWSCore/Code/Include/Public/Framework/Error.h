@@ -12,7 +12,6 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AWSCore

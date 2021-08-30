@@ -9,9 +9,7 @@
 #pragma once
 
 
-#include <AzCore/std/functional.h>
 #include <AzCore/std/string/regex.h>
-#include <AzCore/std/string/tokenize.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Component/TickBus.h>
@@ -119,7 +117,7 @@ namespace AWSCore
         Error error;
 
         /// Determines if the AWS credentials, as supplied by the credentialsProvider from
-        /// the ServiceReqestJobConfig object (which defaults to the user's credentials), 
+        /// the ServiceRequestJobConfig object (which defaults to the user's credentials), 
         /// are used to sign the request. The default is true. Override this and return false 
         /// if calling a public API and want to avoid the overhead of signing requests.
         bool UseAWSCredentials() {
@@ -187,7 +185,7 @@ namespace AWSCore
                 return false;
             }
 
-            auto awsCredentials = config->GetCredentialsProvider()->GetAWSCredentials();
+            const auto awsCredentials = config->GetCredentialsProvider()->GetAWSCredentials();
 
             return !(awsCredentials.GetAWSAccessKeyId().empty() || awsCredentials.GetAWSSecretKey().empty());
         }
@@ -305,7 +303,7 @@ namespace AWSCore
                 );
 #endif
 
-                int responseCode = static_cast<int>(response->GetResponseCode());
+                const int responseCode = static_cast<int>(response->GetResponseCode());
                 Aws::IOStream& responseBody = response->GetResponseBody();
 #ifdef _DEBUG
                 std::istreambuf_iterator<AZStd::string::value_type> eos;
@@ -382,7 +380,7 @@ namespace AWSCore
 
                 // This is determined by AZ::g_maxMessageLength defined in in dev\Code\Framework\AzCore\AzCore\Debug\Trace.cpp.
                 // It has the value 4096, but there is the timestamp, etc., to account for so we reduce it by a few characters.
-                const int MAX_MESSAGE_LENGTH = 4096 - 128;
+                constexpr int MAX_MESSAGE_LENGTH = 4096 - 128;
 
                 // Replace the character "%" with "%%" to prevent the error when printing the string that contains the percentage sign
                 message = EscapePercentCharsInString(message);
@@ -565,13 +563,11 @@ namespace AWSCore
             }
 
             AZStd::string requestContent;
-            AZStd::string responseContent;
-
-            std::istreambuf_iterator<AZStd::string::value_type> eos;
 
             std::shared_ptr<Aws::IOStream> requestStream = response->GetOriginatingRequest().GetContentBody();
             if (requestStream)
             {
+                std::istreambuf_iterator<AZStd::string::value_type> eos;
                 requestStream->clear();
                 requestStream->seekg(0);
                 requestContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*requestStream.get()),eos };
@@ -584,7 +580,7 @@ namespace AWSCore
             Aws::IOStream& responseStream = response->GetResponseBody();
             responseStream.clear();
             responseStream.seekg(0);
-            responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream),responseEos };
+            AZStd::string responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream), responseEos };
             responseContent = EscapePercentCharsInString(responseContent);
             responseStream.seekg(0);
 

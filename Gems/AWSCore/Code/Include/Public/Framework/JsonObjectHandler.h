@@ -28,25 +28,25 @@ namespace AWSCore
 
         Ch Peek() const
         {
-            int c = m_is.peek();
-            return c == std::char_traits<char>::eof() ? '\0' : (Ch)c;
+            const int c = m_is.peek();
+            return c == std::char_traits<char>::eof() ? '\0' : static_cast<Ch>(c);
         }
 
         Ch Take()
         {
-            int c = m_is.get();
-            return c == std::char_traits<char>::eof() ? '\0' : (Ch)c;
+            const int c = m_is.get();
+            return c == std::char_traits<char>::eof() ? '\0' : static_cast<Ch>(c);
         }
 
         size_t Tell() const
         {
-            return (size_t)m_is.tellg();
+            return static_cast<size_t>(m_is.tellg());
         }
 
         Ch* PutBegin()
         {
             AZ_Assert(false, "Not Implemented");
-            return 0;
+            return nullptr;
         }
 
         void Put(Ch)

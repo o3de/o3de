@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 

@@ -7,13 +7,10 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
-
-#include <QAction>
 
 using namespace AWSCore;
 

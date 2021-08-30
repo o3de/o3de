@@ -42,7 +42,7 @@ namespace AWSCoreUnitTest
 
     TEST_F(AWSAttributionServiceApiTest, AWSAtrributionSuccessResponse_Serialization)
     {
-        ServiceAPI::AWSAtrributionSuccessResponse response;
+        ServiceAPI::AWSAttributionSuccessResponse response;
         response.result = "ok";
 
         EXPECT_CALL(JsonReader, Accept(response.result)).Times(1);
@@ -53,7 +53,7 @@ namespace AWSCoreUnitTest
 
     TEST_F(AWSAttributionServiceApiTest, AWSAtrributionSuccessResponse_Serialization_Ignore)
     {
-        ServiceAPI::AWSAtrributionSuccessResponse response;
+        ServiceAPI::AWSAttributionSuccessResponse response;
         response.result = "ok";
 
         EXPECT_CALL(JsonReader, Accept(response.result)).Times(0);

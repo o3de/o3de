@@ -7,14 +7,12 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AWSCoreEditorSystemComponent.h>
 #include <Editor/AWSCoreEditorManager.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
 

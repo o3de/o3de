@@ -24,7 +24,7 @@ public:
         AWSScriptBehaviorS3NotificationBus::Handler::BusConnect();
     }
 
-    ~AWSScriptBehaviorS3NotificationBusHandlerMock()
+    ~AWSScriptBehaviorS3NotificationBusHandlerMock() override
     {
         AWSScriptBehaviorS3NotificationBus::Handler::BusDisconnect();
     }

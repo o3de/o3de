@@ -61,7 +61,7 @@ namespace AWSCoreUnitTest
             AZ_UNUSED(dependent);
         }
 
-        ~AWSCoreSystemComponentMock() = default;
+        ~AWSCoreSystemComponentMock() override = default;
 
         MOCK_METHOD0(Init, void());
         MOCK_METHOD0(Activate, void());

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
 namespace AZ

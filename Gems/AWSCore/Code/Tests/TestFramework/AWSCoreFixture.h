@@ -108,7 +108,7 @@ class AWSCoreFixture
 {
 public:
     AWSCoreFixture() {}
-    virtual ~AWSCoreFixture() = default;
+    ~AWSCoreFixture() override = default;
 
     void SetUp() override
     {
