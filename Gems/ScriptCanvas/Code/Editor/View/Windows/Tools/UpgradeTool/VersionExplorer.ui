@@ -369,6 +369,9 @@
              <property name="text">
               <string>Update Reporting Only</string>
              </property>
+             <property name="tristate">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
           </layout>

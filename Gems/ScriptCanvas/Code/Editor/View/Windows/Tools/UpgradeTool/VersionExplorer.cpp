@@ -697,8 +697,10 @@ namespace ScriptCanvasEditor
 
         bool onlyShowOutdatedGraphs = m_ui->onlyShowOutdated->isChecked();
         bool forceUpgrade = m_ui->forceUpgrade->isChecked();
-                
-        if (!forceUpgrade && onlyShowOutdatedGraphs && graphComponent->GetVersion().IsLatest())
+        ScriptCanvas::VersionData graphVersion = graphComponent->GetVersion();
+
+
+        if (!forceUpgrade && onlyShowOutdatedGraphs && graphVersion.IsLatest())
         {
             ScanComplete(asset);
             Log("InspectAsset: %s, is at latest", asset.GetHint().c_str());
@@ -842,8 +844,8 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            spinnerText.append(QString::asprintf(" - Discovered: %zu, Inspected: %zu, Failed: %zu"
-                , m_discoveredAssets, m_inspectedAssets, m_failedAssets));
+            spinnerText.append(QString::asprintf(" - Discovered: %zu, Inspected: %zu, Failed: %zu, Upgradeable: %zu"
+                , m_discoveredAssets, m_inspectedAssets, m_failedAssets, m_assetsToUpgrade.size()));
         }
 
 

@@ -135,6 +135,16 @@ namespace ScriptCanvas
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<VersionData>()
+                ->Version(2, [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+                    {
+                        if (classElement.GetVersion() < 2)
+                        {
+                            FileVersion fileVersion = ScriptCanvas::FileVersion::Initial;
+                            classElement.AddElementWithData(context, "_fileVersion", fileVersion);
+                        }
+
+                        return true;
+                    })
                 ->Field("_grammarVersion", &VersionData::grammarVersion)
                 ->Field("_runtimeVersion", &VersionData::runtimeVersion)
                 ->Field("_fileVersion", &VersionData::fileVersion)
