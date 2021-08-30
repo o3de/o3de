@@ -62,11 +62,6 @@ def C4976204_Verify_Start_Asleep_Condition():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -112,8 +107,5 @@ def C4976204_Verify_Start_Asleep_Condition():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4976204_Verify_Start_Asleep_Condition)

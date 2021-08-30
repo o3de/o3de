@@ -90,11 +90,6 @@ def C4888315_Material_AddModifyDeleteOnCollider():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.math as lymath
 
@@ -176,8 +171,5 @@ def C4888315_Material_AddModifyDeleteOnCollider():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4888315_Material_AddModifyDeleteOnCollider)

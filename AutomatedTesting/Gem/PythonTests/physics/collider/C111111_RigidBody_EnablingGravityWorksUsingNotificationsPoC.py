@@ -24,11 +24,6 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
     # Setup path
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -84,8 +79,5 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
     helper.exit_game_mode(Tests.exit_game_mode)
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC)

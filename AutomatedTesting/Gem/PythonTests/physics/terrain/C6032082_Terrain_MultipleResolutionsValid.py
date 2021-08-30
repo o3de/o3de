@@ -80,11 +80,6 @@ def C6032082_Terrain_MultipleResolutionsValid():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -209,8 +204,5 @@ def C6032082_Terrain_MultipleResolutionsValid():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C6032082_Terrain_MultipleResolutionsValid)

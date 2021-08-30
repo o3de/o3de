@@ -47,13 +47,11 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
     import os
 
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    from asset_utils import Asset
+    from editor_python_test_tools.asset_utils import Asset
 
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
@@ -93,8 +91,5 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C14861502_PhysXCollider_AssetAutoAssigned)

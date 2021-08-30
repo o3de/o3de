@@ -58,11 +58,6 @@ def C5689522_Physxterrain_AddPhysxterrainNoEditorCrash():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.utils import Report
@@ -105,8 +100,5 @@ def C5689522_Physxterrain_AddPhysxterrainNoEditorCrash():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5689522_Physxterrain_AddPhysxterrainNoEditorCrash)

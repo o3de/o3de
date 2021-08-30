@@ -44,11 +44,6 @@ def C15425929_Undo_Redo():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
@@ -91,8 +86,5 @@ def C15425929_Undo_Redo():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C15425929_Undo_Redo)

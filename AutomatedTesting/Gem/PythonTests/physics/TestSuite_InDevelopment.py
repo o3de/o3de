@@ -13,13 +13,13 @@ import pytest
 import os
 import sys
 
-from .FileManagement import FileManagement as fm
+from .utils.FileManagement import FileManagement as fm
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
-@pytest.mark.parametrize("spec", ["all"])
+from base import TestAutomationBase
+
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.system
 class TestAutomation(TestAutomationBase):
     @fm.file_revert("ragdollbones.physmaterial",
                     r"AutomatedTesting\Levels\Physics\C4925582_Material_AddModifyDeleteOnRagdollBones")

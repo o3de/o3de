@@ -87,9 +87,7 @@ def C4982797_Collider_ColliderOffset():
     import sys
 
     # Internal editor imports
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -332,8 +330,5 @@ def C4982797_Collider_ColliderOffset():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4982797_Collider_ColliderOffset)

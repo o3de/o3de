@@ -123,9 +123,7 @@ def C13352089_RigidBodies_MaxAngularVelocity():
     import math
     import time
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -281,8 +279,5 @@ def C13352089_RigidBodies_MaxAngularVelocity():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C13352089_RigidBodies_MaxAngularVelocity)

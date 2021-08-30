@@ -57,13 +57,11 @@ def C4982803_Enable_PxMesh_Option():
     import os
 
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    from asset_utils import Asset
+    from editor_python_test_tools.asset_utils import Asset
     import azlmbr.math as math
 
     # Open 3D Engine Imports
@@ -141,8 +139,5 @@ def C4982803_Enable_PxMesh_Option():
     helper.exit_game_mode(Tests.exit_game_mode)
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4982803_Enable_PxMesh_Option)

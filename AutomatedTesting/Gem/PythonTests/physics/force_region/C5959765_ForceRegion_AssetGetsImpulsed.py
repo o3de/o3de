@@ -45,9 +45,7 @@ def C5959765_ForceRegion_AssetGetsImpulsed():
     # Setup path
     import os, sys
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -169,8 +167,5 @@ def C5959765_ForceRegion_AssetGetsImpulsed():
     helper.exit_game_mode(Tests.exit_game_mode)
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5959765_ForceRegion_AssetGetsImpulsed)

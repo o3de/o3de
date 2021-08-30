@@ -61,12 +61,6 @@ def C5959761_ForceRegion_PhysAssetExertsPointForce():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
-
     import azlmbr
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
@@ -140,8 +134,5 @@ def C5959761_ForceRegion_PhysAssetExertsPointForce():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5959761_ForceRegion_PhysAssetExertsPointForce)

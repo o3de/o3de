@@ -48,13 +48,11 @@ def C14861501_PhysXCollider_RenderMeshAutoAssigned():
     import os
 
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    from asset_utils import Asset
+    from editor_python_test_tools.asset_utils import Asset
 
     # Asset paths
     STATIC_MESH = os.path.join("assets", "c14861501_physxcollider_rendermeshautoassigned", "spherebot", "r0-b_body.azmodel")
@@ -91,8 +89,5 @@ def C14861501_PhysXCollider_RenderMeshAutoAssigned():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C14861501_PhysXCollider_RenderMeshAutoAssigned)

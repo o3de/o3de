@@ -86,9 +86,7 @@ def C4982798_Collider_ColliderRotationOffset():
     :return: None
     """
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
 
     # Internal editor imports
@@ -300,8 +298,5 @@ def C4982798_Collider_ColliderRotationOffset():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4982798_Collider_ColliderRotationOffset)

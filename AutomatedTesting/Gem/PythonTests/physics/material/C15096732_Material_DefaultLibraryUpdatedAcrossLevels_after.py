@@ -99,11 +99,6 @@ def C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -285,8 +280,5 @@ def C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after)

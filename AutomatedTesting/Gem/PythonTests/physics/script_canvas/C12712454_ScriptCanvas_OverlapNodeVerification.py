@@ -97,11 +97,6 @@ def C12712454_ScriptCanvas_OverlapNodeVerification():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -320,8 +315,5 @@ def C12712454_ScriptCanvas_OverlapNodeVerification():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C12712454_ScriptCanvas_OverlapNodeVerification)

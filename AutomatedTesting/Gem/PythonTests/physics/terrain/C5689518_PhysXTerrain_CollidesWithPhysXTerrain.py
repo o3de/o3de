@@ -47,11 +47,6 @@ def C5689518_PhysXTerrain_CollidesWithPhysXTerrain():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     from editor_python_test_tools.utils import Report
@@ -113,8 +108,5 @@ def C5689518_PhysXTerrain_CollidesWithPhysXTerrain():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5689518_PhysXTerrain_CollidesWithPhysXTerrain)

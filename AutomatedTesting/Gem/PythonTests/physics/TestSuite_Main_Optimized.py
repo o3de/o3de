@@ -12,7 +12,7 @@ import inspect
 
 from ly_test_tools import LAUNCHERS
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
-from .FileManagement import FileManagement as fm
+from .utils.FileManagement import FileManagement as fm
 
 # Custom test spec, it provides functionality to override files
 class EditorSingleTest_WithFileOverrides(EditorSingleTest):
@@ -54,7 +54,6 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
             fm._restore_file(f, file_list[f])
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarly.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])

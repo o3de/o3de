@@ -22,7 +22,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def C14861504_RenderMeshAsset_WithNoPxAsset():
     """
     Summary:
      Create entity with Mesh component and assign a render mesh that has no physics asset to the Mesh component.
@@ -52,14 +52,12 @@ def run():
     import os
 
     # Helper Files
-    import ImportPathHelper as imports
 
-    imports.init()
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
-    from asset_utils import Asset
+    from editor_python_test_tools.asset_utils import Asset
 
     # Open 3D Engine Imports
     import azlmbr.asset as azasset
@@ -102,4 +100,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C14861504_RenderMeshAsset_WithNoPxAsset)

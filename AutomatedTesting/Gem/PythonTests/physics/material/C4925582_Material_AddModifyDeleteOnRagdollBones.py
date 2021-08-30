@@ -92,11 +92,6 @@ def C4925582_Material_AddModifyDeleteOnRagdollBones():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.components
@@ -212,8 +207,5 @@ def C4925582_Material_AddModifyDeleteOnRagdollBones():
     Report.info("Modified max bouce: " + str(modified_ragdoll.bounces[0]))
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C4925582_Material_AddModifyDeleteOnRagdollBones)

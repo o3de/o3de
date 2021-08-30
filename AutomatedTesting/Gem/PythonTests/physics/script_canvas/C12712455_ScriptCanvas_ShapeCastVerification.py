@@ -67,11 +67,6 @@ def C12712455_ScriptCanvas_ShapeCastVerification():
     """
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -137,8 +132,5 @@ def C12712455_ScriptCanvas_ShapeCastVerification():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C12712455_ScriptCanvas_ShapeCastVerification)

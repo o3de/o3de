@@ -90,11 +90,6 @@ def C6321601_Force_HighValuesDirectionAxes():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
@@ -246,10 +241,6 @@ def C6321601_Force_HighValuesDirectionAxes():
     Report.result(Tests.error_not_found, not has_physx_error())
 
 
-
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C6321601_Force_HighValuesDirectionAxes)

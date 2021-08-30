@@ -54,9 +54,7 @@ def C18243584_Joints_HingeSoftLimitsConstrained():
     import sys
     import math
 
-    import ImportPathHelper as imports
 
-    imports.init()
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -142,8 +140,5 @@ def C18243584_Joints_HingeSoftLimitsConstrained():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C18243584_Joints_HingeSoftLimitsConstrained)

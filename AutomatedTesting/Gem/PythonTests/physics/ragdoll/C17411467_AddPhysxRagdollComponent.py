@@ -9,7 +9,6 @@ Test Case Title : Check that Physx Ragdoll component can be added without errors
 
 """
 
-
 # fmt: off
 class Tests():
     create_test_entity  = ("Entity created successfully",        "Failed to create Entity")
@@ -45,10 +44,6 @@ def C17411467_AddPhysxRagdollComponent():
     :return: None
     """
 
-    # Helper file Imports
-    import ImportPathHelper as imports
-
-    imports.init()
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import TestHelper as helper
@@ -93,8 +88,5 @@ def C17411467_AddPhysxRagdollComponent():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C17411467_AddPhysxRagdollComponent)

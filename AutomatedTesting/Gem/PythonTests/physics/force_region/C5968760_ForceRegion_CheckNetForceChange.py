@@ -61,11 +61,6 @@ def C5968760_ForceRegion_CheckNetForceChange():
 
     import os
     import sys
-
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -163,8 +158,5 @@ def C5968760_ForceRegion_CheckNetForceChange():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     Report.start_test(C5968760_ForceRegion_CheckNetForceChange)
