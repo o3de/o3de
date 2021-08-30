@@ -18,6 +18,7 @@
 
 namespace AzToolsFramework
 {
+    // This ebus is intended to provide behavior-context friendly APIs to create and manage entities
     struct EditorEntityUtilityTraits : AZ::EBusTraits
     {
         virtual ~EditorEntityUtilityTraits() = default;
@@ -45,6 +46,8 @@ namespace AzToolsFramework
         void Activate() override;
         void Deactivate() override;
 
+        // Our own entity context.  This API is intended mostly for use in Asset Builders where there is no editor context
+        // Additionally, an entity context is needed when using the Behavior Entity class
         AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
     };
 }; // namespace AzToolsFramework

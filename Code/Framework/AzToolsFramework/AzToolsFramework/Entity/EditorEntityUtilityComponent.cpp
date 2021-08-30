@@ -16,6 +16,12 @@ namespace AzToolsFramework
     {
         auto* newEntity = m_entityContext->CreateEntity(entityName.c_str());
 
+        if (!newEntity)
+        {
+            AZ_Error("EditorEntityUtility", false, "Failed to create new entity %s", entityName.c_str());
+            return AZ::EntityId();
+        }
+
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *newEntity);
 
