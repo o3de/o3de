@@ -359,7 +359,7 @@ namespace AZStd
                     {
                         functor.obj_ref.obj_ptr = (void*)&f.get();
                         functor.obj_ref.is_const_qualified = is_const<FunctionObj>::value;
-                        functor.obj_ref.is_volatile_qualified = std::is_volatile<FunctionObj>::value;
+                        functor.obj_ref.is_volatile_qualified = AZStd::is_volatile<FunctionObj>::value;
                         return true;
                     }
                     else
