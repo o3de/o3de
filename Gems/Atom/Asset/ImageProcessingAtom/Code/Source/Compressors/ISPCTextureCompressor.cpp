@@ -111,6 +111,11 @@ namespace ImageProcessingAtom
         return ColorSpace::autoSelect;
     }
 
+    const char* ISPCCompressor::GetName() const
+    {
+        return "ISPCCompressor";
+    }
+
     IImageObjectPtr ISPCCompressor::CompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat, const CompressOption* compressOption) const
     {
         // Used to find the profile setters, depending on the image quality
