@@ -17,6 +17,7 @@ namespace UnitTest
     using PrefabScriptingTest = PrefabTestFixture;
 
     TemplateId g_globalTemplateId = {};
+    AZStd::string g_globalPrefabString = "";
 
     TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab)
     {
@@ -43,6 +44,32 @@ namespace UnitTest
         TemplateReference templateRef = prefabSystemComponentInterface->FindTemplate(g_globalTemplateId);
 
         EXPECT_TRUE(templateRef);
+    }
+
+    TEST_F(PrefabScriptingTest, PrefabScripting_SaveToString)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+
+        behaviorContext->Property("g_globalPrefabString", BehaviorValueProperty(&g_globalPrefabString));
+        
+        g_globalPrefabString = "";
+
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            entities = vector_EntityId(my_id)
+            template_id = PrefabSystemComponentBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            my_result = PrefabLoaderRequestBus.Broadcast.SaveTemplateToString(template_id)
+
+            if my_result:IsSuccess() then
+                g_globalPrefabString = "my_result:GetValue()"
+            end
+            )LUA");
+
+        EXPECT_STRNE(g_globalPrefabString.c_str(), "");
+
+        g_globalPrefabString.set_capacity(0); // Free all memory
     }
     
 }

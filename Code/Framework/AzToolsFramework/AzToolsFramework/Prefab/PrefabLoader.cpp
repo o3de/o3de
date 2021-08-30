@@ -43,10 +43,12 @@ namespace AzToolsFramework
             m_projectPathWithSlashSeparator = AZ::IO::Path(m_projectPathWithOsSeparator.Native(), '/').MakePreferred();
 
             AZ::Interface<PrefabLoaderInterface>::Register(this);
+            PrefabLoaderRequestBus::Handler::BusConnect();
         }
 
         void PrefabLoader::UnregisterPrefabLoaderInterface()
         {
+            PrefabLoaderRequestBus::Handler::BusDisconnect();
             AZ::Interface<PrefabLoaderInterface>::Unregister(this);
         }
 
@@ -553,6 +555,18 @@ namespace AzToolsFramework
             return !path.empty() &&
                 (pathStr.find_first_of(AZ_FILESYSTEM_INVALID_CHARACTERS) == AZStd::string::npos) &&
                 (pathStr.back() != '\\' && pathStr.back() != '/');
+        }
+
+        AZ::Outcome<AZStd::string, void> PrefabLoader::SaveTemplateToString(TemplateId templateId)
+        {
+            AZStd::string json;
+
+            if (SaveTemplateToString(templateId, json))
+            {
+                return AZ::Success(json);
+            }
+            
+            return AZ::Failure();
         }
 
         AZ::IO::Path PrefabLoader::GetFullPath(AZ::IO::PathView path)
