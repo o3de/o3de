@@ -146,7 +146,7 @@ namespace EMotionFX
             }
 
             const size_t lowestCostFrame = GetLowestCostFrameIndex();
-            if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == ~0)
+            if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
             {
                 outputPose.InitFromBindPose(m_actorInstance);
                 m_motionExtractionDelta.Identity();
@@ -209,7 +209,7 @@ namespace EMotionFX
             }
 
             size_t currentFrameIndex = GetLowestCostFrameIndex();
-            if (currentFrameIndex == ~0)
+            if (currentFrameIndex == InvalidIndex)
             {
                 currentFrameIndex = 0;
             }

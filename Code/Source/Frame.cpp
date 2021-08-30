@@ -20,7 +20,7 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_IMPL(Frame, MotionMatchAllocator, 0)
 
         Frame::Frame()
-            : m_frameIndex(~0)
+            : m_frameIndex(InvalidIndex)
             , m_sampleTime(0.0f)
             , m_sourceMotion(nullptr)
             , m_mirrored(false)
