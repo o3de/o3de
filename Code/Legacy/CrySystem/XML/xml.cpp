@@ -1293,7 +1293,6 @@ XmlString CXmlNode::getXMLUnsafe(int level, char* tmpBuffer, uint32 sizeOfTmpBuf
 // TODO: those 2 saving functions are a bit messy. should probably make a separate one for the use of PlatformAPI
 bool CXmlNode::saveToFile(const char* fileName)
 {
-    const size_t chunkSizeBytes = (15 * 1024);
     if (!fileName)
     {
         return false;
@@ -1310,6 +1309,7 @@ bool CXmlNode::saveToFile(const char* fileName)
             gEnv->pCryPak->FClose(fileHandle);
             return true;
 #else
+            constexpr size_t chunkSizeBytes = (15 * 1024);
             bool ret = saveToFile(fileName, chunkSizeBytes, fileHandle);
             gEnv->pCryPak->FClose(fileHandle);
             return ret;

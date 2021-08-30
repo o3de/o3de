@@ -15,7 +15,6 @@
 
 #include <QSplitter>
 #include <QListView>
-#include <QFileDialog>
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
@@ -91,6 +90,7 @@
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
@@ -1868,7 +1868,7 @@ namespace ScriptCanvasEditor
 
         while (!isValidFileName)
         {
-            selectedFile = QFileDialog::getSaveFileName(this, tr("Save As..."), suggestedFilename.data(), filter);
+            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedFilename.data(), filter);
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.

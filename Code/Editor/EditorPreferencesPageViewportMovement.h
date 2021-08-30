@@ -79,6 +79,27 @@ private:
         }
     };
 
+    struct CameraInputSettings
+    {
+        AZ_TYPE_INFO(struct CameraInputSettings, "{A250FAD4-662E-4896-B030-D4ED03679377}")
+
+        AZStd::string m_translateForwardChannelId;
+        AZStd::string m_translateBackwardChannelId;
+        AZStd::string m_translateLeftChannelId;
+        AZStd::string m_translateRightChannelId;
+        AZStd::string m_translateUpChannelId;
+        AZStd::string m_translateDownChannelId;
+        AZStd::string m_boostChannelId;
+        AZStd::string m_orbitChannelId;
+        AZStd::string m_freeLookChannelId;
+        AZStd::string m_freePanChannelId;
+        AZStd::string m_orbitLookChannelId;
+        AZStd::string m_orbitDollyChannelId;
+        AZStd::string m_orbitPanChannelId;
+    };
+
     CameraMovementSettings m_cameraMovementSettings;
+    CameraInputSettings m_cameraInputSettings;
+
     QIcon m_icon;
 };
