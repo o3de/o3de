@@ -824,9 +824,7 @@ void CLevelSystem::LogLoadingTime()
         sChain = " (Chained)";
     }
 
-    AZStd::string text;
-    text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-    gEnv->pLog->Log(text.c_str());
+    gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
 }
 
 void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const

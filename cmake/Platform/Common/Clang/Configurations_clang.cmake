@@ -22,7 +22,6 @@ ly_append_configurations_options(
         "-Wno-#pragma-messages"
         -Wno-absolute-value
         -Wno-dynamic-class-memaccess
-        -Wno-format-security
         -Wno-inconsistent-missing-override
         -Wno-invalid-offsetof
         -Wno-multichar

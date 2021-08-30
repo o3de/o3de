@@ -190,7 +190,7 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways(s);
+    CryLogAlways("%s", s);
 
     CryLogAlways("Built on " __DATE__ " " __TIME__);
 
