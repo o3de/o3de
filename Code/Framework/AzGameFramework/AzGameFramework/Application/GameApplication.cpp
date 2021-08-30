@@ -55,6 +55,12 @@ namespace AzGameFramework
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM && defined (AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+#endif
+
         // Used the lowercase the platform name since the bootstrap.game.<config>.<platform>.setreg is being loaded
         // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
         static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE "." AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER ".setreg";

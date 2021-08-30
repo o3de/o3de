@@ -77,7 +77,7 @@ namespace AZ
         void PlatformLimitsDescriptor::LoadPlatformLimitsDescriptor(const char* rhiName)
         {
             auto settingsRegistry = AZ::SettingsRegistry::Get();
-            AZStd::string platformLimitsRegPath = AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", rhiName);
+            AZStd::string platformLimitsRegPath = AZStd::string::format("/O3DE/Atom/RHI/PlatformLimits/%s", rhiName);
             if (!(settingsRegistry &&
                   settingsRegistry->GetObject(this, azrtti_typeid(this), platformLimitsRegPath.c_str())))
             {
