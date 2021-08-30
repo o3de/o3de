@@ -65,6 +65,8 @@ namespace AZ
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
 
             FrameGraphExecuterData m_frameGraphExecuterData;
+
+            void LoadPlatformLimitsDescriptor(const char* rhiName) override;
         };
     }
 }
