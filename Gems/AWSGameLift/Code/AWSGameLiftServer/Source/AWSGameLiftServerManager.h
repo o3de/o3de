@@ -16,6 +16,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Session/SessionConfig.h>
+#include <Request/IAWSGameLiftServerRequests.h>
 
 namespace AWSGameLift
 {
@@ -31,7 +32,8 @@ namespace AWSGameLift
 
     //! Manage the server process for hosting game sessions via GameLiftServerSDK.
     class AWSGameLiftServerManager
-        : public AzFramework::ISessionHandlingProviderRequests
+        : public AWSGameLiftServerRequestBus::Handler
+        , public AzFramework::ISessionHandlingProviderRequests
     {
     public:
         static constexpr const char AWSGameLiftServerManagerName[] = "AWSGameLiftServerManager";
@@ -68,14 +70,14 @@ namespace AWSGameLift
         AWSGameLiftServerManager();
         virtual ~AWSGameLiftServerManager();
 
-        //! Initialize GameLift API client by calling InitSDK().
-        //! @return Whether the initialization is successful.
-        bool InitializeGameLiftServerSDK();
+        void ActivateManager();
+        void DeactivateManager();
 
-        //! Notify GameLift that the server process is ready to host a game session.
-        //! @param desc GameLift server process settings.
-        //! @return Whether the ProcessReady notification is sent to GameLift.
-        bool NotifyGameLiftProcessReady(const GameLiftServerProcessDesc& desc);
+        //! Initialize GameLift API client by calling InitSDK().
+        void InitializeGameLiftServerSDK();
+
+        // AWSGameLiftServerRequestBus interface implementation
+        bool NotifyGameLiftProcessReady() override;
 
         // ISessionHandlingProviderRequests interface implementation
         void HandleDestroySession() override;
@@ -91,6 +93,9 @@ namespace AWSGameLift
         bool AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig);
 
     private:
+        //! Build the serverProcessDesc with appropriate server port number and log paths.
+        GameLiftServerProcessDesc BuildGameLiftServerProcessDesc();
+
         //! Build session config by using AWS GameLift Server GameSession Model.
         AzFramework::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
