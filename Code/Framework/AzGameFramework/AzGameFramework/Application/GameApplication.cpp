@@ -55,7 +55,7 @@ namespace AzGameFramework
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM && defined (AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM && (defined (AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD))
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
