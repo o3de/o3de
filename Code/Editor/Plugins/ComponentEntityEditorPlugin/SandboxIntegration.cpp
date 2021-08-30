@@ -528,7 +528,6 @@ void SandboxIntegrationManager::EntityParentChanged(
         oldAncestor = nextParentId;
     } while (oldAncestor.IsValid());
 
-    AZ::EntityId newAncestors = newParentId;
     AZ::EntityId newAncestor = newParentId;
 
     bool isGoingToRootScene = false;
@@ -721,7 +720,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         if (selected.size() > 0)
         {
             action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [this, selected]
+            QObject::connect(action, &QAction::triggered, [selected]
             {
                 AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
@@ -842,7 +841,7 @@ void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
 
             QAction* findLayerAssetAction = menu->addAction(QObject::tr("Find layer in Asset Browser"));
             findLayerAssetAction->setToolTip(QObject::tr("Selects this layer in the Asset Browser"));
-            QObject::connect(findLayerAssetAction, &QAction::triggered, [this, fullFilePath] {
+            QObject::connect(findLayerAssetAction, &QAction::triggered, [fullFilePath] {
                 QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
 
                 AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(

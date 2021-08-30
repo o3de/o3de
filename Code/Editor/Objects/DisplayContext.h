@@ -63,7 +63,6 @@ struct SANDBOX_API DisplayContext
 
     CDisplaySettings* settings;
     IDisplayViewport* view;
-    IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
     CCamera*    camera;

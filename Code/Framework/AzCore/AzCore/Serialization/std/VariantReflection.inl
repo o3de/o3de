@@ -483,9 +483,9 @@ namespace AZ
             }
         private:
             static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
-                const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
+                [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
-                auto alternativeVisitor = [&callContext, &variantClassData, variantClassElement](auto&& elementAlt)
+                auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
                 {
                     using AltType = AZStd::remove_cvref_t<decltype(elementAlt)>;
                     const SerializeContext& context = *callContext.m_context;

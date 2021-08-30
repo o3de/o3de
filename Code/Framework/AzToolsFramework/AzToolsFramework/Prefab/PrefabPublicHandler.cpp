@@ -1298,9 +1298,6 @@ namespace AzToolsFramework
                         command->RunRedo();
                     }
 
-                    const auto instanceTemplateId = instancePtr->GetTemplateId();
-                    auto parentContainerEntityId = parentInstance.GetContainerEntityId();
-
                     instancePtr->DetachNestedInstances(
                         [&](AZStd::unique_ptr<Instance> detachedNestedInstance)
                     {

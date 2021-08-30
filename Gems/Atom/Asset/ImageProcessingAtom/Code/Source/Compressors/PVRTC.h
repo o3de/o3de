@@ -25,5 +25,6 @@ namespace ImageProcessingAtom
 
         EPixelFormat GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const override;
         ColorSpace GetSupportedColorSpace(EPixelFormat compressFormat) const final;
+        const char* GetName() const final;
     };
 } // namespace ImageProcessingAtom

@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Editor/Util/EditorUtils.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 
 //! Half PI
 #define PI_HALF (3.1415926535897932384626433832795f / 2.0f)

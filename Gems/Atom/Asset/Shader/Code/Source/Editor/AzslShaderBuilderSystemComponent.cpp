@@ -81,7 +81,7 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 103; // ATOM-15058
+            shaderAssetBuilderDescriptor.m_version = 104; // ATOM-15871
             // .shader file changes trigger rebuilds
             shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
@@ -96,7 +96,7 @@ namespace AZ
             shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
             // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
             // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
-            shaderVariantAssetBuilderDescriptor.m_version = 24; // ATOM-15978
+            shaderVariantAssetBuilderDescriptor.m_version = 25; // ATOM-15871
             shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
             shaderVariantAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::CreateJobs, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);

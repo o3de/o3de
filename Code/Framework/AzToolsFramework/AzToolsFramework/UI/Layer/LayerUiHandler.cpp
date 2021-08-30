@@ -111,9 +111,6 @@ namespace AzToolsFramework
                 painter, option.rect.left() - 1, option.rect.top(), option.rect.bottom(), m_layerBorderBottomColor, layerColor);
         }
 
-        QModelIndex nameColumn = index.sibling(index.row(), EntityOutlinerListModel::Column::ColumnName);
-        QModelIndex sibling = index.sibling(index.row() + 1, index.column());
-
         QPoint lineBottomLeft(option.rect.bottomLeft());
         QPoint lineTopLeft(option.rect.topLeft());
 

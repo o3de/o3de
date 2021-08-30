@@ -887,7 +887,6 @@ namespace AZ::IO::ZipDir
     {
         FileRecordList arrFiles(GetRoot());
         arrFiles.SortByFileOffset();
-        FileRecordList::ZipStats Stats = arrFiles.GetStats();
 
         // we back up our file entries, because we'll need to restore them
         // in case the operation fails

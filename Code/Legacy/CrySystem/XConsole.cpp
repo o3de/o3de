@@ -20,8 +20,8 @@
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
-#include <IProcess.h>
-#include <IRenderAuxGeom.h>
+#include <IFont.h>
+#include <ITexture.h>
 #include "ConsoleHelpGen.h"         // CConsoleHelpGen
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>

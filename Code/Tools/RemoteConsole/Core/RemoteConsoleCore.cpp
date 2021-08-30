@@ -383,6 +383,13 @@ void SRemoteClient::Run()
 
     bool ok = true;
     bool autoCompleteDoneSent = false;
+    
+    // Send a message that is used to verify that the Remote Console connected
+    SNoDataEvent<eCET_ConnectMessage> connectMessage;
+    SRemoteEventFactory::GetInst()->WriteToBuffer(&connectMessage, szBuff, size, kDefaultBufferSize);
+    ok &= SendPackage(szBuff, size);
+    ok &= RecvPackage(szBuff, size);
+    ok &= m_pServer->ReadBuffer(szBuff, size);
     while (ok)
     {
         // read data
@@ -531,6 +538,7 @@ SRemoteEventFactory::SRemoteEventFactory()
 
     REGISTER_EVENT_NODATA(eCET_Strobo_FrameInfoStart);
     REGISTER_EVENT_STRING(eCET_Strobo_FrameInfoAdd);
+    REGISTER_EVENT_NODATA(eCET_ConnectMessage);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

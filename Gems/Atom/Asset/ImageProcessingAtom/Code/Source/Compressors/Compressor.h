@@ -48,6 +48,7 @@ namespace ImageProcessingAtom
         virtual IImageObjectPtr DecompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst) const = 0;
         virtual EPixelFormat GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const = 0;
         virtual ColorSpace GetSupportedColorSpace(EPixelFormat compressFormat) const = 0;
+        virtual const char* GetName() const = 0;
 
         //find compressor for specified compressed pixel format. isCompressing to indicate if it's for compressing or decompressing
         static ICompressorPtr FindCompressor(EPixelFormat fmt, ColorSpace colorSpace, bool isCompressing);

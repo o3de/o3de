@@ -22,6 +22,8 @@ namespace AZStd
     using std::exp2;
     using std::floor;
     using std::fmod;
+    using std::llround;
+    using std::lround;
     using std::pow;
     using std::round;
     using std::sin;

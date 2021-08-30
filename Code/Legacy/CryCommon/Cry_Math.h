@@ -592,14 +592,12 @@ enum type_identity
 #include "Cry_Vector2.h"
 #include "Cry_Vector3.h"
 #include "Cry_Vector4.h"
-#include "Cry_MatrixDiag.h"
 #include "Cry_Matrix33.h"
 #include "Cry_Matrix34.h"
 #include "Cry_Matrix44.h"
 #include "Cry_Quat.h"
 #include "Cry_HWVector3.h"
 #include "Cry_HWMatrix.h"
-#include "Cry_XOptimise.h"
 
 //////////////////////////////////////////////////////////////////////////
 
