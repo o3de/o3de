@@ -39,7 +39,19 @@
                     "Name": "PPLLIndexCounter",
                     "ShaderInputName": "m_linkedListCounter",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "BufferViewDesc": {
+                        "m_elementOffset": "0",
+                        "m_elementCount": "1",
+                        "m_elementSize": "4",
+                        "m_elementFormat": "R32_UINT" // Unknown is not accpeted and the pass compilation failsd
+                    },
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [ 0, 0, 0, 0 ]
+                        },
+                        "LoadAction": "Clear"
+                    }
                 },
                 {
                     "Name": "PerPixelListHead",
@@ -66,6 +78,16 @@
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
+            "BufferAttachments": [
+                {
+                    "Name": "PPLLIndexCounter",
+                    "BufferDescriptor": {
+                        "m_bindFlags": "ShaderReadWrite",
+                        "m_byteCount": "4",
+                        "m_alignment": "0" // or size of the buffer element
+                    }
+                }
+            ],
             "ImageAttachments": [
                 {
                     "Name": "PerPixelListHead",
@@ -88,6 +110,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "PerPixelListHead"
+                    }
+                },
+                {
+                    "LocalSlot": "PPLLIndexCounter",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PPLLIndexCounter"
                     }
                 }
             ],

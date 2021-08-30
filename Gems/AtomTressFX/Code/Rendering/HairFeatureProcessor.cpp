@@ -390,20 +390,6 @@ namespace AZ
                     }
                 }
 
-                // PPLL index counter
-                {
-                    descriptor = SrgBufferDescriptor(
-                        RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
-                        sizeof(uint32_t), 1,
-                        Name{ "LinkedListCounterPPLL" + instanceNumber }, Name{ "m_linkedListCounter" }, 0, 0
-                    );
-                    m_linkedListCounterBuffer = UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr );
-                    if (!m_linkedListCounterBuffer)
-                    {
-                        AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", descriptor.m_bufferName.GetCStr());
-                        return false;
-                    }
-                }
                 m_sharedResourcesCreated = true;
                 return true;
             }

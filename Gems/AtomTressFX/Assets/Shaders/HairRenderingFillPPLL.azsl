@@ -49,7 +49,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
     RWTexture2D<uint>               m_fragmentListHead;
     RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
-    RWStructuredBuffer<uint>        m_linkedListCounter;  // [To Do] - change to RWBuffer
+    RWBuffer<uint>                  m_linkedListCounter;
 
     // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;

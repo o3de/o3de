@@ -120,7 +120,6 @@ namespace AZ
                 void FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings);
 
                 Data::Instance<RPI::Buffer> GetPerPixelListBuffer() { return m_linkedListNodesBuffer; }
-                Data::Instance<RPI::Buffer> GetPerPixelCounterBuffer() { return m_linkedListCounterBuffer;  }
                 HairUniformBuffer<AMD::TressFXShadeParams>& GetMaterialsArray() { return m_hairObjectsMaterialsCB;  }
 
                 void ForceRebuildRenderData() { m_forceRebuildRenderData = true; }
@@ -176,9 +175,6 @@ namespace AZ
 
                 //! PPLL single buffer containing all the PPLL elements
                 Data::Instance<RPI::Buffer> m_linkedListNodesBuffer = nullptr;
-                //! shared counter representing the next free index in the buffer
-                //! 
-                Data::Instance<RPI::Buffer> m_linkedListCounterBuffer = nullptr;
                 //--------------------------------------------------------------
 
                 //! Per frame delta time for the physics simulation - updated every frame
