@@ -182,11 +182,6 @@ public:
     virtual int GetNumVars();
     virtual int GetNumVisibleVars();
     virtual size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0);
-    virtual int GetNumCheatVars();
-    virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar);
-    virtual void CalcCheatVarHash();
-    virtual bool IsHashCalculated();
-    virtual uint64 GetCheatVarHash();
     virtual void FindVar(const char* substr);
     virtual const char* AutoComplete(const char* substr);
     virtual const char* AutoCompletePrev(const char* substr);
@@ -230,9 +225,6 @@ public:
     // Returns
     //   0 if the operation failed
     ICVar* RegisterCVarGroup(const char* sName, const char* szFileName);
-
-    virtual void PrintCheatVars(bool bUseLastHashRange);
-    virtual char* GetCheatVarAt(uint32 nOffset);
 
     void SetProcessingGroup(bool isGroup) { m_bIsProcessingGroup = isGroup; }
     bool GetIsProcessingGroup(void) const { return m_bIsProcessingGroup; }
@@ -285,9 +277,6 @@ protected: // ------------------------------------------------------------------
     void ExecuteDeferredCommands();
 
     static const char* GetFlagsString(const uint32 dwFlags);
-
-    static void CmdDumpAllAnticheatVars(IConsoleCmdArgs* pArgs);
-    static void CmdDumpLastHashedAnticheatVars(IConsoleCmdArgs* pArgs);
 
 private: // ----------------------------------------------------------
 

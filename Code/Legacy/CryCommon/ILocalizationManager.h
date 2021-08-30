@@ -73,11 +73,11 @@ struct SLocalizedSoundInfoGame
     bool    bIsIntercepted;
 
     // SoundMoods.
-    int         nNumSoundMoods;
+    size_t         nNumSoundMoods;
     SLocalizedAdvancesSoundEntry* pSoundMoods;
 
     // EventParameters.
-    int         nNumEventParameters;
+    size_t         nNumEventParameters;
     SLocalizedAdvancesSoundEntry* pEventParameters;
 };
 
