@@ -297,7 +297,6 @@ namespace ImageProcessingAtom
                 if (trimZeros)
                 {
                     /* set i0 and i1 to the nonzero support of the filter */
-                    i0 = i0;
                     i1 = i1 = lastnonzero + 1;
                 }
 
