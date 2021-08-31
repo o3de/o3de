@@ -135,11 +135,16 @@ namespace ScriptCanvasEditor
 
         void SetVerbose(bool isVerbose);
 
+        const AZStd::string& GetDebugPrefix() const;
+
+        void SetDebugPrefix(AZStd::string_view);
+
         AZStd::shared_ptr<IState> m_currentState = nullptr;
         AZStd::vector<AZStd::shared_ptr<IState>> m_states;
 
     private:
         bool m_isVerbose = true;
+        AZStd::string m_debugPrefix;
     };
 
     //! This state machine will collect and share a variety of data from the EditorGraph
@@ -349,6 +354,7 @@ namespace ScriptCanvasEditor
         int EvaluateTransition() override;
     };
 
+
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
@@ -360,8 +366,10 @@ namespace ScriptCanvasEditor
             azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
             sBuffer[sizeof(sBuffer) - 1] = '\0';
             va_end(ArgList);
-
-            AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "%s\n", sBuffer);
+            AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data()
+                , "%s-%s\n"
+                , m_stateMachine->GetDebugPrefix().c_str()
+                , sBuffer);
         }
     }
 }

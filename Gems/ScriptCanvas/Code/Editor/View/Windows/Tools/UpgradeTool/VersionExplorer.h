@@ -115,7 +115,8 @@ namespace ScriptCanvasEditor
             BackupSuccess,
             BackupFail,
             BackupFail_CreateFolder,
-            BackupFail_FileNotFound
+            BackupFail_FileNotFound,
+            CopyFinalFailed,
         };
 
         void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result = OperationResult::Success);
@@ -123,7 +124,7 @@ namespace ScriptCanvasEditor
         bool IsUpgrading() const;
 
         bool m_inProgress = false;
-        size_t m_currentAssetIndex = 0;
+        size_t m_currentAssetRowIndex = 0;
         size_t m_inspectedAssets = 0;
         size_t m_failedAssets = 0;
         size_t m_discoveredAssets = 0;
@@ -159,8 +160,6 @@ namespace ScriptCanvasEditor
         OperationResult BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
         void UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
 
-        void RetryMove(const AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target);
-
         void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result = OperationResult::Success);
         void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) override;
 
@@ -169,7 +168,7 @@ namespace ScriptCanvasEditor
         void closeEvent(QCloseEvent* event) override;
 
         bool m_overwriteAll = false;
-        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target);
+        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target, size_t remainingAttempts);
 
         void Log(const char* format, ...);
     };

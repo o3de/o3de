@@ -678,6 +678,7 @@ namespace ScriptCanvasEditor
         if (m_asset != asset)
         {
             m_asset = asset;
+            SetDebugPrefix(asset.GetHint());
         }
     }
 
@@ -753,4 +754,16 @@ namespace ScriptCanvasEditor
     {
         m_isVerbose = isVerbose;
     }
+
+    const AZStd::string& StateMachine::GetDebugPrefix() const
+    {
+        return m_debugPrefix;
+    }
+
+    void StateMachine::SetDebugPrefix(AZStd::string_view prefix)
+    {
+        m_debugPrefix = prefix;
+    }
+
+
 }
