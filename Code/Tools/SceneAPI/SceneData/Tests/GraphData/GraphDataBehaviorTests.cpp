@@ -153,12 +153,12 @@ namespace AZ
                         materialDataData->SetBaseColor(AZStd::make_optional(AZ::Vector3(0.1, 0.2, 0.3)));
                         materialDataData->SetDiffuseColor({ 0.3, 0.4, 0.5 });
                         materialDataData->SetEmissiveColor({ 0.4, 0.5, 0.6 });
-                        materialDataData->SetEmissiveIntensity(AZStd::make_optional(0.789));
+                        materialDataData->SetEmissiveIntensity(AZStd::make_optional(0.789f));
                         materialDataData->SetMaterialName("TestMaterialName");
-                        materialDataData->SetMetallicFactor(AZStd::make_optional(0.123));
+                        materialDataData->SetMetallicFactor(AZStd::make_optional(0.123f));
                         materialDataData->SetNoDraw(true);
                         materialDataData->SetOpacity(0.7);
-                        materialDataData->SetRoughnessFactor(AZStd::make_optional(0.456));
+                        materialDataData->SetRoughnessFactor(AZStd::make_optional(0.456f));
                         materialDataData->SetShininess(1.23);
                         materialDataData->SetSpecularColor({ 0.8, 0.9, 1.0 });
                         materialDataData->SetUseAOMap(AZStd::make_optional(true));
