@@ -104,8 +104,6 @@ static CCryEditDoc * theDocument;
 #define VERIFY(EXPRESSION) { auto e = EXPRESSION; assert(e); }
 #endif
 
-#undef GetCommandLine
-
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
