@@ -102,6 +102,11 @@ namespace AZ
 
         AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
         {
+            if (!m_propertyNames.empty() && m_isDirty)
+            {
+                const_cast<MaterialAsset*>(this)->RealignPropertyValuesAndNames();
+            }
+
             return m_propertyValues;
         }
 
@@ -125,12 +130,6 @@ namespace AZ
             }
             else
             {
-                // Realign property values to MaterialPropertyLayout if m_propertyNames is populated.
-                //if (!m_propertyNames.empty())
-                //{
-                //    RealignPropertyValues();
-                //}
-
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 
@@ -155,19 +154,10 @@ namespace AZ
             }
         }
         
-        void MaterialAsset::RealignPropertyValues()
+        void MaterialAsset::RealignPropertyValuesAndNames()
         {
             const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
-            const size_t latestPropertyCount = propertyLayout->GetPropertyCount();
-            AZStd::vector<MaterialPropertyValue> alignedPropertyValues;
-            alignedPropertyValues.resize(latestPropertyCount);
-            // initialize all values to default first in case there are new material properties in the MaterialTypeAsset.
-            for (size_t i = 0; i < latestPropertyCount; ++i)
-            {
-                const MaterialPropertyDescriptor* propertyDescriptor = propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{ i });
-                alignedPropertyValues[i] = propertyDescriptor->GetDefaultValue();
-            }
-
+            AZStd::vector<MaterialPropertyValue> alignedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
             for (size_t i = 0; i < m_propertyNames.size(); ++i)
             {
                 const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(m_propertyNames[i]);
@@ -176,8 +166,14 @@ namespace AZ
                     alignedPropertyValues[propertyIndex.GetIndex()] = m_propertyValues[i];
                 }
             }
-
             m_propertyValues.swap(alignedPropertyValues);
+
+            const size_t propertyCount = propertyLayout->GetPropertyCount();
+            m_propertyNames.resize(propertyCount);
+            for (size_t i = 0; i < propertyCount; ++i)
+            {
+                m_propertyNames[i] = propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{ i })->GetName();
+            }
 
             m_isDirty = false;
         } 
@@ -193,13 +189,10 @@ namespace AZ
                 // This also covers the case where just the MaterialTypeAsset is reloaded and not the MaterialAsset.
                 m_materialTypeAsset = newMaterialTypeAsset;
 
+                m_isDirty = true;
+
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-
-                //if (!m_propertyNames.empty())
-                //{
-                //    RealignPropertyValues();
-                //}
             }
         }
 

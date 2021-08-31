@@ -110,36 +110,16 @@ namespace AZ
             // This baking process could be more efficient by doing it at build-time rather than run-time. However, the 
             // architectural complexity of supporting separate asset/runtime paths for assigning buffers/images is prohibitive.
             {
-                m_propertyValues.resize(materialAsset.GetMaterialPropertiesLayout()->GetPropertyCount());
+                m_propertyValues.resize(materialAsset.GetPropertyValues().size());
                 AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
 
-                if (materialAsset.HasPropertyNames())
+                for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
                 {
-                    if (materialAsset.IsDirty())
+                    const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
+                    MaterialPropertyIndex propertyIndex{ i };
+                    if (!SetPropertyValue(propertyIndex, value))
                     {
-                        materialAsset.RealignPropertyValues();
-                    }
-
-                    for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
-                    {
-                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                        MaterialPropertyIndex propertyIndex{ i };
-                        if (!SetPropertyValue(propertyIndex, value))
-                        {
-                            return RHI::ResultCode::Fail;
-                        }
-                    }
-                }
-                else
-                {
-                    for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
-                    {
-                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                        MaterialPropertyIndex propertyIndex{ i };
-                        if (!SetPropertyValue(propertyIndex, value))
-                        {
-                            return RHI::ResultCode::Fail;
-                        }
+                        return RHI::ResultCode::Fail;
                     }
                 }
 
@@ -247,7 +227,6 @@ namespace AZ
 
             if (newMaterialAsset)
             {
-                newMaterialAsset->SetDirty();
                 Init(*newMaterialAsset);
                 MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
             }

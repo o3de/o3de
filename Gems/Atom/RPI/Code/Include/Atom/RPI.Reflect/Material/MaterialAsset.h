@@ -105,26 +105,13 @@ namespace AZ
             //! their parent material, they all get flattened at build time so every MaterialAsset has the full set of values.
             AZStd::array_view<MaterialPropertyValue> GetPropertyValues() const;
 
-            bool HasPropertyNames() const { return !m_propertyNames.empty(); }
-            const AZStd::vector<AZ::Name>& GetPropertyNames() const { return m_propertyNames; }
-
-            //! Realigns property value indices with MaterialPropertyLayout by using m_propertyNames. Property names not found in the
-            //! MaterialPropertyLayout are discarded, while property names not included in m_propertyNames will use a default value
-            //! based on the property's data type (see MaterialPropertyDescriptor::GetDefaultValue()).
-            void RealignPropertyValues();
-
-            // temp code
-            const MaterialPropertyValue& GetDefaultPropertyValue(size_t index) const
-            {
-                return m_materialTypeAsset->GetDefaultPropertyValues()[index];
-            }
-            AZStd::array_view<MaterialPropertyValue> GetDefaultPropertyValues() const { return m_materialTypeAsset->GetDefaultPropertyValues(); }
-
-            bool IsDirty() { return !m_propertyNames.empty() ? m_isDirty : false; }
-            void SetDirty() { m_isDirty = true; }
-
         private:
             bool PostLoadInit() override;
+
+            //! Realigns property value and name indices with MaterialPropertyLayout by using m_propertyNames. Property names not found in the
+            //! MaterialPropertyLayout are discarded, while property names not included in m_propertyNames will use a default value
+            //! based on the property's data type (see MaterialPropertyDescriptor::GetDefaultValue()).
+            void RealignPropertyValuesAndNames();
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
