@@ -231,6 +231,12 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {%      set ControllerBaseName = ControllerName + "Base" %}
 {% endif %}
 {% set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
+{%      endif %}
+{% endfor %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "AutoComponentTypes.h"
@@ -337,6 +343,19 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
+{%      if NetworkInputsExposedToScript.value > 0 %}
+{% set parameters = [] %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%              set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{%      endif %}
+{% endfor %}
+        AZ_TYPE_INFO({{ ComponentName }}NetworkInput, "{{ (ComponentName ~ "NetworkInput") | createHashGuid }}") 
+        {{ ComponentName }}NetworkInput() = default;
+        {{ ComponentName }}NetworkInput({{ parameters|join(', ') }});
+        static void Reflect(AZ::ReflectContext* context);
+        
+{%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;

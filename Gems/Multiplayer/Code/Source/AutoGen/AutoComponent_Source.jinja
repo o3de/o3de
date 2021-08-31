@@ -1153,6 +1153,12 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {%      set ControllerBaseName = ControllerName %}
 {% endif %}
 {% set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
+{%      endif %}
+{% endfor %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "{{ includeFile }}"
@@ -1299,6 +1305,50 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {% if NetworkInputCount > 0 %}
+{% if NetworkInputsExposedToScript.value > 0 %}
+{% set parameters_type_name = [] %}
+{% set parameters_name = [] %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%      set parameters_type_name = parameters_type_name.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{%      set parameters_name = parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
+{%      endif %}
+{% endfor %}
+    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ parameters_type_name|join(', ') }})
+    { 
+        return {{ ComponentName }}NetworkInput({{ parameters_name|join(', ') }});
+    }
+
+    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ parameters_type_name|join(', ') }})
+    : {% for param_name in parameters_name %}m_{{ param_name }}({{ param_name }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
+
+    void {{ ComponentName }}NetworkInput::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<{{ ComponentName }}NetworkInput>()
+                ->Version(1)
+                ;
+        }
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+                    ->Method("ConstructFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
+{%                  for netInput in Component.findall('NetworkInput') %}
+{%                      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+                    ->Property("{{ netInput.attrib['Name'] }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(netInput.attrib['Name']) }}))
+{%                      endif %}
+{%                 endfor %}
+            ;
+        }
+    }
+{% endif %}
+
     Multiplayer::NetComponentId {{ ComponentName }}NetworkInput::GetNetComponentId() const
     {
         return {{ ComponentName }}NetworkInput::s_netComponentId;
@@ -1399,6 +1449,9 @@ namespace {{ Component.attrib['Namespace'] }}
         }
         ReflectToEditContext(context);
         ReflectToBehaviorContext(context);
+{%          if NetworkInputsExposedToScript.value > 0 %}
+        {{ ComponentName }}NetworkInput::Reflect(context);
+{%          endif %}
     }
 
     void {{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
@@ -1448,8 +1501,8 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
-            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) -}}
-                
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) }}
+
             // Reflect RPCs
             {{ ReflectRpcInvocations(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
             {{ ReflectRpcInvocations(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
@@ -1459,7 +1512,6 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ ReflectRpcEvents(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
             {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
             {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
-
             {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
             ;
         }
@@ -1503,7 +1555,6 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
     {{ ComponentBaseName }}::{{ ComponentBaseName }}() = default;
-
     {{ ComponentBaseName }}::~{{ ComponentBaseName }}() = default;
 
     void {{ ComponentBaseName }}::Init()
