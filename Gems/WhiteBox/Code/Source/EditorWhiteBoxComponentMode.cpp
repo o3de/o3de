@@ -397,7 +397,7 @@ namespace WhiteBox
 
         const auto edgeHandlesPair = Api::MeshUserEdgeHandles(*whiteBox);
 
-        const auto edgeHandles = [whiteBox, edgeSelectionMode, &edgeHandlesPair]()
+        const auto edgeHandles = [edgeSelectionMode, &edgeHandlesPair]()
         {
             switch (edgeSelectionMode)
             {

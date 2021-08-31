@@ -295,8 +295,6 @@ struct Vec2_tpl
     {
         return sqrt_tpl((x - vec1.x) * (x - vec1.x) + (y - vec1.y) * (y - vec1.y));
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////

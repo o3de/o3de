@@ -17,14 +17,13 @@
 struct ShadowMapFrustum;
 struct SRenderingPassInfo;
 struct SRendItemSorter;
-struct IShader;
+struct ITetrLattice;
 struct SPhysGeomArray;
 struct CStatObj;
 
 class CRenderObject;
 class CDLight;
 class IReadStream;
-class CRenderObject;
 class CLodValue;
 
 
@@ -35,13 +34,12 @@ struct phys_geometry;
 struct IChunkFile;
 
 // General forward declaration.
-class CRenderObject;
 struct SMeshLodInfo;
 
-#include "CryHeaders.h"
+#include "Cry_Color.h"
 #include "Cry_Math.h"
 #include "Cry_Geo.h"
-#include "IPhysics.h"
+#include "CrySizer.h"
 
 #define MAX_STATOBJ_LODS_NUM 6
 
@@ -148,70 +146,6 @@ enum EFileStreamingStatus
     ecss_Ready
 };
 
-// Interface for streaming of objects like CStatObj.
-struct IStreamable
-{
-    struct SInstancePriorityInfo
-    {
-        int   nRoundId;
-        float fMaxImportance;
-    };
-
-    IStreamable()
-    {
-        ZeroStruct(m_arrUpdateStreamingPrioriryRoundInfo);
-        m_eStreamingStatus = ecss_NotLoaded;
-        fCurImportance = 0;
-        m_nSelectedFrameId = 0;
-        m_nStatsInUse = 0;
-    }
-
-    bool UpdateStreamingPrioriryLowLevel(float fImportance, int nRoundId, bool bFullUpdate)
-    {
-        bool bRegister = false;
-
-        if (m_arrUpdateStreamingPrioriryRoundInfo[0].nRoundId != nRoundId)
-        {
-            if (!m_arrUpdateStreamingPrioriryRoundInfo[0].nRoundId)
-            {
-                bRegister = true;
-            }
-
-            m_arrUpdateStreamingPrioriryRoundInfo[1] = m_arrUpdateStreamingPrioriryRoundInfo[0];
-
-            m_arrUpdateStreamingPrioriryRoundInfo[0].nRoundId = nRoundId;
-            m_arrUpdateStreamingPrioriryRoundInfo[0].fMaxImportance = fImportance;
-        }
-        else
-        {
-            m_arrUpdateStreamingPrioriryRoundInfo[0].fMaxImportance = max(m_arrUpdateStreamingPrioriryRoundInfo[0].fMaxImportance, fImportance);
-        }
-
-        if (bFullUpdate)
-        {
-            m_arrUpdateStreamingPrioriryRoundInfo[1] = m_arrUpdateStreamingPrioriryRoundInfo[0];
-            m_arrUpdateStreamingPrioriryRoundInfo[1].nRoundId--;
-        }
-
-        return bRegister;
-    }
-
-    // <interfuscator:shuffle>
-    virtual ~IStreamable(){}
-    virtual void StartStreaming(bool bFinishNow, IReadStream_AutoPtr* ppStream) = 0;
-    virtual int GetStreamableContentMemoryUsage(bool bJustForDebug = false) = 0;
-    virtual void ReleaseStreamableContent() = 0;
-    virtual void GetStreamableName(AZStd::string& sName) = 0;
-    virtual uint32 GetLastDrawMainFrameId() = 0;
-    virtual bool IsUnloadable() const = 0;
-
-    SInstancePriorityInfo m_arrUpdateStreamingPrioriryRoundInfo[2];
-    float fCurImportance;
-    EFileStreamingStatus m_eStreamingStatus;
-    uint32 m_nSelectedFrameId : 31;
-    uint32 m_nStatsInUse : 1;
-};
-
 struct SMeshBoneMapping_uint8;
 struct SSpine;
 struct SMeshColor;
@@ -219,7 +153,6 @@ struct SMeshColor;
 // Summary:
 //     Interface to hold static object data
 struct IStatObj
-    : public IStreamable
 {
     //! Loading flags
     enum ELoadingFlags
@@ -260,50 +193,6 @@ struct IStatObj
     };
     //////////////////////////////////////////////////////////////////////////
 
-    // Statistics information about this object.
-    struct SStatistics
-    {
-        int nVertices;
-        int nVerticesPerLod[MAX_STATOBJ_LODS_NUM];
-        int nIndices;
-        int nIndicesPerLod[MAX_STATOBJ_LODS_NUM];
-        int nMeshSize;
-        int nMeshSizeLoaded;
-        int nPhysProxySize;
-        int nPhysProxySizeMax;
-        int nPhysPrimitives;
-        int nDrawCalls;
-        int nLods;
-        int nSubMeshCount;
-        int nNumRefs;
-        bool bSplitLods; // Lods split between files.
-
-        // Optional texture sizer.
-        ICrySizer* pTextureSizer;
-        ICrySizer* pTextureSizer2;
-
-        SStatistics() { Reset(); }
-
-        void Reset()
-        {
-            pTextureSizer = NULL;
-            pTextureSizer2 = NULL;
-            nVertices = 0;
-            nIndices = 0;
-            nMeshSize = 0;
-            nMeshSizeLoaded = 0;
-            nNumRefs = 0;
-            nPhysProxySize = 0;
-            nPhysPrimitives = 0;
-            nDrawCalls = 0;
-            nLods = 0;
-            nSubMeshCount = 0;
-            bSplitLods = false;
-            ZeroStruct(nVerticesPerLod);
-            ZeroStruct(nIndicesPerLod);
-        }
-    };
-
     // <interfuscator:shuffle>
     // Description:
     //     Increase the reference count of the object.
@@ -336,10 +225,6 @@ struct IStatObj
     virtual unsigned int  GetVehicleOnlyPhysics() = 0;
 
     // Description:
-    //     Retrieves the internal flag m_nIdMaterialBreakable.
-    virtual int  GetIDMatBreakable() = 0;
-
-    // Description:
     //     Retrieves the internal flag m_bBreakableByGame.
     virtual unsigned int  GetBreakableByGame() = 0;
 
@@ -363,34 +248,6 @@ struct IStatObj
     virtual struct IRenderMesh* GetRenderMesh() = 0;
 
     // Description:
-    //     Returns the physical representation of the object.
-    // Arguments:
-    //     nType - one of PHYS_GEOM_TYPE_'s, or an explicit slot index
-    // Return Value:
-    //     A pointer to a phys_geometry structure.
-    // Summary:
-    //     Get the physic representation
-    virtual phys_geometry* GetPhysGeom(int nType = PHYS_GEOM_TYPE_DEFAULT) = 0;
-
-    // Description:
-    //       Updates rendermesh's vertices, normals, and tangents with the data provided
-    // Summary:
-    //       Updates vertices in the range [iVtx0..iVtx0+nVtx-1], vertices are in their original order
-    //       (as they are physicalized). Clones the object if necessary to make the modifications
-    // Return Value:
-    //     modified IStatObj (a clone or this one, if it's already a clone)
-    virtual IStatObj* UpdateVertices(strided_pointer<Vec3> pVtx, strided_pointer<Vec3> pNormals, int iVtx0, int nVtx, int* pVtxMap = 0, float rscale = 1.f) = 0;
-
-    // Description:
-    //       Skins rendermesh's vertices based on skeleton vertices
-    // Summary:
-    //       Skins vertices based on mtxSkelToMesh[pSkelVtx[i]]
-    //       Clones the object if necessary to make the modifications
-    // Return Value:
-    //     modified IStatObj (a clone or this one, if it's already a clone)
-    virtual IStatObj* SkinVertices(strided_pointer<Vec3> pSkelVtx, const Matrix34& mtxSkelToMesh) = 0;
-
-    // Description:
     //     Sets and replaces the physical representation of the object.
     // Arguments:
     //       pPhysGeom - A pointer to a phys_geometry class.
@@ -398,10 +255,6 @@ struct IStatObj
     // Summary:
     //     Set the physic representation
     virtual void SetPhysGeom(phys_geometry* pPhysGeom, int nType = 0) = 0;
-
-    // Description:
-    //     Returns a tetrahedral lattice, if any (used for breakable objects)
-    virtual ITetrLattice* GetTetrLattice() = 0;
 
     virtual float GetAIVegetationRadius() const = 0;
     virtual void SetAIVegetationRadius(float radius) = 0;
@@ -432,18 +285,6 @@ struct IStatObj
     // Summary:
     //     Get the minimal bounding box component
     virtual Vec3 GetBoxMax() = 0;
-
-    // Return Value:
-    //     A Vec3 object containing the bounding box center.
-    // Summary:
-    //     Get the center of bounding box
-    virtual const Vec3 GetVegCenter() = 0;
-
-    // Arguments:
-    //     Minimum bounding box component
-    // Summary:
-    //     Set the minimum bounding box component
-    virtual void    SetBBoxMin(const Vec3& vBBoxMin) = 0;
 
     // Arguments:
     //     Minimum bounding box component
@@ -504,16 +345,8 @@ struct IStatObj
     virtual int FindNearesLoadedLOD(int nLodIn, bool bSearchUp = false) = 0;
     virtual int FindHighestLOD(int nBias) = 0;
 
-    virtual bool LoadCGF(const char* filename, bool bLod, unsigned long nLoadingFlags, const void* pData, const int nDataSize) = 0;
-    virtual void DisableStreaming() = 0;
-    virtual void TryMergeSubObjects(bool bFromStreaming) = 0;
-    virtual bool IsUnloadable() const = 0;
-    virtual void SetCanUnload(bool value) = 0;
-
     virtual AZStd::string& GetFileName() = 0;
     virtual const AZStd::string& GetFileName() const = 0;
-
-    virtual const AZStd::string& GetCGFNodeName() const = 0;
 
     // Summary:
     //     Returns the filename of the object
@@ -528,25 +361,6 @@ struct IStatObj
     // Return Value:
     //       None
     virtual void SetFilePath(const char* szFileName) = 0;
-
-    // Summary:
-    //     Returns the name of the geometry
-    // Return Value:
-    //     A null terminated string which contains the name of the geometry
-    virtual const char* GetGeoName() = 0;
-
-    // Summary:
-    //     Sets the name of the geometry
-    virtual void SetGeoName(const char* szGeoName) = 0;
-
-    // Summary:
-    //     Compares if another object is the same
-    // Arguments:
-    //     szFileName - Filename of the object to compare
-    //     szGeomName - Geometry name of the object to compare (optional)
-    // Return Value:
-    //     A boolean which equals to true in case both object are the same, or false in the opposite case.
-    virtual bool IsSameObject(const char* szFileName, const char* szGeomName) = 0;
 
     // Description:
     //     Will return the position of the helper named in the argument. The
@@ -635,15 +449,6 @@ struct IStatObj
     //    adds a new sub object
     virtual IStatObj::SSubObject& AddSubObject(IStatObj* pStatObj) = 0;
 
-    // Summary:
-    //      Adds subobjects to pent, meshes as parts, joint helpers as breakable joints
-    virtual int PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx, float mass, float density = 0.0f, int id0 = 0, strided_pointer<int> pJointsIdMap = 0, const char* szPropsOverride = 0) = 0;
-    // Summary:
-    //      Adds all phys geometries to pent, assigns ids starting from id; takes mass and density from the StatObj properties if not set in pgp
-    //    for compound objects calls PhysicalizeSubobjects
-    //    returns the physical id of the last physicalized part
-    virtual int Physicalize(IPhysicalEntity* pent, pe_geomparams* pgp, int id = 0, const char* szPropsOverride = 0) = 0;
-
     virtual bool IsDeformable() = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -690,9 +495,6 @@ struct IStatObj
     // hides all non-physicalized geometry, clones the object if necessary
     virtual IStatObj* HideFoliage() = 0;
 
-    // serializes the StatObj's mesh into a stream
-    virtual int Serialize(TSerialize ser) = 0;
-
     // Get object properties as loaded from CGF.
     virtual const char* GetProperties() = 0;
 
@@ -712,9 +514,6 @@ struct IStatObj
 
     // Debug Draw this static object.
     virtual void DebugDraw(const struct SGeometryDebugDrawInfo& info, float fExtrdueScale = 0.01f) = 0;
-
-    // Fill statistics about the level.
-    virtual void GetStatistics(SStatistics& stats) = 0;
 
     // Returns initial hide mask
     virtual uint64 GetInitialHideMask() = 0;
@@ -767,12 +566,6 @@ struct IStatObj
     virtual int GetLoadedLodsNum() = 0;
 
     virtual bool UpdateStreamableComponents(float fImportance, const Matrix34A& objMatrix, bool bFullUpdate, int nNewLod) = 0;
-
-    virtual void RenderInternal(CRenderObject* pRenderObject, uint64 nSubObjectHideMask, const CLodValue& lodValue, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderObjectInternal(CRenderObject* pRenderObject, int nLod, uint8 uLodDissolveRef, bool dissolveOut, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObject(CRenderObject* pRenderObject, int nLod, int nSubObjId, const Matrix34A& renderTM, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObjectInternal(CRenderObject* pRenderObject, int nLod, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderRenderMesh(CRenderObject* pObj, struct SInstancingInfo* pInstInfo, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
 
     virtual SPhysGeomArray& GetArrPhysGeomInfo() = 0;
     virtual bool IsLodsAreLoadedFromSeparateFile() = 0;

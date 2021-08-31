@@ -18,6 +18,7 @@
 #include "SandboxAPI.h"
 #include <Cry_Color.h>
 #include <Cry_Geo.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QColor>
 
@@ -63,7 +64,6 @@ struct SANDBOX_API DisplayContext
 
     CDisplaySettings* settings;
     IDisplayViewport* view;
-    IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
     CCamera*    camera;

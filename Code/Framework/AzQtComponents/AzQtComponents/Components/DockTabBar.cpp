@@ -31,8 +31,6 @@ static const int g_closeButtonOffset = g_closeButtonWidth + AzQtComponents::Dock
 static const QColor g_tabIndicatorUnderlayColor(Qt::black);
 // Constant for the opacity of our tab indicator underlay
 static const qreal g_tabIndicatorUnderlayOpacity = 0.75;
-// Constant for the duration of our tab animations (in milliseconds)
-static const int g_tabAnimationDurationMS = 250;
 
 
 namespace AzQtComponents

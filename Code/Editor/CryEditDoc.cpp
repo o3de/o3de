@@ -342,7 +342,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     // Register this level and its content hash as version
     GetIEditor()->GetSettingsManager()->AddToolVersion(fileName, levelHash);
     GetIEditor()->GetSettingsManager()->RegisterEvent(loadEvent);
-    LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
+
     CAutoDocNotReady autoDocNotReady;
 
     HEAP_CHECK
@@ -1018,14 +1018,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
     return bSaved;
 }
 
-
-static void GetUserSettingsFile(const QString& levelFolder, QString& userSettings)
-{
-    const char* pUserName = GetISystem()->GetUserName();
-    QString fileName = QStringLiteral("%1_usersettings.editor_xml").arg(pUserName);
-    userSettings = Path::Make(levelFolder, fileName);
-}
-
 static bool TryRenameFile(const QString& oldPath, const QString& newPath, int retryAttempts=10)
 {
     QFile(newPath).setPermissions(QFile::ReadOther | QFile::WriteOther);
@@ -1047,7 +1039,7 @@ static bool TryRenameFile(const QString& oldPath, const QString& newPath, int re
 
 bool CCryEditDoc::SaveLevel(const QString& filename)
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(Editor);
     QWaitCursor wait;
 
     CAutoCheckOutDialogEnableForAll enableForAll;
@@ -1067,7 +1059,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
     {
 
-        AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel BackupBeforeSave");
+        AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel BackupBeforeSave");
         BackupBeforeSave();
     }
 
@@ -1178,7 +1170,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         CPakFile pakFile;
 
         {
-            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Open PakFile");
+            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Open PakFile");
             if (!pakFile.Open(tempSaveFile.toUtf8().data(), false))
             {
                 gEnv->pLog->LogWarning("Unable to open pack file %s for writing", tempSaveFile.toUtf8().data());
@@ -1209,7 +1201,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
         AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
         {
-            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Save Entities To Stream");
+            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Save Entities To Stream");
             EBUS_EVENT_RESULT(
                 savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
                 instancesInLayers);

@@ -270,7 +270,6 @@ namespace TestImpact
             {
                 processInFlight.m_process->Terminate(ProcessTerminateErrorCode);
                 AccumulateProcessStdContent(processInFlight);
-                const ProcessId processId = processInFlight.m_process->GetProcessInfo().GetId();
 
                 if (isCallingBackToClient)
                 {

@@ -17,7 +17,6 @@
 #include <Cry_Math.h>
 #include <IXml.h>
 #include "MiniQueue.h"
-#include <VectorSet.h>
 #include <VectorMap.h>
 #include <StlUtils.h>
 #include <AzCore/Math/Vector3.h>
@@ -105,8 +104,6 @@ struct SNetObjectID
     }
 
     void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { /*nothing*/}
-
-    AUTO_STRUCT_INFO
 };
 
 // this enumeration details what "kind" of serialization we are
@@ -154,8 +151,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 struct SSerializeString
 {
-    AUTO_STRUCT_INFO
-
     SSerializeString() {};
     SSerializeString(const SSerializeString& src) { m_str.assign(src.c_str()); };
     explicit SSerializeString(const char* sbegin, const char* send)
@@ -571,8 +566,6 @@ public:
     CONTAINER_VALUE(std::list, push_back);
     CONTAINER_VALUE(std::set, insert);
     CONTAINER_VALUE(std::deque, push_back);
-    CONTAINER_VALUE(VectorSet, insert);
-    CONTAINER_VALUE(DynArray, insert);
 
     PAIR_CONTAINER_VALUE(std::list, push_back);
     PAIR_CONTAINER_VALUE(std::vector, push_back);

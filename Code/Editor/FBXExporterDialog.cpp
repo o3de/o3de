@@ -17,12 +17,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_FBXExporterDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-
-namespace
-{
-    const uint kDefaultFPS = 30u;
-}
-
 CFBXExporterDialog::CFBXExporterDialog(bool bDisplayOnlyFPSSetting, QWidget* pParent)
     : QDialog(pParent)
     , m_ui(new Ui::FBXExporterDialog)

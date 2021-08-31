@@ -133,7 +133,5 @@ namespace ScriptCanvasDeveloper
         QLabel*      m_errorTestLabel = nullptr;
         QLabel*      m_runLabel = nullptr;
         QMainWindow* m_scriptCanvasWindow = nullptr;
-
-        QWindow* m_canvasWindow = nullptr;
     };
 }

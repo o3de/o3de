@@ -752,7 +752,9 @@ namespace UnitTest
             // Test that sending in a too small output path fails,
             // if the output buffer is too small to hold the resolved path
             size_t SMALLER_THAN_FINAL_RESOLVED_PATH = expectedResolvedPath.length() - 1;
+            AZ_TEST_START_TRACE_SUPPRESSION;
             resolveDidWork = local.ResolvePath(aliasTestPath, aliasResolvedPath, SMALLER_THAN_FINAL_RESOLVED_PATH);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_ASSERT(!resolveDidWork);
 
             // test clearing an alias

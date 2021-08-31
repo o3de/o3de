@@ -43,7 +43,7 @@ struct SFileVersion
         t[len] = 0;
 
         char* p;
-        char* next = nullptr;
+        [[maybe_unused]] char* next = nullptr;
         [[maybe_unused]] size_t strmax = sizeof(t);
         p = azstrtok(t, &strmax, ".", &next);
         if (!p)
