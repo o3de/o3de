@@ -273,7 +273,7 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
-                azrtti_typeid<AzToolsFramework::EditorEntityUtilityComponent>()
+                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>()
             });
 
         return components;

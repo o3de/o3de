@@ -19,9 +19,9 @@
 namespace AzToolsFramework
 {
     // This ebus is intended to provide behavior-context friendly APIs to create and manage entities
-    struct EditorEntityUtilityTraits : AZ::EBusTraits
+    struct EntityUtilityTraits : AZ::EBusTraits
     {
-        virtual ~EditorEntityUtilityTraits() = default;
+        virtual ~EntityUtilityTraits() = default;
 
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -30,14 +30,14 @@ namespace AzToolsFramework
         virtual AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) = 0;
     };
 
-    using EditorEntityUtilityBus = AZ::EBus<EditorEntityUtilityTraits>;
+    using EntityUtilityBus = AZ::EBus<EntityUtilityTraits>;
 
-    struct EditorEntityUtilityComponent : AZ::Component
-        , EditorEntityUtilityBus::Handler
+    struct EntityUtilityComponent : AZ::Component
+        , EntityUtilityBus::Handler
     {
         inline const static AZ::Uuid UtilityEntityContextId = AZ::Uuid("{9C277B88-E79E-4F8A-BAFF-A4C175BD565F}");
 
-        AZ_COMPONENT(EditorEntityUtilityComponent, "{47205907-A0EA-4FFF-A620-04D20C04A379}");
+        AZ_COMPONENT(EntityUtilityComponent, "{47205907-A0EA-4FFF-A620-04D20C04A379}");
 
         AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) override;
         static void Reflect(AZ::ReflectContext* context);

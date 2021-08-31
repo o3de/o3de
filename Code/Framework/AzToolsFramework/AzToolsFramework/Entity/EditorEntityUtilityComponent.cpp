@@ -12,7 +12,7 @@
 
 namespace AzToolsFramework
 {
-    AZ::EntityId EditorEntityUtilityComponent::CreateEditorReadyEntity(const AZStd::string& entityName)
+    AZ::EntityId EntityUtilityComponent::CreateEditorReadyEntity(const AZStd::string& entityName)
     {
         auto* newEntity = m_entityContext->CreateEntity(entityName.c_str());
 
@@ -30,33 +30,33 @@ namespace AzToolsFramework
         return newEntity->GetId();
     }
     
-    void EditorEntityUtilityComponent::Reflect(AZ::ReflectContext* context)
+    void EntityUtilityComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorEntityUtilityComponent, AZ::Component>();
+            serializeContext->Class<EntityUtilityComponent, AZ::Component>();
         }
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<EditorEntityUtilityBus>("EditorEntityUtilityBus")
+            behaviorContext->EBus<EntityUtilityBus>("EntityUtilityBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Entity")
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
-                ->Event("CreateEditorReadyEntity", &EditorEntityUtilityBus::Events::CreateEditorReadyEntity);
+                ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity);
         }
     }
 
-    void EditorEntityUtilityComponent::Activate()
+    void EntityUtilityComponent::Activate()
     {
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>(UtilityEntityContextId);
         m_entityContext->InitContext();
-        EditorEntityUtilityBus::Handler::BusConnect();
+        EntityUtilityBus::Handler::BusConnect();
     }
 
-    void EditorEntityUtilityComponent::Deactivate()
+    void EntityUtilityComponent::Deactivate()
     {
-        EditorEntityUtilityBus::Handler::BusConnect();
+        EntityUtilityBus::Handler::BusConnect();
         m_entityContext = nullptr;
     }
 }
