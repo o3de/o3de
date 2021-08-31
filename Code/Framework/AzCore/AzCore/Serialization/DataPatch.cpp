@@ -135,7 +135,6 @@ namespace AZ
         AZStd::list<SerializeContext::ClassElement> m_dynamicClassElements; ///< Storage for class elements that represent dynamic serializable fields.
     };
 
-    static bool ConvertLegacyBoolToEnum(AZ::SerializeContext& context, AZStd::any& patchAny, const DataNode& sourceNode);
     static void ReportDataPatchMismatch(SerializeContext* context, const SerializeContext::ClassElement* classElement, const TypeId& patchDataTypeId);
 
     //=========================================================================

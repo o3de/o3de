@@ -102,7 +102,6 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     bool m_bAutoExportMode;
-    int m_numExportedMaterials;
 
     static CGameExporter* m_pCurrentExporter;
 };

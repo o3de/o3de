@@ -123,11 +123,6 @@ set(FILES
     Entity/SliceGameEntityOwnershipServiceBus.h
     Entity/PrefabEntityOwnershipService.h
     Entity/PrefabEntityOwnershipService.cpp
-    Driller/RemoteDrillerInterface.cpp
-    Driller/RemoteDrillerInterface.h
-    Driller/DrillerConsoleAPI.h
-    Driller/DrillToFileComponent.h
-    Driller/DrillToFileComponent.cpp
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h

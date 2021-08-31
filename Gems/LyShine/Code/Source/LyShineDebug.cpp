@@ -39,7 +39,7 @@ AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dLine);
 AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dDefer);
 
 static const int g_numColors = 8;
-static const char* g_colorNames[g_numColors] =
+[[maybe_unused]] static const char* g_colorNames[g_numColors] =
 {
     "white",
     "red",
@@ -64,7 +64,7 @@ static AZ::Vector3 g_colorVec3[g_numColors] =
 };
 
 static const int g_numSrcBlendModes = 11;
-static int g_srcBlendModes[g_numSrcBlendModes] =
+[[maybe_unused]] static int g_srcBlendModes[g_numSrcBlendModes] =
 {
     GS_BLSRC_ZERO,
     GS_BLSRC_ONE,
@@ -80,7 +80,7 @@ static int g_srcBlendModes[g_numSrcBlendModes] =
 };
 
 static const int g_numDstBlendModes = 10;
-static int g_dstBlendModes[g_numDstBlendModes] =
+[[maybe_unused]] static int g_dstBlendModes[g_numDstBlendModes] =
 {
     GS_BLDST_ZERO,
     GS_BLDST_ONE,
@@ -94,7 +94,7 @@ static int g_dstBlendModes[g_numDstBlendModes] =
     GS_BLDST_ONEMINUSSRC1ALPHA, // dual source blending
 };
 
-static bool g_deferDrawsToEndOfFrame = false;
+[[maybe_unused]] static bool g_deferDrawsToEndOfFrame = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS

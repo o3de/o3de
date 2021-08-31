@@ -13,6 +13,8 @@
 
 #include <ScriptCanvas/Core/Graph.h>
 
+AZ_DECLARE_BUDGET(ScriptCanvas);
+
 namespace ScriptCanvas
 {
     namespace Nodes

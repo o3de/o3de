@@ -405,8 +405,6 @@ void CEditorImpl::Update()
     // Make sure this is not called recursively
     m_bUpdates = false;
 
-    FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-
     //@FIXME: Restore this latter.
     //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
     {

@@ -33,7 +33,6 @@ class CGizmo;
 class CObjectArchive;
 struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
-class ISubObjectSelectionReferenceFrameCalculator;
 class CPopupMenuItem;
 class QMenu;
 struct IRenderNode;
@@ -409,10 +408,6 @@ public:
     CBaseObject* GetParent() const { return m_parent; };
     //! Scans hierarchy up to determine if we child of specified node.
     virtual bool IsChildOf(CBaseObject* node);
-    //! Get all child objects
-    void GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj = nullptr) const;
     //! Clone Children
     void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.
@@ -571,7 +566,6 @@ public:
     // Return true if object support selecting of this sub object element type.
     virtual bool StartSubObjSelection([[maybe_unused]] int elemType) { return false; };
     virtual void EndSubObjectSelection() {};
-    virtual void CalculateSubObjectSelectionReferenceFrame([[maybe_unused]] ISubObjectSelectionReferenceFrameCalculator* pCalculator) { };
     virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
     virtual void AcceptSubObjectModify() {};
 

@@ -58,7 +58,6 @@ namespace EMStudio
         NodeSelectionWindow*            m_nodeSelectionWindow;
         CommandSystem::SelectionList    m_nodeSelectionList;
         EMotionFX::NodeGroup*           m_nodeGroup;
-        uint16                          m_nodeGroupIndex;
         CommandSystem::CommandAdjustNodeGroup::NodeAction m_nodeAction;
 
         // widgets

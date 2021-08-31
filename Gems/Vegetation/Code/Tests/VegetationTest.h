@@ -77,7 +77,6 @@ namespace UnitTest
 
             claimContext.m_existedCallback = [this](const Vegetation::ClaimPoint&, const Vegetation::InstanceData&) 
             { 
-                m_existedCallbackCount;
                 return m_existedCallbackOutput;
             };
 

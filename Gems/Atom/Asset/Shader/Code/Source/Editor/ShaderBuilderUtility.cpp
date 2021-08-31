@@ -521,7 +521,7 @@ namespace AZ
                     {
                         // Search the function name into the list of valid entry points into the shader.
                         auto findId =
-                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item) {
+                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName](const auto& item) {
                                 return item.first == functionName;
                             });
 

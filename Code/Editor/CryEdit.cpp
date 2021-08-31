@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 
 // CryCommon
 #include <CryCommon/ITimer.h>
-#include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor
@@ -448,13 +447,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
 
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    ON_COMMAND_RANGE(ID_GAME_##CODENAME##_ENABLELOWSPEC, ID_GAME_##CODENAME##_ENABLEHIGHSPEC, OnChangeGameSpec)
-    AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
-
     ON_COMMAND(ID_OPEN_QUICK_ACCESS_BAR, OnOpenQuickAccessBar)
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
@@ -559,7 +551,9 @@ public:
             { "NSDocumentRevisionsDebugMode", nsDocumentRevisionsDebugMode},
             { "skipWelcomeScreenDialog", m_bSkipWelcomeScreenDialog},
             { "autotest_mode", m_bAutotestMode},
-            { "regdumpall", dummy }
+            { "regdumpall", dummy },
+            { "attach-debugger", dummy }, // Attaches a debugger for the current application
+            { "wait-for-debugger", dummy }, // Waits until a debugger is attached to the current application
         };
 
         QString dummyString;
@@ -2298,7 +2292,7 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     int res = 0;
     if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
         // Automated tests must always keep the editor active, or they can get stuck
-        || m_bAutotestMode)
+        || m_bAutotestMode || m_bRunPythonTestScript)
     {
         res = 1;
         bActive = true;
@@ -4018,6 +4012,19 @@ struct CryAllocatorsRAII
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
     CryAllocatorsRAII cryAllocatorsRAII;
+
+    // Debugging utilities
+    for (int i = 1; i < argc; ++i)
+    {
+        if (azstricmp(argv[i], "--attach-debugger") == 0)
+        {
+            AZ::Debug::Trace::AttachDebugger();
+        }
+        else if (azstricmp(argv[i], "--wait-for-debugger") == 0)
+        {
+            AZ::Debug::Trace::WaitForDebugger();
+        }
+    }
 
     // ensure the EditorEventsBus context gets created inside EditorLib
     [[maybe_unused]] const auto& editorEventsContext = AzToolsFramework::EditorEvents::Bus::GetOrCreateContext();

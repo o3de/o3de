@@ -1361,7 +1361,7 @@ namespace UnitTest
             AZ::JobCompletion completion;
 
             // Push a parent job that pushes the work as child jobs (requires the current job, so this is a real world test of "functor with current job as param")
-            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData, JobCount](AZ::Job& thisJob)
+            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData](AZ::Job& thisJob)
                 {
                     EXPECT_EQ(m_jobManager->GetCurrentJob(), &thisJob);
 

@@ -38,7 +38,7 @@ namespace AZ
     {
         namespace
         {
-            static const char* PassName = "ImGuiPass";
+            [[maybe_unused]] static const char* PassName = "ImGuiPass";
             static const char* ImguiShaderFilePath = "Shaders/imgui/imgui.azshader";
         }
 

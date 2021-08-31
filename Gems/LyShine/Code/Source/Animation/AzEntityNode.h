@@ -91,8 +91,8 @@ public:
     //////////////////////////////////////////////////////////////////////////
     virtual unsigned int GetParamCount() const;
     virtual CUiAnimParamType GetParamType(unsigned int nIndex) const;
-    virtual const char* GetParamName(const CUiAnimParamType& param) const;
-    const char* GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const override;
+    AZStd::string GetParamName(const CUiAnimParamType& param) const override;
+    AZStd::string GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const override;
 
     static int GetParamCountStatic();
     static bool GetParamInfoStatic(int nIndex, SParamInfo& info);

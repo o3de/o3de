@@ -217,7 +217,7 @@ bool CAnimMaterialNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
+AZStd::string CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
 {
     if (param.GetType() == AnimParamType::ByString)
     {

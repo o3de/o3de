@@ -161,7 +161,7 @@ namespace ImageProcessingAtom
         bool FillCubemapMipmaps();
 
         //IBL cubemap generation, this creates a separate ImageConvertProcess
-        void CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr cubemapImage);
+        void CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
 
         //convert color space to linear with pixel format rgba32f
         bool ConvertToLinear();

@@ -22,8 +22,6 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* ReflectionProbeDrawListTag("reflectionprobevisualization");
-
         ReflectionProbe::~ReflectionProbe()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();

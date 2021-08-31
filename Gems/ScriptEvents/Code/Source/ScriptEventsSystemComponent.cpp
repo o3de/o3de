@@ -26,6 +26,8 @@
 #include <ScriptEvents/ScriptEventDefinition.h>
 #include <ScriptEvents/ScriptEventFundamentalTypes.h>
 
+AZ_DEFINE_BUDGET(ScriptCanvas);
+
 namespace ScriptEvents
 {
     void ScriptEventsSystemComponent::Reflect(AZ::ReflectContext* context)

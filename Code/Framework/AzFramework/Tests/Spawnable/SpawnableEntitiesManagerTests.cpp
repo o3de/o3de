@@ -313,7 +313,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -346,7 +346,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -572,6 +572,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 
@@ -592,6 +594,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 
@@ -617,7 +621,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -671,7 +675,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -719,6 +723,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 

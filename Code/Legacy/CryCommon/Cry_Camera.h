@@ -17,8 +17,6 @@
 //DOC-IGNORE-BEGIN
 #include <Cry_Math.h>
 #include <Cry_Geo.h>
-#include <MemoryAccess.h>
-#include <Cry_XOptimise.h>
 //DOC-IGNORE-END
 
 //////////////////////////////////////////////////////////////////////
@@ -547,7 +545,7 @@ public:
     ILINE void SetMatrixNoUpdate(const Matrix34& mat) { assert(mat.IsOrthonormal()); m_Matrix = mat; };
     ILINE const Matrix34& GetMatrix() const { return m_Matrix; };
     ILINE Vec3 GetViewdir() const { return m_Matrix.GetColumn1(); };
-    
+
     ILINE void SetEntityRotation(const Quat& entityRot) { m_entityRot = entityRot; }
     ILINE Quat GetEntityRotation() { return m_entityRot; }
     ILINE void SetEntityPos(const Vec3& entityPos) { m_entityPos = entityPos; }
@@ -557,9 +555,6 @@ public:
     ILINE Vec3 GetPosition() const { return m_Matrix.GetTranslation(); }
     ILINE void SetPosition(const Vec3& p)   { m_Matrix.SetTranslation(p); UpdateFrustum(); }
     ILINE void SetPositionNoUpdate(const Vec3& p)   { m_Matrix.SetTranslation(p); }
-    ILINE bool Project(const Vec3& p, Vec3& result, Vec2i topLeft = Vec2i(0, 0), Vec2i widthHeight = Vec2i(0, 0)) const;
-    ILINE bool Unproject(const Vec3& viewportPos, Vec3& result, Vec2i topLeft = Vec2i(0, 0), Vec2i widthHeight = Vec2i(0, 0)) const;
-    ILINE void CalcScreenBounds(int* vOut, const AABB* pAABB, int nWidth, int nHeight) const;
     ILINE Vec3 GetUp() const { return m_Matrix.GetColumn2(); }
 
     //------------------------------------------------------------
@@ -630,11 +625,6 @@ public:
     uint8 IsAABBVisible_EH(const ::AABB& aabb, bool* pAllInside) const;
     uint8 IsAABBVisible_EH(const ::AABB& aabb) const;
 
-    // Multi-camera
-    bool IsAABBVisible_EHM(const ::AABB& aabb, bool* pAllInside) const;
-    bool IsAABBVisible_EM(const ::AABB& aabb) const;
-    bool IsAABBVisible_FM(const ::AABB& aabb) const;
-
     //OBB-frustum test
     bool IsOBBVisible_F(const Vec3& wpos, const OBB& obb) const;
     uint8 IsOBBVisible_FH(const Vec3& wpos,  const OBB& obb) const;
@@ -652,7 +642,6 @@ public:
         SetFrustum(640, 480);
         m_zrangeMin = 0.0f;
         m_zrangeMax = 1.0f;
-        m_pMultiCamera = NULL;
         m_pPortal = NULL;
         m_JustActivated = 0;
         m_nPosX = m_nPosY = m_nSizeX = m_nSizeY = 0;
@@ -708,8 +697,8 @@ private:
     Vec3    m_edge_flt;                 // this is the left/upper vertex of the far-clip-plane
 
     f32     m_asymLeft, m_asymRight, m_asymBottom, m_asymTop;   // Shift to create asymmetric frustum (only used for GPU culling of tessellated objects)
-    f32     m_asymLeftProj, m_asymRightProj, m_asymBottomProj, m_asymTopProj;   
-    f32     m_asymLeftFar, m_asymRightFar, m_asymBottomFar, m_asymTopFar;   
+    f32     m_asymLeftProj, m_asymRightProj, m_asymBottomProj, m_asymTopProj;
+    f32     m_asymLeftFar, m_asymRightFar, m_asymBottomFar, m_asymTopFar;
 
     //usually we update these values every frame (they depend on m_Matrix)
     Vec3    m_cltp, m_crtp, m_clbp, m_crbp;        //this are the 4 vertices of the projection-plane in cam-space
@@ -778,7 +767,6 @@ public:
         uint16 x1, y1, x2, y2;
     };
     ScissorInfo m_ScissorInfo;
-    class PodArray<CCamera>* m_pMultiCamera; // maybe used for culling instead of this camera
 
     Vec3    m_OccPosition;      //Position for calculate occlusions (needed for portals rendering)
     inline const Vec3& GetOccPos() const { return(m_OccPosition); }
@@ -894,190 +882,6 @@ ILINE Vec3 CCamera::CreateViewdir(const Ang3& ypr)
     return Vec3(-sz * cx, cz * cx, sx); //calculate the view-direction
 }
 
-// Description
-//   <PRE>
-//p=world space position
-//result=spreen space pos
-//retval=is visible on screen
-// </PRE>
-ILINE bool CCamera::Project(const Vec3& p, Vec3& result, Vec2i topLeft, Vec2i widthHeight) const
-{
-    Matrix44A mProj, mView;
-    Vec4 in, transformed, projected;
-
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), GetUp());
-
-    int pViewport[4] = {0, 0, GetViewSurfaceX(), GetViewSurfaceZ()};
-
-    if (!topLeft.IsZero() || !widthHeight.IsZero())
-    {
-        pViewport[0] = topLeft.x;
-        pViewport[1] = topLeft.y;
-        pViewport[2] = widthHeight.x;
-        pViewport[3] = widthHeight.y;
-    }
-
-    in.x = p.x;
-    in.y = p.y;
-    in.z = p.z;
-    in.w = 1.0f;
-    mathVec4Transform((f32*)&transformed, (f32*)&mView, (f32*)&in);
-
-    bool visible = transformed.z < 0.0f;
-
-    mathVec4Transform((f32*)&projected, (f32*)&mProj, (f32*)&transformed);
-
-    if (projected.w == 0.0f)
-    {
-        result = Vec3(0.f, 0.f, 0.f);
-        return false;
-    }
-
-    projected.x /= projected.w;
-    projected.y /= projected.w;
-    projected.z /= projected.w;
-
-    visible = visible && (fabs_tpl(projected.x) <= 1.0f) && (fabs_tpl(projected.y) <= 1.0f);
-
-    //output coords
-    result.x = pViewport[0] + (1 + projected.x) * pViewport[2] / 2;
-    result.y = pViewport[1] + (1 - projected.y) * pViewport[3] / 2;  //flip coords for y axis
-    result.z = projected.z;
-
-    return visible;
-}
-
-ILINE bool CCamera::Unproject(const Vec3& viewportPos, Vec3& result, Vec2i topLeft, Vec2i widthHeight) const
-{
-    Matrix44A mProj, mView;
-
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), Vec3(0, 0, 1));
-
-    int viewport[4] = {0, 0, GetViewSurfaceX(), GetViewSurfaceZ()};
-
-    if (!topLeft.IsZero() || !widthHeight.IsZero())
-    {
-        viewport[0] = topLeft.x;
-        viewport[1] = topLeft.y;
-        viewport[2] = widthHeight.x;
-        viewport[3] = widthHeight.y;
-    }
-
-    Vec4 vIn;
-    vIn.x = (viewportPos.x - viewport[0]) * 2 / viewport[2] - 1.0f;
-    vIn.y = (viewportPos.y - viewport[1]) * 2 / viewport[3] - 1.0f;
-    vIn.z = viewportPos.z;
-    vIn.w = 1.0;
-
-    Matrix44A m;
-    const float* proj = mProj.GetData();
-    const float* view = mView.GetData();
-    float* mdata = m.GetData();
-    for (int i = 0; i < 4; i++)
-    {
-        float ai0 = proj[i],  ai1 = proj[4 + i],  ai2 = proj[8 + i],  ai3 = proj[12 + i];
-        mdata[i] = ai0 * view[0] + ai1 * view[1] + ai2 * view[2] + ai3 * view[3];
-        mdata[4 + i] = ai0 * view[4] + ai1 * view[5] + ai2 * view[6] + ai3 * view[7];
-        mdata[8 + i] = ai0 * view[8] + ai1 * view[9] + ai2 * view[10] + ai3 * view[11];
-        mdata[12 + i] = ai0 * view[12] + ai1 * view[13] + ai2 * view[14] + ai3 * view[15];
-    }
-
-    m.Invert();
-    if (!m.IsValid())
-    {
-        return false;
-    }
-
-    Vec4 vOut = vIn * m;
-    if (vOut.w == 0.0)
-    {
-        return false;
-    }
-
-    result = Vec3(vOut.x / vOut.w, vOut.y / vOut.w, vOut.z / vOut.w);
-
-    return true;
-}
-
-ILINE void CCamera::CalcScreenBounds(int* vOut, const AABB* pAABB, int nWidth, int nHeight) const
-{
-    Matrix44A mProj, mView, mVP;
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), GetMatrix().GetColumn2());
-    mVP = mView * mProj;
-
-    Vec3 verts[8];
-
-    Vec2i   topLeft = Vec2i(0, 0);
-    Vec2i widthHeight = Vec2i(nWidth, nHeight);
-    float pViewport[4] = {0.0f, 0.0f, (float)widthHeight.x, (float)widthHeight.y};
-
-    float x0 = 9999.9f, x1 = -9999.9f, y0 = 9999.9f, y1 = -9999.9f;
-    float fIntersect = 1.0f;
-
-    Vec3 vDir = GetViewdir();
-    Vec3 vPos = GetPosition();
-    float d = vPos.Dot(vDir);
-
-    verts[0] = Vec3(pAABB->min.x, pAABB->min.y, pAABB->min.z);
-    verts[1] = Vec3(pAABB->max.x, pAABB->min.y, pAABB->min.z);
-    verts[2] = Vec3(pAABB->min.x, pAABB->max.y, pAABB->min.z);
-    verts[3] = Vec3(pAABB->max.x, pAABB->max.y, pAABB->min.z);
-    verts[4] = Vec3(pAABB->min.x, pAABB->min.y, pAABB->max.z);
-    verts[5] = Vec3(pAABB->max.x, pAABB->min.y, pAABB->max.z);
-    verts[6] = Vec3(pAABB->min.x, pAABB->max.y, pAABB->max.z);
-    verts[7] = Vec3(pAABB->max.x, pAABB->max.y, pAABB->max.z);
-
-    for (int i = 0; i < 8; i++)
-    {
-        float fDist = verts[i].Dot(vDir) - d;
-        fDist = (float)fsel(fDist, 0.0f, -fDist);
-
-        //Project(verts[i],vertsOut[i], topLeft, widthHeight);
-
-        Vec3 result = Vec3(0.0f, 0.0f, 0.0f);
-        Vec4 transformed, projected, vIn;
-
-        vIn = Vec4(verts[i].x, verts[i].y, verts[i].z, 1.0f);
-
-        mathVec4Transform((f32*)&projected, (f32*)&mVP, (f32*)&vIn);
-
-        fIntersect = (float)fsel(-projected.w, 0.0f, 1.0f);
-
-        if (!fzero(fIntersect) && !fzero(projected.w))
-        {
-            projected.x /= projected.w;
-            projected.y /= projected.w;
-            projected.z /= projected.w;
-
-            //output coords
-            result.x = pViewport[0] + (1.0f + projected.x) * pViewport[2] / 2.0f;
-            result.y = pViewport[1] + (1.0f - projected.y) * pViewport[3] / 2.0f;  //flip coords for y axis
-            result.z = projected.z;
-        }
-        else
-        {
-            vOut[0] = topLeft.x;
-            vOut[1] = topLeft.y;
-            vOut[2] = widthHeight.x;
-            vOut[3] = widthHeight.y;
-            return;
-        }
-
-        x0 = min(x0, result.x);
-        x1 = max(x1, result.x);
-        y0 = min(y0, result.y);
-        y1 = max(y1, result.y);
-    }
-
-    vOut[0] = (int)max(0.0f, min(pViewport[2], x0));
-    vOut[1] = (int)max(0.0f, min(pViewport[3], y0));
-    vOut[2] = (int)max(0.0f, min(pViewport[2], x1));
-    vOut[3] = (int)max(0.0f, min(pViewport[3], y1));
-}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1118,7 +922,7 @@ inline void CCamera::SetFrustum(int nWidth, int nHeight, f32 FOV, f32 nearplane,
 
     //Apply asym shift to the camera frustum - Necessary for properly culling tessellated objects in VR
     //These are applied in UpdateFrustum to the camera space frustum planes
-    //Can't apply asym shift to frustum edges here. That would only apply to the top left corner 
+    //Can't apply asym shift to frustum edges here. That would only apply to the top left corner
     //rather than the whole frustum. It would also interfere with shadow map application
 
     //m_asym is at the near plane, we want it at the projection plane too
@@ -1763,102 +1567,6 @@ inline uint8 CCamera::IsAABBVisible_EH(const AABB& aabb) const
     }
     return AdditionalCheck(aabb); //result is either "exclusion" or "overlap"
 }
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-inline bool CCamera::IsAABBVisible_EHM(const AABB& aabb, bool* pAllInside) const
-{
-    assert(pAllInside && *pAllInside == false);
-
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_EH(aabb, pAllInside) != CULL_EXCLUSION;
-    }
-
-    bool bVisible = false;
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        bool bAllIn = false;
-
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_EH(aabb, &bAllIn))
-        {
-            bVisible = true;
-
-            // don't break here always because another camera may include bbox completely
-            if (bAllIn)
-            {
-                *pAllInside = true;
-                break;
-            }
-        }
-    }
-
-    return bVisible;
-}
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-ILINE bool CCamera::IsAABBVisible_EM(const AABB& aabb) const
-{
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_E(aabb) != CULL_EXCLUSION;
-    }
-
-    // check several parallel cameras - object is visible if at least one camera see's it
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_E(aabb))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-ILINE bool CCamera::IsAABBVisible_FM(const AABB& aabb) const
-{
-    PrefetchLine(&aabb, sizeof(AABB));
-
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_F(aabb) != CULL_EXCLUSION;
-    }
-
-    // check several parallel cameras - object is visible if at least one camera see's it
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_F(aabb))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 
 
 

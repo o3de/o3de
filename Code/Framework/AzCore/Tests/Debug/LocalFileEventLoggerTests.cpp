@@ -226,8 +226,10 @@ namespace AZ::Debug
         AZStd::thread threads[totalThreads];
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
-            threads[threadIndex] = AZStd::thread([&startLogging, &totalRecordsWritten, &message, recordsPerThreadCount]()
+            threads[threadIndex] = AZStd::thread([&startLogging, &message, &totalRecordsWritten]()
             {
+                AZ_UNUSED(message);
+
                 while (!startLogging)
                 {
                     AZStd::this_thread::yield();

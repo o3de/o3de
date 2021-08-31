@@ -33,7 +33,11 @@
 #include <AzCore/Console/Console.h>
 
 #if defined(OPEN_IMAGE_IO_ENABLED)
+// OpenImageIO/fmath.h(2271,5): error C4777: 'fprintf' : format string '%zd' requires an argument of type 'unsigned __int64', but variadic
+// argument 5 has type 'OpenImageIO_v2_1::span_strided<const float,-1>::index_type'
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
+AZ_POP_DISABLE_WARNING
 #endif
 
 namespace AZ

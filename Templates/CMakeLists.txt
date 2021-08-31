@@ -6,4 +6,11 @@
 #
 #
 
-ly_install_directory(DIRECTORIES .)
+ly_install_directory(
+    DIRECTORIES 
+        AssetGem
+        DefaultGem
+        DefaultProject
+        MinimalProject
+    VERBATIM
+)

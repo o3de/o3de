@@ -1,0 +1,225 @@
+#! C:/Program Files/Nuke13.0v3/nuke-13.0.3.dll -nx
+version 13.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="108" y="0" w="3729" h="2127" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="3066" stretch="1"/>
+            <splitter orientation="2">
+                <split size="1224"/>
+                <dock id="" activePageId="Viewer.7">
+                    <page id="Viewer.1"/>
+                    <page id="Viewer.2"/>
+                    <page id="Viewer.3"/>
+                    <page id="Viewer.4"/>
+                    <page id="Viewer.5"/>
+                    <page id="Viewer.6"/>
+                    <page id="Viewer.7"/>
+                </dock>
+                <split size="861"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name C:/Depot/o3de/Gems/Atom/Feature/Common/Tools/ColorGrading/Resources/TestData/Nuke/HDR/Test_Grade/Test-Grade.nk
+ project_directory "\"C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/TestData/Nuke/"
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement OCIO
+ OCIO_config aces_1.0.3
+ defaultViewerLUT "OCIO LUTs"
+ workingSpaceLUT scene_linear
+ monitorLut ACES/Rec.709
+ monitorOutLUT "sRGB (ACES)"
+ int8Lut matte_paint
+ int16Lut texture_paint
+ logLut compositing_log
+ floatLut scene_linear
+}
+Read {
+ inputs 0
+ file_type exr
+ file C:/Depot/o3de/Gems/Atom/Feature/Common/Tools/ColorGrading/Resources/LUTs/linear_32_LUT.exr
+ format "1024 32 0 0 1024 32 1 "
+ origset true
+ colorspace data
+ raw true
+ name Read_Linear_LUT_32
+ xpos -846
+ ypos 10
+}
+set N16319800 [stack 0]
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer1
+ xpos -846
+ ypos 135
+}
+push $N16319800
+OCIOFileTransform {
+ file C:/Depot/o3de-engine/Tools/ColorGrading/OpenColorIO-Configs/aces_1.0.3/luts/Log2_48_nits_Shaper_to_linear.spi1d
+ working_space rendering
+ name Log2_48_nits_Shaper_to_linear
+ xpos -710
+ ypos 46
+}
+set N16319000 [stack 0]
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer2
+ xpos -710
+ ypos 137
+}
+push $N16319000
+Transform {
+ center {1024 778}
+ name Transform_Position_LUT
+ xpos -579
+ ypos 3
+}
+set N16318c00 [stack 0]
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer3
+ xpos -579
+ ypos 135
+}
+push $N16318c00
+Read {
+ inputs 0
+ file_type exr
+ file C:/Depot/o3de/Gems/Atom/Feature/Common/Tools/ColorGrading/Resources/TestData/displaymapperpassthrough.exr
+ format "2802 1854 0 0 2802 1854 1 "
+ origset true
+ name Read_DisplayMapperPassthrough
+ xpos -580
+ ypos -146
+}
+ZMerge {
+ inputs 2
+ name ZMerge_Combine
+ xpos -413
+ ypos -83
+}
+set N16297c00 [stack 0]
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer4
+ xpos -413
+ ypos 128
+}
+push $N16297c00
+HueShift {
+ ingray {0.18 0.18 0.18}
+ outgray {0.18 0.18 0.18}
+ saturation 1.26
+ color {0.12 0.12 0.12}
+ color_saturation 0.78
+ hue_rotation -150
+ brightness 0.74
+ name HueShift1
+ xpos -256
+ ypos -83
+}
+set N16297800 [stack 0]
+Crop {
+ box {0 0 1024 32}
+ reformat true
+ crop false
+ name Crop1
+ xpos -86
+ ypos 32
+}
+set N16297400 [stack 0]
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer6
+ xpos -86
+ ypos 134
+}
+push $N16297800
+Write {
+ file C:/Depot/o3de/Gems/Atom/Feature/Common/Tools/ColorGrading/Resources/TestData/Nuke/HDR/Test_Grade/Shot_post_test-grade.exr
+ colorspace compositing_linear
+ file_type exr
+ write_ACES_compliant_EXR true
+ datatype "32 bit float"
+ first_part rgba
+ version 11
+ name Write_Shot_Grade_Comp
+ xpos 353
+ ypos -95
+}
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer8
+ xpos 353
+ ypos 135
+}
+push $N16297400
+OCIOFileTransform {
+ file C:/Depot/o3de-engine/Tools/ColorGrading/OpenColorIO-Configs/aces_1.0.3/luts/Log2_48_nits_Shaper_to_linear.spi1d
+ direction inverse
+ working_space data
+ name invLog2_48_nits_Shaper_to_linear
+ xpos 74
+ ypos -14
+}
+Write {
+ file C:/Depot/o3de/Gems/Atom/Feature/Common/Tools/ColorGrading/Resources/TestData/Nuke/HDR/Test_Grade/test-grade_inv-Log2-48nits_32_LUT.exr
+ colorspace data
+ file_type exr
+ datatype "32 bit float"
+ first_part rgba
+ version 11
+ name Write_RAW_LUT
+ xpos 242
+ ypos 20
+}
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer7
+ xpos 242
+ ypos 135
+}
+push $N16297800
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "sRGB (ACES)"
+ name Viewer5
+ xpos -256
+ ypos 130
+}
