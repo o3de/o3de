@@ -796,7 +796,7 @@ namespace PhysX
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
+                const size_t lastSlash = assetPath.rfind('/');
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);
