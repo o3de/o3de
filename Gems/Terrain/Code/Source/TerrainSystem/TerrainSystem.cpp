@@ -355,7 +355,13 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
     AZ::Aabb aabb = AZ::Aabb::CreateNull();
     LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-    m_registeredAreas.erase(areaId);    
+    AZStd::erase_if(
+        m_registeredAreas,
+        [areaId](const auto& item)
+        {
+            auto const& [entityId, aabb] = item;
+            return areaId == entityId;
+        });
     m_dirtyRegion.AddAabb(aabb);
     m_terrainHeightDirty = true;
 }

@@ -118,9 +118,6 @@ namespace Terrain
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-
-        m_cachedLayer = m_configuration.m_layer;
-        m_cachedPriority = m_configuration.m_priority;
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -155,10 +152,8 @@ namespace Terrain
     
     void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
     {
-        // Return the cached priority values so that when they are changed in the editor, the TerrainSystem
-        // will be able to erase the registered entity during the editor redraw.
-        outLayer = m_cachedLayer;
-        outPriority = m_cachedPriority;
+        outLayer = m_configuration.m_layer;
+        outPriority = m_configuration.m_priority;
     }
 
     void TerrainLayerSpawnerComponent::GetUseGroundPlane(bool& outUseGroundPlane)

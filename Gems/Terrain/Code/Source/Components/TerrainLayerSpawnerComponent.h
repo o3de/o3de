@@ -97,8 +97,5 @@ namespace Terrain
 
     private:
         TerrainLayerSpawnerConfig m_configuration;
-
-        AZ::u32 m_cachedLayer = 0;
-        AZ::u32 m_cachedPriority = 0;
     };
 }
