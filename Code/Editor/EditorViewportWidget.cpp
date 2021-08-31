@@ -54,7 +54,6 @@
 // CryCommon
 #include <CryCommon/HMDBus.h>
 #include <CryCommon/IRenderAuxGeom.h>
-#include <CryCommon/physinterface.h>
 
 // AzFramework
 #include <AzFramework/Render/IntersectorInterface.h>
@@ -70,7 +69,6 @@
 #include "Include/IDisplayViewport.h"
 #include "Objects/ObjectManager.h"
 #include "ProcessInfo.h"
-#include "IPostEffectGroup.h"
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "EditorViewportSettings.h"
@@ -100,7 +98,6 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <IEntityRenderState.h>
-#include <IPhysics.h>
 #include <IStatObj.h>
 
 AZ_CVAR(
@@ -1528,7 +1525,7 @@ AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
             &AZ::RPI::ViewProviderBus::Events::GetView
         );
 
-        const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
+        [[maybe_unused]] const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
         AZ_Error("EditorViewportWidget", isViewEntityCorrect,
             "GetCurrentViewEntityId called while the current view is being changed. "
             "You may get inconsistent results if you make use of the returned entity ID. "

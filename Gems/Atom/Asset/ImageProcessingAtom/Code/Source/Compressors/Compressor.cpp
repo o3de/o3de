@@ -7,6 +7,7 @@
  */
 
 
+#include <AzCore/PlatformIncl.h>
 #include <Compressors/CTSquisher.h>
 #include <Compressors/PVRTC.h>
 #include <Compressors/ETC2.h>

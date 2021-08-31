@@ -27,7 +27,6 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
-ly_associate_package(PACKAGE_NAME Blast-v1.1.7_rc2-9-geb169fe-rev1-windows              TARGETS Blast                       PACKAGE_HASH 216df71f4ffaf4a6ea3f2e77e5f27d68f2325e717fbd1626b00c785b82cd1b67)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 803e10b94006b834cbbdd30f562a8ddf04174c2cb6956c8399ec164ef8418d1f)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows                            TARGETS freetype                    PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)

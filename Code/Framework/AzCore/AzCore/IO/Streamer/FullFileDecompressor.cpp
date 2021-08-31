@@ -45,8 +45,10 @@ namespace AZ
             }
         }
 
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         static constexpr char DecompBoundName[] = "Decompression bound";
         static constexpr char ReadBoundName[] = "Read bound";
+#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         bool FullFileDecompressor::DecompressionInformation::IsProcessing() const
         {
