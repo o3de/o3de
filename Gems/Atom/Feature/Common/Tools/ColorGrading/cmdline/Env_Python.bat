@@ -20,8 +20,6 @@ PUSHD %~dp0
 
 CALL %~dp0\Env_Core.bat
 
-::SETLOCAL ENABLEDELAYEDEXPANSION
-
 echo.
 echo _____________________________________________________________________
 echo.
@@ -67,11 +65,14 @@ echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 
-set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python
+IF "%DCCSI_PY_REV%"=="" (set DCCSI_PY_REV=rev2)
+IF "%DCCSI_PY_PLATFORM%"=="" (set DCCSI_PY_PLATFORM=windows)
+
+set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.%DCCSI_PY_VERSION_RELEASE%-%DCCSI_PY_REV%-%DCCSI_PY_PLATFORM%\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_EXE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python\python.exe
+set DCCSI_PY_EXE=%DCCSI_PY_IDE%\python.exe
 echo     DCCSI_PY_EXE = %DCCSI_PY_EXE%
 
 set DCCSI_PY_IDE_PACKAGES=%DCCSI_PY_IDE%\Lib\site-packages
@@ -90,7 +91,10 @@ SET PATH=%DCCSI_PYTHON_INSTALL%;%DCCSI_PY_IDE%;%DCCSI_PY_IDE_PACKAGES%;%DCCSI_PY
 set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BIN_PATH%;%DCCSI_COLORGRADING_SCRIPTS%;%DCCSI_FEATURECOMMON_SCRIPTS%;%PYTHONPATH%
 echo     PYTHONPATH = %PYTHONPATH%
 
-::ENDLOCAL
+:: used for debugging in WingIDE (but needs to be here)
+IF "%TAG_USERNAME%"=="" (set TAG_USERNAME=NOT_SET)
+echo     TAG_USERNAME = %TAG_USERNAME%
+IF "%TAG_USERNAME%"=="NOT_SET" (echo        Add TAG_USERNAME to User_Env.bat)
 
 :: Set flag so we don't initialize dccsi environment twice
 SET O3DE_ENV_PY_INIT=1
