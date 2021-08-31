@@ -6,7 +6,13 @@
 #
 #
 
-# This file contains utility wrappers for dealing with the Gems system. 
+# This file contains utility wrappers for dealing with the Gems system.
+
+define_property(TARGET PROPERTY LY_PROJECT_NAME
+    BRIEF_DOCS "Name of the project, this target can use enabled gems from"
+    FULL_DOCS "If set, the when iterating over the enabled gems in ly_enabled_gems_delayed
+    only a project with that name can have it's enabled gem list added as a dependency to this target.
+    If the __NOPROJECT__ placeholder is associated with a list enabled gems, then it applies to this target regardless of this property value")
 
 # ly_create_alias
 # given an alias to create, and a list of one or more targets,
@@ -170,6 +176,10 @@ function(ly_enable_gems)
     # Backwards-Compatibility - Delegate any TARGETS and VARIANTS arguments to the ly_set_gem_variant_to_load
     # command. That command is used to associate TARGETS with the list of Gem Variants they desire to use
     if (ly_enable_gems_TARGETS AND ly_enable_gems_VARIANTS)
+        message(DEPRECATION "The TARGETS and VARIANTS arguments to \"${CMAKE_CURRENT_FUNCTION}\" is deprecated.\n"
+            "Please use the \"ly_set_gem_variant_to_load\" function directly to associate a Target with a Gem Variant.\n"
+            "This function will forward the TARGETS and VARIANTS arguments to \"ly_set_gem_variant_to_load\" for now,"
+            " but this functionality will be removed.")
         ly_set_gem_variant_to_load(TARGETS ${ly_enable_gems_TARGETS} VARIANTS ${ly_enable_gems_VARIANTS})
     endif()
 

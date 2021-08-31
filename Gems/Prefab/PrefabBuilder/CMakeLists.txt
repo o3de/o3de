@@ -23,7 +23,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME PrefabBuilder GEM_MODULE
+    NAME PrefabBuilder.Builders GEM_MODULE
     NAMESPACE Gem
     INCLUDE_DIRECTORIES
         PRIVATE
@@ -36,8 +36,6 @@ ly_add_target(
 )
 
 # the prefab builder only needs to be active in builders
-# use the PrefabBuilder module in Clients and Servers:
-ly_create_alias(NAME PrefabBuilder.Builders NAMESPACE Gem TARGETS Gem::PrefabBuilder)
 
 # we automatically add this gem, if it is present, to all our known set of builder applications:
 ly_enable_gems(GEMS PrefabBuilder)
