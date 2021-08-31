@@ -38,12 +38,7 @@ namespace AZ
                 }
                 if (includeMaterialPropertyNames)
                 {
-                    for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
-                    {
-                        MaterialPropertyIndex propertyIndex{ i };
-                        auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
-                        m_asset->m_propertyNames.emplace_back(propertyName);
-                    }
+                    PopulatePropertyNameList();
                 }
 
                 // Note we don't have to check the validity of these property values because the parent material's AssetCreator already did that.
@@ -78,12 +73,7 @@ namespace AZ
                 m_materialPropertiesLayout = m_asset->GetMaterialPropertiesLayout();
                 if (includeMaterialPropertyNames)
                 {
-                    for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
-                    {
-                        MaterialPropertyIndex propertyIndex{ i };
-                        auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
-                        m_asset->m_propertyNames.emplace_back(propertyName);
-                    }
+                    PopulatePropertyNameList();
                 }
 
                 if (!m_materialPropertiesLayout)
@@ -120,5 +110,16 @@ namespace AZ
             m_asset->SetReady();
             return EndCommon(result);
         }
+
+        void MaterialAssetCreator::PopulatePropertyNameList()
+        {
+            for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
+            {
+                MaterialPropertyIndex propertyIndex{ i };
+                auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
+                m_asset->m_propertyNames.emplace_back(propertyName);
+            }
+        }
+
     } // namespace RPI
 } // namespace AZ

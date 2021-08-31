@@ -73,13 +73,6 @@
         "properties": {
             "general": [
                 {
-                    "id": "dummyMaterial",
-                    "displayName": "Dummy Material",
-                    "description": "This is a dummy material.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
                     "description": "Whether to apply specular anti-aliasing in the shader.",

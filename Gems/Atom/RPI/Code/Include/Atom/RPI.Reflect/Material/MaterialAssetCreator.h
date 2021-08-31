@@ -31,6 +31,8 @@ namespace AZ
             bool End(Data::Asset<MaterialAsset>& result);
 
         private:
+            void PopulatePropertyNameList();
+
             const MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr;
         };
     } // namespace RPI

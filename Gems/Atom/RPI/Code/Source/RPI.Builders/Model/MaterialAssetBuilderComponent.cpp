@@ -7,6 +7,7 @@
  */
 
 #include <Model/MaterialAssetBuilderComponent.h>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Color.h>

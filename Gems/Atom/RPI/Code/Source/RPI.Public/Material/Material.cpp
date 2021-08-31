@@ -101,6 +101,7 @@ namespace AZ
 
             MaterialPropertyFlags prevOverrideFlags = m_propertyOverrideFlags;
             AZStd::vector<MaterialPropertyValue> prevPropertyValues = m_propertyValues;
+
             // Initialize the shader runtime data like shader constant buffers and shader variants by applying the 
             // material's property values. This will feed through the normal runtime material value-change data flow, which may
             // include custom property change handlers provided by the material type.
@@ -114,7 +115,7 @@ namespace AZ
                 for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
                 {
                     const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                    MaterialPropertyIndex propertyIndex{ i };
+                    MaterialPropertyIndex propertyIndex{i};
                     if (!SetPropertyValue(propertyIndex, value))
                     {
                         return RHI::ResultCode::Fail;
