@@ -175,9 +175,6 @@ namespace AZ
             // And of course we don't need to handle OnShaderReinitialized because this *is* this Shader.
             ///////////////////////////////////////////////////////////////////
 
-            //! Returns the path to the pipeline library cache file.
-            AZStd::string GetPipelineLibraryPath() const;
-
             //! A strong reference to the shader asset.
             Data::Asset<ShaderAsset> m_asset;
 

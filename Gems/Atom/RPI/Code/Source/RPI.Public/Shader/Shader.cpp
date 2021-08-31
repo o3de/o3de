@@ -249,49 +249,53 @@ namespace AZ
             }
         }
         ///////////////////////////////////////////////////////////////////
-
-
-        ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
+        
+        static bool GetPipelineLibraryPath(char* pipelineLibraryPath, size_t pipelineLibraryPathLength, const ShaderAsset& shaderAsset)
         {
-            if (IO::FileIOBase::GetInstance())
+            if (auto* fileIOBase = IO::FileIOBase::GetInstance())
             {
-                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(GetPipelineLibraryPath());
+                const Data::AssetId& assetId = shaderAsset.GetId();
+                
+                Name platformName = RHI::Factory::Get().GetName();
+                Name shaderName = shaderAsset.GetName();
+
+                AZStd::string uuidString;
+                assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
+
+                char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
+                azsnprintf(
+                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(),
+                    shaderName.GetCStr(), uuidString.data(), assetId.m_subId);
+
+                fileIOBase->ResolvePath(pipelineLibraryPathTemp, pipelineLibraryPath, pipelineLibraryPathLength);
+                return true;
+            }
+            return false;
+        }
+        
+        ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
+        { 
+            char pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+            if (GetPipelineLibraryPath(pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset))
+            {
+                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(pipelineLibraryPath);
             }
             return nullptr;
         }
 
         void Shader::SavePipelineLibrary() const
         {
-            if (auto* fileIOBase = IO::FileIOBase::GetInstance())
+            char pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+            if (GetPipelineLibraryPath(pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset))
             {
                 RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = m_pipelineStateCache->GetLibrarySerializedData(m_pipelineLibraryHandle);
                 if (serializedData)
                 {
-                    const AZStd::string pipelineLibraryPath = GetPipelineLibraryPath();
-
-                    char pipelineLibraryPathResolved[AZ_MAX_PATH_LEN] = { 0 };
-                    fileIOBase->ResolvePath(pipelineLibraryPath.c_str(), pipelineLibraryPathResolved, AZ_MAX_PATH_LEN);
-                    Utils::SaveObjectToFile(pipelineLibraryPathResolved, DataStream::ST_BINARY, serializedData.get());
+                    Utils::SaveObjectToFile<RHI::PipelineLibraryData>(pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
                 }
             }
-            else
-            {
-                AZ_Error("Shader", false, "FileIOBase is not initialized");
-            }
         }
-
-        AZStd::string Shader::GetPipelineLibraryPath() const
-        {
-            const Data::InstanceId& instanceId = GetId();
-            Name platformName = RHI::Factory::Get().GetName();
-            Name shaderName = m_asset->GetName();
-
-            AZStd::string uuidString;
-            instanceId.m_guid.ToString<AZStd::string>(uuidString, false, false);
-
-            return AZStd::string::format("@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(), shaderName.GetCStr(), uuidString.data(), instanceId.m_subId);
-        }
-
+        
         ShaderOptionGroup Shader::CreateShaderOptionGroup() const
         {
             return ShaderOptionGroup(m_asset->GetShaderOptionGroupLayout());

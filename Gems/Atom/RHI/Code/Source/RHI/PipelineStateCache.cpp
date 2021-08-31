@@ -188,16 +188,19 @@ namespace AZ
                 }
             });
 
-            Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-            ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
-
-            if (resultCode == ResultCode::Success)
+            if (entry.m_serializedData.get() || !threadLibraries.empty())
             {
-                resultCode = pipelineLibrary->MergeInto(threadLibraries);
+                Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
+                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
 
                 if (resultCode == ResultCode::Success)
                 {
-                    return pipelineLibrary->GetSerializedData();
+                    resultCode = pipelineLibrary->MergeInto(threadLibraries);
+
+                    if (resultCode == ResultCode::Success)
+                    {
+                        return pipelineLibrary->GetSerializedData();
+                    }
                 }
             }
 

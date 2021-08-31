@@ -75,6 +75,9 @@ namespace AZ
                     case E_INVALIDARG:
                         AZ_Assert(false, "Failed to use pipeline library blob due to invalid arguments. Contents will be rebuilt.");
                         break;
+                    case DXGI_ERROR_DEVICE_REMOVED:
+                        AZ_Assert(false, "Failed to use pipeline library blob due to DXGI_ERROR_DEVICE_REMOVED.");
+                        break;
                     default:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");
                     }
@@ -202,6 +205,7 @@ namespace AZ
         {
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+            size_t currentSize = m_pipelineStates.size();
 
             for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
             {
@@ -209,14 +213,24 @@ namespace AZ
 
                 for (const auto& pipelineStateEntry : library->m_pipelineStates)
                 {
-                    m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
+                    if (m_pipelineStates.find(pipelineStateEntry.first) == m_pipelineStates.end())
+                    {
+                        m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
 
-                    m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
+                        m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
+                        
+                    }
                 }
             }
+
+            if (m_pipelineStates.size() != currentSize)
+            {
+                return RHI::ResultCode::Success;
+            }
+
 #endif
 
-            return RHI::ResultCode::Success;
+            return RHI::ResultCode::Fail;
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
