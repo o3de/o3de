@@ -21,8 +21,6 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Asset/AssetCommon.h>
-
 namespace AZ
 {
     namespace RPI

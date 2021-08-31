@@ -108,8 +108,8 @@ namespace AZ
         private:
             bool PostLoadInit() override;
 
-            //! Realigns property value and name indices with MaterialPropertyLayout by using m_propertyNames. Property names not found in the
-            //! MaterialPropertyLayout are discarded, while property names not included in m_propertyNames will use the default value
+            //! Realigns property value and name indices with MaterialProperiesLayout by using m_propertyNames. Property names not found in the
+            //! MaterialPropertiesLayout are discarded, while property names not included in m_propertyNames will use the default value
             //! from m_materialTypeAsset.
             void RealignPropertyValuesAndNames();
 
