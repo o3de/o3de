@@ -123,7 +123,7 @@ namespace Terrain
         // Per-area data
         struct TerrainAreaData
         {
-            AZ::Transform m_transform;
+            AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
             float m_heightScale;
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
