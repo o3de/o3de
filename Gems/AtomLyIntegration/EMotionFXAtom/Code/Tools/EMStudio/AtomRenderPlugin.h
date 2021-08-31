@@ -9,8 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AnimViewportWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
+#include <EMStudio/AnimViewportWidget.h>
 #include <QWidget>
 #endif
 

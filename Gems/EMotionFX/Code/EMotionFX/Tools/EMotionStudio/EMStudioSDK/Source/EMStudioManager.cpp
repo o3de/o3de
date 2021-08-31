@@ -47,14 +47,9 @@ AZ_POP_DISABLE_WARNING
 namespace EMStudio
 {
     //--------------------------------------------------------------------------
-    // globals
-    //--------------------------------------------------------------------------
-    EMStudioManager* gEMStudioMgr = nullptr;
-
-
-    //--------------------------------------------------------------------------
     // class EMStudioManager
     //--------------------------------------------------------------------------
+    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator, 0)
 
     // constructor
     EMStudioManager::EMStudioManager(QApplication* app, [[maybe_unused]] int& argc, [[maybe_unused]] char* argv[])
@@ -105,6 +100,8 @@ namespace EMStudio
 
         // log some information
         LogInfo();
+
+        AZ::Interface<EMStudioManager>::Register(this);
     }
 
 
@@ -130,6 +127,8 @@ namespace EMStudio
         delete m_commandManager;
 
         AZ::AllocatorInstance<UIAllocator>::Destroy();
+
+        AZ::Interface<EMStudioManager>::Unregister(this);
     }
 
     MainWindow* EMStudioManager::GetMainWindow()
@@ -422,6 +421,12 @@ namespace EMStudio
     }
 
 
+    EMStudioManager* EMStudioManager::GetInstance()
+    {
+        return AZ::Interface<EMStudioManager>().Get();
+    }
+
+
     // function to add a gizmo to the manager
     MCommon::TransformationManipulator* EMStudioManager::AddTransformationManipulator(MCommon::TransformationManipulator* manipulator)
     {
@@ -492,32 +497,5 @@ namespace EMStudio
         QPainterPath path;
         path.addText(textPos, font, text);
         painter.drawPath(path);
-    }
-
-    //--------------------------------------------------------------------------
-    // class Initializer
-    //--------------------------------------------------------------------------
-    // initialize EMotion Studio
-    bool Initializer::Init(QApplication* app, int& argc, char* argv[])
-    {
-        // do nothing if we already have initialized
-        if (gEMStudioMgr)
-        {
-            return true;
-        }
-
-        // create the new EMStudio object
-        gEMStudioMgr = new EMStudioManager(app, argc, argv);
-
-        // return success
-        return true;
-    }
-
-
-    // the shutdown function
-    void Initializer::Shutdown()
-    {
-        delete gEMStudioMgr;
-        gEMStudioMgr = nullptr;
     }
 } // namespace EMStudio

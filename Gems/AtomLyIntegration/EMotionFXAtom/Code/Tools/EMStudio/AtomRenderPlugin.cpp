@@ -6,7 +6,7 @@
  *
  */
 
-#include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AtomRenderPlugin.h>
+#include <EMStudio/AtomRenderPlugin.h>
 #include <QHBoxLayout>
 
 namespace EMStudio

@@ -6,7 +6,7 @@
  *
  */
 
-#include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AnimViewportWidget.h>
+#include <EMStudio/AnimViewportWidget.h>
 
 namespace EMStudio
 {
