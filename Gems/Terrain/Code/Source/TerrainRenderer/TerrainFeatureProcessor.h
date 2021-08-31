@@ -134,7 +134,19 @@ namespace Terrain
 
         TerrainAreaData m_areaData;
 
-        // These could either be per-area or system-level
-        AZStd::vector<AZStd::unique_ptr<const AZ::RHI::DrawPacket>> m_drawPackets;
+        struct SectorData
+        {
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::Aabb m_aabb;
+            AZStd::unique_ptr<const AZ::RHI::DrawPacket> m_drawPacket;
+
+            SectorData(const AZ::RHI::DrawPacket* drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
+                : m_srg(srg)
+                , m_aabb(aabb)
+                , m_drawPacket(drawPacket)
+            {}
+        };
+
+        AZStd::vector<SectorData> m_sectorData;
     };
 }

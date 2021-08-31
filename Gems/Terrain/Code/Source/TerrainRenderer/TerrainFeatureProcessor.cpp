@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Math/Frustum.h>
 
 #include <Atom/Utils/Utils.h>
 
@@ -255,8 +256,7 @@ namespace Terrain
         
         if (m_areaData.m_propertiesDirty)
         {
-
-            m_drawPackets.clear();
+            m_sectorData.clear();
 
             AZ::RHI::DrawPacketBuilder drawPacketBuilder;
 
@@ -282,9 +282,9 @@ namespace Terrain
                     drawPacketBuilder.SetDrawArguments(drawIndexed);
                     drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
 
-                    auto m_resourceGroup = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), AZ::Name("ObjectSrg"));
+                    auto resourceGroup = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), AZ::Name("ObjectSrg"));
                     //auto m_resourceGroup = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), AZ::Name("ObjectSrg"));
-                    if (!m_resourceGroup)
+                    if (!resourceGroup)
                     {
                         AZ_Error(TerrainFPName, false, "Failed to create shader resource group");
                         return;
@@ -311,37 +311,42 @@ namespace Terrain
 
                     AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
 
-                    m_resourceGroup->SetImage(m_heightmapImageIndex, m_areaData.m_heightmapImage);
-                    m_resourceGroup->SetConstant(m_modelToWorldIndex, matrix3x4);
-                    m_resourceGroup->SetConstant(m_heightScaleIndex, m_areaData.m_heightScale);
-                    m_resourceGroup->SetConstant(m_uvMinIndex, uvMin);
-                    m_resourceGroup->SetConstant(m_uvMaxIndex, uvMax);
-                    m_resourceGroup->SetConstant(m_uvStepIndex, uvStep);
-                    m_resourceGroup->Compile();
-
-                    if (m_resourceGroup != nullptr)
-                    {
-                        drawPacketBuilder.AddShaderResourceGroup(m_resourceGroup->GetRHIShaderResourceGroup());
-                    }
+                    resourceGroup->SetImage(m_heightmapImageIndex, m_areaData.m_heightmapImage);
+                    resourceGroup->SetConstant(m_modelToWorldIndex, matrix3x4);
+                    resourceGroup->SetConstant(m_heightScaleIndex, m_areaData.m_heightScale);
+                    resourceGroup->SetConstant(m_uvMinIndex, uvMin);
+                    resourceGroup->SetConstant(m_uvMaxIndex, uvMax);
+                    resourceGroup->SetConstant(m_uvStepIndex, uvStep);
+                    resourceGroup->Compile();
+                    drawPacketBuilder.AddShaderResourceGroup(resourceGroup->GetRHIShaderResourceGroup());
 
                     AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
                     drawRequest.m_listTag = m_drawListTag;
                     drawRequest.m_pipelineState = m_pipelineState.get();
                     drawRequest.m_streamBufferViews = AZStd::array_view<AZ::RHI::StreamBufferView>(&m_vertexBufferView, 1);
                     drawPacketBuilder.AddDrawItem(drawRequest);
-
-                    const AZ::RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
-                    m_drawPackets.emplace_back(drawPacket);
-
+                    
+                    m_sectorData.emplace_back(
+                        drawPacketBuilder.End(),
+                        AZ::Aabb::CreateFromMinMax(
+                            AZ::Vector3(xPatch, yPatch, m_areaData.m_terrainBounds.GetMin().GetZ()),
+                            AZ::Vector3(xPatch + m_gridMeters, yPatch + m_gridMeters, m_areaData.m_terrainBounds.GetMax().GetZ())
+                        ),
+                        resourceGroup
+                    );
                 }
             }
         }
-
-        for (auto& drawPacket : m_drawPackets)
+        
+        for (auto& view : process.m_views)
         {
-            for (auto& view : process.m_views)
+            AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+            for (auto& sectorData : m_sectorData)
             {
-                view->AddDrawPacket(drawPacket.get());
+                if (viewFrustum.IntersectAabb(sectorData.m_aabb) != AZ::IntersectResult::Exterior)
+                {
+                    view->AddDrawPacket(sectorData.m_drawPacket.get());
+                }
             }
         }
     }
