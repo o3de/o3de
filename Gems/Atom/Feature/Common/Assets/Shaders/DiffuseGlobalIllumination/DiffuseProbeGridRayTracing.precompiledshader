@@ -7,7 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridraytracing.azshader",
         "PlatformIdentifiers": 
         [
-            "pc"
+            "pc", "linux"
         ],
         "RootShaderVariantAssets":
         [

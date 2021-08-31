@@ -327,12 +327,8 @@ namespace
 
 }
 
-AZ::AtomFont::AtomFont(ISystem* system)
-    : m_system(system)
-    , m_fonts()
+AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 {
-    assert(m_system);
-
     CryLogAlways("Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
 
     // Persist fonts for application lifetime to prevent unnecessary work

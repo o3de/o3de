@@ -1819,7 +1819,6 @@ bool CTrackViewAnimNode::IsDisabled() const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewAnimNode::SetPos(const Vec3& position)
 {
-    const float time = GetSequence()->GetTime();
     CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
 
     if (track)
@@ -1943,7 +1942,7 @@ void CTrackViewAnimNode::OnSelectionChanged(const bool selected)
 {
     if (m_animNode)
     {
-        const AnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const AnimNodeType animNodeType = GetType();
         AZ_Assert(animNodeType == AnimNodeType::AzEntity, "Expected AzEntity for selection changed");
 
         const EAnimNodeFlags flags = (EAnimNodeFlags)m_animNode->GetFlags();

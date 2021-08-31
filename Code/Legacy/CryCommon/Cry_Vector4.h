@@ -227,8 +227,6 @@ struct Vec4_tpl
 
     ILINE void SetLerp(const Vec4_tpl<F>& p, const Vec4_tpl<F>& q, F t) { *this = p * (1.0f - t) + q * t; }
     ILINE static Vec4_tpl<F> CreateLerp(const Vec4_tpl<F>& p, const Vec4_tpl<F>& q, F t) {    return p * (1.0f - t) + q * t; }
-
-    AUTO_STRUCT_INFO
 };
 
 

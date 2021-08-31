@@ -2141,7 +2141,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<void> keyToAdd(nullptr);
 
         bool createdElement = pContainerNode->CreateContainerElement(CreateContainerElementSelectClassCallback,
-            [this, pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
+            [pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
         {
             bool handled = false;
 

@@ -390,7 +390,7 @@ namespace AZ
 
         inline void ImGuiPipelineStatisticsView::CreateAttributeRow(const PassEntry* passEntry, const PassEntry* rootEntry)
         {
-            const uint32_t columnCount = static_cast<uint32_t>(ImGui::GetColumnsCount());
+            [[maybe_unused]] const uint32_t columnCount = static_cast<uint32_t>(ImGui::GetColumnsCount());
             AZ_Assert(columnCount == ImGuiPipelineStatisticsView::HeaderAttributeCount, "The column count needs to match HeaderAttributeCount.");
 
             ImGui::Separator();
@@ -1336,7 +1336,7 @@ namespace AZ
         inline PassEntry* ImGuiGpuProfiler::CreatePassEntries(RHI::Ptr<RPI::ParentPass> rootPass)
         {
             AZStd::unordered_map<Name, PassEntry> passEntryDatabase;
-            const auto addPassEntry = [&passEntryDatabase, this](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
+            const auto addPassEntry = [&passEntryDatabase](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
             {
                 // If parent a nullptr, it's assumed to be the rootpass.
                 if (parent == nullptr)
@@ -1348,7 +1348,7 @@ namespace AZ
                     PassEntry entry(pass, parent);
 
                     // Set the time stamp in the database.
-                    const auto passEntry = passEntryDatabase.find(entry.m_path);
+                    [[maybe_unused]] const auto passEntry = passEntryDatabase.find(entry.m_path);
                     AZ_Assert(passEntry == passEntryDatabase.end(), "There already is an entry with the name \"%s\".", entry.m_path.GetCStr());
 
                     // Set the entry in the map.

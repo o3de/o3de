@@ -867,7 +867,6 @@ namespace AZ
             const FloatType cols0 = {{ rows[0].v[0], rows[1].v[0], rows[2].v[0], 0.0f }};
             const FloatType cols1 = {{ rows[0].v[1], rows[1].v[1], rows[2].v[1], 0.0f }};
             const FloatType cols2 = {{ rows[0].v[2], rows[1].v[2], rows[2].v[2], 0.0f }};
-            const FloatType cols3 = {{ rows[0].v[3], rows[1].v[3], rows[2].v[3], 1.0f }};
             out[0] = cols0;
             out[1] = cols1;
             out[2] = cols2;

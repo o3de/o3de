@@ -1266,7 +1266,7 @@ namespace AZ
             void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
             {
                 // Remove last path segment and check if the key corresponds to the Modules array
-                AZStd::optional<AZStd::string_view> moduleIndex = AZ::StringFunc::TokenizeLast(path, "/");
+                AZ::StringFunc::TokenizeLast(path, "/");
                 if (path.ends_with("/Modules"))
                 {
                     // Remove the "Modules" path segment to be at the GemName key

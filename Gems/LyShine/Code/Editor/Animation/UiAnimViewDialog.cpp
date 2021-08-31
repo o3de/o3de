@@ -70,24 +70,12 @@
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    const char* s_kUiAnimViewLayoutSection = "UiAnimViewLayout";
-    const char* s_kUiAnimViewSection = "DockingPaneLayouts\\UiAnimView";
-    const char* s_kSplitterEntry = "Splitter";
-    const char* s_kVersionEntry = "UiAnimViewLayoutVersion";
-
     const char* s_kUiAnimViewSettingsSection = "UiAnimView";
     const char* s_kSnappingModeEntry = "SnappingMode";
     const char* s_kFrameSnappingFPSEntry = "FrameSnappingFPS";
     const char* s_kTickDisplayModeEntry = "TickDisplayMode";
-    const char* s_kDefaultTracksEntry = "DefaultTracks";
-
-    const char* s_kRebarVersionEntry = "UiAnimViewReBarVersion";
-    const char* s_kRebarBandEntryPrefix = "ReBarBand";
 
     const char* s_kNoSequenceComboBoxEntry = "--- No Sequence ---";
-
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
 }
 
 //////////////////////////////////////////////////////////////////////////

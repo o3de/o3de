@@ -17,7 +17,6 @@
 //DOC-IGNORE-BEGIN
 #include <Cry_Math.h>
 #include <Cry_Geo.h>
-#include <MemoryAccess.h>
 //DOC-IGNORE-END
 
 //////////////////////////////////////////////////////////////////////
@@ -546,7 +545,7 @@ public:
     ILINE void SetMatrixNoUpdate(const Matrix34& mat) { assert(mat.IsOrthonormal()); m_Matrix = mat; };
     ILINE const Matrix34& GetMatrix() const { return m_Matrix; };
     ILINE Vec3 GetViewdir() const { return m_Matrix.GetColumn1(); };
-    
+
     ILINE void SetEntityRotation(const Quat& entityRot) { m_entityRot = entityRot; }
     ILINE Quat GetEntityRotation() { return m_entityRot; }
     ILINE void SetEntityPos(const Vec3& entityPos) { m_entityPos = entityPos; }
@@ -626,11 +625,6 @@ public:
     uint8 IsAABBVisible_EH(const ::AABB& aabb, bool* pAllInside) const;
     uint8 IsAABBVisible_EH(const ::AABB& aabb) const;
 
-    // Multi-camera
-    bool IsAABBVisible_EHM(const ::AABB& aabb, bool* pAllInside) const;
-    bool IsAABBVisible_EM(const ::AABB& aabb) const;
-    bool IsAABBVisible_FM(const ::AABB& aabb) const;
-
     //OBB-frustum test
     bool IsOBBVisible_F(const Vec3& wpos, const OBB& obb) const;
     uint8 IsOBBVisible_FH(const Vec3& wpos,  const OBB& obb) const;
@@ -648,7 +642,6 @@ public:
         SetFrustum(640, 480);
         m_zrangeMin = 0.0f;
         m_zrangeMax = 1.0f;
-        m_pMultiCamera = NULL;
         m_pPortal = NULL;
         m_JustActivated = 0;
         m_nPosX = m_nPosY = m_nSizeX = m_nSizeY = 0;
@@ -704,8 +697,8 @@ private:
     Vec3    m_edge_flt;                 // this is the left/upper vertex of the far-clip-plane
 
     f32     m_asymLeft, m_asymRight, m_asymBottom, m_asymTop;   // Shift to create asymmetric frustum (only used for GPU culling of tessellated objects)
-    f32     m_asymLeftProj, m_asymRightProj, m_asymBottomProj, m_asymTopProj;   
-    f32     m_asymLeftFar, m_asymRightFar, m_asymBottomFar, m_asymTopFar;   
+    f32     m_asymLeftProj, m_asymRightProj, m_asymBottomProj, m_asymTopProj;
+    f32     m_asymLeftFar, m_asymRightFar, m_asymBottomFar, m_asymTopFar;
 
     //usually we update these values every frame (they depend on m_Matrix)
     Vec3    m_cltp, m_crtp, m_clbp, m_crbp;        //this are the 4 vertices of the projection-plane in cam-space
@@ -774,7 +767,6 @@ public:
         uint16 x1, y1, x2, y2;
     };
     ScissorInfo m_ScissorInfo;
-    class PodArray<CCamera>* m_pMultiCamera; // maybe used for culling instead of this camera
 
     Vec3    m_OccPosition;      //Position for calculate occlusions (needed for portals rendering)
     inline const Vec3& GetOccPos() const { return(m_OccPosition); }
@@ -930,7 +922,7 @@ inline void CCamera::SetFrustum(int nWidth, int nHeight, f32 FOV, f32 nearplane,
 
     //Apply asym shift to the camera frustum - Necessary for properly culling tessellated objects in VR
     //These are applied in UpdateFrustum to the camera space frustum planes
-    //Can't apply asym shift to frustum edges here. That would only apply to the top left corner 
+    //Can't apply asym shift to frustum edges here. That would only apply to the top left corner
     //rather than the whole frustum. It would also interfere with shadow map application
 
     //m_asym is at the near plane, we want it at the projection plane too
@@ -1575,102 +1567,6 @@ inline uint8 CCamera::IsAABBVisible_EH(const AABB& aabb) const
     }
     return AdditionalCheck(aabb); //result is either "exclusion" or "overlap"
 }
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-inline bool CCamera::IsAABBVisible_EHM(const AABB& aabb, bool* pAllInside) const
-{
-    assert(pAllInside && *pAllInside == false);
-
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_EH(aabb, pAllInside) != CULL_EXCLUSION;
-    }
-
-    bool bVisible = false;
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        bool bAllIn = false;
-
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_EH(aabb, &bAllIn))
-        {
-            bVisible = true;
-
-            // don't break here always because another camera may include bbox completely
-            if (bAllIn)
-            {
-                *pAllInside = true;
-                break;
-            }
-        }
-    }
-
-    return bVisible;
-}
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-ILINE bool CCamera::IsAABBVisible_EM(const AABB& aabb) const
-{
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_E(aabb) != CULL_EXCLUSION;
-    }
-
-    // check several parallel cameras - object is visible if at least one camera see's it
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_E(aabb))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-// Description:
-//  Makes culling taking into account presence of m_pMultiCamera
-//  If m_pMultiCamera exists - object is visible if at least one of cameras see's it
-//
-// return values:
-//  true - box visible
-//  true - not visible
-ILINE bool CCamera::IsAABBVisible_FM(const AABB& aabb) const
-{
-    PrefetchLine(&aabb, sizeof(AABB));
-
-    if (!m_pMultiCamera) // use main camera
-    {
-        return IsAABBVisible_F(aabb) != CULL_EXCLUSION;
-    }
-
-    // check several parallel cameras - object is visible if at least one camera see's it
-
-    for (int i = 0; i < m_pMultiCamera->Count(); i++)
-    {
-        if (m_pMultiCamera->GetAt(i).IsAABBVisible_F(aabb))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 
 
 

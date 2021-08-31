@@ -19,13 +19,11 @@ class CUiAnimViewKeyConstHandle
 {
 public:
     CUiAnimViewKeyConstHandle()
-        : m_bIsValid(false)
-        , m_keyIndex(0)
+        : m_keyIndex(0)
         , m_pTrack(nullptr) {}
 
     CUiAnimViewKeyConstHandle(const CUiAnimViewTrack* pTrack, unsigned int keyIndex)
-        : m_bIsValid(true)
-        , m_keyIndex(keyIndex)
+        : m_keyIndex(keyIndex)
         , m_pTrack(pTrack) {}
 
     void GetKey(IKey* pKey) const;
@@ -33,7 +31,6 @@ public:
     const CUiAnimViewTrack* GetTrack() const { return m_pTrack; }
 
 private:
-    bool m_bIsValid;
     unsigned int m_keyIndex;
     const CUiAnimViewTrack* m_pTrack;
 };

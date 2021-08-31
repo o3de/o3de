@@ -939,6 +939,34 @@ namespace AzToolsFramework
                 jobinfo.m_warningCount = jobDatabaseEntry.m_warningCount;
                 jobinfo.m_errorCount = jobDatabaseEntry.m_errorCount;
             }
+
+            bool GetDatabaseInfoResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::databaseInfoHandler handler);
+            bool GetScanFolderResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::scanFolderHandler handler);
+            bool GetSourceResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceHandler handler);
+            bool GetSourceAndScanfolderResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedSourceScanFolderHandler handler);
+            bool GetSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler);
+            bool GetJobResultSimple(const char* name, SQLite::Statement* statement, AssetDatabaseConnection::jobHandler handler);
+            bool GetJobResult(
+                const char* callName,
+                SQLite::Statement* statement,
+                AssetDatabaseConnection::jobHandler handler,
+                AZ::Uuid builderGuid = AZ::Uuid::CreateNull(),
+                const char* jobKey = nullptr,
+                AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool GetProductResultSimple(const char* name, SQLite::Statement* statement, AssetDatabaseConnection::productHandler handler);
+            bool GetProductResult(
+                const char* callName,
+                SQLite::Statement* statement,
+                AssetDatabaseConnection::productHandler handler,
+                AZ::Uuid builderGuid = AZ::Uuid::CreateNull(),
+                const char* jobKey = nullptr,
+                AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool GetLegacySubIDsResult(const char* callname, SQLite::Statement* statement, AssetDatabaseConnection::legacySubIDsHandler handler);
+            bool GetProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyHandler handler);
+            bool GetProductDependencyAndPathResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyAndPathHandler handler);
+            bool GetMissingProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::missingProductDependencyHandler handler);
+            bool GetCombinedDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedProductDependencyHandler handler);
+            bool GetFileResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::fileHandler handler);
         }
         
         //////////////////////////////////////////////////////////////////////////

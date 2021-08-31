@@ -192,6 +192,7 @@ namespace O3DE::ProjectManager
         projectFooter->setLayout(hLayout);
         {
             QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
+            projectNameLabel->setToolTip(m_projectInfo.m_path);
             hLayout->addWidget(projectNameLabel);
 
             QMenu* menu = new QMenu(this);

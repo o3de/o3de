@@ -604,14 +604,14 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     m_rcController.m_RCJobListModel.addNewJob(jobA);
 
     bool beginWorkA = false;
-    QObject::connect(jobA, &RCJob::BeginWork, this, [this, &beginWorkA]()
+    QObject::connect(jobA, &RCJob::BeginWork, this, [&beginWorkA]()
     {
         beginWorkA = true;
     }
     );
 
     bool jobFinishedA = false;
-    QObject::connect(jobA, &RCJob::JobFinished, this, [this, &jobFinishedA](AssetBuilderSDK::ProcessJobResponse /*result*/)
+    QObject::connect(jobA, &RCJob::JobFinished, this, [&jobFinishedA](AssetBuilderSDK::ProcessJobResponse /*result*/)
     {
         jobFinishedA = true;
     }
@@ -655,7 +655,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     );
 
     bool jobFinishedB = false;
-    QObject::connect(jobB, &RCJob::JobFinished, this, [this, &jobFinishedB](AssetBuilderSDK::ProcessJobResponse /*result*/)
+    QObject::connect(jobB, &RCJob::JobFinished, this, [&jobFinishedB](AssetBuilderSDK::ProcessJobResponse /*result*/)
     {
         jobFinishedB = true;
     }

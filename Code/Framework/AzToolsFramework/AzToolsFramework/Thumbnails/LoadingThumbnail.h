@@ -37,7 +37,6 @@ namespace AzToolsFramework
             void OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/) override;
 
         private:
-            float m_angle;
             QMovie m_loadingMovie;
         };
     } // namespace Thumbnailer
