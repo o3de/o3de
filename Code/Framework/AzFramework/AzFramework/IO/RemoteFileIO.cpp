@@ -24,9 +24,9 @@ namespace AZ
     namespace IO
     {
         //////////////////////////////////////////////////////////////////////////
-        const char* const NetworkFileIOChannel = "NetworkFileIO";
+        [[maybe_unused]] const char* const NetworkFileIOChannel = "NetworkFileIO";
 #ifndef REMOTEFILEIO_IS_NETWORKFILEIO
-        const char* const RemoteFileIOChannel = "RemoteFileIO";
+        [[maybe_unused]] const char* const RemoteFileIOChannel = "RemoteFileIO";
     #ifdef REMOTEFILEIO_SYNC_CHECK
         const char* const RemoteFileCacheChannel = "RemoteFileCache";
     #endif

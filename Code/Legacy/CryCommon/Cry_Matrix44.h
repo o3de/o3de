@@ -655,8 +655,6 @@ struct Matrix44_tpl
             (fabs_tpl(m0.m30 - m1.m30) <= e) && (fabs_tpl(m0.m31 - m1.m31) <= e) && (fabs_tpl(m0.m32 - m1.m32) <= e) && (fabs_tpl(m0.m33 - m1.m33) <= e)
             );
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////

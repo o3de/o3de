@@ -1491,7 +1491,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     float as = 0.001f * gSettings.cameraMoveSpeed;
                     Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
-                    ypr.y = CLAMP(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
+                    ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
                     viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());

@@ -353,12 +353,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-// Include support for meta-type data.
-#include "TypeInfo_decl.h"
-
-// Include array.
-#include <CryArray.h>
-
 bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
 

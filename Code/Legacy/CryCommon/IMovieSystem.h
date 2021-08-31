@@ -21,7 +21,6 @@
 #include <AnimKey.h>
 #include <ISplines.h>
 #include <Cry_Camera.h>
-#include <VectorSet.h>
 
 // forward declaration.
 struct IAnimTrack;

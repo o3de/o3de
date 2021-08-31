@@ -28,7 +28,7 @@ namespace AZ
 
         static constexpr uint32_t SubProductTypeBitPosition = 0;
         static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
-        static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
+        [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
         static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
 

@@ -202,6 +202,7 @@ namespace AZ
             {
                 uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });                
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
@@ -325,11 +326,11 @@ namespace AZ
         DirectionalLightFeatureProcessorInterface::LightHandle DirectionalLightFeatureProcessor::AcquireLight()
         {
             const uint16_t index = m_lightData.GetFreeSlotIndex();
-            const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
+            [[maybe_unused]] const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
             AZ_Assert(index == shadowPropIndex, "light index is illegal.");
             for (const auto& viewIt : m_cameraViewNames)
             {
-                const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
+                [[maybe_unused]] const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
                 AZ_Assert(index == shadowIndex, "light index is illegal.");
             }
 
@@ -616,6 +617,10 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable)
+        {
+            m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
+        }
 
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {

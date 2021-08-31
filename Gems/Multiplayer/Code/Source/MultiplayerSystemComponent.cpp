@@ -180,7 +180,7 @@ namespace Multiplayer
     {
         AZ::TickBus::Handler::BusConnect();
         AzFramework::SessionNotificationBus::Handler::BusConnect();
-        m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
+        m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MpNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         if (AZ::Interface<AZ::IConsole>::Get())
         {
             m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
@@ -197,7 +197,7 @@ namespace Multiplayer
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
         AZ::Interface<IMultiplayer>::Unregister(this);
         m_consoleCommandHandler.Disconnect();
-        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MpNetworkInterfaceName));
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
@@ -441,6 +441,11 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
+    bool MultiplayerSystemComponent::IsHandshakeComplete() const
+    {
+        return m_didHandshake;
+    }
+
     bool MultiplayerSystemComponent::HandleRequest
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
@@ -465,6 +470,8 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
+            m_didHandshake = true;
+
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
@@ -480,6 +487,8 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
+        m_didHandshake = true;
+
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
@@ -670,7 +679,7 @@ namespace Multiplayer
         }
     }
 
-    bool MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    AzNetworking::PacketDispatchResult MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
