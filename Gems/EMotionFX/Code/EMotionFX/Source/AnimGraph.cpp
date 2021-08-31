@@ -902,6 +902,7 @@ namespace EMotionFX
 
     void AnimGraph::OnRetargetingEnabledChanged()
     {
+        SetDirtyFlag(true);
         for (AnimGraphInstance* animGraphInstance : m_animGraphInstances)
         {
             animGraphInstance->SetRetargetingEnabled(m_retarget);
