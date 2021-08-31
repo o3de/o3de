@@ -9,7 +9,6 @@
 #! ly_install_code_function_override: Linux-specific copy function to handle RPATH fixes
 set(ly_copy_template [[
 function(ly_copy source_file target_directory)
-    message(STATUS "Src File: ${source_file}")
     file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
     get_filename_component(target_filename_ext "${source_file}" LAST_EXT)
     if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
