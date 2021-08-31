@@ -25,26 +25,24 @@ apt-get install -y gcc make linux-headers-$(uname -r)
 echo Installing desktop environment and tools
 apt-get install ubuntu-desktop mesa-utils vulkan-tools awscli unzip -y
 
-# Setup X desktop manager (Wayland needs to be turned off for Nice DCV)
+# Setup X desktop manager (Wayland needs to be turned off for GDM3)
 #
-
 if [ "`cat /etc/issue | grep 18.04`" != "" ] ; then
     apt-get install lightdm -y
 else
-    # Please note: GDM3 will only with console sessions
     apt-get install gdm3 -y
     sed -i 's/#WaylandEnable=false/WaylandEnable=false/g' /etc/gdm3/custom.conf
     systemctl restart gdm3
 fi
 
 # Set desktop environment to start by default
+#
 systemctl get-default
 systemctl set-default graphical.target
 systemctl isolate graphical.target
 
-sudo apt-get install -y gcc make linux-headers-$(uname -r)
-
-# Prepare for the nVidia driver by disabling nouveau, ...
+# Prepare for the nVidia driver by disabling nouveau
+#
 cat << EOF | sudo tee --append /etc/modprobe.d/blacklist.conf
 blacklist vga16fb
 blacklist nouveau
@@ -53,9 +51,8 @@ blacklist nvidiafb
 blacklist rivatv
 EOF
 
-# Edit the /etc/default/grub file and add the following line:
-# GRUB_CMDLINE_LINUX="rdblacklist=nouveau"
-# Here we add this line to the end of /etc/default/grub
+# Blocking nouveau from activating during grub startup
+#
 echo 'GRUB_CMDLINE_LINUX="rdblacklist=nouveau"' >> /etc/default/grub
 update-grub
 
@@ -74,7 +71,7 @@ unzip NVIDIA-Linux-x86_64* \
 && nvidia-xconfig --preserve-busid --enable-all-gpus \
 && rm -rf /tmp/Linux
 
-# Download and configure licenses
+# Download and configure licenses (needed for VMs and multiuser)
 #
 cat << EOF | sudo tee -a /etc/nvidia/gridd.conf
 vGamingMarketplace=2
