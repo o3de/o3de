@@ -8,18 +8,25 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <AzToolsFramework/Manipulators/ScaleManipulators.h>
+
+namespace AZ
+{
+    class Vector3;
+} // namespace AZ
 
 namespace PhysX
 {
-    /// Sub component mode for modifying the asset scale on a collider in the viewport.
-    class ColliderAssetScaleMode : public PhysXSubComponentModeBase
+    class JointsSubComponentModeTranslation final
+        : public PhysXSubComponentModeBase
     {
     public:
-        AZ_CLASS_ALLOCATOR_DECL
+        AZ_CLASS_ALLOCATOR_DECL;
 
-        ColliderAssetScaleMode();
+        JointsSubComponentModeTranslation();
 
         // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
@@ -28,11 +35,9 @@ namespace PhysX
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
     private:
+        void OnManipulatorMoved(const AZ::Vector3& position, const AZ::EntityComponentIdPair& idPair);
 
-        void OnManipulatorDown(const AZ::EntityComponentIdPair& idPair);
-        void OnManipulatorMoved(const AZ::Vector3& scale, const AZ::EntityComponentIdPair& idPair);
-
-        AZ::Vector3 m_initialScale;
-        AzToolsFramework::ScaleManipulators m_dimensionsManipulators;
+        AZ::Vector3 m_resetValue = AZ::Vector3::CreateZero();
+        AzToolsFramework::TranslationManipulators m_manipulator;
     };
-} //namespace PhysX
+}
