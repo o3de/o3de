@@ -86,16 +86,16 @@ namespace EMStudio
 
     private:
         // declare the callbacks
-        MCORE_DEFINECOMMANDCALLBACK(CommandCreateMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandReinitCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandRemoveMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAddMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetRemoveMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
 
-        CommandCreateMotionSetCallback*         m_createMotionSetCallback;
-        CommandReinitCallback*                  m_reinitCallback;
+        AZStd::vector<MCore::Command::Callback*> m_callbacks;
+        CommandRemoveMotionSetCallback*         m_removeMotionSetCallback;
         CommandAdjustMotionSetCallback*         m_adjustMotionSetCallback;
         CommandMotionSetAddMotionCallback*      m_motionSetAddMotionCallback;
         CommandMotionSetRemoveMotionCallback*   m_motionSetRemoveMotionCallback;
