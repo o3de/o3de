@@ -73,13 +73,11 @@ namespace AZ
             }
         }
 
-        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings) const
+        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
         {
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
 
-            bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IsMaterialPropertyNamesIncluded);
             if (m_parentMaterial.empty())
             {
                 auto materialTypeAsset = AssetUtils::LoadAsset<MaterialTypeAsset>(materialSourceFilePath, m_materialType);

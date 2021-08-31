@@ -73,7 +73,8 @@ namespace AZ
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
-                bool elevateWarnings = true
+                bool elevateWarnings = true,
+                bool includeMaterialPropertyNames = true
             ) const;
         };
     } // namespace RPI
