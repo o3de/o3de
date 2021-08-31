@@ -82,7 +82,7 @@ namespace AZ
                 AZ_Printf("Convert", "Converting '%s'\n", filePath.c_str());
 
                 PathDocumentContainer documents;
-                auto callback = [&result, &documents, &extension, &convertSettings, &verifySettings, skipVerify]
+                auto callback = [&result, &documents, &convertSettings, &verifySettings, skipVerify]
                     (void* classPtr, const Uuid& classId, SerializeContext* /*context*/)
                 {
                     rapidjson::Document document;
@@ -346,7 +346,7 @@ namespace AZ
                 // Convert the supplied file list to an absolute path
                 AZStd::optional<AZ::IO::FixedMaxPathString> absFilePath = AZ::Utils::ConvertToAbsolutePath(configFileView);
                 AZ::IO::FixedMaxPath configFilePath = absFilePath ? *absFilePath : configFileView;
-                auto callback = [&documents, &outputExtension, &configFilePath](AZ::IO::PathView configFileView, bool isFile) -> bool
+                auto callback = [&documents, &configFilePath](AZ::IO::PathView configFileView, bool isFile) -> bool
                 {
                     if (configFileView == "." || configFileView == "..")
                     {

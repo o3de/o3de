@@ -397,7 +397,7 @@ namespace AzToolsFramework
         AzQtComponents::CardNotification * notification = CreateNotification(message);
         const QPushButton * featureButton = notification->addButtonFeature(tr("Continue"));
 
-        connect(featureButton, &QPushButton::clicked, this, [this, notification]()
+        connect(featureButton, &QPushButton::clicked, this, [notification]()
         {
             notification->close();
         });

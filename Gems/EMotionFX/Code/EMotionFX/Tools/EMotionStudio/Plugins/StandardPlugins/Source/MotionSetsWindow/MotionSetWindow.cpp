@@ -819,7 +819,6 @@ namespace EMStudio
         }
 
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const size_t numSelectedItems = selectedItems.count();
 
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
@@ -1079,7 +1078,6 @@ namespace EMStudio
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
         GetRowIndices(selectedItems, rowIndices);
-        const size_t numRowIndices = rowIndices.size();
 
         // remove motion from motion window, too?
         bool removeMotion = false;

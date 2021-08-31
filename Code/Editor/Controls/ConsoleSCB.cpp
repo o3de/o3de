@@ -298,7 +298,6 @@ Lines CConsoleSCB::s_pendingLines;
 CConsoleSCB::CConsoleSCB(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::Console())
-    , m_richEditTextLength(0)
     , m_backgroundTheme(gSettings.consoleBackgroundColorTheme)
 {
     m_lines = s_pendingLines;
@@ -574,6 +573,10 @@ static CVarBlock* VarBlockFromConsoleVars()
     IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
+        if (!cmds[i].data())
+        {
+            continue;
+        }
         ICVar* pCVar = console->GetCVar(cmds[i].data());
         if (!pCVar)
         {

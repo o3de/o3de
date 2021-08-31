@@ -316,8 +316,6 @@ void CSelectionGroup::Rotate(const Ang3& angles, int referenceCoordSys)
     //  return;
 
     // Rotate selection about selection center.
-    Vec3 center = GetCenter();
-
     Matrix34 rotateTM = Matrix34::CreateRotationXYZ(DEG2RAD(angles));
     Rotate(rotateTM, referenceCoordSys);
 }

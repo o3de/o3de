@@ -454,7 +454,7 @@ namespace EMStudio
             // get the actor instance id to which this item belongs to
             m_actorInstanceIdString = FromQtString(item->whatsThis(0));
             int actorInstanceID;
-            const bool validConversion = AzFramework::StringFunc::LooksLikeInt(m_actorInstanceIdString.c_str(), &actorInstanceID);
+            [[maybe_unused]] const bool validConversion = AzFramework::StringFunc::LooksLikeInt(m_actorInstanceIdString.c_str(), &actorInstanceID);
             MCORE_ASSERT(validConversion);
 
             // remove the node from the selected nodes
@@ -497,7 +497,7 @@ namespace EMStudio
             FromQtString(item->whatsThis(0), &m_actorInstanceIdString);
 
             int actorInstanceID;
-            const bool validConversion = AzFramework::StringFunc::LooksLikeInt(m_actorInstanceIdString.c_str(), &actorInstanceID);
+            [[maybe_unused]] const bool validConversion = AzFramework::StringFunc::LooksLikeInt(m_actorInstanceIdString.c_str(), &actorInstanceID);
             MCORE_ASSERT(validConversion);
 
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);

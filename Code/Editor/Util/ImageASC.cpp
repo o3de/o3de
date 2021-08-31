@@ -99,7 +99,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
 
     // Break all of the values in the file apart into tokens.
 
-    char* nextToken = nullptr;
+    [[maybe_unused]] char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);
 
     // ncols = grid width

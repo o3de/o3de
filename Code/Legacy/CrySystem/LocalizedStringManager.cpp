@@ -32,8 +32,11 @@
 #define MAX_CELL_COUNT 32
 
 // CVAR names
+#if !defined(_RELEASE)
 const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
+#endif // !defined(_RELEASE)
+
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 
@@ -874,7 +877,6 @@ inline YesNoType ToYesNoType(const char* szString)
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;
@@ -1755,7 +1757,7 @@ void CLocalizedStringsManager::ReloadData()
 void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32)
 {
     pLanguage->m_vLocalizedStrings.push_back(pEntry);
-    int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
+    [[maybe_unused]] int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
     pLanguage->m_keysMap[keyCRC32] = pEntry;
 
     if (m_cvarLocalizationDebug >= 2)
@@ -1927,11 +1929,9 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
-            size_t len =
-#endif
-                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
             assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
-
+#endif
 
 #if defined(LOG_DECOMP_TIMES)
             nAllocTicks = CryGetTicks();

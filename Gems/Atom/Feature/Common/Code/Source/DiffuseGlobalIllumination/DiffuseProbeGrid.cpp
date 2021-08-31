@@ -731,7 +731,6 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
-            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));

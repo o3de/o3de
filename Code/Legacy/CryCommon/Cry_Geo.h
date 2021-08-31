@@ -54,7 +54,6 @@ enum EGeomForm
 
     MaxGeomForm
 };
-AUTO_TYPE_INFO(EGeomForm)
 
 enum EGeomType
 {
@@ -63,7 +62,6 @@ enum EGeomType
     GeomType_Physics,
     GeomType_Render,
 };
-AUTO_TYPE_INFO(EGeomType)
 
 struct PosNorm
 {
@@ -104,7 +102,6 @@ struct RectF
         , h(1)
     {
     }
-    AUTO_STRUCT_INFO
 };
 
 struct RectI
@@ -705,8 +702,6 @@ struct AABB
         result.Add(c.mTip);
         return result;
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ILINE bool IsEquivalent(const AABB& a, const AABB& b, float epsilon = VEC_EPSILON)

@@ -9,7 +9,6 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                      TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev11-multiplatform                      TARGETS assimplib                   PACKAGE_HASH 1a9113788b893ef4a2ee63ac01eb71b981a92894a5a51175703fa225f5804dec)
-ly_associate_package(PACKAGE_NAME squish-ccr-20150601-rev3-multiplatform                TARGETS squish-ccr                  PACKAGE_HASH c878c6c0c705e78403c397d03f5aa7bc87e5978298710e14d09c9daf951a83b3)
 ly_associate_package(PACKAGE_NAME ASTCEncoder-2017_11_14-rev2-multiplatform             TARGETS ASTCEncoder                 PACKAGE_HASH c240ffc12083ee39a5ce9dc241de44d116e513e1e3e4cc1d05305e7aa3bdc326)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                                 TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
@@ -28,7 +27,6 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
-ly_associate_package(PACKAGE_NAME Blast-v1.1.7_rc2-9-geb169fe-rev1-windows              TARGETS Blast                       PACKAGE_HASH 216df71f4ffaf4a6ea3f2e77e5f27d68f2325e717fbd1626b00c785b82cd1b67)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 803e10b94006b834cbbdd30f562a8ddf04174c2cb6956c8399ec164ef8418d1f)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows                            TARGETS freetype                    PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)
@@ -51,3 +49,5 @@ ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                     
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                           TARGETS OpenSSL                     PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-windows                              TARGETS zlib                        PACKAGE_HASH 6fb46a0ef8c8614cde3517b50fca47f2a6d1fd059b21f3b8ff13e635ca7f2fa6)
+ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 5c3d9fa491e488ccaf802304ad23b932268a2b2846e383f088779962af2bfa84)
+ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)

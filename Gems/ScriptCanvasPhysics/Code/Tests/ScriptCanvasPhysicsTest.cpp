@@ -313,7 +313,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given raycast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";
@@ -346,7 +345,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given raycast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";
@@ -385,7 +383,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given shapecast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";

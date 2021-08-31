@@ -241,8 +241,6 @@ namespace ImageProcessingAtom
     // clone this image-object's contents
     IImageObject* CImageObject::Clone(uint32_t maxMipCount) const
     {
-        const EPixelFormat srcPixelformat = GetPixelFormat();
-
         IImageObject* outImage = AllocateImage(maxMipCount);
         AZ::u32 mips = outImage->GetMipCount();
 

@@ -107,7 +107,6 @@ void UiAnimationSystem::DoNodeStaticInitialisation()
 bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
 {
     INDENT_LOG_DURING_SCOPE (true, "UI Animation system is loading the file '%s' (mission='%s')", pszFile, pszMission);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     XmlNodeRef rootNode = m_pSystem->LoadXmlFromFile(pszFile);
     if (!rootNode)
@@ -732,9 +731,9 @@ void UiAnimationSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
+    //f32 green[4] = {0, 1, 0, 1};
+    //f32 purple[4] = {1, 0, 1, 1};
+    //f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     AZStd::vector<AZStd::string> names;
 

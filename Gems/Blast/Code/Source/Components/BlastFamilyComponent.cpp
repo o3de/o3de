@@ -48,6 +48,7 @@ namespace Blast
         BlastFamilyComponentNotificationBusHandler::Reflect(context);
         BlastActorConfiguration::Reflect(context);
         BlastActorData::Reflect(context);
+        BlastAsset::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {

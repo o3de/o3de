@@ -34,6 +34,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
@@ -76,9 +77,6 @@ inline namespace TrackViewInternal
 
     const int s_kMinimumFrameSnappingFPS = 1;
     const int s_kMaximumFrameSnappingFPS = 120;
-
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
 
     CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
@@ -2327,7 +2325,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         }
     }
 
-    QString filename = QFileDialog::getSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
+    QString filename = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
     if (!filename.isEmpty())
     {
         pExportManager->SetBakedKeysSequenceExport(true);

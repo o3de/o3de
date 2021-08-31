@@ -313,8 +313,6 @@ AZ::Vector2 UiRenderer::GetViewportSize()
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
-    const float viewX = viewport.m_minX;
-    const float viewY = viewport.m_minY;
     const float viewWidth = viewport.m_maxX - viewport.m_minX;
     const float viewHeight = viewport.m_maxY - viewport.m_minY;
     return AZ::Vector2(viewWidth, viewHeight);
