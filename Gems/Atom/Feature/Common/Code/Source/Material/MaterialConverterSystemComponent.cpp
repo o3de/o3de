@@ -26,9 +26,10 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialConverterSettings>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("Enable", &MaterialConverterSettings::m_enable)
-                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
+                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial)
+                    ->Field("IncludeMaterialPropertyNames", &MaterialConverterSettings::m_includeMaterialPropertyNames);
             }
         }
 
@@ -69,9 +70,9 @@ namespace AZ
             return m_settings.m_enable;
         }
 
-        bool MaterialConverterSystemComponent::IsMaterialPropertyNamesIncluded() const
+        bool MaterialConverterSystemComponent::ShouldIncludeMaterialPropertyNames() const
         {
-            return IncludeMaterialPropertyNames;
+            return m_settings.m_includeMaterialPropertyNames;
         }
 
         bool MaterialConverterSystemComponent::ConvertMaterial(

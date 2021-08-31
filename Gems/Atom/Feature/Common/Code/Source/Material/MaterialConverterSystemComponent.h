@@ -26,6 +26,7 @@ namespace AZ
 
             bool m_enable = true;
             AZStd::string m_defaultMaterial;
+            bool m_includeMaterialPropertyNames = true;
         };
 
         //! Atom's implementation of converting SceneAPI data into Atom's default material: StandardPBR
@@ -47,7 +48,7 @@ namespace AZ
 
             // MaterialConverterBus overrides ...
             bool IsEnabled() const override;
-            bool IsMaterialPropertyNamesIncluded() const override;
+            bool ShouldIncludeMaterialPropertyNames() const override;
             bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& out) override;
             AZStd::string GetMaterialTypePath() const override;
             AZStd::string GetDefaultMaterialPath() const override;
