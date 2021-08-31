@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/IndirectBufferSignature.h>
 #include <RHI/Device.h>
 #include <RHI/Buffer.h>
@@ -112,6 +111,8 @@ namespace AZ
 
         void IndirectBufferSignature::ShutdownInternal()
         {
+            auto& device = static_cast<Device&>(GetDevice());
+            device.QueueForRelease(m_signature);
             m_signature = nullptr;
             m_stride = 0;
         }

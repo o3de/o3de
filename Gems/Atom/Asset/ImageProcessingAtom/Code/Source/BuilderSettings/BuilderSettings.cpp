@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ImageProcessing_precompiled.h"
 #include <BuilderSettings/BuilderSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

@@ -12,10 +12,10 @@
 #include <Tests/Device.h>
 #include <Atom/RHI/FrameEventBus.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class QueryTests
         : public RHITestFixture
     {
@@ -112,6 +112,7 @@ namespace UnitTest
 
                 queryPool->ForEach<RHI::Query>([&queryIndex, &queries]([[maybe_unused]] RHI::Query& query)
                 {
+                    AZ_UNUSED(queries); // Prevent unused warning in release builds
                     AZ_Assert(queries[queryIndex] == &query, "Queries don't match");
                     queryIndex++;
                 });

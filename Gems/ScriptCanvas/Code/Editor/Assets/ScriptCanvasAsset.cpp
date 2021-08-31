@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/Utils.h>
@@ -115,11 +114,13 @@ namespace ScriptCanvasEditor
 
     ScriptCanvas::ScriptCanvasData& ScriptCanvasAsset::GetScriptCanvasData()
     {
+        AZ_Assert(m_data != nullptr, "ScriptCanvasData not initialized, it must be created on construction");
         return *m_data;
     }
 
     const ScriptCanvas::ScriptCanvasData& ScriptCanvasAsset::GetScriptCanvasData() const
     {
+        AZ_Assert(m_data != nullptr, "ScriptCanvasData not initialized, it must be created on construction");
         return *m_data;
     }
 }

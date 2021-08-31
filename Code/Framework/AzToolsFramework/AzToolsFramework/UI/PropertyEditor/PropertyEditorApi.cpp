@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyEditorAPI.h"
 #include <QtWidgets/QDoubleSpinBox>
 
@@ -99,7 +98,7 @@ namespace AzToolsFramework
     //-----------------------------------------------------------------------------
     NodeDisplayVisibility CalculateNodeDisplayVisibility(const InstanceDataNode& node, bool isSlicePushUI)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         NodeDisplayVisibility visibility = NodeDisplayVisibility::NotVisible;
 

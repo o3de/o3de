@@ -313,7 +313,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -346,7 +346,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -364,6 +364,24 @@ namespace UnitTest
             m_manager->ListEntities(*m_ticket, callback);
             m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
         }
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, EntitySpawnTicket_Move_Works)
+    {
+        AzFramework::EntitySpawnTicket ticket1(*m_spawnableAsset);
+        AzFramework::EntitySpawnTicket ticket2(*m_spawnableAsset);
+
+        const AzFramework::EntitySpawnTicket::Id ticket1Id = ticket1.GetId();
+        const AzFramework::EntitySpawnTicket::Id ticket2Id = ticket2.GetId();
+
+        AzFramework::EntitySpawnTicket ticketMoveConstructor(AZStd::move(ticket1));
+        EXPECT_TRUE(ticketMoveConstructor.IsValid());
+        EXPECT_EQ(ticketMoveConstructor.GetId(), ticket1Id);
+
+        AzFramework::EntitySpawnTicket ticketMoveOperator;
+        ticketMoveOperator = AZStd::move(ticket2);
+        EXPECT_TRUE(ticketMoveOperator.IsValid());
+        EXPECT_EQ(ticketMoveOperator.GetId(), ticket2Id);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_DeleteTicketBeforeCall_NoCrash)
@@ -554,6 +572,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 
@@ -574,6 +594,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 
@@ -599,7 +621,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -653,7 +675,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -701,6 +723,8 @@ namespace UnitTest
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
+            AZ_UNUSED(refScheme);
+            AZ_UNUSED(NumEntities);
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
 

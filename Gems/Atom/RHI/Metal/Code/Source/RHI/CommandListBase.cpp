@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -65,6 +64,7 @@ namespace AZ
             {
                 [m_encoder endEncoding];
                 m_encoder = nil;
+                m_isNullDescHeapBound = false;
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
                 if (m_supportsInterDrawTimestamps)
                 {
@@ -74,18 +74,25 @@ namespace AZ
             }
         }
         
-        void CommandListBase::MakeHeapsResident()
+        void CommandListBase::MakeHeapsResident(MTLRenderStages renderStages)
         {
+            if(m_isNullDescHeapBound)
+            {
+                return;
+            }
+            
             switch(m_commandEncoderType)
             {
                 case CommandEncoderType::Render:
                 {
-                    id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-                    for (id<MTLHeap> residentHeap : *m_residentHeaps)
+                    if(renderStages != 0)
                     {
-                        //MTLRenderStageVertex is not added to this as it was causing an immediate gpu crash on ios (first buffer commit)
-                        [renderEncoder useHeap : residentHeap
-                                       stages  : MTLRenderStageFragment];
+                        id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+                        for (id<MTLHeap> residentHeap : *m_residentHeaps)
+                        {
+                            [renderEncoder useHeap : residentHeap
+                                           stages  : renderStages];
+                        }
                     }
                     break;
                 }
@@ -103,6 +110,7 @@ namespace AZ
                     AZ_Assert(false, "Encoder Type not supported");
                 }
             }
+            m_isNullDescHeapBound = true;
         }
 
         void CommandListBase::CreateEncoder(CommandEncoderType encoderType)
@@ -120,16 +128,12 @@ namespace AZ
                     m_commandEncoderType = CommandEncoderType::Render;
                     m_encoder = [m_mtlCommandBuffer renderCommandEncoderWithDescriptor : m_renderPassDescriptor];
                     m_renderPassDescriptor = nil;
-                    MakeHeapsResident();
-
                     break;
                 }
                 case CommandEncoderType::Compute:
                 {
                     m_commandEncoderType = CommandEncoderType::Compute;
                     m_encoder = [m_mtlCommandBuffer computeCommandEncoder];
-                    MakeHeapsResident();
-
                     break;
                 }
                 case CommandEncoderType::Blit:

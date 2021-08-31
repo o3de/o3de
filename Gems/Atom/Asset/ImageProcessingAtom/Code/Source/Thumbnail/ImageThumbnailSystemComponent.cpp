@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -181,7 +180,7 @@ namespace ImageProcessingAtom
                 // Dispatch event on main thread
                 AZ::SystemTickBus::QueueFunction(
                 [
-                    thumbnailKey, thumbnailSize,
+                    thumbnailKey,
                     pixmap = QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))
                 ]() mutable
                 {

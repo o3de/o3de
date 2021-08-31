@@ -9,7 +9,6 @@
 #include <GridMate/Replica/ReplicaChunk.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
 #include <GridMate/Replica/RemoteProcedureCall.h>
-#include <GridMate/String/string.h>
 
 using namespace AZ::Debug;
 

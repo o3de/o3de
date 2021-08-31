@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "AnimNode.h"
 #include "AnimTrack.h"
@@ -75,10 +74,10 @@ void CAnimNode::Activate([[maybe_unused]] bool bActivate)
 //////////////////////////////////////////////////////////////////////////
 int CAnimNode::GetTrackCount() const
 {
-    return m_tracks.size();
+    return static_cast<int>(m_tracks.size());
 }
 
-const char* CAnimNode::GetParamName(const CAnimParamType& paramType) const
+AZStd::string CAnimNode::GetParamName(const CAnimParamType& paramType) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(paramType, info))

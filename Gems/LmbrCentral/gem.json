@@ -8,6 +8,7 @@
     "canonical_tags": ["Gem"],
     "user_tags": ["Core", "Framework", "Assets"],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/core/lmbr-central/"
 }
 

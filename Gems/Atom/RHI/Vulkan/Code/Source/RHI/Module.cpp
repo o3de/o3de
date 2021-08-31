@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/SystemComponent.h>
 #include <Atom/RHI.Reflect/Vulkan/ReflectSystemComponent.h>
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>

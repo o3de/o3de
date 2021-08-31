@@ -88,7 +88,7 @@ namespace AtomToolsFramework
             [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
         {
             AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
+            if (m_controllerList->HandleInputChannelEvent(AzFramework::ViewportControllerInputEvent{GetId(), windowId, *inputChannel}))
             {
                 // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
                 if (event)
@@ -403,11 +403,6 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
-    {
-        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
         return m_mouseOver;
@@ -464,5 +459,15 @@ namespace AtomToolsFramework
     float RenderViewportWidget::GetDpiScaleFactor() const
     {
         return aznumeric_cast<float>(devicePixelRatioF());
+    }
+
+    uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
+    {
+        return 60;
+    }
+
+    uint32_t RenderViewportWidget::GetSyncInterval() const
+    {
+        return 1;
     }
 } //namespace AtomToolsFramework

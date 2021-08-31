@@ -38,7 +38,7 @@ namespace AZ
             float m_cosInnerConeAngle = 0.0f; // cosine of inner cone angle
             float m_cosOuterConeAngle = 0.0f; // cosine of outer cone angle
             float m_bulbPositionOffset = 0.0f; // Distance from the light disk surface to the tip of the cone of the light. m_bulbRadius * tanf(pi/2 - m_outerConeAngle).
-            uint16_t m_shadowIndex = -1; // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
+            uint16_t m_shadowIndex = std::numeric_limits<uint16_t>::max(); // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
             uint16_t m_padding; // Explicit padding.
         };
 
@@ -84,6 +84,8 @@ namespace AZ
 
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 #include "StorageRequiredContract.h"
 
 #include <ScriptCanvas/Core/ContractBus.h>

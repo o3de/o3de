@@ -30,6 +30,9 @@ namespace AZ
 {
     namespace Render
     {
+
+
+
         //! A configuration structure for the MeshComponentController
         class MeshComponentConfig final
             : public AZ::ComponentConfig
@@ -41,13 +44,20 @@ namespace AZ
 
             // Editor helper functions
             bool IsAssetSet();
+            bool LodTypeIsScreenCoverage();
+            bool LodTypeIsSpecificLOD();
+            bool ShowLodConfig();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
-            RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
+
+            RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
+            RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
+            float m_minimumScreenCoverage = 1.0f / 1080.0f;
+            float m_qualityDecayRate = 0.5f;
         };
 
         class MeshComponentController final
@@ -94,8 +104,17 @@ namespace AZ
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
 
-            void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
-            RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
+
+            virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
+            virtual RPI::Cullable::LodOverride GetLodOverride() const;
+
+            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage);
+            virtual float GetMinimumScreenCoverage() const;
+
+            virtual void SetQualityDecayRate(float qualityDecayRate);
+            virtual float GetQualityDecayRate() const;
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
@@ -111,6 +130,9 @@ namespace AZ
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             // MaterialReceiverRequestBus::Handler overrides ...
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
@@ -128,6 +150,8 @@ namespace AZ
             void RegisterModel();
             void UnregisterModel();
             void RefreshModelRegistration();
+
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 

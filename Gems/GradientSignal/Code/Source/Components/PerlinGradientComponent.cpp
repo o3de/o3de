@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "PerlinGradientComponent.h"
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/Job.h>
@@ -173,7 +172,7 @@ namespace GradientSignal
 
     float PerlinGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (m_perlinImprovedNoise)
         {

@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "LuaBuilderComponent.h"
 
 #include <AzCore/Script/ScriptAsset.h>
@@ -26,7 +25,7 @@ void LuaBuilder::BuilderPluginComponent::Activate()
 {
     AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
     builderDescriptor.m_name = "Lua Worker Builder";
-    builderDescriptor.m_version = 6;
+    builderDescriptor.m_version = 7;
             builderDescriptor.m_analysisFingerprint = AZStd::string::format("%d", static_cast<AZ::u8>(AZ::ScriptAsset::AssetVersion));
     builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.lua", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
     builderDescriptor.m_busId = azrtti_typeid<LuaBuilderWorker>();

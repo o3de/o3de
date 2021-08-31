@@ -132,7 +132,7 @@ namespace UnitTest
                     PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::LinkIdName);
                 PrefabDomValueConstReference expectedNestedInstanceDomLinkId =
                     PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::LinkIdName);
-                ComparePrefabDomValues(actualNestedInstanceDomLinkId, actualNestedInstanceDomLinkId);
+                ComparePrefabDomValues(actualNestedInstanceDomLinkId, expectedNestedInstanceDomLinkId);
             }
 
             if (shouldCompareContainerEntities)

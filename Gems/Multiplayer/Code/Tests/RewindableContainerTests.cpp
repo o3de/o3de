@@ -43,7 +43,7 @@ namespace UnitTest
         // Test rewind for all pushed values and overall size
         for (uint32_t idx = 0; idx < RewindableContainerSize; ++idx)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(idx), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(idx), AZ::TimeMs{ 0 }, 1.f, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(idx + 1, test.size());
             EXPECT_EQ(idx, test.back());
         }
@@ -70,9 +70,9 @@ namespace UnitTest
         EXPECT_TRUE(test.empty());
 
         // Test rewind for pop_back and clear
-        Multiplayer::ScopedAlterTime pop_time(static_cast<Multiplayer::HostFrameId>(RewindableContainerSize), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
+        Multiplayer::ScopedAlterTime pop_time(static_cast<Multiplayer::HostFrameId>(RewindableContainerSize), AZ::TimeMs{ 0 }, 1.f, AzNetworking::InvalidConnectionId);
         EXPECT_EQ(RewindableContainerSize - 1, test.size());
-        Multiplayer::ScopedAlterTime clear_time(static_cast<Multiplayer::HostFrameId>(RewindableContainerSize + 1), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
+        Multiplayer::ScopedAlterTime clear_time(static_cast<Multiplayer::HostFrameId>(RewindableContainerSize + 1), AZ::TimeMs{ 0 }, 1.f, AzNetworking::InvalidConnectionId);
         EXPECT_EQ(0, test.size());
 
         // Test copy_values and resize_no_construct
@@ -100,7 +100,7 @@ namespace UnitTest
         // Test rewind for all values and overall size
         for (uint32_t idx = 1; idx <= RewindableContainerSize; ++idx)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(idx), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(idx), AZ::TimeMs{ 0 }, 1.f, AzNetworking::InvalidConnectionId);
             for (uint32_t testIdx = 0; testIdx < RewindableContainerSize; ++testIdx)
             {
                 if (testIdx < idx)

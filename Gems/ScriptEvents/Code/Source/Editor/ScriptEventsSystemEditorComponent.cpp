@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "ScriptEventsSystemEditorComponent.h"
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
@@ -23,6 +21,8 @@
 #include <ScriptEvents/ScriptEvent.h>
 
 #if defined(SCRIPTEVENTS_EDITOR)
+
+AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace ScriptEventsEditor
 {

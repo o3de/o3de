@@ -141,11 +141,11 @@ class TestRemoteConsole():
 
     @mock.patch('socket.socket', mock.MagicMock())
     @mock.patch('ly_remote_console.remote_console_commands.threading', mock.MagicMock())
-    def test_HandleMessage_AutoCompleteListDone_ReadySet(self):
+    def test_HandleMessage_ConnectMessage_ReadySet(self):
         rc_instance = remote_console.RemoteConsole()
         rc_instance.on_display = mock.MagicMock()
         rc_instance.ready = mock.MagicMock()
-        msg = b'70'  # in python3 socket.recv returns byte array. 7 is AUTOCOMPLETELISTDONE
+        msg = b'I0'  # in python3 socket.recv returns byte array. I is CONNECTMESSAGE
 
         rc_instance._handle_message(msg)
 

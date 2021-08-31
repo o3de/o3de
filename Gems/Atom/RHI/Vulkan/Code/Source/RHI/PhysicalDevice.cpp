@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
@@ -18,8 +17,6 @@ namespace AZ
 {
     namespace Vulkan
     {
-        static constexpr size_t MinGPUMemSize = AZ_TRAIT_ATOM_VULKAN_MIN_GPU_MEM;
-
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             RHI::PhysicalDeviceList physicalDeviceList;
@@ -262,7 +259,7 @@ namespace AZ
                 VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
             } };
 
-            [[maybe_unused]] uint32_t optionalExtensionCount = sizeof(optionalExtensions) / sizeof(VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+            [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
             AZ_Assert(optionalExtensionCount == static_cast<uint32_t>(OptionalDeviceExtension::Count), "The order and size must match the enum OptionalDeviceExtensions.");
 

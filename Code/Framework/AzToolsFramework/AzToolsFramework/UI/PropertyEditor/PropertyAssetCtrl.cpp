@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "PropertyAssetCtrl.hxx"
 
@@ -549,7 +548,7 @@ namespace AzToolsFramework
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
-        connect(m_errorButton, &QPushButton::pressed, this, [this, errorLog]() {
+        connect(m_errorButton, &QPushButton::pressed, this, [errorLog]() {
             // Create the dialog for the log panel, and set the layout
             QDialog* logDialog = new QDialog();
             logDialog->setMinimumSize(1024, 400);

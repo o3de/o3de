@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include "CommentTrack.h"
@@ -26,7 +25,7 @@ void CCommentTrack::GetKeyInfo(int key, const char*& description, float& duratio
     description = 0;
     duration = m_keys[key].m_duration;
 
-    cry_strcpy(desc, m_keys[key].m_strComment.c_str());
+    azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].m_strComment.c_str());
 
     description = desc;
 }

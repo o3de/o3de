@@ -33,7 +33,6 @@
 
 #include "CryLibrary.h"
 #include "CryPath.h"
-#include <StringUtils.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -98,7 +97,6 @@
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
-#include <AzFramework/Driller/DrillerConsoleAPI.h>
 
 #if defined(ANDROID)
     #include <AzCore/Android/Utils.h>
@@ -252,15 +250,15 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 1:
         {
             int* p = 0;
-            PREFAST_SUPPRESS_WARNING(6011) * p = 0xABCD;
+            *p = 0xABCD;
         }
         break;
         case 2:
         {
             float a = 1.0f;
             memset(&a, 0, sizeof(a));
-            float* b = &a;
-            float c = 3;
+            [[maybe_unused]] float* b = &a;
+            [[maybe_unused]] float c = 3;
             CryLog("%f", (c / *b));
         }
         break;
@@ -433,8 +431,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const cha
 //////////////////////////////////////////////////////////////////////////
 AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
@@ -452,7 +448,7 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
     //////////////////////////////////////////////////////////////////////////
     // After loading DLL initialize it by calling ModuleInitISystem
     //////////////////////////////////////////////////////////////////////////
-    string moduleName = PathUtil::GetFileName(dllName);
+    AZStd::string moduleName = PathUtil::GetFileName(dllName);
 
     typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
     PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
@@ -477,7 +473,7 @@ bool CSystem::UnloadDLL(const char* dllName)
 {
     bool isSuccess = false;
 
-    CCryNameCRC key(dllName);
+    AZ::Crc32 key(dllName);
     AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
     AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
     if ((hModule) && (hModule->IsLoaded()))
@@ -524,7 +520,7 @@ void CSystem::ShutdownModuleLibraries()
 /////////////////////////////////////////////////////////////////////////////////
 
 #if defined(WIN32) || defined(WIN64)
-wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendorId, unsigned int gpuDeviceId)
+AZStd::wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendorId, unsigned int gpuDeviceId)
 {
     const size_t fullLangID = (size_t) GetKeyboardLayout(0);
     const size_t primLangID = fullLangID & 0x3FF;
@@ -613,8 +609,6 @@ wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendor
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (m_env.pConsole)
     {
         m_env.pConsole->Init(this);
@@ -663,7 +657,6 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem()
 {
-    LOADING_TIME_PROFILE_SECTION;
     using namespace AzFramework::AssetSystem;
 
     if (m_pUserCallback)
@@ -749,11 +742,8 @@ void CSystem::ShutdownFileSystem()
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
-    LOADING_TIME_PROFILE_SECTION;
-    {
-        LoadConfiguration(m_systemConfigName.c_str());
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
-    }
+    LoadConfiguration(m_systemConfigName.c_str());
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
 
 #if defined(AZ_PLATFORM_ANDROID)
     AZ::Android::Utils::SetLoadFilesToMemory(m_sys_load_files_to_memory->GetString());
@@ -784,8 +774,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!Audio::Gem::AudioSystemGemRequestBus::HasHandlers())
     {
         // AudioSystem Gem has not been enabled for this project.
@@ -827,8 +815,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitVTuneProfiler()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
 #ifdef PROFILE_WITH_VTUNE
 
     WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
@@ -856,7 +842,6 @@ bool CSystem::InitVTuneProfiler()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
     // Set the localization folder
     ICVar* pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("sys_localization_folder") : 0;
     if (pCVar)
@@ -878,37 +863,35 @@ void CSystem::InitLocalization()
         languageID = ILocalizationManager::EPlatformIndependentLanguageID::ePILID_English_US;
     }
 
-    string language = m_pLocalizationManager->LangNameFromPILID(languageID);
+    AZStd::string language = m_pLocalizationManager->LangNameFromPILID(languageID);
     m_pLocalizationManager->SetLanguage(language.c_str());
     if (m_pLocalizationManager->GetLocalizationFormat() == 1)
     {
-        string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
-        m_pLocalizationManager->InitLocalizationData(translationsListXML);
+        AZStd::string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
+        m_pLocalizationManager->InitLocalizationData(translationsListXML.c_str());
 
         m_pLocalizationManager->LoadAllLocalizationData();
     }
     else
     {
         // if the language value cannot be found, let's default to the english pak
-        OpenLanguagePak(language);
+        OpenLanguagePak(language.c_str());
     }
 
     if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
         AZ::CVarFixedString languageAudio;
-        if (auto result = console->GetCvarValue("g_languageAudio", languageAudio); result == AZ::GetValueResult::Success)
+        console->GetCvarValue("g_languageAudio", languageAudio);
+        if (languageAudio.empty())
         {
-            if (languageAudio.size() == 0)
-            {
-                console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
-            }
-            else
-            {
-                language.assign(languageAudio.data(), languageAudio.size());
-            }
+            console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
+        }
+        else
+        {
+            language.assign(languageAudio.data(), languageAudio.size());
         }
     }
-    OpenLanguageAudioPak(language);
+    OpenLanguageAudioPak(language.c_str());
 }
 
 void CSystem::OpenBasicPaks()
@@ -919,8 +902,6 @@ void CSystem::OpenBasicPaks()
         return;
     }
     bBasicPaksLoaded = true;
-
-    LOADING_TIME_PROFILE_SECTION;
 
     // open pak files
     constexpr AZStd::string_view paksFolder = "@assets@/*.pak"; // (@assets@ assumed)
@@ -972,10 +953,10 @@ void CSystem::OpenLanguagePak(const char* sLanguage)
     // Initialize languages.
 
     // Omit the trailing slash!
-    string sLocalizationFolder = PathUtil::GetLocalizationFolder();
+    AZStd::string sLocalizationFolder = PathUtil::GetLocalizationFolder();
 
     // load xml pak with full filenames to perform wildcard searches.
-    string sLocalizedPath;
+    AZStd::string sLocalizedPath;
     GetLocalizedPath(sLanguage, sLocalizedPath);
     if (!m_env.pCryPak->OpenPacks({ sLocalizationFolder.c_str(), sLocalizationFolder.size() }, { sLocalizedPath.c_str(), sLocalizedPath.size() }, 0))
     {
@@ -1002,15 +983,15 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
     int nPakFlags = 0;
 
     // Omit the trailing slash!
-    string sLocalizationFolder(string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
+    AZStd::string sLocalizationFolder(AZStd::string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
 
-    if (sLocalizationFolder.compareNoCase("Languages") == 0)
+    if (!AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
     {
         sLocalizationFolder = "@assets@";
     }
 
     // load localized pak with crc32 filenames on consoles to save memory.
-    string sLocalizedPath = "loc.pak";
+    AZStd::string sLocalizedPath = "loc.pak";
 
     if (!m_env.pCryPak->OpenPacks(sLocalizationFolder.c_str(), sLocalizedPath.c_str(), nPakFlags))
     {
@@ -1020,10 +1001,10 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
 }
 
 
-string GetUniqueLogFileName(string logFileName)
+AZStd::string GetUniqueLogFileName(AZStd::string logFileName)
 {
-    string logFileNamePrefix = logFileName;
-    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix)))
+    AZStd::string logFileNamePrefix = logFileName;
+    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix.c_str())))
     {
         logFileNamePrefix = "@log@/";
         logFileNamePrefix += logFileName;
@@ -1039,9 +1020,9 @@ string GetUniqueLogFileName(string logFileName)
         return logFileNamePrefix;
     }
 
-    string logFileExtension;
+    AZStd::string logFileExtension;
     size_t extensionIndex = logFileName.find_last_of('.');
-    if (extensionIndex != string::npos)
+    if (extensionIndex != AZStd::string::npos)
     {
         logFileExtension = logFileName.substr(extensionIndex, logFileName.length() - extensionIndex);
         logFileNamePrefix = logFileName.substr(0, extensionIndex);
@@ -1156,8 +1137,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         gEnv = &m_env;
     }
 
-    LOADING_TIME_PROFILE_SECTION;
-
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
     gEnv->mMainThreadId = GetCurrentThreadId();         //Set this ASAP on startup
 
@@ -1188,7 +1167,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-    
+
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
@@ -1215,7 +1194,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
-        GetVersionExA(&osvi);
+        GetVersionExW(&osvi);
 AZ_POP_DISABLE_WARNING
 
         bool bIsWindowsXPorLater = osvi.dwMajorVersion > 5 || (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion >= 1);
@@ -1310,7 +1289,7 @@ AZ_POP_DISABLE_WARNING
             }
             else if (startupParams.sLogFileName)    //otherwise see if the startup params has a log file name, if so use it
             {
-                const string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
+                const AZStd::string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
                 m_env.pLog->SetFileName(sUniqueLogFileName.c_str(), startupParams.autoBackupLogs);
             }
             else//use the default log name
@@ -1629,6 +1608,9 @@ AZ_POP_DISABLE_WARNING
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
+    // Execute any deferred commands that uses the CVar commands that were just registered
+    AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+
     // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
     if (gEnv->IsEditor() && !gEnv->pMovieSystem)
     {
@@ -1644,7 +1626,7 @@ AZ_POP_DISABLE_WARNING
 
     m_bInitializedSuccessfully = true;
 
-    return (true);
+    return true;
 }
 
 
@@ -1658,20 +1640,20 @@ static void LoadConfigurationCmd(IConsoleCmdArgs* pParams)
         return;
     }
 
-    GetISystem()->LoadConfiguration(string("Config/") + pParams->GetArg(1));
+    GetISystem()->LoadConfiguration((AZStd::string("Config/") + pParams->GetArg(1)).c_str());
 }
 
 
 // --------------------------------------------------------------------------------------------------------------------------
 
-static string ConcatPath(const char* szPart1, const char* szPart2)
+static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
 {
     if (szPart1[0] == 0)
     {
         return szPart2;
     }
 
-    string ret;
+    AZStd::string ret;
 
     ret.reserve(strlen(szPart1) + 1 + strlen(szPart2));
 
@@ -1693,46 +1675,6 @@ void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
         int logLevel = atoi(pArgs->GetArg(1));
         *logVar = logLevel;
         AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
-}
-
-void CmdDrillToFile(IConsoleCmdArgs* pArgs)
-{
-    if (azstricmp(pArgs->GetArg(0), "DrillerStop") == 0)
-    {
-        EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StopDrillerSession, AZ::Crc32("DefaultDrillerSession"));
-    }
-    else
-    {
-        if (pArgs->GetArgCount() > 1)
-        {
-            AZ::Debug::DrillerManager::DrillerListType drillersToEnable;
-            for (int iArg = 1; iArg < pArgs->GetArgCount(); ++iArg)
-            {
-                if (azstricmp(pArgs->GetArg(iArg), "Replica") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("ReplicaDriller");
-                }
-                else if (azstricmp(pArgs->GetArg(iArg), "Carrier") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("CarrierDriller");
-                }
-                else
-                {
-                    CryLogAlways("Driller %s not supported.", pArgs->GetArg(iArg));
-                }
-            }
-            EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StartDrillerSession, drillersToEnable, AZ::Crc32("DefaultDrillerSession"));
-        }
-        else
-        {
-            CryLogAlways("Syntax: DrillerStart [Driller1] [Driller2] [...]");
-            CryLogAlways("Supported Drillers:");
-            CryLogAlways("    Carrier");
-            CryLogAlways("    Replica");
-        }
     }
 }
 
@@ -1877,19 +1819,6 @@ void CSystem::CreateSystemVars()
             "Entities marked with lower level will not be spawned - 0 means no level.\n"
             "Usage: e_EntitySuppressionLevel [0-infinity]\n"
             "Default is 0 (off)");
-
-#if defined(WIN32) || defined(WIN64)
-    const uint32 nJobSystemDefaultCoreNumber = 8;
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_11
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    const uint32 nJobSystemDefaultCoreNumber = 4;
-#endif
 
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
@@ -2114,9 +2043,6 @@ void CSystem::CreateSystemVars()
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
 
-    REGISTER_COMMAND_DEV_ONLY("DrillerStart", CmdDrillToFile, VF_DEV_ONLY, "Start a driller capture.");
-    REGISTER_COMMAND_DEV_ONLY("DrillerStop", CmdDrillToFile, VF_DEV_ONLY, "Stop a driller capture.");
-
     REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
@@ -2135,12 +2061,12 @@ void CSystem::CreateAudioVars()
 }
 
 /////////////////////////////////////////////////////////////////////
-void CSystem::AddCVarGroupDirectory(const string& sPath)
+void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
 {
     CryLog("creating CVarGroups from directory '%s' ...", sPath.c_str());
     INDENT_LOG_DURING_SCOPE();
 
-    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath, "*.cfg").c_str());
+    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath.c_str(), "*.cfg").c_str());
 
     if (!handle)
     {
@@ -2153,15 +2079,8 @@ void CSystem::AddCVarGroupDirectory(const string& sPath)
         {
             if (handle.m_filename != "." && handle.m_filename != "..")
             {
-                AddCVarGroupDirectory(ConcatPath(sPath, handle.m_filename.data()));
+                AddCVarGroupDirectory(ConcatPath(sPath.c_str(), handle.m_filename.data()));
             }
-        }
-        else
-        {
-            string sFilePath = ConcatPath(sPath, handle.m_filename.data());
-
-            string sCVarName = sFilePath;
-            PathUtil::RemoveExtension(sCVarName);
         }
     } while (handle = gEnv->pCryPak->FindNext(handle));
 

@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
@@ -101,7 +99,6 @@ namespace PhysX
         debugDisplay.PushMatrix(localTransform);
 
         const float xAxisLineLength = 15.0f;
-        const float yzAxisArrowLength = 1.0f;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
         debugDisplay.DrawLine(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisLineLength, 0.0f, 0.0f));
 

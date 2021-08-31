@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include "BoolTrack.h"
@@ -39,7 +38,7 @@ void CBoolTrack::GetValue(float time, bool& value)
 
     CheckValid();
 
-    int nkeys = m_keys.size();
+    int nkeys = static_cast<int>(m_keys.size());
     if (nkeys < 1)
     {
         return;

@@ -6,7 +6,6 @@
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/PhysicalDevice_Windows.h>
 #include <AzCore/std/string/conversions.h>
 
@@ -79,7 +78,7 @@ namespace AZ
             }
 
             constexpr uint32_t SubKeyLength = 256;
-            char subKeyName[SubKeyLength];
+            wchar_t subKeyName[SubKeyLength];
 
             uint32_t driverVersion = 0;
 

@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVEventsDialog.h"
 #include <Editor/Animation/ui_UiAVEventsDialog.h>
 #include "UiAnimViewUndo.h"
@@ -18,12 +17,6 @@
 
 
 // CUiAVEventsDialog dialog
-
-namespace
-{
-    const int kCountSubItemIndex = 1;
-    const int kTimeSubItemIndex = 2;
-}
 
 class UiAVEventsModel
     : public QAbstractTableModel
@@ -353,7 +346,7 @@ int UiAVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, flo
         {
             CUiAnimViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

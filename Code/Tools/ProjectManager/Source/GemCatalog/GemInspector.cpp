@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
             m_mainWidget->hide();
         }
 
-        m_nameLabel->setText(m_model->GetName(modelIndex));
+        m_nameLabel->setText(m_model->GetDisplayName(modelIndex));
         m_creatorLabel->setText(m_model->GetCreator(modelIndex));
 
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
@@ -108,7 +108,7 @@ namespace O3DE::ProjectManager
     {
         // Gem name, creator and summary
         m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
-        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_creatorColor);
+        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_headerColor);
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
@@ -116,6 +116,8 @@ namespace O3DE::ProjectManager
         m_summaryLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_mainLayout->addWidget(m_summaryLabel);
         m_summaryLabel->setWordWrap(true);
+        m_summaryLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_summaryLabel->setOpenExternalLinks(true);
         m_mainLayout->addSpacing(5);
 
         // Directory and documentation links
@@ -161,6 +163,8 @@ namespace O3DE::ProjectManager
 
         m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
         m_reqirementsTextLabel->setWordWrap(true);
+        m_reqirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_reqirementsTextLabel->setOpenExternalLinks(true);
 
         QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
         requrementsLayout->addSpacerItem(reqirementsSpacer);

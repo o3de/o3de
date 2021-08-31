@@ -89,13 +89,13 @@ namespace AZ
                 // AssImp only has one tangentStream per mesh.
                 tangentStream->SetTangentSetIndex(0);
 
-                tangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+                tangentStream->SetGenerationMethod(AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene);
                 tangentStream->ReserveContainerSpace(vertexCount);
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
                     const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                     {
                         if (!mesh->HasTangentsAndBitangents())
                         {

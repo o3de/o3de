@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "LogPanel_Panel.h"
 
@@ -33,6 +32,9 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
                                                                     // 4800 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractTextDocumentLayout>
 AZ_POP_DISABLE_WARNING
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QApplication>
+
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include "NewLogTabDialog.h"
@@ -655,7 +657,6 @@ namespace AzToolsFramework
                 // if we have any elements, the last element is top right aligned:
                 QLayoutItem* pItem = m_children[m_children.size() - 1];
                 QSize lastItemSize = pItem->minimumSize();
-                QPoint topRight = effectiveRect.topRight();
                 QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width(), 0), lastItemSize);
                 pItem->setGeometry(topRightCorner);
             }

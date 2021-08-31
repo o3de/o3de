@@ -55,6 +55,11 @@ namespace Multiplayer
         return m_hostTimeMs;
     }
 
+    float NetworkTime::GetHostBlendFactor() const
+    {
+        return m_hostBlendFactor;
+    }
+
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
     {
         return m_rewindingConnectionId;
@@ -65,11 +70,25 @@ namespace Multiplayer
         return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
     }
 
+    void NetworkTime::ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs)
+    {
+        AZ_Assert(!IsTimeRewound(), "Forcibly setting network time is unsupported under a rewound time scope");
+        m_unalteredFrameId = frameId;
+        m_hostFrameId = frameId;
+        m_hostTimeMs = timeMs;
+        m_rewindingConnectionId = AzNetworking::InvalidConnectionId;
+    }
+
     void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
     {
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
+    }
+
+    void NetworkTime::AlterBlendFactor(float blendFactor)
+    {
+        m_hostBlendFactor = blendFactor;
     }
 
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
@@ -95,6 +114,7 @@ namespace Multiplayer
 
                     if (networkTransform != nullptr)
                     {
+                        // We're not presently factoring in interpolated position here
                         const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb

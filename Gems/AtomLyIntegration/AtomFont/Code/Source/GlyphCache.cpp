@@ -10,7 +10,6 @@
 // Purpose:
 //  - Manage and cache glyphs, retrieving them from the renderer as needed
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -125,7 +124,7 @@ int AZ::GlyphCache::Release()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::GlyphCache::LoadFontFromFile(const string& fileName)
+int AZ::GlyphCache::LoadFontFromFile(const AZStd::string & fileName)
 {
     return m_fontRenderer.LoadFromFile(fileName);
 }

@@ -54,6 +54,7 @@ namespace O3DE::ProjectManager
         QTabWidget* tabWidget = new QTabWidget();
         tabWidget->setObjectName("projectSettingsTab");
         tabWidget->tabBar()->setObjectName("projectSettingsTabBar");
+        tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
         QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
@@ -94,7 +95,7 @@ namespace O3DE::ProjectManager
         Update();
 
         // Gather the available gems that will be shown in the gem catalog.
-        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
     }
 
     void UpdateProjectCtrl::HandleGemsButton()

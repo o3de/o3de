@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>
@@ -44,8 +45,10 @@ namespace AZ
             }
         }
 
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         static constexpr char DecompBoundName[] = "Decompression bound";
         static constexpr char ReadBoundName[] = "Read bound";
+#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         bool FullFileDecompressor::DecompressionInformation::IsProcessing() const
         {
@@ -367,7 +370,7 @@ namespace AZ
                 {
                     auto callback = [this, nextRequest](const FileRequest& checkRequest)
                     {
-                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                        AZ_PROFILE_FUNCTION(AzCore);
                         auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
                         AZ_Assert(check,
                             "Callback in FullFileDecompressor::PrepareReadRequest expected FileExistsCheck but got another command.");
@@ -426,7 +429,7 @@ namespace AZ
                 {
                     auto callback = [this, nextRequest](const FileRequest& checkRequest)
                     {
-                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                        AZ_PROFILE_FUNCTION(AzCore);
                         auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
                         AZ_Assert(check,
                             "Callback in FullFileDecompressor::PrepareDedicatedCache expected FileExistsCheck but got another command.");
@@ -508,7 +511,7 @@ namespace AZ
                     archiveReadRequest->SetCompletionCallback(
                         [this, readSlot = i](FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
                             FinishArchiveRead(&request, readSlot);
                         });
                     m_next->QueueRequest(archiveReadRequest);
@@ -596,7 +599,7 @@ namespace AZ
 
                     waitRequest->SetCompletionCallback([this, jobSlot](FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
                             FinishDecompression(&request, jobSlot);
                         });
 

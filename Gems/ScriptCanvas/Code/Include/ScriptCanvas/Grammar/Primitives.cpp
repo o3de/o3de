@@ -55,7 +55,6 @@ namespace ScriptCanvas
             AZStd::vector<AZStd::string> tokens;
             AzFramework::StringFunc::Tokenize(name, tokens, Grammar::k_luaSpecialCharacters);
             AZStd::string joinResult;
-            const size_t length = tokens.size();
             for (auto& token : tokens)
             {
                 joinResult.append(token);
@@ -235,7 +234,7 @@ namespace ScriptCanvas
         const VariableData Source::k_emptyVardata{};
 
         Source::Source
-        (const Graph& graph
+            ( const Graph& graph
             , const AZ::Data::AssetId& id
             , const GraphData& graphData
             , const VariableData& variableData
@@ -277,7 +276,7 @@ namespace ScriptCanvas
                 AzFramework::StringFunc::Path::StripExtension(namespacePath);
 
                 return AZ::Success(Source
-                (*request.graph
+                    (*request.graph
                     , request.scriptAssetId
                     , *graphData
                     , *sourceVariableData

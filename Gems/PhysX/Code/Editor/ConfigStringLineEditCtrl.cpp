@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysX_precompiled.h"
-
 #include <AzFramework/Physics/Material.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
@@ -259,16 +257,16 @@ namespace PhysX
 
     void ConfigStringLineEditHandler::WriteGUIValuesIntoProperty(size_t index, ConfigStringLineEditCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = GUI->Value();
         instance = static_cast<property_t>(val);
     }
 
     bool ConfigStringLineEditHandler::ReadValuesIntoGUI(size_t index, ConfigStringLineEditCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = instance;
         GUI->setValue(val);
         return false;

@@ -55,14 +55,17 @@ namespace EditorPythonBindings
         void ExecuteByString(AZStd::string_view script, bool printResult) override;
         void ExecuteByFilename(AZStd::string_view filename) override;
         void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
-        void ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
+        bool ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
         ////////////////////////////////////////////////////////////////////////
         
     private:
+        class SymbolLogHelper;
+
         // handle multiple Python initializers and threads
         AZStd::atomic_int m_initalizeWaiterCount {0};
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
+        AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
     
         enum class Result
         {

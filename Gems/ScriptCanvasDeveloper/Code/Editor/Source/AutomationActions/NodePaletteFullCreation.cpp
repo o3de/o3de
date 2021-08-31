@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QMenu>
 
@@ -93,8 +92,6 @@ namespace ScriptCanvasDeveloperEditor
             int m_heightOffset = 0;
             
             int m_maxRowHeight = 0;
-
-            int creationCounter = 100;
         };
         
         void NodePaletteFullCreationAction()

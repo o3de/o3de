@@ -7,7 +7,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/EBus/Results.h>
@@ -1022,6 +1021,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/LuaScript.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LuaScript.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Script.png")
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/lua-script/")
@@ -1107,17 +1107,7 @@ namespace AzToolsFramework
                             ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
-                    ec->Class<AZ::ScriptPropertyAsset>("Script Property Asset(asset)", "A script asset property")->
-                        ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyEditorAsset's class attributes.")->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement("Asset", &AZ::ScriptPropertyAsset::m_value, "m_value", "An object")->
-                            Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
-                    ec->Class<AZ::ScriptPropertyEntityRef>("Script Property Entity(EntityRef)", "A script entity reference property")->
-                        ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyEditorEntityRef's class attributes.")->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement("EntityRef", &AZ::ScriptPropertyEntityRef::m_value, "m_entity", "An entity reference")->
-                            Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
                 }
             }
         }

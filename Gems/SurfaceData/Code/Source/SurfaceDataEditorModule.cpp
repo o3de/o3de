@@ -6,7 +6,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include <SurfaceDataEditorModule.h>
 #include <SurfaceDataSystemComponent.h>
 #include <Editor/EditorSurfaceDataSystemComponent.h>

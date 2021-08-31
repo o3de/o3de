@@ -417,12 +417,12 @@ namespace GridMate
     {
         GM_CLASS_ALLOCATOR(Connection); // make a pool and use it...
 
-        Connection(CarrierThread* threadOwner, const string& address);
+        Connection(CarrierThread* threadOwner, const AZStd::string& address);
         ~Connection();
 
         CarrierThread*              m_threadOwner;                                  ///< Pointer to the carrier thread that operates with this connection.
         AZStd::atomic<struct ThreadConnection*> m_threadConn;                       ///< Pointer to a thread connection. You can use it in the main thread only for a reference.
-        string                      m_fullAddress;                                  ///< Connection full address.
+        AZStd::string               m_fullAddress;                                  ///< Connection full address.
 
         Carrier::ConnectionStates   m_state;
 
@@ -604,7 +604,7 @@ namespace GridMate
         Connection*             m_connection;
         ThreadConnection*       m_threadConnection;
 
-        string                  m_newConnectionAddress;
+        AZStd::string           m_newConnectionAddress;
         CarrierErrorCode        m_errorCode;
         AZ::u32                 m_newRateBytesPerSec;           ///< new send rate
         AZStd::vector<AZStd::unique_ptr<CarrierACKCallback> > m_ackCallbacks;
@@ -999,7 +999,7 @@ namespace GridMate
         /// Connect with host and port. This is ASync operation, the connection is active after OnConnectionEstablished is called.
         ConnectionID    Connect(const char* hostAddress, unsigned int port) override;
         /// Connect with internal address format. This is ASync operation, the connection is active after OnConnectionEstablished is called.
-        ConnectionID    Connect(const string& address) override;
+        ConnectionID    Connect(const AZStd::string& address) override;
         /// Request a disconnect procedure. This is ASync operation, the connection is closed after OnDisconnect is called.
         void            Disconnect(ConnectionID id) override;
 
@@ -1007,7 +1007,7 @@ namespace GridMate
 
         unsigned int    GetMessageMTU() override                    { return m_maxMsgDataSizeBytes; }
 
-        string          ConnectionToAddress(ConnectionID id) override;
+        AZStd::string   ConnectionToAddress(ConnectionID id) override;
 
         void            SendWithCallback(const char* data, unsigned int dataSize, AZStd::unique_ptr<CarrierACKCallback> ackCallback, ConnectionID target = AllConnections, DataReliability reliability = SEND_RELIABLE, DataPriority priority = PRIORITY_NORMAL, unsigned char channel = 0) override;
         void            Send(const char* data, unsigned int dataSize, ConnectionID target = AllConnections, DataReliability reliability = SEND_RELIABLE, DataPriority priority = PRIORITY_NORMAL, unsigned char channel = 0) override
@@ -1118,7 +1118,7 @@ using namespace GridMate;
 // Connection
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-Connection::Connection(CarrierThread* threadOwner, const string& address)
+Connection::Connection(CarrierThread* threadOwner, const AZStd::string& address)
     : m_threadOwner(threadOwner)
     , m_threadConn(NULL)
     , m_fullAddress(address)
@@ -1452,7 +1452,7 @@ void CarrierThread::NotifyRateUpdate(ThreadConnection* conn)
     float rtt = lifetime.m_rtt > 1.f ? lifetime.m_rtt : 100.f; //For unknown RTT use conservative 100ms to avoid buffer bloat
                                                                 //Note: using lifetime RTT as stand-in for smoothed RTT
     float ratef = (1010 * (cState.m_congestionWindow)) / rtt;   //Add 10% to allow rate increases until buffer fills up
-    constexpr float max_rate = azlossy_cast<float>(0x7FFFFFFF);
+    [[maybe_unused]] constexpr float max_rate = azlossy_cast<float>(0x7FFFFFFF);
     AZ_Assert(ratef <= max_rate, " ratef %f > 0x7FFFFFFF", ratef);
     bytesPerSecond = static_cast<AZ::u32>(ratef);
 
@@ -3740,7 +3740,7 @@ CarrierImpl::Connect(const char* hostAddress, unsigned int port)
 // [1/12/2011]
 //=========================================================================
 ConnectionID
-CarrierImpl::Connect(const string& address)
+CarrierImpl::Connect(const AZStd::string& address)
 {
     // check if we don't have it in the list.
     for(auto& i : m_connections)
@@ -3902,10 +3902,10 @@ CarrierImpl::DeleteConnection(Connection* conn, CarrierDisconnectReason reason)
 // Carrier
 // [9/14/2010]
 //=========================================================================
-string
+AZStd::string
 CarrierImpl::ConnectionToAddress(ConnectionID id)
 {
-    string str;
+    AZStd::string str;
     AZ_Assert(id != InvalidConnectionID, "Invalid connection id!");
     if (id != InvalidConnectionID)
     {
@@ -4911,7 +4911,7 @@ DefaultCarrier::Create(const CarrierDesc& desc, IGridMate* gridMate)
 // ReasonToString
 // [4/11/2011]
 //=========================================================================
-string
+AZStd::string
 CarrierEventsBase::ReasonToString(CarrierDisconnectReason reason)
 {
     const char* reasonStr = 0;
@@ -4951,5 +4951,5 @@ CarrierEventsBase::ReasonToString(CarrierDisconnectReason reason)
         reasonStr = "Unknown reason";
     }
 
-    return string(reasonStr);
+    return AZStd::string(reasonStr);
 }

@@ -28,7 +28,9 @@ namespace ImageProcessingAtom
 
         ColorSpace GetSupportedColorSpace(EPixelFormat compressFormat) const final;
         IImageObjectPtr CompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat, const CompressOption* compressOption) const final;
-        IImageObjectPtr DecompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat) const final;
+        IImageObjectPtr DecompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat) const final;        
+        const char* GetName() const final;
+
 
         EPixelFormat GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const final;
     };

@@ -1361,7 +1361,7 @@ namespace UnitTest
             AZ::JobCompletion completion;
 
             // Push a parent job that pushes the work as child jobs (requires the current job, so this is a real world test of "functor with current job as param")
-            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData, JobCount](AZ::Job& thisJob)
+            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData](AZ::Job& thisJob)
                 {
                     EXPECT_EQ(m_jobManager->GetCurrentJob(), &thisJob);
 
@@ -1736,7 +1736,7 @@ namespace Benchmark
                                                                        std::numeric_limits<AZ::s8>::max());
             std::generate(m_randomPriorities.begin(), m_randomPriorities.end(), [&randomPriorityDistribution, &randomPriorityGenerator]()
             {
-                return randomPriorityDistribution(randomPriorityGenerator);
+                return static_cast<AZ::s8>(randomPriorityDistribution(randomPriorityGenerator));
             });
 
             // Generate some random depths

@@ -18,6 +18,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiFaderComponent
@@ -156,11 +157,8 @@ private: // data
     //! This is generated from the entity ID and cached
     AZStd::string m_renderTargetName;
 
-    //! When rendering to a texture this is the texture ID of the render target
-    int m_renderTargetHandle = -1;
-
-    //! When rendering to a texture this is our depth surface
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_attachmentImageId;
     
     //! The positions used for the render to texture viewport and to render the render target to the screen
     AZ::Vector2 m_viewportTopLeft;
@@ -171,5 +169,5 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    IRenderer::DynUiPrimitive m_cachedPrimitive;
+    DynUiPrimitive m_cachedPrimitive;
 };

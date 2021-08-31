@@ -36,6 +36,9 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+AZ_DEFINE_BUDGET(AzRender);
+AZ_DEFINE_BUDGET(RPI);
+
 // This will cause the RPI System to print out global state (like the current pass hierarchy) when an assert is hit
 // This is useful for rendering engineers debugging a crash in the RPI/RHI layers
 #define AZ_RPI_PRINT_GLOBAL_STATE_ON_ASSERT 0
@@ -270,7 +273,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
@@ -349,19 +352,6 @@ namespace AZ
                 return;
             }
 
-            //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
-            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
-            AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
-            
-            Data::Asset<AnyAsset> platformLimitsAsset;
-            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
-            // Only read the m_platformLimits if the platformLimitsAsset is ready.
-            // The platformLimitsAsset may not exist for null renderer which is allowed
-            if (platformLimitsAsset.IsReady())
-            {
-                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
-            }
-
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
@@ -382,7 +372,7 @@ namespace AZ
                 return;
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -406,7 +396,7 @@ namespace AZ
             }
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
 

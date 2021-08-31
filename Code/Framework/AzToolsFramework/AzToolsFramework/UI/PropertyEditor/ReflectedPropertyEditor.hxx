@@ -51,6 +51,8 @@ namespace AzToolsFramework
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 
+        ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
+
         ReflectedPropertyEditor(QWidget* pParent);
         virtual ~ReflectedPropertyEditor();
 
@@ -62,6 +64,7 @@ namespace AzToolsFramework
         bool AddInstance(void* instance, const AZ::Uuid& classId, void* aggregateInstance = nullptr, void* compareInstance = nullptr);
         void SetCompareInstance(void* instance, const AZ::Uuid& classId);
         void ClearInstances();
+        void ReadValuesIntoGui(QWidget* widget, InstanceDataNode* node);
         template<class T>
         bool AddInstance(T* instance, void* aggregateInstance = nullptr, void* compareInstance = nullptr)
         {
@@ -152,9 +155,19 @@ namespace AzToolsFramework
         using VisibilityCallback = AZStd::function<void(InstanceDataNode* node, NodeDisplayVisibility& visibility, bool& checkChildVisibility)>;
         void SetVisibilityCallback(VisibilityCallback callback);
 
+        void MoveNodeToIndex(InstanceDataNode* node, int index);
+        void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
+        void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
+
+        int GetNodeIndexInContainer(InstanceDataNode* node);
+        InstanceDataNode* GetNodeAtIndex(int index);
+        QSet<PropertyRowWidget*> GetTopLevelWidgets();
     signals:
         void OnExpansionContractionDone();
     private:
+        InstanceDataNode* FindContainerNodeForNode(InstanceDataNode* node) const;
+        void ChangeNodeIndex(InstanceDataNode* containerNode, InstanceDataNode* node, int oldIndex, int newIndex);
+
         class Impl;
         std::unique_ptr<Impl> m_impl;
         

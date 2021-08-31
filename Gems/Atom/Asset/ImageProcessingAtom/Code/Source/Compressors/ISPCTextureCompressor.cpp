@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/std/function/function_template.h>
 
@@ -110,6 +109,11 @@ namespace ImageProcessingAtom
 
         AZ_Warning("ISPC Texture Compressor", false, "Compression format is not supported.");
         return ColorSpace::autoSelect;
+    }
+
+    const char* ISPCCompressor::GetName() const
+    {
+        return "ISPCCompressor";
     }
 
     IImageObjectPtr ISPCCompressor::CompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat, const CompressOption* compressOption) const

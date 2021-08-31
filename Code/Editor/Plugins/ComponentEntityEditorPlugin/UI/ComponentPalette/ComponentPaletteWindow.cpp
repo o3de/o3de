@@ -6,8 +6,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "ComponentPaletteWindow.h"
 #include "ComponentDataModel.h"
 #include "FavoriteComponentList.h"
@@ -27,6 +25,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <QLabel>
+#include <QKeyEvent>
 
 ComponentPaletteWindow::ComponentPaletteWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -43,7 +42,7 @@ void ComponentPaletteWindow::Init()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    QHBoxLayout* gridLayout = new QHBoxLayout(NULL);
+    QHBoxLayout* gridLayout = new QHBoxLayout(nullptr);
     gridLayout->setSizeConstraint(QLayout::SetMaximumSize);
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);

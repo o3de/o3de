@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <qpushbutton.h>
 
@@ -71,8 +70,8 @@ namespace ScriptCanvasDeveloper
                 AZ::Vector2 modifiedValue = (*position);
 
                 QRectF sceneBoundingBox = nodeItem->sceneBoundingRect();
-                modifiedValue.SetX(position->GetX() + sceneBoundingBox.width() * m_horizontalDimension);
-                modifiedValue.SetY(position->GetY() + sceneBoundingBox.height() * m_verticalDimension);
+                modifiedValue.SetX(position->GetX() + static_cast<float>(sceneBoundingBox.width()) * m_horizontalDimension);
+                modifiedValue.SetY(position->GetY() + static_cast<float>(sceneBoundingBox.height()) * m_verticalDimension);
 
                 GetStateModel()->SetStateData(m_positionId, modifiedValue);
             }

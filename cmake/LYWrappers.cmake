@@ -6,7 +6,7 @@
 #
 #
 
-set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
+set(LY_UNITY_BUILD ON CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
@@ -29,6 +29,20 @@ define_property(TARGET PROPERTY GEM_MODULE
     ]]
 )
 
+define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
+    BRIEF_DOCS "Defines the dependencies the runtime dependencies of a target has"
+    FULL_DOCS [[
+        Property which is queried through generator expressions at the moment
+        the target is declared so a custom command that will do the copies can
+        be generated later. Custom commands need to be declared in the same folder
+        the target is declared, however, runtime dependencies need all targets
+        to be declared, so it is done towards the end of CMake parsing. When 
+        runtime dependencies are processed, this target property is filled so the
+        right dependencies are set for the custom command. 
+        This property contains all the files that are going to be copied to the output
+        when the target gets built.
+    ]]
+)
 
 #! ly_add_target: adds a target and provides parameters for the common configurations.
 #
@@ -310,15 +324,34 @@ function(ly_add_target)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
+    # Custom commands need to be declared in the same folder as the target that they use. 
+    # Not all the targets will require runtime dependencies, but we will generate at least an
+    # empty file for them.
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
     if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
-        add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
+        # the stamp file will be the one that triggers the execution of the custom rule. At the end
+        # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
+        # Adding a config as part of the name since the stamp file is added to the VS project.
+        # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
+        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
+        add_custom_command(
+            OUTPUT ${STAMP_OUTPUT_FILE}
+            DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
             COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
-            DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
-            MESSAGE "Copying runtime dependencies..."
+            COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
             VERBATIM
         )
+
+        # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
+        # stamp file on each configuration so it gets properly excluded by the generator
+        unset(stamp_files_per_config)
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
+            set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
+            list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
+        endforeach()
+        target_sources(${ly_add_target_NAME} PRIVATE ${stamp_files_per_config})
 
     endif()
 
@@ -392,10 +425,10 @@ function(ly_delayed_target_link_libraries)
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
-                        target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
-                        target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
-                        target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
+                        target_include_directories(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>)
+                        target_link_libraries(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>)
+                        target_compile_definitions(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>)
+                        target_compile_options(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>)
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})
@@ -660,7 +693,12 @@ function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir
     if(is_target_prefix_of_engine_root)
         cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
     else()
-        cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        cmake_path(IS_PREFIX CMAKE_SOURCE_DIR ${absolute_target_source_dir} is_target_prefix_of_source_dir)
+        if(is_target_prefix_of_source_dir)
+            cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        else()
+            cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        endif()
     endif()
 
     set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)

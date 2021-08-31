@@ -67,8 +67,10 @@ namespace AZ
 
             // Shadows
 
-            //! Sets if shadows should be enabled 
+            //! Sets if shadows should be enabled
             virtual void SetEnableShadow(bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(float bias) = 0;
             //! Sets the maximum resolution of the shadow map
             virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
             //! Sets the filter method for the shadow

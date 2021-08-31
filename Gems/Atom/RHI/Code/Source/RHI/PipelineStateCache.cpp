@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/std/sort.h>
@@ -176,7 +177,7 @@ namespace AZ
              */
 
             AZStd::vector<const PipelineLibrary*> threadLibraries;
-            m_threadLibrarySet.ForEach([this, handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+            m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
                 const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
 
@@ -205,6 +206,7 @@ namespace AZ
 
         void PipelineStateCache::Compact()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "PipelineStateCache: Compact");
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
             // Merge the pending cache into the read-only cache.
@@ -270,7 +272,7 @@ namespace AZ
 
         const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (handle.IsNull())
             {

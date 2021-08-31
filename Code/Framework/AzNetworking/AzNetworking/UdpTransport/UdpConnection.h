@@ -66,12 +66,7 @@ namespace AzNetworking
         bool Disconnect(DisconnectReason reason, TerminationEndpoint endpoint) override;
         void SetConnectionMtu(uint32_t connectionMtu) override;
         uint32_t GetConnectionMtu() const override;
-        void SetConnectionQuality(const ConnectionQuality& connectionQuality) override;
         // @}
-
-        //! Gets connection quality values for testing poor connection conditions.
-        //! @return connection quality values for this IConnection instance
-        const ConnectionQuality& GetConnectionQuality() const;
 
         //! Returns a suitable encryption endpoint for this connection type.
         //! @return reference to the connections encryption endpoint
@@ -135,8 +130,8 @@ namespace AzNetworking
         //! @param listener   a connection listener to receive connection related events
         //! @param header     the packet header received to process
         //! @param serializer the output serializer containing the transmitted packet data
-        //! @return boolean true on successful handling of the received header
-        bool HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
+        //! @return PacketDispatchResult result of processing the core packet
+        PacketDispatchResult HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
 
         AZ_DISABLE_COPY_MOVE(UdpConnection);
 
@@ -146,8 +141,6 @@ namespace AzNetworking
         UdpFragmentQueue  m_fragmentQueue;
         ConnectionState   m_state = ConnectionState::Disconnected;
         ConnectionRole    m_connectionRole = ConnectionRole::Connector;
-
-        ConnectionQuality m_connectionQuality;
         DtlsEndpoint      m_dtlsEndpoint;
 
         AZ::TimeMs m_lastSentPacketMs;
@@ -160,4 +153,3 @@ namespace AzNetworking
 }
 
 #include <AzNetworking/UdpTransport/UdpConnection.inl>
-

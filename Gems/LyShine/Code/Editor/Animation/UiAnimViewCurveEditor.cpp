@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorDefs.h"
 #include "Resource.h"
 #include "UiEditorAnimationBus.h"
@@ -178,7 +177,7 @@ void CUiAnimViewCurveEditor::UpdateSplines()
     std::set<CUiAnimViewTrack*> newTracks;
     if (selectedTracks.AreAllOfSameType())
     {
-        for (int i = 0; i < selectedTracks.GetCount(); i++)
+        for (unsigned int i = 0; i < selectedTracks.GetCount(); i++)
         {
             CUiAnimViewTrack* pTrack = selectedTracks.GetTrack(i);
 

@@ -6,11 +6,10 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <algorithm>
 
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.h>
 

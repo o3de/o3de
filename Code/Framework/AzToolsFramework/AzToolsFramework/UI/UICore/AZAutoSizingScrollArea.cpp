@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "AZAutoSizingScrollArea.hxx"
 

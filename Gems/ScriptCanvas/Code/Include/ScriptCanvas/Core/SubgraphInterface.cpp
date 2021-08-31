@@ -37,7 +37,7 @@ namespace SubgraphInterfaceCpp
 
     AZ_INLINE const char* GetTabs(size_t tabs)
     {
-        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+        AZ_Assert(tabs <= k_maxTabs, "invalid argument to GetTabs");
 
         static const char* const k_tabs[] =
         {
@@ -509,7 +509,8 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::HasAnyFunctionality() const
         {
-            return IsActiveDefaultObject() || HasPublicFunctionality();
+            // \todo restore default object addition when ndoes can define an variable, as well
+            return /*IsActiveDefaultObject() || */ HasPublicFunctionality();
         }
 
         bool SubgraphInterface::HasBranches() const
@@ -802,12 +803,6 @@ namespace ScriptCanvas
         {
             m_namespacePath = namespacePath;
         }
-
-        void SubgraphInterface::TakeNamespacePath(NamespacePath&& namespacePath)
-        {
-            m_namespacePath = AZStd::move(namespacePath);
-        }
-
 
         AZStd::string SubgraphInterface::ToExecutionString() const
         {

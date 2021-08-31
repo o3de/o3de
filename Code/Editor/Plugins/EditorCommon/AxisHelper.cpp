@@ -7,5 +7,4 @@
  */
 
 
-#include "EditorCommon_precompiled.h"
 #include "../../Editor/RenderHelpers/AxisHelperShared.inl"

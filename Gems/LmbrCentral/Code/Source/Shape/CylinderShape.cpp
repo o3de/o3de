@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CylinderShapeComponent.h"
 
 #include <AzCore/Math/IntersectPoint.h>
@@ -244,7 +243,6 @@ namespace LmbrCentral
             AZ::Vector3 diff = m_intersectionDataCache.m_baseCenterPoint - point;
             return diff.GetLengthSq();
         }
-
         return Distance::Point_CylinderSq(
             point, m_intersectionDataCache.m_baseCenterPoint,
             m_intersectionDataCache.m_baseCenterPoint + m_intersectionDataCache.m_axisVector,

@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AzFramework
 {

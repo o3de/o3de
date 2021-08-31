@@ -6,8 +6,7 @@
  *
  */
 
-#include <StdAfx.h>
-
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <Family/ActorTracker.h>
 #include <algorithm>
@@ -48,7 +47,7 @@ namespace Blast
 
     BlastActor* ActorTracker::FindClosestActor(const AZ::Vector3& position)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         const auto candidate = std::min_element(
             m_actors.begin(), m_actors.end(),

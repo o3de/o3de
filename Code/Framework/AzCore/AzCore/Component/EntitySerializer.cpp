@@ -81,29 +81,22 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(),
                     inputValue, "Components", context);
 
+            static TypeId genericComponentWrapperTypeId("{68D358CA-89B9-4730-8BA6-E181DEA28FDE}");
             for (auto& [componentKey, component] : componentMap)
             {
-                entityInstance->m_components.emplace_back(component);
+                // if underlying type is genericComponentWrapperTypeId, the template is null and the component should not be addded
+                if (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
+                {
+                    entityInstance->m_components.emplace_back(component);
+                }
             }
 
             result.Combine(componentLoadResult);
         }
 
-        {
-            JSR::ResultCode dependencyReadyLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isDependencyReady,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(),
-                    inputValue, "IsDependencyReady", context);
-
-            result.Combine(dependencyReadyLoadResult);
-        }
-
-        {
-            JSR::ResultCode runtimeActiveLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
-                    inputValue, "IsRuntimeActive", context);
-        }
+        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
+            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+            inputValue, "IsRuntimeActive", context);
 
         return context.Report(
             result,
@@ -182,20 +175,6 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(), context);
 
             result.Combine(resultComponents);
-        }
-
-        {
-            AZ::ScopedContextPath subPathDependencyReady(context, "m_isDependencyReady");
-            const bool* dependencyReady = &entityInstance->m_isDependencyReady;
-            const bool* dependencyReadyDefault =
-                defaultEntityInstance ? &defaultEntityInstance->m_isDependencyReady : nullptr;
-
-            JSR::ResultCode resultDependencyReady =
-                ContinueStoringToJsonObjectField(outputValue, "IsDependencyReady",
-                    dependencyReady, dependencyReadyDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(), context);
-
-            result.Combine(resultDependencyReady);
         }
 
         {

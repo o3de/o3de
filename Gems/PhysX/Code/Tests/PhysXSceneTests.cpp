@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <AzTest/AzTest.h>
 #include <Tests/PhysXTestCommon.h>
 
@@ -96,7 +94,7 @@ namespace PhysX
         //invalid scene handle returns empty
         AzPhysics::SimulatedBodyHandleList emptyBodies = sceneInterface->AddSimulatedBodies(AzPhysics::InvalidSceneHandle, configs);
         EXPECT_TRUE(emptyBodies.empty());
-        emptyBodies = sceneInterface->AddSimulatedBodies(AzPhysics::SceneHandle(2347892347890, 7), configs);
+        emptyBodies = sceneInterface->AddSimulatedBodies(AzPhysics::SceneHandle(static_cast<AZ::u32>(2347892347890), AzPhysics::SceneIndex(7)), configs);
         EXPECT_TRUE(emptyBodies.empty());
 
         //add some rigid bodies
@@ -167,7 +165,7 @@ namespace PhysX
         //invalid scene handle returns null
         AzPhysics::SimulatedBody* nullBody = sceneInterface->GetSimulatedBodyFromHandle(AzPhysics::InvalidSceneHandle, newBodies[0]);
         EXPECT_TRUE(nullBody == nullptr);
-        nullBody = sceneInterface->GetSimulatedBodyFromHandle(AzPhysics::SceneHandle(2347892347890, 7), newBodies[0]);
+        nullBody = sceneInterface->GetSimulatedBodyFromHandle(AzPhysics::SceneHandle(static_cast<AZ::u32>(2347892347890), AzPhysics::SceneIndex(7)), newBodies[0]);
         EXPECT_TRUE(nullBody == nullptr);
 
         //invalid simulated body handle returns null
@@ -560,7 +558,7 @@ namespace PhysX
         // add a static simulated body - this is not expected to be reported as an active actor
         AzPhysics::StaticRigidBodyConfiguration staticConfig;
         staticConfig.m_colliderAndShapeData = shapeColliderData;
-        AzPhysics::SimulatedBodyHandle staticSphereHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
+        sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
 
         // add a rigid body - this is expect to be reported as an active actor
         AzPhysics::RigidBodyConfiguration rigidConfig;

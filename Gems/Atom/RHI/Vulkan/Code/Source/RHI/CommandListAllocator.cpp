@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/CommandListAllocator.h>
 #include <RHI/Device.h>
 
@@ -101,7 +100,7 @@ namespace AZ
                 commandPoolAllocatorDescriptor.m_collectLatency = descriptor.m_frameCountMax;
                 commadPoolAllocator.Init(commandPoolAllocatorDescriptor);
 
-                m_commandListSubAllocators[queueFamilyIndex].SetInitFunction([this, &commadPoolAllocator]
+                m_commandListSubAllocators[queueFamilyIndex].SetInitFunction([&commadPoolAllocator]
                 (Internal::CommandListSubAllocator& subAllocator)
                 {
                     subAllocator.Init(commadPoolAllocator);

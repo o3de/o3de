@@ -34,29 +34,17 @@ namespace AZStd
     }
 } // namespace AZStd
 
-namespace MCore
-{
-    void PrintTo(const Quaternion& quaternion, ::std::ostream* os)
-    {
-        *os << "(x: " << quaternion.x
-            << ", y: " << quaternion.y
-            << ", z: " << quaternion.z
-            << ", w: " << quaternion.w
-            << ")";
-    }
-} // namespace MCore
-
 namespace EMotionFX
 {
     void PrintTo(const Transform& transform, ::std::ostream* os)
     {
         *os << "(pos: ";
-        PrintTo(transform.mPosition, os);
+        PrintTo(transform.m_position, os);
         *os << ", rot: ";
-        PrintTo(transform.mRotation, os);
+        PrintTo(transform.m_rotation, os);
 #if !defined(EMFX_SCALE_DISABLED)
         *os << ", scale: ";
-        PrintTo(transform.mScale, os);
+        PrintTo(transform.m_scale, os);
 #endif
         *os << ")";
     }

@@ -42,8 +42,6 @@ namespace AZStd
     class unordered_multiset;
     template<AZStd::size_t NumBits>
     class bitset;
-    template<class T, class Container/* = AZStd::deque<T>*/ >
-    class stack;
 
     template<class T>
     class intrusive_ptr;
@@ -1322,7 +1320,7 @@ namespace AZ
                     (void)classElement;
                     void* reserveElement{};
                     using DummyArray = bool[];
-                    DummyArray{ true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
+                    [[maybe_unused]] DummyArray dummy = { true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
                     return reserveElement;
                 }
 

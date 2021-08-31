@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAnimViewTrack.h"
 #include "UiAnimViewAnimNode.h"
 #include "UiAnimViewSequence.h"
@@ -15,6 +14,9 @@
 #include "UiAnimViewNodeFactories.h"
 
 #include "UiEditorAnimationBus.h"
+
+#include <Util/EditorUtils.h>
+#include <CryCommon/StlUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)
@@ -403,7 +405,7 @@ void CUiAnimViewTrack::RestoreFromMemento(const CUiAnimViewTrackMemento& memento
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewTrack::GetName() const
+AZStd::string CUiAnimViewTrack::GetName() const
 {
     CUiAnimViewNode* pParentNode = GetParentNode();
 
@@ -628,7 +630,7 @@ void CUiAnimViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnly
     EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
 
     XmlNodeRef childNode = xmlNode->newChild("Track");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     GetParameterType().Serialize(animationSystem, childNode, false);
     childNode->setAttr("valueType", GetValueType());
 

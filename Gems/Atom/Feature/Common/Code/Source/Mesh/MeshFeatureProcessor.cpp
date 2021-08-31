@@ -75,7 +75,7 @@ namespace AZ
 
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "MeshFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
@@ -87,7 +87,7 @@ namespace AZ
             {
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "MeshFP::Simulate() Lambda");
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFP::Simulate() Lambda");
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
@@ -149,7 +149,7 @@ namespace AZ
             const MeshHandleDescriptor& descriptor,
             const MaterialAssignmentMap& materials)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
@@ -346,7 +346,7 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle)
+        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
@@ -359,24 +359,24 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride)
+        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetLodOverride(lodOverride);
+                meshHandle->SetMeshLodConfiguration(meshLodConfig);
             }
         }
 
-        RPI::Cullable::LodOverride MeshFeatureProcessor::GetLodOverride(const MeshHandle& meshHandle)
+        RPI::Cullable::LodConfiguration MeshFeatureProcessor::GetMeshLodConfiguration(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->GetLodOverride();
+                return meshHandle->GetMeshLodConfiguration();
             }
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return 0;
+                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 
@@ -478,27 +478,19 @@ namespace AZ
             : m_modelAsset(modelAsset)
             , m_parent(parent)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             if (!m_modelAsset.GetId().IsValid())
             {
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-
-            // Check if the model is in the instance database and skip the loading process in this case.
-            // The model asset id is used as instance id to indicate that it is a static and shared.
-            Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
-            if (model)
+            
+            if (!m_modelAsset.IsReady())
             {
-                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
-                // model instance with the asset id as instance id as searched above.
-                m_parent->Init(model);
-                m_modelChangedEvent.Signal(AZStd::move(model));
-                return;
+                m_modelAsset.QueueLoad();
             }
 
-            m_modelAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
         }
 
@@ -515,7 +507,7 @@ namespace AZ
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
@@ -587,19 +579,7 @@ namespace AZ
 
         void MeshDataInstance::Init(Data::Instance<RPI::Model> model)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
-            auto modelAsset = model->GetModelAsset();
-            for (const auto& modelLodAsset : modelAsset->GetLodAssets())
-            {
-                for (const auto& mesh : modelLodAsset->GetMeshes())
-                {
-                    if (mesh.GetMaterialAsset().GetStatus() != Data::AssetData::AssetStatus::Ready)
-                    {
-
-                    }
-                }
-            }
+            AZ_PROFILE_FUNCTION(AzRender);
 
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
@@ -631,7 +611,7 @@ namespace AZ
 
         void MeshDataInstance::BuildDrawPacketList(size_t modelLodIndex)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
@@ -644,10 +624,12 @@ namespace AZ
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
+                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+
+                Data::Instance<RPI::Material> material = mesh.m_material;
 
                 // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -790,7 +772,7 @@ namespace AZ
                 // retrieve the material
                 Data::Instance<RPI::Material> material = mesh.m_material;
 
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -818,19 +800,19 @@ namespace AZ
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
-                uint32_t positionBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t positionBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
 
-                uint32_t normalBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t normalBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
 
-                uint32_t tangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t tangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
 
-                uint32_t bitangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t bitangentBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
 
-                uint32_t uvBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount;
+                uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
                 const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
@@ -986,24 +968,24 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshDataInstance::GetSortKey()
+        RHI::DrawItemSortKey MeshDataInstance::GetSortKey() const
         {
             return m_sortKey;
         }
 
-        void MeshDataInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
+        void MeshDataInstance::SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig)
         {
-            m_cullable.m_lodData.m_lodOverride = lodOverride;
+            m_cullable.m_lodData.m_lodConfiguration = meshLodConfig;
         }
 
-        RPI::Cullable::LodOverride MeshDataInstance::GetLodOverride()
+        RPI::Cullable::LodConfiguration MeshDataInstance::GetMeshLodConfiguration() const
         {
-            return m_cullable.m_lodData.m_lodOverride;
+            return m_cullable.m_lodData.m_lodConfiguration;
         }
 
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -1018,7 +1000,7 @@ namespace AZ
 
         void MeshDataInstance::BuildCullable()
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1040,9 +1022,6 @@ namespace AZ
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                //[GFX TODO][ATOM-5562] - Level of detail: override lod distances and add global lod multiplier(s)
-                static const float MinimumScreenCoverage = 1.0f/1080.0f;        //mesh should cover at least a screen pixel at 1080p to be drawn
-                static const float ReductionFactor = 0.5f;
                 if (lodIndex == 0)
                 {
                     //first lod
@@ -1051,17 +1030,18 @@ namespace AZ
                 else
                 {
                     //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex-1].m_screenCoverageMin, MinimumScreenCoverage);
+                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
+
                 if (lodIndex < lodAssets.size() - 1)
                 {
                     //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(ReductionFactor * lod.m_screenCoverageMax, MinimumScreenCoverage);
+                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
                 else
                 {
                     //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = MinimumScreenCoverage;
+                    lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
                 }
 
                 lod.m_drawPackets.clear();
@@ -1097,7 +1077,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 

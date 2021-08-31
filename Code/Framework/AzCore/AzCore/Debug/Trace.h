@@ -15,6 +15,11 @@ namespace AZ
 {
     namespace Debug
     {
+        namespace Platform
+        {
+            void OutputToDebugger(const char* window, const char* message);
+        }
+    
         /// Global instance to the tracer.
         extern class Trace      g_tracer;
 
@@ -44,6 +49,8 @@ namespace AZ
             */
             static const char* GetDefaultSystemWindow();
             static bool IsDebuggerPresent();
+            static bool AttachDebugger();
+            static bool WaitForDebugger(float timeoutSeconds = -1.f);
 
             /// True or false if we want to handle system exceptions.
             static void HandleExceptions(bool isEnabled);

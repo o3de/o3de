@@ -7,10 +7,7 @@
  */
 
 
-#include "FFMPEGPlugin_precompiled.h"
 #include "FFMPEGPlugin.h"
-#include "CryString.h"
-typedef CryStringT<char> string;
 #include "Include/ICommandManager.h"
 #include "Util/PathUtil.h"
 

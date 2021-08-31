@@ -158,7 +158,6 @@ private:
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
-    AZStd::string SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue) override;
     void OpenPinnedInspector(const AzToolsFramework::EntityIdSet& entities) override;
     void ClosePinnedInspector(AzToolsFramework::EntityPropertyEditor* editor) override;
     void GoToSelectedOrHighlightedEntitiesInViewports() override;
@@ -281,7 +280,6 @@ private:
 
 private:
     AZ::Vector2 m_contextMenuViewPoint;
-    AZ::Vector3 m_sliceWorldPos;
 
     int m_inObjectPickMode;
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
@@ -296,10 +294,8 @@ private:
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
-
-    bool m_debugDisplayBusImplementationActive = false;
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
     AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
 

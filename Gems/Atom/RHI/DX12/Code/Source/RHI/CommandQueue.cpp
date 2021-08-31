@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
@@ -109,9 +108,9 @@ namespace AZ
 
         void CommandQueue::QueueGpuSignal(Fence& fence)
         {
-            QueueCommand([this, &fence](void* commandQueue)
+            QueueCommand([&fence](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "SignalFence");
+                AZ_PROFILE_SCOPE(RHI, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 dx12CommandQueue->Signal(fence.Get(), fence.GetPendingValue());
             });
@@ -139,7 +138,7 @@ namespace AZ
 
             QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
@@ -196,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -230,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

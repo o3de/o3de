@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "SurfaceAltitudeGradientComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -245,7 +244,7 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::UpdateFromShape()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 

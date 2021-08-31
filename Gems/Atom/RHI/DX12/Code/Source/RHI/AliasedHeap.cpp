@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/AliasedHeap.h>
 #include <RHI/AliasingBarrierTracker.h>
 #include <RHI/Image.h>
@@ -105,8 +104,6 @@ namespace AZ
         {
             const RHI::BufferDescriptor& descriptor = request.m_descriptor;
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
-            const size_t alignmentInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-            const size_t sizeInBytes = RHI::AlignUp<size_t>(descriptor.m_byteCount, alignmentInBytes);
 
             MemoryView memoryView =
                 GetDX12RHIDevice().CreateBufferPlaced(

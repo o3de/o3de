@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -36,8 +37,6 @@ namespace AZ
 
             ~RenderPass() = default;
             static RHI::Ptr<RenderPass> Create();
-
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
 
             enum class AttachmentType : uint32_t
             {
@@ -96,8 +95,6 @@ namespace AZ
                 AZStd::array<uint32_t, RHI::Limits::Pipeline::AttachmentColorCountMax> m_preserveAttachments;
                 SubpassAttachment m_depthStencilAttachment;
             };
-
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
             struct Descriptor
             {

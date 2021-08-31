@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
@@ -164,9 +163,9 @@ namespace AZ
             createInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
-            createInfo.stageCount = stages.size();
+            createInfo.stageCount = static_cast<uint32_t>(stages.size());
             createInfo.pStages = stages.data();
-            createInfo.groupCount = groups.size();
+            createInfo.groupCount = static_cast<uint32_t>(groups.size());
             createInfo.pGroups = groups.data();
             createInfo.maxPipelineRayRecursionDepth = descriptor->GetConfiguration().m_maxRecursionDepth;
             createInfo.layout = m_pipelineLayout;

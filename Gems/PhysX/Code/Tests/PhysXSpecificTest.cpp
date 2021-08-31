@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include "PhysXTestFixtures.h"
 #include "PhysXTestUtil.h"
 
@@ -1101,6 +1100,62 @@ namespace PhysX
 
         // Expect each generated point to be equal to the canonical frustum plotting algorithm
         SanityCheckValidFrustumParams(points.value(), validHeight, validBottomRadius, validTopRadius, validSubdivisions);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBody_RigidBodyWithAxisLockFlagsCreated_InternalPhysXFlagsSetAccordingly)
+    {
+        // Helper function wrapping creation logic
+        auto CreateRigidBody = [this](bool linearX, bool linearY, bool linearZ, bool angularX, bool angularY, bool angularZ) -> AzPhysics::RigidBody*
+        {
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+
+            rigidBodyConfig.m_lockLinearX = linearX;
+            rigidBodyConfig.m_lockLinearY = linearY;
+            rigidBodyConfig.m_lockLinearZ = linearZ;
+
+            rigidBodyConfig.m_lockAngularX = angularX;
+            rigidBodyConfig.m_lockAngularY = angularY;
+            rigidBodyConfig.m_lockAngularZ = angularZ;
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfig);
+                return azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+            }
+
+            return nullptr;
+        };
+
+        auto RemoveRigidBody = [](AzPhysics::RigidBody*& rigidBody)
+        {
+            auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+            if (rigidBody && sceneInterface)
+            {
+                sceneInterface->RemoveSimulatedBody(rigidBody->m_sceneOwner, rigidBody->m_bodyHandle);
+            }
+            rigidBody = nullptr;
+        };
+
+        auto TestLockFlags = [&CreateRigidBody, &RemoveRigidBody](bool linearX, bool linearY, bool linearZ,
+                                                                  bool angularX, bool angularY, bool angularZ,
+                                                                  physx::PxRigidDynamicLockFlags expectedFlags)
+        {
+            auto* rigidBody = CreateRigidBody(linearX, linearY, linearZ, angularX, angularY, angularZ);
+            ASSERT_TRUE(rigidBody != nullptr);
+
+            physx::PxRigidDynamic* pxRigidBody = static_cast<physx::PxRigidDynamic*>(rigidBody->GetNativePointer());
+
+            // These values need to be cast to integral types to prevent a compilation error on somme platforms.
+            EXPECT_EQ(static_cast<AZ::u32>(pxRigidBody->getRigidDynamicLockFlags()), static_cast<AZ::u32>((expectedFlags)));
+
+            RemoveRigidBody(rigidBody);
+        };
+
+        TestLockFlags(false, false, false, false, false, false, physx::PxRigidDynamicLockFlags(0));
+        TestLockFlags(true, false, false, false, false, false, physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X));
+        TestLockFlags(false, false, false, false, true, false, physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y));
+        TestLockFlags(false, true, false, false, false, true,
+            physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z));
     }
 
     TEST_F(PhysXSpecificTest, RigidBody_RigidBodyWithSimulatedFlagsHitsPlane_OnlySimulatedShapeCollidesWithPlane)

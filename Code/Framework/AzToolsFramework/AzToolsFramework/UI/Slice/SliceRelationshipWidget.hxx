@@ -19,6 +19,11 @@ class QTreeWidgetItem;
 class QLabel;
 class QVBoxLayout;
 
+namespace AZ
+{
+    class EntityId;
+}
+
 namespace AzToolsFramework
 {
     /**
@@ -106,7 +111,6 @@ namespace AzToolsFramework
 
         QTreeWidget*                                                m_sliceDependentsTree;            ///< Tree widget for fields (left side)
         QTreeWidget*                                                m_sliceDependencyTree;            ///< Tree widget for slice targets (right side)
-        QLabel*                                                     m_infoLabel;            ///< Label above slice tree describing selection
         QVBoxLayout*                                                m_bottomLayout;         ///< Bottom layout containing optional status messages, legend and buttons
     };
 

@@ -85,7 +85,7 @@ namespace Multiplayer
         return m_replicationSet;
     }
 
-    uint32_t ServerToClientReplicationWindow::GetMaxEntityReplicatorSendCount() const
+    uint32_t ServerToClientReplicationWindow::GetMaxProxyEntityReplicatorSendCount() const
     {
         return m_isPoorConnection ? sv_MinEntitiesToReplicate : sv_MaxEntitiesToReplicate;
     }
@@ -107,8 +107,10 @@ namespace Multiplayer
     void ServerToClientReplicationWindow::UpdateWindow()
     {
         // clear the candidate queue, we're going to rebuild it
-        ReplicationCandidateQueue clearQueue;
-        clearQueue.get_container().reserve(sv_MaxEntitiesToTrackReplication);
+        ReplicationCandidateQueue::container_type clearQueueContainer;
+        clearQueueContainer.reserve(sv_MaxEntitiesToTrackReplication);
+        // Move the clearQueueContainer into the ReplicationCandidateQueue to maintain the reserved memory
+        ReplicationCandidateQueue clearQueue(ReplicationCandidateQueue::value_compare{}, AZStd::move(clearQueueContainer));
         m_candidateQueue.swap(clearQueue);
         m_replicationSet.clear();
 
@@ -179,9 +181,9 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::DebugDraw() const
     {
-        static const float   BoundaryStripeHeight = 1.0f;
-        static const float   BoundaryStripeSpacing = 0.5f;
-        static const int32_t BoundaryStripeCount = 10;
+        //static const float   BoundaryStripeHeight = 1.0f;
+        //static const float   BoundaryStripeSpacing = 0.5f;
+        //static const int32_t BoundaryStripeCount = 10;
 
         //if (auto localEnt = m_ControlledEntity.lock())
         //{
@@ -287,7 +289,6 @@ namespace Multiplayer
         }
 
         const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication);  // See if have the maximum number of entities in our set
-        const bool isBetterChoice = !m_candidateQueue.empty() && (priority > m_candidateQueue.top().m_priority);  // Check if the new thing we are adding is better than the worst item in our set
         const bool isInReplicationSet = m_replicationSet.find(entityHandle) != m_replicationSet.end();
         if (!isInReplicationSet)
         {

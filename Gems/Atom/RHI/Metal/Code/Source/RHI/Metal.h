@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <Metal_Traits_Platform.h>
+#include <Metal/Metal.h>
 
 namespace AZ
 {

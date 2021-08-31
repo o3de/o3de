@@ -8,6 +8,7 @@
 
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {
@@ -480,7 +481,7 @@ namespace AzFramework
         if (!m_freeOctreeNodes.empty())
         {
             // Take a free block of child nodes from our free list
-            ExtractPageAndOffsetFromIndex(m_freeOctreeNodes.back(), nextChildPage, nextChildOffset);
+            ExtractPageAndOffsetFromIndex(m_freeOctreeNodes.top(), nextChildPage, nextChildOffset);
             m_freeOctreeNodes.pop();
         }
         else

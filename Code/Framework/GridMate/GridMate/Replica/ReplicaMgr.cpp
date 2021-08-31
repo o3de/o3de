@@ -867,7 +867,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::UpdateFromReplicas()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {
@@ -888,7 +888,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::UpdateReplicas()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {
@@ -940,7 +940,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::Marshal()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsReady())
         {
@@ -1287,7 +1287,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::Unmarshal()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {
@@ -1688,12 +1688,12 @@ namespace GridMate
             return;     //No connections to update
         }
         bool updateRate = false;
-        AZ::u32 minRateBytesPerSecond = m_connByCongestionState.top().m_rate;
+        AZ::u32 minRateBytesPerSecond = m_connByCongestionState.front().m_rate;
         //const AZ::u32 old = minRateBytesPerSecond;  //For debugging
 
-        auto connIt = AZStd::find(m_connByCongestionState.get_container().begin(), m_connByCongestionState.get_container().end(), id);
+        auto connIt = AZStd::find(m_connByCongestionState.begin(), m_connByCongestionState.end(), id);
 
-        if ( connIt == m_connByCongestionState.get_container().end())
+        if ( connIt == m_connByCongestionState.end())
         {
             return; //Already disconnected
         }
@@ -1708,11 +1708,11 @@ namespace GridMate
 
             //If new min or old min increased, rebuild the heap and send an update
             if (bytesPerSecond < minRateBytesPerSecond
-                || (id == m_connByCongestionState.top().m_connection && bytesPerSecond > minRateBytesPerSecond))
+                || (id == m_connByCongestionState.front().m_connection && bytesPerSecond > minRateBytesPerSecond))
             {
                 updateRate = true;
                 minRateBytesPerSecond = bytesPerSecond;
-                AZStd::make_heap(m_connByCongestionState.get_container().begin(), m_connByCongestionState.get_container().end());
+                AZStd::make_heap(m_connByCongestionState.begin(), m_connByCongestionState.end());
             }
         }
 

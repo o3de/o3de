@@ -10,8 +10,6 @@
 // Description : Implementation of IAnimSequence interface.
 
 
-#include "LyShine_precompiled.h"
-
 #include "AnimSequence.h"
 
 #include "StlUtils.h"
@@ -50,7 +48,7 @@ CUiAnimSequence::CUiAnimSequence(IUiAnimationSystem* pUiAnimationSystem, uint32 
 CUiAnimSequence::~CUiAnimSequence()
 {
     // clear reference to me from all my nodes
-    for (int i = m_nodes.size(); --i >= 0;)
+    for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
     {
         if (m_nodes[i])
         {
@@ -82,10 +80,10 @@ void CUiAnimSequence::SetName(const char* name)
         return;   // should never happen, null pointer guard
     }
 
-    string originalName = GetName();
+    AZStd::string originalName = GetName();
 
     m_name = name;
-    m_pUiAnimationSystem->OnSequenceRenamed(originalName, m_name.c_str());
+    m_pUiAnimationSystem->OnSequenceRenamed(originalName.c_str(), m_name.c_str());
 
     if (GetOwner())
     {
@@ -146,7 +144,7 @@ const IUiAnimSequence* CUiAnimSequence::GetParentSequence() const
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimSequence::GetNodeCount() const
 {
-    return m_nodes.size();
+    return static_cast<int>(m_nodes.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -595,6 +593,8 @@ void CUiAnimSequence::Activate()
         pAnimNode->Activate(true);
     }
 }
+
+typedef AZStd::fixed_string<512> stack_string;
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Deactivate()

@@ -250,7 +250,7 @@ namespace NvCloth
         [[maybe_unused]] ClothId clothId,
         float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         UpdateSimulationCollisions();
 
@@ -267,7 +267,7 @@ namespace NvCloth
         [[maybe_unused]] float deltaTime,
         const AZStd::vector<SimParticleFormat>& updatedParticles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Next buffer index of the render data
         m_renderDataBufferIndex = (m_renderDataBufferIndex + 1) % RenderDataBufferSize;
@@ -326,7 +326,7 @@ namespace NvCloth
     {
         if (m_actorClothColliders)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothColliders->Update();
 
@@ -342,7 +342,7 @@ namespace NvCloth
     {
         if (m_actorClothSkinning)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothSkinning->UpdateSkinning();
 
@@ -376,7 +376,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateSimulationConstraints()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_motionConstraints = m_clothConstraints->GetMotionConstraints();
         m_separationConstraints = m_clothConstraints->GetSeparationConstraints();
@@ -396,7 +396,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if (!m_cloth)
         {
@@ -449,7 +449,7 @@ namespace NvCloth
 
     void ClothComponentMesh::CopyRenderDataToModel()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Previous buffer index of the render data
         const AZ::u32 previousBufferIndex = (m_renderDataBufferIndex + RenderDataBufferSize - 1) % RenderDataBufferSize;
@@ -525,7 +525,7 @@ namespace NvCloth
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;
-            if (subMesh.GetVertexCount() != numVertices)
+            if (subMesh.GetVertexCount() != static_cast<uint32_t>(numVertices))
             {
                 AZ_Error("ClothComponentMesh", false,
                     "Render mesh to be modified doesn't have the same number of vertices (%d) as the cloth's submesh (%d).",
@@ -556,7 +556,7 @@ namespace NvCloth
 
             for (size_t index = 0; index < numVertices; ++index)
             {
-                const int renderVertexIndex = firstVertex + index;
+                const int renderVertexIndex = static_cast<int>(firstVertex + index);
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
                 destVerticesBuffer[index].Set(
@@ -578,7 +578,7 @@ namespace NvCloth
                     const AZ::Vector3& renderTangent = renderTangents[renderVertexIndex];
                     destTangentsBuffer[index].Set(
                         renderTangent,
-                        1.0f);
+                        -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
                 }
 
                 if (destBitangentsBuffer)

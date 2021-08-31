@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -312,7 +311,7 @@ namespace ScriptCanvasEditor
     {
         if (AZStd::wildcard_match("*.scriptcanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/ScriptCanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/ScriptCanvas_16.png");
         }
 
         // not one of our types.
@@ -333,7 +332,7 @@ namespace ScriptCanvasEditor
 
         if (isScriptCanvasAsset)
         {
-            auto scriptCanvasEditorCallback = [this]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+            auto scriptCanvasEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
             {
                 AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
                 const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);

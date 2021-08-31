@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzCore/PlatformIncl.h>
 
@@ -79,8 +78,8 @@ namespace ScriptCanvasDeveloper
     {
         CompoundAction* compoundAction = aznew CompoundAction();
 
-        QPoint startPoint(m_scenePoint.x() - 5, m_scenePoint.y() - 5);
-        QPoint endPoint(m_scenePoint.x() + 5, m_scenePoint.y() + 5);
+        QPoint startPoint(static_cast<int>(m_scenePoint.x() - 5.0), static_cast<int>(m_scenePoint.y() - 5.0));
+        QPoint endPoint(static_cast<int>(m_scenePoint.x() + 5.0), static_cast<int>(m_scenePoint.y() + 5.0));
 
         QRect sceneRect = QRect(startPoint, endPoint);
 
@@ -151,8 +150,8 @@ namespace ScriptCanvasDeveloper
     {
         CompoundAction* compoundAction = aznew CompoundAction();
 
-        QPoint startPoint(m_scenePoint.x() - 5, m_scenePoint.y() - 5);
-        QPoint endPoint(m_scenePoint.x() + 5, m_scenePoint.y() + 5);
+        QPoint startPoint(static_cast<int>(m_scenePoint.x() - 5.0), static_cast<int>(m_scenePoint.y() - 5.0));
+        QPoint endPoint(static_cast<int>(m_scenePoint.x() + 5.0), static_cast<int>(m_scenePoint.y() + 5.0));
 
         QRect sceneRect = QRect(startPoint, endPoint);
 

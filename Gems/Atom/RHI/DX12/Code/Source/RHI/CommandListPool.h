@@ -13,6 +13,7 @@
 #include <Atom/RHI/ThreadLocalContext.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

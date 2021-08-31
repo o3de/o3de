@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/std/sort.h>
 
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -281,7 +279,7 @@ namespace PhysX::Pipeline
         {
             if (volumeTermWeight >= 0.0 && volumeTermWeight < 1.0)
             {
-                const AZ::u32 numberOfVertices = vertices.size();
+                const AZ::u32 numberOfVertices = static_cast<AZ::u32>(vertices.size());
 
                 // Convert vertices and compute the mean of the vertex cloud.
                 AZStd::vector<Vector> verticesConverted(numberOfVertices, Vector{{ 0.0, 0.0, 0.0 }});

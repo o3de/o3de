@@ -14,7 +14,6 @@
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
-#include <IEditor.h>
 #include <ImplementationManager.h>
 
 #include <QDropEvent>
@@ -139,7 +138,7 @@ namespace AudioControls
                 for (int i = 0; i < size; ++i)
                 {
                     QListWidgetItem* listItem = m_connectionList->item(i);
-                    if (listItem && listItem->data(eMDR_ID).toInt() == middlewareControl->GetId())
+                    if (listItem && listItem->data(eMDR_ID).toInt() == static_cast<int>(middlewareControl->GetId()))
                     {
                         m_connectionList->clearSelection();
                         listItem->setSelected(true);

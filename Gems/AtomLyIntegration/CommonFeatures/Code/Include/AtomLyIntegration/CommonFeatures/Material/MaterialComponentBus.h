@@ -21,6 +21,8 @@ namespace AZ
         public:
             //! Get all material assignments that can be overridden
             virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
             //! Set material overrides
             virtual void SetMaterialOverrides(const MaterialAssignmentMap& materials) = 0;
             //! Get material overrides
@@ -39,12 +41,56 @@ namespace AZ
             virtual const AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const = 0;
             //! Clear material override
             virtual void ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId) = 0;
-            //! Set a material property value override
-            virtual void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName, const AZStd::any& propertyValue) = 0;
-            //! Get a material property value override
-            virtual AZStd::any GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName) const = 0;
+            //! Set a material property override value wrapped by an AZStd::any
+            virtual void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) = 0;
+            //! Set a material property override value to a bool
+            virtual void SetPropertyOverrideBool(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const bool& value) = 0;
+            //! Set a material property override value to a integer
+            virtual void SetPropertyOverrideInt32(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const int32_t& value) = 0;
+            //! Set a material property override value to a unsigned integer
+            virtual void SetPropertyOverrideUInt32(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const uint32_t& value) = 0;
+            //! Set a material property override value to a float
+            virtual void SetPropertyOverrideFloat(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const float& value) = 0;
+            //! Set a material property override value to a Vector2
+            virtual void SetPropertyOverrideVector2(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector2& value) = 0;
+            //! Set a material property override value to a Vector3
+            virtual void SetPropertyOverrideVector3(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector3& value) = 0;
+            //! Set a material property override value to a Vector4
+            virtual void SetPropertyOverrideVector4(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector4& value) = 0;
+            //! Set a material property override value to a color
+            virtual void SetPropertyOverrideColor(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Color& value) = 0;
+            //! Set a material property override value to an image asset
+            virtual void SetPropertyOverrideImageAsset(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Data::Asset<AZ::RPI::ImageAsset>& value) = 0;
+            //! Set a material property override value to an image instance
+            virtual void SetPropertyOverrideImageInstance(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Data::Instance<AZ::RPI::Image>& value) = 0;
+            //! Set a material property override value to a string
+            virtual void SetPropertyOverrideString(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::string& value) = 0;
+            //! Get a material property override value wrapped by an AZStd::any
+            virtual AZStd::any GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a bool
+            virtual bool GetPropertyOverrideBool(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as an integer
+            virtual int32_t GetPropertyOverrideInt32(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as an unsigned integer
+            virtual uint32_t GetPropertyOverrideUInt32(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a float
+            virtual float GetPropertyOverrideFloat(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a Vector2
+            virtual AZ::Vector2 GetPropertyOverrideVector2(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a Vector3
+            virtual AZ::Vector3 GetPropertyOverrideVector3(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a Vector4
+            virtual AZ::Vector4 GetPropertyOverrideVector4(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a Color
+            virtual AZ::Color GetPropertyOverrideColor(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as an image asset
+            virtual AZ::Data::Asset<AZ::RPI::ImageAsset> GetPropertyOverrideImageAsset(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as an image instance
+            virtual AZ::Data::Instance<AZ::RPI::Image> GetPropertyOverrideImageInstance(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+            //! Get a material property override value as a string
+            virtual AZStd::string GetPropertyOverrideString(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
             //! Clear property override for a specific material assignment
-            virtual void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName) = 0;
+            virtual void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) = 0;
             //! Clear property overrides for a specific material assignment
             virtual void ClearPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) = 0;
             //! Clear all property overrides
@@ -69,6 +115,13 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
+                
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
+
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };

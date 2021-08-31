@@ -151,7 +151,7 @@ namespace ScriptEvents
         
         const AZStd::vector<Method>& GetMethods() const { return m_methods; }
 
-        AZStd::string_view GetLabel() const { return GetName(); }
+        AZStd::string_view GetLabel() const { return { m_name.Get<AZStd::string>()->data(), m_name.Get<AZStd::string>()->size() }; }
 
         void SetVersion(AZ::u32 version) { m_version = version; }
         ScriptEventData::VersionedProperty& GetNameProperty() { return m_name; }

@@ -13,12 +13,12 @@
 #include <AzCore/std/time.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
-using namespace AZ;
-
 #define PRINTF(...)  do { UnitTest::ColoredPrintf(UnitTest::COLOR_GREEN, "[          ] "); UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, __VA_ARGS__); } while(0)
 
 namespace UnitTest
 {
+    using namespace AZ;
+
     class AllocatorTest
         : public RHITestFixture
     {
@@ -67,7 +67,6 @@ namespace UnitTest
             AZStd::vector<Allocation> retiredAllocationsCurrent;
             AZStd::vector<Allocation> retiredAllocationsPrevious;
 
-            const size_t AllocationCount = 100;
             const size_t AllocationSizeRange = descriptor.m_allocationSizeMax - descriptor.m_allocationSizeMin;
 
             AZStd::string outputString;

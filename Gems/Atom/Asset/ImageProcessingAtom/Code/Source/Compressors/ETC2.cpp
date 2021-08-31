@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Processing/PixelFormatInfo.h>
@@ -112,12 +111,15 @@ namespace ImageProcessingAtom
     {
         return ColorSpace::autoSelect;
     }
+        
+    const char* ETC2Compressor::GetName() const
+    {
+        return "ETC2Compressor";
+    }
 
     IImageObjectPtr ETC2Compressor::CompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst,
         const CompressOption* compressOption) const
     {
-        const size_t srcPixelSize = 4;
-
         //validate input
         EPixelFormat fmtSrc = srcImage->GetPixelFormat();
 

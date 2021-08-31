@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 
 #include "AssetEditorWidget.h"
 
@@ -38,6 +37,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+
 #include <SourceControl/SourceControlAPI.h>
 
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
@@ -47,9 +50,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QMenu>
 #include <QMenuBar>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
-#include <QFileDialog>
-AZ_POP_DISABLE_WARNING
 #include <QAction>
 
 namespace AzToolsFramework
@@ -58,7 +58,7 @@ namespace AzToolsFramework
     {
         using AssetCheckoutCallback = AZStd::function<void(bool, const AZStd::string&, const AZStd::string&)>;
 
-        void AssetCheckoutCommon(const AZ::Data::AssetId& id, AZ::Data::Asset<AZ::Data::AssetData> asset, AZ::SerializeContext* serializeContext, AssetCheckoutCallback assetCheckoutAndSaveCallback)
+        void AssetCheckoutCommon(const AZ::Data::AssetId& id, AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] AZ::SerializeContext* serializeContext, AssetCheckoutCallback assetCheckoutAndSaveCallback)
         {
             AZStd::string assetPath;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, id);
@@ -75,7 +75,7 @@ namespace AzToolsFramework
             {
                 using SCCommandBus = SourceControlCommandBus;
                 SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, assetFullPath.c_str(), true,
-                    [id, asset, assetFullPath, serializeContext, assetCheckoutAndSaveCallback](bool /*success*/, const SourceControlFileInfo& info)
+                    [id, asset, assetFullPath, assetCheckoutAndSaveCallback](bool /*success*/, const SourceControlFileInfo& info)
                     {
                         if (!info.IsReadOnly())
                         {
@@ -361,7 +361,7 @@ namespace AzToolsFramework
                 if (savedCallback)
                 {
                     auto conn = AZStd::make_shared<QMetaObject::Connection>();
-                    *conn = connect(this, &AssetEditorWidget::OnAssetSavedSignal, this, [this, conn, savedCallback]()
+                    *conn = connect(this, &AssetEditorWidget::OnAssetSavedSignal, this, [conn, savedCallback]()
                             {
                                 disconnect(*conn);
                                 savedCallback();
@@ -415,7 +415,7 @@ namespace AzToolsFramework
                 filter.append(")");
             }
 
-            const QString saveAs = QFileDialog::getSaveFileName(nullptr, tr("Save As..."), m_userSettings->m_lastSavePath.c_str(), filter);
+            const QString saveAs = AzQtComponents::FileDialog::GetSaveFileName(AzToolsFramework::GetActiveWindow(), tr("Save As..."), m_userSettings->m_lastSavePath.c_str(), filter);
 
             return SaveImpl(asset, saveAs);
         }
@@ -903,7 +903,7 @@ namespace AzToolsFramework
                 statusString = QString("%1");
             }
 
-            statusString = statusString.arg(m_currentAsset).arg(m_queuedAssetStatus);
+            statusString = statusString.arg(m_currentAsset);
 
             if (!m_queuedAssetStatus.isEmpty())
             {
@@ -921,7 +921,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::SetupHeader()
         {            
-            QString nameString = QString("%1").arg(m_currentAsset).arg(m_queuedAssetStatus);
+            QString nameString = QString("%1").arg(m_currentAsset);
 
             m_header->setName(nameString);
 

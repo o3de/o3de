@@ -6,6 +6,8 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
@@ -67,7 +69,7 @@ namespace TestImpact
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
-                    strcmp(GetSuiteTypeName(suiteType).c_str(), suiteName) == 0)
+                    strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
                     testMeta.m_suite = suiteName;
                     testMeta.m_customArgs = suite[Keys[CommandKey]].GetString();

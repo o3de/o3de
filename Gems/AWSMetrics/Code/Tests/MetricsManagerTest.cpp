@@ -290,7 +290,7 @@ namespace AWSMetrics
 
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
-            producers.emplace_back(AZStd::thread([this, index]()
+            producers.emplace_back(AZStd::thread([index]()
             {
                 AZStd::vector<MetricsAttribute> metricsAttributes;
                 metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
@@ -452,7 +452,7 @@ namespace AWSMetrics
         EXPECT_EQ(stats.m_numErrors, MaxNumMetricsEvents / 2);
         EXPECT_EQ(stats.m_numDropped, 0);
 
-        int metricsEventSize = sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue);
+        int metricsEventSize = static_cast<int>(sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue));
         EXPECT_EQ(stats.m_sendSizeInBytes, metricsEventSize * MaxNumMetricsEvents / 2);
 
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);

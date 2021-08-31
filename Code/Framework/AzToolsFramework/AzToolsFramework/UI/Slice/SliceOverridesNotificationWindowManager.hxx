@@ -12,6 +12,7 @@
 #include "SliceOverridesNotificationWindow.hxx"
 #endif
 
+#include <AzCore/std/containers/vector.h>
 
 namespace AzToolsFramework
 {

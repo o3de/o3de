@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Editor/MaterialIdWidget.h>
 
 #include <AzFramework/Physics/PropertyTypes.h>
@@ -70,7 +69,7 @@ namespace PhysX
 
             auto lockToDefault = [gui]()
             {
-                gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
+                gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), static_cast<int>(Physics::DefaultPhysicsMaterialLabel.size())));
                 gui->setCurrentIndex(0);
                 return false;
             };
@@ -99,7 +98,7 @@ namespace PhysX
 
             // Add default physics material first
             m_libraryIds.push_back(Physics::MaterialId());
-            gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
+            gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), static_cast<int>(Physics::DefaultPhysicsMaterialLabel.size())));
 
             for (const auto& material : materials)
             {

@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include "RecentFiles.h"
 #include "CommonSettingsConfigurations.h"
+#include <AzCore/std/algorithm.h>
 
 #include <QDir>
 #include <QSettings>

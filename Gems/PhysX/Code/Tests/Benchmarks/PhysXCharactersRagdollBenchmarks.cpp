@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #ifdef HAVE_BENCHMARK
 #include <benchmark/benchmark.h>
 
@@ -227,7 +225,6 @@ namespace PhysX::Benchmarks
         }
 
         //enable and position the ragdolls
-        const int ragdollsPerCol = static_cast<const int>(RagdollConstants::TerrainSize / 10.0f) - 1;
         int idx = 0;
         for (auto& ragdoll : ragdolls)
         {

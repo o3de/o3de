@@ -135,7 +135,6 @@ namespace AZ
         AZStd::list<SerializeContext::ClassElement> m_dynamicClassElements; ///< Storage for class elements that represent dynamic serializable fields.
     };
 
-    static bool ConvertLegacyBoolToEnum(AZ::SerializeContext& context, AZStd::any& patchAny, const DataNode& sourceNode);
     static void ReportDataPatchMismatch(SerializeContext* context, const SerializeContext::ClassElement* classElement, const TypeId& patchDataTypeId);
 
     //=========================================================================
@@ -143,7 +142,7 @@ namespace AZ
     //=========================================================================
     void DataNodeTree::Build(const void* rootClassPtr, const Uuid& rootClassId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         m_root.Reset();
         m_currentNode = nullptr;
@@ -1400,7 +1399,7 @@ namespace AZ
 
         AddressTypeElement AddressTypeSerializer::LoadAddressElementFromPath(const AZStd::string& pathElement) const
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             // AddressTypeElement default constructor defaults to an invalid addressElement
             AddressTypeElement addressElement;
@@ -1485,13 +1484,13 @@ namespace AZ
         /// Load the class data from a stream.
         bool AddressTypeSerializer::Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian /*= false*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             (void)isDataBigEndian;
             constexpr unsigned int version1PathAddress = 1;
 
             if (version < version1PathAddress)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "AddressTypeSerializer::Load::LegacyUpgrade");
+                AZ_PROFILE_SCOPE(AzCore, "AddressTypeSerializer::Load::LegacyUpgrade");
                 // Grab the AddressType object to be filled
                 AddressType* address = reinterpret_cast<AddressType*>(classPtr);
                 address->clear();
@@ -1516,7 +1515,7 @@ namespace AZ
             }
             else
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "AddressTypeSerializer::Load::CurrentFlow");
+                AZ_PROFILE_SCOPE(AzCore, "AddressTypeSerializer::Load::CurrentFlow");
                 // Grab the AddressType object to be filled
                 AddressType* address = reinterpret_cast<AddressType*>(classPtr);
                 address->clear();
@@ -1749,7 +1748,7 @@ namespace AZ
         const FlagsMap& targetFlagsMap,
         SerializeContext* context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!source || !target)
         {
@@ -1804,7 +1803,7 @@ namespace AZ
             targetTree.Build(target, targetClassId);
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "DataPatch::Create:RecursiveCallToCompareElements");
+                AZ_PROFILE_SCOPE(AzCore, "DataPatch::Create:RecursiveCallToCompareElements");
 
                 sourceTree.CompareElements(
                     &sourceTree.m_root,
@@ -1829,7 +1828,7 @@ namespace AZ
         const FlagsMap& sourceFlagsMap,
         const FlagsMap& targetFlagsMap) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!source)
         {
@@ -1870,7 +1869,7 @@ namespace AZ
 
         {
             // Loop over the original data patch and make a copy of the key value pair
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "DataPatch::Apply:UpgradeDataPatch");
+            AZ_PROFILE_SCOPE(AzCore, "DataPatch::Apply:UpgradeDataPatch");
             // Copy of the patch element is purposefully being created here(notice no ampersand) so that the UpgradeDataPatch
             // function can modify the key and insert it into the fixed patch map
             for (PatchMap::value_type patch : m_patch)
@@ -1883,7 +1882,7 @@ namespace AZ
         // Build a mapping of child patches for quick look-up: [parent patch address] -> [list of patches for child elements (parentAddress + one more address element)]
             ChildPatchMap childPatchMap;
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "DataPatch::Apply:GenerateChildPatchMap");
+            AZ_PROFILE_SCOPE(AzCore, "DataPatch::Apply:GenerateChildPatchMap");
             for (auto& patch : fixedPatch)
             {
                 AddressType parentAddress = patch.first;
@@ -1921,7 +1920,7 @@ namespace AZ
             }
         }
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "DataPatch::Apply:RecursiveCallToApplyToElements");
+            AZ_PROFILE_SCOPE(AzCore, "DataPatch::Apply:RecursiveCallToApplyToElements");
             int rootContainerElementCounter = 0;
 
             result = DataNodeTree::ApplyToElements(
@@ -2015,7 +2014,7 @@ namespace AZ
     */
     bool LegacyDataPatchConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ::Outcome<void, AZStd::string> conversionResult = LegacyDataPatchConverter_Impl(context, classElement);
 
         if (!conversionResult.IsSuccess())
@@ -2043,7 +2042,7 @@ namespace AZ
     */
     AZ::Outcome<void, AZStd::string> LegacyDataPatchConverter_Impl(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         // Pull the targetClassId value out of the class element before it gets cleared when converting the DataPatch TypeId
         AZ::TypeId targetClassTypeId;
         if (!classElement.GetChildData(AZ_CRC("m_targetClassId", 0xcabab9dc), targetClassTypeId))

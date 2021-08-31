@@ -18,6 +18,8 @@ ly_set(PAL_TRAIT_BUILD_UNITY_EXCLUDE_EXTENSIONS)
 ly_set(PAL_TRAIT_BUILD_EXCLUDE_ALL_TEST_RUNS_FROM_IDE FALSE)
 ly_set(PAL_TRAIT_BUILD_CPACK_SUPPORTED FALSE)
 
+ly_set(PAL_TRAIT_PROF_PIX_SUPPORTED FALSE)
+
 # Test library support
 ly_set(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED TRUE)
@@ -37,3 +39,7 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "pc" CACHE STRING "Set the asset type for deploym
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
+
+# Set the default window manager that applications should be using on Linux 
+# Note: Only ("xcb", "wayland", or "xlib" should be considered)
+set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux (xcb, wayland, or xlib)")  

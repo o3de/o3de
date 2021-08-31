@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 
 #include <AzCore/Asset/AssetDataStream.h>
@@ -121,7 +119,7 @@ namespace ScriptEventsBuilder
             AssetBuilderSDK::JobDescriptor jobDescriptor;
             jobDescriptor.m_priority = 2;
             jobDescriptor.m_critical = true;
-            jobDescriptor.m_jobKey = "Script Events";
+            jobDescriptor.m_jobKey = ScriptEvents::k_builderJobKey;
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
             jobDescriptor.m_additionalFingerprintInfo = GetFingerprintString();
 

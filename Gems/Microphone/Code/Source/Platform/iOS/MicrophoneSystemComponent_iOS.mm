@@ -6,8 +6,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
-
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 
@@ -189,13 +187,14 @@ public:
 
     AZStd::size_t GetData(void** outputData, AZStd::size_t numFrames, const SAudioInputConfig& targetConfig, bool shouldDeinterleave) override
     {
-        bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
-        bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
-        bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
 #if defined(USE_LIBSAMPLERATE)
 // pending port of LIBSAMPLERATE to iOS
         return {};
 #else
+        bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
+        bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
+        bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
+
         if (changeSampleType || changeNumChannels)
         {
             // Without the SRC library, any change is unsupported!
@@ -240,7 +239,7 @@ public:
     void ProcessAudio(AudioBufferList* bufferList)
     {
         AudioBuffer sourceBuffer = bufferList->mBuffers[0];
-        m_captureData->AddData((int16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
+        m_captureData->AddData((AZ::s16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
 
     }
 

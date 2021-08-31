@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QTableView>
 
@@ -41,7 +40,7 @@ namespace ScriptCanvasDeveloper
     {
         ClearActionQueue();
 
-        QPoint targetPoint = m_targetEdit->mapToGlobal(QPoint(5, m_targetEdit->height() * 0.5f));
+        QPoint targetPoint = m_targetEdit->mapToGlobal(QPoint(5, static_cast<int>(m_targetEdit->height() * 0.5f)));
 
         // Cheaty clear for right now.
         m_targetEdit->clear();

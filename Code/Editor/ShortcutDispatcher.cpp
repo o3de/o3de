@@ -346,7 +346,6 @@ bool ShortcutDispatcher::eventFilter(QObject* obj, QEvent* ev)
 
     case QEvent::Shortcut:
         return shortcutFilter(obj, static_cast<QShortcutEvent*>(ev));
-        break;
 
     case QEvent::MouseButtonPress:
         if (!s_lastFocus || !IsAContainerForB(qobject_cast<QWidget*>(obj), s_lastFocus))

@@ -4,15 +4,15 @@
     <Window Width="672" Height="500" HexStyle="100a0000" FontId="2">#(loc.WindowTitle)</Window>
 
     <!-- header font -->
-    <Font Id="0" Height="-24" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="0" Height="-24" Weight="500" Foreground="000000">Segoe UI</Font>
     <!-- body font -->
-    <Font Id="1" Height="-12" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="1" Height="-12" Weight="500" Foreground="000000">Segoe UI</Font>
     <!-- special font -->
-    <Font Id="2" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Open Sans</Font>
+    <Font Id="2" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <!-- throwaway font for button bar -->
-    <Font Id="3" Height="-12" Weight="500" Foreground="EEEEEE" Background="EEEEEE">Open Sans</Font>
+    <Font Id="3" Height="-12" Weight="500" Foreground="EEEEEE" Background="EEEEEE">Segoe UI</Font>
     <!-- special font for install warning title -->
-    <Font Id="4" Height="-14" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="4" Height="-14" Weight="500" Foreground="000000">Segoe UI</Font>
 
     <!-- top banner -->
     <Image X="28" Y="24" Width="168" Height="64" ImageFile="logo.png" Visible="yes"/>
@@ -68,6 +68,21 @@
 
         <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
         <Button Name="ProgressCancelButton" X="-22" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.ProgressCancelButton)</Button>
+    </Page>
+
+    <!-- files in use page (action blocking) -->
+    <Page Name="FilesInUse">
+      <Text X="38" Y="142" Width="-42" Height="34" FontId="0" DisablePrefix="yes">#(loc.FilesInUseHeader)</Text>
+
+      <Text X="42" Y="202" Width="-42" Height="18" FontId="1" DisablePrefix="yes">#(loc.FilesInUseLabel)</Text>
+      <Richedit Name="FilesInUseText" X="42" Y="230" Width="-42" Height="-104" FontId="1" DisablePrefix="yes" HexStyle="0x800000" />
+
+      <Button Name="FilesInUseCloseRadioButton" X="42" Y="-76" Width="-42" Height="18" TabStop="yes" FontId="2" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseCloseRadioButton)</Button>
+      <Button Name="FilesInUseDontCloseRadioButton" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="2" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseDontCloseRadioButton)</Button>
+
+      <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
+      <Button Name="FilesInUseOkButton" X="-106" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2" HideWhenDisabled="yes">#(loc.FilesInUseOkButton)</Button>
+      <Button Name="FilesInUseCancelButton" X="-22" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.FilesInUseCancelButton)</Button>
     </Page>
 
     <!-- final page (success state) -->

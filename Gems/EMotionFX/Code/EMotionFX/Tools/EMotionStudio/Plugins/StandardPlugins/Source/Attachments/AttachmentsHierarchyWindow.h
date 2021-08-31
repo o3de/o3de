@@ -39,7 +39,7 @@ namespace EMStudio
 
     private:
         void RecursivelyAddAttachments(QTreeWidgetItem* parent, EMotionFX::ActorInstance* actorInstance);
-        QTreeWidget* mHierarchy;
+        QTreeWidget* m_hierarchy;
     };
 } // namespace EMStudio
 

@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "CanvasHelpers.h"
 #include <AzQtComponents/Components/Style.h>
@@ -546,7 +544,7 @@ AzToolsFramework::ComponentEditor* PropertiesContainer::CreateComponentEditor([[
 {
     AzToolsFramework::ComponentEditor* editor = new AzToolsFramework::ComponentEditor(m_serializeContext, m_propertiesWidget, this);
     connect(editor, &AzToolsFramework::ComponentEditor::OnDisplayComponentEditorMenu, this, &PropertiesContainer::OnDisplayUiComponentEditorMenu);
-    
+
     m_rowLayout->addWidget(editor);
     editor->hide();
 
@@ -597,7 +595,7 @@ bool PropertiesContainer::DoesIntersectNonSelectedComponentEditor(const QRect& g
 
 void PropertiesContainer::ClearComponentEditorSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
     for (auto componentEditor : m_componentEditors)
     {
         componentEditor->SetSelected(false);
@@ -790,7 +788,7 @@ void PropertiesContainer::Update()
     }
     else // more than one entity selected
     {
-        displayName = ToString(selectedEntitiesAmount) + " elements selected";
+        displayName = QString::number(selectedEntitiesAmount) + " elements selected";
     }
 
     // Update the selected element display name

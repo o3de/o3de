@@ -83,10 +83,10 @@ namespace AZ
             // Update RenderActorInstance world bounding box
             // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
-            m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
+            m_worldAABB = m_actorInstance->GetAabb();
 
             // Update RenderActorInstance local bounding box
-            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // NB: computing the local bbox from the world bbox makes the local bbox artificially larger than it should be
             // instead EMFX should support getting the local bbox from the actor instance directly
             m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
 
@@ -107,9 +107,8 @@ namespace AZ
                 {
                     if (debugOptions.m_drawAABB)
                     {
-                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
-                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
-                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                        const AZ::Aabb& aabb = m_actorInstance->GetAabb();
+                        auxGeom->DrawAabb(aabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
                     }
 
                     if (debugOptions.m_drawSkeleton)
@@ -132,14 +131,13 @@ namespace AZ
             const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
             const EMotionFX::Pose* pose = transformData->GetCurrentPose();
 
-            const AZ::u32 transformCount = transformData->GetNumTransforms();
-            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
-            const AZ::u32 numJoints = skeleton->GetNumNodes();
+            const size_t lodLevel = m_actorInstance->GetLODLevel();
+            const size_t numJoints = skeleton->GetNumNodes();
 
             m_auxVertices.clear();
             m_auxVertices.reserve(numJoints * 2);
 
-            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
                 const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
                 if (!joint->GetSkeletalLODStatus(lodLevel))
@@ -147,23 +145,23 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::u32 parentIndex = joint->GetParentIndex();
-                if (parentIndex == InvalidIndex32)
+                const size_t parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex)
                 {
                     continue;
                 }
 
-                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 m_auxVertices.emplace_back(parentPos);
 
-                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 m_auxVertices.emplace_back(bonePos);
             }
 
             const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = &skeletonColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -204,9 +202,9 @@ namespace AZ
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = m_auxColors.size();
+            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -307,6 +305,30 @@ namespace AZ
             m_meshFeatureProcessor = nullptr;
             m_skinnedMeshFeatureProcessor = nullptr;
         }
+        
+        RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
+
+        MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
+            }
+
+            return MaterialAssignmentId();
+        }
 
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
         {
@@ -404,15 +426,53 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetSortKey(*m_meshHandle);
         }
+
+        void AtomActorInstance::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        RPI::Cullable::LodType AtomActorInstance::GetLodType() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
+        }
         
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_meshFeatureProcessor->SetLodOverride(*m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         RPI::Cullable::LodOverride AtomActorInstance::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodOverride;
+        }
+
+        void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_minimumScreenCoverage;
+        }
+
+        void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_qualityDecayRate;
         }
 
         void AtomActorInstance::SetVisibility(bool visible)
@@ -427,13 +487,13 @@ namespace AZ
 
         AZ::u32 AtomActorInstance::GetJointCount()
         {
-            return m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes();
+            return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());
         }
 
         const char* AtomActorInstance::GetJointNameByIndex(AZ::u32 jointIndex)
         {
             EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-            const AZ::u32 numNodes = skeleton->GetNumNodes();
+            const size_t numNodes = skeleton->GetNumNodes();
             if (jointIndex < numNodes)
             {
                 return skeleton->GetNode(jointIndex)->GetName();
@@ -447,12 +507,12 @@ namespace AZ
             if (jointName)
             {
                 EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-                const AZ::u32 numNodes = skeleton->GetNumNodes();
-                for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+                const size_t numNodes = skeleton->GetNumNodes();
+                for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
                 {
                     if (0 == azstricmp(jointName, skeleton->GetNode(nodeIndex)->GetName()))
                     {
-                        return nodeIndex;
+                        return aznumeric_caster(nodeIndex);
                     }
                 }
             }
@@ -490,16 +550,18 @@ namespace AZ
                     const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
                     for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
                     {
-                        AZ_Error("AtomActorInstance", submesh.m_material, "Actor does not have a valid default material in lod %d", lodIndex);
-                        if (submesh.m_material)
+                        Data::Asset<RPI::MaterialAsset> materialAsset = submesh.m_materialSlot.m_defaultMaterialAsset;
+                        AZ_Error("AtomActorInstance", materialAsset, "Actor does not have a valid default material in lod %d", lodIndex);
+
+                        if (materialAsset)
                         {
-                            if (!submesh.m_material->IsReady())
+                            if (!materialAsset->IsReady())
                             {
                                 // Start listening for the material's OnAssetReady event.
                                 // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
                                 // since those events will also come from the main thread
-                                m_waitForMaterialLoadIds.insert(submesh.m_material->GetId());
-                                Data::AssetBus::MultiHandler::BusConnect(submesh.m_material->GetId());
+                                m_waitForMaterialLoadIds.insert(materialAsset->GetId());
+                                Data::AssetBus::MultiHandler::BusConnect(materialAsset->GetId());
                             }
                         }
                     }
@@ -559,7 +621,8 @@ namespace AZ
 
                 // Update the morph weights for every lod. This does not mean they will all be dispatched, but they will all have up to date weights
                 // TODO: once culling is hooked up such that EMotionFX and Atom are always in sync about which lod to update, only update the currently visible lods [ATOM-13564]
-                for (uint32_t lodIndex = 0; lodIndex < m_actorInstance->GetActor()->GetNumLODLevels(); ++lodIndex)
+                const auto lodCount = aznumeric_cast<uint32_t>(m_actorInstance->GetActor()->GetNumLODLevels());
+                for (uint32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
                 {
                     EMotionFX::MorphSetup* morphSetup = m_actorInstance->GetActor()->GetMorphSetup(lodIndex);
                     if (morphSetup)
@@ -568,9 +631,9 @@ namespace AZ
                         m_wrinkleMasks.clear();
                         m_wrinkleMaskWeights.clear();
 
-                        uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
+                        size_t morphTargetCount = morphSetup->GetNumMorphTargets();
                         m_morphTargetWeights.clear();
-                        for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
+                        for (size_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
                         {
                             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
                             // check if we are dealing with a standard morph target
@@ -586,11 +649,11 @@ namespace AZ
 
                             // Each morph target is split into several deform datas, all of which share the same weight but have unique min/max delta values
                             // and thus correspond with unique dispatches in the morph target pass
-                            for (uint32_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
+                            for (size_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                             {
                                 // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
                                 const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
-                                if (deformData->mNumVerts > 0)
+                                if (deformData->m_numVerts > 0)
                                 {
                                     float weight = morphTargetSetupInstance->GetWeight();
                                     m_morphTargetWeights.push_back(weight);
@@ -748,7 +811,7 @@ namespace AZ
                     const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
 
                     const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                    const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
+                    [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
                     const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
 
                     // The byte count from input and output buffers doesn't have to match necessarily.
@@ -786,13 +849,13 @@ namespace AZ
 
             for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
             {
-                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
+                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(static_cast<uint32>(lodIndex));
                 if (morphSetup)
                 {
                     const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
                     // Loop over all the EMotionFX morph targets
-                    uint32_t numMorphTargets = morphSetup->GetNumMorphTargets();
-                    for (uint32_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+                    size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+                    for (size_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
                     {
                         EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
                         for (const RPI::MorphTargetMetaAsset::MorphTarget& metaData : metaDatas)
@@ -836,7 +899,7 @@ namespace AZ
                             // Set the weights for any active masks
                             for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
                             {
-                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], i);
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], static_cast<uint32_t>(i));
                             }
                             AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
                         }

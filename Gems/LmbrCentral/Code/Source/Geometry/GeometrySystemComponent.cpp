@@ -6,10 +6,8 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "GeometrySystemComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral_precompiled.h>
 #include <Shape/ShapeGeometryUtil.h>
 #include <AzCore/std/containers/array.h>
 

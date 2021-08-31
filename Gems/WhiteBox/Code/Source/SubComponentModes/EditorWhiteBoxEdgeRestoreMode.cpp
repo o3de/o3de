@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxEdgeRestoreMode.h"
 #include "Viewport/WhiteBoxModifierUtil.h"

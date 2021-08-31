@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -71,7 +70,7 @@
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QDir>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -88,15 +87,10 @@ namespace AzToolsFramework
 {
     namespace Internal
     {
-        static const char* s_engineConfigFileName = "engine.json";
-        static const char* s_engineConfigEngineVersionKey = "O3DEVersion";
-
-        static const char* s_startupLogWindow = "Startup";
-
         template<typename IdContainerType>
         void DeleteEntities(const IdContainerType& entityIds)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (entityIds.empty())
             {
@@ -142,7 +136,7 @@ namespace AzToolsFramework
                 }
 
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
+                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
                     for (const auto& entityId : entityIds)
                     {
                         AZ::Entity* entity = NULL;
@@ -161,7 +155,7 @@ namespace AzToolsFramework
 
                 selCommand->SetParent(currentUndoBatch);
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:RunRedo");
+                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
                     selCommand->RunRedo();
                 }
             }
@@ -459,7 +453,7 @@ namespace AzToolsFramework
 
     bool ToolsApplication::RemoveEntity(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
         if (undoCacheInterface)
@@ -473,7 +467,7 @@ namespace AzToolsFramework
         EBUS_EVENT(ToolsApplicationEvents::Bus, EntityDeregistered, entity->GetId());
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
             if (AzFramework::Application::RemoveEntity(entity))
             {
                 return true;
@@ -546,7 +540,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::MarkEntitySelected(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ_Assert(entityId.IsValid(), "Invalid entity Id being marked as selected.");
 
         EntityIdList::iterator foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
@@ -564,7 +558,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::MarkEntitiesSelected(const EntityIdList& entitiesToSelect)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EntityIdList entitiesSelected;
         entitiesSelected.reserve(entitiesToSelect.size());
@@ -588,11 +582,11 @@ namespace AzToolsFramework
 
     void ToolsApplication::MarkEntityDeselected(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         auto foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
         if (foundIter != m_selectedEntities.end())
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ToolsApplication::MarkEntityDeselected:Deselect");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::MarkEntityDeselected:Deselect");
             ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
             m_selectedEntities.erase(foundIter);
 
@@ -604,7 +598,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::MarkEntitiesDeselected(const EntityIdList& entitiesToDeselect)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
 
@@ -634,14 +628,14 @@ namespace AzToolsFramework
 
     void ToolsApplication::SetEntityHighlighted(AZ::EntityId entityId, bool highlighted)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         auto foundIter = AZStd::find(m_highlightedEntities.begin(), m_highlightedEntities.end(), entityId);
         if (foundIter != m_highlightedEntities.end())
         {
             if (!highlighted)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ToolsApplication::SetEntityHighlighted:RemoveHighlight");
+                AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::SetEntityHighlighted:RemoveHighlight");
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntityHighlightingChanged);
                 m_highlightedEntities.erase(foundIter);
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::AfterEntityHighlightingChanged);
@@ -649,7 +643,7 @@ namespace AzToolsFramework
         }
         else if (highlighted)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ToolsApplication::SetEntityHighlighted:AddHighlight");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::SetEntityHighlighted:AddHighlight");
             ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntityHighlightingChanged);
             m_highlightedEntities.push_back(entityId);
             ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::AfterEntityHighlightingChanged);
@@ -658,7 +652,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::SetSelectedEntities(const EntityIdList& selectedEntities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // We're setting the selection set as a batch from an external caller.
         // * Filter out any unselectable entities
@@ -1536,7 +1530,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::CreateUndosForDirtyEntities()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(!m_isDuringUndoRedo, "Cannot add dirty entities during undo/redo.");
         if (m_dirtyEntities.empty())
@@ -1782,5 +1776,4 @@ namespace AzToolsFramework
     { 
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     };
-
 } // namespace AzToolsFramework

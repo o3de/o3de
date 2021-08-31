@@ -82,16 +82,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // If this instance's templateId is valid, we should be able to unregister this instance from 
-            // Template to Instance mapping successfully.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to Unregister Instance from Template with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             m_templateId = templateId;
 
@@ -221,15 +212,7 @@ namespace AzToolsFramework
 
         void Instance::Reset()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(), m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
@@ -237,7 +220,6 @@ namespace AzToolsFramework
 
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
                 m_containerEntity.reset(aznew AZ::Entity());
                 RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
             }
@@ -265,6 +247,11 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
+
             for (const auto&[entityAlias, entity] : m_entities)
             {
                 if (entity)
@@ -663,7 +650,10 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
-            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
             return AZStd::move(m_containerEntity);
         }
     }

@@ -20,6 +20,8 @@ class CBaseObject;
 #include "ObjectEvent.h"
 #include "Objects/BaseObject.h"
 
+#include <Editor/EditorDefs.h>
+
 /*!
  *  CSelectionGroup is a named selection group of objects.
  */
@@ -69,7 +71,7 @@ public:
     //! And save resulting objects to saveTo selection.
     void    FilterParents();
     //! Get number of child filtered objects.
-    int GetFilteredCount() const { return m_filtered.size(); }
+    int GetFilteredCount() const { return static_cast<int>(m_filtered.size()); }
     CBaseObject* GetFilteredObject(int i) const { return m_filtered[i]; }
 
     //////////////////////////////////////////////////////////////////////////

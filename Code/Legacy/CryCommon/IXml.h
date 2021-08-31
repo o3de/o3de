@@ -94,14 +94,20 @@ void testXml(bool bReuseStrings)
 // Summary:
 //   Special string wrapper for xml nodes.
 class XmlString
-    : public string
+    : public AZStd::string
 {
 public:
     XmlString() {};
     XmlString(const char* str)
-        : string(str) {};
+        : AZStd::string(str) {};
 
-    operator const char*() const {
+    size_t GetAllocatedMemory() const
+    {
+        return sizeof(XmlString) + capacity() * sizeof(AZStd::string::value_type);
+    }
+
+    operator const char*() const
+    {
         return c_str();
     }
 };
@@ -147,13 +153,11 @@ public:
     XmlNodeRef&  operator=(IXmlNode* newp);
     XmlNodeRef&  operator=(const XmlNodeRef& newp);
 
-#if !defined(RESOURCE_COMPILER)
     template<typename Sizer >
     void GetMemoryUsage(Sizer* pSizer) const
     {
         pSizer->AddObject(p);
     }
-#endif
 
     //Support for range based for, and stl algorithms.
     class XmlNodeRefIterator begin();
@@ -399,7 +403,6 @@ public:
 
     // </interfuscator:shuffle>
 
-#if !defined(RESOURCE_COMPILER)
     // <interfuscator:shuffle>
     // Summary:
     //   Collect all allocated memory
@@ -423,7 +426,6 @@ public:
     //   Save in small memory chunks.
     virtual bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle) = 0;
     // </interfuscator:shuffle>
-#endif
 
     //##@}
 
@@ -743,7 +745,7 @@ private:
 
     void Update()
     {
-        if (m_index >= 0 && m_index < m_parentNode->getChildCount())
+        if (m_index < m_parentNode->getChildCount())
         {
             m_currentChildNode = m_parentNode->getChild(static_cast<int>(m_index));
         }
@@ -792,12 +794,9 @@ struct IXmlSerializer
     virtual ISerialize* GetWriter(XmlNodeRef& node) = 0;
     virtual ISerialize* GetReader(XmlNodeRef& node) = 0;
     // </interfuscator:shuffle>
-#if !defined(RESOURCE_COMPILER)
     virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
-#endif
 };
 
-#if !defined(RESOURCE_COMPILER)
 //////////////////////////////////////////////////////////////////////////
 // Summary:
 //   XML Parser interface.
@@ -867,7 +866,6 @@ struct IXmlTableReader
     virtual float GetCurrentRowHeight() = 0;
     // </interfuscator:shuffle>
 };
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Summary:
@@ -900,7 +898,6 @@ struct IXmlUtils
     virtual IXmlSerializer* CreateXmlSerializer() = 0;
     // </interfuscator:shuffle>
 
-#if !defined(RESOURCE_COMPILER)
     // <interfuscator:shuffle>
     // Summary:
     //   Creates XML Parser.
@@ -945,7 +942,6 @@ struct IXmlUtils
     // Set to NULL to clear an existing transform and disable further patching
     virtual void SetXMLPatcher(XmlNodeRef* pPatcher) = 0;
     // </interfuscator:shuffle>
-#endif
 };
 
 #endif // CRYINCLUDE_CRYCOMMON_IXML_H

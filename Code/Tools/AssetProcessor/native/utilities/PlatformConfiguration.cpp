@@ -14,6 +14,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 namespace
 {
@@ -23,6 +24,21 @@ namespace
 
 namespace AssetProcessor
 {
+
+    void AssetImporterPathsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
+        AZStd::string_view value)
+    {
+        auto found = value.find('.');
+        if (found != AZStd::string::npos)
+        {
+            m_supportedFileExtensions.emplace_back(value.substr(found + 1));
+        }
+        else
+        {
+            m_supportedFileExtensions.emplace_back(value);
+        }
+    }
+
     struct PlatformsInfoVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
@@ -181,7 +197,7 @@ namespace AssetProcessor
         }
         else if (valueName == "order")
         {
-            scanFolderEntry.m_scanOrder = value;
+            scanFolderEntry.m_scanOrder = static_cast<int>(value);
         }
     }
 
@@ -459,7 +475,7 @@ namespace AssetProcessor
         RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
-            assetRecognizer.m_recognizer.m_priority = value;
+            assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
     }
 
@@ -665,7 +681,6 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
-    const char RestrictedPlatformDir[] = "restricted";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
@@ -1126,6 +1141,17 @@ namespace AssetProcessor
 
         MetaDataTypesVisitor visitor;
         settingsRegistry->Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/MetaDataTypes");
+
+        using namespace AzToolsFramework::AssetUtils;
+        AZStd::vector<AZStd::string> supportedFileExtensions;
+        AssetImporterPathsVisitor assetImporterVisitor{ settingsRegistry, supportedFileExtensions };
+        settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/" + AssetImporterSupportedFileTypeKey);
+
+        for (auto& entry : assetImporterVisitor.m_supportedFileExtensions)
+        {
+            visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
+        }
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),

@@ -87,13 +87,13 @@ namespace AZ
                 // AssImp only has one bitangentStream per mesh.
                 bitangentStream->SetBitangentSetIndex(0);
 
-                bitangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+                bitangentStream->SetGenerationMethod(AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene);
                 bitangentStream->ReserveContainerSpace(vertexCount);
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
                     const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                     {
                         if (!mesh->HasTangentsAndBitangents())
                         {

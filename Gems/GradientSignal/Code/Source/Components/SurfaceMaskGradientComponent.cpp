@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "SurfaceMaskGradientComponent.h"
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -162,7 +161,7 @@ namespace GradientSignal
 
     float SurfaceMaskGradientComponent::GetValue(const GradientSampleParams& params) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         float result = 0.0f;
 

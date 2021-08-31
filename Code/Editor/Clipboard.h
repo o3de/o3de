@@ -54,10 +54,9 @@ private:
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     static XmlNodeRef m_node;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     static QString m_title;
-
     static QVariant s_pendingPut;
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     QWidget* m_parent;
     QTimer m_putDebounce;

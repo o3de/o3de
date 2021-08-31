@@ -17,6 +17,8 @@ struct DisplayContext;
 struct HitContext;
 struct IDisplayViewport;
 
+class QPoint;
+
 //////////////////////////////////////////////////////////////////////////
 struct SGizmoParameters
 {
@@ -58,7 +60,7 @@ public:
     void DrawDome(const Matrix34& worldTM, const SGizmoParameters& setup, DisplayContext& dc, AABB& objectBox);
     bool HitTest(const Matrix34& worldTM, const SGizmoParameters& setup, HitContext& hc);
 
-    bool HitTestForRotationCircle(const Matrix34& worldTM, IDisplayViewport* view, const QPoint& pos, float fHitWidth, Vec3* pOutHitPos = NULL, Vec3* pOutHitNormal = NULL);
+    bool HitTestForRotationCircle(const Matrix34& worldTM, IDisplayViewport* view, const QPoint& pos, float fHitWidth, Vec3* pOutHitPos = nullptr, Vec3* pOutHitNormal = nullptr);
 
     void SetHighlightAxis(int axis) { m_highlightAxis = axis; };
     int  GetHighlightAxis() const { return m_highlightAxis; };

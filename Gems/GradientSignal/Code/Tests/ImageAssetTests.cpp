@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -41,7 +40,7 @@ namespace
 
             asset.m_imageWidth = dimensions;
             asset.m_imageHeight = dimensions;
-            asset.m_bytesPerPixel = bytesPerPixel;
+            asset.m_bytesPerPixel = static_cast<AZ::u8>(bytesPerPixel);
             asset.m_imageFormat = format;
             asset.m_imageData.resize(asset.m_bytesPerPixel * asset.m_imageWidth * asset.m_imageHeight);
 

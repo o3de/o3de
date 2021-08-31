@@ -14,6 +14,7 @@
 
 #include "Include/ISourceControl.h"
 
+#include <QtCore/QString>
 
 class CPerforceSourceControl
     : public ISourceControl

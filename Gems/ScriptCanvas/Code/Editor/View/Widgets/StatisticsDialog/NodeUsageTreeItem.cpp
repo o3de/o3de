@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -152,8 +151,6 @@ namespace ScriptCanvasEditor
         }
 
         m_assetType = assetType;
-
-        const bool loadBlocking = false;
 
         auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
         AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);

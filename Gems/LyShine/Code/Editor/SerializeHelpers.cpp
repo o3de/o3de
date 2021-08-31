@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include <AzCore/Serialization/Utils.h>
@@ -245,11 +243,14 @@ namespace SerializeHelpers
                 insertBefore);
         }
 
-        // if a list of entities was passed then add all the entities that we added 
+        // if a list of entities was passed then add all the entities that we added
         // to the list
         if (cumulativeListOfCreatedEntities)
         {
-            cumulativeListOfCreatedEntities->push_back(validatedListOfNewlyCreatedTopLevelElements);
+            cumulativeListOfCreatedEntities->insert(
+                        cumulativeListOfCreatedEntities->end(),
+                        validatedListOfNewlyCreatedTopLevelElements.begin(),
+                        validatedListOfNewlyCreatedTopLevelElements.end());
         }
     }
 
@@ -365,7 +366,7 @@ namespace SerializeHelpers
         entityRestoreInfos.insert(entityRestoreInfos.end(),
             unserializedEntities->m_entityRestoreInfos.begin(), unserializedEntities->m_entityRestoreInfos.end());
         entityRestoreInfos.insert(entityRestoreInfos.end(),
-            unserializedEntities->m_childEntityRestoreInfos.begin(), unserializedEntities->m_childEntityRestoreInfos.end()); 
+            unserializedEntities->m_childEntityRestoreInfos.begin(), unserializedEntities->m_childEntityRestoreInfos.end());
     }
 
 }   // namespace EntityHelpers

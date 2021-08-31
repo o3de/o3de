@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "LyShineTest.h"
 #include <UiSerialize.h>
 
@@ -26,7 +24,6 @@ namespace UnitTest
             appDesc.m_stackRecordLevels = 20;
 
             AZ::ComponentApplication::StartupParameters appStartup;
-            // Module needs to be created this way to create CryString allocator for test
             appStartup.m_createStaticModulesCallback =
                 [](AZStd::vector<AZ::Module*>& modules)
             {

@@ -14,9 +14,11 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <PhysXDebug/PhysXDebugBus.h>
+#include <PxPhysicsAPI.h>
 
 #include <Cry_Camera.h>
 #include <IRenderAuxGeom.h>
+#include <CryCommon/CrySystemBus.h>
 
 #include <AzFramework/Physics/SystemBus.h>
 

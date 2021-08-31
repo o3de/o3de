@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandListBase.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -34,7 +33,7 @@ namespace AZ
 
         void CommandListBase::Reset(ID3D12CommandAllocator* commandAllocator)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);  
+            AZ_PROFILE_FUNCTION(RHI);  
             AZ_Assert(m_queuedBarriers.empty(), "Unflushed barriers in command list.");
 
             m_commandList->Reset(commandAllocator, nullptr);
@@ -96,7 +95,7 @@ namespace AZ
         {
             if (m_queuedBarriers.size())
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRenderDetailed);
+                AZ_PROFILE_FUNCTION(RHI);
 
                 m_commandList->ResourceBarrier((UINT)m_queuedBarriers.size(), m_queuedBarriers.data());
                 m_queuedBarriers.clear();

@@ -202,8 +202,6 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
-        bool result = false;
-
         // note that the convention here is that it uses windows-shell style escaping of combined args with spaces in it
         // (so surrounding with quotes like param="hello world")
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
@@ -269,7 +267,7 @@ namespace AzFramework
         int numEnvironmentVars = 0;
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
+            numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
             // Adding one more as exec expects the array to have a nullptr as the last element
             environmentVariables = new char*[numEnvironmentVars + 1];
             for (int i = 0; i < numEnvironmentVars; i++)

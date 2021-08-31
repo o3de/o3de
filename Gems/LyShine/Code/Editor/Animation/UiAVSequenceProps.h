@@ -13,6 +13,7 @@
 class CUiAnimViewSequence;
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QDialog>
 #include <QScopedPointer>
 #endif
@@ -32,7 +33,7 @@ public:
 private:
     CUiAnimViewSequence* m_pSequence;
 
-    virtual BOOL OnInitDialog();
+    virtual bool OnInitDialog();
     virtual void OnOK();
 
     void MoveScaleKeys();

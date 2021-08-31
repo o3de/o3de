@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PlatformSettings_Android.h"
 
 #include "PlatformSettings_common.h"
@@ -166,8 +165,8 @@ namespace ProjectSettingsTool
             if (editContext)
             {
                 editContext->Class<AndroidSplashscreens>("Splashscreens", "All splashscreen overrides for Android.")
-                    ->DataElement(0, &AndroidSplashscreens::m_landscapeSplashscreens)
-                    ->DataElement(0, &AndroidSplashscreens::m_portraitSplashscreens)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_landscapeSplashscreens)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_portraitSplashscreens)
                 ;
             }
         }

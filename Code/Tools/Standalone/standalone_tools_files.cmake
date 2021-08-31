@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    StandaloneTools_precompiled.h
     targetver.h
     Source/StandaloneToolsApplication.cpp
     Source/StandaloneToolsApplication.h

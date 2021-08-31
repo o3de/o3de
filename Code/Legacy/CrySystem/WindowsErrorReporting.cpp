@@ -15,7 +15,7 @@
 #ifdef WIN32
 
 #include "System.h"
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <tchar.h>
 #include "errorrep.h"
 #include "ISystem.h"
@@ -66,7 +66,9 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
-    HANDLE hFile = ::CreateFile(szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    AZStd::wstring szDumpPathW;
+    AZStd::to_wstring(szDumpPathW, szDumpPath);
+    HANDLE hFile = ::CreateFileW(szDumpPathW.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
         CryLogAlways("Failed to record DMP file: could not open file '%s' for writing - error code: %d", szDumpPath, GetLastError());

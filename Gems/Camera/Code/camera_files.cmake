@@ -9,9 +9,10 @@
 set(FILES camera_files.cmake
     Source/CameraComponent.cpp
     Source/CameraComponent.h
+    Source/CameraSystemComponent.cpp
+    Source/CameraSystemComponent.h
     Source/CameraComponentConverter.cpp
     Source/CameraComponentController.cpp
     Source/CameraComponentController.h
     Source/CameraViewRegistrationBus.h
-    Source/Camera_precompiled.h
 )

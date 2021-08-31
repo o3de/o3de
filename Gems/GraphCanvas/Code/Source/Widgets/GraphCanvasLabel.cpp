@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QCoreApplication>
 #include <QFont>
@@ -433,7 +432,5 @@ namespace GraphCanvas
         default:
             return QGraphicsWidget::sizeHint(which, constraint);
         }
-
-        return QGraphicsWidget::sizeHint(which, constraint);
     }
 }

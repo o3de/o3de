@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "PrefabsLibraryAssetTypeInfo.h"
 
 namespace LmbrCentral

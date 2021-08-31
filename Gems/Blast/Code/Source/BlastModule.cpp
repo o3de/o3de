@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
@@ -17,7 +16,6 @@
 #ifdef BLAST_EDITOR
 #include <Editor/EditorBlastFamilyComponent.h>
 #include <Editor/EditorBlastMeshDataComponent.h>
-#include <Editor/EditorBlastSliceAssetHandler.h>
 #include <Editor/EditorSystemComponent.h>
 #endif
 
@@ -41,8 +39,7 @@ namespace Blast
 #ifdef BLAST_EDITOR
                     EditorSystemComponent::CreateDescriptor(),
                     EditorBlastFamilyComponent::CreateDescriptor(),
-                    EditorBlastMeshDataComponent::CreateDescriptor(),
-                    BlastSliceAssetStorageComponent::CreateDescriptor(),
+                    EditorBlastMeshDataComponent::CreateDescriptor()
 #endif
                 });
         }

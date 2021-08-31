@@ -22,6 +22,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class BehaviorContextObjectSerializer;
 }
 
 namespace ScriptCanvas
@@ -29,6 +30,8 @@ namespace ScriptCanvas
     class BehaviorContextObject final
     {
         friend struct AZStd::IntrusivePtrCountPolicy<BehaviorContextObject>;
+        friend class Datum;
+        friend class AZ::BehaviorContextObjectSerializer;
 
     public:
         AZ_TYPE_INFO(BehaviorContextObject, "{B735214D-5182-4536-B748-61EC83C1F007}");
@@ -37,8 +40,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflection);
 
         static BehaviorContextObjectPtr Create(const AZ::BehaviorClass& behaviorClass, const void* value = nullptr);
-        static BehaviorContextObjectPtr CreateDeepCopy(const AZ::BehaviorClass& behaviorClass, const BehaviorContextObject* value = nullptr);
-
+        
         template<typename t_Value>
         AZ_INLINE static BehaviorContextObjectPtr Create(const t_Value& value, const AZ::BehaviorClass& behaviorClass);
 
@@ -70,16 +72,6 @@ namespace ScriptCanvas
             Reference = 1 << 3,
         };
 
-        class SerializeContextEventHandler : public AZ::SerializeContext::IEventHandler
-        {
-        public:
-            /// Called right before we start reading from the instance pointed by classPtr.
-            void OnReadBegin(void* classPtr) override;
-
-            /// Called after we are done writing to the instance pointed by classPtr.
-            void OnWriteEnd(void* classPtr) override;
-        };
-
         template<typename... Args>
         static AZ::BehaviorObject InvokeConstructor(const AZ::BehaviorClass& behaviorClass, void* resultPtr, Args&&... args);
 
@@ -90,6 +82,8 @@ namespace ScriptCanvas
         AZ_INLINE static BehaviorContextObject* CreateDefaultBuffer(const AZ::BehaviorClass& behaviorClass);
 
         AZ_INLINE static BehaviorContextObject* CreateDefaultHeap(const AZ::BehaviorClass& behaviorClass);
+
+        static void Deserialize(BehaviorContextObject& target, const AZ::BehaviorClass& behaviorClass, AZStd::any& source);
 
         // use the SSO optimization on behavior class size ALIGNED with a placement new of behavior class create
         AZ_FORCE_INLINE static AnyTypeInfo GetAnyTypeInfoObject(const AZ::BehaviorClass& behaviorClass);
@@ -111,11 +105,13 @@ namespace ScriptCanvas
         // it is very important to track these from the moment they are created...
         friend struct AZ::Serialize::InstanceFactory<BehaviorContextObject, true, false>;
         friend struct AZ::AnyTypeInfoConcept<BehaviorContextObject, void>;
+
         //...so don't use the ctors, use the Create functions...
         //...the friend declarations are here for compatibility with the serialization system only
         AZ_FORCE_INLINE BehaviorContextObject() = default;
 
         BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
+
         BehaviorContextObject(const BehaviorContextObject&) = delete;
 
         // copy ctor
@@ -127,10 +123,6 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE void Clear();
 
         AZ_FORCE_INLINE bool IsOwned() const;
-
-        void OnReadBegin();
-
-        void OnWriteEnd();
 
         AZ_FORCE_INLINE void add_ref();
 
@@ -268,7 +260,7 @@ namespace ScriptCanvas
 
     AZ_INLINE BehaviorContextObject* BehaviorContextObject::CreateDefaultBuffer(const AZ::BehaviorClass& behaviorClass)
     {
-        AZ_ALIGN(char buffer[AZStd::Internal::ANY_SBO_BUF_SIZE], 32);
+        alignas(32) char buffer[AZStd::Internal::ANY_SBO_BUF_SIZE];
         AZ::BehaviorObject object = InvokeConstructor(behaviorClass, AZStd::addressof(buffer));
         auto bco = aznew BehaviorContextObject(object.m_address, GetAnyTypeInfoObject(behaviorClass), Owned);
         behaviorClass.m_destructor(object.m_address, behaviorClass.m_userData);

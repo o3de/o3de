@@ -6,11 +6,13 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
 #include <Integration/Assets/AnimGraphAsset.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
-
+#include <EMotionFX/Source/AnimGraphInstance.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Importer/Importer.h>
+#include <EMotionFX/Source/AnimGraph.h>
 
 namespace EMotionFX
 {
@@ -51,8 +53,7 @@ namespace EMotionFX
             AnimGraphAsset* assetData = asset.GetAs<AnimGraphAsset>();
             assetData->m_emfxAnimGraph.reset(EMotionFX::GetImporter().LoadAnimGraph(
                 assetData->m_emfxNativeData.data(),
-                assetData->m_emfxNativeData.size(),
-                nullptr));
+                assetData->m_emfxNativeData.size()));
 
             if (assetData->m_emfxAnimGraph)
             {

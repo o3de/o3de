@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/MemoryView.h>
 
 #include <AzCore/Debug/EventTrace.h>
@@ -95,7 +94,7 @@ namespace AZ
             if (m_memoryAllocation.m_memory)
             {
                 AZStd::wstring wname;
-                AZStd::to_wstring(wname, name.data(), name.size());
+                AZStd::to_wstring(wname, name);
                 m_memoryAllocation.m_memory->SetName(wname.data());
             }
         }

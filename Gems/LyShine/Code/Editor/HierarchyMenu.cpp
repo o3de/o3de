@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
@@ -36,7 +34,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy,
             New_EmptyElement(hierarchy, selectedItems, menu, (showMask & Show::kNew_EmptyElementAtRoot), optionalPos);
         }
 
-        if (showMask & Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot)
+        if (showMask & (Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot))
         {
             New_ElementFromSlice(hierarchy, selectedItems, menu, (showMask & Show::kNew_InstantiateSliceAtRoot), optionalPos);
         }
@@ -238,14 +236,14 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
         if (showMask & Show::kNewSlice)
         {
             QAction* action = addAction("Make Cascaded Slice from Selected Slices && Entities...");
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, true);
                 }
             );
 
             action = addAction(QObject::tr("Make Detached Slice from Selected Entities..."));
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, false);
                 }
@@ -332,7 +330,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
                                 slicesAddedToMenu.push_back(sliceAsset.GetId());
 
                                 QAction* action = menu->addAction(assetPath.c_str());
-                                QObject::connect(action, &QAction::triggered, [this, hierarchy, sliceAsset]
+                                QObject::connect(action, &QAction::triggered, [hierarchy, sliceAsset]
                                     {
                                         hierarchy->GetEditorWindow()->EditSliceInNewTab(sliceAsset.GetId());
                                     }

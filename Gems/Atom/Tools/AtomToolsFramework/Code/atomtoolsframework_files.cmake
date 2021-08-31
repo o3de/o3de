@@ -7,9 +7,16 @@
 #
 
 set(FILES
+    Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
+    Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Include/AtomToolsFramework/Inspector/InspectorWidget.h
@@ -23,9 +30,19 @@ set(FILES
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
+    Source/Application/AtomToolsApplication.cpp
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
+    Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentMainWindow.cpp
+    Source/Document/AtomToolsDocumentSystemSettings.cpp
+    Source/Document/AtomToolsDocumentSystemComponent.cpp
+    Source/Document/AtomToolsDocumentSystemComponent.h
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp
@@ -38,4 +55,7 @@ set(FILES
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
+    Source/Window/AtomToolsMainWindow.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.h
 )

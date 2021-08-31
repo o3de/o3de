@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <AzCore/base.h>
 #include <AzCore/Memory/Memory.h>
 

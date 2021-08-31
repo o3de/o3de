@@ -135,9 +135,7 @@ CTrackViewKeyHandle CTrackViewSequence::FindSingleSelectedKey()
 
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::OnEntityComponentPropertyChanged(AZ::ComponentId changedComponentId)
-{
-    const AZ::EntityId entityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
-   
+{  
     // find the component node for this changeComponentId if it exists
     for (int i = m_pAnimSequence->GetNodeCount(); --i >= 0;)
     {
@@ -455,7 +453,7 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
 
             // Make sure to deselect any keys
             CTrackViewKeyBundle keys = node->GetAllKeys();
-            for (int key = 0; key < keys.GetKeyCount(); key++)
+            for (unsigned int key = 0; key < keys.GetKeyCount(); key++)
             {
                 CTrackViewKeyHandle keyHandle = keys.GetKey(key);
                 if (keyHandle.IsSelected())
@@ -894,14 +892,14 @@ bool CTrackViewSequence::SetName(const char* name)
         return false;
     }
 
-    const char* oldName = GetName();
-    if (0 != strcmp(name, oldName))
+    AZStd::string oldName = GetName();
+    if (name != oldName)
     {
         m_pAnimSequence->SetName(name);
         MarkAsModified();
 
         AzToolsFramework::ScopedUndoBatch undoBatch("Rename Sequence");
-        GetSequence()->OnNodeRenamed(this, oldName);
+        GetSequence()->OnNodeRenamed(this, oldName.c_str());
         undoBatch.MarkEntityDirty(m_pAnimSequence->GetSequenceEntityId());
     }
 
@@ -1073,7 +1071,7 @@ std::deque<CTrackViewTrack*> CTrackViewSequence::GetMatchingTracks(CTrackViewAni
 {
     std::deque<CTrackViewTrack*> matchingTracks;
 
-    const string trackName = trackNode->getAttr("name");
+    const AZStd::string trackName = trackNode->getAttr("name");
 
     CAnimParamType animParamType;
     animParamType.LoadFromXml(trackNode);
@@ -1133,11 +1131,11 @@ void CTrackViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLo
     for (unsigned int nodeIndex = 0; nodeIndex < numChildNodes; ++nodeIndex)
     {
         XmlNodeRef xmlChildNode = clipboardNode->getChild(nodeIndex);
-        const string tagName = xmlChildNode->getTag();
+        const AZStd::string tagName = xmlChildNode->getTag();
 
         if (tagName == "Node")
         {
-            const string nodeName = xmlChildNode->getAttr("name");
+            const AZStd::string nodeName = xmlChildNode->getAttr("name");
 
             int nodeType = static_cast<int>(AnimNodeType::Invalid);
             xmlChildNode->getAttr("type", nodeType);
@@ -1159,7 +1157,7 @@ void CTrackViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLo
         }
         else if (tagName == "Track")
         {
-            const string trackName = xmlChildNode->getAttr("name");
+            const AZStd::string trackName = xmlChildNode->getAttr("name");
 
             CAnimParamType trackParamType;
             trackParamType.Serialize(xmlChildNode, true);
@@ -1249,7 +1247,7 @@ void CTrackViewSequence::DeselectAllKeys()
     CTrackViewSequenceNotificationContext context(this);
 
     CTrackViewKeyBundle selectedKeys = GetSelectedKeys();
-    for (int i = 0; i < selectedKeys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < selectedKeys.GetKeyCount(); ++i)
     {
         CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(i);
         keyHandle.Select(false);
@@ -1403,7 +1401,7 @@ float CTrackViewSequence::ClipTimeOffsetForSliding(const float timeOffset)
     for (pTrackIter = tracks.begin(); pTrackIter != tracks.end(); ++pTrackIter)
     {
         CTrackViewTrack* pTrack = *pTrackIter;
-        for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             const CTrackViewKeyHandle& keyHandle = pTrack->GetKey(i);
 
@@ -1486,7 +1484,7 @@ void CTrackViewSequence::CloneSelectedKeys()
     std::vector<float> selectedKeyTimes;
     for (size_t k = 0; k < selectedKeys.GetKeyCount(); ++k)
     {
-        CTrackViewKeyHandle skey = selectedKeys.GetKey(k);
+        CTrackViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         if (pTrack != skey.GetTrack())
         {
             pTrack = skey.GetTrack();
@@ -1498,7 +1496,7 @@ void CTrackViewSequence::CloneSelectedKeys()
     // Now, do the actual cloning.
     for (size_t k = 0; k < selectedKeyTimes.size(); ++k)
     {
-        CTrackViewKeyHandle skey = selectedKeys.GetKey(k);
+        CTrackViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         skey = skey.GetTrack()->GetKeyByTime(selectedKeyTimes[k]);
 
         assert(skey.IsValid());

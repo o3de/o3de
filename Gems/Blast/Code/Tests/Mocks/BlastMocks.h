@@ -68,7 +68,7 @@ namespace Blast
 
         uint32_t getChunkCount() const override
         {
-            return m_chunks.size();
+            return static_cast<uint32_t>(m_chunks.size());
         }
 
         const Nv::Blast::ExtPxChunk* getChunks() const override
@@ -78,7 +78,7 @@ namespace Blast
 
         uint32_t getSubchunkCount() const override
         {
-            return m_subchunks.size();
+            return static_cast<uint32_t>(m_subchunks.size());
         }
 
         const Nv::Blast::ExtPxSubchunk* getSubchunks() const override
@@ -562,7 +562,7 @@ namespace Blast
     public:
         FakeEntityProvider(uint32_t entityCount)
         {
-            for (int i = 0; i < entityCount; ++i)
+            for (uint32 i = 0; i < entityCount; ++i)
             {
                 m_entities.push_back(AZStd::make_shared<AZ::Entity>());
             }

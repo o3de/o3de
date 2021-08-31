@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYEntityOutliner.h"
 
 #ifdef IMGUI_ENABLED
@@ -771,8 +770,8 @@ namespace ImGui
                         {
                             AZStd::string name1 = com1->RTTI_GetTypeName();
                             AZStd::string name2 = com2->RTTI_GetTypeName();
-                            AZStd::transform(name1.begin(), name1.end(), name1.begin(), ::tolower);
-                            AZStd::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
+                            AZStd::to_lower(name1.begin(), name1.end());
+                            AZStd::to_lower(name2.begin(), name2.end());
                             return name1 < name2;
                         };
                         AZStd::sort(components.begin(), components.end(), sortByComponentName);
@@ -941,7 +940,7 @@ namespace ImGui
             rootSliceComponent->GetEntityIds(entityIds);
 
             // Save off our count for use later.
-            m_totalEntitiesFound = entityIds.size();
+            m_totalEntitiesFound = static_cast<int>(entityIds.size());
 
             // Clear the entityId to InfoNodePtr Map.
             m_entityIdToInfoNodePtrMap.clear();
@@ -1018,8 +1017,8 @@ namespace ImGui
             AZStd::string name1, name2;
             AZ::ComponentApplicationBus::BroadcastResult(name1, &AZ::ComponentApplicationBus::Events::GetEntityName, ent1->m_entityId);
             AZ::ComponentApplicationBus::BroadcastResult(name2, &AZ::ComponentApplicationBus::Events::GetEntityName, ent2->m_entityId);
-            AZStd::transform(name1.begin(), name1.end(), name1.begin(), ::tolower);
-            AZStd::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
+            AZStd::to_lower(name1.begin(), name1.end());
+            AZStd::to_lower(name2.begin(), name2.end());
             return name1 < name2;
         };
         AZStd::sort(entityInfo->m_children.begin(), entityInfo->m_children.end(), sortByEntityName);

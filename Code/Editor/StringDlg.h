@@ -14,6 +14,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <SandboxAPI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // StringDlg Qt dialog
@@ -24,7 +25,7 @@ typedef bool (StringDlgPredicate)(QString input);
 class StringDlg : public QInputDialog
 {
 public:
-    StringDlg(const QString &title, QWidget* pParent = NULL, bool bFileNameLimitation = false);
+    StringDlg(const QString &title, QWidget* pParent = nullptr, bool bFileNameLimitation = false);
 
     void SetCheckCallback(const std::function<StringDlgPredicate>& Check) {
         m_Check = Check;

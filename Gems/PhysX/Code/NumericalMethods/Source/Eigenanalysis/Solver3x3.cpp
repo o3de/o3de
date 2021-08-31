@@ -6,8 +6,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
-
 #include <algorithm>
 #include <cmath>
 

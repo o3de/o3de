@@ -264,7 +264,7 @@ namespace EditorPythonBindings
                 reinterpret_cast<PythonProxyNotificationHandler*>(userData)->OnEventGenericHook(eventName, eventIndex, result, numParameters, parameters);
             }
 
-            void OnEventGenericHook(const char* eventName, [[maybe_unused]] int eventIndex, [[maybe_unused]] AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            void OnEventGenericHook(const char* eventName, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
             {
                 // find the callback for the event
                 const auto& callbackEntry = m_callbackMap.find(eventName);
@@ -299,12 +299,17 @@ namespace EditorPythonBindings
                         // reset/prepare the stack allocator
                         m_stackVariableAllocator = {};
 
-                        AZ::BehaviorValueParameter coverted;
+                        // Reset the result parameter
+                        m_resultParam = {};
+
                         const AZ::u32 traits = result->m_traits;
-                        if (Convert::PythonToBehaviorValueParameter(*result, pyResult, coverted, m_stackVariableAllocator))
+                        if (Convert::PythonToBehaviorValueParameter(*result, pyResult, m_resultParam, m_stackVariableAllocator))
                         {
-                            result->Set(coverted);
-                            result->m_value = coverted.GetValueAddress();
+                            // Setting result parameter into the output parameter will not fix its pointers
+                            // to use output parameter's internal memory, because of this, result parameter
+                            // needs to be a member so its memory is still valid when accessed in BehaviorEBusHandler::CallResult.
+                            result->Set(m_resultParam);
+                            result->m_value = m_resultParam.GetValueAddress();
                             if ((traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                             {
                                 result->m_value = &result->m_value;
@@ -323,6 +328,7 @@ namespace EditorPythonBindings
             AZ::BehaviorEBusHandler* m_handler = nullptr;
             AZStd::unordered_map<AZStd::string, pybind11::function> m_callbackMap;
             Convert::StackVariableAllocator m_stackVariableAllocator;
+            AZ::BehaviorValueParameter m_resultParam;
         };
     }
 
@@ -388,7 +394,7 @@ namespace EditorPythonBindings
 
                     // log the bus symbol
                     AZStd::string subModuleName = pybind11::cast<AZStd::string>(thisBusModule.attr("__name__"));
-                    PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogBus, subModuleName, ebusName, behaviorEBus);
+                    PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogBus, subModuleName, ebusName, behaviorEBus);
                 }
             }
 

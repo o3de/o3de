@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiTransform2dComponent.h"
 
 #include <AzCore/Math/Crc.h>
@@ -23,6 +22,9 @@
 #include "UiSerialize.h"
 #include "UiElementComponent.h"
 #include "UiCanvasComponent.h"
+
+#include <set>
+#include <list>
 
 namespace
 {
@@ -274,7 +276,7 @@ AZ::Vector2 UiTransform2dComponent::GetViewportSpacePivot()
         AZ::Matrix4x4 transform;
         parentTransformComponent->GetTransformToViewport(transform);
 
-        point3 = transform * point3;    
+        point3 = transform * point3;
     }
 
     return AZ::Vector2(point3.GetX(), point3.GetY());
@@ -1455,7 +1457,7 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
 LyShine::EntityArray UiTransform2dComponent::GetDescendantsWithSameDimensionScaleToDevice(ScaleToDeviceMode scaleToDeviceMode) const
 {
     // Check if any descendants have their scale to device mode set in the same dimension
-    auto HasSameDimensionScaleToDevice = [this, scaleToDeviceMode](const AZ::Entity* entity)
+    auto HasSameDimensionScaleToDevice = [scaleToDeviceMode](const AZ::Entity* entity)
     {
         ScaleToDeviceMode descendantScaleToDeviceMode = ScaleToDeviceMode::None;
         EBUS_EVENT_ID_RESULT(descendantScaleToDeviceMode, entity->GetId(), UiTransformBus, GetScaleToDeviceMode);

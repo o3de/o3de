@@ -40,9 +40,9 @@ namespace AZ
             return m_lods;
         }
 
-        Data::Instance<Model> Model::CreateInternal(ModelAsset& modelAsset)
+        Data::Instance<Model> Model::CreateInternal(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             Data::Instance<Model> model = aznew Model();
             const RHI::ResultCode resultCode = model->Init(modelAsset);
 
@@ -54,15 +54,15 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode Model::Init(ModelAsset& modelAsset)
+        RHI::ResultCode Model::Init(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
-            m_lods.resize(modelAsset.GetLodAssets().size());
+            m_lods.resize(modelAsset->GetLodAssets().size());
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
-                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset.GetLodAssets()[lodIndex];
+                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset->GetLodAssets()[lodIndex];
 
                 if (!lodAsset)
                 {
@@ -70,7 +70,7 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
 
-                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset);
+                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset, modelAsset);
                 if (lodInstance == nullptr)
                 {
                     return RHI::ResultCode::Fail;
@@ -98,7 +98,7 @@ namespace AZ
                 m_lods[lodIndex] = AZStd::move(lodInstance);
             }
 
-            m_modelAsset = { &modelAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            m_modelAsset = modelAsset;
             m_isUploadPending = true;
             return RHI::ResultCode::Success;
         }
@@ -107,7 +107,7 @@ namespace AZ
         {
             if (m_isUploadPending)
             {
-                AZ_PROFILE_SCOPE_STALL_DYNAMIC(Debug::ProfileCategory::AzRender, "Model::WaitForUpload - %s", GetDatabaseName());
+                AZ_PROFILE_SCOPE(RPI, "Model::WaitForUpload - %s", GetDatabaseName());
                 for (const Data::Instance<ModelLod>& lod : m_lods)
                 {
                     lod->WaitForUpload();
@@ -128,7 +128,7 @@ namespace AZ
 
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             
             if (!GetModelAsset())
             {
@@ -171,7 +171,7 @@ namespace AZ
             float& distanceNormalized,
             AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
 
             const AZ::Transform inverseTM = modelTransform.GetInverse();

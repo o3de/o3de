@@ -14,6 +14,8 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AtomLyIntegration/AtomFont/FontCommon.h>
 
+class ICrySizer;
+
 namespace AZ
 {
     class GlyphBitmap

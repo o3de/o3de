@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
@@ -108,7 +106,7 @@ namespace WhiteBox
                     WhiteBoxMesh* whiteBox = nullptr;
                     EditorWhiteBoxComponentRequestBus::EventResult(
                         whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-                    m_selectedHandleIndex = vertexIndex;
+                    m_selectedHandleIndex = static_cast<AZ::u32>(vertexIndex);
                     InitializeScaleModifier(whiteBox, action);
                 });
 

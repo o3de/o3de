@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include <LyShine/Draw2d.h>
 
@@ -29,7 +27,7 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        AZ::Vector2 scaledSize(size.m_width, size.m_height);
+        AZ::Vector2 scaledSize(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
         if (m_applyDpiScaleFactorToSize)
         {
             scaledSize *= m_dpiScaleFactor;

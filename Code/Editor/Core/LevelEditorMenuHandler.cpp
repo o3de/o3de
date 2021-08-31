@@ -41,8 +41,6 @@ using namespace AZ;
 using namespace AzToolsFramework;
 
 static const char* const s_LUAEditorName = "Lua Editor";
-static const char* const s_shortTimeInterval = "debug";
-static const char* const s_assetImporterMetricsIdentifier = "AssetImporter";
 
 // top level menu ids
 static const char* const s_fileMenuId = "FileMenu";
@@ -50,7 +48,6 @@ static const char* const s_editMenuId = "EditMenu";
 static const char* const s_gameMenuId = "GameMenu";
 static const char* const s_toolMenuId = "ToolMenu";
 static const char* const s_viewMenuId = "ViewMenu";
-static const char* const s_awsMenuId = "AwsMenu";
 static const char* const s_helpMenuId = "HelpMenu";
 
 static bool CompareLayoutNames(const QString& name1, const QString& name2)
@@ -80,12 +77,12 @@ namespace
             , m_trigger(trigger)
         {}
 
-        virtual ~EditorListener()
+        ~EditorListener() override
         {
             GetIEditor()->UnregisterNotifyListener(this);
         }
 
-        void OnEditorNotifyEvent(EEditorNotifyEvent event)
+        void OnEditorNotifyEvent(EEditorNotifyEvent event) override
         {
             m_trigger(event);
         }
@@ -157,13 +154,11 @@ namespace
     }
 }
 
-LevelEditorMenuHandler::LevelEditorMenuHandler(
-    MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, QSettings& settings)
+LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
     , m_viewPaneManager(viewPaneManager)
     , m_actionManager(mainWindow->GetActionManager())
-    , m_settings(settings)
 {
 #if defined(AZ_PLATFORM_MAC)
     // Hide the non-native toolbar, then setNativeMenuBar to ensure it is always visible on macOS.
@@ -544,12 +539,12 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
 
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
-    snapMenu.AddAction(ID_SNAPANGLE);
+    snapMenu.AddAction(AzToolsFramework::SnapAngle);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
-    transformModeMenu.AddAction(ID_EDITMODE_MOVE);
-    transformModeMenu.AddAction(ID_EDITMODE_ROTATE);
-    transformModeMenu.AddAction(ID_EDITMODE_SCALE);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeRotate);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeScale);
 
     editMenu.AddSeparator();
 

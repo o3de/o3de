@@ -208,6 +208,32 @@ namespace AZ
 
 
     template <typename... Params>
+    auto Event<Params...>::ClaimHandlers(Event&& other) -> Event&
+    {
+        auto handlers = AZStd::move(other.m_handlers);
+        auto addList = AZStd::move(other.m_addList);
+        other.m_freeList = {};
+        other.m_updating = false;
+
+        AZStd::array handlerContainers{ &handlers, &addList };
+        for (AZStd::vector<Handler*>* handlerList : handlerContainers)
+        {
+            for (Handler* handler : *handlerList)
+            {
+                if (handler != nullptr)
+                {
+                    handler->m_index = 0;
+                    handler->m_event = this;
+                    Connect(*handler);
+                }
+            }
+        }
+
+        return *this;
+    }
+
+
+    template <typename... Params>
     bool Event<Params...>::HasHandlerConnected() const
     {
         for (Handler* handler : m_handlers)

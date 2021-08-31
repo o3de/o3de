@@ -28,9 +28,26 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        if (!m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
+        // Search Bar
+        if (!m_sourceModel->GetDisplayName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetCreator(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetSummary(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
         {
-            return false;
+            bool foundFeature = false;
+            for (const QString& feature : m_sourceModel->GetFeatures(sourceIndex))
+            {
+                if (feature.contains(m_searchString, Qt::CaseInsensitive))
+                {
+                    foundFeature = true;
+                    break;
+                }
+            }
+
+            if (!foundFeature)
+            {
+                return false;
+            }
         }
 
         // Gem status

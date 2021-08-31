@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "ComponentEditor.hxx"
 #include "ComponentEditorHeader.hxx"
 
@@ -36,6 +35,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // 4251: 'QInputE
                                                                // 4244: 'return': conversion from 'qreal' to 'int', possible loss of data
 #include <QContextMenuEvent>
 AZ_POP_DISABLE_WARNING
+#include <QtWidgets/QApplication>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
@@ -397,7 +397,7 @@ namespace AzToolsFramework
         AzQtComponents::CardNotification * notification = CreateNotification(message);
         const QPushButton * featureButton = notification->addButtonFeature(tr("Continue"));
 
-        connect(featureButton, &QPushButton::clicked, this, [this, notification]()
+        connect(featureButton, &QPushButton::clicked, this, [notification]()
         {
             notification->close();
         });
@@ -527,7 +527,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::SetComponentOverridden(const bool overridden)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto entityId = m_components[0]->GetEntityId();
         AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;

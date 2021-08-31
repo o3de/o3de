@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <System/PhysXJob.h>
 #include <AzCore/Debug/Profiler.h>
 
@@ -20,7 +19,7 @@ namespace PhysX
 
     void PhysXJob::Process()
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, m_pxTask.getName());
+        AZ_PROFILE_SCOPE(Physics, m_pxTask.getName());
         m_pxTask.run();
         m_pxTask.release();
     }

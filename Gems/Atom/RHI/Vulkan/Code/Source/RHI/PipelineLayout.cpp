@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
 #include <RHI/Conversion.h>
@@ -135,7 +134,7 @@ namespace AZ
 
                 uint32_t bindingSlot = srgLayout->GetBindingSlot();
                 m_indexToSlot[bindingInfo.m_spaceId].set(bindingSlot);
-                m_slotToIndex[bindingSlot] = bindingInfo.m_spaceId;
+                m_slotToIndex[bindingSlot] = static_cast<uint8_t>(bindingInfo.m_spaceId);
             }
 
             m_descriptorSetLayouts.reserve(srgCount);

@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Maestro_precompiled.h
     Source/Cinematics/ShadowsSetupNode.h
     Source/Cinematics/ShadowsSetupNode.cpp
     Include/Maestro/MaestroBus.h
@@ -22,7 +21,6 @@ set(FILES
     Source/Cinematics/AnimSequence.h
     Source/Cinematics/CharacterTrackAnimator.h
     Source/Cinematics/Movie.h
-    Source/Cinematics/Maestro_precompiled.h
     Source/Cinematics/TCBSpline.h
     Source/Cinematics/resource.h
     Source/Cinematics/AnimSplineTrack.cpp

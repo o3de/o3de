@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QTableView>
 
@@ -55,7 +54,7 @@ namespace ScriptCanvasDeveloper
                 qreal verticalPoint = boundingRect.top() + boundingRect.height() * m_offsets.m_verticalPosition;
                 verticalPoint += m_offsets.m_verticalOffset;
 
-                AZ::Vector2 scenePoint(horizontalPoint, verticalPoint);
+                AZ::Vector2 scenePoint(static_cast<float>(horizontalPoint), static_cast<float>(verticalPoint));
                 GetStateModel()->SetStateData(m_outputId, scenePoint);
             }
         }
@@ -93,7 +92,7 @@ namespace ScriptCanvasDeveloper
             qreal verticalPoint = groupBoundingBox.top() + groupBoundingBox.height() * m_offsets.m_verticalPosition;
             verticalPoint += m_offsets.m_verticalPosition;
 
-            AZ::Vector2 scenePoint(horizontalPoint, verticalPoint);
+            AZ::Vector2 scenePoint(static_cast<float>(horizontalPoint), static_cast<float>(verticalPoint));
             GetStateModel()->SetStateData(m_outputId, scenePoint);
         }
         else
@@ -188,7 +187,6 @@ namespace ScriptCanvasDeveloper
 
     DeleteVariableRowFromPaletteState::DeleteVariableRowFromPaletteState(int row)
         : NamedAutomationState("DeleteVariableRowFromPaletteState")
-        , m_row(row)
         , m_clickAction(Qt::MouseButton::LeftButton)
         , m_deleteAction(VK_DELETE)
     {

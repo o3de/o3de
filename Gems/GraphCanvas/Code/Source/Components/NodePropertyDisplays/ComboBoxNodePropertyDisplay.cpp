@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QGraphicsSceneDragDropEvent>
 #include <QGraphicsProxyWidget>
@@ -404,6 +403,4 @@ namespace GraphCanvas
             m_menuDisplayDirty = true;
         }
     }
-
-#include <Source/Components/NodePropertyDisplays/moc_ComboBoxNodePropertyDisplay.cpp>
 }

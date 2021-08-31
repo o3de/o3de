@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 
 #include <LyShine/Draw2d.h>
+#include "LyShinePassDataBus.h"
 
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/MatrixUtils.h>
@@ -71,7 +71,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
 
     // Load the shader to be used for 2d drawing
     const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
+    AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadCriticalShader(shaderFilepath);
 
     // Set scene to be associated with the dynamic draw context
     AZ::RPI::ScenePtr scene;
@@ -88,6 +88,12 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     AZ_Assert(scene != nullptr, "Attempting to create a DynamicDrawContext for a viewport context that has not been associated with a scene yet.");
 
     // Create and initialize a DynamicDrawContext for 2d drawing
+
+    // Get the pass for the dynamic draw context to render to
+    AZ::RPI::RasterPass* uiCanvasPass = nullptr;
+    AZ::RPI::SceneId sceneId = scene->GetId();
+    LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
+
     m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
     AZ::RPI::ShaderOptionList shaderOptions;
     shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
@@ -100,7 +106,15 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
-    m_dynamicDraw->SetOutputScope(scene.get());
+    if (uiCanvasPass)
+    {
+        m_dynamicDraw->SetOutputScope(uiCanvasPass);
+    }
+    else
+    {
+        // Render target support is disabled
+        m_dynamicDraw->SetOutputScope(scene.get());
+    }
     m_dynamicDraw->EndInit();
 
     // Cache draw srg input indices for later use
@@ -469,6 +483,7 @@ bool CDraw2d::GetDeferPrimitives()
     return m_deferCalls;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDraw2d::SetSortKey(int64_t key)
 {
     m_dynamicDraw->SetSortKey(key);

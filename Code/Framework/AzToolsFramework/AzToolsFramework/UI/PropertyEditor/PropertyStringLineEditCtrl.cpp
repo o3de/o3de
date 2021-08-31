@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyStringLineEditCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/StyledLineEdit.h>
@@ -143,16 +142,16 @@ namespace AzToolsFramework
 
     void StringPropertyLineEditHandler::WriteGUIValuesIntoProperty(size_t index, PropertyStringLineEditCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = GUI->value();
         instance = static_cast<property_t>(val);
     }
 
     bool StringPropertyLineEditHandler::ReadValuesIntoGUI(size_t index, PropertyStringLineEditCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = instance;
         GUI->setValue(val);
         return false;

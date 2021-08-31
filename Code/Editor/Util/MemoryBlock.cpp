@@ -18,7 +18,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 CMemoryBlock::CMemoryBlock()
-    : m_buffer(0)
+    : m_buffer(nullptr)
     , m_size(0)
     , m_uncompressedSize(0)
     , m_owns(false)
@@ -54,7 +54,7 @@ CMemoryBlock& CMemoryBlock::operator=(const CMemoryBlock& mem)
     }
     else
     {
-        m_buffer = 0;
+        m_buffer = nullptr;
         m_size = 0;
         m_owns = false;
     }
@@ -104,7 +104,7 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
     m_size = size;
     m_uncompressedSize = uncompressedSize;
     // Check if allocation failed.
-    if (m_buffer == 0)
+    if (m_buffer == nullptr)
     {
         return false;
     }
@@ -118,7 +118,7 @@ void CMemoryBlock::Free()
     {
         free(m_buffer);
     }
-    m_buffer = 0;
+    m_buffer = nullptr;
     m_owns = false;
     m_size = 0;
     m_uncompressedSize = 0;
@@ -175,7 +175,7 @@ void CMemoryBlock::Uncompress(CMemoryBlock& toBlock) const
 #endif
         uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
     assert(result == Z_OK);
-    assert(destSize == m_uncompressedSize);
+    assert(destSize == static_cast<unsigned long>(m_uncompressedSize));
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -351,7 +351,7 @@ void CVarBlock::EnableUpdateCallbacks(bool boEnable)
 void CVarBlock::GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources)
 {
     int type = pVar->GetDataType();
-    if (type == IVariable::DT_FILE || type == IVariable::DT_OBJECT || type == IVariable::DT_TEXTURE)
+    if (type == IVariable::DT_TEXTURE)
     {
         // this is file.
         QString filename;
@@ -447,7 +447,7 @@ void CVarObject::AddVariable(CVariableArray& table, CVariableBase& var, const QS
 //////////////////////////////////////////////////////////////////////////
 void CVarObject::RemoveVariable(IVariable* var)
 {
-    if (m_vars != NULL)
+    if (m_vars != nullptr)
     {
         m_vars->DeleteVariable(var);
     }
@@ -455,7 +455,7 @@ void CVarObject::RemoveVariable(IVariable* var)
 //////////////////////////////////////////////////////////////////////////
 void CVarObject::EnableUpdateCallbacks(bool boEnable)
 {
-    if (m_vars != NULL)
+    if (m_vars != nullptr)
     {
         m_vars->EnableUpdateCallbacks(boEnable);
     }
@@ -463,7 +463,7 @@ void CVarObject::EnableUpdateCallbacks(bool boEnable)
 //////////////////////////////////////////////////////////////////////////
 void CVarObject::OnSetValues()
 {
-    if (m_vars != NULL)
+    if (m_vars != nullptr)
     {
         m_vars->OnSetValues();
     }
@@ -471,7 +471,7 @@ void CVarObject::OnSetValues()
 //////////////////////////////////////////////////////////////////////////
 void CVarObject::ReserveNumVariables(int numVars)
 {
-    if (m_vars != NULL)
+    if (m_vars != nullptr)
     {
         m_vars->ReserveNumVariables(numVars);
     }
@@ -482,7 +482,7 @@ void CVarObject::CopyVariableValues(CVarObject* sourceObject)
 {
     // Check if compatible types.
     assert(metaObject() == sourceObject->metaObject());
-    if (m_vars != NULL && sourceObject->m_vars != NULL)
+    if (m_vars != nullptr && sourceObject->m_vars != nullptr)
     {
         m_vars->CopyValues(sourceObject->m_vars);
     }
@@ -511,7 +511,7 @@ CVarGlobalEnumList::CVarGlobalEnumList(const QString& enumName)
 //! Get the name of specified value in enumeration.
 QString CVarGlobalEnumList::GetItemName(uint index)
 {
-    if (!m_pEnum || index >= m_pEnum->strings.size())
+    if (!m_pEnum || index >= static_cast<uint>(m_pEnum->strings.size()))
     {
         return QString();
     }

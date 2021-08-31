@@ -6,27 +6,20 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
+#include <AzCore/PlatformIncl.h>
 #include <Compressors/CTSquisher.h>
 #include <Compressors/PVRTC.h>
 #include <Compressors/ETC2.h>
-
-// this is required for the AZ_TRAIT_IMAGEPROCESSING_USE_ISPC_TEXTURE_COMPRESSOR define
-#include <ImageProcessing_Traits_Platform.h>
-
-#if AZ_TRAIT_IMAGEPROCESSING_USE_ISPC_TEXTURE_COMPRESSOR
 #include <Compressors/ISPCTextureCompressor.h>
-#endif
 
 namespace ImageProcessingAtom
 {
-    ICompressorPtr ICompressor::FindCompressor(EPixelFormat fmt, ColorSpace colorSpace, bool isCompressing)
+    ICompressorPtr ICompressor::FindCompressor(EPixelFormat fmt, [[maybe_unused]] ColorSpace colorSpace, bool isCompressing)
     {
         // The ISPC texture compressor is able to compress BC1, BC3, BC6H and BC7 formats, and all of the ASTC formats.
         // Note: The ISPC texture compressor is only able to compress images that are a multiple of the compressed format's blocksize.
         // Another limitation is that the compressor requires LDR source images to be in sRGB colorspace.
-#if AZ_TRAIT_IMAGEPROCESSING_USE_ISPC_TEXTURE_COMPRESSOR
         if (ISPCCompressor::IsCompressedPixelFormatSupported(fmt))
         {
             if ((isCompressing && ISPCCompressor::IsSourceColorSpaceSupported(colorSpace, fmt)) || (!isCompressing && ISPCCompressor::DoesSupportDecompress(fmt)))
@@ -34,7 +27,6 @@ namespace ImageProcessingAtom
                 return ICompressorPtr(new ISPCCompressor());
             }
         }
-#endif
 
         if (CTSquisher::IsCompressedPixelFormatSupported(fmt))
         {

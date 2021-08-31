@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiScrollBoxComponent.h"
 #include "Sprite.h"
 
@@ -1501,7 +1500,6 @@ AZ::Vector2 UiScrollBoxComponent::ConstrainOffset(AZ::Vector2 proposedOffset, AZ
 
         // add the requested scroll offset to the content rect to get the proposed position
         // The content has already need moved by the requested offset all but latestOffsetDelta
-        UiTransformInterface::Rect origContentRect = contentRect;
         contentRect.MoveBy(latestOffsetDelta);
 
         if (contentRect.GetWidth() <= parentRect.GetWidth())

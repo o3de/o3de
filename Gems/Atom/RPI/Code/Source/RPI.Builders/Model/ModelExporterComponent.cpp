@@ -31,6 +31,7 @@
 #include <cinttypes>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -40,6 +41,15 @@ namespace AZ
 
         ModelExporterComponent::ModelExporterComponent()
         {
+            // This setting disables model output (for automated testing purposes) to allow an FBX file to be processed without including
+            // all the dependencies required to process a model.  
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            bool skipAtomOutput = false;
+            if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+            {
+                return;
+            }
+
             BindToCall(&ModelExporterComponent::ExportModel);
         }
 
@@ -68,9 +78,17 @@ namespace AZ
             //Export MaterialAssets
             for (auto& materialPair : materialsByUid)
             {
+                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
+                
+                // MaterialAssetBuilderContext could attach an independent material asset rather than
+                // generate one using the scene data, so we must skip the export step in that case.
+                if (asset.GetId().m_guid != exportEventContext.GetScene().GetSourceGuid())
+                {
+                    continue;
+                }
+
                 uint64_t materialUid = materialPair.first;
                 const AZStd::string& sceneName = exportEventContext.GetScene().GetName();
-                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
 
                 // escape the material name acceptable for a filename
                 AZStd::string materialName = materialPair.second.m_name;

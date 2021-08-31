@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <CryCommon/BaseTypes.h>
+#include <CryCommon/platform.h>
 
 class CTimeValue
 {
@@ -161,8 +163,6 @@ public:
     ILINE bool operator<=(const CTimeValue& inRhs) const { return m_lValue <= inRhs.m_lValue; };
     ILINE bool operator==(const CTimeValue& inRhs) const { return m_lValue == inRhs.m_lValue; };
     ILINE bool operator!=(const CTimeValue& inRhs) const { return m_lValue != inRhs.m_lValue; };
-
-    AUTO_STRUCT_INFO
 
     void GetMemoryStatistics(class ICrySizer*) const { /*nothing*/}
 

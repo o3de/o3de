@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysX_precompiled.h"
-
 #include <Source/ForceRegionComponent.h>
 #include <Source/ForceRegionForces.h>
 
@@ -117,7 +115,7 @@ namespace PhysX
 
     void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto entityId : m_entities)
         {

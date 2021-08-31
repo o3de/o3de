@@ -7,11 +7,12 @@
  */
 
 
-#include "EditorCommon_precompiled.h"
 #include "TimeSlider.h"
 
 #include <QPainter>
 #include <QPalette>
+
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace DrawingPrimitives
 {

@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "ScriptEventsSystemComponent.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -26,6 +25,8 @@
 #include <ScriptEvents/ScriptEventsAssetRef.h>
 #include <ScriptEvents/ScriptEventDefinition.h>
 #include <ScriptEvents/ScriptEventFundamentalTypes.h>
+
+AZ_DEFINE_BUDGET(ScriptCanvas);
 
 namespace ScriptEvents
 {

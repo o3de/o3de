@@ -6,10 +6,11 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "PlainTextEdit.hxx"
 
 #include <QtGui/QTextBlock>
+
+#include <AzCore/std/functional.h>
 
 namespace AzToolsFramework
 {

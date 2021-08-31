@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiMarkupButtonComponent.h"
 
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -33,7 +32,7 @@ namespace
     {
         // Iterate through the clickable rects to find one that contains the point
         int clickableRectIndex = -1;
-        const int numClickableRects = clickableTextRects.size();
+        const int numClickableRects = static_cast<int>(clickableTextRects.size());
         for (int i = 0; i < numClickableRects; ++i)
         {
             const auto& clickableRect = clickableTextRects[i];

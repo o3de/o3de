@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
@@ -28,6 +27,7 @@
 
 #include <StlUtils.h>
 #include <MathConversion.h>
+#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
@@ -75,20 +75,20 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 //////////////////////////////////////////////////////////////////////////
 // Serialization for anim nodes & param types
 #define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(AnimNodeType::name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[string(STRINGIFY(name))] = AnimNodeType::name;
+    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                                                         \
+    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
 #define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(AnimParamType::name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[AnimParamType::name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[string(STRINGIFY(name))] = AnimParamType::name;
+    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                                                           \
+    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimParamType::name;
 
 namespace
 {
-    AZStd::unordered_map<AnimNodeType, string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<string, AnimNodeType, stl::less_stricmp<string> >> g_animNodeStringToEnumMap;
+    AZStd::unordered_map<AnimNodeType, AZStd::string> g_animNodeEnumToStringMap;
+    StaticInstance<std::map<AZStd::string, AnimNodeType, stl::less_stricmp<AZStd::string> >> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<AnimParamType, string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<string, AnimParamType, stl::less_stricmp<string> >> g_animParamStringToEnumMap;
+    AZStd::unordered_map<AnimParamType, AZStd::string> g_animParamEnumToStringMap;
+    StaticInstance<std::map<AZStd::string, AnimParamType, stl::less_stricmp<AZStd::string> >> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()
@@ -380,7 +380,7 @@ IAnimSequence* CMovieSystem::GetSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumSequences() const
 {
-    return m_sequences.size();
+    return static_cast<int>(m_sequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -399,7 +399,7 @@ IAnimSequence* CMovieSystem::GetPlayingSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumPlayingSequences() const
 {
-    return m_playingSequences.size();
+    return static_cast<int>(m_playingSequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -411,7 +411,7 @@ void CMovieSystem::AddSequence(IAnimSequence* sequence)
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::IsCutScenePlaying() const
 {
-    const uint numPlayingSequences = m_playingSequences.size();
+    const uint numPlayingSequences = static_cast<uint>(m_playingSequences.size());
     for (uint i = 0; i < numPlayingSequences; ++i)
     {
         const IAnimSequence* pAnimSequence = m_playingSequences[i].sequence.get();
@@ -974,9 +974,6 @@ void CMovieSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     std::vector<const char*> names;
 
@@ -1480,8 +1477,7 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 
     if (gEnv->IsEditor() && gEnv->IsEditorGameMode() == false)
     {
-        string editorCmd;
-        editorCmd.Format("mov_goToFrameEditor %s %f", seqName, targetFrame);
+        AZStd::string editorCmd = AZStd::string::format("mov_goToFrameEditor %s %f", seqName, targetFrame);
         gEnv->pConsole->ExecuteString(editorCmd.c_str());
         return;
     }
@@ -1680,7 +1676,7 @@ void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xml
     {
         const char* pTypeString = "Invalid";
         assert(g_animNodeEnumToStringMap.find(animNodeType) != g_animNodeEnumToStringMap.end());
-        pTypeString = g_animNodeEnumToStringMap[animNodeType];
+        pTypeString = g_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1781,7 +1777,7 @@ void CMovieSystem::SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNo
         }
 
         assert(g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end());
-        pTypeString = g_animParamEnumToStringMap[animParamType.m_type];
+        pTypeString = g_animParamEnumToStringMap[animParamType.m_type].c_str();
     }
 
     xmlNode->setAttr(kParamType, pTypeString);
@@ -1816,7 +1812,7 @@ const char* CMovieSystem::GetParamTypeName(const CAnimParamType& animParamType)
     {
         if (g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end())
         {
-            return g_animParamEnumToStringMap[animParamType.m_type];
+            return g_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
     }
 
@@ -1964,20 +1960,20 @@ void CLightAnimWrapper::InvalidateAllNodes()
 
 CLightAnimWrapper* CLightAnimWrapper::FindLightAnim(const char* name)
 {
-    LightAnimWrapperCache::const_iterator it = ms_lightAnimWrapperCache.find(CONST_TEMP_STRING(name));
+    LightAnimWrapperCache::const_iterator it = ms_lightAnimWrapperCache.find(name);
     return it != ms_lightAnimWrapperCache.end() ? (*it).second : 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CLightAnimWrapper::CacheLightAnim(const char* name, CLightAnimWrapper* p)
 {
-    ms_lightAnimWrapperCache.insert(LightAnimWrapperCache::value_type(string(name), p));
+    ms_lightAnimWrapperCache.insert(LightAnimWrapperCache::value_type(AZStd::string(name), p));
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CLightAnimWrapper::RemoveCachedLightAnim(const char* name)
 {
-    ms_lightAnimWrapperCache.erase(CONST_TEMP_STRING(name));
+    ms_lightAnimWrapperCache.erase(name);
 }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING

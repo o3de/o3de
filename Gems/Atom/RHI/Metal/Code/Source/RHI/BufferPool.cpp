@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/BufferPoolDescriptor.h>
@@ -103,8 +102,7 @@ namespace AZ
         void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
-            auto& device = static_cast<Device&>(GetDevice());
-            
+
             if (auto* resolver = GetResolver())
             {
                 resolver->OnResourceShutdown(resourceBase);

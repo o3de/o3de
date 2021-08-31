@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include <QLabel>
@@ -34,7 +32,7 @@ MainToolbar::MainToolbar(EditorWindow* parent)
 
     QObject::connect(m_zoomFactorSpinBox,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
-        [this, parent](double value)
+        [parent](double value)
         {
             parent->GetViewport()->GetViewportInteraction()->SetCanvasZoomPercent(static_cast<float>(value));
         });

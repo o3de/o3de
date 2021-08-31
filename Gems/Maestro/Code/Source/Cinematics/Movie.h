@@ -15,7 +15,11 @@
 #pragma once
 #include <AzCore/std/containers/map.h>
 
+#include <CryCommon/TimeValue.h>
+#include <CryCommon/StaticInstance.h>
+
 #include "IMovieSystem.h"
+#include "IShader.h"
 
 struct PlayingSequence
 {
@@ -48,7 +52,7 @@ public:
     static void InvalidateAllNodes();
 
 private:
-    typedef std::map<string, CLightAnimWrapper*> LightAnimWrapperCache;
+    typedef std::map<AZStd::string, CLightAnimWrapper*> LightAnimWrapperCache;
     static StaticInstance<LightAnimWrapperCache> ms_lightAnimWrapperCache;
     static AZStd::intrusive_ptr<IAnimSequence> ms_pLightAnimSet;
 

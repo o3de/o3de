@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <ImageProcessing_precompiled.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Processing/ImageToProcess.h>

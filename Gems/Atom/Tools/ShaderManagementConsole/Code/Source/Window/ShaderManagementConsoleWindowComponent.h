@@ -13,7 +13,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
-#include <Atom/Window/ShaderManagementConsoleWindowRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <Atom/Core/ShaderManagementConsoleRequestBus.h>
 #include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
 #include <Source/Window/ShaderManagementConsoleWindow.h>
@@ -24,7 +24,7 @@ namespace ShaderManagementConsole
     //! used for initialization and registration of other classes, including ShaderManagementConsoleWindow.
     class ShaderManagementConsoleWindowComponent
         : public AZ::Component
-        , private ShaderManagementConsoleWindowRequestBus::Handler
+        , private AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler
         , private ShaderManagementConsoleRequestBus::Handler
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
@@ -51,9 +51,9 @@ namespace ShaderManagementConsole
         //////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // ShaderManagementConsoleWindowRequestBus::Handler overrides...
-        void CreateShaderManagementConsoleWindow() override;
-        void DestroyShaderManagementConsoleWindow() override;
+        // AtomToolsMainWindowFactoryRequestBus::Handler overrides...
+        void CreateMainWindow() override;
+        void DestroyMainWindow() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

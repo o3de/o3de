@@ -10,6 +10,15 @@ include(cmake/FileUtil.cmake)
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
+define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
+    BRIEF_DOCS "Defines if a \"RUN\" targets should be created when installing this target Gem"
+    FULL_DOCS [[
+        Property which is set on targets that should generate a "RUN"
+        target when installed. This \"RUN\" target helps to run the 
+        binary from the installed location directly from the IDE.
+    ]]
+)
+
 ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
 
 cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
@@ -36,7 +45,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
     # Instead, we install them with install(DIRECTORY)
-    set(include_location "include")
     get_target_property(include_directories ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
     if (include_directories)
         unset(public_headers)
@@ -54,9 +62,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                     continue()
                 endif()
 
+                unset(rel_include_dir)
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
-                cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
-                cmake_path(NORMAL_PATH destination_dir)
+                cmake_path(APPEND rel_include_dir "..")
+                cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
@@ -65,6 +74,8 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.h
                         PATTERN *.hpp
                         PATTERN *.inl
+                        PATTERN *.hxx
+                        PATTERN *.jinja # LyAutoGen files
                 )
             endif()
         endforeach()
@@ -116,15 +127,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         set(NAMESPACE_PLACEHOLDER "")
         set(NAME_PLACEHOLDER ${TARGET_NAME})
     endif()
+    get_target_property(should_create_helper ${TARGET_NAME} LY_INSTALL_GENERATE_RUN_TARGET)
+    if(should_create_helper)
+        set(NAME_PLACEHOLDER ${NAME_PLACEHOLDER}.Imported)
+    endif()
 
     set(TARGET_TYPE_PLACEHOLDER "")
-    get_target_property(target_type ${NAME_PLACEHOLDER} TYPE)
+    get_target_property(target_type ${TARGET_NAME} TYPE)
     # Remove the _LIBRARY since we dont need to pass that to ly_add_targets
     string(REPLACE "_LIBRARY" "" TARGET_TYPE_PLACEHOLDER ${target_type})
     # For HEADER_ONLY libs we end up generating "INTERFACE" libraries, need to specify HEADERONLY instead
     string(REPLACE "INTERFACE" "HEADERONLY" TARGET_TYPE_PLACEHOLDER ${TARGET_TYPE_PLACEHOLDER})
     if(TARGET_TYPE_PLACEHOLDER STREQUAL "MODULE")
-        get_target_property(gem_module ${NAME_PLACEHOLDER} GEM_MODULE)
+        get_target_property(gem_module ${TARGET_NAME} GEM_MODULE)
         if(gem_module)
             set(TARGET_TYPE_PLACEHOLDER "GEM_MODULE")
         endif()
@@ -142,10 +157,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         foreach(include ${include_directories})
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
-                cmake_path(NORMAL_PATH target_include)
-                # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${include_location}/${target_include}\n")
+                # Make the include path relative to the source dir where the target will be declared
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${target_include}\n")
             endif()
         endforeach()
     endif()
@@ -156,7 +170,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     else()
         unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     endif()
-
 
     get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
@@ -181,6 +194,23 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
 
+    # If the target is an executable/application, add a custom target so we can debug the target in project-centric workflow
+    if(should_create_helper)
+        string(REPLACE ".Imported" "" RUN_TARGET_NAME ${NAME_PLACEHOLDER})
+        set(target_types_with_debugging_helper EXECUTABLE APPLICATION)
+        if(NOT target_type IN_LIST target_types_with_debugging_helper)
+            message(FATAL_ERROR "Cannot generate a RUN target for ${TARGET_NAME}, type is ${target_type}")
+        endif()
+        set(TARGET_RUN_HELPER
+"add_custom_target(${RUN_TARGET_NAME})
+set_target_properties(${RUN_TARGET_NAME} PROPERTIES 
+    FOLDER \"O3DE_SDK\"
+    VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
+    VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
+)"
+)
+    endif()
+
     # Config file
     set(target_file_contents "# Generated by O3DE install\n\n")
     if(NOT target_type STREQUAL INTERFACE_LIBRARY)
@@ -193,13 +223,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     APPEND_STRING PROPERTY IMPORTED_IMPLIB
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
 )
 ")
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
         \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
 )
@@ -211,11 +241,11 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 
         if(target_location)
             string(APPEND target_file_contents
-"set_property(TARGET ${TARGET_NAME}
+"set_property(TARGET ${NAME_PLACEHOLDER}
     APPEND_STRING PROPERTY IMPORTED_LOCATION
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:${target_location}$<ANGLE-R>
 )
-set_property(TARGET ${TARGET_NAME}
+set_property(TARGET ${NAME_PLACEHOLDER}
     PROPERTY IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>>
         ${target_location}
 )
@@ -325,9 +355,16 @@ function(ly_setup_o3de_install)
 
     ly_setup_subdirectories()
     ly_setup_cmake_install()
-    ly_setup_target_generator()
     ly_setup_runtime_dependencies()
-    ly_setup_others()
+    ly_setup_assets()
+
+    # Misc
+    install(FILES
+        ${LY_ROOT_FOLDER}/ctest_pytest.ini
+        ${LY_ROOT_FOLDER}/LICENSE.txt
+        ${LY_ROOT_FOLDER}/README.md
+        DESTINATION .
+    )
 
 endfunction()
 
@@ -418,11 +455,15 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    install(CODE
+    if(COMMAND ly_install_code_function_override)
+        ly_install_code_function_override()
+    else()
+        install(CODE
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-    )
+        )
+    endif()
 
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
@@ -445,7 +486,8 @@ endfunction()"
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
-            ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
+            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
+            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()
@@ -454,75 +496,12 @@ endfunction()"
 
     list(REMOVE_DUPLICATES runtime_commands)
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
-    install(CODE "${runtime_commands_str}"
-    )
+    install(CODE "${runtime_commands_str}")
 
 endfunction()
 
-#! ly_setup_others: install directories required by the engine
-function(ly_setup_others)
-
-    # List of directories we want to install relative to engine root
-    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole)
-    foreach(dir ${DIRECTORIES_TO_INSTALL})
-
-        get_filename_component(install_path ${dir} DIRECTORY)
-        if (NOT install_path)
-            set(install_path .)
-        endif()
-
-        install(DIRECTORY "${LY_ROOT_FOLDER}/${dir}"
-            DESTINATION ${install_path}
-            PATTERN "__pycache__" EXCLUDE
-        )
-
-    endforeach()
-
-    # Scripts
-    file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-    install(PROGRAMS
-        ${o3de_scripts}
-        DESTINATION ./scripts
-    )
-
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/scripts/bundler
-        ${LY_ROOT_FOLDER}/scripts/o3de
-        DESTINATION ./scripts
-        PATTERN "__pycache__" EXCLUDE
-        PATTERN "CMakeLists.txt" EXCLUDE
-        PATTERN "tests" EXCLUDE
-    )
-
-    install(DIRECTORY "${LY_ROOT_FOLDER}/python"
-        DESTINATION .
-        REGEX "downloaded_packages" EXCLUDE
-        REGEX "runtime" EXCLUDE
-        REGEX ".*$\.sh" EXCLUDE
-    )
-
-    # For Mac/Linux shell scripts need to be installed as PROGRAMS to have execute permission
-    file(GLOB python_scripts "${LY_ROOT_FOLDER}/python/*.sh")
-    install(PROGRAMS
-        ${python_scripts}
-        DESTINATION ./python
-    )
-
-    # Registry
-    install(DIRECTORY
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
-        DESTINATION ./${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-    )
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Registry
-        DESTINATION .
-    )
-
-    # Engine Source Assets
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Assets
-        DESTINATION .
-    )
+#! ly_setup_assets: install asset directories required by the engine
+function(ly_setup_assets)
 
     # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
@@ -609,82 +588,6 @@ function(ly_setup_others)
             endif()
         endforeach()
 
-    endforeach()
-
-    # Templates
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Templates
-        DESTINATION .
-    )
-
-    # Misc
-    install(FILES
-        ${LY_ROOT_FOLDER}/ctest_pytest.ini
-        ${LY_ROOT_FOLDER}/LICENSE.txt
-        ${LY_ROOT_FOLDER}/README.md
-        DESTINATION .
-    )
-
-endfunction()
-
-#! ly_setup_target_generator: install source files needed for project launcher generation
-function(ly_setup_target_generator)
-
-    install(FILES
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_generator.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_project_files.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/LauncherProject.cpp
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/StaticModules.in
-        DESTINATION LauncherGenerator
-    )
-    install(DIRECTORY ${LY_ROOT_FOLDER}/Code/LauncherUnified/Platform
-        DESTINATION LauncherGenerator
-    )
-    install(FILES ${LY_ROOT_FOLDER}/Code/LauncherUnified/FindLauncherGenerator.cmake
-        DESTINATION cmake
-    )
-
-endfunction()
-
-#! ly_add_install_paths: Adds the list of path to copy to the install layout relative to the same folder
-# \arg:PATHS - Paths to copy over to the install layout. The DESTINATION sub argument is optional
-#      The INPUT sub-argument is required
-# \arg:BASE_DIRECTORY(Optional) - Absolute path where a relative path from the each input path will be
-#      based off of. Defaults to LY_ROOT_FOLDER if not supplied
-function(ly_add_install_paths)
-    set(options)
-    set(oneValueArgs BASE_DIRECTORY)
-    set(multiValueArgs PATHS)
-    cmake_parse_arguments(ly_add_install_paths "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT ly_add_install_paths_PATHS)
-        message(FATAL_ERROR "ly_add_install_paths requires at least one input path to copy to the destination")
-    endif()
-    
-    # The default is the "." directory if not supplied
-    if(NOT ly_add_install_paths_BASE_DIRECTORY)
-        cmake_path(SET ly_add_install_paths_BASE_DIRECTORY ${LY_ROOT_FOLDER})
-    endif()
-    
-    # Separate each path into an INPUT and DESTINATION parameter
-    set(options)
-    set(oneValueArgs INPUT DESTINATION)
-    set(multiValueArgs)
-    foreach(install_path IN LISTS ly_add_install_paths_PATHS)
-        string(REPLACE " " ";" install_path ${install_path})
-        cmake_parse_arguments(install "${options}" "${oneValueArgs}" "${multiValueArgs}" ${install_path})
-        if(NOT install_DESTINATION)
-            ly_get_engine_relative_source_dir(${install_INPUT} rel_to_root_input_path
-                BASE_DIRECTORY ${ly_add_install_paths_BASE_DIRECTORY})
-            cmake_path(GET rel_to_root_input_path PARENT_PATH install_DESTINATION)
-        endif()
-        if(NOT install_DESTINATION)
-            cmake_path(SET install_DESTINATION .)
-        endif()
-        if(IS_DIRECTORY ${install_INPUT})
-            install(DIRECTORY ${install_INPUT} DESTINATION ${install_DESTINATION})
-        elseif(EXISTS ${install_INPUT})
-            install(FILES ${install_INPUT} DESTINATION ${install_DESTINATION})
-        endif()
     endforeach()
 
 endfunction()

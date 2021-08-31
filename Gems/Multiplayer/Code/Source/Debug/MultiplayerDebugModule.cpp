@@ -6,7 +6,6 @@
  *
  */
 
-#include <Source/Multiplayer_precompiled.h>
 #include <Source/Debug/MultiplayerDebugModule.h>
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 
@@ -29,4 +28,4 @@ namespace Multiplayer
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Imgui, Multiplayer::MultiplayerDebugModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug, Multiplayer::MultiplayerDebugModule);

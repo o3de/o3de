@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "MaterialNode.h"
 #include "AnimTrack.h"
@@ -175,13 +174,13 @@ void CAnimMaterialNode::UpdateDynamicParamsInternal()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CAnimMaterialNode::GetParamCount() const
 {
-    return s_nodeParams.size() + m_dynamicShaderParamInfos.size();
+    return static_cast<unsigned int>(s_nodeParams.size() + m_dynamicShaderParamInfos.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimMaterialNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
@@ -218,7 +217,7 @@ bool CAnimMaterialNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
+AZStd::string CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
 {
     if (param.GetType() == AnimParamType::ByString)
     {

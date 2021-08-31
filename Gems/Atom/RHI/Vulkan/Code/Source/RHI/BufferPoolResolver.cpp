@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferPoolResolver.h>
@@ -95,7 +94,6 @@ namespace AZ
         void BufferPoolResolver::Resolve(CommandList& commandList)
         {
             auto& device = static_cast<Device&>(commandList.GetDevice());
-            VkBufferCopy bufCopy{};
             for (const BufferUploadPacket& packet : m_uploadPackets)
             {
                 Buffer* stagingBuffer = packet.m_stagingBuffer.get();

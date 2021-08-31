@@ -141,7 +141,6 @@ struct CryHalf2
 
     void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
 
-    AUTO_STRUCT_INFO
 };
 
 struct CryHalf4
@@ -197,7 +196,6 @@ struct CryHalf4
 
     void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
 
-    AUTO_STRUCT_INFO
 };
 
 #endif // #ifndef CRY_HALF_INL

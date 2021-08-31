@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -34,8 +32,7 @@ namespace QtHelpers
 
     float GetHighDpiScaleFactor(const QWidget& widget)
     {
-        float dpiScale = QHighDpiScaling::factor(widget.windowHandle()->screen());
-        return dpiScale;
+        return static_cast<float>(QHighDpiScaling::factor(widget.windowHandle()->screen()));
     }
 
     QSize GetDpiScaledViewportSize(const QWidget& widget)
@@ -43,7 +40,7 @@ namespace QtHelpers
         float dpiScale = GetHighDpiScaleFactor(widget);
         float width = ceilf(widget.size().width() * dpiScale);
         float height = ceilf(widget.size().height() * dpiScale);
-        return QSize(width, height);        
+        return QSize(static_cast<int>(width), static_cast<int>(height));
     }
 
 }   // namespace QtHelpers

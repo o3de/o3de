@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/SliceFavorites_precompiled.h
     Include/SliceFavorites/SliceFavoritesBus.h
     Source/SliceFavoritesSystemComponent.cpp
     Source/SliceFavoritesSystemComponent.h

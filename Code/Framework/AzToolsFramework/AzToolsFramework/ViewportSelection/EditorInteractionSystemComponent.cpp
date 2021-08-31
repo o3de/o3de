@@ -50,11 +50,19 @@ namespace AzToolsFramework
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(GetEntityContextId());
         }
 
-        m_entityDataCache = AZStd::make_unique<EditorVisibleEntityDataCache>();
+        // temporarily disconnect from EditorInteractionSystemViewportSelectionRequestBus in case during the creation of
+        // m_interactionRequests (see interactionRequestsBuilder below) an event is propagated to the handler, if this happens then
+        // m_interactionRequests will be null as it will not have finished being created yet so we ensure no events are forwarded to it
+        EditorInteractionSystemViewportSelectionRequestBus::Handler::BusDisconnect();
 
-        m_interactionRequests.reset(); // BusConnect/Disconnect in constructor/destructor,
-                                       // so have to reset before assigning the new one
-        m_interactionRequests = interactionRequestsBuilder(m_entityDataCache.get());
+        {
+            m_entityDataCache = AZStd::make_unique<EditorVisibleEntityDataCache>();
+            m_interactionRequests.reset(); // BusConnect/Disconnect in constructor/destructor,
+                                           // so have to reset before assigning the new one
+            m_interactionRequests = interactionRequestsBuilder(m_entityDataCache.get());
+        }
+
+        EditorInteractionSystemViewportSelectionRequestBus::Handler::BusConnect(GetEntityContextId());
     }
 
     void EditorInteractionSystemComponent::SetDefaultHandler()
@@ -77,7 +85,7 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::DisplayViewport(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // calculate which entities are in the view and can be interacted with
         // and cache that data to make iterating/looking it up much faster

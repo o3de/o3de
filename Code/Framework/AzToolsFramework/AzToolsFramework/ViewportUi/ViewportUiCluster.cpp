@@ -6,8 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
-
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 
@@ -15,13 +13,12 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiCluster::ViewportUiCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : QToolBar(nullptr)
-        , m_buttonGroup(buttonGroup)
+        , m_buttonGroup(AZStd::move(buttonGroup))
     {
         setOrientation(Qt::Orientation::Vertical);
         setStyleSheet("background: black;");
 
-        const AZStd::vector<Button*> buttons = buttonGroup->GetButtons();
-        for (auto button : buttons)
+        for (auto button : m_buttonGroup->GetButtons())
         {
             RegisterButton(button);
         }
@@ -35,10 +32,12 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         AddClusterAction(
             action,
-            [this, button]() {
+            [this, button]()
+            {
                 m_buttonGroup->PressButton(button->m_buttonId);
             },
-            [button](QAction* action) {
+            [button](QAction* action)
+            {
                 action->setChecked(button->m_state == Button::State::Selected);
             });
 
@@ -47,8 +46,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiCluster::RemoveButton(ButtonId buttonId)
     {
-        if (auto actionEntry = m_buttonActionMap.find(buttonId);
-            actionEntry != m_buttonActionMap.end())
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
         {
             auto action = actionEntry->second;
             RemoveClusterAction(action);
@@ -57,8 +55,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     }
 
     void ViewportUiCluster::AddClusterAction(
-        QAction* action, const AZStd::function<void()>& callback,
-        const AZStd::function<void(QAction*)>& updateCallback)
+        QAction* action, const AZStd::function<void()>& callback, const AZStd::function<void(QAction*)>& updateCallback)
     {
         if (!action)
         {
@@ -81,10 +78,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         // register the action
-        m_widgetCallbacks.AddWidget(action, [updateCallback](QPointer<QObject> object)
-        {
-            updateCallback(static_cast<QAction*>(object.data()));
-        });
+        m_widgetCallbacks.AddWidget(
+            action,
+            [updateCallback](QPointer<QObject> object)
+            {
+                updateCallback(static_cast<QAction*>(object.data()));
+            });
     }
 
     void ViewportUiCluster::RemoveClusterAction(QAction* action)
@@ -112,10 +111,13 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (m_lockedButtonId.has_value() && isLocked)
         {
             // find the button to extract the old icon (without overlay)
-            auto findLocked = [this](const Button* button) { return (button->m_buttonId == m_lockedButtonId); };
+            auto findLocked = [this](const Button* button)
+            {
+                return (button->m_buttonId == m_lockedButtonId);
+            };
             if (auto lockedButtonIt = AZStd::find_if(buttons.begin(), buttons.end(), findLocked); lockedButtonIt != buttons.end())
             {
-                // get the action corresponding to the lockedButtonId 
+                // get the action corresponding to the lockedButtonId
                 if (auto actionEntry = m_buttonActionMap.find(m_lockedButtonId.value()); actionEntry != m_buttonActionMap.end())
                 {
                     // remove the overlay
@@ -125,14 +127,18 @@ namespace AzToolsFramework::ViewportUi::Internal
             }
         }
 
-        auto found = [buttonId](Button* button) { return (button->m_buttonId == buttonId); };
+        auto found = [buttonId](Button* button)
+        {
+            return (button->m_buttonId == buttonId);
+        };
+
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QIcon newIcon;
 
             if (isLocked)
             {
-                // overlay the locked icon ontop of the button's icon
+                // overlay the locked icon on top of the button's icon
                 QPixmap comboPixmap(24, 24);
                 comboPixmap.fill(Qt::transparent);
                 QPixmap firstImage(QString((*buttonIt)->m_icon.c_str()));

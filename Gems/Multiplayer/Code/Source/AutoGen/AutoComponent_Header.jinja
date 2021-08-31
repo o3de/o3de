@@ -8,22 +8,22 @@
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
+const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
 {% else %}
-const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
+const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
 {% endif %}
-const {{ Property.attrib['Type'] }} &Get{{ PropertyName }}(int32_t index) const;
+const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}
 {%     elif Property.attrib['Container'] == 'Vector' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Vector() const;
+const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
 {% else %}
-const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Vector() const;
+const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
 {% endif %}
-const {{ Property.attrib['Type'] }} &Get{{ PropertyName }}(int32_t index) const;
-const {{ Property.attrib['Type'] }} &{{ PropertyName }}GetBack() const;
+const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
+const {{ Property.attrib['Type'] }}& {{ PropertyName }}GetBack() const;
 uint32_t {{ PropertyName }}GetSize() const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
@@ -63,7 +63,7 @@ void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
 {% macro DeclareNetworkPropertyGetters(Component, ReplicateFrom, ReplicateTo, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
-{% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
+{% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) }}
@@ -105,7 +105,7 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {% macro DeclareNetworkPropertyAccessors(Component, ReplicateFrom, ReplicateTo, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
-{% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
+{% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) -}}
@@ -130,9 +130,9 @@ void {{ PropertyName }}({{ ', '.join(paramDefines) }});
 {#
 
 #}
-{% macro DeclareRpcInvocations(Component, Section, HandleOn, ProctectedSection) %}
+{% macro DeclareRpcInvocations(Component, Section, HandleOn, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, Section, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
+{%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {{ DeclareRpcInvocation(Property, HandleOn) -}}
 {%    endif %}
 {% endcall %}
@@ -176,7 +176,7 @@ RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count']
 AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {% endif %}
 {%     elif Property.attrib['IsRewindable']|booleanTrue %}
-Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::RewindHistorySize> m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
+Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::RewindHistorySize> m_{{ LowerFirst(Property.attrib['Name']) }} { {{ Property.attrib['Init'] }} };
 {%     else %}
 {{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
 {%     endif %}
@@ -386,8 +386,6 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Client', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Client', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
@@ -445,8 +443,8 @@ namespace {{ Component.attrib['Namespace'] }}
 
         static AZStd::unique_ptr<Multiplayer::IMultiplayerComponentInput> AllocateComponentInput();
 
-        {{ ComponentBaseName }}() = default;
-        ~{{ ComponentBaseName }}() override = default;
+        {{ ComponentBaseName }}();
+        ~{{ ComponentBaseName }}() override;
 
         void Init() override;
         void Activate() override;
@@ -459,6 +457,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', false)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) -}}
@@ -483,6 +482,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) -}}

@@ -10,6 +10,11 @@
 					".fbx",
 					".stl"
 				]
+			},
+			"MaterialConverter": 
+			{
+				"Enable": true,
+				"DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
 			}
 		}
 	}

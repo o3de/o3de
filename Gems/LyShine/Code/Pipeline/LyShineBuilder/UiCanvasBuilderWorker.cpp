@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include <Pipeline/LyShineBuilder/UiCanvasBuilderWorker.h>
 
 #include <AssetBuilderSDK/SerializationDependencies.h>

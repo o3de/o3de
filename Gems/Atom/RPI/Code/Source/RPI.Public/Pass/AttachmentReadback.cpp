@@ -23,7 +23,7 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -121,7 +121,7 @@ namespace AZ
 
             // Load shader and srg
             const char* ShaderPath = "shader/decomposemsimage.azshader";
-            m_decomposeShader = LoadShader(ShaderPath);
+            m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
             {

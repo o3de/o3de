@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointInput_precompiled.h"
+
 #include "InputConfigurationComponent.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/SystemFile.h>
@@ -52,7 +52,7 @@ namespace StartingPointInput
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/InputConfig.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/InputConfig.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/InputConfig.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<InputEventBindingsAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/input/")
@@ -62,7 +62,7 @@ namespace StartingPointInput
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
-                        ->Attribute("EditDescription", "Open in Input Bindings Editor")
+                        ->Attribute("EditDescription", "Open in Asset Editor")
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &InputConfigurationComponent::m_localPlayerIndex, "Local player index",
                             "The player index that this component will receive input from (0 based, -1 means all controllers).\n"
                             "Will only work on platforms such as PC where the local user id corresponds to the local player index.\n"

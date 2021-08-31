@@ -6,7 +6,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
 #include <MicrophoneSystemComponent.h>
 
 namespace Audio

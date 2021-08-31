@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <Components/BlastSystemComponent.h>
 
@@ -33,6 +32,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #endif
+#include <CryCommon/ISystem.h>
 
 namespace Blast
 {
@@ -112,7 +112,7 @@ namespace Blast
 
     void BlastSystemComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(Physics);
         auto blastAssetHandler = aznew BlastAssetHandler();
         blastAssetHandler->Register();
         m_assetHandlers.emplace_back(blastAssetHandler);
@@ -141,7 +141,7 @@ namespace Blast
 
     void BlastSystemComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(Physics);
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
@@ -185,7 +185,7 @@ namespace Blast
 
     void BlastSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZ::JobCompletion jobCompletion;
 
@@ -226,18 +226,18 @@ namespace Blast
 
         for (auto& group : m_groups)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "ExtGroupTaskManager::process");
+            AZ_PROFILE_SCOPE(Physics, "ExtGroupTaskManager::process");
             group.m_extGroupTaskManager->process();
         }
         for (auto& group : m_groups)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "ExtGroupTaskManager::wait");
+            AZ_PROFILE_SCOPE(Physics, "ExtGroupTaskManager::wait");
             group.m_extGroupTaskManager->wait();
         }
 
         // Clean up damage descriptions and program params now that groups have run.
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "BlastSystemComponent::OnTick::Cleanup");
+            AZ_PROFILE_SCOPE(Physics, "BlastSystemComponent::OnTick::Cleanup");
             m_radialDamageDescs.clear();
             m_capsuleDamageDescs.clear();
             m_shearDamageDescs.clear();
@@ -248,7 +248,7 @@ namespace Blast
 
         if (gEnv && m_debugRenderMode)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "BlastSystemComponent::OnTick::DebugRender");
+            AZ_PROFILE_SCOPE(Physics, "BlastSystemComponent::OnTick::DebugRender");
             DebugRenderBuffer buffer;
             BlastFamilyComponentRequestBus::Broadcast(
                 &BlastFamilyComponentRequests::FillDebugRenderBuffer, buffer, m_debugRenderMode);
@@ -428,18 +428,16 @@ namespace Blast
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneStart(const char* eventName)
     {
-        AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Physics, eventName);
+        AZ_PROFILE_BEGIN(Physics, eventName);
     }
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneEnd()
     {
-        AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_END(Physics);
     }
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)
     {
-        using namespace CryStringUtils;
-
         const int argumentCount = args->GetArgCount();
 
         if (argumentCount == 2)

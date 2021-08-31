@@ -10,10 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include "Include/EditorCoreAPI.h"
-#endif
-
-#if !defined(Q_MOC_RUN)
-#include "Include/EditorCoreAPI.h"
 #include <QtViewPane.h>
 #include "Resource.h"
 #include <AzToolsFramework/API/ViewPaneOptions.h>
@@ -71,7 +67,6 @@ private:
     void reparentToMainWindowFix();
     QRect ProperGeometry() const;
     QString settingsKey() const;
-    QSettings* const m_settings;
     QMainWindow* const m_mainWindow;
     QtViewPane* const m_pane;
     AzQtComponents::FancyDocking* m_advancedDockManager;

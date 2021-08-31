@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
@@ -26,11 +25,9 @@ namespace AZ
         RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
         {
             Image* image = static_cast<Image*>(request.m_image);
-            auto& device = static_cast<Device&>(GetDevice());
-            
+
             const RHI::ImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
-            const RHI::Origin& imageSubresourcePixelOffset =  request.m_imageSubresourcePixelOffset;
-            
+
             const uint32_t stagingRowPitch = sourceSubresourceLayout.m_bytesPerRow;
             const uint32_t stagingSlicePitch = sourceSubresourceLayout.m_bytesPerImage;
             const uint32_t stagingSize = stagingSlicePitch * sourceSubresourceLayout.m_size.m_depth;

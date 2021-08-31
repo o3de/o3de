@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "ScriptEventMethod.h"
 #include "ScriptEventsBindingBus.h"
 
@@ -123,7 +121,7 @@ namespace ScriptEvents
     {
         // Iterate from end of parameters and count the number of consecutive valid BehaviorValue objects
         size_t numDefaultArguments = 0;
-        for (size_t i = GetNumArguments() - 1; i >= 0 && GetDefaultValue(i); --i, ++numDefaultArguments)
+        for (int i = static_cast<int>(GetNumArguments()) - 1; i >= 0 && GetDefaultValue(static_cast<size_t>(i)); --i, ++numDefaultArguments)
         {
         }
         return GetNumArguments() - numDefaultArguments;

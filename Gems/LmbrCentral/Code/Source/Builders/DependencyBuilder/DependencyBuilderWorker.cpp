@@ -6,16 +6,14 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "DependencyBuilderWorker.h"
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace DependencyBuilder
 {
-    DependencyBuilderWorker::DependencyBuilderWorker(AZStd::string jobKey, bool critical)
+    DependencyBuilderWorker::DependencyBuilderWorker(AZStd::string jobKey, [[maybe_unused]] bool critical)
         : m_jobKey(jobKey)
-        , m_critical(critical)
     {
     }
 

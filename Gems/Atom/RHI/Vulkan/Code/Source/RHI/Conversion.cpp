@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Conversion.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
@@ -258,7 +257,7 @@ namespace AZ
             state.srcAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaSource);
             state.dstAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaDest);
             state.alphaBlendOp = ConvertBlendOp(targetBlendState.m_blendAlphaOp);
-            state.colorWriteMask = ConvertComponentFlags(targetBlendState.m_writeMask);
+            state.colorWriteMask = ConvertComponentFlags(static_cast<uint8_t>(targetBlendState.m_writeMask));
         }
 
         VkBlendFactor ConvertBlendFactor(const RHI::BlendFactor& blendFactor)

@@ -34,8 +34,6 @@ namespace ExecutionInterpretedAPICpp
 
     constexpr size_t k_StringFastSize = 32;
 
-    constexpr size_t k_MaxNodeableOuts = 64;
-
     constexpr size_t k_UuidSize = 16;
 
     constexpr unsigned char k_Bad = 77;
@@ -551,7 +549,7 @@ namespace ScriptCanvas
         {
             using namespace ExecutionInterpretedAPICpp;
             // Lua: usernodeable, keyCount
-            const int argsCount = lua_gettop(lua);
+            [[maybe_unused]] const int argsCount = lua_gettop(lua);
             AZ_Assert(argsCount == 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "InitializeNodeableOutKeys: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
@@ -699,7 +697,7 @@ namespace ScriptCanvas
             ActivationData data(args.runtimeOverrides, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
             PushActivationArgs(lua, range.inputs, range.totalCount);
-            return range.totalCount;
+            return static_cast<int>(range.totalCount);
         }
 
         int UnpackDependencyConstructionArgs(lua_State* lua)

@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -18,6 +16,7 @@
 #include "CanvasHelpers.h"
 #include "GuideHelpers.h"
 #include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <Util/PathUtil.h>
 
 #include <QFileDialog>
 #include <QMenuBar>
@@ -705,7 +704,7 @@ void EditorWindow::AddMenu_View()
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
             &QAction::triggered,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             gEnv->pCryFont->ReloadAllFonts();
         });
@@ -725,7 +724,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
     // Iterate through the subdirectories of the localization folder. Each
     // directory corresponds to a different language containing localization
     // translations for that language.
-    string fullLocPath(string(gEnv->pFileIO->GetAlias("@assets@")) + "/" + string(m_startupLocFolderName.toUtf8().constData()));
+    AZStd::string fullLocPath(AZStd::string(gEnv->pFileIO->GetAlias("@assets@")) + "/" + AZStd::string(m_startupLocFolderName.toUtf8().constData()));
     QDir locDir(fullLocPath.c_str());
     locDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     locDir.setSorting(QDir::Name);

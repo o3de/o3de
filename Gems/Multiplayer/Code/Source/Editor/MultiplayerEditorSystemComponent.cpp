@@ -105,7 +105,7 @@ namespace Multiplayer
                 m_serverProcess->TerminateProcess(0);
                 m_serverProcess = nullptr;
             }
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
             if (editorNetworkInterface)
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
@@ -147,13 +147,9 @@ namespace Multiplayer
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
-        // Launch the Server and give it a few seconds to boot up
+        // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-        if (outProcess)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
-        }
 
         return outProcess;
     }
@@ -198,7 +194,7 @@ namespace Multiplayer
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Now that the server has launched, attempt to connect the NetworkInterface         
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
             m_editorConnId = editorNetworkInterface->Connect(
                 AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));

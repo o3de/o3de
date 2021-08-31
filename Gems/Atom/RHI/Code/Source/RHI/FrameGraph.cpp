@@ -126,6 +126,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {
@@ -496,7 +497,7 @@ namespace AZ
                 for (const uint32_t edgeIndex : graphEdges[producerIndex])
                 {
                     const GraphEdge& graphEdge = m_graphEdges[edgeIndex];
-                    const uint16_t consumerIndex = graphEdge.m_consumerIndex;
+                    const uint16_t consumerIndex = static_cast<uint16_t>(graphEdge.m_consumerIndex);
                     if (--m_graphNodes[consumerIndex].m_unsortedProducerCount == 0)
                     {
                         NodeId newNode;

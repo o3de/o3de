@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Null_precompiled.h"
 #include <RHI/BufferPool.h>
 
 namespace AZ

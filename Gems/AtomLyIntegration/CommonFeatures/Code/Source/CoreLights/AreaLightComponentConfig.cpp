@@ -18,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(6) // ATOM-15654
+                    ->Version(7) // ATOM-16034
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -33,6 +33,7 @@ namespace AZ
                     ->Field("OuterShutterAngleDegrees", &AreaLightComponentConfig::m_outerShutterAngleDegrees)
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
+                    ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
@@ -194,6 +195,17 @@ namespace AZ
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool AreaLightComponentConfig::IsSofteningBoundaryWidthDisabled() const
+        {
+            // softening boundary width is always available with ESM. It controls the width of the blur kernel during the ESM gaussian
+            // blur passes
+            if (!IsEsmDisabled())
+                return false;
+
+            // with PCF, softening boundary width is used with the boundary search method and NOT the bicubic pcf methods
+            return IsPcfBoundarySearchDisabled();
         }
 
     }

@@ -6,13 +6,12 @@
  *
  */
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontTexture::WriteToFile([[maybe_unused]] const string& fileName)
+int AZ::FontTexture::WriteToFile([[maybe_unused]] const AZStd::string& fileName)
 {
     return 1;
 }

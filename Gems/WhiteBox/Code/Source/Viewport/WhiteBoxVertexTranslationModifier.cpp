@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxModifierUtil.h"
@@ -91,7 +89,7 @@ namespace WhiteBox
             const auto screenLength = std::fabs(currentAction.ScreenOffset().Dot(screenAxis));
             if (screenLength > maxLength)
             {
-                axisIndex = actionIndex;
+                axisIndex = static_cast<int>(actionIndex);
                 maxLength = screenLength;
             }
         }

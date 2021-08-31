@@ -6,8 +6,6 @@
  *
  */
 
-#include "StartingPointInput_precompiled.h"
-
 #include "InputConfigurationComponent.h"
 #include "InputEventBindings.h"
 #include "InputEventMap.h"

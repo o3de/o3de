@@ -230,7 +230,7 @@ namespace TestImpact
             processInFlight.m_process = LaunchProcess(AZStd::move(processInfo));
             processInFlight.m_startTime = createTime;
         }
-        catch (ProcessException& e)
+        catch ([[maybe_unused]] ProcessException& e)
         {
             AZ_Warning("ProcessScheduler", false, e.what());
             createResult = LaunchResult::Failure;
@@ -270,7 +270,6 @@ namespace TestImpact
             {
                 processInFlight.m_process->Terminate(ProcessTerminateErrorCode);
                 AccumulateProcessStdContent(processInFlight);
-                const ProcessId processId = processInFlight.m_process->GetProcessInfo().GetId();
 
                 if (isCallingBackToClient)
                 {

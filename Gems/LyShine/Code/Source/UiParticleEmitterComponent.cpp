@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
-
 #include "UiParticleEmitterComponent.h"
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"
@@ -411,7 +409,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellIndex(int spriteSheetIndex)
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellIndex = AZ::GetMin(numCells, m_spriteSheetCellIndex);
         m_spriteSheetCellEndIndex = AZ::GetMax(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -430,7 +428,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellEndIndex(int spriteSheetEndIn
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellEndIndex = AZ::GetMin(numCells, m_spriteSheetCellEndIndex);
         m_spriteSheetCellIndex = AZ::GetMin(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -761,7 +759,7 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
+    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(static_cast<AZ::u32>(m_particleContainer.size()), m_particleBufferSize);
     if (particlesToRender == 0)
     {
         return;
@@ -787,7 +785,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
+        CSprite* sprite = static_cast<CSprite*>(m_sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         if (sprite)
         {
             image = sprite->GetImage();
@@ -832,7 +830,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::u32 totalVerticesInserted = 0;
 
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
-    for (int i = 0; i < particlesToRender; ++i)
+    for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
         SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
@@ -845,7 +843,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+    LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
     if (lyRenderGraph)
     {
         lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -1827,9 +1825,9 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
-    for (int i = 0; i < numIndices; i += indicesPerParticle)
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
+    for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;
         m_cachedPrimitive.m_indices[i + 1] = 1 + baseIndex;
@@ -1945,7 +1943,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     m_spriteSheetCellIndex = 0;
     if (IsSpriteTypeSpriteSheet())
     {
-        m_spriteSheetCellEndIndex = m_sprite->GetSpriteSheetCells().size() - 1;
+        m_spriteSheetCellEndIndex = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size() - 1);
     }
 }
 
@@ -2088,7 +2086,7 @@ UiParticleEmitterComponent::AZu32ComboBoxVec UiParticleEmitterComponent::Populat
     // There may not be a sprite loaded for this component
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
 
         if (numCells != 0)
         {

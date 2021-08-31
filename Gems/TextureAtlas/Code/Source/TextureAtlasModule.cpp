@@ -6,8 +6,6 @@
  *
  */
 
-#include "TextureAtlas_precompiled.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "TextureAtlasSystemComponent.h"

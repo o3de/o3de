@@ -42,8 +42,11 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
-            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            PrefabOperationResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            PrefabOperationResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -64,8 +67,11 @@ namespace AzToolsFramework
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
-            bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
+            PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
+                const EntityList& inputEntities,
+                Instance& commonRootEntityOwningInstance,
+                EntityList& outEntities,
+                AZStd::vector<Instance*>& outInstances) const;
             EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;

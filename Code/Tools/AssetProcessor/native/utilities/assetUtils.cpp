@@ -72,11 +72,6 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
-        if (waitTimeInSeconds < 0)
-        {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
-            waitTimeInSeconds = 0;
-        }
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
@@ -1026,7 +1021,7 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AzToolsFramework::AssetSystem::JobInfo& jobInfo)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), static_cast<uint64_t>(jobInfo.m_jobRunKey));
+        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
     }
 
     AZStd::string ComputeJobLogFileName(const AssetBuilderSDK::CreateJobsRequest& createJobsRequest)
@@ -1246,7 +1241,7 @@ namespace AssetUtilities
         return 0;
     }
 
-    std::uint64_t AdjustTimestamp(QDateTime timestamp)
+    AZ::u64 AdjustTimestamp(QDateTime timestamp)
     {
         timestamp = timestamp.toUTC();
 
@@ -1281,7 +1276,7 @@ namespace AssetUtilities
         else
         {
             bool useHash = ShouldUseFileHashing();
-            std::uint64_t fileIdentifier;
+            AZ::u64 fileIdentifier;
             if(useHash)
             {
                 fileIdentifier = GetFileHash(absolutePath.c_str());
@@ -1295,13 +1290,13 @@ namespace AssetUtilities
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
             // but with a different name.  So we add that too.
-            return AZStd::string::format("%" PRIX64 ":%" PRIu64 ":%s", fileIdentifier, aznumeric_cast<uint64_t>(fileStateInfo.m_fileSize), nameToUse.c_str());
+            return AZStd::string::format("%" PRIX64 ":%" PRIu64 ":%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
         }
     }
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), static_cast<uint64_t>(jobEntry.m_jobRunKey));
+        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1404,7 +1399,6 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
-        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 

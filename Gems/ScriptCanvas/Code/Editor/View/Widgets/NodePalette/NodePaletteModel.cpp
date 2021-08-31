@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
@@ -86,16 +85,6 @@ namespace
     bool MethodHasAttribute(const AZ::BehaviorMethod* method, AZ::Crc32 attribute)
     {
         return AZ::FindAttribute(attribute, method->m_attributes) != nullptr; // warning C4800: 'AZ::Attribute *': forcing value to bool 'true' or 'false' (performance warning)
-    }
-
-    bool HasAttribute(const AZ::BehaviorClass* behaviorClass, AZ::Crc32 attributeCrc)
-    {
-        AZ::Attribute* attribute = AZ::FindAttribute(attributeCrc, behaviorClass->m_attributes);
-        if (attribute)
-        {
-            return true;
-        }
-        return false;
     }
 
     // Checks for and returns the Category attribute from an AZ::AttributeArray

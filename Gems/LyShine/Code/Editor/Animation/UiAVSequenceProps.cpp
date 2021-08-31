@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVSequenceProps.h"
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
@@ -44,9 +43,9 @@ CUiAVSequenceProps::~CUiAVSequenceProps()
 }
 
 // CUiAVSequenceProps message handlers
-BOOL CUiAVSequenceProps::OnInitDialog()
+bool CUiAVSequenceProps::OnInitDialog()
 {
-    QString name = m_pSequence->GetName();
+    QString name = QString::fromUtf8(m_pSequence->GetName().c_str());
     ui->NAME->setText(name);
 
     ui->MOVE_SCALE_KEYS->setChecked(false);
@@ -76,7 +75,7 @@ BOOL CUiAVSequenceProps::OnInitDialog()
         ui->ORT_ONCE->setChecked(true);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -136,7 +135,7 @@ void CUiAVSequenceProps::OnOK()
         ac->UpdateTimeRange();
     }
 
-    QString seqName = m_pSequence->GetName();
+    QString seqName = QString::fromUtf8(m_pSequence->GetName().c_str());
     if (name != seqName)
     {
         // Rename sequence.

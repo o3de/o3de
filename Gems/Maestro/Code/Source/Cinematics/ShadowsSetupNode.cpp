@@ -9,7 +9,6 @@
 
 // Description : CryMovie animation node for shadow settings
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include "ShadowsSetupNode.h"
@@ -82,13 +81,13 @@ void CShadowsSetupNode::OnReset()
 //-----------------------------------------------------------------------------
 unsigned int CShadowsSetupNode::GetParamCount() const
 {
-    return ShadowSetupNode::s_shadowSetupParams.size();
+    return static_cast<int>(ShadowSetupNode::s_shadowSetupParams.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CShadowsSetupNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)ShadowSetupNode::s_shadowSetupParams.size())
+    if (nIndex < ShadowSetupNode::s_shadowSetupParams.size())
     {
         return ShadowSetupNode::s_shadowSetupParams[nIndex].paramType;
     }

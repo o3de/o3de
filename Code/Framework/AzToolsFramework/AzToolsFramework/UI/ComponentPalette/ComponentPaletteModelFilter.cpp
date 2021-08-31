@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "ComponentPaletteModelFilter.hxx"
 #include <AzCore/Serialization/SerializeContext.h>
 

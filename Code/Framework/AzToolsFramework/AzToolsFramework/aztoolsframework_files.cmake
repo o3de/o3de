@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    AzToolsFramework_precompiled.h
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui
@@ -148,6 +147,8 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
+    Logger/TraceLogger.cpp
+    Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
     Manipulators/BaseManipulator.cpp
@@ -656,6 +657,9 @@ set(FILES
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
     Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicRequestBus.h
+    Prefab/PrefabPublicRequestHandler.h
+    Prefab/PrefabPublicRequestHandler.cpp
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp

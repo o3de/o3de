@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorImageProcessingSystemComponent.h"
 
 #include <AzCore/Asset/AssetManager.h>
@@ -109,7 +108,7 @@ namespace GradientSignal
 
         if(settingsExist)
         {
-            menu->addAction("Edit Gradient Image Settings...", [this, source, settingsPath]()
+            menu->addAction("Edit Gradient Image Settings...", [settingsPath]()
             {
                 bool result = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -124,7 +123,7 @@ namespace GradientSignal
         }
         else
         {
-            menu->addAction("Enable Gradient Image Settings", [this, source, settingsPath]()
+            menu->addAction("Enable Gradient Image Settings", [settingsPath]()
             {
                 GradientSignal::ImageSettings imageSettings;
                 AZ::Utils::SaveObjectToFile(settingsPath, AZ::DataStream::ST_XML, &imageSettings);

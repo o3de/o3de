@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "BoxShape.h"
 
 #include <AzCore/Math/Color.h>

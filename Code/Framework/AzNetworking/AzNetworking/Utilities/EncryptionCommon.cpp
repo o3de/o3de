@@ -25,7 +25,7 @@
 
 #if defined(OPENSSL_THREADS)
 //  thread support enabled
-#else
+#elif AZ_TRAIT_USE_OPENSSL
 #   error OpenSSL threading support is not enabled
 #endif
 

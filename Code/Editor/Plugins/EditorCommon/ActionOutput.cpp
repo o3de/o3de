@@ -6,7 +6,6 @@
  *
  */
 
-#include "EditorCommon_precompiled.h"
 #include <ActionOutput.h>
 #include <QWidget>
 

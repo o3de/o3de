@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QApplication>
 #include <QKeyEvent>
@@ -31,7 +30,7 @@ namespace ScriptCanvasDeveloper
 #if defined(AZ_COMPILER_MSVC)
         INPUT osInput = { 0 };
         osInput.type = INPUT_KEYBOARD;
-        osInput.ki.wVk = m_keyValue;
+        osInput.ki.wVk = static_cast<WORD>(m_keyValue);
 
         switch (m_keyAction)
         {

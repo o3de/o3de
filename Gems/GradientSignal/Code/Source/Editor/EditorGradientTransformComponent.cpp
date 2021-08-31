@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorGradientTransformComponent.h"
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 

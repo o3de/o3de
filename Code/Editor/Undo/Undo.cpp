@@ -34,7 +34,7 @@ public:
     {
         m_undoSteps.push_back(step);
     }
-    virtual int GetSize() const
+    int GetSize() const override
     {
         int size = 0;
         for (int i = 0; i < m_undoSteps.size(); i++)
@@ -43,18 +43,18 @@ public:
         }
         return size;
     }
-    virtual bool IsEmpty() const
+    bool IsEmpty() const override
     {
         return m_undoSteps.empty();
     }
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
-        for (int i = m_undoSteps.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
         {
             m_undoSteps[i]->Undo(bUndo);
         }
     }
-    virtual void Redo()
+    void Redo() override
     {
         for (int i = 0; i < m_undoSteps.size(); i++)
         {
@@ -113,8 +113,8 @@ CUndoManager::CUndoManager()
     m_bRecording = false;
     m_bSuperRecording = false;
 
-    m_currentUndo = 0;
-    m_superUndo = 0;
+    m_currentUndo = nullptr;
+    m_superUndo = nullptr;
     m_assetManagerUndoInterruptor = new AssetManagerUndoInterruptor();
 
     m_suspendCount = 0;
@@ -270,7 +270,7 @@ void CUndoManager::Accept(const QString& name)
     }
 
     m_bRecording = false;
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
 
     SignalNumUndoRedoToListeners();
 
@@ -303,7 +303,7 @@ void CUndoManager::Cancel()
     }
 
     delete m_currentUndo;
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
     //CLogFile::WriteLine( "<Undo> Cancel OK" );
 }
 
@@ -582,7 +582,7 @@ void CUndoManager::SuperAccept(const QString& name)
 
     //CLogFile::FormatLine( "Undo Object Accepted (Undo:%d,Redo:%d)",m_undoStack.size(),m_redoStack.size() );
     m_bSuperRecording = false;
-    m_superUndo = 0;
+    m_superUndo = nullptr;
     //CLogFile::WriteLine( "<Undo> SupperAccept OK" );
 
     SignalNumUndoRedoToListeners();
@@ -616,7 +616,7 @@ void CUndoManager::SuperCancel()
 
     m_bSuperRecording = false;
     delete m_superUndo;
-    m_superUndo = 0;
+    m_superUndo = nullptr;
     //CLogFile::WriteLine( "<Undo> SuperCancel OK" );
 }
 
@@ -624,13 +624,13 @@ void CUndoManager::SuperCancel()
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
-    return m_undoStack.size();
+    return static_cast<int>(m_undoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetRedoStackLen() const
 {
-    return m_redoStack.size();
+    return static_cast<int>(m_redoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -708,8 +708,8 @@ void CUndoManager::Flush()
 
     delete m_superUndo;
     delete m_currentUndo;
-    m_superUndo = 0;
-    m_currentUndo = 0;
+    m_superUndo = nullptr;
+    m_currentUndo = nullptr;
 
     SignalUndoFlushedToListeners();
 }
@@ -817,7 +817,7 @@ void CUndoManager::SignalNumUndoRedoToListeners()
 {
     for (IUndoManagerListener* listener : m_listeners)
     {
-        listener->SignalNumUndoRedo(m_undoStack.size(), m_redoStack.size());
+        listener->SignalNumUndoRedo(static_cast<unsigned int>(m_undoStack.size()), static_cast<unsigned int>(m_redoStack.size()));
     }
 }
 

@@ -163,6 +163,8 @@ ly_add_target(
         editor_files.cmake
     PLATFORM_INCLUDE_FILES
         Platform/${PAL_PLATFORM_NAME}/editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    TARGET_PROPERTIES
+        LY_INSTALL_GENERATE_RUN_TARGET TRUE
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
@@ -236,9 +238,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::Qt::Core
                 3rdParty::Qt::Gui
                 3rdParty::Qt::Widgets
+                3rdParty::Qt::Test
                 Legacy::CryCommon
                 AZ::AzToolsFramework
+                AZ::AzToolsFramework.Tests
+                AZ::AzFrameworkTestShared
+                AZ::AzToolsFrameworkTestCommon
                 Legacy::EditorLib
+                Gem::AtomToolsFramework.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )

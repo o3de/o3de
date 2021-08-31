@@ -284,7 +284,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceCompositePass"), &Render::ReflectionScreenSpaceCompositePass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
 
-            // Add RayTracing pas
+            // Add RayTracing pass
             passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
             // setup handler for load pass template mappings
@@ -294,6 +294,7 @@ namespace AZ
 
         void CommonSystemComponent::Deactivate()
         {
+            m_loadTemplatesHandler.Disconnect();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseProbeGridFeatureProcessor>();

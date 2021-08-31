@@ -9,12 +9,9 @@
 
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( push )
-#   pragma warning( disable : 4127 ) // "conditional expression is constant"
-#endif
+#include <AzCore/std/allocator.h>
 
 namespace AZStd
 {
@@ -687,7 +684,3 @@ namespace AZStd
         }
     };
 } // end namespace AZStd
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( pop )
-#endif

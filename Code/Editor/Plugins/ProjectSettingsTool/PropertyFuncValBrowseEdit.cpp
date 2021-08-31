@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PropertyFuncValBrowseEdit.h"
 #include "PlatformSettings_common.h"
 #include "ValidationHandler.h"

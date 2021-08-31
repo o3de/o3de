@@ -114,7 +114,7 @@ function(ly_add_test)
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
     elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
-        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
+        message(FATAL_ERROR "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)
@@ -219,7 +219,16 @@ function(ly_add_test)
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
             )
 
+            # In the case where we are creating a custom target, we need to add dependency to the target
+            if(ly_add_test_PARENT_NAME AND NOT ${ly_add_test_NAME} STREQUAL ${ly_add_test_PARENT_NAME})
+                ly_add_dependencies(${unaliased_test_name} ${ly_add_test_PARENT_NAME})
+            endif()
+
         endif()
+
+        # For test projects that are custom targets, pass a props file that sets the project as "Console" so
+        # it leaves the console open when it finishes
+        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/TestProject.props")
 
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)
@@ -276,7 +285,7 @@ endfunction()
 #
 function(ly_add_pytest)
 
-    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED)
+    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED OR NOT PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
         return()
     endif()
 

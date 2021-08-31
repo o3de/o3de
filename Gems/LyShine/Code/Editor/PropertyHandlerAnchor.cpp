@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorCommon.h"
 
 #include "PropertyHandlerAnchor.h"
@@ -351,10 +350,8 @@ void PropertyHandlerAnchor::WriteGUIValuesIntoProperty(size_t index, PropertyAnc
     }
 }
 
-bool PropertyHandlerAnchor::ReadValuesIntoGUI(size_t index, PropertyAnchorCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerAnchor::ReadValuesIntoGUI([[maybe_unused]] size_t index, PropertyAnchorCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
-    (int)index;
-
     AzQtComponents::VectorInput* ctrl = GUI->GetPropertyVectorCtrl();
 
     ctrl->blockSignals(true);

@@ -30,11 +30,14 @@ namespace Multiplayer
 
     private:
         void OnPreRender(float deltaTime, float blendFactor);
+        void OnCorrection();
 
         void OnRotationChangedEvent(const AZ::Quaternion& rotation);
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
         void OnScaleChangedEvent(float scale);
         void OnResetCountChangedEvent();
+
+        void UpdateTargetHostFrameId();
 
         AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
         AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
@@ -45,6 +48,9 @@ namespace Multiplayer
         AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
 
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
+        EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+
+        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };
 
     class NetworkTransformComponentController

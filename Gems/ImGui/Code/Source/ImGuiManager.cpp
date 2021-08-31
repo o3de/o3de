@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
@@ -81,59 +80,6 @@ namespace
         const auto& touches = InputDeviceTouch::Touch::All;
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput controller button to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput controller button.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerButtonIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& buttons = InputDeviceGamepad::Button::All;
-        const auto& triggers = InputDeviceGamepad::Trigger::All;
-        const auto& it = AZStd::find(buttons.cbegin(), buttons.cend(), inputChannelId);
-        if (it != buttons.cend())
-        {
-            return static_cast<unsigned int>(it - buttons.cbegin());
-        }
-        else
-        {
-            const auto& it2 = AZStd::find(triggers.cbegin(), triggers.cend(), inputChannelId);
-            if (it2 != triggers.cend())
-            {
-                return static_cast<unsigned int>(it2 - triggers.cbegin()) + AZ_ARRAY_SIZE(InputDeviceGamepad::Button::All);
-            }
-        }
-
-        return UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovements = InputDeviceGamepad::ThumbStickDirection::All;
-        const auto& it = AZStd::find(thumbstickMovements.cbegin(), thumbstickMovements.cend(), inputChannelId);
-        return it != thumbstickMovements.cend() ? static_cast<unsigned int>(it - thumbstickMovements.cbegin()) : UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement amountto its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement amount.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickAmountIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovementAmounts = InputDeviceGamepad::ThumbStickAxis1D::All;
-        const auto& it = AZStd::find(thumbstickMovementAmounts.cbegin(), thumbstickMovementAmounts.cend(), inputChannelId);
-        return it != thumbstickMovementAmounts.cend() ? static_cast<unsigned int>(it - thumbstickMovementAmounts.cbegin()) : UINT_MAX;
     }
 }
 
@@ -410,7 +356,7 @@ void ImGuiManager::Render()
             break;
 
         case ImGuiResolutionMode::MatchToMaxRenderResolution:
-            if (backBufferWidth <= static_cast<int>(m_renderResolution.x))
+            if (backBufferWidth <= static_cast<AZ::u32>(m_renderResolution.x))
             {
                 renderRes[0] = backBufferWidth;
                 renderRes[1] = backBufferHeight;
@@ -453,7 +399,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
     // Handle Keyboard Hotkeys
-    if (inputDeviceId == InputDeviceKeyboard::Id && inputChannel.IsStateBegan())
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId) && inputChannel.IsStateBegan())
     {
         // Cycle through ImGui Menu Bar States on Home button press
         if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
@@ -478,7 +424,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Keyboard Modifier Keys
-    if (inputDeviceId == InputDeviceKeyboard::Id)
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
             || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
@@ -507,14 +453,10 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     // Handle Controller Inputs
     int inputControllerIndex = -1;
     bool controllerInput = false;
-    for (int i = 0; i < MaxControllerNumber; ++i)
+    if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
     {
-        //Allow only one controller navigating ImGui at the same time. After menu bar dismissed, other controllers could take over
-        if (inputDeviceId == InputDeviceGamepad::IdForIndexN(i))
-        {
-            inputControllerIndex = i;
-            controllerInput = true;
-        }
+        inputControllerIndex = inputDeviceId.GetIndex();
+        controllerInput = true;
     }
 
     
@@ -571,7 +513,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Mouse Inputs
-    if (inputDeviceId == InputDeviceMouse::Id)
+    if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
     {
         const int mouseButtonIndex = GetAzMouseButtonIndex(inputChannelId);
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -585,7 +527,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Touch Inputs
-    if (inputDeviceId == InputDeviceTouch::Id)
+    if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
     {
         const int touchIndex = GetAzTouchIndex(inputChannelId);
         if (0 <= touchIndex && touchIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -606,7 +548,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Virtual Keyboard Inputs
-    if (inputDeviceId == InputDeviceVirtualKeyboard::Id)
+    if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == AzFramework::InputDeviceVirtualKeyboard::Command::EditEnter)
         {

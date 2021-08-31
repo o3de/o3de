@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "ShapeGeometryUtil.h"
 
 #include <AzCore/Math/IntersectPoint.h>
@@ -354,10 +353,10 @@ namespace LmbrCentral
             const AZ::u32 sides, const AZ::u32 segments, const AZ::u32 capSegments,
             AZ::u32* indices)
         {
-            const auto capSegmentTipVerts = capSegments > 0 ? 1 : 0;
-            const auto totalSegments = segments + capSegments * 2;
-            const auto numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
-            const auto hasEnds = capSegments > 0;
+            const AZ::u32 capSegmentTipVerts = capSegments > 0 ? 1 : 0;
+            const AZ::u32 totalSegments = segments + capSegments * 2;
+            const AZ::u32 numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
+            const AZ::u32 hasEnds = capSegments > 0;
 
             // Start Faces (start point of tube)
             // Each starting face shares the same vertex at the beginning of the vertex buffer
@@ -366,8 +365,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = i + 1;
                     AZ::u32 b = a + 1;
@@ -384,9 +382,9 @@ namespace LmbrCentral
             // Middle Faces
             // 2 triangles per face.
             // 1 face per side.
-            for (auto i = 0; i < totalSegments; ++i)
+            for (AZ::u32 i = 0; i < totalSegments; ++i)
             {
-                for (auto j = 0; j < sides; ++j)
+                for (AZ::u32 j = 0; j < sides; ++j)
                 {
                     // 4 corners for each face
                     // a ------ d
@@ -417,7 +415,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = totalSegments * sides + i + 1;
                     AZ::u32 b = a + 1;

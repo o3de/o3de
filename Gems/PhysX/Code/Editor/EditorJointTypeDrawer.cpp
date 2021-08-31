@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Editor/EditorJointTypeDrawer.h>
 

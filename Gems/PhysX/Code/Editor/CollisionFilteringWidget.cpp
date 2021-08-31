@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/CollisionFilteringWidget.h>
 #include <Editor/CollisionLayersWidget.h>
 #include <Editor/CollisionGroupsWidget.h>
@@ -20,7 +18,7 @@ namespace PhysX
     namespace Editor
     {
         static const char* const s_collisionFilteringLink = "Learn more about <a href=%1>configuring collision filtering.</a>";
-        static const char* const s_collisionFilteringAddress = "configuration/collision";
+        static const char* const s_collisionFilteringAddress = "configuring/configuration-collision-layers";
 
         CollisionFilteringWidget::CollisionFilteringWidget(QWidget* parent)
             : QWidget(parent)

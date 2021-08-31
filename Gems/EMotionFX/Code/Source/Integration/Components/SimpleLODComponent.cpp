@@ -9,8 +9,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -18,6 +16,7 @@
 
 #include <Integration/Components/SimpleLODComponent.h>
 #include <MCore/Source/AttributeString.h>
+#include <EMotionFX/Source/ActorInstance.h>
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
@@ -72,13 +71,13 @@ namespace EMotionFX
             m_lodDistances.clear();
         }
 
-        void SimpleLODComponent::Configuration::GenerateDefaultValue(AZ::u32 numLODs)
+        void SimpleLODComponent::Configuration::GenerateDefaultValue(size_t numLODs)
         {
             if (numLODs != m_lodDistances.size())
             {
                 // Generate the default LOD (max) distance to 10, 20, 30....
                 m_lodDistances.resize(numLODs);
-                for (AZ::u32 i = 0; i < numLODs; ++i)
+                for (size_t i = 0; i < numLODs; ++i)
                 {
                     m_lodDistances[i] = i * 10.0f + 10.0f;
                 }
@@ -87,12 +86,9 @@ namespace EMotionFX
             if (numLODs != m_lodSampleRates.size())
             {
                 // Generate the default LOD Sample Rate to 140, 60, 45, 25, 15, 10
-                const float defaultSampleRate[] = {140.0f, 60.0f, 45.0f, 25.0f, 15.0f, 10.0f};
+                constexpr AZStd::array defaultSampleRate {140.0f, 60.0f, 45.0f, 25.0f, 15.0f, 10.0f};
                 m_lodSampleRates.resize(numLODs);
-                for (AZ::u32 i = 0; i < numLODs; ++i)
-                {
-                    m_lodSampleRates[i] = defaultSampleRate[i];
-                }
+                AZStd::copy(begin(defaultSampleRate), end(defaultSampleRate), begin(m_lodSampleRates));
             }
         }
 
@@ -172,7 +168,7 @@ namespace EMotionFX
             UpdateLodLevelByDistance(m_actorInstance, m_configuration, GetEntityId());
         }
 
-        AZ::u32 SimpleLODComponent::GetLodByDistance(const AZStd::vector<float>& distances, float distance)
+        size_t SimpleLODComponent::GetLodByDistance(const AZStd::vector<float>& distances, float distance)
         {
             const size_t max = distances.size();
             for (size_t i = 0; i < max; ++i)
@@ -180,11 +176,11 @@ namespace EMotionFX
                 const float rDistance = distances[i];
                 if (distance < rDistance)
                 {
-                    return static_cast<AZ::u32>(i);
+                    return i;
                 }
             }
 
-            return static_cast<AZ::u32>(max - 1);
+            return max - 1;
         }
 
         void SimpleLODComponent::UpdateLodLevelByDistance(EMotionFX::ActorInstance * actorInstance, const Configuration& configuration, AZ::EntityId entityId)
@@ -205,7 +201,7 @@ namespace EMotionFX
                 AZ::RPI::ViewportContextPtr defaultViewportContext =
                     viewportContextManager->GetViewportContextByName(viewportContextManager->GetDefaultViewportContextName());
                 const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
-                const AZ::u32 lodByDistance = GetLodByDistance(configuration.m_lodDistances, distance);
+                const size_t lodByDistance = GetLodByDistance(configuration.m_lodDistances, distance);
                 actorInstance->SetLODLevel(lodByDistance);
 
                 if (configuration.m_enableLodSampling)

@@ -46,7 +46,6 @@ namespace AzToolsFramework
 
         bool InstanceToTemplatePropagator::GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity)
         {
-            //grab the owning instance so we can use the entityIdMapper in settings
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity.GetId());
 
             if (!owningInstance)
@@ -54,19 +53,8 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Entity does not belong to an instance");
                 return false;
             }
-            
-            InstanceEntityIdMapper entityIdMapper;
-            entityIdMapper.SetStoringInstance(owningInstance->get());
 
-            //create settings so that the serialized entity dom undergoes mapping from entity id to entity alias
-            AZ::JsonSerializerSettings settings;
-            settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
-
-            //generate PrefabDom using Json serialization system
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Store(
-                generatedEntityDom, generatedEntityDom.GetAllocator(), entity, settings);
-
-            return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
+            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), generatedEntityDom);
         }
 
         bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
@@ -164,7 +152,7 @@ namespace AzToolsFramework
 
                 AZStd::string path = prefix + pathIter->value.GetString();
 
-                pathIter->value.SetString(path.c_str(), path.length(), providedPatch.GetAllocator());
+                pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
             }
         }
 
@@ -177,7 +165,7 @@ namespace AzToolsFramework
                 PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), providedPatch);
 
             //trigger propagation
-            if (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Success)
+            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
             {
                 AZ_Error("Prefab", false, "Patch was not successfully applied.");
                 return false; 
@@ -185,8 +173,10 @@ namespace AzToolsFramework
             else
             {
                 AZ_Error(
-                    "Prefab", result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip,
-                    "Some of the patches are not successfully applied.");
+                    "Prefab",
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
+                    "Some of the patches were not successfully applied.");
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
@@ -272,8 +262,6 @@ namespace AzToolsFramework
         void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
         {
             PrefabDom& linkDom = link.GetLinkDom();
-            PrefabDomValueReference linkPatchesReference =
-                PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             /*
             If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the

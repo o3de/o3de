@@ -28,6 +28,7 @@ namespace AZ::SettingsRegistryMergeUtils
     inline static constexpr char FilePathsRootKey[] = "/Amazon/AzCore/Runtime/FilePaths";
     inline static constexpr char FilePathKey_BinaryFolder[] = "/Amazon/AzCore/Runtime/FilePaths/BinaryFolder";
     inline static constexpr char FilePathKey_EngineRootFolder[] = "/Amazon/AzCore/Runtime/FilePaths/EngineRootFolder";
+    inline static constexpr char FilePathKey_InstalledBinaryFolder[] = "/Amazon/AzCore/Runtime/FilePaths/InstalledBinariesFolder";
 
     //! Stores the absolute path to root of a project's cache.  No asset platform in this path, this is where the asset database file lives.
     //! i.e. <ProjectPath>/Cache
@@ -43,6 +44,10 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Store the absolute path to the Projects "user" directory, which is a transient directory where per user
     //! project settings can be stored
     inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
+
+    //! Store the absolute path to the Projects "log" directory, which is a transient directory where per user
+    //! logs can be stored. By default this would be on "{FilePathKey_ProjectUserPath}/log"
+    inline static constexpr char FilePathKey_ProjectLogPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectLogPath";
 
     //! User facing key which represents the root of a project cmake build tree. i.e the ${CMAKE_BINARY_DIR}
     //! A relative path is taking relative to the *project* root, NOT *engine* root.

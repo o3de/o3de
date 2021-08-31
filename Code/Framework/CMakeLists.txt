@@ -6,7 +6,6 @@
 #
 #
 
-add_subdirectory(AzAutoGen)
 add_subdirectory(AtomCore)
 add_subdirectory(AzCore)
 add_subdirectory(AzQtComponents)
@@ -16,6 +15,5 @@ add_subdirectory(AzTest)
 add_subdirectory(AzToolsFramework)
 add_subdirectory(AzManipulatorTestFramework)
 add_subdirectory(AzNetworking)
-add_subdirectory(Crcfix)
 add_subdirectory(GFxFramework)
 add_subdirectory(GridMate)

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <LyViewPaneNames.h>
 
@@ -68,7 +67,7 @@ namespace ScriptCanvasEditor
         {
             AssetTrackerNotificationBus::Handler::BusConnect(m_scriptCanvasAsset.GetId());
 
-            Callbacks::OnAssetReadyCallback onAssetReady = [this](ScriptCanvasMemoryAsset& asset)
+            Callbacks::OnAssetReadyCallback onAssetReady = [](ScriptCanvasMemoryAsset& asset)
             {
                 AssetHelpers::DumpAssetInfo(asset.GetFileAssetId(), "ScriptCanvasAssetHolder::Init");
             };

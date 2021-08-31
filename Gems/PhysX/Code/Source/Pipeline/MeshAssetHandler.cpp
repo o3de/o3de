@@ -7,8 +7,6 @@
  */
 
 
-#include <PhysX_precompiled.h>
-
 #include <Pipeline/MeshAssetHandler.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>

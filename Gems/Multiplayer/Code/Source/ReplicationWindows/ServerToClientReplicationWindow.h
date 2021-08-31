@@ -44,7 +44,7 @@ namespace Multiplayer
         //! @{
         bool ReplicationSetUpdateReady() override;
         const ReplicationSet& GetReplicationSet() const override;
-        uint32_t GetMaxEntityReplicatorSendCount() const override;
+        uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
         void DebugDraw() const override;
@@ -76,7 +76,6 @@ namespace Multiplayer
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
         const AzNetworking::IConnection* m_connection = nullptr;
-        float m_minPriorityReplicated = 0.0f; ///< Lowest replicated entity priority in last update
 
         // Cached values to detect a poor network connection
         uint32_t m_lastCheckedSentPackets = 0;

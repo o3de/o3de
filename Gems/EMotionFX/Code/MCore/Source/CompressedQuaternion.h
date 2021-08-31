@@ -73,7 +73,7 @@ namespace MCore
         AZ_INLINE operator AZ::Quaternion() const { return ToQuaternion(); }
 
     public:
-        StorageType mX, mY, mZ, mW; /**< The compressed/packed quaternion components values. */
+        StorageType m_x, m_y, m_z, m_w; /**< The compressed/packed quaternion components values. */
 
         // the number of steps within the specified range
         enum
