@@ -43,7 +43,6 @@ namespace AZStd::Internal
         {
             return t * b + (1 - t) * a;
         }
-
         if (t == 1)
         {
             return b;
@@ -76,5 +75,4 @@ namespace AZStd
     {
         return Internal::lerp(a, b, t);
     }
-
 } // namespace AZStd
