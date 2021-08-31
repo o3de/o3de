@@ -38,7 +38,7 @@ ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::Automa
 # Enable the enabled_gems for the Project:
 ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake)
 
-# Add  project to the list server projects to create the AutomatedTesting.ServerLauncher
+# Add project to the list server projects to create the AutomatedTesting.ServerLauncher
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
