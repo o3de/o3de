@@ -16,6 +16,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/TickBus.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RPI
@@ -114,7 +116,7 @@ namespace AZ
 
         bool MaterialAsset::PostLoadInit()
         {
-            if (!(m_materialTypeAsset.GetStatus() == AssetStatus::Ready))
+            if (!m_materialTypeAsset.Get())
             {
                 AssetInitBus::Handler::BusDisconnect();
 
@@ -123,12 +125,6 @@ namespace AZ
             }
             else
             {
-                // Realign property values to MaterialPropertyLayout if m_propertyNames is populated.
-                if (!m_propertyNames.empty())
-                {
-                    RealignPropertyValues();
-                }
-
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 
@@ -152,23 +148,6 @@ namespace AZ
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
             }
         }
-        
-        void MaterialAsset::RealignPropertyValues()
-        {
-            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
-            const size_t numProperties = m_propertyValues.size();
-            AZStd::vector<MaterialPropertyValue> alignedPropertyValues;
-            alignedPropertyValues.resize(numProperties);
-            for (size_t i = 0; i < numProperties; ++i)
-            {
-                const size_t index = propertyLayout->FindPropertyIndex(m_propertyNames[i]).GetIndex();
-                if (index < numProperties)
-                {
-                    alignedPropertyValues[index] = m_propertyValues[i];
-                }
-            }
-            AZStd::swap(alignedPropertyValues, m_propertyValues);
-        } 
 
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
@@ -183,11 +162,6 @@ namespace AZ
 
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-
-                if (!m_propertyNames.empty())
-                {
-                    RealignPropertyValues();
-                }
             }
         }
 

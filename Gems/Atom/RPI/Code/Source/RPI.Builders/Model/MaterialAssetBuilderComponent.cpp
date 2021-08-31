@@ -78,7 +78,7 @@ namespace AZ
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
             bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IsMaterialPropertyNamesIncluded);
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
             if (conversionEnabled && !materialTypePath.empty() && !includeMaterialPropertyNames)
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
@@ -103,7 +103,7 @@ namespace AZ
             fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
 
             bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IsMaterialPropertyNamesIncluded);
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
             fingerprintInfo.insert(AZStd::string::format("[MaterialConverter includeMaterialPropertyNames=%d]", includeMaterialPropertyNames));
 
             if (!conversionEnabled)
@@ -224,6 +224,8 @@ namespace AZ
                 }
             }
 
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
             // Build material assets. 
             for (auto& itr : materialSourceDataByUid)
             {

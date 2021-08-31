@@ -21,6 +21,8 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#include <AzCore/Asset/AssetCommon.h>
+
 namespace AZ
 {
     namespace RPI
@@ -59,7 +61,10 @@ namespace AZ
             AZ_TRACE_METHOD();
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            while (m_materialAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
+            {
 
+            }
             // Cache off pointers to some key data structures from the material type...
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
             if (srgLayout)
@@ -106,16 +111,78 @@ namespace AZ
             // This baking process could be more efficient by doing it at build-time rather than run-time. However, the 
             // architectural complexity of supporting separate asset/runtime paths for assigning buffers/images is prohibitive.
             {
-                m_propertyValues.resize(materialAsset.GetPropertyValues().size());
-                AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
+                m_propertyValues.resize(materialAsset.GetMaterialPropertiesLayout()->GetPropertyCount());
+                //if (!m_materialAsset->HasPropertyNames())
+                //{
+                //AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
+                //}
+                //else if (m_propertyValues.size() != m_layout->GetPropertyCount())
+                //{
+                //    m_materialAsset->RealignPropertyValues();
+                //}
 
-                for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
+
+                // const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
+                // const size_t numLayoutProperties = propertyLayout->GetPropertyCount();
+                // AZStd::vector<MaterialPropertyValue> alignedPropertyValues;
+                // alignedPropertyValues.resize(numLayoutProperties);
+                //// initialize all values to default first in case there are new material properties in the MaterialTypeAsset.
+                // for (size_t i = 0; i < numLayoutProperties; ++i)
+                //{
+                //    const MaterialPropertyDescriptor* propertyDescriptor =
+                //    propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{ i }); alignedPropertyValues[i] =
+                //    propertyDescriptor->GetDefaultValue();
+                //}
+
+                // for (size_t i = 0; i < m_propertyValues.size(); ++i)
+                //{
+                //    const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(m_propertyNames[i]);
+                //    const size_t index = propertyIndex.GetIndex();
+                //    if (propertyIndex.IsValid() && index < m_propertyValues.size())
+                //    {
+                //        alignedPropertyValues[index] = m_propertyValues[i];
+                //    }
+                //}
+                if (materialAsset.HasPropertyNames())
                 {
-                    const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                    MaterialPropertyIndex propertyIndex{ i };
-                    if (!SetPropertyValue(propertyIndex, value))
+                    const auto& propertyValues = materialAsset.GetPropertyValues();
+                    const auto& propertyNames = materialAsset.GetPropertyNames();
+                    const auto& propertyDescriptor = materialAsset.GetMaterialPropertiesLayout();
+                    const size_t latestPropertyValuesSize = propertyDescriptor->GetPropertyCount();
+                    AZStd::vector<bool> touchedIndices;
+                    touchedIndices.resize(latestPropertyValuesSize);
+                    for (size_t i = 0; i < propertyNames.size(); ++i)
                     {
-                        return RHI::ResultCode::Fail;
+                        const auto propertyIndex = propertyDescriptor->FindPropertyIndex(propertyNames[i]);
+                        if (propertyIndex.IsValid())
+                        {
+                            if (!SetPropertyValue(propertyIndex, propertyValues[i]))
+                            {
+                                return RHI::ResultCode::Fail;
+                            }
+
+                            touchedIndices[propertyIndex.GetIndex()] = true;
+                        }
+                    }
+
+                    for (size_t i = 0; i < touchedIndices.size(); ++i)
+                    {
+                        if (!touchedIndices[i])
+                        {
+                            SetPropertyValue(MaterialPropertyIndex{ i }, materialAsset.GetDefaultPropertyValue(i));
+                        }
+                    }
+                }
+                else
+                {
+                    for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
+                    {
+                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
+                        MaterialPropertyIndex propertyIndex{ i };
+                        if (!SetPropertyValue(propertyIndex, value))
+                        {
+                            return RHI::ResultCode::Fail;
+                        }
                     }
                 }
 
@@ -398,14 +465,14 @@ namespace AZ
 
             AZ::TypeId actualDataType = types[static_cast<size_t>(propertyDescriptor->GetDataType())];
 
-            if (accessDataType != actualDataType)
-            {
-                AZ_Warning(s_debugTraceName, false, "Material property '%s': Accessed as type %s but is type %s",
-                    propertyDescriptor->GetName().GetCStr(),
-                    GetMaterialPropertyDataTypeString(accessDataType).c_str(),
-                    ToString(propertyDescriptor->GetDataType()));
-                return false;
-            }
+            //if (accessDataType != actualDataType)
+            //{
+            //    AZ_Warning(s_debugTraceName, false, "Material property '%s': Accessed as type %s but is type %s",
+            //        propertyDescriptor->GetName().GetCStr(),
+            //        GetMaterialPropertyDataTypeString(accessDataType).c_str(),
+            //        ToString(propertyDescriptor->GetDataType()));
+            //    return false;
+            //}
 
             return true;
         }

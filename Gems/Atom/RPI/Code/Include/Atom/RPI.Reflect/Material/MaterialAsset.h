@@ -105,6 +105,15 @@ namespace AZ
             //! their parent material, they all get flattened at build time so every MaterialAsset has the full set of values.
             AZStd::array_view<MaterialPropertyValue> GetPropertyValues() const;
 
+            bool HasPropertyNames() const { return !m_propertyNames.empty(); }
+            const AZStd::vector<AZ::Name>& GetPropertyNames() const { return m_propertyNames; }
+
+            // temp code
+            const MaterialPropertyValue& GetDefaultPropertyValue(size_t index) const
+            {
+                return m_materialTypeAsset->GetDefaultPropertyValues()[index];
+            }
+
         private:
             bool PostLoadInit() override;
 
@@ -120,9 +129,6 @@ namespace AZ
 
             // MaterialReloadNotificationBus overrides...
             void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
-
-            //! Realigns property value indices with MaterialPropertyLayout by using m_propertyNames;
-            void RealignPropertyValues();
 
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
 
