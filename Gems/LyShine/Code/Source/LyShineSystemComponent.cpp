@@ -205,6 +205,10 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::Deactivate()
     {
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        m_loadTemplatesHandler.Disconnect();
+#endif
+
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();

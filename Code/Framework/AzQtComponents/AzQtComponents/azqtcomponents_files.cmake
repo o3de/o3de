@@ -146,6 +146,8 @@ set(FILES
     Components/Widgets/Eyedropper.h
     Components/Widgets/Eyedropper.cpp
     Components/Widgets/EyedropperConfig.ini
+    Components/Widgets/FileDialog.cpp
+    Components/Widgets/FileDialog.h
     Components/Widgets/FilteredSearchWidget.qss
     Components/Widgets/FilteredSearchWidgetConfig.ini
     Components/Widgets/GradientSlider.cpp

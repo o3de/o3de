@@ -108,9 +108,6 @@ public:
     virtual void ForceSet(const char* s);
     virtual void SetOnChangeCallback(ConsoleVarFunc pChangeFunc);
     virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) override;
-    virtual bool RemoveOnChangeFunctor(const uint64 nFunctorId) override;
-    virtual uint64 GetNumberOfOnChangeFunctors() const;
-    virtual const SFunctor& GetOnChangeFunctor(uint64 nFunctorId) const override;
     virtual ConsoleVarFunc GetOnChangeCallback() const;
 
     virtual bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
@@ -250,7 +247,7 @@ public:
 
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
-    AZStd::string m_sValue;                                            
+    AZStd::string m_sValue;
     AZStd::string m_sDefault;                                                                              //!<
 };
 
@@ -315,7 +312,7 @@ public:
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 protected: // --------------------------------------------------------------------------------------------
 
-    int                             m_iValue;                                           
+    int                             m_iValue;
     int                             m_iDefault;                                 //!<
 };
 
@@ -382,7 +379,7 @@ public:
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 protected: // --------------------------------------------------------------------------------------------
 
-    int64                           m_iValue;                                           
+    int64                           m_iValue;
     int64                           m_iDefault;                                 //!<
 };
 
@@ -488,7 +485,7 @@ protected:
 
 private: // --------------------------------------------------------------------------------------------
 
-    float                           m_fValue;                                           
+    float                           m_fValue;
     float                           m_fDefault;                             //!<
 };
 
@@ -578,7 +575,7 @@ public:
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
 
-    int&                           m_iValue;                                            
+    int&                           m_iValue;
     int                            m_iDefault;                                  //!<
 };
 

@@ -2057,53 +2057,7 @@ bool CBaseObject::IsChildOf(CBaseObject* node)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.AddObject(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::CloneChildren(CBaseObject* pFromObject)
