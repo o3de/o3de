@@ -17,7 +17,8 @@ namespace AWSCore
     /// Base class for all AWS jobs. Primarily exists so that
     /// AwsApiJob::s_config can be used for settings that apply to
     /// all AWS jobs.
-    class AwsApiJob : public AZ::Job
+    class AwsApiJob
+        : public AZ::Job
     {
     public:
         // To use a different allocator, extend this class and use this macro.
