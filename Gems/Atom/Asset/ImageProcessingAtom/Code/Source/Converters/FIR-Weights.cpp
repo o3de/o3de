@@ -296,8 +296,8 @@ namespace ImageProcessingAtom
                 /* skip leading and trailing zeros */
                 if (trimZeros)
                 {
-                    /* set i0 and i1 to the nonzero support of the filter */
-                    i0 = i1 = lastnonzero + 1;
+                    /* set i1 to the nonzero support of the filter */
+                    i1 = lastnonzero + 1;
                 }
 
                 if (sumiWeights != WEIGHTONE)
