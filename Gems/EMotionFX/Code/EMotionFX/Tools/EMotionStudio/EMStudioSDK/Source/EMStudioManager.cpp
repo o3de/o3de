@@ -104,7 +104,6 @@ namespace EMStudio
         AZ::Interface<EMStudioManager>::Register(this);
     }
 
-
     // destructor
     EMStudioManager::~EMStudioManager()
     {
@@ -497,5 +496,50 @@ namespace EMStudio
         QPainterPath path;
         path.addText(textPos, font, text);
         painter.drawPath(path);
+    }
+
+    // shortcuts
+    QApplication* GetApp()
+    {
+        return EMStudioManager::GetInstance()->GetApp();
+    }
+    EMStudioManager* GetManager()
+    {
+        return EMStudioManager::GetInstance();
+    }
+
+    bool HasMainWindow()
+    {
+        return EMStudioManager::GetInstance()->HasMainWindow();
+    }
+
+    MainWindow* GetMainWindow()
+    {
+        return EMStudioManager::GetInstance()->GetMainWindow();
+    }
+
+    PluginManager* GetPluginManager()
+    {
+        return EMStudioManager::GetInstance()->GetPluginManager();
+    }
+
+    LayoutManager* GetLayoutManager()
+    {
+        return EMStudioManager::GetInstance()->GetLayoutManager();
+    }
+
+    NotificationWindowManager* GetNotificationWindowManager()
+    {
+        return EMStudioManager::GetInstance()->GetNotificationWindowManager();
+    }
+
+    MotionEventPresetManager* GetEventPresetManager()
+    {
+        return EMStudioManager::GetInstance()->GetEventPresetManger();
+    }
+
+    CommandSystem::CommandManager* GetCommandManager()
+    {
+        return EMStudioManager::GetInstance()->GetCommandManager();
     }
 } // namespace EMStudio

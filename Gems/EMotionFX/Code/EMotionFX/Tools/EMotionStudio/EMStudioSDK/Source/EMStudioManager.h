@@ -157,41 +157,14 @@ namespace EMStudio
         EventProcessingCallback*    m_eventProcessingCallback;
     };
 
-    // shortcuts
-    MCORE_INLINE QApplication* GetApp()
-    {
-        return EMStudioManager::GetInstance()->GetApp();
-    }
-    MCORE_INLINE EMStudioManager* GetManager()
-    {
-        return EMStudioManager::GetInstance();
-    }
-    MCORE_INLINE bool HasMainWindow()
-    {
-        return EMStudioManager::GetInstance()->HasMainWindow();
-    }
-    MCORE_INLINE MainWindow* GetMainWindow()
-    {
-        return EMStudioManager::GetInstance()->GetMainWindow();
-    }
-    MCORE_INLINE PluginManager* GetPluginManager()
-    {
-        return EMStudioManager::GetInstance()->GetPluginManager();
-    }
-    MCORE_INLINE LayoutManager* GetLayoutManager()
-    {
-        return EMStudioManager::GetInstance()->GetLayoutManager();
-    }
-    MCORE_INLINE NotificationWindowManager* GetNotificationWindowManager()
-    {
-        return EMStudioManager::GetInstance()->GetNotificationWindowManager();
-    }
-    MCORE_INLINE MotionEventPresetManager* GetEventPresetManager()
-    {
-        return EMStudioManager::GetInstance()->GetEventPresetManger();
-    }
-    MCORE_INLINE CommandSystem::CommandManager* GetCommandManager()
-    {
-        return EMStudioManager::GetInstance()->GetCommandManager();
-    }
+    // Shortcuts
+    QApplication* GetApp();
+    EMStudioManager* GetManager();
+    bool HasMainWindow();
+    MainWindow* GetMainWindow();
+    PluginManager* GetPluginManager();
+    LayoutManager* GetLayoutManager();
+    NotificationWindowManager* GetNotificationWindowManager();
+    MotionEventPresetManager* GetEventPresetManager();
+    CommandSystem::CommandManager* GetCommandManager();
 }   // namespace EMStudio

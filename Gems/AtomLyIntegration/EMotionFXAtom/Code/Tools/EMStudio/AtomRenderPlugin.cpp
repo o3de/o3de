@@ -21,6 +21,51 @@ namespace EMStudio
 
     }
 
+    const char* AtomRenderPlugin::GetName() const
+    {
+        return "Atom Render Window";
+    }
+
+    uint32 AtomRenderPlugin::GetClassID() const
+    {
+        return static_cast<uint32>(AtomRenderPlugin::CLASS_ID);
+    }
+
+    const char* AtomRenderPlugin::GetCreatorName() const
+    {
+        return "O3DE";
+    }
+
+    float AtomRenderPlugin::GetVersion() const
+    {
+        return 1.0f;
+    }
+
+    bool AtomRenderPlugin::GetIsClosable() const
+    {
+        return true;
+    }
+
+    bool AtomRenderPlugin::GetIsFloatable() const
+    {
+        return true;
+    }
+
+    bool AtomRenderPlugin::GetIsVertical() const
+    {
+        return false;
+    }
+
+    EMStudioPlugin* AtomRenderPlugin::Clone()
+    {
+        return new AtomRenderPlugin();
+    }
+
+    EMStudioPlugin::EPluginType AtomRenderPlugin::GetPluginType() const
+    {
+        return EMStudioPlugin::PLUGINTYPE_RENDERING;
+    }
+
     bool AtomRenderPlugin::Init()
     {
         m_innerWidget = new QWidget();

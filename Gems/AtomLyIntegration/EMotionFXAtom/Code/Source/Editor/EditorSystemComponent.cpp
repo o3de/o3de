@@ -11,32 +11,29 @@
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
-namespace AZ
+namespace AZ::EMotionFXAtom
 {
-    namespace EMotionFXAtom
+    void EditorSystemComponent::Reflect(ReflectContext* context)
     {
-        void EditorSystemComponent::Reflect(ReflectContext* context)
+        if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
-            {
-                serialize->Class<EditorSystemComponent, Component>()->Version(0);
-            }
-        }
-
-        void EditorSystemComponent::Activate()
-        {
-            EMotionFX::Integration::SystemNotificationBus::Handler::BusConnect();
-        }
-
-        void EditorSystemComponent::Deactivate()
-        {
-            EMotionFX::Integration::SystemNotificationBus::Handler::BusDisconnect();
-        }
-
-        void EditorSystemComponent::OnRegisterPlugin()
-        {
-            EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
-            pluginManager->RegisterPlugin(new EMStudio::AtomRenderPlugin());
+            serialize->Class<EditorSystemComponent, Component>()->Version(0);
         }
     }
-} // namespace AZ
+
+    void EditorSystemComponent::Activate()
+    {
+        EMotionFX::Integration::SystemNotificationBus::Handler::BusConnect();
+    }
+
+    void EditorSystemComponent::Deactivate()
+    {
+        EMotionFX::Integration::SystemNotificationBus::Handler::BusDisconnect();
+    }
+
+    void EditorSystemComponent::OnRegisterPlugin()
+    {
+        EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
+        pluginManager->RegisterPlugin(new EMStudio::AtomRenderPlugin());
+    }
+} // namespace AZ::EMotionFXAtom

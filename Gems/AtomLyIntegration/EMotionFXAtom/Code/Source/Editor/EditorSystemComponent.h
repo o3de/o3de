@@ -10,26 +10,23 @@
 #include <AzCore/Component/Component.h>
 #include <Integration/AnimationBus.h>
 
-namespace AZ
+namespace AZ::EMotionFXAtom
 {
-    namespace EMotionFXAtom
+    class EditorSystemComponent
+        : public Component
+        , private EMotionFX::Integration::SystemNotificationBus::Handler
     {
-        class EditorSystemComponent
-            : public Component
-            , private EMotionFX::Integration::SystemNotificationBus::Handler
-        {
-        public:
-            AZ_COMPONENT(EditorSystemComponent, "{1FAEC046-255D-4664-8F12-D16503C34431}");
+    public:
+        AZ_COMPONENT(EditorSystemComponent, "{1FAEC046-255D-4664-8F12-D16503C34431}");
 
-            static void Reflect(ReflectContext* context);
+        static void Reflect(ReflectContext* context);
 
-        protected:
-            // AZ::Component
-            void Activate() override;
-            void Deactivate() override;
+    protected:
+        // AZ::Component
+        void Activate() override;
+        void Deactivate() override;
 
-            // SystemNotificationBus::OnRegisterPlugin
-            void OnRegisterPlugin() override;
-        };
-    } // namespace EMotionFXAtom
-} // namespace AZ
+        // SystemNotificationBus::OnRegisterPlugin
+        void OnRegisterPlugin() override;
+    };
+} // namespace AZ::EMotionFXAtom
