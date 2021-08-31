@@ -17,7 +17,6 @@ import os
 import inspect
 import site
 from pathlib import Path
-import logging as _logging
 # ------------------------------------------------------------------------
 _MODULENAME = 'Gems.Atom.Feature.Common.bootstrap'
 
@@ -27,10 +26,6 @@ _MODULE_PATH = Path(_MODULE_PATH)
 site.addsitedir(_MODULE_PATH.resolve())
 
 from ColorGrading import initialize_logger
-
-if DCCSI_GDEBUG:
-    DCCSI_LOGLEVEL = int(10)
-
 _LOGGER = initialize_logger(_MODULENAME, log_to_file=False)
 _LOGGER.info(f'site.addsitedir({_MODULE_PATH.resolve()})')
 # ------------------------------------------------------------------------
