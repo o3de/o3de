@@ -73,9 +73,6 @@ echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0User_Dev.bat" CALL %~dp0User_Dev.bat
-
 echo.
 
 :: Change to root dir
