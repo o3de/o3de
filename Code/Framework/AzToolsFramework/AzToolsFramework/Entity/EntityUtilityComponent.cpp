@@ -7,7 +7,7 @@
  */
 
 #include <AzFramework/Entity/EntityContext.h>
-#include <AzToolsFramework/Entity/EditorEntityUtilityComponent.h>
+#include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
