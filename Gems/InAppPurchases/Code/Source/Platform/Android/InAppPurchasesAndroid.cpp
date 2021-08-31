@@ -250,7 +250,7 @@ namespace InAppPurchases
         document.Parse(fileBuffer.data());
         if (document.HasParseError())
         {
-            const char* errorStr = rapidjson::GetParseError_En(document.GetParseError());
+            [[maybe_unused]] const char* errorStr = rapidjson::GetParseError_En(document.GetParseError());
             AZ_TracePrintf("LumberyardInAppBilling", "Failed to parse product_ids.json: %s\n", errorStr);
             return;
         }
