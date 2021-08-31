@@ -19,6 +19,7 @@
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
 #include "EditorViewportSettings.h"
+#include "EditorModularViewportCameraComposer.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -54,7 +55,8 @@ namespace AZ::ViewportHelpers
 namespace AtomToolsFramework
 {
     class RenderViewportWidget;
-}
+    class ModularViewportCameraController;
+} // namespace AtomToolsFramework
 
 namespace AzToolsFramework
 {
@@ -219,7 +221,6 @@ private:
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
 
-    bool AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, Vec3& outPos) const;
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
     bool AddCameraMenuItems(QMenu* menu);
@@ -368,6 +369,8 @@ private:
 
     // This widget holds a reference to the manipulator manage because its responsible for drawing manipulators
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
+
+    AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
 
     // Helper for getting EditorEntityNotificationBus events
     AZStd::unique_ptr<AZ::ViewportHelpers::EditorEntityNotifications> m_editorEntityNotifications;

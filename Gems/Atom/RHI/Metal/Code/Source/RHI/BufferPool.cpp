@@ -102,8 +102,7 @@ namespace AZ
         void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
-            auto& device = static_cast<Device&>(GetDevice());
-            
+
             if (auto* resolver = GetResolver())
             {
                 resolver->OnResourceShutdown(resourceBase);

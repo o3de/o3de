@@ -621,7 +621,7 @@ namespace EMotionFX
         }
 
         // Expand the bounding volume by a tolerance area in case set.
-        if (!AZ::IsClose(m_boundsExpandBy, 0.0f))
+        if (!AZ::IsClose(m_boundsExpandBy, 0.0f) && m_aabb.IsValid())
         {
             const AZ::Vector3 center = m_aabb.GetCenter();
             const AZ::Vector3 halfExtents = m_aabb.GetExtents() * 0.5f;
@@ -1115,7 +1115,7 @@ namespace EMotionFX
     void ActorInstance::EnableAllNodes()
     {
         m_enabledNodes.resize(m_actor->GetNumNodes());
-        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), 0);
+        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), uint16(0));
     }
 
     // disable all nodes
@@ -1416,8 +1416,12 @@ namespace EMotionFX
 
         *outResult = m_staticAabb;
         EMFX_SCALECODE(
-            outResult->SetMin(m_staticAabb.GetMin() * m_worldTransform.m_scale);
-            outResult->SetMax(m_staticAabb.GetMax() * m_worldTransform.m_scale);)
+            if (m_staticAabb.IsValid())
+            {
+                outResult->SetMin(m_staticAabb.GetMin() * m_worldTransform.m_scale);
+                outResult->SetMax(m_staticAabb.GetMax() * m_worldTransform.m_scale);
+            }
+        )
         outResult->Translate(m_worldTransform.m_position);
     }
 

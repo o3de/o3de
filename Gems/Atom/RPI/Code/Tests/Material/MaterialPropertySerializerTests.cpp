@@ -11,7 +11,7 @@
 #include <Common/JsonTestUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Common/TestUtils.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 

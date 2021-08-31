@@ -35,7 +35,6 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-#pragma comment(lib, "Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -394,7 +393,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, float& v
     {
         const SettingsGroup sg(sSection);
         const QString defaultVal = s_editorSettings()->value(sKey, QString::number(value)).toString();
-        value = defaultVal.toDouble();
+        value = defaultVal.toFloat();
 
         if (GetIEditor()->GetSettingsManager())
         {
@@ -660,22 +659,6 @@ void SEditorSettings::Save()
     // Slice settings
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
-    /*
-    //////////////////////////////////////////////////////////////////////////
-    // Save paths.
-    //////////////////////////////////////////////////////////////////////////
-    for (int id = 0; id < EDITOR_PATH_LAST; id++)
-    {
-        for (int i = 0; i < searchPaths[id].size(); i++)
-        {
-            CString path = searchPaths[id][i];
-            CString key;
-            key.Format( "Paths","Path_%.2d_%.2d",id,i );
-            SaveValue( "Paths",key,path );
-        }
-    }
-    */
 
     s_editorSettings()->sync();
 
@@ -1077,7 +1060,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
-    int lastSeparator = sourcePath.find_last_of("|");
+    size_t lastSeparator = sourcePath.find_last_of("|");
 
     // Everything before the last separator is the category (since only the category is hierarchical)
     category = sourcePath.substr(0, lastSeparator);

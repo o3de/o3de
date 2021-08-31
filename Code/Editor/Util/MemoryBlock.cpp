@@ -175,7 +175,7 @@ void CMemoryBlock::Uncompress(CMemoryBlock& toBlock) const
 #endif
         uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
     assert(result == Z_OK);
-    assert(destSize == m_uncompressedSize);
+    assert(destSize == static_cast<unsigned long>(m_uncompressedSize));
 }
 
 //////////////////////////////////////////////////////////////////////////

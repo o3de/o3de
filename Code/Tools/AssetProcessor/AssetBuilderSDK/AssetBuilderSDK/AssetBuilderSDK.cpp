@@ -74,6 +74,10 @@ namespace AssetBuilderSDK
         {
             return AssetBuilderSDK::Platform_PC;
         }
+        if (azstricmp(newPlatformName, "linux") == 0)
+        {
+            return AssetBuilderSDK::Platform_LINUX;
+        }
         if (azstricmp(newPlatformName, "android") == 0)
         {
             return AssetBuilderSDK::Platform_ANDROID;

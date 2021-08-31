@@ -324,7 +324,7 @@ namespace UnitTest
 
             // Tests whether the deleter actually calls delete properly without
             // a parent database.
-            instance->m_onDeleteCallback = [this, &m_deleted]()
+            instance->m_onDeleteCallback = [&m_deleted]()
             {
                 m_deleted = true;
             };

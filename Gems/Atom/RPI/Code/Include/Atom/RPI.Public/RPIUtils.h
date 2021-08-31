@@ -22,19 +22,21 @@ namespace AZ
         class Shader;
 
         //! Get the asset ID for a given shader file path
-        Data::AssetId GetShaderAssetId(const AZStd::string& shaderFilePath);
+        Data::AssetId GetShaderAssetId(const AZStd::string& shaderFilePath, bool isCritical = false);
 
         //! Finds a shader asset for the given shader asset ID. Optional shaderFilePath param for debugging.
         Data::Asset<ShaderAsset> FindShaderAsset(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "");
 
         //! Finds a shader asset for the given shader file path
         Data::Asset<ShaderAsset> FindShaderAsset(const AZStd::string& shaderFilePath);
+        Data::Asset<ShaderAsset> FindCriticalShaderAsset(const AZStd::string& shaderFilePath);
 
         //! Loads a shader for the given shader asset ID. Optional shaderFilePath param for debugging.
         Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "");
 
         //! Loads a shader for the given shader file path
         Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath);
+        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath);
 
         //! Loads a streaming image asset for the given file path
         Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path);

@@ -42,8 +42,6 @@
 #define s_nodeParams s_nodeParamsSene
 #define AddSupportedParam AddSupportedParamScene
 
-float const kDefaultCameraFOV = 60.0f;
-
 namespace {
     bool s_nodeParamsInitialized = false;
     StaticInstance<std::vector<CAnimNode::SParamInfo>> s_nodeParams;
@@ -260,7 +258,7 @@ unsigned int CAnimSceneNode::GetParamCount() const
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimSceneNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
@@ -697,7 +695,6 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
         return;
     }
 
-    static const float EPSILON_TIME = 0.01f;            // consider times within EPSILON_TIME of beginning of blend time to be at the beginning of blend time
     float interpolatedFoV;
 
     ISceneCamera* secondCamera = static_cast<ISceneCamera*>(new CComponentEntitySceneCamera(secondKey.cameraAzEntityId));
@@ -916,8 +913,8 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
 void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext& ec)
 {
     char funcName[1024];
-    cry_strcpy(funcName, "Event_");
-    cry_strcat(funcName, key.event.c_str());
+    azstrcpy(funcName, AZ_ARRAY_SIZE(funcName), "Event_");
+    azstrcat(funcName, AZ_ARRAY_SIZE(funcName), key.event.c_str());
     gEnv->pMovieSystem->SendGlobalEvent(funcName);
 }
 
@@ -1003,7 +1000,7 @@ void CAnimSceneNode::ApplyGotoKey(CGotoTrack*   poGotoTrack, SAnimContext& ec)
         {
             if (stDiscreteFloadKey.m_fValue >= 0)
             {
-                string fullname = m_pSequence->GetName();
+                AZStd::string fullname = m_pSequence->GetName();
                 GetMovieSystem()->GoToFrame(fullname.c_str(), stDiscreteFloadKey.m_fValue);
             }
         }

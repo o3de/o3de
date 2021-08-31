@@ -70,8 +70,6 @@ bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, b
     static const int max_len = 4096;
     static char gs_command_str[4096];
 
-    static CryLockT<CRYLOCK_RECURSIVE> lock;
-
     gEnv->pSystem->OnAssert(szCondition, gs_szMessage, szFile, line);
 
     size_t file_len = strlen(szFile);

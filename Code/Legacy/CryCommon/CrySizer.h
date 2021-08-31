@@ -24,18 +24,17 @@
 
 #include "Cry_Math.h"
 #include <StlUtils.h>
-#include <Tarray.h>
 #include <CryPodArray.h>
 #include <Cry_Vector3.h>
 #include <Cry_Quat.h>
 #include <Cry_Color.h>
 #include <smartptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 // forward declarations for overloads
 struct AABB;
 struct SVF_P3F;
 struct SVF_P3F_C4B_T2F;
-struct SVF_P3F_C4B_T2S;
 struct SVF_P3S_C4B_T2S;
 struct SPipTangents;
 
@@ -208,9 +207,7 @@ public:
         this->AddObject(rPair.first);
         this->AddObject(rPair.second);
     }
-    void AddObject(const string& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
-    void AddObject(const CryStringT<wchar_t>& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
-    void AddObject(const CryFixedStringT<32>&){}
+    void AddObject(const AZStd::string& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
     void AddObject(const wchar_t&) {}
     void AddObject(const char&) {}
     void AddObject(const unsigned char&) {}
@@ -238,7 +235,6 @@ public:
     void AddObject(const AABB&) {}
     void AddObject(const SVF_P3F&) {}
     void AddObject(const SVF_P3F_C4B_T2F&) {}
-    void AddObject(const SVF_P3F_C4B_T2S&) {}
     void AddObject(const SVF_P3S_C4B_T2S&) {}
     void AddObject(const SPipTangents&) {}
     void AddObject([[maybe_unused]] const AZ::Vector3& rObj) {}
@@ -299,26 +295,6 @@ public:
             {
                 this->AddObject(*it);
             }
-        }
-    }
-
-    template<typename T, typename I, typename S>
-    void AddObject(const DynArray<T, I, S>& rVector)
-    {
-        if (rVector.empty())
-        {
-            this->AddObject(rVector.begin(), rVector.get_alloc_size());
-            return;
-        }
-
-        if (!this->AddObject(rVector.begin(), rVector.get_alloc_size()))
-        {
-            return;
-        }
-
-        for (typename DynArray<T, I, S>::const_iterator it = rVector.begin(); it != rVector.end(); ++it)
-        {
-            this->AddObject(*it);
         }
     }
 
@@ -427,7 +403,7 @@ public:
 #endif
 
  #ifndef NOT_USE_CRY_STRING
-    bool Add (const string& strText)
+    bool Add (const AZStd::string& strText)
     {
         AddString(strText);
         return true;
@@ -581,7 +557,7 @@ protected:
 
 // use this to push (and automatically pop) the sizer component name at the beginning of the
 // getSize() function
-#define SIZER_COMPONENT_NAME(pSizerPointer, szComponentName) PREFAST_SUPPRESS_WARNING(6246) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, false)
-#define SIZER_SUBCOMPONENT_NAME(pSizerPointer, szComponentName) PREFAST_SUPPRESS_WARNING(6246) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, true)
+#define SIZER_COMPONENT_NAME(pSizerPointer, szComponentName) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, false)
+#define SIZER_SUBCOMPONENT_NAME(pSizerPointer, szComponentName) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, true)
 
 #endif // CRYINCLUDE_CRYCOMMON_CRYSIZER_H

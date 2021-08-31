@@ -238,9 +238,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::Qt::Core
                 3rdParty::Qt::Gui
                 3rdParty::Qt::Widgets
+                3rdParty::Qt::Test
                 Legacy::CryCommon
                 AZ::AzToolsFramework
+                AZ::AzToolsFramework.Tests
+                AZ::AzFrameworkTestShared
+                AZ::AzToolsFrameworkTestCommon
                 Legacy::EditorLib
+                Gem::AtomToolsFramework.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )

@@ -39,7 +39,7 @@ AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dLine);
 AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dDefer);
 
 static const int g_numColors = 8;
-static const char* g_colorNames[g_numColors] =
+[[maybe_unused]] static const char* g_colorNames[g_numColors] =
 {
     "white",
     "red",
@@ -64,7 +64,7 @@ static AZ::Vector3 g_colorVec3[g_numColors] =
 };
 
 static const int g_numSrcBlendModes = 11;
-static int g_srcBlendModes[g_numSrcBlendModes] =
+[[maybe_unused]] static int g_srcBlendModes[g_numSrcBlendModes] =
 {
     GS_BLSRC_ZERO,
     GS_BLSRC_ONE,
@@ -80,7 +80,7 @@ static int g_srcBlendModes[g_numSrcBlendModes] =
 };
 
 static const int g_numDstBlendModes = 10;
-static int g_dstBlendModes[g_numDstBlendModes] =
+[[maybe_unused]] static int g_dstBlendModes[g_numDstBlendModes] =
 {
     GS_BLDST_ZERO,
     GS_BLDST_ONE,
@@ -94,7 +94,7 @@ static int g_dstBlendModes[g_numDstBlendModes] =
     GS_BLDST_ONEMINUSSRC1ALPHA, // dual source blending
 };
 
-static bool g_deferDrawsToEndOfFrame = false;
+[[maybe_unused]] static bool g_deferDrawsToEndOfFrame = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS
@@ -115,7 +115,7 @@ static int Create2DTexture(int width, int height, byte* data, ETEX_Format format
 static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 {
     AZ::RHI::Size size = image->GetDescriptor().m_size;
-    return AZ::Vector2(size.m_width, size.m_height);
+    return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
 }
 #endif
 
@@ -995,7 +995,7 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
@@ -1094,7 +1094,7 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);

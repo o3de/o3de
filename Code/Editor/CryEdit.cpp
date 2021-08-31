@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 
 // CryCommon
 #include <CryCommon/ITimer.h>
-#include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor
@@ -286,7 +285,7 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToMRU)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU)
 {
     assert(lpszFileName != nullptr);
 
@@ -448,13 +447,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
 
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    ON_COMMAND_RANGE(ID_GAME_##CODENAME##_ENABLELOWSPEC, ID_GAME_##CODENAME##_ENABLEHIGHSPEC, OnChangeGameSpec)
-    AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
-
     ON_COMMAND(ID_OPEN_QUICK_ACCESS_BAR, OnOpenQuickAccessBar)
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
@@ -559,7 +551,9 @@ public:
             { "NSDocumentRevisionsDebugMode", nsDocumentRevisionsDebugMode},
             { "skipWelcomeScreenDialog", m_bSkipWelcomeScreenDialog},
             { "autotest_mode", m_bAutotestMode},
-            { "regdumpall", dummy }
+            { "regdumpall", dummy },
+            { "attach-debugger", dummy }, // Attaches a debugger for the current application
+            { "wait-for-debugger", dummy }, // Waits until a debugger is attached to the current application
         };
 
         QString dummyString;
@@ -613,7 +607,7 @@ public:
         }
 
         // Get boolean options
-        const int numOptions = options.size();
+        const int numOptions = static_cast<int>(options.size());
         for (int i = 0; i < numOptions; ++i)
         {
             options[i].second = parser.isSet(options[i].first);
@@ -801,12 +795,12 @@ void CCryEditApp::InitDirectory()
 // Needed to work with custom memory manager.
 //////////////////////////////////////////////////////////////////////////
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bMakeVisible /*= true*/)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool bMakeVisible /*= true*/)
 {
     return OpenDocumentFile(lpszPathName, true, bMakeVisible);
 }
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
 {
     CCryEditDoc* pCurDoc = GetIEditor()->GetDocument();
 
@@ -845,7 +839,7 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool 
     return pCurDoc;
 }
 
-CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch)
+CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch)
 {
     assert(lpszPathName != nullptr);
     rpDocMatch = nullptr;
@@ -891,8 +885,7 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lp
 /////////////////////////////////////////////////////////////////////////////
 namespace
 {
-    CryMutex g_splashScreenStateLock;
-    CryConditionVariable g_splashScreenStateChange;
+    AZStd::mutex g_splashScreenStateLock;
     enum ESplashScreenState
     {
         eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
@@ -923,7 +916,7 @@ QString FormatRichTextCopyrightNotice()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
 
     CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
@@ -931,8 +924,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreen = splashScreen;
     g_splashScreenState = eSplashScreenState_Started;
 
-    g_splashScreenStateLock.Unlock();
-    g_splashScreenStateChange.Notify();
+    g_splashScreenStateLock.unlock();
 
     splashScreen->show();
     // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
@@ -940,10 +932,9 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
-        g_splashScreenStateLock.Lock();
+        AZStd::scoped_lock lock(g_splashScreenStateLock);
         g_pInitializeUIInfo = nullptr;
         g_splashScreen = nullptr;
-        g_splashScreenStateLock.Unlock();
     });
 }
 
@@ -973,9 +964,9 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.Lock();
+        g_splashScreenStateLock.lock();
         g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.Unlock();
+        g_splashScreenStateLock.unlock();
     }
 
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);
@@ -984,12 +975,12 @@ void CCryEditApp::CloseSplashScreen()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OutputStartupMessage(QString str)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
     if (g_pInitializeUIInfo)
     {
         g_pInitializeUIInfo->SetInfoText(str.toUtf8().data());
     }
-    g_splashScreenStateLock.Unlock();
+    g_splashScreenStateLock.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1864,11 +1855,6 @@ void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::LoadFile(QString fileName)
 {
-    //CEditCommandLineInfo cmdLine;
-    //ProcessCommandLine(cmdinfo);
-
-    //bool bBuilding = false;
-    //CString file = cmdLine.SpanExcluding()
     if (GetIEditor()->GetViewManager()->GetViewCount() == 0)
     {
         return;
@@ -2306,7 +2292,7 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     int res = 0;
     if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
         // Automated tests must always keep the editor active, or they can get stuck
-        || m_bAutotestMode)
+        || m_bAutotestMode || m_bRunPythonTestScript)
     {
         res = 1;
         bActive = true;
@@ -3193,7 +3179,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         GetIEditor()->GetDocument()->DeleteTemporaryLevel();
     }
 
-    if (levelName.length() == 0 || !CryStringUtils::IsValidFileName(levelName.toUtf8().data()))
+    if (levelName.length() == 0 || !AZ::StringFunc::Path::IsValid(levelName.toUtf8().data()))
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Level name is invalid, please choose another name."));
         return false;
@@ -3226,13 +3212,16 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         DWORD dw = GetLastError();
 
 #ifdef WIN32
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        wchar_t windowsErrorMessageW[ERROR_LEN];
+        windowsErrorMessageW[0] = L'\0';
+        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             dw,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            windowsErrorMessage.data(),
-            windowsErrorMessage.length(), nullptr);
+            windowsErrorMessageW,
+            ERROR_LEN, nullptr);
         _getcwd(cwd.data(), cwd.length());
+        AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
         windowsErrorMessage = strerror(dw);
         cwd = QDir::currentPath().toUtf8();
@@ -3245,7 +3234,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     {
         QFileInfo info(fullyQualifiedLevelName);
         const AZStd::string rawProjectDirectory = Path::GetEditingGameDataFolder();
-        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), rawProjectDirectory.size()));
+        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), static_cast<int>(rawProjectDirectory.size())));
         const QString elidedLevelName = QStringLiteral("%1...%2").arg(levelName.left(10)).arg(levelName.right(10));
         const QString elidedLevelFileName = QStringLiteral("%1...%2").arg(info.fileName().left(10)).arg(info.fileName().right(10));
         const QString message = QObject::tr(
@@ -3306,7 +3295,7 @@ void CCryEditApp::OnOpenSlice()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditDoc* CCryEditApp::OpenDocumentFile(LPCTSTR lpszFileName)
+CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
 {
     if (m_openingLevel)
     {
@@ -3385,7 +3374,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(LPCTSTR lpszFileName)
 void CCryEditApp::OnResourcesReduceworkingset()
 {
 #ifdef WIN32 // no such thing on macOS
-    SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
+    SetProcessWorkingSetSize(GetCurrentProcess(), std::numeric_limits<SIZE_T>::max(), std::numeric_limits<SIZE_T>::max());
 #endif
 }
 
@@ -3915,11 +3904,19 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
-    AZStd::string process = AZStd::string::format("\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+#if defined(AZ_PLATFORM_LINUX)
+    // On Linux platforms, launching a process is not done through a shell and its arguments are passed in
+    // separately. There is no need to wrap the process path in case of spaces in the path
+    constexpr const char* argumentQuoteString = "";
+#else
+    constexpr const char* argumentQuoteString = "\"";
+#endif    
+
+    AZStd::string process = AZStd::string::format("%s%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
 #if defined(AZ_PLATFORM_WINDOWS)
         ".exe"
 #endif
-        "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
+        "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
 
     AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
     StartProcessDetached(process.c_str(), processArgs.c_str());
@@ -3927,7 +3924,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 
 void CCryEditApp::PrintAlways(const AZStd::string& output)
 {
-    m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), output.size());
+    m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), static_cast<unsigned int>(output.size()));
 }
 
 QString CCryEditApp::GetRootEnginePath() const
@@ -4001,15 +3998,12 @@ struct CryAllocatorsRAII
     CryAllocatorsRAII()
     {
         AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-        AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
 
         AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-        AZ::AllocatorInstance<CryStringAllocator>::Create();
     }
 
     ~CryAllocatorsRAII()
     {
-        AZ::AllocatorInstance<CryStringAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
     }
 };
@@ -4018,6 +4012,19 @@ struct CryAllocatorsRAII
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
     CryAllocatorsRAII cryAllocatorsRAII;
+
+    // Debugging utilities
+    for (int i = 1; i < argc; ++i)
+    {
+        if (azstricmp(argv[i], "--attach-debugger") == 0)
+        {
+            AZ::Debug::Trace::AttachDebugger();
+        }
+        else if (azstricmp(argv[i], "--wait-for-debugger") == 0)
+        {
+            AZ::Debug::Trace::WaitForDebugger();
+        }
+    }
 
     // ensure the EditorEventsBus context gets created inside EditorLib
     [[maybe_unused]] const auto& editorEventsContext = AzToolsFramework::EditorEvents::Bus::GetOrCreateContext();

@@ -628,7 +628,7 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     float targetFrame = (float)atof(pArgs->GetArg(1));
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
-        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
+        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
         return;
     }
     GetIEditor()->GetAnimation()->m_currTime = targetFrame;

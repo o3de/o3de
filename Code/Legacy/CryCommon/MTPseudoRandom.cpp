@@ -63,7 +63,7 @@ void CMTRand_int32::seed(const uint32* array, int size)   // init by array
     }
     for (int k = n - 1; k; --k)
     {
-        PREFAST_SUPPRESS_WARNING(6385)  PREFAST_SUPPRESS_WARNING(6386)  m_nState[i] = (m_nState[i] ^ ((m_nState[i - 1] ^ (m_nState[i - 1] >> 30)) * 1566083941UL)) - i;
+        m_nState[i] = (m_nState[i] ^ ((m_nState[i - 1] ^ (m_nState[i - 1] >> 30)) * 1566083941UL)) - i;
         if ((++i) == n)
         {
             m_nState[0] = m_nState[n - 1];

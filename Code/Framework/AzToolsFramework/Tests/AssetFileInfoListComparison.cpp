@@ -65,7 +65,8 @@ namespace UnitTest
             AzToolsFramework::AssetSeedManager assetSeedManager;
             AzFramework::AssetRegistry assetRegistry;
 
-            const AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(AzFramework::PlatformId::PC);
+            const AZ::PlatformId thisPlatform = AZ::PlatformHelper::GetPlatformIdFromName(AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME));
+            const AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(thisPlatform);
 
             for (int idx = 0; idx < TotalAssets; idx++)
             {
@@ -113,17 +114,18 @@ namespace UnitTest
             // Currently I am serializing the asset registry to disk
             // and invoking the LoadCatalog API to populate the asset catalog created by the azframework app.
 
-            AZStd::string pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
+            const AZStd::string catalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(thisPlatform);
 
-            bool catalogSaved = AzFramework::AssetCatalog::SaveCatalog(pcCatalogFile.c_str(), &assetRegistry);
+            bool catalogSaved = AzFramework::AssetCatalog::SaveCatalog(catalogFile.c_str(), &assetRegistry);
             EXPECT_TRUE(catalogSaved) << "Unable to save the asset catalog file.\n";
 
-            m_pcCatalog = new AzToolsFramework::PlatformAddressedAssetCatalog(AzFramework::PlatformId::PC);
+            m_catalog = new AzToolsFramework::PlatformAddressedAssetCatalog(thisPlatform);
 
-            assetSeedManager.AddSeedAsset(m_assets[0], AzFramework::PlatformFlags::Platform_PC);
-            assetSeedManager.AddSeedAsset(m_assets[1], AzFramework::PlatformFlags::Platform_PC);
+            const auto thisPlatformFlags = AZ::PlatformHelper::GetPlatformFlag(AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME));
+            assetSeedManager.AddSeedAsset(m_assets[0], thisPlatformFlags);
+            assetSeedManager.AddSeedAsset(m_assets[1], thisPlatformFlags);
 
-            bool firstAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::FirstAssetFileInfoList], AzFramework::PlatformFlags::Platform_PC, {});
+            bool firstAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::FirstAssetFileInfoList], thisPlatformFlags, {});
             EXPECT_TRUE(firstAssetFileInfoListSaved);
 
             // Modify contents of asset2
@@ -156,10 +158,10 @@ namespace UnitTest
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to open asset file.\n").c_str());
             }
 
-            assetSeedManager.RemoveSeedAsset(m_assets[0], AzFramework::PlatformFlags::Platform_PC);
-            assetSeedManager.AddSeedAsset(m_assets[5], AzFramework::PlatformFlags::Platform_PC);
+            assetSeedManager.RemoveSeedAsset(m_assets[0], thisPlatformFlags);
+            assetSeedManager.AddSeedAsset(m_assets[5], thisPlatformFlags);
 
-            bool secondAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::SecondAssetFileInfoList], AzFramework::PlatformFlags::Platform_PC, {});
+            bool secondAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::SecondAssetFileInfoList], thisPlatformFlags, {});
             EXPECT_TRUE(secondAssetFileInfoListSaved);
         }
 
@@ -202,7 +204,7 @@ namespace UnitTest
                 AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
-            delete m_pcCatalog;
+            delete m_catalog;
             m_application->Stop();
             delete m_application;
 
@@ -754,7 +756,7 @@ namespace UnitTest
 
         ToolsTestApplication* m_application = nullptr;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog = nullptr;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_catalog = nullptr;
         AZ::IO::FileIOStream m_fileStreams[TotalAssets];
         AZ::Data::AssetId m_assets[TotalAssets];
         AZStd::string m_assetsPath[TotalAssets];

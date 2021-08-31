@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
@@ -13,6 +14,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneSerializationHandler.h>
 
@@ -36,7 +38,7 @@ namespace AZ
     AZStd::shared_ptr<SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
         const AZStd::string& filePath, Uuid sceneSourceGuid)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+        AZ_PROFILE_FUNCTION(Editor);
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
 
@@ -96,7 +98,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = 
-            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath, sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath, sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
         if (!scene)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load the requested scene.");

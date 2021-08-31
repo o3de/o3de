@@ -982,7 +982,7 @@ namespace UnitTest
                 : m_data(data) {}
             ~MyClass() {}
 
-            AZ_ALIGN(int m_data, 32);
+            alignas(32) int m_data;
         };
         // Explicitly doesn't have AZ_CLASS_ALLOCATOR
         class MyDerivedClass

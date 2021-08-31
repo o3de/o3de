@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/is_function.h>
 #include <AzCore/std/typetraits/is_trivially_copyable.h>
 #include <AzCore/std/typetraits/is_void.h>
+#include <AzCore/std/utils.h> // AZStd::addressof
 
 namespace AZStd
 {

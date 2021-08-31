@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 
 namespace ShaderManagementConsole
 {

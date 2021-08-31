@@ -84,7 +84,6 @@ namespace AZ
 
             // AzFramework::InputChannelEventListener overrides...
             bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
-            AZ::s32 GetPriority() const override;
 
         protected:
             explicit ImGuiPass(const RPI::PassDescriptor& descriptor);

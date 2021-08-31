@@ -330,7 +330,7 @@ namespace EMStudio
         const size_t numMorphTargets = m_morphSetup->GetNumMorphTargets();
         const uint32 numPhonemeSets  = m_morphTarget->GetNumAvailablePhonemeSets();
         int insertPosition = 0;
-        for (int i = 1; i < numPhonemeSets; ++i)
+        for (uint32 i = 1; i < numPhonemeSets; ++i)
         {
             // check if another morph target already has this phoneme set.
             bool phonemeSetFound = false;

@@ -272,8 +272,7 @@ namespace EMStudio
                 fpsNumFrames    = 0;
             }
 
-            static AZStd::string perfTempString;
-            perfTempString = AZStd::string::format("%d FPS (%.1f ms)", lastFPS, renderTime);
+            const AZStd::string perfTempString = AZStd::string::format("%d FPS (%.1f ms)", lastFPS, renderTime);
 
             // initialize the painter and get the font metrics
             EMStudioManager::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignRight, QRect(width() - 55, height() - 20, 50, 20));

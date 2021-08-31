@@ -47,12 +47,12 @@ namespace Config
             return m_type;
         }
 
-        ILINE const string& GetName() const
+        ILINE const AZStd::string& GetName() const
         {
             return m_name;
         }
 
-        ILINE const string& GetDescription() const
+        ILINE const AZStd::string& GetDescription() const
         {
             return m_description;
         }
@@ -71,13 +71,13 @@ namespace Config
         static EType TranslateType(const bool&) { return eType_BOOL; }
         static EType TranslateType(const int&) { return eType_INT; }
         static EType TranslateType(const float&) { return eType_FLOAT; }
-        static EType TranslateType(const string&) { return eType_STRING; }
+        static EType TranslateType(const AZStd::string&) { return eType_STRING; }
 
     protected:
         EType m_type;
         uint8 m_flags;
-        string m_name;
-        string m_description;
+        AZStd::string m_name;
+        AZStd::string m_description;
         void* m_ptr;
         ICVar* m_pCVar;
     };

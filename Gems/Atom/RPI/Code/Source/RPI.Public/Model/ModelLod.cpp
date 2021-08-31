@@ -264,7 +264,7 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             streamBufferViewsOut.clear();
 
@@ -366,7 +366,7 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             const Mesh& mesh = m_meshes[meshIndex];
 

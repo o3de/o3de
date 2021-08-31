@@ -575,7 +575,7 @@ namespace ScriptCanvas
             const SlotExecution::Map* slotExecutionMap = GetSlotExecutionMap();
             const auto& executionIns = slotExecutionMap->GetIns();
 
-            if (methodIndex < 0 || methodIndex >= executionIns.size())
+            if (methodIndex >= executionIns.size())
             {
                 return;
             }
@@ -655,7 +655,7 @@ namespace ScriptCanvas
 
         AZ::Outcome<void, AZStd::string> NodeableNodeOverloaded::IsValidConfiguration(size_t methodIndex, const DataIndexMapping& inputMapping, const DataIndexMapping& outputMapping)
         {
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Trying to access unknown method index."));
             }
@@ -716,7 +716,7 @@ namespace ScriptCanvas
             const SlotExecution::Map* slotExecutionMap = GetSlotExecutionMap();
             const auto& executionIns = slotExecutionMap->GetIns();
 
-            if (methodIndex < 0 || methodIndex >= executionIns.size())
+            if (methodIndex >= executionIns.size())
             {
                 return AZ::Failure(AZStd::string("Invalid method index given to Nodeable"));;
             }
@@ -785,7 +785,7 @@ namespace ScriptCanvas
                 return AZ::Success();
             }
 
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Invalid Method index given to Nodeable Node Overloaded."));
             }
@@ -826,7 +826,7 @@ namespace ScriptCanvas
         {
             static const DataTypeSet k_emptySet;
 
-            if (methodIndex >= 0 && methodIndex < m_methodSelections.size())
+            if (methodIndex < m_methodSelections.size())
             {
                 const OverloadConfiguration& overloadConfiguration = m_methodConfigurations[methodIndex];
                 size_t startIndex = NodeableNodeOverloadedCpp::AdjustForHiddenNodeableThisPointer(overloadConfiguration, 0);
@@ -845,7 +845,7 @@ namespace ScriptCanvas
                 return AZ::Success();
             }
 
-            if (methodIndex < 0 || methodIndex >= m_methodConfigurations.size())
+            if (methodIndex >= m_methodConfigurations.size())
             {
                 return AZ::Failure(AZStd::string("Invalid Method index given to Nodeable Node Overloaded."));
             }
@@ -883,7 +883,7 @@ namespace ScriptCanvas
         {
             static const DataTypeSet k_emptySet;
 
-            if (methodIndex >= 0 && methodIndex < m_methodSelections.size())
+            if (methodIndex < m_methodSelections.size())
             {
                 return m_methodSelections[methodIndex].FindPossibleInputTypes(index);
             }

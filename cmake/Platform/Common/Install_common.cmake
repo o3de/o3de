@@ -355,9 +355,16 @@ function(ly_setup_o3de_install)
 
     ly_setup_subdirectories()
     ly_setup_cmake_install()
-    ly_setup_target_generator()
     ly_setup_runtime_dependencies()
-    ly_setup_others()
+    ly_setup_assets()
+
+    # Misc
+    install(FILES
+        ${LY_ROOT_FOLDER}/ctest_pytest.ini
+        ${LY_ROOT_FOLDER}/LICENSE.txt
+        ${LY_ROOT_FOLDER}/README.md
+        DESTINATION .
+    )
 
 endfunction()
 
@@ -479,7 +486,8 @@ endfunction()"
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
-            ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
+            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
+            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()
@@ -488,75 +496,12 @@ endfunction()"
 
     list(REMOVE_DUPLICATES runtime_commands)
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
-    install(CODE "${runtime_commands_str}"
-    )
+    install(CODE "${runtime_commands_str}")
 
 endfunction()
 
-#! ly_setup_others: install directories required by the engine
-function(ly_setup_others)
-
-    # List of directories we want to install relative to engine root
-    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole)
-    foreach(dir ${DIRECTORIES_TO_INSTALL})
-
-        get_filename_component(install_path ${dir} DIRECTORY)
-        if (NOT install_path)
-            set(install_path .)
-        endif()
-
-        install(DIRECTORY "${LY_ROOT_FOLDER}/${dir}"
-            DESTINATION ${install_path}
-            PATTERN "__pycache__" EXCLUDE
-        )
-
-    endforeach()
-
-    # Scripts
-    file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-    install(PROGRAMS
-        ${o3de_scripts}
-        DESTINATION ./scripts
-    )
-
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/scripts/bundler
-        ${LY_ROOT_FOLDER}/scripts/o3de
-        DESTINATION ./scripts
-        PATTERN "__pycache__" EXCLUDE
-        PATTERN "CMakeLists.txt" EXCLUDE
-        PATTERN "tests" EXCLUDE
-    )
-
-    install(DIRECTORY "${LY_ROOT_FOLDER}/python"
-        DESTINATION .
-        REGEX "downloaded_packages" EXCLUDE
-        REGEX "runtime" EXCLUDE
-        REGEX ".*$\.sh" EXCLUDE
-    )
-
-    # For Mac/Linux shell scripts need to be installed as PROGRAMS to have execute permission
-    file(GLOB python_scripts "${LY_ROOT_FOLDER}/python/*.sh")
-    install(PROGRAMS
-        ${python_scripts}
-        DESTINATION ./python
-    )
-
-    # Registry
-    install(DIRECTORY
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
-        DESTINATION ./${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-    )
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Registry
-        DESTINATION .
-    )
-
-    # Engine Source Assets
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Assets
-        DESTINATION .
-    )
+#! ly_setup_assets: install asset directories required by the engine
+function(ly_setup_assets)
 
     # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
@@ -643,82 +588,6 @@ function(ly_setup_others)
             endif()
         endforeach()
 
-    endforeach()
-
-    # Templates
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Templates
-        DESTINATION .
-    )
-
-    # Misc
-    install(FILES
-        ${LY_ROOT_FOLDER}/ctest_pytest.ini
-        ${LY_ROOT_FOLDER}/LICENSE.txt
-        ${LY_ROOT_FOLDER}/README.md
-        DESTINATION .
-    )
-
-endfunction()
-
-#! ly_setup_target_generator: install source files needed for project launcher generation
-function(ly_setup_target_generator)
-
-    install(FILES
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_generator.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_project_files.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/LauncherProject.cpp
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/StaticModules.in
-        DESTINATION LauncherGenerator
-    )
-    install(DIRECTORY ${LY_ROOT_FOLDER}/Code/LauncherUnified/Platform
-        DESTINATION LauncherGenerator
-    )
-    install(FILES ${LY_ROOT_FOLDER}/Code/LauncherUnified/FindLauncherGenerator.cmake
-        DESTINATION cmake
-    )
-
-endfunction()
-
-#! ly_add_install_paths: Adds the list of path to copy to the install layout relative to the same folder
-# \arg:PATHS - Paths to copy over to the install layout. The DESTINATION sub argument is optional
-#      The INPUT sub-argument is required
-# \arg:BASE_DIRECTORY(Optional) - Absolute path where a relative path from the each input path will be
-#      based off of. Defaults to LY_ROOT_FOLDER if not supplied
-function(ly_add_install_paths)
-    set(options)
-    set(oneValueArgs BASE_DIRECTORY)
-    set(multiValueArgs PATHS)
-    cmake_parse_arguments(ly_add_install_paths "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT ly_add_install_paths_PATHS)
-        message(FATAL_ERROR "ly_add_install_paths requires at least one input path to copy to the destination")
-    endif()
-    
-    # The default is the "." directory if not supplied
-    if(NOT ly_add_install_paths_BASE_DIRECTORY)
-        cmake_path(SET ly_add_install_paths_BASE_DIRECTORY ${LY_ROOT_FOLDER})
-    endif()
-    
-    # Separate each path into an INPUT and DESTINATION parameter
-    set(options)
-    set(oneValueArgs INPUT DESTINATION)
-    set(multiValueArgs)
-    foreach(install_path IN LISTS ly_add_install_paths_PATHS)
-        string(REPLACE " " ";" install_path ${install_path})
-        cmake_parse_arguments(install "${options}" "${oneValueArgs}" "${multiValueArgs}" ${install_path})
-        if(NOT install_DESTINATION)
-            ly_get_engine_relative_source_dir(${install_INPUT} rel_to_root_input_path
-                BASE_DIRECTORY ${ly_add_install_paths_BASE_DIRECTORY})
-            cmake_path(GET rel_to_root_input_path PARENT_PATH install_DESTINATION)
-        endif()
-        if(NOT install_DESTINATION)
-            cmake_path(SET install_DESTINATION .)
-        endif()
-        if(IS_DIRECTORY ${install_INPUT})
-            install(DIRECTORY ${install_INPUT} DESTINATION ${install_DESTINATION})
-        elseif(EXISTS ${install_INPUT})
-            install(FILES ${install_INPUT} DESTINATION ${install_DESTINATION})
-        endif()
     endforeach()
 
 endfunction()

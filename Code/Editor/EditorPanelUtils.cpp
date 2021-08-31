@@ -47,7 +47,6 @@ struct ToolTip
 class CEditorPanelUtils_Impl
     : public IEditorPanelUtils
 {
-    #pragma region Drag & Drop
 public:
     void SetViewportDragOperation(void(* dropCallback)(CViewport* viewport, int dragPointX, int dragPointY, void* custom), void* custom) override
     {
@@ -56,8 +55,7 @@ public:
             GetIEditor()->GetViewManager()->GetView(i)->SetGlobalDropCallback(dropCallback, custom);
         }
     }
-    #pragma endregion
-    #pragma region Preview Window
+
 public:
 
     int PreviewWindow_GetDisplaySettingsDebugFlags(CDisplaySettings* settings) override
@@ -72,8 +70,6 @@ public:
         settings->SetDebugFlags(flags);
     }
 
-    #pragma endregion
-    #pragma region Shortcuts
 protected:
     QVector<HotKey> hotkeys;
     bool m_hotkeysAreEnabled;
@@ -130,7 +126,7 @@ public:
             HotKey_BuildDefaults();
             for (QPair<QString, QString> key : keys)
             {
-                for (unsigned int j = 0; j < hotkeys.count(); j++)
+                for (int j = 0; j < hotkeys.count(); j++)
                 {
                     if (hotkeys[j].path.compare(key.first, Qt::CaseInsensitive) == 0)
                     {
@@ -256,7 +252,7 @@ public:
             hotkey.second = settings.value("keySequence").toString();
             if (!hotkey.first.isEmpty())
             {
-                for (unsigned int j = 0; j < hotkeys.count(); j++)
+                for (int j = 0; j < hotkeys.count(); j++)
                 {
                     if (hotkeys[j].path.compare(hotkey.first, Qt::CaseInsensitive) == 0)
                     {
@@ -408,8 +404,6 @@ public:
         return m_hotkeysAreEnabled;
     }
 
-    #pragma  endregion
-    #pragma region ToolTip
 protected:
     QMap<QString, ToolTip> m_tooltips;
 
@@ -539,7 +533,6 @@ public:
         }
         return GetToolTip(path).disabledContent;
     }
-    #pragma endregion ToolTip
 };
 
 IEditorPanelUtils* CreateEditorPanelUtils()

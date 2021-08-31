@@ -186,7 +186,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googlebenchmark(
         NAME Gem::PhysX.Benchmarks
         TARGET Gem::PhysX.Tests
-        TIMEOUT 1500 #25mins
     )
 
     list(APPEND testTargets PhysX.Tests)
@@ -228,12 +227,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Test.Assets/Gems/PhysX/Code/Tests
             )
 endif()
-
-ly_add_source_properties(
-    SOURCES
-        Editor/CollisionLayersWidget.cpp
-        Source/Collision.cpp
-        Source/Configuration/PhysXConfiguration.cpp
-    PROPERTY COMPILE_DEFINITIONS 
-    VALUES TOUCHBENDING_LAYER_BIT=${LY_TOUCHBENDING_LAYER_BIT}
-)

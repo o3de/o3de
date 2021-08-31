@@ -8,9 +8,6 @@
 
 #pragma once
 
-//! Disables "unreferenced formal parameter" warning
-#pragma warning(disable : 4100)
-
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -53,10 +50,10 @@ namespace AtomToolsFramework
 
         //! Resizes the main window to achieve a requested size for the viewport render target.
         //! (This indicates the size of the render target, not the desktop-scaled QT widget size).
-        virtual void ResizeViewportRenderTarget(uint32_t width, uint32_t height) {};
+        virtual void ResizeViewportRenderTarget([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height) {};
 
         //! Forces the viewport's render target to use the given resolution, ignoring the size of the viewport widget.
-        virtual void LockViewportRenderTargetSize(uint32_t width, uint32_t height) {};
+        virtual void LockViewportRenderTargetSize([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height) {};
 
         //! Releases the viewport's render target resolution lock, allowing it to match the viewport widget again.
         virtual void UnlockViewportRenderTargetSize() {};

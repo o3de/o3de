@@ -143,7 +143,7 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -168,7 +168,7 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -221,7 +221,7 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::UpdateShapeData()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool shapeValidBeforeUpdate = false;
         bool shapeValidAfterUpdate = false;

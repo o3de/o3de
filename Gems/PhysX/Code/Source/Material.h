@@ -89,7 +89,7 @@ namespace PhysX
 
         PxMaterialUniquePtr m_pxMaterial;
         AZ::Crc32 m_surfaceType = 0;
-        AZ::u32 m_cryEngineSurfaceId = -1;
+        AZ::u32 m_cryEngineSurfaceId = std::numeric_limits<AZ::u32>::max();
         AZStd::string m_surfaceString;
         float m_density = 1000.0f;
         AZ::Color m_debugColor = AZ::Colors::White;
