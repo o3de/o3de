@@ -1290,13 +1290,13 @@ namespace AZ
 
         const EventArray& GetEvents() const;
 
-#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
+#if !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
         AZStd::string m_scriptPath;
 #endif
 
         AZStd::string GetScriptPath() const 
         {
-#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
+#if !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
             return m_scriptPath;
 #else
             return{};
@@ -1305,7 +1305,7 @@ namespace AZ
 
         void SetScriptPath(const char* scriptPath) 
         { 
-#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
+#if !defined(_RELEASE) // m_scriptPath is only available in non-Release mode
             m_scriptPath = scriptPath;
 #else
             AZ_UNUSED(scriptPath);

@@ -1433,10 +1433,6 @@ AZ_POP_DISABLE_WARNING
 #endif
         }
 
-#if defined(PERFORMANCE_BUILD)
-        LoadConfiguration("performance.cfg");
-#endif
-
         //////////////////////////////////////////////////////////////////////////
         if (g_cvars.sys_asserts == 0)
         {
