@@ -71,7 +71,7 @@
     #define REMOTE_ASSET_PROCESSOR
 #endif
 
-#if (!defined(_RELEASE)
+#if !defined(_RELEASE)
     #define USE_HTTP_WEBSOCKETS 0
 #endif
 
@@ -97,7 +97,7 @@
     #endif
 #endif
 
-#if (!defined(_RELEASE)
+#if !defined(_RELEASE)
     #ifndef ENABLE_PROFILING_CODE
         #define ENABLE_PROFILING_CODE
     #endif
