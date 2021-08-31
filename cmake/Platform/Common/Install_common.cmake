@@ -404,14 +404,25 @@ function(ly_setup_cmake_install)
 
     # Collect all Find files that were added with ly_add_external_target_path
     unset(additional_find_files)
+    unset(additional_platform_files)
     get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
     foreach(additional_module_path ${additional_module_paths})
         unset(find_files)
         file(GLOB find_files "${additional_module_path}/Find*.cmake")
         list(APPEND additional_find_files "${find_files}")
+        foreach(find_file ${find_files})
+            # also copy the Platform/<current_platform> to the destination
+            cmake_path(GET find_file PARENT_PATH find_file_parent)
+            unset(plat_files)
+            file(GLOB plat_files "${find_file_parent}/Platform/${PAL_PLATFORM_NAME}/*.cmake")
+            list(APPEND additional_platform_files "${plat_files}")
+        endforeach()
     endforeach()
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
+    )
+    install(FILES ${additional_platform_files}
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
     )
 
     # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
