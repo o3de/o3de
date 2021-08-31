@@ -32,17 +32,12 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
-#include <OpenImageIO/imageio.h>
-#endif
-
 namespace AZ
 {
     namespace Render
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
         AZ_CVAR(unsigned int,
             r_pngCompressionLevel,
             3, // A compression level of 3 seems like the best default in terms of file size and saving speeds
@@ -112,7 +107,6 @@ namespace AZ
 
             return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
         }
-#endif
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -471,7 +465,6 @@ namespace AZ
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
-#if defined(OPEN_IMAGE_IO_ENABLED)
                     else if (extension == "png")
                     {
                         if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
@@ -492,7 +485,6 @@ namespace AZ
                             m_result = FrameCaptureResult::UnsupportedFormat;
                         }
                     }
-#endif
                     else
                     {
                         m_latestCaptureInfo = AZStd::string::format("Only supports saving image to ppm or dds files");

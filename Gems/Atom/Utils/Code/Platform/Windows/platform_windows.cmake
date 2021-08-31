@@ -9,4 +9,5 @@
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
         3rdParty::OpenImageIO
+        3rdParty::libpng
 )
