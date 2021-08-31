@@ -353,17 +353,22 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 {
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
-    AZ::Aabb aabb = AZ::Aabb::CreateNull();
-    LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+    // Remove the data for this entity from the registered areas. Erase_if is used as erase would use the comparator to lookup the entity id in the map.
+    // As the comparator will get the new layer/priority data for the entity, the id lookup will fail.
     AZStd::erase_if(
         m_registeredAreas,
-        [areaId](const auto& item)
+        [areaId, this](const auto& item)
         {
             auto const& [entityId, aabb] = item;
-            return areaId == entityId;
+            if (areaId == entityId)
+            {
+                m_dirtyRegion.AddAabb(aabb);
+                m_terrainHeightDirty = true;
+                return true;
+            }
+            return false;
         });
-    m_dirtyRegion.AddAabb(aabb);
-    m_terrainHeightDirty = true;
 }
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId)
