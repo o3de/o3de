@@ -751,10 +751,10 @@ finally {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
                 if(env.SNS_TOPIC_GITHUB_ISSUE) {
-                    message_json = ["repository_name":env.REPOSITORY_NAME, "branch_name":env.BRANCH_NAME, "build_failure":buildFailure]
+                    message_json = ["build_url":env.BUILD_URL, "repository_name":env.REPOSITORY_NAME, "branch_name":env.BRANCH_NAME, "build_failure":buildFailure]
                     snsPublish(
                         topicArn: env.SNS_TOPIC_GITHUB_ISSUE,
-                        subject:'Build Result',
+                        subject:'Build Failure',
                         message:JsonOutput.toJson(message_json)
                     )
                 }
