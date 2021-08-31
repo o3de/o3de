@@ -161,35 +161,6 @@ namespace AZ
             return m_outputConnections;
         }
 
-        MaterialPropertyValue MaterialPropertyDescriptor::GetDefaultValue() const
-        {
-            switch (m_dataType)
-            {
-            case MaterialPropertyDataType::Bool:
-                return true;
-            case MaterialPropertyDataType::Int:
-                return 0;
-            case MaterialPropertyDataType::UInt:
-                return 0;
-            case MaterialPropertyDataType::Float:
-                return 0;
-            case MaterialPropertyDataType::Vector2:
-                return AZ::Vector2::CreateZero();
-            case MaterialPropertyDataType::Vector3:
-                return Vector3::CreateZero();
-            case MaterialPropertyDataType::Vector4:
-                return Vector4::CreateZero();
-            case MaterialPropertyDataType::Color:
-                return Color::CreateZero();
-            case MaterialPropertyDataType::Enum:
-            case MaterialPropertyDataType::Image:
-                return MaterialPropertyValue();
-            default:
-                AZ_Error("MaterialPropertyValueSourceData", false, "No default value is available for data type %s.", ToString(m_dataType));
-                return MaterialPropertyValue();
-            }
-        }
-
         AZ::TypeId MaterialPropertyDescriptor::GetStorageDataTypeId() const
         {
             switch (m_dataType)

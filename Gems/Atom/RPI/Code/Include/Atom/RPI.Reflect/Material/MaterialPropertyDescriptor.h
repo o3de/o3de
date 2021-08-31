@@ -98,9 +98,6 @@ namespace AZ
             
             MaterialPropertyDescriptor() = default;
 
-            //! Returns a default value based on the material property descriptor's type.
-            MaterialPropertyValue GetDefaultValue() const;
-
             MaterialPropertyDataType GetDataType() const;
             //! Returns the TypeId that is used to store values for this material property.
             AZ::TypeId GetStorageDataTypeId() const;
@@ -117,7 +114,6 @@ namespace AZ
 
         private:
             MaterialPropertyDataType m_dataType = MaterialPropertyDataType::Invalid;
-            MaterialPropertyValue m_defaultValue;
             AZStd::vector<AZ::Name> m_enumNames;
             Name m_nameId;
             OutputList m_outputConnections;
