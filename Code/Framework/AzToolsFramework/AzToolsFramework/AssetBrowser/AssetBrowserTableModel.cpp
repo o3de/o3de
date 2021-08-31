@@ -30,7 +30,7 @@ namespace AzToolsFramework
             connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &AssetBrowserTableModel::beginResetModel);
             connect(
                 sourceModel, &QAbstractItemModel::modelReset, this,
-                [&]()
+                [this]()
                 {
                     {
                         QSignalBlocker sb(this);
