@@ -29,8 +29,6 @@ else()
 endif()
 
 # Signing
-# The "-o linker-signed" flag is required as a work-around for the following CMake issue:
-# https://gitlab.kitware.com/cmake/cmake/-/issues/21854
 ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep")
 
 # Generate scheme files for Xcode

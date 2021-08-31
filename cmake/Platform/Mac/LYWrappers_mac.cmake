@@ -18,7 +18,8 @@ function(ly_apply_platform_properties target)
     get_property(is_imported TARGET ${target} PROPERTY IMPORTED)
     if((NOT is_imported) AND (LY_ENABLE_HARDENED_RUNTIME))
         get_property(target_type TARGET ${target} PROPERTY TYPE)
-        if ((${target_type} STREQUAL "MODULE_LIBRARY") OR (${target_type} STREQUAL "SHARED_LIBRARY") OR (${target_type} STREQUAL "EXECUTABLE"))
+        set(runtime_types_list "MODULE_LIBRARY" "SHARED_LIBRARY" "EXECUTABLE")
+        if (target_type IN_LIST runtime_types_list)
             set_target_properties(${target} PROPERTIES
                 XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
                 XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO
