@@ -50,7 +50,7 @@ static const int g_numColors = 8;
     "black"
 };
 
-static AZ::Vector3 g_colorVec3[g_numColors] =
+[[maybe_unused]] static AZ::Vector3 g_colorVec3[g_numColors] =
 {
     AZ::Vector3(1.0f, 1.0f, 1.0f),
     AZ::Vector3(1.0f, 0.0f, 0.0f),
@@ -63,7 +63,7 @@ static AZ::Vector3 g_colorVec3[g_numColors] =
 };
 
 static const int g_numSrcBlendModes = 11;
-static AZ::RHI::BlendFactor g_srcBlendModes[g_numSrcBlendModes] =
+[[maybe_unused]] static AZ::RHI::BlendFactor g_srcBlendModes[g_numSrcBlendModes] =
 {
     AZ::RHI::BlendFactor::Zero,
     AZ::RHI::BlendFactor::One,
@@ -79,7 +79,7 @@ static AZ::RHI::BlendFactor g_srcBlendModes[g_numSrcBlendModes] =
 };
 
 static const int g_numDstBlendModes = 10;
-static AZ::RHI::BlendFactor g_dstBlendModes[g_numDstBlendModes] =
+[[maybe_unused]] static AZ::RHI::BlendFactor g_dstBlendModes[g_numDstBlendModes] =
 {
     AZ::RHI::BlendFactor::Zero,
     AZ::RHI::BlendFactor::One,
