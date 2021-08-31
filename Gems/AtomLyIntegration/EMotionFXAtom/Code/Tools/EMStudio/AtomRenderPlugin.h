@@ -19,8 +19,6 @@ namespace EMStudio
     class AtomRenderPlugin
         : public DockWidgetPlugin
     {
-        Q_OBJECT // AUTOMOC
-
     public:
         enum
         {
