@@ -56,7 +56,7 @@ namespace UnitTest
     }
 
 
-    // filesystem::path::is_absolute test
+    // PathView::IsAbsolute test
     TEST_F(PathFixture, IsAbsolute_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -88,7 +88,7 @@ namespace UnitTest
         static_assert(IsAbsolute());
     }
 
-    // filesystem::path::is_relative test
+    // PathView::isRelative test
     TEST_F(PathFixture, IsRelative_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -573,7 +573,16 @@ namespace UnitTest
             PathLexicallyNormalParams{ '/', "foo/./bar/..", "foo" },
             PathLexicallyNormalParams{ '/', "foo/.///bar/../", "foo" },
             PathLexicallyNormalParams{ '/', R"(/foo\./bar\..\)", "/foo" },
-            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" }
+            PathLexicallyNormalParams{ '/', R"(/..)", "/" },
+            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:bar)", R"(C:\foo\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:foo/C:bar)", R"(C:foo\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:/bar)", R"(C:\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:)", R"(C:\foo)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:/)", R"(C:\)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/D:bar)", R"(D:bar)" },
+            PathLexicallyNormalParams{ '\\', R"(..)", R"(..)" },
+            PathLexicallyNormalParams{ '\\', R"(foo/../../bar)", R"(..\bar)" }
         )
     );
 
@@ -642,7 +651,11 @@ namespace UnitTest
             PathViewLexicallyProximateParams{ '\\', "C:a\\b", "C:\\a\\b", "C:a\\b", false },
             PathViewLexicallyProximateParams{ '\\', "C:\\a\\b", "C:a\\b", "C:\\a\\b", false },
             PathViewLexicallyProximateParams{ '\\', "E:\\a\\b", "F:\\a\\b", "E:\\a\\b", false },
-            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/asset.txt", "D:\\o3de\\Project\\Cache", "asset.txt", true }
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/asset.txt", "d:\\o3de\\Project\\Cache", "asset.txt", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/pc/..", "d:\\o3de\\Project\\Cache", "pc\\..", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/pc/asset.txt/..", "d:\\o3de\\Project\\Cache\\", "pc\\asset.txt\\..", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache\\", "D:\\o3de\\Project\\Cache/", ".", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/../foo", "D:\\o3de\\Project\\Cache", "..\\foo", false }
         )
     );
 
