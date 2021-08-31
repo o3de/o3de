@@ -514,19 +514,10 @@ namespace LyShine
 
             if (m_dynamicDraw)
             {
-                UiRenderer::BaseState priorBaseState = uiRenderer->GetBaseState();
-
-                UiRenderer::BaseState curBaseState = priorBaseState;
-                curBaseState.m_blendState.m_blendAlphaSource = AZ::RHI::BlendFactor::One;
-                curBaseState.m_blendState.m_blendAlphaDest = AZ::RHI::BlendFactor::AlphaSource1Inverse;
-                uiRenderer->SetBaseState(curBaseState);
-
                 for (RenderNode* renderNode : m_childRenderNodes)
                 {
                     renderNode->Render(uiRenderer, m_modelViewProjMat, m_dynamicDraw);
                 }
-
-                uiRenderer->SetBaseState(priorBaseState);
             }
             else
             {
@@ -808,7 +799,7 @@ namespace LyShine
             // The shader can be outputing premultiplied alpha EITHER if the input texture is premultiplied alpha OR if the
             // shader is doing the premultiply of the output color
             bool isShaderOutputPremultAlpha = isPreMultiplyAlpha || isTexturePremultipliedAlpha;
-            int blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
+            AZ::RHI::TargetBlendState blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
             AlphaMaskType alphaMaskType = isShaderOutputPremultAlpha ? AlphaMaskType::ModulateAlphaAndColor : AlphaMaskType::ModulateAlpha;
 
             PrimitiveListRenderNode* renderNodeToAddTo = nullptr;
