@@ -16,8 +16,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/TickBus.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace RPI

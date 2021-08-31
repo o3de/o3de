@@ -23,8 +23,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace RPI
