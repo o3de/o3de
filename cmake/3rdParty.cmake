@@ -306,20 +306,10 @@ endfunction()
 function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
 
     # Install the Find file to our <install_location>/cmake directory
-    install(FILES ${CMAKE_CURRENT_LIST_FILE}
-        DESTINATION cmake
+    ly_install_files(FILES ${CMAKE_CURRENT_LIST_FILE}
+        DESTINATION cmake/3rdParty
     )
-
-    # We only want to install external targets that are part of our source tree
-    # Checking for relative path beginning with "../" also works when the path
-    # given is on another drive letter on windows(i.e., RELATIVE_PATH returns an absolute path)
-    file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${3RDPARTY_ROOT_DIRECTORY})
-    if (NOT ${rel_path} MATCHES "^../")
-        get_filename_component(rel_path ${rel_path} DIRECTORY)
-        install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY}
-            DESTINATION ${rel_path}
-        )
-    endif()
+    ly_install_directory(DIRECTORIES ${3RDPARTY_ROOT_DIRECTORY})
 
 endfunction()
 
