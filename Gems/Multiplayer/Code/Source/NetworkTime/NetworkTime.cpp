@@ -79,16 +79,12 @@ namespace Multiplayer
         m_rewindingConnectionId = AzNetworking::InvalidConnectionId;
     }
 
-    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
+    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId rewindConnectionId)
     {
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
-        m_rewindingConnectionId = rewindConnectionId;
-    }
-
-    void NetworkTime::AlterBlendFactor(float blendFactor)
-    {
         m_hostBlendFactor = blendFactor;
+        m_rewindingConnectionId = rewindConnectionId;
     }
 
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)

@@ -66,12 +66,9 @@ namespace Multiplayer
         //! Alters the current HostFrameId and binds that alteration to the provided ConnectionId.
         //! @param frameId the new HostFrameId to use
         //! @param timeMs the new HostTimeMs to use
+        //! @param blendFactor the factor used to blend between values at the current and previous HostFrameId
         //! @param rewindConnectionId the rewinding ConnectionId 
-        virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) = 0;
-
-        //! Alters the current Host blend factor. Used to drive interpolation in rewound states.
-        //! @param blendFactor the blend factor to use
-        virtual void AlterBlendFactor(float blendFactor) = 0;
+        virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId rewindConnectionId) = 0;
 
         //! Syncs all entities contained within a volume to the current rewind state.
         //! @param rewindVolume the volume to rewind entities within (needed for physics entities)

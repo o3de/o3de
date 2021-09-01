@@ -179,12 +179,9 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
-                // Client blends from previous frame to target so here we subtract blend factor to get to that state
-                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.0f);
-                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.0f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -430,10 +427,13 @@ namespace Multiplayer
 
             NetworkInputArray inputArray(GetEntityHandle());
             NetworkInput& input = inputArray[0];
+            const float blendFactor = AZStd::min(AZStd::max(0.f, multiplayer->GetCurrentBlendFactor()), 1.0f);
+            const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.0f - blendFactor));
 
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
-            input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            // Account for the client blending from previous frame to current
+            input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs() - blendMs);
             input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
