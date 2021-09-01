@@ -84,7 +84,7 @@ namespace ScriptCanvasEditor
             Inactive,
             Backup,
             Scan,
-            Upgrade
+            Upgrade,
         };
         ProcessState m_state = ProcessState::Inactive;
 
@@ -135,6 +135,10 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
 
         AZStd::recursive_mutex m_mutex;
+        bool m_upgradeComplete = false;
+        AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
+        OperationResult m_upgradeResult;
+        AZStd::string m_upgradeMessage;
 
         AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 
@@ -163,7 +167,7 @@ namespace ScriptCanvasEditor
         void closeEvent(QCloseEvent* event) override;
 
         bool m_overwriteAll = false;
-        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target, size_t remainingAttempts);
+        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, AZStd::string source, AZStd::string target, size_t remainingAttempts);
 
         void Log(const char* format, ...);
     };

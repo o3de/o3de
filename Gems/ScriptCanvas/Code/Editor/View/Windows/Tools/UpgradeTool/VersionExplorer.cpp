@@ -185,6 +185,50 @@ namespace ScriptCanvasEditor
             break;
 
         case ProcessState::Upgrade:
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+            if (m_upgradeComplete)
+            {
+                m_inProgress = false;
+
+                if (m_scriptCanvasEntity)
+                {
+                    m_scriptCanvasEntity->Deactivate();
+                    m_scriptCanvasEntity = nullptr;
+                }
+
+                GraphUpgradeCompleteUIUpdate(m_upgradeAsset, m_upgradeResult, m_upgradeMessage);
+
+                if (!m_isUpgradingSingleGraph)
+                {
+                    if (m_inProgressAsset != m_assetsToUpgrade.end())
+                    {
+                        m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
+                    }
+
+                    if (m_inProgressAsset == m_assetsToUpgrade.end())
+                    {
+                        FinalizeUpgrade();
+                    }
+                }
+                else
+                {
+                    m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
+                    m_inProgress = false;
+                    m_state = ProcessState::Inactive;
+                    AZ::SystemTickBus::Handler::BusDisconnect();
+                    AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+                }
+
+                m_isUpgradingSingleGraph = false;
+
+                if (m_assetsToUpgrade.empty())
+                {
+                    m_ui->upgradeAllButton->setEnabled(false);
+                }
+
+                m_upgradeComplete = false;
+            }
 
             if (!IsUpgrading())
             {
@@ -215,7 +259,7 @@ namespace ScriptCanvasEditor
 
             }
             break;
-
+        }
         default:
             break;
         }
@@ -329,7 +373,7 @@ namespace ScriptCanvasEditor
     void VersionExplorer::UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
         m_inProgress = true;
-
+        m_upgradeComplete = false;
         Log("UpgradeGraph %s ", m_inProgressAsset->GetHint().c_str());
         m_ui->spinner->SetText(QObject::tr("Upgrading: %1").arg(asset.GetHint().c_str()));
         m_scriptCanvasEntity = nullptr;
@@ -492,7 +536,7 @@ namespace ScriptCanvasEditor
         });
     }
 
-    void VersionExplorer::PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target
+    void VersionExplorer::PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, AZStd::string source, AZStd::string target
         , size_t remainingAttempts)
     {
         VersionExplorerCpp::FileEventHandler fileEventHandler;
@@ -508,7 +552,7 @@ namespace ScriptCanvasEditor
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
             AZ::IO::FileRequestPtr flushRequest = streamer->FlushCaches();
             streamer->SetRequestCompleteCallback(flushRequest
-            , [this, asset, remainingAttempts, &source, &target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+            , [this, asset, remainingAttempts, source, target]([[maybe_unused]] AZ::IO::FileRequestHandle request)
             {
                 // Continue saving.
                 AZ::SystemTickBus::QueueFunction(
@@ -535,7 +579,7 @@ namespace ScriptCanvasEditor
                 AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s, trying again", target.c_str());
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
-                streamer->SetRequestCompleteCallback(flushRequest, [this, asset, &source, &target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                streamer->SetRequestCompleteCallback(flushRequest, [this, asset, source, target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
                     // Continue saving.
                     AZ::SystemTickBus::QueueFunction([this, asset, source, target, remainingAttempts]() { PerformMove(asset, source, target, remainingAttempts - 1); });
@@ -548,43 +592,11 @@ namespace ScriptCanvasEditor
     void VersionExplorer::GraphUpgradeComplete
         (const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message)
     {
-        m_inProgress = false;
-
-        if (m_scriptCanvasEntity)
-        {
-            m_scriptCanvasEntity->Deactivate();
-            m_scriptCanvasEntity = nullptr;
-        }
-
-        GraphUpgradeCompleteUIUpdate(asset, result, message);
-
-        if (!m_isUpgradingSingleGraph)
-        {
-            if (m_inProgressAsset != m_assetsToUpgrade.end())
-            {
-                m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
-            }
-
-            if (m_inProgressAsset == m_assetsToUpgrade.end())
-            {
-                FinalizeUpgrade();
-            }
-        }
-        else
-        {
-            m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
-            m_inProgress = false;
-            m_state = ProcessState::Inactive;
-            AZ::SystemTickBus::Handler::BusDisconnect();
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
-
-        m_isUpgradingSingleGraph = false;
-
-        if (m_assetsToUpgrade.empty())
-        {
-            m_ui->upgradeAllButton->setEnabled(false);
-        }
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        m_upgradeComplete = true;
+        m_upgradeResult = result;
+        m_upgradeMessage = message;
+        m_upgradeAsset = asset;
     }
 
     void VersionExplorer::GraphUpgradeCompleteUIUpdate
