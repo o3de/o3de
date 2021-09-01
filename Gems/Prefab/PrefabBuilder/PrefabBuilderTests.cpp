@@ -67,7 +67,7 @@ namespace UnitTest
         EXPECT_STREQ(sourceFileDependencies[0].m_sourceFileDependencyPath.c_str(), ChildPrefabPath);
     }
 
-    TEST_F(PrefabBuilderTests, ProductDependencies)
+    TEST_F(PrefabBuilderTests, DISABLED_ProductDependencies)
     {
         constexpr const char* ChildPrefabPath = "child.prefab";
         using namespace AzToolsFramework::Prefab;

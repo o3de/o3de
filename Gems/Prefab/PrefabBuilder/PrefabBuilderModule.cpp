@@ -8,6 +8,7 @@
 
 #include <AzCore/Module/Module.h>
 #include <PrefabBuilderComponent.h>
+#include <PrefabGroup/PrefabGroupBehavior.h>
 
 namespace AZ::Prefab
 {
@@ -22,7 +23,8 @@ namespace AZ::Prefab
             : Module()
         {
             m_descriptors.insert(m_descriptors.end(), {
-                PrefabBuilderComponent::CreateDescriptor()
+                PrefabBuilderComponent::CreateDescriptor(),
+                AZ::SceneAPI::Behaviors::PrefabGroupBehavior::CreateDescriptor()
             });
         }
     };
