@@ -256,6 +256,10 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
+{% if NetworkInputsExposedToScript.value > 0 %}
+#include <AzCore/RTTI/BehaviorContext.h>
+{% endif %}
+
 
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
@@ -367,7 +371,35 @@ namespace {{ Component.attrib['Namespace'] }}
         static Multiplayer::NetComponentId s_netComponentId;
         friend void RegisterMultiplayerComponents();
     };
+{% if NetworkInputsExposedToScript.value > 0 %}
 
+    class {{ ComponentName }}Requests
+        : public AZ::ComponentBus
+    {
+    public:
+        AZ_RTTI({{ ComponentName }}Requests, "{{ (ComponentName ~ "Requests") | createHashGuid }}")
+
+        virtual {{ ComponentName }}NetworkInput {{ ComponentName }}CreateInput(float deltaTime) = 0;
+    };
+
+    using {{ ComponentName }}RequestBus = AZ::EBus<{{ ComponentName }}Requests>;
+
+    class {{ ComponentName }}BusHandler final
+        : public {{ ComponentName }}RequestBus::Handler
+          , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER({{ ComponentName }}BusHandler, "{{ (ComponentName ~ "BusHandler") | createHashGuid }}", AZ::SystemAllocator, {{ ComponentName }}CreateInput)
+
+        {{ ComponentName }}NetworkInput {{ ComponentName }}CreateInput(float deltaTime) override
+        {
+            {{ ComponentName }}NetworkInput result;
+            CallResult(result, FN_{{ ComponentName }}CreateInput, deltaTime);
+            return result;
+        }
+    };
+
+{% endif %}
 {% endif %}
     class {{ ControllerBaseName }}{% if not ControllerDerived %} final{% endif %}{{ "" }}
         : public Multiplayer::MultiplayerController

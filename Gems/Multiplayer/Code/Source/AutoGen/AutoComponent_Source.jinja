@@ -1338,13 +1338,20 @@ namespace {{ Component.attrib['Namespace'] }}
             behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-                    ->Method("ConstructFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
+                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
 {%                  for netInput in Component.findall('NetworkInput') %}
 {%                      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
                     ->Property("{{ netInput.attrib['Name'] }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(netInput.attrib['Name']) }}))
 {%                      endif %}
 {%                 endfor %}
             ;
+
+            behaviorContext->EBus<{{ ComponentName }}RequestBus>("{{ ComponentName }}BusHandler")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+                    ->Handler<{{ ComponentName }}BusHandler>()
+                ;
         }
     }
 {% endif %}
