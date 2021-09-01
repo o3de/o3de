@@ -354,7 +354,8 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 {
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    // Remove the data for this entity from the registered areas. Erase_if is used as erase would use the comparator to lookup the entity id in the map.
+    // Remove the data for this entity from the registered areas.
+    // Erase_if is used as erase would use the comparator to lookup the entity id in the map.
     // As the comparator will get the new layer/priority data for the entity, the id lookup will fail.
     AZStd::erase_if(
         m_registeredAreas,

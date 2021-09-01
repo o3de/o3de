@@ -90,7 +90,7 @@ namespace Terrain
 
         // TerrainSpawnerRequestBus
         void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
-        void GetUseGroundPlane(bool& outUseGroundPlane) override;
+        bool GetUseGroundPlane() override;
         
         void RegisterArea() override;
         void RefreshArea() override;

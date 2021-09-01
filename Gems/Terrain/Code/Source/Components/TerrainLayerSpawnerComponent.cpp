@@ -113,11 +113,11 @@ namespace Terrain
     void TerrainLayerSpawnerComponent::Deactivate()
     {
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
-
-        TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        TerrainAreaRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -156,9 +156,9 @@ namespace Terrain
         outPriority = m_configuration.m_priority;
     }
 
-    void TerrainLayerSpawnerComponent::GetUseGroundPlane(bool& outUseGroundPlane)
+    bool TerrainLayerSpawnerComponent::GetUseGroundPlane()
     {
-        outUseGroundPlane = m_configuration.m_useGroundPlane;
+        return m_configuration.m_useGroundPlane;
     }
 
     void TerrainLayerSpawnerComponent::RegisterArea()
