@@ -19,17 +19,16 @@ IF "%O3DE_USER_ENV_INIT%"=="1" GOTO :END_OF_FILE
 cd %~dp0
 PUSHD %~dp0
 
-SETLOCAL ENABLEDELAYEDEXPANSION
-
 SET O3DE_DEV=C:\Depot\o3de-engine
 ::SET OCIO_APPS=C:\Depot\o3de-engine\Tools\ColorGrading\ocio\build\src\apps
 SET TAG_LY_BUILD_PATH=build
 SET DCCSI_GDEBUG=True
 SET DCCSI_DEV_MODE=True
 
-SET WING_PROJ=%O3DE_PROJECT_PATH%\.solutions\.wing\o3de_color_grading_%DCCSI_WING_VERSION_MAJOR%x.wpr
-
-::ENDLOCAL
+:: set the your user name here for windows path
+SET TAG_USERNAME=< not set >
+SET DCCSI_PY_REV=rev1
+SET DCCSI_PY_PLATFORM=windows
 
 :: Set flag so we don't initialize dccsi environment twice
 SET O3DE_USER_ENV_INIT=1

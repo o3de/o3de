@@ -23,18 +23,17 @@ from pathlib import Path
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.lut_helper'
 
-import ColorGrading.initialize
-ColorGrading.initialize.start()
-
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-try:
-    import OpenImageIO as oiio
-    pass
-except ImportError as e:
-    _LOGGER.error(f"invalid import: {e}")
-    sys.exit(1)
+import ColorGrading.initialize
+if ColorGrading.initialize.start():
+    try:
+        import OpenImageIO as oiio
+        pass
+    except ImportError as e:
+        _LOGGER.error(f"invalid import: {e}")
+        sys.exit(1)
 # ------------------------------------------------------------------------
 
 

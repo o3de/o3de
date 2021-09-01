@@ -9,6 +9,7 @@
 
 #include <Blast/BlastMaterial.h>
 #include <Family/ActorTracker.h>
+#include <Blast/BlastSystemBus.h>
 
 namespace Blast
 {
