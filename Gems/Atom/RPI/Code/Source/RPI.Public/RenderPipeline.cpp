@@ -303,7 +303,19 @@ namespace AZ
 
         void RenderPipeline::OnPrepareFrame()
         {
-            m_prepareFrameEvent.Signal();
+            m_lastRenderRequestTime = AZStd::chrono::system_clock::now();
+            if (m_renderMode == RenderMode::RenderAtTargetRate)
+            {
+                constexpr AZStd::chrono::duration<float> updateThresholdMs(0.001f);
+                const bool shouldRender =
+                    m_lastRenderRequestTime - m_lastRenderStartTime + updateThresholdMs >= m_targetRefreshRate;
+                m_rootPass->SetEnabled(shouldRender);
+            }
+
+            if (NeedsRender())
+            {
+                m_prepareFrameEvent.Signal();
+            }
         }
 
         void RenderPipeline::OnPassModified()
@@ -380,11 +392,11 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame()
         {
             AZ_PROFILE_FUNCTION(RPI);
 
-            m_lastRenderStartTime = tick.m_currentGameTime;
+            m_lastRenderStartTime = m_lastRenderRequestTime;
 
             OnPassModified();
 
@@ -495,6 +507,13 @@ namespace AZ
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
+        void RenderPipeline::AddToRenderTickAtInterval(AZStd::chrono::duration<float> renderInterval)
+        {
+            m_rootPass->SetEnabled(false);
+            m_renderMode = RenderMode::RenderAtTargetRate;
+            m_targetRefreshRate = renderInterval;
+        }
+
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
@@ -508,7 +527,7 @@ namespace AZ
         
         bool RenderPipeline::NeedsRender() const
         {
-            return m_renderMode != RenderMode::NoRender;
+            return m_rootPass->IsEnabled();
         }
 
         RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const

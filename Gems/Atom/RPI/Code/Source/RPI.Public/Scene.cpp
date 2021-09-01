@@ -395,7 +395,7 @@ namespace AZ
             }
         }
 
-        void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::PrepareRender([[maybe_unused]]const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: PrepareRender");
 
@@ -414,10 +414,10 @@ namespace AZ
                 //AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnPrepareFrame");
                 for (auto& pipeline : m_pipelines)
                 {
+                    pipeline->OnPrepareFrame();
                     if (pipeline->NeedsRender())
                     {
                         activePipelines.push_back(pipeline);
-                        pipeline->OnPrepareFrame();
                     }
                 }
             }
@@ -436,7 +436,7 @@ namespace AZ
             for (const auto& pipeline : activePipelines)
             {
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnStartFrame");
-                pipeline->OnStartFrame(tickInfo);
+                pipeline->OnStartFrame();
             }
 
             // Return if there is no active render pipeline

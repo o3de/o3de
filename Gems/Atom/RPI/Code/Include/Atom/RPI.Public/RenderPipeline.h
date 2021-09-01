@@ -161,19 +161,25 @@ namespace AZ
 
             //! Add this RenderPipeline to RPI system's RenderTick and it will be rendered whenever
             //! the RPI system's RenderTick is called.
-            //! The RenderPipeline is rendered per RenderTick by default unless AddToRenderTickOnce() was called.
+            //! The RenderPipeline is rendered per RenderTick by default.
             void AddToRenderTick();
+
+            //! Add this RenderPipeline to RPI system's RenderTick and it will be rendered every RenderTick
+            //! after the specified interval has elapsed since the last rendered frame.
+            //! @param renderInterval The desired time between rendered frames, in seconds.
+            void AddToRenderTickAtInterval(AZStd::chrono::duration<float> renderInterval);
 
             //! Disable render for this RenderPipeline
             void RemoveFromRenderTick();
 
             ~RenderPipeline();
-                        
+
             enum class RenderMode : uint8_t
             {
-                RenderEveryTick, // Render at each RPI system render tick
-                RenderOnce, // Render once in next RPI system render tick
-                NoRender // Render disabled.
+                RenderEveryTick, //!< Render at each RPI system render tick.
+                RenderAtTargetRate, //!< Render on RPI system render tick after a target refresh rate interval has passed.
+                RenderOnce, //!< Render once in next RPI system render tick.
+                NoRender //!< Render disabled.
             };
 
             //! Get current render mode
@@ -212,7 +218,7 @@ namespace AZ
             void OnPrepareFrame();
 
             // Called when this pipeline is about to be rendered
-            void OnStartFrame(const TickTimeInfo& tick);
+            void OnStartFrame();
 
             // Called when the rendering of current frame is finished.
             void OnFrameEnd();
@@ -237,8 +243,14 @@ namespace AZ
             
             PipelineViewMap m_pipelineViewsByTag;
             
-            /// The system time when the last time this pipeline render was started
-            float m_lastRenderStartTime = 0;
+            // The system time when the last time this pipeline render was started
+            AZStd::chrono::system_clock::time_point m_lastRenderStartTime;
+
+            // The current system time, as of OnPrepareFrame's execution.
+            AZStd::chrono::system_clock::time_point m_lastRenderRequestTime;
+
+            // The target time between renders when m_renderMode is RenderMode::RenderAtTargetRate
+            AZStd::chrono::duration<float> m_targetRefreshRate;
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;

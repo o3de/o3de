@@ -239,7 +239,7 @@ namespace AZ
             m_imageSystem.Update();
         }
 
-        void RPISystem::SimulationTick()
+        void RPISystem::SimulationTick(float deltaTime, float simulationTimeMs)
         {
             if (!m_systemAssetsInitialized)
             {
@@ -250,20 +250,13 @@ namespace AZ
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
             // Update tick time info
-            FillTickTimeInfo();
+            m_tickTime.m_gameDeltaTime = deltaTime;
+            m_tickTime.m_currentGameTime = simulationTimeMs;
 
             for (auto& scene : m_scenes)
             {
                 scene->Simulate(m_tickTime, m_simulationJobPolicy);
             }
-        }
-
-        void RPISystem::FillTickTimeInfo()
-        {
-            AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
-            ScriptTimePoint currentTime;
-            AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetMilliseconds());
         }
 
         void RPISystem::RenderTick()

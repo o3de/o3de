@@ -76,7 +76,7 @@ namespace AZ
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> GetViewSrgLayout() const override;
-            void SimulationTick() override;
+            void SimulationTick(float deltaTime, float simulationTimeMs) override;
             void RenderTick() override;
             void SetSimulationJobPolicy(RHI::JobPolicy jobPolicy) override;
             RHI::JobPolicy GetSimulationJobPolicy() const override;
@@ -95,9 +95,6 @@ namespace AZ
 
             // SystemTickBus::OnTick
             void OnSystemTick() override;
-
-            // Fill system time and game time information for simulation or rendering
-            void FillTickTimeInfo();
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
