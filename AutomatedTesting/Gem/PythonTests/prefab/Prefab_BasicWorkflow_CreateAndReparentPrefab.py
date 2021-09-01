@@ -22,7 +22,8 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
 
         prefab_test_utils.open_base_tests_level()
 
-        # Create a new Entity at the root level
+        # Creates a new Entity at the root level
+        # Asserts if creation didn't succeed
         car_entity = EditorEntity.create_editor_entity()
         car_prefab_entities = [car_entity]
 
@@ -30,7 +31,7 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
         car_prefab = Prefab.create_prefab(
             car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
-        # Create another new Entity at the root level
+        # Creates another new Entity at the root level
         wheel_entity = EditorEntity.create_editor_entity()
         wheel_prefab_entities = [wheel_entity]
 

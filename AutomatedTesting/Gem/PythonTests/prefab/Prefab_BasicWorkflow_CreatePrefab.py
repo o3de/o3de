@@ -17,7 +17,8 @@ def Prefab_BasicWorkflow_CreatePrefab():
 
     prefab_test_utils.open_base_tests_level()
 
-    # Create a new Entity at the root level
+    # Creates a new Entity at the root level
+    # Asserts if creation didn't succeed
     car_entity = EditorEntity.create_editor_entity()
     car_prefab_entities = [car_entity]
 
