@@ -111,15 +111,10 @@ namespace ScriptCanvasEditor
         enum class OperationResult
         {
             Success,
-            SkipBackup,
-            BackupSuccess,
-            BackupFail,
-            BackupFail_CreateFolder,
-            BackupFail_FileNotFound,
-            CopyFinalFailed,
+            Failure,
         };
 
-        void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result = OperationResult::Success);
+        void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result, AZStd::string_view message);
 
         bool IsUpgrading() const;
 
@@ -157,10 +152,10 @@ namespace ScriptCanvasEditor
         void FinalizeScan();
 
         void BackupComplete();
-        OperationResult BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
+        AZStd::string BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
         void UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
 
-        void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result = OperationResult::Success);
+        void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message);
         void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) override;
 
         void OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset);

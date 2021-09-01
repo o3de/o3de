@@ -188,9 +188,9 @@ namespace ScriptCanvasEditor
 
             if (!IsUpgrading())
             {
-                OperationResult result = BackupGraph(*m_inProgressAsset);
+                AZStd::string errorMessage = BackupGraph(*m_inProgressAsset);
                 // Make the backup
-                if (result == OperationResult::BackupSuccess || result == OperationResult::SkipBackup)
+                if (errorMessage.empty())
                 {
                     Log("SystemTick::ProcessState::Upgrade: Backup Success %s ", m_inProgressAsset->GetHint().c_str());
                     QList<QTableWidgetItem*> items = m_ui->tableWidget->findItems(m_inProgressAsset->GetHint().c_str(), Qt::MatchFlag::MatchExactly);
@@ -210,7 +210,7 @@ namespace ScriptCanvasEditor
                 else
                 {
                     Log("SystemTick::ProcessState::Upgrade: Backup Failed %s ", m_inProgressAsset->GetHint().c_str());
-                    GraphUpgradeComplete(*m_inProgressAsset, result);
+                    GraphUpgradeComplete(*m_inProgressAsset, OperationResult::Failure, errorMessage);
                 }
 
             }
@@ -241,12 +241,12 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Handler::BusConnect();
     }
 
-    VersionExplorer::OperationResult VersionExplorer::BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    AZStd::string VersionExplorer::BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
         bool makeBackup = m_ui->makeBackupCheckbox->isChecked();
         if (!makeBackup)
         {
-            return OperationResult::SkipBackup;
+            return "";
         }
 
         QDateTime theTime = QDateTime::currentDateTime();
@@ -262,7 +262,7 @@ namespace ScriptCanvasEditor
             if (AZ::IO::FileIOBase::GetInstance()->CreatePath(backupPath.c_str()) != AZ::IO::ResultCode::Success)
             {
                 AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Failed to create backup folder %s", backupPath.c_str());
-                return OperationResult::BackupFail_CreateFolder;
+                return "Failed to create backup folder";
             }
         }
 
@@ -298,7 +298,7 @@ namespace ScriptCanvasEditor
         else
         {
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Failed to find file: %s", asset.GetHint().c_str());
-            return OperationResult::BackupFail_FileNotFound;
+            return "Failed to find source file";
         }
 
         devRoot = devRootCStr;
@@ -317,12 +317,12 @@ namespace ScriptCanvasEditor
         if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Error)
         {
             Log("VersionExplorer::BackupGraph: Backed up: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
-            return OperationResult::BackupSuccess;
+            return "";
         }
         else
         {
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Error creating backup: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
-            return OperationResult::BackupFail;
+            return "Failed to copy source file to backup location";
         }
     }
 
@@ -376,17 +376,18 @@ namespace ScriptCanvasEditor
                 scriptCanvasEntity->Activate();
             }
 
+            AZ_Assert(scriptCanvasEntity->GetState() == AZ::Entity::State::Active, "Graph entity is not active");
             auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
             AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
 
             if (graphComponent)
             {
+                m_scriptCanvasEntity = scriptCanvasEntity;
+
                 graphComponent->UpgradeGraph
                     ( asset
                     , m_ui->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
                     , m_ui->verbose->isChecked());
-
-                m_scriptCanvasEntity = scriptCanvasEntity;
             }
         }
 
@@ -417,85 +418,78 @@ namespace ScriptCanvasEditor
     {
         AZStd::string relativePath, fullPath;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
-
         bool fullPathFound = false;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
-
         AZStd::string tmpFileName;
-        bool tmpFilesaved = false;
-
-        constexpr const size_t k_maxAttemps = 10;
-
         // here we are saving the graph to a temp file instead of the original file and then copying the temp file to the original file.
         // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing. Temp files are ignored by AP.
-        if (AZ::IO::CreateTempFileName(fullPath.c_str(), tmpFileName))
+        if (!AZ::IO::CreateTempFileName(fullPath.c_str(), tmpFileName))
         {
-            AZ::IO::FileIOStream fileStream(tmpFileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            GraphUpgradeComplete(asset, OperationResult::Failure, "Failure to create temporary file name");
+            return;
+        }
 
-            if (fileStream.IsOpen())
+        bool tempSavedSucceeded = false;
+        AZ::IO::FileIOStream fileStream(tmpFileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+        if (fileStream.IsOpen())
+        {
+            if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
             {
-                if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
-                {
-                    ScriptCanvasEditor::ScriptCanvasAssetHandler handler;
-                    tmpFilesaved = handler.SaveAssetData(asset, &fileStream);
-                }
-
-                fileStream.Close();
+                ScriptCanvasEditor::ScriptCanvasAssetHandler handler;
+                tempSavedSucceeded = handler.SaveAssetData(asset, &fileStream);
             }
 
-            using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-            SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, fullPath.c_str(), true,
-                [this, asset, fullPath, tmpFileName, tmpFilesaved](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& info)
-                {
-                    if (!info.IsReadOnly())
-                    {
-                        if (tmpFilesaved)
-                        {
-                            PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
-                        }
-                    }
-                    else
-                    {
-                        if (m_overwriteAll)
-                        {
-                            AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
-
-                            if (tmpFilesaved)
-                            {
-                                PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
-                            }
-                        }
-                        else
-                        {
-                            int result = QMessageBox::No;
-                            if (!m_overwriteAll)
-                            {
-                                QMessageBox mb(QMessageBox::Warning,
-                                    QObject::tr("Failed to Save Upgraded File"),
-                                    QObject::tr("The upgraded file could not be saved because the file is read only.\nDo you want to make it writeable and overwrite it?"),
-                                    QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No, this);
-
-                                result = mb.exec();
-                                if (result == QMessageBox::YesToAll)
-                                {
-                                    m_overwriteAll = true;
-                                }
-                            }
-
-                            if (result == QMessageBox::Yes || m_overwriteAll)
-                            {
-                                AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
-
-                                if (tmpFilesaved)
-                                {
-                                    PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
-                                }
-                            }
-
-                        }
-                    }
-                });
+            fileStream.Close();
         }
+
+        if (!tempSavedSucceeded)
+        {
+            GraphUpgradeComplete(asset, OperationResult::Failure, "Save asset data to temporary file failed");
+            return;
+        }
+
+        using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+        SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, fullPath.c_str(), true,
+        [this, asset, fullPath, tmpFileName]([[maybe_unused]] bool success, const AzToolsFramework::SourceControlFileInfo& info)
+        {
+            constexpr const size_t k_maxAttemps = 10;
+
+            if (!info.IsReadOnly())
+            {
+                PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
+            }
+            else
+            {
+                if (m_overwriteAll)
+                {
+                    AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
+                    PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
+                }
+                else
+                {
+                    int result = QMessageBox::No;
+                    if (!m_overwriteAll)
+                    {
+                        QMessageBox mb(QMessageBox::Warning,
+                            QObject::tr("Failed to Save Upgraded File"),
+                            QObject::tr("The upgraded file could not be saved because the file is read only.\nDo you want to make it writeable and overwrite it?"),
+                            QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No, this);
+
+                        result = mb.exec();
+                        if (result == QMessageBox::YesToAll)
+                        {
+                            m_overwriteAll = true;
+                        }
+                    }
+
+                    if (result == QMessageBox::Yes || m_overwriteAll)
+                    {
+                        AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
+                        PerformMove(asset, tmpFileName, fullPath, k_maxAttemps);
+                    }
+                }
+            }
+        });
     }
 
     void VersionExplorer::PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZStd::string& source, const AZStd::string& target
@@ -506,10 +500,11 @@ namespace ScriptCanvasEditor
         if (remainingAttempts == 0)
         {
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s. giving up", target.c_str());
-            GraphUpgradeComplete(asset, OperationResult::CopyFinalFailed);
+            GraphUpgradeComplete(asset, OperationResult::Failure, "Failed to move updated file from backup to source destination");
         }
         else if (remainingAttempts == 2)
         {
+            AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s, trying again", target.c_str());
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
             AZ::IO::FileRequestPtr flushRequest = streamer->FlushCaches();
             streamer->SetRequestCompleteCallback(flushRequest
@@ -530,11 +525,14 @@ namespace ScriptCanvasEditor
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                 // Bump the slice asset up in the asset processor's queue.
                 AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
-                AZ::SystemTickBus::QueueFunction([this, asset]() { GraphUpgradeComplete(asset); });
+                AZ::SystemTickBus::QueueFunction([this, asset]()
+                    {
+                        GraphUpgradeComplete(asset, OperationResult::Success, "");
+                    });
             }
             else
             {
-                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s. trying again", target.c_str());
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s, trying again", target.c_str());
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                 streamer->SetRequestCompleteCallback(flushRequest, [this, asset, &source, &target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
@@ -547,7 +545,8 @@ namespace ScriptCanvasEditor
         }        
     }
 
-    void VersionExplorer::GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result )
+    void VersionExplorer::GraphUpgradeComplete
+        (const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message)
     {
         m_inProgress = false;
 
@@ -557,7 +556,7 @@ namespace ScriptCanvasEditor
             m_scriptCanvasEntity = nullptr;
         }
 
-        GraphUpgradeCompleteUIUpdate(asset, result);
+        GraphUpgradeCompleteUIUpdate(asset, result, message);
 
         if (!m_isUpgradingSingleGraph)
         {
@@ -588,7 +587,8 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void VersionExplorer::GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result /*= OperationResult::Success*/)
+    void VersionExplorer::GraphUpgradeCompleteUIUpdate
+        ( const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message)
     {
         QString text = asset.GetHint().c_str();
         QList<QTableWidgetItem*> items = m_ui->tableWidget->findItems(text, Qt::MatchFlag::MatchExactly);
@@ -615,18 +615,7 @@ namespace ScriptCanvasEditor
                     else
                     {
                         doneButton->setIcon(QIcon(":/stylesheet/img/UI20/titlebar-close.svg"));
-                        if (result == OperationResult::BackupFail_FileNotFound)
-                        {
-                            doneButton->setToolTip("The file no longer exists");
-                        }
-                        else if (result == OperationResult::BackupFail_CreateFolder)
-                        {
-                            doneButton->setToolTip("Failed to create the backup folder");
-                        }
-                        else if (result == OperationResult::CopyFinalFailed)
-                        {
-                            doneButton->setToolTip("Failed to copy final file to the source destination");
-                        }
+                        doneButton->setToolTip(message.data());
                     }
 
                     m_ui->tableWidget->setCellWidget(row, ColumnStatus, doneButton);
