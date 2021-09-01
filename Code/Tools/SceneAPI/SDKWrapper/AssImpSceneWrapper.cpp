@@ -86,7 +86,7 @@ namespace AZ
                 AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Failed to import Asset Importer Scene. Error returned: %s", m_importer.GetErrorString());
                 return false;
             }
-
+            CheckTextureName();
             return true;
         }
 
@@ -132,6 +132,61 @@ namespace AZ
             m_assImpScene->mMetaData->Get("FrontAxisSign", result.second);
             result.first = static_cast<AssImpSceneWrapper::AxisVector>(frontVectorRead);
             return result;
+        }
+
+        void AssImpSceneWrapper::CheckTextureName()
+        {
+            aiMesh* pMesh = nullptr;
+            aiString textureName;
+            aiString nextName;
+            for (AZ::u32 i = 0; i < m_assImpScene->mNumMeshes; i++)
+            {
+                pMesh = *(m_assImpScene->mMeshes + i);
+                for (AZ::u32 j = 0; j < AI_MAX_NUMBER_OF_TEXTURECOORDS; j++)
+                {
+                    textureName = *(pMesh->mTextureCoordsNames + j);
+                    if (textureName.length == 0)
+                    {
+                        break;
+                    }
+
+                    for (AZ::u32 k = j + 1; k < AI_MAX_NUMBER_OF_TEXTURECOORDS; k++)
+                    {
+                        nextName = *(pMesh->mTextureCoordsNames + k);
+                        if (nextName.length == 0)
+                        {
+                            break;
+                        }
+                        if (nextName == textureName)
+                        {
+                            *(pMesh->mTextureCoordsNames + k) = GetNewTextureName(nextName, pMesh);
+                        }
+                    }
+                }
+            }
+        }
+
+        aiString AssImpSceneWrapper::GetNewTextureName(const aiString& oldName, const aiMesh* pMesh)
+        {
+            AZ::u32 nameIndex = 1;
+            aiString textureName;
+            aiString newName = oldName;
+            newName.Append(std::to_string(nameIndex++).c_str());
+            for (AZ::s32 j = 0; j < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++j)
+            {
+                textureName = *(pMesh->mTextureCoordsNames + j);
+                if (textureName.length == 0)
+                {
+                    break;
+                }
+                if (newName == textureName)
+                {
+                    newName = oldName;
+                    newName.Append(std::to_string(nameIndex++).c_str());
+                    j = -1;
+                }
+            }
+            return newName;
         }
     }//namespace AssImpSDKWrapper
 

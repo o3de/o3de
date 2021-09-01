@@ -10,6 +10,7 @@
 #include <assimp/Importer.hpp>
 
 struct aiScene;
+struct aiMesh;
 
 namespace AZ
 {
@@ -43,6 +44,8 @@ namespace AZ
             AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
+            void CheckTextureName();
+            aiString GetNewTextureName(const aiString& oldName, const aiMesh* pMesh);
         protected:
             const aiScene* m_assImpScene = nullptr;
             Assimp::Importer m_importer;
