@@ -9,28 +9,14 @@ import os
 
 from azlmbr.entity import EntityId
 from azlmbr.math import Vector3
+from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
 
 import azlmbr.bus as bus
 import azlmbr.components as components
-import azlmbr.editor as editor
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
-
-
-class UtilsResults:
-    unique_name_entity_found = (
-        "Entity with a unique name found",
-        "Entity with a unique name *not* found")
-
-    prefab_at_expected_position = (
-        "prefab is at expected position",
-        "prefab is *not* at expected position")
-
-    entity_children_count_matched = (
-        "Entity with a unique name found",
-        "Entity with a unique name *not* found")
 
 
 def get_prefab_file_name(prefab_name):
@@ -48,9 +34,13 @@ def find_entities_by_name(entity_name):
 
 
 def find_entity_by_unique_name(entity_name):
+    unique_name_entity_found_result =  (
+        "Entity with a unique name found",
+        "Entity with a unique name *not* found")
+
     entities = find_entities_by_name(entity_name)
-    unique_name_entity_found = len(entities) is 1
-    Report.result(UtilsResults.unique_name_entity_found, unique_name_entity_found)
+    unique_name_entity_found = len(entities) == 1
+    Report.result(unique_name_entity_found_result, unique_name_entity_found)
 
     if unique_name_entity_found:
         return entities[0]
@@ -60,9 +50,13 @@ def find_entity_by_unique_name(entity_name):
 
 
 def check_entity_at_position(entity_id, expected_prefab_position):
+    prefab_at_expected_position_result = (
+        "prefab is at expected position",
+        "prefab is *not* at expected position")
+
     actual_prefab_position = components.TransformBus(bus.Event, "GetWorldTranslation", entity_id)
     is_at_position = actual_prefab_position.IsClose(expected_prefab_position)
-    Report.result(UtilsResults.prefab_at_expected_position, is_at_position)
+    Report.result(prefab_at_expected_position_result, is_at_position)
 
     if not is_at_position:
         Report.info(f"Entity '{entity_id.ToString()}'\'s expected position: {expected_prefab_position.ToString()}, actual position: {actual_prefab_position.ToString()}")
@@ -71,9 +65,14 @@ def check_entity_at_position(entity_id, expected_prefab_position):
 
 
 def check_entity_children_count(entity_id, expected_children_count):
-    children_entity_ids = editor.EditorEntityInfoRequestBus(bus.Event, 'GetChildren', entity_id)
-    entity_children_count_matched = len(children_entity_ids) is expected_children_count
-    Report.result(UtilsResults.entity_children_count_matched, entity_children_count_matched)
+    entity_children_count_matched_result = (
+        "Entity with a unique name found",
+        "Entity with a unique name *not* found")
+
+    entity = Entity(entity_id)
+    children_entity_ids = entity.get_children_ids()
+    entity_children_count_matched = len(children_entity_ids) == expected_children_count
+    Report.result(entity_children_count_matched_result, entity_children_count_matched)
 
     if not entity_children_count_matched:
         Report.info(f"Entity '{entity_id.ToString()}' actual children count: {len(children_entity_ids)}. Expected children count: {expected_children_count}")
@@ -81,12 +80,14 @@ def check_entity_children_count(entity_id, expected_children_count):
     return entity_children_count_matched
 
 
-def get_children_by_name(parent_entity_id, entity_name):
-    children_entity_ids = editor.EditorEntityInfoRequestBus(bus.Event, 'GetChildren', parent_entity_id)
+def get_children_ids_by_name(entity_id, entity_name):
+    entity = Entity(entity_id)
+    children_entity_ids = entity.get_children_ids()
     
     result = []
     for child_entity_id in children_entity_ids:
-        child_entity_name = editor.EditorEntityInfoRequestBus(bus.Event, 'GetName', child_entity_id)
+        child_entity = Entity(child_entity_id)
+        child_entity_name = child_entity.get_name()
         if child_entity_name == entity_name:
             result.append(child_entity_id)
 

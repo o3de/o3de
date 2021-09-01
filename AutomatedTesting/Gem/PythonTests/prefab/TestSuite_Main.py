@@ -23,24 +23,16 @@ from base import TestAutomationBase
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
 
-    def _run_prefab_test(self, request, workspace, editor, test_module):
-        self._run_test(request, workspace, editor, test_module, ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
-
-    def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
-        from . import PrefabLevel_OpensLevelWithEntities as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
-
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestPrefabBasicWorkflows(TestAutomationBase):
-
     def _run_prefab_test(self, request, workspace, editor, test_module, batch_mode=True, autotest_mode=True):
         self._run_test(request, workspace, editor, test_module, 
             extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"], 
             batch_mode=batch_mode,
             autotest_mode=autotest_mode)
+
+
+    def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
+        from . import PrefabLevel_OpensLevelWithEntities as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
 
 
     def test_Prefab_BasicWorkflow_CreatePrefab(self, request, workspace, editor, launcher_platform):
@@ -61,3 +53,4 @@ class TestPrefabBasicWorkflows(TestAutomationBase):
     def test_Prefab_BasicWorkflow_CreateAndReparentPrefab(self, request, workspace, editor, launcher_platform):
         from . import Prefab_BasicWorkflow_CreateAndReparentPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
