@@ -15,6 +15,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Entity/BehaviorEntity.h>
 
 namespace AzToolsFramework
 {
@@ -28,6 +29,10 @@ namespace AzToolsFramework
 
         // Creates an entity with the default editor components attached and initializes the entity
         virtual AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) = 0;
+
+        virtual AzFramework::BehaviorComponentId FindComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) = 0;
+
+        virtual bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) = 0;
     };
 
     using EntityUtilityBus = AZ::EBus<EntityUtilityTraits>;
@@ -40,6 +45,8 @@ namespace AzToolsFramework
         AZ_COMPONENT(EntityUtilityComponent, "{47205907-A0EA-4FFF-A620-04D20C04A379}");
 
         AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) override;
+        AzFramework::BehaviorComponentId FindComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) override;
+        bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) override;
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
