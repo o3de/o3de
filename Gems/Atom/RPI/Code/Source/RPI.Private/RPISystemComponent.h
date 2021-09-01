@@ -32,7 +32,7 @@ namespace AZ
          */
         class RPISystemComponent final
             : public AZ::Component
-            , public AZ::SystemTickBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -50,15 +50,11 @@ namespace AZ
         private:
             RPISystemComponent(const RPISystemComponent&) = delete;
 
-            // SystemTickBus overrides...
-            void OnSystemTick() override;
+            // TickBus overrides...
+            void OnTick(float deltaTime, ScriptTimePoint time) override;
+            int GetTickOrder() override;
 
             RPISystem m_rpiSystem;
-
-            // Timestamp of the last tick
-            AZStd::chrono::system_clock::time_point m_lastTime;
-            // Map of viewport => time since last render
-            AZStd::unordered_map<AzFramework::ViewportId, AZStd::chrono::duration<float>> m_renderUpdates;
 
             RPISystemDescriptor m_rpiDescriptor;
 
