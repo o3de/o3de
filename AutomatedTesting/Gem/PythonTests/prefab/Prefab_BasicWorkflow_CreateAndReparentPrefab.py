@@ -9,15 +9,13 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
-    CAR_PREFAB_INSTANCE_NAME = "car_1"
-    WHEEL_PREFAB_INSTANCE_NAME = "wheel_1"
 
     import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
 
-        from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+        from editor_python_test_tools.editor_entity_utils import EditorEntity
         from prefab.Prefab import Prefab
 
         import prefab.Prefab_Test_Utils as prefab_test_utils
@@ -25,31 +23,27 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
         prefab_test_utils.open_base_tests_level()
 
         # Create a new Entity at the root level
-        car_entity = Entity.create_editor_entity()
+        car_entity = EditorEntity.create_editor_entity()
         car_prefab_entities = [car_entity]
 
         # Checks for prefab creation passed or not 
         car_prefab = Prefab.create_prefab(
-            car_prefab_entities, CAR_PREFAB_FILE_NAME, 
-            prefab_instance_name=CAR_PREFAB_INSTANCE_NAME)
+            car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
         # Create another new Entity at the root level
-        wheel_entity = Entity.create_editor_entity()
+        wheel_entity = EditorEntity.create_editor_entity()
         wheel_prefab_entities = [wheel_entity]
 
         # Checks for wheel prefab creation passed or not 
         wheel_prefab = Prefab.create_prefab(
-            wheel_prefab_entities, WHEEL_PREFAB_FILE_NAME, 
-            prefab_instance_name=WHEEL_PREFAB_INSTANCE_NAME)
+            wheel_prefab_entities, WHEEL_PREFAB_FILE_NAME)
 
         # Checks for prefab reparenting passed or not 
-        car = car_prefab.instances[CAR_PREFAB_INSTANCE_NAME]
-        wheel = wheel_prefab.instances[WHEEL_PREFAB_INSTANCE_NAME]
-        await wheel.reparent_prefab(car.container_entity.id)
-
+        car = car_prefab.instances[CAR_PREFAB_FILE_NAME]
+        wheel = wheel_prefab.instances[WHEEL_PREFAB_FILE_NAME]
+        await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 
     run_test()
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

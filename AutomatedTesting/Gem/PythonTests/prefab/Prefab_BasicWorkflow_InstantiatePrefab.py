@@ -14,21 +14,20 @@ def Prefab_BasicWorkflow_InstantiatePrefab():
     EXPECTED_TEST_PREFAB_CHILDREN_COUNT = 1
 
     from prefab.Prefab import Prefab
-    
+
     import prefab.Prefab_Test_Utils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 
     # Checks for prefab instantiation passed or not 
-    test_prefab = Prefab.add_existing_prefab(EXISTING_TEST_PREFAB_FILE_NAME)
+    test_prefab = Prefab.get_prefab(EXISTING_TEST_PREFAB_FILE_NAME)
 
-    instantiated_test_container_entity_id = test_prefab.instantiate_prefab( 
-        expected_prefab_position=INSTANTIATED_TEST_PREFAB_POSITION)
+    instantiated_test_container_entity_id = test_prefab.instantiate( 
+        prefab_position=INSTANTIATED_TEST_PREFAB_POSITION)
     
     prefab_test_utils.check_entity_children_count(
         instantiated_test_container_entity_id, 
         EXPECTED_TEST_PREFAB_CHILDREN_COUNT)
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

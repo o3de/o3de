@@ -9,7 +9,7 @@ def Prefab_BasicWorkflow_CreatePrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
     from prefab.Prefab import Prefab
 
@@ -18,12 +18,11 @@ def Prefab_BasicWorkflow_CreatePrefab():
     prefab_test_utils.open_base_tests_level()
 
     # Create a new Entity at the root level
-    car_entity = Entity.create_editor_entity()
+    car_entity = EditorEntity.create_editor_entity()
     car_prefab_entities = [car_entity]
 
     # Checks for prefab creation passed or not
     Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
