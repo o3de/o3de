@@ -198,7 +198,7 @@ namespace AZStd
     AZ_FORCE_INLINE cv_status condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time)
     {
         chrono::milliseconds toWait = rel_time;
-        EnterCriticalSection(static_cast<LPCRITICAL_SECTION>(&m_mutex));
+        EnterCriticalSection(AZ_STD_MUTEX_CAST(m_mutex));
         lock.unlock();
 
         // We need to make sure we use CriticalSection based mutex.
@@ -217,7 +217,7 @@ namespace AZStd
                 returnCode = cv_status::timeout;
             }
         }
-        LeaveCriticalSection(static_cast<LPCRITICAL_SECTION>(&m_mutex));
+        LeaveCriticalSection(AZ_STD_MUTEX_CAST(m_mutex));
         lock.lock();
         return returnCode;
     }

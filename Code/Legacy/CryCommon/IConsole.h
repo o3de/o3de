@@ -118,10 +118,6 @@ struct IConsoleVarSink
     // </interfuscator:shuffle>
 };
 
-#if defined(GetCommandLine)
-#undef GetCommandLine
-#endif
-
 // Interface to the arguments of the console command.
 struct IConsoleCmdArgs
 {
