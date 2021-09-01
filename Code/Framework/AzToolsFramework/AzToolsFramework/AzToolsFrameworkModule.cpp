@@ -51,7 +51,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
-#include <Entity/EditorEntityUtilityComponent.h>
+#include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 
 namespace AzToolsFramework
 {
