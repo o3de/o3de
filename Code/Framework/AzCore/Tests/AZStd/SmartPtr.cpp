@@ -920,7 +920,9 @@ namespace UnitTest
 
         AZStd::shared_ptr<incomplete> p1;
 
+        AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
         p1 = p1;
+        AZ_POP_DISABLE_WARNING
 
         EXPECT_EQ(p1, p1);
         EXPECT_FALSE(p1);
@@ -950,7 +952,9 @@ namespace UnitTest
     {
         AZStd::shared_ptr<void> p1;
 
+        AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
         p1 = p1;
+        AZ_POP_DISABLE_WARNING
 
         EXPECT_EQ(p1, p1);
         EXPECT_FALSE(p1);
@@ -996,7 +1000,9 @@ namespace UnitTest
         using X = SharedPtr::test::X;
         AZStd::shared_ptr<X> p1;
 
+        AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
         p1 = p1;
+        AZ_POP_DISABLE_WARNING
 
         EXPECT_EQ(p1, p1);
         EXPECT_FALSE(p1);

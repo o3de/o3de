@@ -65,6 +65,7 @@ namespace AzToolsFramework
             AddedScanTimeSecondsSinceEpochField = 29,
             ChangedSortFunctionFromQSortToStdStableSort = 30,
             RemoveOutputPrefixFromScanFolders,
+            AddedSourceIndexForSourceDependencyTable,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1

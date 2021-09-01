@@ -138,16 +138,20 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     string(REPLACE "_LIBRARY" "" TARGET_TYPE_PLACEHOLDER ${target_type})
     # For HEADER_ONLY libs we end up generating "INTERFACE" libraries, need to specify HEADERONLY instead
     string(REPLACE "INTERFACE" "HEADERONLY" TARGET_TYPE_PLACEHOLDER ${TARGET_TYPE_PLACEHOLDER})
-    if(TARGET_TYPE_PLACEHOLDER STREQUAL "MODULE")
+    # In non-monolithic mode, gem targets are MODULE libraries, In monolithic mode gem targets are STATIC libraries
+    set(GEM_LIBRARY_TYPES "MODULE" "STATIC")
+    if(TARGET_TYPE_PLACEHOLDER IN_LIST GEM_LIBRARY_TYPES)
         get_target_property(gem_module ${TARGET_NAME} GEM_MODULE)
         if(gem_module)
             set(TARGET_TYPE_PLACEHOLDER "GEM_MODULE")
         endif()
     endif()
 
+    string(REPEAT " " 12 PLACEHOLDER_INDENT)
     get_target_property(COMPILE_DEFINITIONS_PLACEHOLDER ${TARGET_NAME} INTERFACE_COMPILE_DEFINITIONS)
     if(COMPILE_DEFINITIONS_PLACEHOLDER)
-        string(REPLACE ";" "\n" COMPILE_DEFINITIONS_PLACEHOLDER "${COMPILE_DEFINITIONS_PLACEHOLDER}")
+        set(COMPILE_DEFINITIONS_PLACEHOLDER "${PLACEHOLDER_INDENT}${COMPILE_DEFINITIONS_PLACEHOLDER}")
+        list(JOIN COMPILE_DEFINITIONS_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" COMPILE_DEFINITIONS_PLACEHOLDER)
     else()
         unset(COMPILE_DEFINITIONS_PLACEHOLDER)
     endif()
@@ -159,25 +163,28 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
                 # Make the include path relative to the source dir where the target will be declared
                 cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${target_include}\n")
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}\n")
             endif()
         endforeach()
     endif()
 
+    string(REPEAT " " 8 PLACEHOLDER_INDENT)
     get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
     if(RUNTIME_DEPENDENCIES_PLACEHOLDER) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
-        string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+        set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+        list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
     else()
         unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     endif()
 
+    string(REPEAT " " 12 PLACEHOLDER_INDENT)
     get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     if(inteface_build_dependencies_props)
         foreach(build_dependency ${inteface_build_dependencies_props})
             # Skip wrapping produced when targets are not created in the same directory
             if(NOT ${build_dependency} MATCHES "^::@")
-                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}")
+                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
             endif()
         endforeach()
     endif()
@@ -187,12 +194,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         foreach(build_dependency ${private_build_dependencies_props})
             # Skip wrapping produced when targets are not created in the same directory
             if(NOT ${build_dependency} MATCHES "^::@")
-                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}")
+                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
             endif()
         endforeach()
     endif()
     list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
-    string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
+    list(JOIN INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+
+    string(REPEAT " " 8 PLACEHOLDER_INDENT)
+    # If a target has an LY_PROJECT_NAME property, forward that property to new target
+    get_target_property(target_project_association ${TARGET_NAME} LY_PROJECT_NAME)
+    if(target_project_association)
+        list(APPEND TARGET_PROPERTIES_PLACEHOLDER "${PLACEHOLDER_INDENT}LY_PROJECT_NAME ${target_project_association}")
+    endif()
 
     # If the target is an executable/application, add a custom target so we can debug the target in project-centric workflow
     if(should_create_helper)
@@ -288,44 +302,9 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         string(APPEND all_configured_targets "${configured_target}")
     endforeach()
 
-    # Replicate the ly_create_alias() calls based on the SOURCE_DIR for each target that generates an installed CMakeLists.txt
-    string(JOIN "\n" create_alias_template
-        "if(NOT TARGET @ALIAS_NAME@)"
-        "   ly_create_alias(NAME @ALIAS_NAME@ NAMESPACE @ALIAS_NAMESPACE@ TARGETS @ALIAS_TARGETS@)"
-        "endif()"
-        ""
-    )
-    get_property(create_alias_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_CREATE_ALIAS_ARGUMENTS)
-    foreach(create_alias_single_command_arg_list ${create_alias_commands_arg_list})
-        # Split the ly_create_alias arguments back out based on commas
-        string(REPLACE "," ";" create_alias_single_command_arg_list "${create_alias_single_command_arg_list}")
-        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAME)
-        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAMESPACE)
-        # The rest of the list are the target dependencies
-        set(ALIAS_TARGETS ${create_alias_single_command_arg_list})
-        string(CONFIGURE "${create_alias_template}" create_alias_command @ONLY)
-        string(APPEND CREATE_ALIASES_PLACEHOLDER ${create_alias_command})
-    endforeach()
-
-
-    # Reproduce the ly_enable_gems() calls made in the the SOURCE_DIR for this target into the CMakeLists.txt that
-    # is about to be generated
-    set(enable_gems_template "ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEMS@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)\n")
-    get_property(enable_gems_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
-    foreach(enable_gems_single_command_arg_list ${enable_gems_commands_arg_list})
-        # Split the ly_enable_gems arguments back out based on commas
-        string(REPLACE "," ";" enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
-        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEMS GEM_FILE VARIANTS TARGETS)
-            list(POP_FRONT enable_gems_single_command_arg_list enable_gem_${enable_gem_arg_kw})
-            if(enable_gem_${enable_gem_arg_kw})
-                # if the argument exist append to argument keyword to the front
-                string(PREPEND enable_gem_${enable_gem_arg_kw} "${enable_gem_arg_kw} ")
-            endif()
-        endforeach()
-
-        string(CONFIGURE "${enable_gems_template}" enable_gems_command @ONLY)
-        string(APPEND ENABLE_GEMS_PLACEHOLDER ${enable_gems_command})
-    endforeach()
+    ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
+    ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
+    ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
 
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
 
@@ -337,6 +316,7 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
+        "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
@@ -601,4 +581,59 @@ function(ly_setup_assets)
 
     endforeach()
 
+endfunction()
+
+
+#! ly_setup_subdirectory_create_alias: Replicates the call to the `ly_create_alias` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_create_alias absolute_target_source_dir output_script)
+    # Replicate the create_alias() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    string(JOIN "\n" create_alias_template
+        "if(NOT TARGET @alias_name@)"
+        "   ly_create_alias(@create_alias_args@)"
+        "endif()"
+        "")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(create_alias_args_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_CREATE_ALIAS_ARGUMENTS)
+    foreach(create_alias_args IN LISTS create_alias_args_list)
+        # Create a list out of the comma separated arguments and store it into the same variable
+        string(REPLACE "," ";" create_alias_args ${create_alias_args})
+        # The first argument of the create alias argument list is the ALIAS NAME so pop it from the list
+        # It is used to protect against registering the same alias twice
+        list(POP_FRONT create_alias_args alias_name)
+        string(CONFIGURE "${create_alias_template}" create_alias_command @ONLY)
+        string(APPEND create_alias_calls ${create_alias_command})
+    endforeach()
+    set(${output_script} ${create_alias_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_set_gem_variant_to_load: Replicates the call to the `ly_set_gem_variant_to_load` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_set_gem_variant_to_load absolute_target_source_dir output_script)
+    # Replicate the ly_set_gem_variant_to_load() calls made in the SOURCE_DIR for into the generated CMakeLists.txt
+    set(set_gem_variant_args_template "ly_set_gem_variant_to_load(@set_gem_variant_args@)\n")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(set_gem_variant_args_lists DIRECTORY ${absolute_target_source_dir} PROPERTY LY_SET_GEM_VARIANT_TO_LOAD_ARGUMENTS)
+    foreach(set_gem_variant_args IN LISTS set_gem_variant_args_lists)
+        string(CONFIGURE "${set_gem_variant_args_template}" set_gem_variant_to_load_command @ONLY)
+        string(APPEND set_gem_variant_calls ${set_gem_variant_to_load_command})
+    endforeach()
+    set(${output_script} ${set_gem_variant_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_enable_gems: Replicates the call to the `ly_enable_gems` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_enable_gems absolute_target_source_dir output_script)
+    # Replicate the ly_set_gem_variant_to_load() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    set(enable_gems_template "ly_enable_gems(@enable_gems_args@)\n")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(enable_gems_args_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
+    foreach(enable_gems_args IN LISTS enable_gems_args_list)
+        string(CONFIGURE "${enable_gems_template}" enable_gems_command @ONLY)
+        string(APPEND enable_gems_calls ${enable_gems_command})
+    endforeach()
+    set(${output_script} ${enable_gems_calls} PARENT_SCOPE)
 endfunction()

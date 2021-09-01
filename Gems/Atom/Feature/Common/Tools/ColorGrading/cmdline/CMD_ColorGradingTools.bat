@@ -24,7 +24,7 @@ PUSHD %~dp0
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0User_env.bat" CALL %~dp0User_env.bat
+IF EXIST "%~dp0User_Env.bat" CALL %~dp0User_Env.bat
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat

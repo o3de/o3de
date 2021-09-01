@@ -25,6 +25,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ 
 {
@@ -33,6 +34,7 @@ namespace AZ
         namespace Platform
         {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
+            bool AttachDebugger();
             bool IsDebuggerPresent();
             void HandleExceptions(bool isEnabled);
             void DebugBreak();
@@ -136,6 +138,42 @@ namespace AZ
     {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
         return Platform::IsDebuggerPresent();
+#else
+        return false;
+#endif
+    }
+
+    bool
+    Trace::AttachDebugger()
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        return Platform::AttachDebugger();
+#else
+        return false;
+#endif
+    }
+
+    bool
+    Trace::WaitForDebugger(float timeoutSeconds/*=-1.f*/)
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        using AZStd::chrono::system_clock;
+        using AZStd::chrono::time_point;
+        using AZStd::chrono::milliseconds;
+
+        milliseconds timeoutMs = milliseconds(aznumeric_cast<long long>(timeoutSeconds * 1000));
+        system_clock clock;
+        time_point start = clock.now();
+        auto hasTimedOut = [&clock, start, timeoutMs]()
+        {
+            return timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs;
+        };
+
+        while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())
+        {
+            AZStd::this_thread::sleep_for(milliseconds(1));
+        }
+        return AZ::Debug::Trace::IsDebuggerPresent();
 #else
         return false;
 #endif
