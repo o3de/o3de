@@ -41,7 +41,7 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac                
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 28adc1c0616ac0482b2a9d7b4a3a3635a1020e87b163f8aba687c501cf35f96c)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev5-mac                                TARGETS Qt                          PACKAGE_HASH 9d25918351898b308ded3e9e571fff6f26311b2071aeafd00dd5b249fdf53f7e)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                      TARGETS libsamplerate               PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-mac                              TARGETS zlib                        PACKAGE_HASH 7fd8a77b3598423d9d6be5f8c60d52aecf346ab4224f563a5282db283aa0da02)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-mac                              TARGETS zlib                        PACKAGE_HASH 21714e8a6de4f2523ee92a7f52d51fbee29c5f37ced334e00dc3c029115b472e)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac                       TARGETS squish-ccr                  PACKAGE_HASH 155bfbfa17c19a9cd2ef025de14c5db598f4290045d5b0d83ab58cb345089a77)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 8a4e93277b8face6ea2fd57c6d017bdb55643ed3d6387110bc5f6b3b884dd169)
 

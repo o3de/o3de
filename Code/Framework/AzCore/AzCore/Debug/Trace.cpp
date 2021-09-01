@@ -174,6 +174,8 @@ namespace AZ
             AZStd::this_thread::sleep_for(milliseconds(1));
         }
         return AZ::Debug::Trace::IsDebuggerPresent();
+#else
+        return false;
 #endif
     }
 

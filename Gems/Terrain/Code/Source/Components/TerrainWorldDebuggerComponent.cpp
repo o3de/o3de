@@ -92,20 +92,13 @@ namespace Terrain
     {
         m_wireframeBounds = AZ::Aabb::CreateNull();
 
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::SetDebugWireframe, m_configuration.m_drawWireframe);
-
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
     }
 
     void TerrainWorldDebuggerComponent::Deactivate()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::SetDebugWireframe, false);
-
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();

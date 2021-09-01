@@ -36,11 +36,9 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
-
-        void SetWorldMin(AZ::Vector3 worldOrigin) override;
-        void SetWorldMax(AZ::Vector3 worldBounds) override;
+        
+        void SetWorldBounds(const AZ::Aabb& worldBounds) override;
         void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
-        void SetDebugWireframe(bool wireframeEnabled) override;
 
         void Activate() override;
         void Deactivate() override;
@@ -103,7 +101,6 @@ namespace Terrain
         {
             AZ::Aabb m_worldBounds;
             AZ::Vector2 m_heightQueryResolution{ 1.0f };
-            bool m_debugWireframeEnabled{ false };
             bool m_systemActive{ false };
         };
 

@@ -47,16 +47,12 @@ namespace Terrain
         void Deactivate() override;
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
-        void UpdateTerrainData(AZ::EntityId areaId, const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
+        void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
                                uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
 
-        void RemoveTerrainData(AZ::EntityId areaId)
-        {
-            m_areaData.erase(areaId);
-        }
         void RemoveTerrainData()
         {
-            m_areaData.clear();
+            m_areaData = {};
         }
 
     private:
@@ -122,13 +118,13 @@ namespace Terrain
         AZ::RHI::Ptr<AZ::RHI::Buffer> m_indexBuffer;
         AZ::RHI::Ptr<AZ::RHI::Buffer> m_vertexBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
-        AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax> m_vertexBufferViews;
+        AZ::RHI::StreamBufferView m_vertexBufferView;
 
         // Per-area data
         struct TerrainAreaData
         {
-            AZ::Transform m_transform;
-            AZ::Aabb m_terrainBounds;
+            AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
+            AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
             float m_heightScale;
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth;
@@ -136,10 +132,21 @@ namespace Terrain
             bool m_propertiesDirty{ true };
         };
 
-        AZStd::unordered_map<AZ::EntityId, TerrainAreaData> m_areaData;
+        TerrainAreaData m_areaData;
 
-        // These could either be per-area or system-level
-        AZStd::vector<AZStd::unique_ptr<const AZ::RHI::DrawPacket>> m_drawPackets;
-        AZStd::vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>> m_processSrgs;
+        struct SectorData
+        {
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::Aabb m_aabb;
+            AZStd::unique_ptr<const AZ::RHI::DrawPacket> m_drawPacket;
+
+            SectorData(const AZ::RHI::DrawPacket* drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
+                : m_srg(srg)
+                , m_aabb(aabb)
+                , m_drawPacket(drawPacket)
+            {}
+        };
+
+        AZStd::vector<SectorData> m_sectorData;
     };
 }
