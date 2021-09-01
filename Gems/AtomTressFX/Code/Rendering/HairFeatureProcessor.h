@@ -91,6 +91,7 @@ namespace AZ
                 void UpdateHairSkinning();
 
                 bool Init();
+                bool IsInitialized() { return m_initialized; }
 
                 // FeatureProcessor overrides ...
                 void Activate() override;

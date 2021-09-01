@@ -36,8 +36,8 @@ namespace AZ
             {
                 RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
 
-                // Shader Options
                 m_featureProcessor->GetHairGlobalSettings(m_hairGlobalSettings);
+
                 shaderOption.SetValue(AZ::Name("o_enableShadows"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableShadows });
                 shaderOption.SetValue(AZ::Name("o_enableDirectionalLights"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableDirectionalLights });
                 shaderOption.SetValue(AZ::Name("o_enablePunctualLights"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enablePunctualLights });
@@ -86,11 +86,12 @@ namespace AZ
                     return false;
                 }
 
-                if (!m_featureProcessor)
+                if (!m_featureProcessor || !m_featureProcessor->IsInitialized())
                 {
-                    AZ_Warning("Hair Gem", false,
+                    AZ_Warning("Hair Gem", m_featureProcessor,
                         "HairPPLLResolvePass [%s] - Failed to retrieve Hair feature processor from the scene",
                         GetName().GetCStr());
+                    m_featureProcessor = nullptr;   // set it as null if not initialized to repeat this check.
                     return false;
                 }
                 return true;
@@ -102,49 +103,38 @@ namespace AZ
                 FullscreenTrianglePass::BuildInternal();
             }
 
-            void HairPPLLResolvePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+            void HairPPLLResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context)
             {
-                FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph);
-
                 if (!m_shaderResourceGroup || !AcquireFeatureProcessor())
                 {
-                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data was not bound - missing Srg or Feature Processor");
-                    return;
+                    AZ_Error("Hair Gem", m_shaderResourceGroup, "HairPPLLResolvePass: PPLL list data was not bound - missing Srg");
+                    return;     // no error message due to FP - initialization not complete yet, wait for the next frame
                 }
 
                 UpdateGlobalShaderOptions();
-                
-                {
-                    SrgBufferDescriptor descriptor = SrgBufferDescriptor(
-                        RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
-                        PPLL_NODE_SIZE, RESERVED_PIXELS_FOR_OIT,
-                        Name{ "LinkedListNodesPPLL" }, Name{ "m_linkedListNodes" }, 0, 0
-                    );
-                    if (!UtilityClass::BindBufferToSrg("Hair Gem", m_featureProcessor->GetPerPixelListBuffer(), descriptor, m_shaderResourceGroup))
-                    {
-                        AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data could not be bound.");
-                    }
-                }
-            }
-
-            void HairPPLLResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context)
-            {
-                if (!m_shaderResourceGroup || !m_featureProcessor)
-                {
-                    return;
-                }
-
-                // Update the material array constant buffer within the per pass srg
-                SrgBufferDescriptor descriptor = SrgBufferDescriptor(
-                    RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
-                    sizeof(AMD::TressFXShadeParams), 1,
-                    Name{ "HairMaterialsArray" }, Name{ "m_hairParams" }, 0, 0
-                );
 
                 if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
                 {
                     m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_shaderOptions);
                 }
+
+
+                SrgBufferDescriptor descriptor = SrgBufferDescriptor(
+                    RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
+                    PPLL_NODE_SIZE, RESERVED_PIXELS_FOR_OIT,
+                    Name{ "LinkedListNodesPPLL" }, Name{ "m_linkedListNodes" }, 0, 0
+                );
+                if (!UtilityClass::BindBufferToSrg("Hair Gem", m_featureProcessor->GetPerPixelListBuffer(), descriptor, m_shaderResourceGroup))
+                {
+                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data could not be bound.");
+                }
+
+                // Update the material array constant buffer within the per pass srg
+                descriptor = SrgBufferDescriptor(
+                    RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
+                    sizeof(AMD::TressFXShadeParams), 1,
+                    Name{ "HairMaterialsArray" }, Name{ "m_hairParams" }, 0, 0
+                );
 
                 m_featureProcessor->GetMaterialsArray().UpdateGPUData(m_shaderResourceGroup, descriptor);
 
