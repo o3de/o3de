@@ -689,6 +689,7 @@ namespace AZ
                 resolvedPathLen += postAliasView.size();
                 // Null-Terminated the resolved path
                 resolvedPath[resolvedPathLen] = '\0';
+
                 // If the path started with one of the "asset cache" path aliases, lowercase the path
                 const char* assetAliasPath = GetAlias("@assets@");
                 const char* rootAliasPath = GetAlias("@root@");
@@ -697,11 +698,13 @@ namespace AZ
                 const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
                     (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
                     (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
+
                 if (lowercasePath)
                 {
-                    // Lowercase the part of the path after the alias
+                    // Lowercase only the relative part after the replaced alias.
                     AZStd::to_lower(resolvedPath + aliasValue.size(), resolvedPath + resolvedPathLen);
                 }
+
                 // Replace any backslashes with posix slashes
                 AZStd::replace(resolvedPath, resolvedPath + resolvedPathLen, AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
                 return true;
