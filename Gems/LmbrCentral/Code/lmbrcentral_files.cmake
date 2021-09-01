@@ -49,7 +49,6 @@ set(FILES
     include/LmbrCentral/Shape/EditorShapeComponentBus.h
     include/LmbrCentral/Shape/ShapeComponentBus.h
     include/LmbrCentral/Shape/SphereShapeComponentBus.h
-    include/LmbrCentral/Shape/AxisAlignedBoxShapeComponentBus.h
     include/LmbrCentral/Shape/BoxShapeComponentBus.h
     include/LmbrCentral/Shape/CylinderShapeComponentBus.h
     include/LmbrCentral/Shape/CapsuleShapeComponentBus.h

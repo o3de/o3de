@@ -16,6 +16,12 @@
 
 namespace LmbrCentral
 {
+    void DrawBoxShape(
+        const ShapeDrawParams& shapeDrawParams,
+        const BoxShapeConfig& boxShapeConfig,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
+
     void AxisAlignedBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ShapeService"));
@@ -80,7 +86,7 @@ namespace LmbrCentral
 
     bool AxisAlignedBoxShapeDebugDisplayComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
     {
-        if (const auto config = azrtti_cast<const AxisAlignedBoxShapeConfig*>(baseConfig))
+        if (const auto config = azrtti_cast<const BoxShapeConfig*>(baseConfig))
         {
             m_boxShapeConfig = *config;
             return true;
@@ -90,7 +96,7 @@ namespace LmbrCentral
 
     bool AxisAlignedBoxShapeDebugDisplayComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
     {
-        if (auto outConfig = azrtti_cast<AxisAlignedBoxShapeConfig*>(outBaseConfig))
+        if (auto outConfig = azrtti_cast<BoxShapeConfig*>(outBaseConfig))
         {
             *outConfig = m_boxShapeConfig;
             return true;
@@ -102,39 +108,8 @@ namespace LmbrCentral
     {
         if (changeReason == ShapeChangeReasons::ShapeChanged)
         {
-            AxisAlignedBoxShapeComponentRequestsBus::EventResult(m_boxShapeConfig, GetEntityId(), &AxisAlignedBoxShapeComponentRequests::GetBoxConfiguration);
+            BoxShapeComponentRequestsBus::EventResult(m_boxShapeConfig, GetEntityId(), &BoxShapeComponentRequests::GetBoxConfiguration);
             AZ::NonUniformScaleRequestBus::EventResult(m_nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-        }
-    }
-
-    void AxisAlignedBoxShapeConfig::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<AxisAlignedBoxShapeConfig, ShapeComponentConfig>()
-                ->Version(1)
-                ->Field("Dimensions", &AxisAlignedBoxShapeConfig::m_dimensions)
-                ;
-
-            if (auto editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<AxisAlignedBoxShapeConfig>("Configuration", "Axis Aligned Box shape configuration parameters")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Shape Configuration")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AxisAlignedBoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
-            }
-        }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<AxisAlignedBoxShapeConfig>()
-                ->Constructor()
-                ->Constructor<AZ::Vector3&>()
-                ->Property("Dimensions", BehaviorValueProperty(&AxisAlignedBoxShapeConfig::m_dimensions))
-                ;
         }
     }
 
@@ -154,10 +129,10 @@ namespace LmbrCentral
         {
             behaviorContext->Constant("AxisAlignedBoxShapeComponentTypeId", BehaviorConstant(AxisAlignedBoxShapeComponentTypeId));
 
-            behaviorContext->EBus<AxisAlignedBoxShapeComponentRequestsBus>("AxisAlignedBoxShapeComponentRequestsBus")
-                ->Event("GetBoxConfiguration", &AxisAlignedBoxShapeComponentRequestsBus::Events::GetBoxConfiguration)
-                ->Event("GetBoxDimensions", &AxisAlignedBoxShapeComponentRequestsBus::Events::GetBoxDimensions)
-                ->Event("SetBoxDimensions", &AxisAlignedBoxShapeComponentRequestsBus::Events::SetBoxDimensions)
+            behaviorContext->EBus<BoxShapeComponentRequestsBus>("AxisAlignedBoxShapeComponentRequestsBus")
+                ->Event("GetBoxConfiguration", &BoxShapeComponentRequestsBus::Events::GetBoxConfiguration)
+                ->Event("GetBoxDimensions", &BoxShapeComponentRequestsBus::Events::GetBoxDimensions)
+                ->Event("SetBoxDimensions", &BoxShapeComponentRequestsBus::Events::SetBoxDimensions)
                 ;
         }
     }
@@ -174,7 +149,7 @@ namespace LmbrCentral
 
     bool AxisAlignedBoxShapeComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
     {
-        if (const auto config = azrtti_cast<const AxisAlignedBoxShapeConfig*>(baseConfig))
+        if (const auto config = azrtti_cast<const BoxShapeConfig*>(baseConfig))
         {
             m_aaboxShape.SetBoxConfiguration(*config);
             return true;
@@ -184,7 +159,7 @@ namespace LmbrCentral
 
     bool AxisAlignedBoxShapeComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
     {
-        if (auto config = azrtti_cast<AxisAlignedBoxShapeConfig*>(outBaseConfig))
+        if (auto config = azrtti_cast<BoxShapeConfig*>(outBaseConfig))
         {
             *config = m_aaboxShape.GetBoxConfiguration();
             return true;

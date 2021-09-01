@@ -13,7 +13,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <LmbrCentral/Shape/AxisAlignedBoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 
 namespace AzFramework
 {
@@ -26,7 +26,7 @@ namespace LmbrCentral
 
     class AxisAlignedBoxShape
         : public ShapeComponentRequestsBus::Handler
-        , public AxisAlignedBoxShapeComponentRequestsBus::Handler
+        , public BoxShapeComponentRequestsBus::Handler
         , public AZ::TransformNotificationBus::Handler
     {
     public:
@@ -51,7 +51,7 @@ namespace LmbrCentral
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
 
         // BoxShapeComponentRequestBus::Handler
-        AxisAlignedBoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
+        BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
         AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
 
@@ -61,8 +61,8 @@ namespace LmbrCentral
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
         const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
 
-        const AxisAlignedBoxShapeConfig& GetBoxConfiguration() const { return m_boxShapeConfig; }
-        void SetBoxConfiguration(const AxisAlignedBoxShapeConfig& boxShapeConfig) { m_boxShapeConfig = boxShapeConfig; }
+        const BoxShapeConfig& GetBoxConfiguration() const { return m_boxShapeConfig; }
+        void SetBoxConfiguration(const BoxShapeConfig& boxShapeConfig) { m_boxShapeConfig = boxShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 
         void SetDrawColor(const AZ::Color& color) { m_boxShapeConfig.SetDrawColor(color); }
@@ -70,15 +70,15 @@ namespace LmbrCentral
     protected:
 
         friend class EditorAxisAlignedBoxShapeComponent;        
-        AxisAlignedBoxShapeConfig& ModifyConfiguration() { return m_boxShapeConfig; }
+        BoxShapeConfig& ModifyConfiguration() { return m_boxShapeConfig; }
 
     private:
         /// Runtime data - cache potentially expensive operations.
         class BoxIntersectionDataCache
-            : public IntersectionTestDataCache<AxisAlignedBoxShapeConfig>
+            : public IntersectionTestDataCache<BoxShapeConfig>
         {
             void UpdateIntersectionParamsImpl(
-                const AZ::Transform& currentTransform, const AxisAlignedBoxShapeConfig& configuration,
+                const AZ::Transform& currentTransform, const BoxShapeConfig& configuration,
                 const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne()) override;
 
             friend AxisAlignedBoxShape;
@@ -88,16 +88,11 @@ namespace LmbrCentral
             AZ::Vector3 m_scaledDimensions; ///< Dimensions of Box (including entity scale and non-uniform scale).
         };
 
-        AxisAlignedBoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
+        BoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
         BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
     };
-
-    void DrawBoxShape(
-        const ShapeDrawParams& shapeDrawParams, const AxisAlignedBoxShapeConfig& boxShapeConfig,
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
-
 } // namespace LmbrCentral

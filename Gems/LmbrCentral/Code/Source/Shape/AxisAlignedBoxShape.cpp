@@ -31,7 +31,7 @@ namespace LmbrCentral
 
     void AxisAlignedBoxShape::Reflect(AZ::ReflectContext* context)
     {
-        AxisAlignedBoxShapeConfig::Reflect(context);
+        BoxShapeConfig::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -64,7 +64,7 @@ namespace LmbrCentral
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         ShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
-        AxisAlignedBoxShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
+        BoxShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
 
         AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
@@ -73,7 +73,7 @@ namespace LmbrCentral
     void AxisAlignedBoxShape::Deactivate()
     {
         m_nonUniformScaleChangedHandler.Disconnect();
-        AxisAlignedBoxShapeComponentRequestsBus::Handler::BusDisconnect();
+        BoxShapeComponentRequestsBus::Handler::BusDisconnect();
         ShapeComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
@@ -228,7 +228,7 @@ namespace LmbrCentral
     }
 
     void AxisAlignedBoxShape::BoxIntersectionDataCache::UpdateIntersectionParamsImpl(
-        const AZ::Transform& currentTransform, const AxisAlignedBoxShapeConfig& configuration, const AZ::Vector3& currentNonUniformScale)
+        const AZ::Transform& currentTransform, const BoxShapeConfig& configuration, const AZ::Vector3& currentNonUniformScale)
     {
         AZ::Transform worldFromLocalNormalized = currentTransform;
         const float entityScale = worldFromLocalNormalized.ExtractUniformScale();
@@ -243,22 +243,5 @@ namespace LmbrCentral
         boxMax = worldFromLocalNormalized.TransformPoint(boxMax);
 
         m_aabb = AZ::Aabb::CreateFromMinMax(boxMin, boxMax);
-    }
-
-    void DrawBoxShape(
-        const ShapeDrawParams& shapeDrawParams, const AxisAlignedBoxShapeConfig& boxShapeConfig,
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& nonUniformScale)
-    {
-        const AZ::Vector3 boxMin = boxShapeConfig.m_dimensions * nonUniformScale * -0.5f;
-        const AZ::Vector3 boxMax = boxShapeConfig.m_dimensions * nonUniformScale * 0.5f;
-
-        if (shapeDrawParams.m_filled)
-        {
-            debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawSolidBox(boxMin, boxMax);
-        }
-
-        debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
-        debugDisplay.DrawWireBox(boxMin, boxMax);
     }
 } // namespace LmbrCentral

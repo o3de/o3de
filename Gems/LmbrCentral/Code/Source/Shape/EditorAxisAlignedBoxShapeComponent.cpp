@@ -20,6 +20,12 @@
 
 namespace LmbrCentral
 {
+    void DrawBoxShape(
+        const ShapeDrawParams& shapeDrawParams,
+        const BoxShapeConfig& boxShapeConfig,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
+
     void EditorAxisAlignedBoxShapeComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

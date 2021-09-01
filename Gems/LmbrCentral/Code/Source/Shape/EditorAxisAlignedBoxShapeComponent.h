@@ -9,6 +9,7 @@
 #pragma once
 
 #include "AxisAlignedBoxShape.h"
+#include "AxisAlignedBoxShapeComponent.h"
 #include "EditorBaseShapeComponent.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>

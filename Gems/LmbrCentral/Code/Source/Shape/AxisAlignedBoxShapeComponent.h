@@ -15,6 +15,12 @@
 
 namespace LmbrCentral
 {
+    /// Type ID for the AxisAlignedBoxShapeComponent
+    static const AZ::Uuid AxisAlignedBoxShapeComponentTypeId = "{641D817E-1BC6-406A-BBB2-218541808E45}";
+
+    /// Type ID for the EditorAxisAlignedBoxShapeComponent
+    static const AZ::Uuid EditorAxisAlignedBoxShapeComponentTypeId = "{8C027DF6-E157-4159-9BF8-F1B925466F1F}";
+
     /// Provide a Component interface for BoxShape functionality.
     class AxisAlignedBoxShapeComponent
         : public AZ::Component
@@ -64,7 +70,7 @@ namespace LmbrCentral
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
-        AxisAlignedBoxShapeConfig m_boxShapeConfig; ///< Stores configuration data for box shape.
+        BoxShapeConfig m_boxShapeConfig; ///< Stores configuration data for box shape.
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne(); ///< Caches non-uniform scale for this entity.
     };
 } // namespace LmbrCentral
