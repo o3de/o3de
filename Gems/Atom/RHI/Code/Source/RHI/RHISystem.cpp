@@ -147,7 +147,7 @@ namespace AZ
             // Some GPU drivers have known issues and it is recommended to update or use other versions.
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             PhysicalDeviceDriverValidator physicalDriverValidator;
-            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/Amazon/Atom/RHI/PhysicalDeviceDriverInfo")))
+            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/O3DE/Atom/RHI/PhysicalDeviceDriverInfo")))
             {
                 AZ_Printf("RHISystem", "Failed to get settings registry for GPU driver Info.");
             }
