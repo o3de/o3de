@@ -14,4 +14,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build dir
 # We install outside of the binary dir because our install support muliple platforms to 
 # be installed together. We also have an exclusion rule in the AP that filters out the 
 # "build" folder which is a common binary dir
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install CACHE PATH "Installation prefix")
+ly_set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
