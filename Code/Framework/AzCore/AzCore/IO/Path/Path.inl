@@ -619,7 +619,9 @@ namespace AZ::IO
                 if (auto filenameParser = parser::PathParser::CreateBegin(filenameView, pathParser.m_preferred_separator);
                     filenameParser && parser::ClassifyPathPart(filenameParser) == parser::PathPartKind::PK_RootName)
                 {
-                    AppendNormalPathParts(pathIterable, AZStd::string_view{ filenameView.begin(), path.m_path.end() });
+                    AZ::IO::PathView fileNamePath{ AZStd::string_view{ filenameView.begin(), path.m_path.end() },
+                        pathParser.m_preferred_separator };
+                    AppendNormalPathParts(pathIterable, fileNamePath);
                     return;
                 }
                 else
