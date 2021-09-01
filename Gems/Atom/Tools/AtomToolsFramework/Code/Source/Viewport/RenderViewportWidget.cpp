@@ -27,6 +27,8 @@
 #include <QScreen>
 #include <QTimer>
 
+AZ_CVAR(float, ed_inactive_viewport_fps_limit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The maximum framerate to render viewports that don't have focus at");
+
 namespace AtomToolsFramework
 {
     RenderViewportWidget::RenderViewportWidget(QWidget* parent, bool shouldInitializeViewportContext)
@@ -201,6 +203,28 @@ namespace AtomToolsFramework
     {
         m_time = time;
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
+
+        if (m_viewportContext)
+        {
+            float fpsLimit = 0.f;
+
+            if (auto console = AZ::Interface<AZ::IConsole>::Get())
+            {
+                console->GetCvarValue<float>("r_fps_limit", fpsLimit);
+            }
+
+            if (!hasFocus() && ed_inactive_viewport_fps_limit != 0.f)
+            {
+                fpsLimit = ed_inactive_viewport_fps_limit;
+            }
+
+            m_viewportContext->SetFpsLimit(fpsLimit);
+        }
+    }
+
+    int RenderViewportWidget::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_PRE_RENDER;
     }
 
     void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)

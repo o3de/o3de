@@ -42,6 +42,7 @@
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
 AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
+AZ_CVAR(float, r_fps_limit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The maximum framerate to render at, or 0 for unlimited");
 
 namespace AZ
 {
@@ -410,25 +411,18 @@ namespace AZ
 
             void BootstrapSystemComponent::OnTick(float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
-                m_simulateTime += deltaTime;
-                m_deltaTime = deltaTime;
-
-                // Temp: When running in the launcher without the legacy renderer
-                // we need to call RenderTick on the viewport context each frame.
                 if (m_viewportContext)
                 {
-                    AZ::ApplicationTypeQuery appType;
-                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                    if (appType.IsGame())
-                    {
-                        m_viewportContext->RenderTick();
-                    }
+                    m_viewportContext->SetFpsLimit(r_fps_limit);
                 }
+
+                m_simulateTime += deltaTime;
+                m_deltaTime = deltaTime;
             }
 
             int BootstrapSystemComponent::GetTickOrder()
             {
-                return TICK_LAST;
+                return TICK_PRE_RENDER;
             }
 
             void BootstrapSystemComponent::OnWindowClosed()

@@ -129,6 +129,7 @@ namespace AtomToolsFramework
 
         // AZ::TickBus::Handler ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
 
         // QWidget ...
         void resizeEvent(QResizeEvent *event) override;
