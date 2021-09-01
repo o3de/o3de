@@ -424,8 +424,14 @@ namespace {{ Component.attrib['Namespace'] }}
         //! MultiplayerController interface
         //! @{
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
-        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
-        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+
+{% if NetworkInputsExposedToScript.value > 0 %}
+        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
+        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
+{% else %}
+        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {};
+        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {};
+{% endif %}
         //! @}
 
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', false)|indent(8) -}}

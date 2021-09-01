@@ -1306,21 +1306,21 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {% if NetworkInputCount > 0 %}
 {% if NetworkInputsExposedToScript.value > 0 %}
-{% set parameters_type_name = [] %}
-{% set parameters_name = [] %}
+{% set net_input_parameters_type_and_name = [] %}
+{% set net_input_parameters_name = [] %}
 {% for netInput in Component.findall('NetworkInput') %}
 {%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%      set parameters_type_name = parameters_type_name.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
-{%      set parameters_name = parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
+{%      set net_input_parameters_type_and_name = net_input_parameters_type_and_name.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
 {%      endif %}
 {% endfor %}
-    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ parameters_type_name|join(', ') }})
+    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ net_input_parameters_type_and_name|join(', ') }})
     { 
-        return {{ ComponentName }}NetworkInput({{ parameters_name|join(', ') }});
+        return {{ ComponentName }}NetworkInput({{ net_input_parameters_name|join(', ') }});
     }
 
-    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ parameters_type_name|join(', ') }})
-    : {% for param_name in parameters_name %}m_{{ param_name }}({{ param_name }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
+    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ net_input_parameters_type_and_name|join(', ') }})
+    : {% for param_name in net_input_parameters_name %}m_{{ param_name }}({{ param_name }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
 
     void {{ ComponentName }}NetworkInput::Reflect(AZ::ReflectContext* context)
     {
@@ -1338,7 +1338,7 @@ namespace {{ Component.attrib['Namespace'] }}
             behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
+                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in net_input_parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
 {%                  for netInput in Component.findall('NetworkInput') %}
 {%                      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
                     ->Property("{{ netInput.attrib['Name'] }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(netInput.attrib['Name']) }}))
@@ -1403,6 +1403,27 @@ namespace {{ Component.attrib['Namespace'] }}
         OnDeactivate(entityIsMigrating);
 {% endif %}
     }
+
+{% if NetworkInputsExposedToScript.value > 0 %}
+    void {{ ControllerBaseName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+{% if ControllerDerived %}
+        // Remember the call this baseclass method from the derived controllers ProccessInput method.
+{% endif %}
+        {{ ComponentName }}NetworkInput result;
+        {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::{{ ComponentName }}CreateInput, deltaTime);
+
+        // Inputs for your own component always exist
+        {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
+{%      for input_name in net_input_parameters_name %}
+        {{ LowerFirst(ComponentName) }}Input->m_{{ input_name }} = result.m_{{ input_name }};
+{%      endfor %}
+    }
+
+    void {{ ControllerBaseName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+    }
+{% endif %}
 
     const {{ ComponentName }}& {{ ControllerBaseName }}::GetParent() const
     {
