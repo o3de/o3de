@@ -84,8 +84,8 @@ namespace UnitTest
         document.Parse<rapidjson::kParseCommentsFlag>(input.data(), input.size());
 
         SceneData::PrefabGroup prefabGroup;
-        prefabGroup.SetId(AZStd::move(AZ::Uuid::CreateRandom()));
-        prefabGroup.SetName(AZStd::move("tester"));
+        prefabGroup.SetId(AZ::Uuid::CreateRandom());
+        prefabGroup.SetName("tester");
         prefabGroup.SetPrefabDom(AZStd::move(document));
 
         const auto& dom = prefabGroup.GetPrefabDom();
@@ -103,9 +103,9 @@ namespace UnitTest
         })JSON";
 
         SceneData::PrefabGroup prefabGroup;
-        prefabGroup.SetId(AZStd::move(AZ::Uuid::CreateRandom()));
-        prefabGroup.SetName(AZStd::move("tester"));
-        prefabGroup.SetPrefabDomBuffer(std::move(inputJson));
+        prefabGroup.SetId(AZ::Uuid::CreateRandom());
+        prefabGroup.SetName("tester");
+        prefabGroup.SetPrefabDomBuffer(inputJson);
 
         const auto& dom = prefabGroup.GetPrefabDom();
         EXPECT_TRUE(dom.IsNull());
