@@ -472,36 +472,15 @@
                                 "Pass": "Parent",
                                 "Attachment": "DepthLinear"
                             }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ModulateWithSsao",
-                    "TemplateName": "ModulateTextureTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "Ssao",
-                                "Attachment": "Output"
-                            }
                         },
                         {
-                            "LocalSlot": "InputOutput",
+                            "LocalSlot": "Modulate",
                             "AttachmentRef": {
                                 "Pass": "SubsurfaceScatteringPass",
                                 "Attachment": "Output"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "ComputePassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
-                        },
-                        "Make Fullscreen Pass": true
-                    }
+                    ]
                 },
                 {
                     "Name": "DiffuseSpecularMergePass",
@@ -510,8 +489,8 @@
                         {
                             "LocalSlot": "InputDiffuse",
                             "AttachmentRef": {
-                                "Pass": "ModulateWithSsao",
-                                "Attachment": "InputOutput"
+                                "Pass": "Ssao",
+                                "Attachment": "Output"
                             }
                         },
                         {
