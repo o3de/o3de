@@ -27,12 +27,14 @@ namespace AzFramework
         void Activate() override;
         void Deactivate() override;
         NativeWindowHandle GetWindowHandle() const override;
-        uint32_t GetDisplayRefreshRate() const override;
+        void SetWindowTitle(const AZStd::string& title) override;
+        void ResizeClientArea(WindowSize clientAreaSize) override;
+        uint32_t GetDisplayRefreshRate() const override;        
     private:
         xcb_connection_t*     m_xcbConnection = NULL;
         xcb_window_t          m_xcbWindow = 0;
     };
-
+    
     NativeWindowImpl_Linux::NativeWindowImpl_Linux() 
         : NativeWindow::Implementation()
     {
@@ -106,14 +108,7 @@ namespace AzFramework
                           eventMask,
                           valueList);
 
-        xcb_change_property(m_xcbConnection,
-                            XCB_PROP_MODE_REPLACE,
-                            m_xcbWindow,
-                            XCB_ATOM_WM_NAME,
-                            XCB_ATOM_STRING,
-                            8,
-                            static_cast<uint32_t>(title.size()),
-                            title.c_str());
+        SetWindowTitle(title);
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
@@ -152,6 +147,25 @@ namespace AzFramework
     NativeWindowHandle NativeWindowImpl_Linux::GetWindowHandle() const
     {
         return reinterpret_cast<NativeWindowHandle>(m_xcbWindow);
+    }
+
+    void NativeWindowImpl_Linux::SetWindowTitle(const AZStd::string& title)
+    {
+        xcb_change_property(m_xcbConnection,
+                            XCB_PROP_MODE_REPLACE,
+                            m_xcbWindow,
+                            XCB_ATOM_WM_NAME,
+                            XCB_ATOM_STRING,
+                            8,
+                            static_cast<uint32_t>(title.size()),
+                            title.c_str());
+    }
+
+    void NativeWindowImpl_Linux::ResizeClientArea(WindowSize clientAreaSize)
+    {
+        const static uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
+
+        xcb_configure_window (m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
     }
 
     uint32_t NativeWindowImpl_Linux::GetDisplayRefreshRate() const
