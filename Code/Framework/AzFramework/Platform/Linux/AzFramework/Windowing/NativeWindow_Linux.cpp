@@ -89,8 +89,11 @@ namespace AzFramework
             borderWidth = 4;
         }
 
+        uint32_t eventMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
+        uint32_t valueList[] = { xcbRootScreen->black_pixel, 0 };
+
         xcb_create_window(m_xcbConnection,
-                          0, //depth
+                          XCB_COPY_FROM_PARENT, //depth
                           m_xcbWindow, // Window ID
                           xcbParentWindow,  // parent.
                           aznumeric_cast<int16_t>(geometry.m_posX),     // X
@@ -100,8 +103,17 @@ namespace AzFramework
                           borderWidth,                                  // Border Width
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,        // Class
                           xcbRootScreen->root_visual,
-                          0,
-                          NULL);
+                          eventMask,
+                          valueList);
+
+        xcb_change_property(m_xcbConnection,
+                            XCB_PROP_MODE_REPLACE,
+                            m_xcbWindow,
+                            XCB_ATOM_WM_NAME,
+                            XCB_ATOM_STRING,
+                            8,
+                            static_cast<uint32_t>(title.size()),
+                            title.c_str());
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
@@ -118,6 +130,7 @@ namespace AzFramework
             m_activated = true;
 
             xcb_map_window(m_xcbConnection, m_xcbWindow);
+            xcb_flush(m_xcbConnection);
         }
     }
 
@@ -132,6 +145,7 @@ namespace AzFramework
             m_activated = false;
 
             xcb_unmap_window(m_xcbConnection, m_xcbWindow);
+            xcb_flush(m_xcbConnection);
         }
     }    
 
