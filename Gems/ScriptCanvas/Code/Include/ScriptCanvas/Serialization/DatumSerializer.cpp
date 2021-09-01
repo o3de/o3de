@@ -6,11 +6,26 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Serialization/DatumSerializer.h>
 
 using namespace ScriptCanvas;
+
+namespace DatumSerializerCpp
+{
+    bool IsEventInput(const AZ::Uuid& inputType)
+    {
+        AZ::BehaviorContext* behaviorContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+        AZ_Assert(behaviorContext, "Can't serialize data properly without checking the type, for which we need behavior context!");
+        auto bcClassIter = behaviorContext->m_typeToClassMap.find(inputType);
+        return bcClassIter != behaviorContext->m_typeToClassMap.end()
+            && bcClassIter->second->m_azRtti
+            && bcClassIter->second->m_azRtti->GetGenericTypeId() == azrtti_typeid<AZ::Event>();
+    }
+}
 
 namespace AZ
 {
@@ -57,7 +72,7 @@ namespace AZ
             return context.Report
                 ( JSR::Tasks::ReadField
                 , JSR::Outcomes::Missing
-                , "DatumSerializer::Load failed to load the 'isNullPointer'' member");
+                , "DatumSerializer::Load failed to load the 'isNullPointer' member");
         }
 
         if (isNullPointerMember->value.GetBool())
@@ -159,11 +174,13 @@ namespace AZ
             , azrtti_typeid<decltype(inputScriptDataPtr->GetType())>()
             , context));
 
+
         // datum storage begin
         auto inputObjectSource = inputScriptDataPtr->GetAsDanger();
-        outputValue.AddMember("isNullPointer", rapidjson::Value(inputObjectSource == nullptr), context.GetJsonAllocator());
+        const bool isNullPointer = inputObjectSource == nullptr || DatumSerializerCpp::IsEventInput(inputScriptDataPtr->GetType().GetAZType());
+        outputValue.AddMember("isNullPointer", rapidjson::Value(isNullPointer), context.GetJsonAllocator());
 
-        if (inputObjectSource)
+        if (!isNullPointer)
         {
             rapidjson::Value typeValue;
             result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->GetType().GetAZType(), context));

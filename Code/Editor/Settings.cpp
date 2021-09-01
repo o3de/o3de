@@ -35,7 +35,6 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-#pragma comment(lib, "Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
