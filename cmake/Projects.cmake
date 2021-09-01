@@ -53,7 +53,7 @@ function(ly_add_target_dependencies)
     # Append the DEPENDENT_TARGETS to the list of ALL_GEM_DEPENDENCIES
     list(APPEND ALL_GEM_DEPENDENCIES ${ly_add_gem_dependencies_DEPENDENT_TARGETS})
 
-    # for each target, add the dependencies and generate gems json
+    # for each target, add the dependencies and generate setreg json with the list of gems to load
     foreach(target ${ly_add_gem_dependencies_TARGETS})
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
@@ -67,39 +67,6 @@ function(ly_add_target_dependencies)
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
         endforeach()
     endforeach()
-endfunction()
-
-#! ly_add_project_dependencies: adds the dependencies to runtime and tools for this project.
-#
-#  Each project may have dependencies to gems. To properly define these dependencies, we are making the project to define
-#  through a "files list" cmake file the dependencies to the different targets.
-#  So for example, the game's runtime dependencies are associated to the project's launcher; the game's tools dependencies
-#  are associated to the asset processor; etc
-#
-# \arg:PROJECT_NAME name of the game project
-# \arg:TARGETS names of the targets to associate the dependencies to
-# \arg:DEPENDENCIES_FILES file(s) that contains the runtime dependencies the TARGETS will be associated to
-# \arg:DEPENDENT_TARGETS additional list of targets should be added as load-time dependencies for the TARGETS list
-#
-function(ly_add_project_dependencies)
-
-    set(options)
-    set(oneValueArgs PROJECT_NAME)
-    set(multiValueArgs TARGETS DEPENDENCIES_FILES DEPENDENT_TARGETS)
-
-    cmake_parse_arguments(ly_add_project_dependencies "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input arguments
-    if(NOT ly_add_project_dependencies_PROJECT_NAME)
-        message(FATAL_ERROR "PROJECT_NAME parameter missing. If not project name is needed, then call ly_add_target_dependencies directly")
-    endif()
-
-    ly_add_target_dependencies(
-        PREFIX ${ly_add_project_dependencies_PROJECT_NAME}
-        TARGETS ${ly_add_project_dependencies_TARGETS}
-        DEPENDENCIES_FILES ${ly_add_project_dependencies_DEPENDENCIES_FILES}
-        DEPENDENT_TARGETS ${ly_add_project_dependencies_DEPENDENT_TARGETS}
-    )
 endfunction()
 
 
