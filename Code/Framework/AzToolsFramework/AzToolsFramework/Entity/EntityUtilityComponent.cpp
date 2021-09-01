@@ -56,7 +56,7 @@ namespace AzToolsFramework
 
     void EntityUtilityComponent::Deactivate()
     {
-        EntityUtilityBus::Handler::BusConnect();
+        EntityUtilityBus::Handler::BusDisconnect();
         m_entityContext = nullptr;
     }
 }
