@@ -30,7 +30,7 @@ namespace AzToolsFramework
         // Creates an entity with the default editor components attached and initializes the entity
         virtual AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) = 0;
 
-        virtual AzFramework::BehaviorComponentId FindComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) = 0;
+        virtual AzFramework::BehaviorComponentId GetOrAddComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) = 0;
 
         virtual bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) = 0;
     };
@@ -45,7 +45,7 @@ namespace AzToolsFramework
         AZ_COMPONENT(EntityUtilityComponent, "{47205907-A0EA-4FFF-A620-04D20C04A379}");
 
         AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) override;
-        AzFramework::BehaviorComponentId FindComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) override;
+        AzFramework::BehaviorComponentId GetOrAddComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) override;
         bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) override;
         static void Reflect(AZ::ReflectContext* context);
 

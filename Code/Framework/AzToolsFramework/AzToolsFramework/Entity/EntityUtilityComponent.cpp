@@ -34,7 +34,7 @@ namespace AzToolsFramework
         return newEntity->GetId();
     }
 
-    AZ::Component* FindComponent(AZ::EntityId entityId, const AZ::TypeId& typeId, AZ::ComponentId componentId)
+    AZ::Component* FindComponent(AZ::EntityId entityId, const AZ::TypeId& typeId, AZ::ComponentId componentId, bool createComponent = false)
     {
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
@@ -55,11 +55,17 @@ namespace AzToolsFramework
             component = entity->FindComponent(typeId);
         }
 
+        if (!component && createComponent)
+        {
+            component = entity->CreateComponent(typeId);
+        }
+
         if (!component)
         {
             AZ_Error(
                 "EntityUtilityComponent", false, "Failed to find component (%s) on entity (%s)",
-                componentId != AZ::InvalidComponentId ? AZStd::to_string(componentId).c_str() : typeId.ToString<AZStd::string>().c_str(),
+                componentId != AZ::InvalidComponentId ? AZStd::to_string(componentId).c_str()
+                                                      : typeId.ToString<AZStd::string>().c_str(),
                 entity->GetName().c_str());
             return nullptr;
         }
@@ -67,12 +73,18 @@ namespace AzToolsFramework
         return component;
     }
 
-    AzFramework::BehaviorComponentId EntityUtilityComponent::FindComponentByTypeName(AZ::EntityId entityId, const AZStd::string& typeName)
+    AzFramework::BehaviorComponentId EntityUtilityComponent::GetOrAddComponentByTypeName(AZ::EntityId entityId, const AZStd::string& typeName)
     {
         AZ::TypeId typeId;
         if (typeName[0] == '{')
         {
-            typeId = AZ::TypeId::CreateString(typeName.data(), sizeof("{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}") - 1);
+            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), sizeof("{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}") - 1, false);
+
+            if (typeId.IsNull())
+            {
+                AZ_Error("EntityUtilityComponent", false, "Invalid type id %s", typeName.c_str());
+                return AZ::InvalidComponentId;
+            }
         }
         else
         {
@@ -81,10 +93,17 @@ namespace AzToolsFramework
 
             auto typeNameCrc = AZ::Crc32(typeName.data());
             auto typeUuidList = serializeContext->FindClassId(typeNameCrc);
+
+            if (typeUuidList.empty())
+            {
+                AZ_Error("EntityUtilityComponent", false, "Failed to find ClassId for component type name %s", typeName.c_str());
+                return AZ::InvalidComponentId;
+            }
+
             typeId = typeUuidList[0];
         }
 
-        AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId);
+        AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId, true);
 
         return component ? component->GetId() : AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
     }
@@ -107,9 +126,13 @@ namespace AzToolsFramework
         using namespace AZ::JsonSerializationResult;
 
         AZ::JsonDeserializerSettings settings = AZ::JsonDeserializerSettings{};
-        settings.m_reporting = [](AZStd::string_view message, ResultCode result, AZStd::string_view path) -> auto
+        settings.m_reporting = [](AZStd::string_view message, ResultCode result, AZStd::string_view) -> auto
         {
             if (result.GetProcessing() == Processing::Halted)
+            {
+                AZ_Error("EntityUtilityComponent", false, "JSON %s\n", message.data());
+            }
+            else if (result.GetOutcome() > Outcomes::PartialDefaults)
             {
                 AZ_Warning("EntityUtilityComponent", false, "JSON %s\n", message.data());
             }
@@ -137,7 +160,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Category, "Entity")
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity)
-                ->Event("FindComponentByTypeName", &EntityUtilityBus::Events::FindComponentByTypeName)
+                ->Event("GetOrAddComponentByTypeName", &EntityUtilityBus::Events::GetOrAddComponentByTypeName)
                 ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity);
         }
     }

@@ -16,28 +16,40 @@
 
 namespace UnitTest
 {
-    class EntityUtilityComponentTests
-        : public ToolsApplicationFixture
-    {
-        
-    };
-
     AZ::EntityId g_globalEntityId = AZ::EntityId{};
     AZStd::string g_globalEntityName = "";
     AzFramework::BehaviorComponentId g_globalComponentId = {};
     bool g_globalBool = false;
 
-    TEST_F(EntityUtilityComponentTests, Create)
+    class EntityUtilityComponentTests
+        : public ToolsApplicationFixture
+    {
+        void InitProperties()
+        {
+            auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+
+            behaviorContext->Property("g_globalEntityId", BehaviorValueProperty(&g_globalEntityId));
+            behaviorContext->Property("g_globalEntityName", BehaviorValueProperty(&g_globalEntityName));
+            behaviorContext->Property("g_globalComponentId", BehaviorValueProperty(&g_globalComponentId));
+            behaviorContext->Property("g_globalBool", BehaviorValueProperty(&g_globalBool));
+
+            g_globalEntityId = AZ::EntityId{};
+            g_globalEntityName = AZStd::string{};
+            g_globalComponentId = AzFramework::BehaviorComponentId{};
+            g_globalBool = false;
+        }
+
+        void SetUpEditorFixtureImpl() override
+        {
+            InitProperties();
+        }
+    };
+
+    TEST_F(EntityUtilityComponentTests, CreateEntity)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-
-        behaviorContext->Property("g_globalEntityId", BehaviorValueProperty(&g_globalEntityId));
-        behaviorContext->Property("g_globalEntityName", BehaviorValueProperty(&g_globalEntityName));
-
-        g_globalEntityId = AZ::EntityId{};
-        g_globalEntityName = "";
-
+        
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
@@ -53,21 +65,78 @@ namespace UnitTest
         ASSERT_NE(entity, nullptr);
     }
 
-    TEST_F(EntityUtilityComponentTests, FindComponent)
+    TEST_F(EntityUtilityComponentTests, CreateEntityEmptyName)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
 
-        behaviorContext->Property("g_globalComponentId", BehaviorValueProperty(&g_globalComponentId));
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("")
+            )LUA");
 
-        g_globalComponentId = AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
+        EXPECT_NE(g_globalEntityId, AZ::EntityId{});
 
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(g_globalEntityId);
+
+        ASSERT_NE(entity, nullptr);
+    }
+
+    TEST_F(EntityUtilityComponentTests, FindComponent)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             ent_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
-            g_globalComponentId = EntityUtilityBus.Broadcast.FindComponentByTypeName(ent_id, "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent")
+            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent")
             )LUA");
         
+        EXPECT_TRUE(g_globalComponentId.IsValid());
+    }
+
+    TEST_F(EntityUtilityComponentTests, InvalidComponentName)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
+        sc.BindTo(behaviorContext);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        sc.Execute(R"LUA(
+            ent_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "ThisIsNotAComponent-Error")
+            )LUA");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(g_globalComponentId.IsValid());
+    }
+
+    TEST_F(EntityUtilityComponentTests, InvalidComponentId)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
+        sc.BindTo(behaviorContext);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        sc.Execute(R"LUA(
+            ent_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "{1234-hello-world-this-is-not-an-id}")
+            )LUA");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // Should get 1 error stating the type id is not valid
+        EXPECT_FALSE(g_globalComponentId.IsValid());
+    }
+
+    TEST_F(EntityUtilityComponentTests, CreateComponent)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            ent_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "ScriptEditorComponent")
+            )LUA");
+
         EXPECT_TRUE(g_globalComponentId.IsValid());
     }
 
@@ -75,21 +144,14 @@ namespace UnitTest
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-
-        behaviorContext->Property("g_globalEntityId", BehaviorValueProperty(&g_globalEntityId));
-        behaviorContext->Property("g_globalBool", BehaviorValueProperty(&g_globalBool));
-
-        g_globalEntityId = AZ::EntityId{};
-        g_globalBool = false;
-
+        
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
-            comp_id = EntityUtilityBus.Broadcast.FindComponentByTypeName(g_globalEntityId, "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent")
+            comp_id = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(g_globalEntityId, "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent")
             json_update = [[
             {
-                "Transform Data": { "Rotate": [0.0, 0.1, 180.0] },
-                Invalid JSON
+                "Transform Data": { "Rotate": [0.0, 0.1, 180.0] }
             }
             ]]
             g_globalBool = EntityUtilityBus.Broadcast.UpdateComponentForEntity(g_globalEntityId, comp_id, json_update);
