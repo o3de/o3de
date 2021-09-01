@@ -84,12 +84,6 @@ AZ_POP_DISABLE_WARNING
 #include "IEditorPanelUtils.h"
 #include "EditorPanelUtils.h"
 
-
-// even in Release mode, the editor will return its heap, because there's no Profile build configuration for the editor
-#ifdef _RELEASE
-#undef _RELEASE
-#endif
-
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
 static CCryEditDoc * theDocument;
