@@ -126,6 +126,8 @@ namespace AZ
             // MaterialReloadNotificationBus overrides...
             void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
 
+            static const char* s_debugTraceName;
+
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
 
             //! Holds values for each material property, used to initialize Material instances.

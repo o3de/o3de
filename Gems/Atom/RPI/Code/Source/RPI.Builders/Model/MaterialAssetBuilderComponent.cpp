@@ -234,7 +234,7 @@ namespace AZ
                 Data::AssetId assetId(sourceSceneUuid, GetMaterialAssetSubId(materialUid));
 
                 auto materialSourceData = itr.second;
-                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false);
+                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false, includeMaterialPropertyNames);
                 if (result.IsSuccess())
                 {
                     context.m_outputMaterialsByUid[materialUid] = { result.GetValue(), materialSourceData.m_name };

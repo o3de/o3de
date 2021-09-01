@@ -68,8 +68,7 @@ namespace AZ
             //! @param assetId ID for the MaterialAsset
             //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
-            //! @param materialTypeSourceData The function sometimes needs metadata from the .materialtype file.
-            //!        It will either load the .materialtype file from disk, or use this MaterialTypeSourceData if it's provided.
+            //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",

@@ -26,6 +26,10 @@ namespace AZ
 
             bool m_enable = true;
             AZStd::string m_defaultMaterial;
+            //! Sets whether to include material property names when generating material assets. If this
+            //! setting is true, material property name resolution and validation is deferred into load
+            //! time rather than at build time, allowing to break some dependencies (e.g. fbx files will no
+            //! longer need to be dependent on materialtype files).
             bool m_includeMaterialPropertyNames = true;
         };
 
@@ -36,8 +40,6 @@ namespace AZ
         {
         public:
             AZ_COMPONENT(MaterialConverterSystemComponent, "{C2338D45-6456-4521-B469-B000A13F2493}");
-
-            static constexpr bool IncludeMaterialPropertyNames = true;
 
             static void Reflect(AZ::ReflectContext* context);
             

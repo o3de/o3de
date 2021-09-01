@@ -20,6 +20,8 @@ namespace AZ
 {
     namespace RPI
     {
+        const char* MaterialAsset::s_debugTraceName = "MaterialAsset";
+
         const char* MaterialAsset::DisplayName = "MaterialAsset";
         const char* MaterialAsset::Group = "Material";
         const char* MaterialAsset::Extension = "azmaterial";
@@ -162,6 +164,10 @@ namespace AZ
                 if (propertyIndex.IsValid())
                 {
                     alignedPropertyValues[propertyIndex.GetIndex()] = m_propertyValues[i];
+                }
+                else
+                {
+                    AZ_Warning(s_debugTraceName, false, "Material property name \"%s\" is not found in the material properties layout and will not be used.", m_propertyNames[i].GetCStr());
                 }
             }
             m_propertyValues.swap(alignedPropertyValues);
