@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+import groovy.json.JsonOutput
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 
@@ -770,6 +770,14 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
+                if(env.SNS_TOPIC_BUILD_FAILURE) {
+                    message_json = ["build_url":env.BUILD_URL, "repository_name":env.REPOSITORY_NAME, "branch_name":env.BRANCH_NAME, "build_failure":buildFailure]
+                    snsPublish(
+                        topicArn: env.SNS_TOPIC_BUILD_FAILURE,
+                        subject:'Build Failure',
+                        message:JsonOutput.toJson(message_json)
+                    )
+                }
             }
             emailext (
                 body: "${emailBody}",
