@@ -11,4 +11,5 @@ set(FILES
     PrefabBuilderTests.cpp
     PrefabGroup/PrefabGroupTests.cpp
     PrefabGroup/PrefabBehaviorTests.cpp
+    PrefabGroup/PrefabBehaviorTests.inl
 )

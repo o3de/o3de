@@ -48,7 +48,7 @@ namespace AZ::SceneAPI::Behaviors
             const SceneData::PrefabGroup* prefabGroup,
             const rapidjson::Document& doc) const;
 
-        AZStd::optional<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const;
+        AZStd::unique_ptr<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const;
 
         struct ExportEventHandler;
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;

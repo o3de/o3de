@@ -30,8 +30,6 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 
-//#include "C:\work\o3de\user\PrefabGroupBehavior.cpp.inl"
-
 namespace AZ::SceneAPI::Behaviors
 {
     //
@@ -81,59 +79,60 @@ namespace AZ::SceneAPI::Behaviors
         m_exportEventHandler.reset();
     }
 
-    AZStd::optional<rapidjson::Document> PrefabGroupBehavior::CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const
+    AZStd::unique_ptr<rapidjson::Document> PrefabGroupBehavior::CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const
     {
         using namespace AzToolsFramework::Prefab;
 
         auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
         if (!prefabLoaderInterface)
         {
-            return AZStd::nullopt;
+            return {};
         }
 
         // validate the PrefabDom will make a valid Prefab template instance
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(prefabGroup->GetPrefabDomBuffer(), prefabGroup->GetName().c_str());
         if (templateId == InvalidTemplateId)
         {
-            return AZStd::nullopt;
+            return {};
         }
 
         auto* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
         if (!prefabSystemComponentInterface)
         {
-            return AZStd::nullopt;
+            return {};
         }
 
         // create instance to update the asset hints
         auto instance = prefabSystemComponentInterface->InstantiatePrefab(templateId);
         if (!instance)
         {
-            return AZStd::nullopt;
+            return {};
         }
 
         auto* instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
         if (!instanceToTemplateInterface)
         {
-            return AZStd::nullopt;
+            return {};
         }
 
         // fill out a JSON DOM with all the asset IDs filled out
         rapidjson::Document generatedInstanceDom;
         instanceToTemplateInterface->GenerateDomForInstance(generatedInstanceDom, *instance.get());
 
-        auto doc = AZStd::make_optional<rapidjson::Document>();
-        doc.value().SetObject();
+        auto proceduralPrefab = AZStd::make_unique<rapidjson::Document>(rapidjson::kObjectType);
 
         auto prefabId = rapidjson::Value(rapidjson::kStringType);
-        prefabId.SetString(prefabGroup->GetId().ToString<AZStd::string>().c_str(), doc.value().GetAllocator());
+        prefabId.SetString(prefabGroup->GetId().ToString<AZStd::string>().c_str(), proceduralPrefab->GetAllocator());
 
         auto prefabName = rapidjson::Value(rapidjson::kStringType);
-        prefabName.SetString(prefabGroup->GetName().c_str(), doc.value().GetAllocator());
+        prefabName.SetString(prefabGroup->GetName().c_str(), proceduralPrefab->GetAllocator());
 
-        doc.value().AddMember("id", prefabId.Move(), doc.value().GetAllocator());
-        doc.value().AddMember("name", prefabName.Move(), doc.value().GetAllocator());
-        doc.value().AddMember("data", generatedInstanceDom.Move(), doc.value().GetAllocator());
-        return doc;
+        auto prefabTemplate = rapidjson::Value(generatedInstanceDom, proceduralPrefab->GetAllocator());
+
+        proceduralPrefab->AddMember("id", prefabId, proceduralPrefab->GetAllocator());
+        proceduralPrefab->AddMember("name", prefabName, proceduralPrefab->GetAllocator());
+        proceduralPrefab->AddMember("data", prefabTemplate, proceduralPrefab->GetAllocator());
+        return proceduralPrefab;
     }
 
     bool PrefabGroupBehavior::WriteOutProductAsset(
@@ -192,10 +191,6 @@ namespace AZ::SceneAPI::Behaviors
 
     Events::ProcessingResult PrefabGroupBehavior::OnPrepareForExport(Events::PreExportEventContext& context) const
     {
-#ifdef DEBUG_PREFAB
-        DEBUG::FillOutPrefabGroup(context);
-#endif
-
         AZStd::vector<const SceneData::PrefabGroup*> prefabGroupCollection;
         const Containers::SceneManifest& manifest = context.GetScene().GetManifest();
 
@@ -216,12 +211,12 @@ namespace AZ::SceneAPI::Behaviors
         for (const auto* prefabGroup : prefabGroupCollection)
         {
             auto result = CreateProductAssetData(prefabGroup);
-            if (result.has_value() == false)
+            if (!result)
             {
                 return Events::ProcessingResult::Failure;
             }
 
-            if (WriteOutProductAsset(context, prefabGroup, result.value()) == false)
+            if (WriteOutProductAsset(context, prefabGroup, *result.get()) == false)
             {
                 return Events::ProcessingResult::Failure;
             }
