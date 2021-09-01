@@ -76,6 +76,7 @@ DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
 DCCSI_DEV_MODE = env_bool('DCCSI_DEV_MODE', False)
 DCCSI_GDEBUGGER = env_bool('DCCSI_GDEBUGGER', False)
 DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', int(20))
+DCCSI_WING_VERSION_MAJOR = env_bool('DCCSI_WING_VERSION_MAJOR', '7')
 # -------------------------------------------------------------------------
 
 
@@ -159,6 +160,25 @@ else:
     _LOGGER = initialize_logger(_MODULEENAME, log_to_file=False)
 
 _LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
+# -------------------------------------------------------------------------
+
+
+def get_datadir() -> pathlib.Path:
+    """
+    persistent application data.
+    # linux: ~/.local/share
+    # macOS: ~/Library/Application Support
+    # windows: C:/Users/<USER>/AppData/Roaming
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform == "win32":
+        return home / "AppData/Roaming"
+    elif sys.platform == "linux":
+        return home / ".local/share"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support"
 # -------------------------------------------------------------------------
 
 

@@ -374,8 +374,8 @@ namespace AZ::IO
     {
     public:
         AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
-        CResourceList() { m_iter = m_set.end(); };
-        ~CResourceList() {};
+        CResourceList() { m_iter = m_set.end(); }
+        ~CResourceList() override {}
 
         void Add(AZStd::string_view sResourceFile) override
         {
@@ -2571,7 +2571,7 @@ namespace AZ::IO
         return aznumeric_cast<uint64_t>(pFileEntry->nFileDataOffset);
     }
 
-    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const 
+    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szName);
         if (!szFullPath)

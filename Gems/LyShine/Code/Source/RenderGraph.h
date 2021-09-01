@@ -71,9 +71,9 @@ namespace LyShine
         // We use a pool allocator to keep these allocations fast.
         AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator, 0);
 
-        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState);
+        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, const AZ::RHI::TargetBlendState& blendModeState);
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, const AZ::Data::Instance<AZ::RPI::Image>& maskTexture,
-            bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState);
+            bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, const AZ::RHI::TargetBlendState& blendModeState);
         ~PrimitiveListRenderNode() override;
         void Render(UiRenderer* uiRenderer
             , const AZ::Matrix4x4& modelViewProjMat
@@ -88,7 +88,7 @@ namespace LyShine
         bool GetTextureIsClampMode(int texIndex) const { return m_textures[texIndex].m_isClampTextureMode; }
 
         bool GetIsTextureSRGB() const { return m_isTextureSRGB; }
-        int  GetBlendModeState() const { return m_blendModeState; }
+        AZ::RHI::TargetBlendState GetBlendModeState() const { return m_blendModeState; }
         bool GetIsPremultiplyAlpha() const { return m_preMultiplyAlpha; }
         AlphaMaskType GetAlphaMaskType() const { return m_alphaMaskType; }
 
@@ -118,7 +118,7 @@ namespace LyShine
         bool            m_isTextureSRGB;
         bool            m_preMultiplyAlpha;
         AlphaMaskType   m_alphaMaskType;
-        int             m_blendModeState;
+        AZ::RHI::TargetBlendState m_blendModeState;
         int             m_totalNumVertices;
         int             m_totalNumIndices;
 
@@ -340,7 +340,7 @@ namespace LyShine
     protected: // member functions
 
         //! Given a blend mode and whether the shader will be outputing premultiplied alpha, return state flags
-        int GetBlendModeState(LyShine::BlendMode blendMode, bool isShaderOutputPremultAlpha) const;
+        AZ::RHI::TargetBlendState GetBlendModeState(LyShine::BlendMode blendMode, bool isShaderOutputPremultAlpha) const;
 
         void SetRttPassesEnabled(UiRenderer* uiRenderer, bool enabled);
 

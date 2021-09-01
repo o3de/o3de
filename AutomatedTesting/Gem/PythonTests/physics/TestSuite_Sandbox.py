@@ -43,11 +43,3 @@ class TestAutomation(TestAutomationBase):
         # Fixme:    unexpected_lines.append(f"GroupName: {group}")
         # Fixme: expected_lines=["GroupName: "]
         self._run_test(request, workspace, editor, test_module)
-
-    ## Seems to be flaky, need to investigate
-    @pytest.mark.xfail(
-        reason="Editor crashes and errors about files accessed by multiple processes appear in the log.")
-    @revert_physics_config
-    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
-        from .general import C15425929_Undo_Redo as test_module
-        self._run_test(request, workspace, editor, test_module)

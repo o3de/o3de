@@ -85,8 +85,10 @@ namespace Terrain
 
     void TerrainWorldComponent::Activate()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::SetWorldMin, m_configuration.m_worldMin);
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::SetWorldMax, m_configuration.m_worldMax);
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::SetWorldBounds,
+            AZ::Aabb::CreateFromMinMax(m_configuration.m_worldMin, m_configuration.m_worldMax)
+        );
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::SetHeightQueryResolution, m_configuration.m_heightQueryResolution);
 

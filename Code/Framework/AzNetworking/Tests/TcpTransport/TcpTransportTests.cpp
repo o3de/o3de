@@ -23,12 +23,12 @@ namespace UnitTest
         : public IConnectionListener
     {
     public:
-        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
+        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
         {
             return ConnectResult::Accepted;
         }
 
-        void OnConnect([[maybe_unused]] IConnection* connection)
+        void OnConnect([[maybe_unused]] IConnection* connection) override
         {
             ;
         }
@@ -40,12 +40,12 @@ namespace UnitTest
             return PacketDispatchResult::Failure;
         }
 
-        void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId)
+        void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId) override
         {
 
         }
 
-        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
+        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
         {
 
         }
