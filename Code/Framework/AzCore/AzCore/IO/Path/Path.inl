@@ -1219,7 +1219,7 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::LexicallyNormal() const -> BasicPath
     {
-        BasicPath pathResult;
+        BasicPath pathResult(m_preferred_separator);
         PathView::PathIterable pathIterable = PathView::GetNormalPathParts(*this);
         for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
         {
@@ -1231,7 +1231,7 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::LexicallyRelative(const PathView& base) const -> BasicPath
     {
-        BasicPath pathResult;
+        BasicPath pathResult(m_preferred_separator);
         static_cast<PathView>(*this).MakeRelativeTo(pathResult, *this, base);
         return pathResult;
     }
@@ -1346,7 +1346,7 @@ namespace AZ::IO
 
     constexpr FixedMaxPath PathView::LexicallyNormal() const
     {
-        FixedMaxPath pathResult;
+        FixedMaxPath pathResult(m_preferred_separator);
         PathIterable pathIterable = GetNormalPathParts(*this);
         for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
         {
@@ -1358,7 +1358,7 @@ namespace AZ::IO
 
     constexpr FixedMaxPath PathView::LexicallyRelative(const PathView& base) const
     {
-        FixedMaxPath pathResult;
+        FixedMaxPath pathResult(m_preferred_separator);
         MakeRelativeTo(pathResult, *this, base);
         return pathResult;
     }

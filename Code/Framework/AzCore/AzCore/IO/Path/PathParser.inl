@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/Casting/numeric_cast.h>
-
 
 namespace AZ::IO::Internal
 {
@@ -48,10 +48,19 @@ namespace AZ::IO::Internal
     constexpr auto ConsumeRootName(InputIt entryBeginIter, InputIt entryEndIter, const char preferredSeparator)
         -> AZStd::enable_if_t<AZStd::Internal::is_forward_iterator_v<InputIt>, InputIt>
     {
-        if (preferredSeparator == '/')
+        if (preferredSeparator == PosixPathSeparator)
         {
             // If the preferred separator is forward slash the parser is in posix path
-            // parsing mode, which doesn't have a root name
+            // parsing mode, which doesn't have a root name,
+            // unless we're on a posix platform that uses a custom path root separator
+#if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+            const AZStd::string_view path{ entryBeginIter, entryEndIter };
+            const auto positionOfPathSeparator = path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR);
+            if (positionOfPathSeparator != AZStd::string_view::npos)
+            {
+                return AZStd::next(entryBeginIter, positionOfPathSeparator + 1);
+            }
+#endif
             return entryBeginIter;
         }
         else
@@ -144,10 +153,16 @@ namespace AZ::IO::Internal
         size_t pathSize = AZStd::distance(first, last);
 
         // If the preferred separator is a forward slash
-        // than an absolute path is simply one that starts with a forward slash
-        if (preferredSeparator == '/')
+        // than an absolute path is simply one that starts with a forward slash,
+        // unless we're on a posix platform that uses a custom path root separator
+        if (preferredSeparator == PosixPathSeparator)
         {
+#if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+            const AZStd::string_view path{ first, last };
+            return path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR) != AZStd::string_view::npos;
+#else
             return pathSize > 0 && IsSeparator(*first);
+#endif
         }
         else
         {
