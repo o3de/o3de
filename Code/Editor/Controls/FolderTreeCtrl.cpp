@@ -400,7 +400,7 @@ void CFolderTreeCtrl::RemoveEmptyFolderItems(const QString& folder)
 
 void CFolderTreeCtrl::Edit(const QString& path)
 {
-    CFileUtil::EditTextFile(QtUtil::ToString(path), 0, IFileUtil::FILE_TYPE_SCRIPT);
+    CFileUtil::EditTextFile(path.toUtf8().data(), 0, IFileUtil::FILE_TYPE_SCRIPT);
 }
 
 void CFolderTreeCtrl::ShowInExplorer(const QString& path)

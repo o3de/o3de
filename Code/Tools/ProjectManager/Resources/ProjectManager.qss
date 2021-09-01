@@ -20,8 +20,7 @@ QPushButton:focus {
 QTabBar {
     background-color: transparent;
 }
-QTabWidget::tab-bar
-{
+QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
 QTabBar::tab {
@@ -32,26 +31,34 @@ QTabBar::tab {
     margin-right:40px;
     border-bottom: 3px solid transparent;
 }
-QTabBar::tab:text
-{
+QTabBar::tab:text {
     text-align:left;
 }
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
 }
-QTabBar::tab:selected
-{
+QTabBar::tab:selected {
+    background-color: transparent;
     border-bottom: 3px solid #1e70eb;
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:hover
-{
+QTabBar::tab:hover {
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:pressed
-{
+QTabBar::tab:pressed {
     color: #0e60eb;
+}
+QTabBar::focus {
+    outline: 0px;
+    outline: none;
+    outline-style: none;
+}
+QTabBar::tab:focus {
+    background-color: #525252;
+    color: #4082eb;
 }
 
 /************** General (Forms) **************/
@@ -150,15 +157,16 @@ QTabBar::tab:pressed
     font-size:14px;
     text-align:left;
     margin:0;
-    padding-top:10px;
-    padding-bottom:-5px;
-    min-height:15px;
-    max-height:15px;
+    padding-top:0px;
+    padding-bottom:0px;
+    min-height:20px;
+    max-height:20px;
 }
 #headerSubTitle {
     font-size:24px;
     text-align:left;
     margin:0;
+    padding-top:-5px;
     min-height:42px;
     max-height:42px;
 }
@@ -204,6 +212,10 @@ QTabBar::tab:pressed
 #footer > QPushButton[secondary="true"]:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#horizontalSeparatingLine {
+    color: #666666;
 }
 
 /************** Project Settings **************/
@@ -286,8 +298,6 @@ QTabBar::tab:pressed
     border:none;
 }
 
-
-
 #projectSettingsTab::tab-bar {
     left: 60px;
 }
@@ -353,6 +363,10 @@ QTabBar::tab:pressed
     color: #1e70eb;
 }
 
+#firstTimeContent > QPushButton:focus {
+    border: 1px solid #1e70eb;
+}
+
 #firstTimeContent > QPushButton:pressed {
     border: 1px solid #0e60eb;
     color: #0e60eb;
@@ -393,7 +407,8 @@ QTabBar::tab:pressed
 }
 
 #projectButton > #labelButton:hover,
-#projectButton > #labelButton:pressed  {
+#projectButton > #labelButton:pressed,
+#projectButton > #labelButton:focus {
     border:1px solid #1e70eb;
 }
 

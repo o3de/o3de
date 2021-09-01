@@ -403,11 +403,6 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
-    {
-        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
         return m_mouseOver;
@@ -464,5 +459,15 @@ namespace AtomToolsFramework
     float RenderViewportWidget::GetDpiScaleFactor() const
     {
         return aznumeric_cast<float>(devicePixelRatioF());
+    }
+
+    uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
+    {
+        return 60;
+    }
+
+    uint32_t RenderViewportWidget::GetSyncInterval() const
+    {
+        return 1;
     }
 } //namespace AtomToolsFramework

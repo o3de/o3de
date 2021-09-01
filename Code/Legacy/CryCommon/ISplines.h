@@ -11,8 +11,8 @@
 #define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
-#include <CrySizer.h>
 #include <IXml.h>
+#include <AzCore/std/containers/vector.h>
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -466,7 +466,7 @@ namespace spline
         ILINE void flag_clr(int flag) { m_flags &= ~flag; };
         ILINE int  flag(int flag)  { return m_flags & flag; };
 
-        ILINE void ORT(int ort) { m_ORT = ort; };
+        ILINE void ORT(int ort) { m_ORT = static_cast<uint8>(ort); };
         ILINE int  ORT() const { return m_ORT; };
         ILINE int  isORT(int o) const { return (m_ORT == o); };
 
@@ -638,7 +638,7 @@ namespace spline
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::SerializeContext* serializeContext) {}
-     
+
         inline void add_ref()
         {
             ++m_refCount;

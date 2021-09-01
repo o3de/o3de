@@ -184,7 +184,7 @@ namespace SurfaceData
 
     bool SurfaceDataColliderComponent::DoRayTrace(const AZ::Vector3& inPosition, bool queryPointOnly, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -249,7 +249,7 @@ namespace SurfaceData
 
     void SurfaceDataColliderComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -303,7 +303,7 @@ namespace SurfaceData
 
     void SurfaceDataColliderComponent::UpdateColliderData()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool colliderValidBeforeUpdate = false;
         bool colliderValidAfterUpdate = false;

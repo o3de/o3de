@@ -177,7 +177,7 @@ namespace AZ
              */
 
             AZStd::vector<const PipelineLibrary*> threadLibraries;
-            m_threadLibrarySet.ForEach([this, handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+            m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
                 const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
 
@@ -272,7 +272,7 @@ namespace AZ
 
         const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (handle.IsNull())
             {

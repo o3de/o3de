@@ -9,9 +9,15 @@
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/CpuProfilerImpl.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/limits.h>
@@ -25,25 +31,80 @@ namespace AZ
     {
         namespace CpuProfilerImGuiHelper
         {
-            // NOTE: Fix build error in case AZStd::thread_id is not of an arithmetic type, and instead a pointer
-            template<typename ThreadId, typename AZStd::enable_if<AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            AZStd::string TextThreadId(ThreadId threadId)
-            {
-                return AZStd::string::format("Thread: %p", threadId);
-            }
-
-            template<typename ThreadId, typename AZStd::enable_if<!AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            AZStd::string TextThreadId(ThreadId threadId)
-            {
-                return AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
-            }
-
             inline float TicksToMs(AZStd::sys_time_t ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
                 AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
                 return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+            }
+
+            using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
+            inline Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath)
+            {
+                auto* base = IO::FileIOBase::GetInstance();
+
+                char resolvedPath[IO::MaxPathLength];
+                if (!base->ResolvePath(capturePath.c_str(), resolvedPath, IO::MaxPathLength))
+                {
+                    return Failure(AZStd::string::format("Could not resolve the path to file %s, is the path correct?", resolvedPath));
+                }
+
+                u64 captureSizeBytes;
+                const IO::Result fileSizeResult = base->Size(resolvedPath, captureSizeBytes);
+                if (!fileSizeResult)
+                {
+                    return Failure(AZStd::string::format("Could not read the size of file %s, is the path correct?", resolvedPath));
+                }
+
+                // NOTE: this uses raw file pointers over the abstractions and utility functions provided by AZ::JsonSerializationUtils because
+                // saved profiling captures can be upwards of 400 MB. This necessitates a buffered approach to avoid allocating huge chunks of memory.
+                FILE* fp = nullptr;
+                azfopen(&fp, resolvedPath, "rb");
+                if (!fp)
+                {
+                    return Failure(AZStd::string::format("Could not fopen file %s, is the path correct?\n", resolvedPath));
+                }
+
+                constexpr AZStd::size_t MaxBufSize = 65536;
+                const AZStd::size_t bufSize = AZStd::min(MaxBufSize, aznumeric_cast<AZStd::size_t>(captureSizeBytes));
+                char* buf = reinterpret_cast<char*>(azmalloc(bufSize));
+
+                rapidjson::Document document;
+                rapidjson::FileReadStream inputStream(fp, buf, bufSize);
+                document.ParseStream(inputStream);
+
+                azfree(buf);
+                fclose(fp);
+
+                if (document.HasParseError())
+                {
+                    const auto pe = document.GetParseError();
+                    return Failure(AZStd::string::format(
+                        "Rapidjson could not parse the document with ParseErrorCode %u. See 3rdParty/rapidjson/error.h for definitions.\n", pe));
+                }
+
+                if (!document.IsObject() || !document.HasMember("ClassData"))
+                {
+                    return Failure(AZStd::string::format(
+                        "Error in loading saved capture: top-level object does not have a ClassData field. Did the serialization format change recently?\n"));
+                }
+
+                AZ_TracePrintf("JsonUtils", "Successfully loaded JSON into memory.\n");
+
+                const auto& root = document["ClassData"];
+                RHI::CpuProfilingStatisticsSerializer serializer;
+                const JsonSerializationResult::ResultCode deserializationResult = JsonSerialization::Load(serializer, root);
+                if (deserializationResult.GetProcessing() == JsonSerializationResult::Processing::Halted
+                    || serializer.m_cpuProfilingStatisticsSerializerEntries.empty())
+                {
+                    return Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
+                }
+
+                AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
+                     serializer.m_cpuProfilingStatisticsSerializerEntries.size());
+
+                return Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
             }
         } // namespace CpuProfilerImGuiHelper
 
@@ -80,6 +141,11 @@ namespace AZ
                 {
                     DrawStatisticsView();
                 }
+
+                if (m_showFilePicker)
+                {
+                    DrawFilePicker();
+                }
             }
             ImGui::End();
          
@@ -110,6 +176,11 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawCommonHeader()
         {
+            if (!m_lastCapturedFilePath.empty())
+            {
+                ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
+            }
+
             if (ImGui::Button(m_enableVisualizer ? "Swap to statistics" : "Swap to visualizer"))
             {
                 m_enableVisualizer = !m_enableVisualizer;
@@ -129,10 +200,60 @@ namespace AZ
                 m_captureToFile = true;
             }
 
-            if (!m_lastCapturedFilePath.empty())
+            ImGui::SameLine();
+            bool isInProgress = RHI::CpuProfiler::Get()->IsContinuousCaptureInProgress();
+            if (ImGui::Button(isInProgress ? "End" : "Begin"))
             {
-                ImGui::SameLine();
-                ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
+                if (isInProgress)
+                {
+                    AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
+                    AZStd::string timeString;
+                    AZStd::to_string(timeString, timeNow);
+                    u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
+                    const AZStd::string frameDataFilePath = AZStd::string::format(
+                        "@user@/CpuProfiler/%s_%llu.json",
+                        timeString.c_str(),
+                        currentTick);
+                    char resolvedPath[AZ::IO::MaxPathLength];
+                    AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                    m_lastCapturedFilePath = resolvedPath;
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+                    m_paused = true;
+                }
+
+                else
+                {
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                }
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Load file"))
+            {
+                m_showFilePicker = true;
+
+                // Only update the cached file list when opened so that we aren't making IO calls on every frame.
+                auto* base = AZ::IO::FileIOBase::GetInstance();
+                const AZStd::string defaultSavedCapturePath = "@user@/CpuProfiler";
+
+                m_cachedCapturePaths.clear();
+                base->FindFiles(
+                    defaultSavedCapturePath.c_str(), "*.json",
+                    [&paths = m_cachedCapturePaths](const char* path) -> bool
+                    {
+                        auto foundPath = IO::Path(path);
+                        paths.push_back(foundPath);
+                        return true;
+                    });
+
+                // Sort by decreasing modification time (most recent at the top)
+                AZStd::sort(m_cachedCapturePaths.begin(), m_cachedCapturePaths.end(),
+                    [&base](const IO::Path& lhs, const IO::Path& rhs)
+                    {
+                        return base->ModificationTime(lhs.c_str()) > base->ModificationTime(rhs.c_str());
+                    });
             }
         }
 
@@ -235,14 +356,12 @@ namespace AZ
 
             const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
 
-            const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-
-            const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
+            const auto ShowTimeInMs = [](AZStd::sys_time_t duration)
             {
                 ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
             };
 
-            const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
+            const auto ShowRow = [&ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
             {
                 ImGui::Text(regionLabel);
                 ImGui::NextColumn();
@@ -285,6 +404,97 @@ namespace AZ
             } 
         }
 
+        inline void ImGuiCpuProfiler::DrawFilePicker()
+        {
+            ImGui::SetNextWindowSize({ 500, 200 }, ImGuiCond_Once);
+            if (ImGui::Begin("File Picker", &m_showFilePicker))
+            {
+                if (ImGui::Button("Load selected"))
+                {
+                    LoadFile();
+                }
+
+                auto getter = [](void* vectorPointer, int idx, const char** out_text) -> bool
+                {
+                    const auto& pathVec = *static_cast<AZStd::vector<IO::Path>*>(vectorPointer);
+                    if (idx < 0 || idx >= pathVec.size())
+                    {
+                        return false;
+                    }
+                    *out_text = pathVec[idx].c_str();
+                    return true;
+                };
+
+                ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
+                ImGui::ListBox("", &m_currentFileIndex, getter, &m_cachedCapturePaths, aznumeric_cast<int>(m_cachedCapturePaths.size()));
+            }
+            ImGui::End();
+        }
+
+        inline void ImGuiCpuProfiler::LoadFile()
+        {
+            const IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
+            auto loadResult = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.String());
+            if (!loadResult.IsSuccess())
+            {
+                AZ_TracePrintf("ImGuiCpuProfiler", "%s", loadResult.GetError().c_str());
+                return;
+            }
+
+            AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
+
+            // Clear visualizer and statistics view state
+            m_savedRegionCount = deserializedData.size();
+            m_savedData.clear();
+            m_paused = true;
+            AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+            m_frameEndTicks.clear();
+
+            m_tableData.clear();
+            m_groupRegionMap.clear();
+
+            for (const auto& entry : deserializedData)
+            {
+                const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
+                const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetCStr());
+                const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
+                    m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
+
+                const RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+                m_savedData[entry.m_threadId].push_back(newRegion);
+
+                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic. 
+                const static Name frameBoundaryName = Name("RPISystem: OnSystemTick");
+                if (entry.m_regionName == frameBoundaryName)
+                {
+                    m_frameEndTicks.push_back(entry.m_endTick);
+                }  
+
+                // Update running statistics 
+                if (!m_groupRegionMap[*groupNameItr].contains(*regionNameItr))
+                {
+                    m_groupRegionMap[*groupNameItr][*regionNameItr].m_groupName = *groupNameItr;
+                    m_groupRegionMap[*groupNameItr][*regionNameItr].m_regionName = *regionNameItr;
+                    m_tableData.push_back(&m_groupRegionMap[*groupNameItr][*regionNameItr]);
+                }
+                m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, entry.m_threadId);
+            }
+
+            // Update viewport bounds with some added UX fudge factor
+            m_viewportStartTick = deserializedData.back().m_startTick - 1000;
+            m_viewportEndTick = deserializedData.back().m_endTick + 1000;
+
+            // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
+            for (auto& [threadId, singleThreadData] : m_savedData)
+            {
+                AZStd::sort(singleThreadData.begin(), singleThreadData.end(), 
+                [](const TimeRegion& lhs, const TimeRegion& rhs)
+                {
+                    return lhs.m_startTick < rhs.m_startTick;
+                });
+            }
+        }
+
         // -- CPU Visualizer --
         inline void ImGuiCpuProfiler::DrawVisualizer()
         {
@@ -294,14 +504,14 @@ namespace AZ
             if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
             {
                 ImGui::Columns(3, "Options", true);
-                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 20000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
                 m_visualizerHighlightFilter.Draw("Find Region");
 
                 ImGui::NextColumn();
 
                 ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
                 ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
-                ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
+                ImGui::Text("Recording %zu threads", m_savedData.size());
                 ImGui::Text("%llu profiling events saved", m_savedRegionCount);
 
                 ImGui::NextColumn();
@@ -361,6 +571,11 @@ namespace AZ
                             return wrapper.m_startTick < target;
                         });
 
+                    if (regionItr == singleThreadData.end())
+                    {
+                        continue;
+                    }
+
                     // Draw all of the blocks for a given thread/row
                     u64 maxDepth = 0;
                     while (regionItr != singleThreadData.end())
@@ -415,7 +630,6 @@ namespace AZ
                     else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
                     {
                         // We want zooming to be relative to the mouse's current position
-                        const float mouseVel = io.MouseWheel;
                         const float mouseX = ImGui::GetMousePos().x;
 
                         // Find the normalized position of the cursor relative to the window
@@ -455,6 +669,7 @@ namespace AZ
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
             {
+                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId); 
                 // The profiler can sometime return threads without any profiling events when dropping threads, FIXME(ATOM-15949)
                 if (singleThreadRegionMap.size() == 0)
                 {
@@ -480,7 +695,7 @@ namespace AZ
                             m_tableData.push_back(&m_groupRegionMap[groupName][regionName]);
                         }
 
-                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadId);
+                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadIdHashed);
                     }
                 }
 
@@ -500,7 +715,7 @@ namespace AZ
                 m_savedRegionCount += newVisualizerData.size();
 
                 // Move onto the end of the current thread's saved data, sorted order maintained
-                AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadId];
+                AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadIdHashed];
                 savedDataVec.insert(
                     savedDataVec.end(), AZStd::make_move_iterator(newVisualizerData.begin()), AZStd::make_move_iterator(newVisualizerData.end()));
             }
@@ -520,6 +735,12 @@ namespace AZ
             {
                 AZStd::size_t sizeBeforeRemove = savedRegions.size();
 
+                // Early out to avoid the linear erase_if call
+                if (savedRegions.size() >= 1 && savedRegions.at(0).m_startTick > deleteBeforeTick)
+                {
+                    continue;
+                }
+
                 // Use erase_if over plain upper_bound + erase to avoid repeated shifts. erase requires a shift of all elements to the right
                 // for each element that is erased, while erase_if squashes all removes into a single shift which significantly improves perf.
                 AZStd::erase_if(
@@ -531,6 +752,14 @@ namespace AZ
 
                 m_savedRegionCount -= sizeBeforeRemove - savedRegions.size();
             }
+
+            // Remove any threads from the top-level map that no longer hold data
+            AZStd::erase_if(
+                m_savedData,
+                [](const auto& singleThreadDataEntry)
+                {
+                    return singleThreadDataEntry.second.empty();
+                });
         }
 
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
@@ -548,12 +777,19 @@ namespace AZ
             const float startPixel = ConvertTickToPixelSpace(block.m_startTick, m_viewportStartTick, m_viewportEndTick);
             const float endPixel = ConvertTickToPixelSpace(block.m_endTick, m_viewportStartTick, m_viewportEndTick);
 
-            const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight };
-            const ImVec2 endPoint = { endPixel, wy + targetRow * RowHeight + 40 };
+            if (endPixel - startPixel < 0.5f)
+            {
+                return;
+            }
+
+            const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight + 1};
+            const ImVec2 endPoint = { endPixel, wy + (targetRow + 1) * RowHeight };
 
             const ImU32 blockColor = GetBlockColor(block);
 
             drawList->AddRectFilled(startPoint, endPoint, blockColor, 0);
+            drawList->AddLine(startPoint, { endPixel, startPoint.y }, IM_COL32_BLACK, 0.5f);
+            drawList->AddLine({ startPixel, endPoint.y }, endPoint, IM_COL32_BLACK, 0.5f);
 
             // Draw the region name if possible
             // If the block's current width is too small, we skip drawing the label.
@@ -567,17 +803,19 @@ namespace AZ
 
                 if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
                 {
-                    // clipRect appears to only clip when a character is fully outside of its bounds which can lead to overflow
-                    // for now subtract the width of a character
                     const ImVec4 clipRect = { startPoint.x, startPoint.y, endPoint.x - maxCharWidth, endPoint.y };
-                    const float fontSize = ImGui::GetFont()->FontSize;
 
+                    // NOTE: RenderText calls do not automatically account for the global scale (which is modified at high DPI)
+                    // so we must adjust for the scale manually.
+                    const float scaleFactor = ImGui::GetIO().FontGlobalScale;
+                    const float fontSize = ImGui::GetFont()->FontSize * scaleFactor;
+                    
                     ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
                 }
                 else // We have enough space to draw the entire label, draw and center text.
                 {
                     const float remainingWidth = regionPixelWidth - textWidth;
-                    const float offset = remainingWidth * .5;
+                    const float offset = remainingWidth * .5f;
 
                     drawList->AddText({ startPoint.x + offset, startPoint.y }, IM_COL32_WHITE, label.c_str());
                 }
@@ -631,18 +869,18 @@ namespace AZ
             auto [wx, wy] = ImGui::GetWindowPos();
             wy -= ImGui::GetScrollY();
             const float windowWidth = ImGui::GetWindowWidth();
-            const float boundaryY = wy + (baseRow + maxDepth + 1) * RowHeight - 5;
+            const float boundaryY = wy + (baseRow + maxDepth + 1) * RowHeight;
 
-            ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 2.0f);
+            ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 1.0f);
         }
 
-        inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId)
+        inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, size_t threadId)
         {
             auto [wx, wy] = ImGui::GetWindowPos();
             wy -= ImGui::GetScrollY();
-            const AZStd::string threadIdText =  CpuProfilerImGuiHelper::TextThreadId(threadId.m_id);
+            const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", threadId);
 
-            ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
+            ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight}, IM_COL32_WHITE, threadIdText.c_str());
         }
 
         inline void ImGuiCpuProfiler::DrawFrameBoundaries()
@@ -700,8 +938,10 @@ namespace AZ
                     const float textBeginPixel = lastFrameBoundaryPixel + offset;
                     const float textEndPixel = textBeginPixel + labelWidth;
 
+                    const float verticalOffset = (ImGui::GetWindowHeight() - ImGui::GetFontSize()) / 2;
+
                     // Execution time label
-                    drawList->AddText({ textBeginPixel, wy + ImGui::GetWindowHeight() / 4 }, IM_COL32_WHITE, label.c_str());
+                    drawList->AddText({ textBeginPixel, wy + verticalOffset }, IM_COL32_WHITE, label.c_str());
 
                     // Left side
                     drawList->AddLine(
@@ -859,7 +1099,7 @@ namespace AZ
 
         // ---- TableRow impl ----
 
-        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId)
+        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, size_t threadId)
         {
             const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
 
@@ -888,7 +1128,7 @@ namespace AZ
             auto threadString = AZStd::string::format("Executed in %zu threads\n", m_executingThreads.size());
             for (const auto& threadId : m_executingThreads)
             {
-                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + "\n");
+                threadString.append(AZStd::string::format("Thread: %zu\n", threadId));
             }
             return threadString;
         }

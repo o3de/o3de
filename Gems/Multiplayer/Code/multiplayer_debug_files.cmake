@@ -7,6 +7,10 @@
 #
 
 set(FILES
+    Source/Debug/MultiplayerDebugByteReporter.cpp
+    Source/Debug/MultiplayerDebugByteReporter.h
+    Source/Debug/MultiplayerDebugPerEntityReporter.cpp
+    Source/Debug/MultiplayerDebugPerEntityReporter.h
     Source/Debug/MultiplayerDebugModule.cpp
     Source/Debug/MultiplayerDebugModule.h
     Source/Debug/MultiplayerDebugSystemComponent.cpp

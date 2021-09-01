@@ -18,6 +18,8 @@
 
 #include "TrackEventTrack.h"
 
+#include <list>
+
 class CAnimSequence
     : public IAnimSequence
 {
@@ -174,7 +176,7 @@ private:
 
     uint32 m_id;
     AZStd::string m_name;
-    mutable string m_fullNameHolder;
+    mutable AZStd::string m_fullNameHolder;
     Range m_timeRange;
     TrackEvents m_events;
 

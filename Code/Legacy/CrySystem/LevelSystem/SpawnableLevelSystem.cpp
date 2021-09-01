@@ -8,7 +8,6 @@
 
 #include "CrySystem_precompiled.h"
 #include "SpawnableLevelSystem.h"
-#include <IAudioSystem.h>
 #include "IMovieSystem.h"
 
 #include <LoadScreenBus.h>
@@ -56,10 +55,8 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
     //------------------------------------------------------------------------
-    SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
-        : m_pSystem(pSystem)
+    SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
-        LOADING_TIME_PROFILE_SECTION;
         CRY_ASSERT(pSystem);
 
         m_fLastLevelLoadTime = 0;
@@ -249,8 +246,6 @@ namespace LegacyLevelSystem
 
         // This scope is specifically used for marking a loading time profile section
         {
-            LOADING_TIME_PROFILE_SECTION;
-
             m_bLevelLoaded = false;
             m_lastLevelName = levelName;
             gEnv->pConsole->SetScrollMax(600);
@@ -268,12 +263,6 @@ namespace LegacyLevelSystem
             // This is a workaround until the replacement for GameEntityContext is done
             AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
 
-            // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
-            // to avoid the hack in the renderer to not show anything if the camera is at the origin).
-            CCamera defaultCam;
-            defaultCam.SetPosition(Vec3(1.0f));
-            m_pSystem->SetViewCamera(defaultCam);
-
             OnLoadingStart(levelName);
 
             auto pPak = gEnv->pCryPak;
@@ -285,47 +274,6 @@ namespace LegacyLevelSystem
                 spamDelay = pSpamDelay->GetFVal();
                 pSpamDelay->Set(0.0f);
             }
-
-            // Parse level specific config data.
-            AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
-
-            if (!sLevelNameOnly.empty())
-            {
-                const char* controlsPath = nullptr;
-                Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-                if (controlsPath)
-                {
-                    AZStd::string sAudioLevelPath(controlsPath);
-                    sAudioLevelPath.append("levels/");
-                    sAudioLevelPath += sLevelNameOnly;
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    Audio::SAudioRequest oAudioRequestData;
-                    oAudioRequestData.nFlags =
-                        (Audio::eARF_PRIORITY_HIGH |
-                         Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-                    oAudioRequestData.pData = &oAMData;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    oAudioRequestData.pData = &oAMData2;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-
-                    Audio::AudioSystemRequestBus::BroadcastResult(
-                        nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-                    if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-                    {
-                        Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(nPreloadRequestID, true);
-                        oAudioRequestData.pData = &requestData;
-                        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-                    }
-                }
-            }
-
 
             AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable(
                 rootSpawnableAssetId, azrtti_typeid<AzFramework::Spawnable>(), levelName);
@@ -435,8 +383,6 @@ namespace LegacyLevelSystem
         m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
-
-        LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
 
         for (auto& listener : m_listeners)
         {
@@ -570,26 +516,6 @@ namespace LegacyLevelSystem
             gEnv->pMovieSystem->Reset(false, false);
             gEnv->pMovieSystem->RemoveAllSequences();
         }
-
-        // Unload level specific audio binary data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-        Audio::SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-        oAudioRequestData.pData = &oAMData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        // Now unload level specific audio config data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData2;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData3;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        // Reset the camera to (0,0,0) which is the invalid/uninitialised state
-        CCamera defaultCam;
-        m_pSystem->SetViewCamera(defaultCam);
 
         OnUnloadComplete(m_lastLevelName.c_str());
 

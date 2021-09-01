@@ -97,6 +97,7 @@ AZ_POP_DISABLE_WARNING
 #include "ActionManager.h"
 
 #include <ImGuiBus.h>
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -106,12 +107,6 @@ using namespace AzToolsFramework;
 #define LAYOUTS_EXTENSION ".layout"
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
-
-static const char* g_openViewPaneEventName = "OpenViewPaneEvent"; //Sent when users open view panes;
-static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the current view pane
-static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
-
-static const char* g_assetImporterName = "AssetImporter";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -302,7 +297,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_settings("O3DE", "O3DE")
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
-    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
+    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
@@ -1474,25 +1469,22 @@ int MainWindow::ViewPaneVersion() const
 
 void MainWindow::OnStopAllSounds()
 {
-    Audio::SAudioRequest oStopAllSoundsRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_STOP_ALL_SOUNDS>   oStopAllSoundsRequestData;
-    oStopAllSoundsRequest.pData = &oStopAllSoundsRequestData;
-
-    CryLogAlways("<Audio> Executed \"Stop All Sounds\" command.");
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oStopAllSoundsRequest);
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalStopAllSounds);
 }
 
 void MainWindow::OnRefreshAudioSystem()
 {
-    QString sLevelName = GetIEditor()->GetGameEngine()->GetLevelName();
+    AZStd::string levelName;
+    AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequestBus::Events::GetLevelName);
+    AZStd::to_lower(levelName.begin(), levelName.end());
 
-    if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+    if (levelName == "untitled")
     {
-        // Rather pass nullptr to indicate that no level is loaded!
-        sLevelName = QString();
+        levelName.clear();
     }
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+        &LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalRefreshAudio, AZStd::string_view{ levelName });
 }
 
 void MainWindow::SaveLayout()
@@ -1674,7 +1666,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";
@@ -1687,7 +1679,7 @@ void MainWindow::OnUpdateConnectionStatus()
 
         status = tr("Pending Jobs : %1  Failed Jobs : %2").arg(m_connectionListener->GetJobsCount()).arg(failureCount);
 
-        statusBar->SetItem(QtUtil::ToQString("connection"), status, tooltip, icon);
+        statusBar->SetItem("connection", status, tooltip, icon);
 
         if (m_showAPDisconnectDialog && m_connectionListener->GetState() != EConnectionState::Connected)
         {
@@ -1769,7 +1761,7 @@ void MainWindow::RegisterOpenWndCommands()
         cmdUI.tooltip = (QString("Open ") + className).toUtf8().data();
         cmdUI.iconFilename = className.toUtf8().data();
         GetIEditor()->GetCommandManager()->RegisterUICommand("editor", openCommandName.toUtf8().data(),
-            "", "", AZStd::bind(&CEditorOpenViewCommand::Execute, pCmd), cmdUI);
+            "", "", [pCmd] { pCmd->Execute(); }, cmdUI);
         GetIEditor()->GetCommandManager()->GetUIInfo("editor", openCommandName.toUtf8().data(), cmdUI);
     }
 }

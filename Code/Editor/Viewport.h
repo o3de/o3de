@@ -165,11 +165,19 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Set current view matrix,
     //! This is a matrix that transforms from world to view space.
-    virtual void SetViewTM(const Matrix34& tm) { m_viewTM = tm; };
+    virtual void SetViewTM([[maybe_unused]] const Matrix34& tm)
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::SetViewTM not implemented");
+    }
 
     //! Get current view matrix.
     //! This is a matrix that transforms from world space to view space.
-    virtual const Matrix34& GetViewTM() const { return m_viewTM; };
+    virtual const Matrix34& GetViewTM() const
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::GetViewTM not implemented");
+        static const Matrix34 m;
+        return m;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current screen matrix.
@@ -193,6 +201,7 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     virtual bool HitTest(const QPoint& point, HitContext& hitInfo) = 0;
+    virtual AZ::Vector3 GetHitLocation(const QPoint& point) = 0;
 
     virtual void MakeConstructionPlane(int axis) = 0;
 
@@ -277,8 +286,6 @@ protected:
     CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    // Viewport matrix.
-    Matrix34 m_viewTM;
     // Screen Matrix
     Matrix34 m_screenTM;
     int m_nCurViewportID;
@@ -430,6 +437,7 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
+    AZ::Vector3 GetHitLocation(const QPoint& point) override;
 
     //! Do 2D hit testing of line in world space.
     // pToCameraDistance is an optional output parameter in which distance from the camera to the line is returned.

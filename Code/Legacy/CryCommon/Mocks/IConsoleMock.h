@@ -56,7 +56,7 @@ public:
     MOCK_METHOD0(IsOpened, bool ());
     MOCK_METHOD0(GetNumVars, int());
     MOCK_METHOD0(GetNumVisibleVars, int());
-    MOCK_METHOD3(GetSortedVars, size_t (const char** pszArray, size_t numItems, const char* szPrefix));
+    MOCK_METHOD2(GetSortedVars, size_t (AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix));
     MOCK_METHOD1(AutoComplete, const char*(const char* substr));
     MOCK_METHOD1(AutoCompletePrev, const char*(const char* substr));
     MOCK_METHOD1(ProcessCompletion, const char*(const char* szInputBuffer));
@@ -69,13 +69,6 @@ public:
     MOCK_METHOD1(SetInputLine, void (const char* szLine));
     MOCK_METHOD1(DumpKeyBinds, void (IKeyBindDumpSink * pCallback));
     MOCK_CONST_METHOD1(FindKeyBind, const char*(const char* sCmd));
-    MOCK_METHOD0(GetNumCheatVars, int ());
-    MOCK_METHOD2(SetCheatVarHashRange, void (size_t firstVar, size_t lastVar));
-    MOCK_METHOD0(CalcCheatVarHash, void ());
-    MOCK_METHOD0(IsHashCalculated, bool ());
-    MOCK_METHOD0(GetCheatVarHash, uint64 ());
-    MOCK_METHOD1(PrintCheatVars, void (bool bUseLastHashRange));
-    MOCK_METHOD1(GetCheatVarAt, char* (uint32 nOffset));
     MOCK_METHOD1(AddConsoleVarSink, void (IConsoleVarSink * pSink));
     MOCK_METHOD1(RemoveConsoleVarSink, void (IConsoleVarSink * pSink));
     MOCK_METHOD1(GetHistoryElement, const char*(bool bUpOrDown));

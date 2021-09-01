@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include "CryThread.h"
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
 #include <QFileInfo>

@@ -41,7 +41,7 @@ namespace AZ
             {
                 Task& task = m_tasks[i];
                 task.m_graph = this;
-                task.m_successorOffset = cursor - m_successors.data();
+                task.m_successorOffset = static_cast<uint32_t>(cursor - m_successors.data());
                 cursor += task.m_outboundLinkCount;
 
                 AZ_Assert(task.m_outboundLinkCount == links[i].size(), "Task outbound link information mismatch");
@@ -78,7 +78,7 @@ namespace AZ
                 return remaining;
             }
 
-            if (m_waitEvent && remaining == (m_parent ? 1 : 0))
+            if (m_waitEvent && remaining == (m_parent ? 1u : 0u))
             {
                 m_waitEvent->Signal();
             }
@@ -259,7 +259,7 @@ namespace AZ
                         }
 
                         bool isRetained = task->m_graph->m_parent != nullptr;
-                        if (task->m_graph->Release() == (isRetained ? 1 : 0))
+                        if (task->m_graph->Release() == (isRetained ? 1u : 0u))
                         {
                             m_executor->ReleaseGraph();
                         }

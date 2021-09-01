@@ -233,7 +233,7 @@ namespace NvCloth
 
     void ActorClothSkinningLinear::UpdateSkinning()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_skinningMatrices = Internal::ObtainSkinningMatrices(m_entityId);
     }
@@ -250,7 +250,7 @@ namespace NvCloth
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         const size_t vertexCount = m_simulatedVertices.size();
         for (size_t index = 0; index < vertexCount; ++index)
@@ -274,7 +274,7 @@ namespace NvCloth
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         for (const AZ::u32 index : m_nonSimulatedVertices)
         {
@@ -342,7 +342,7 @@ namespace NvCloth
 
     void ActorClothSkinningDualQuaternion::UpdateSkinning()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_skinningDualQuaternions = Internal::ObtainSkinningDualQuaternions(m_entityId, m_jointIndices);
     }
@@ -359,7 +359,7 @@ namespace NvCloth
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         const size_t vertexCount = m_simulatedVertices.size();
         for (size_t index = 0; index < vertexCount; ++index)
@@ -383,7 +383,7 @@ namespace NvCloth
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         for (const AZ::u32 index : m_nonSimulatedVertices)
         {
@@ -415,7 +415,7 @@ namespace NvCloth
 
             const MCore::DualQuaternion& skinningDualQuaternion = m_skinningDualQuaternions.at(jointIndex);
 
-            float flip = AZ::GetSign(vertexSkinningTransform.mReal.Dot(skinningDualQuaternion.mReal));
+            float flip = AZ::GetSign(vertexSkinningTransform.m_real.Dot(skinningDualQuaternion.m_real));
             vertexSkinningTransform += skinningDualQuaternion * jointWeight * flip;
         }
         // Normalizing the dual quaternion as the GPU shaders do. This will remove the scale from the transform.

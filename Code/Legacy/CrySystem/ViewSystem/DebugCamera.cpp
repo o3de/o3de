@@ -58,10 +58,10 @@ DebugCamera::~DebugCamera()
 ///////////////////////////////////////////////////////////////////////////////
 void DebugCamera::OnEnable()
 {
-    m_position = gEnv->pSystem->GetViewCamera().GetPosition();
+    m_position = Vec3_Zero;
     m_moveInput = Vec3_Zero;
 
-    Ang3 cameraAngles = Ang3(gEnv->pSystem->GetViewCamera().GetMatrix());
+    Ang3 cameraAngles = Ang3(ZERO);
     m_cameraYaw = RAD2DEG(cameraAngles.z);
     m_cameraPitch = RAD2DEG(cameraAngles.x);
     m_view = Matrix33(Ang3(DEG2RAD(m_cameraPitch), 0.0f, DEG2RAD(m_cameraYaw)));
@@ -115,24 +115,11 @@ void DebugCamera::Update()
 
     m_view = Matrix33(Ang3(DEG2RAD(m_cameraPitch), 0.0f, DEG2RAD(m_cameraYaw)));
     UpdatePosition(m_moveInput);
-
-    // update the listener of the active view
-    if (IView* view = gEnv->pSystem->GetIViewSystem()->GetActiveView())
-    {
-        view->UpdateAudioListener(Matrix34(m_view, m_position));
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void DebugCamera::PostUpdate()
 {
-    if (m_cameraMode == DebugCamera::ModeOff)
-    {
-        return;
-    }
-
-    CCamera& camera = gEnv->pSystem->GetViewCamera();
-    camera.SetMatrix(Matrix34(m_view, m_position));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -418,7 +418,6 @@ namespace AZ::Render
             }
             const FilterParameter& filter = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
             const float boundaryWidthAngle = shadow.m_boundaryScale * 2.0f;
-            constexpr float SmallAngle = 0.01f;
             const float fieldOfView = GetMax(shadowProperty.m_desc.m_fieldOfViewYRadians, MinimumFieldOfView);
             const float ratioToEntireWidth = boundaryWidthAngle / fieldOfView;
             const float widthInPixels = ratioToEntireWidth * filter.m_shadowmapSize;
@@ -539,9 +538,10 @@ namespace AZ::Render
             {
                 esmPass->QueueForBuildAndInitialization();
             }
-            
-            for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)
+
+            if (!m_projectedShadowmapsPasses.empty())
             {
+                const ProjectedShadowmapsPass* shadowPass = m_projectedShadowmapsPasses.front();
                 for (const auto& shadowProperty : shadowProperties)
                 {
                     const int16_t shadowIndexInSrg = shadowProperty.m_shadowId.GetIndex();
@@ -553,7 +553,6 @@ namespace AZ::Render
                     filterData.m_shadowmapOriginInSlice = origin.m_originInSlice;
                     m_deviceBufferNeedsUpdate = true;
                 }
-                break;
             }
 
             m_shadowmapPassNeedsUpdate = false;
@@ -571,8 +570,9 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
     {
-        for (ProjectedShadowmapsPass* pass : m_projectedShadowmapsPasses)
+        if (!m_projectedShadowmapsPasses.empty())
         {
+            ProjectedShadowmapsPass* pass = m_projectedShadowmapsPasses.front();
             RPI::RenderPipeline* renderPipeline = pass->GetRenderPipeline();
             if (renderPipeline)
             {
@@ -598,7 +598,6 @@ namespace AZ::Render
                     outViews.emplace_back(AZStd::make_pair(viewTag, shadowProperty.m_shadowmapView));
                 }
             }
-            break;
         }
     }
     
@@ -606,8 +605,9 @@ namespace AZ::Render
     {
         AZ_ATOM_PROFILE_FUNCTION("RPI", "ProjectedShadowFeatureProcessor: Render");
 
-        for (const ProjectedShadowmapsPass* pass : m_projectedShadowmapsPasses)
+        if (!m_projectedShadowmapsPasses.empty())
         {
+            const ProjectedShadowmapsPass* pass = m_projectedShadowmapsPasses.front();
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 if (view->GetUsageFlags() & RPI::View::UsageFlags::UsageCamera)
@@ -622,7 +622,6 @@ namespace AZ::Render
                     m_filterParamBufferHandler.UpdateSrg(srg);
                 }
             }
-            break;
         }
     }
 

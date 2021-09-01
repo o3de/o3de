@@ -46,24 +46,7 @@ void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& conte
 
     PreWidgetRendering(); // required so that the current render cam is set.
 
-    Vec3 pos = Vec3(ZERO);
-    HitContext hit;
-    if (HitTest(pt, hit))
-    {
-        pos = hit.raySrc + hit.rayDir * hit.dist;
-        pos = SnapToGrid(pos);
-    }
-    else
-    {
-        bool hitTerrain;
-        pos = ViewToWorld(pt, &hitTerrain);
-        if (hitTerrain)
-        {
-            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-        }
-        pos = SnapToGrid(pos);
-    }
-    context.m_hitLocation = AZ::Vector3(pos.x, pos.y, pos.z);
+    context.m_hitLocation = GetHitLocation(pt);
 
     PostWidgetRendering();
 }
@@ -189,7 +172,6 @@ QtViewport::QtViewport(QWidget* parent)
     {
         m_constructionMatrix[i].SetIdentity();
     }
-    m_viewTM.SetIdentity();
     m_screenTM.SetIdentity();
 
     m_pMouseOverObject = nullptr;
@@ -418,7 +400,6 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
@@ -437,7 +418,7 @@ void QtViewport::Update()
 //////////////////////////////////////////////////////////////////////////
 QPoint QtViewport::WorldToView(const Vec3& wp) const
 {
-    return QPoint(wp.x, wp.y);
+    return QPoint(static_cast<int>(wp.x), static_cast<int>(wp.y));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -445,8 +426,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 {
     QPoint p = WorldToView(wp);
     Vec3 out;
-    out.x = p.x();
-    out.y = p.y();
+    out.x = static_cast<f32>(p.x());
+    out.y = static_cast<f32>(p.y());
     out.z = wp.z;
     return out;
 }
@@ -455,8 +436,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 Vec3    QtViewport::ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const
 {
     Vec3 wp;
-    wp.x = vp.x();
-    wp.y = vp.y();
+    wp.x = static_cast<f32>(vp.x());
+    wp.y = static_cast<f32>(vp.y());
     wp.z = 0;
     if (pCollideWithTerrain)
     {
@@ -538,7 +519,7 @@ void QtViewport::mouseMoveEvent(QMouseEvent* event)
 
 void QtViewport::wheelEvent(QWheelEvent* event)
 {
-    OnMouseWheel(event->modifiers(), event->angleDelta().y(), event->position().toPoint());
+    OnMouseWheel(event->modifiers(), static_cast<short>(event->angleDelta().y()), event->position().toPoint());
     event->accept();
 }
 
@@ -987,7 +968,7 @@ void QtViewport::MakeConstructionPlane(int axis)
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::MapViewToCP(const QPoint& point, int axis)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (axis == AXIS_TERRAIN)
     {
@@ -1155,6 +1136,29 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     return false;
 }
 
+AZ::Vector3 QtViewport::GetHitLocation(const QPoint& point)
+{
+    Vec3 pos = Vec3(ZERO);
+    HitContext hit;
+    if (HitTest(point, hit))
+    {
+        pos = hit.raySrc + hit.rayDir * hit.dist;
+        pos = SnapToGrid(pos);
+    }
+    else
+    {
+        bool hitTerrain;
+        pos = ViewToWorld(point, &hitTerrain);
+        if (hitTerrain)
+        {
+            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
+        }
+        pos = SnapToGrid(pos);
+    }
+
+    return AZ::Vector3(pos.x, pos.y, pos.z);
+}
+
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::SetZoomFactor(float fZoomFactor)
 {
@@ -1271,9 +1275,9 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p2 = WorldToView(lineP2);
 
     return PointToLineDistance2D(
-        Vec3(p1.x(), p1.y(), 0), 
-        Vec3(p2.x(), p2.y(), 0), 
-        Vec3(point.x(), point.y(), 0));
+        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
+        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1331,7 +1335,7 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 //////////////////////////////////////////////////////////////////////////
 bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Ignore any mouse events in game mode.
     if (GetIEditor()->IsInGameMode())
@@ -1431,9 +1435,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-
     size_t nCount(0);
     size_t nTotal(0);
 
@@ -1490,7 +1491,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     float as = 0.001f * gSettings.cameraMoveSpeed;
                     Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
-                    ypr.y = CLAMP(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
+                    ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
                     viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());

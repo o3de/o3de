@@ -135,7 +135,7 @@ private:
         std::vector<int> keySelectionFlags;
         _smart_ptr<ISplineBackup> undo;
         _smart_ptr<ISplineBackup> redo;
-        string id;
+        AZStd::string id;
         ISplineInterpolator* pSpline;
     };
 
@@ -823,8 +823,6 @@ void SplineWidget::DrawGrid(QPainter* painter)
 void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float startTime, float endTime)
 {
     const QPen pOldPen = painter->pen();
-
-    const QRect rcClip = painter->clipBoundingRect().intersected(m_rcSpline).toRect();
 
     //////////////////////////////////////////////////////////////////////////
     ISplineInterpolator* pSpline = splineInfo.pSpline;
