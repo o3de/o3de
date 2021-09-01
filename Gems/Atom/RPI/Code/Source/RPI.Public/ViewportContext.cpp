@@ -124,18 +124,36 @@ namespace AZ
                 }
                 ResetCurrentPipeline();
                 UpdatePipelineView();
+                UpdatePipelineRefreshRate();
             }
 
             m_sceneChangedEvent.Signal(scene);
         }
 
-        void ViewportContext::RenderTick()
+        float ViewportContext::GetFpsLimit() const
         {
-            // add the current pipeline to next render tick if it's not already added.
-            if (m_currentPipeline && m_currentPipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
+            return m_fpsLimit;
+        }
+
+        void ViewportContext::SetFpsLimit(float fpsLimit)
+        {
+            m_fpsLimit = fpsLimit;
+            UpdatePipelineRefreshRate();
+        }
+
+        float ViewportContext::GetTargetFramerate() const
+        {
+            float targetFramerate = GetFpsLimit();
+            const AZ::u32 vsyncInterval = GetVsyncInterval();
+            if (vsyncInterval != 0)
             {
-                m_currentPipeline->AddToRenderTickOnce();
+                const float vsyncFramerate = static_cast<float>(GetRefreshRate()) / static_cast<float>(vsyncInterval);
+                if (targetFramerate == 0.f || vsyncFramerate < targetFramerate)
+                {
+                    targetFramerate = vsyncFramerate;
+                }
             }
+            return targetFramerate;
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -299,6 +317,25 @@ namespace AZ
             }
         }
 
+        void ViewportContext::UpdatePipelineRefreshRate()
+        {
+            if (!m_currentPipeline)
+            {
+                return;
+            }
+
+            const float refreshRate = GetTargetFramerate();
+            // If we have a truly unlimited framerate, just render every tick
+            if (refreshRate == 0.f)
+            {
+                m_currentPipeline->AddToRenderTick();
+            }
+            else
+            {
+                m_currentPipeline->AddToRenderTickAtInterval(AZStd::chrono::duration<float>(1.f / refreshRate));
+            }
+        }
+
         void ViewportContext::ResetCurrentPipeline()
         {
             m_prepareFrameHandler.Disconnect();
@@ -320,6 +357,7 @@ namespace AZ
             {
                 ResetCurrentPipeline();
                 UpdatePipelineView();
+                UpdatePipelineRefreshRate();
             }
         }
 
@@ -329,6 +367,7 @@ namespace AZ
             {
                 ResetCurrentPipeline();
                 UpdatePipelineView();
+                UpdatePipelineRefreshRate();
             }
         }
 
@@ -348,6 +387,7 @@ namespace AZ
             {
                 m_refreshRate = refreshRate;
                 m_refreshRateChangedEvent.Signal(m_refreshRate);
+                UpdatePipelineRefreshRate();
             }
         }
 
@@ -363,6 +403,7 @@ namespace AZ
             {
                 m_vsyncInterval = interval;
                 m_vsyncIntervalChangedEvent.Signal(m_vsyncInterval);
+                UpdatePipelineRefreshRate();
             }
         }
     } // namespace RPI

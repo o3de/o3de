@@ -51,9 +51,21 @@ namespace AZ
             //! Sets the root scene associated with this viewport.
             //! This does not provide a default render pipeline, one must be provided to enable rendering.
             void SetRenderScene(ScenePtr scene);
-            //! Runs one simulation and render tick and renders a frame to this viewport's window.
-            //! @note This is likely to be replaced by a tick management system in the RPI.
-            void RenderTick();
+
+            //! Gets the maximum frame rate this viewport context's pipeline can render at, 0 for unlimited.
+            //! The target framerate for the pipeline will be determined by this frame limit and the
+            //! vsync settings for the current window.
+            float GetFpsLimit() const;
+
+            //! Sets the maximum frame rate this viewport context's pipeline can render at, 0 for unlimited.
+            //! The target framerate for the pipeline will be determined by this frame limit and the
+            //! vsync settings for the current window.
+            void SetFpsLimit(float fpsLimit);
+
+            //! Gets the target frame rate for this viewport context.
+            //! This returns the lowest of either the current VSync refresh rate
+            //! or 0 for an unlimited frame rate (if there's no FPS limit and vsync is off).
+            float GetTargetFramerate() const;
 
             //! Gets the current name of this ViewportContext.
             //! This name is used to tie this ViewportContext to its View stack, and ViewportContexts may be
@@ -154,6 +166,8 @@ namespace AZ
             void SetDefaultView(ViewPtr view);
             // Ensures our render pipeline's default camera matches ours.
             void UpdatePipelineView();
+            // Ensures our render pipeline refresh rate matches our refresh rate.
+            void UpdatePipelineRefreshRate();
             // Resets the current pipeline reference and ensures pipeline events are disconnected.
             void ResetCurrentPipeline();
 
@@ -164,6 +178,7 @@ namespace AZ
             float m_viewportDpiScaleFactor = 1.0f;
             uint32_t m_vsyncInterval = 1;
             uint32_t m_refreshRate = 60;
+            float m_fpsLimit = 0.f;
 
             SizeChangedEvent m_sizeChangedEvent;
             ScalarChangedEvent m_dpiScalingFactorChangedEvent;
