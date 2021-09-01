@@ -17,6 +17,33 @@
 
 using namespace Terrain;
 
+bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const
+{
+    // Comparator for insertion/keylookup.
+    // Sorts into layer/priority order, highest priority first.
+    AZ::u32 priority1, layer1;
+    Terrain::TerrainSpawnerRequestBus::Event(layer1id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer1, priority1);
+
+    AZ::u32 priority2, layer2;
+    Terrain::TerrainSpawnerRequestBus::Event(layer2id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer2, priority2);
+
+    if (layer1 < layer2)
+    {
+        return false;
+    }
+    else if (layer1 > layer2)
+    {
+        return true;
+    }
+
+    if (priority1 != priority2)
+    {
+        return priority1 > priority2;
+    }
+
+    return layer1id > layer2id;
+}
+
 TerrainSystem::TerrainSystem()
 {
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
@@ -91,17 +118,14 @@ float TerrainSystem::GetHeightSynchronous(float x, float y) const
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    if (!m_registeredAreas.empty())
+    for (auto& [areaId, areaBounds] : m_registeredAreas)
     {
-        for (auto& [areaId, areaBounds] : m_registeredAreas)
+        inPosition.SetZ(areaBounds.GetMin().GetZ());
+        if (areaBounds.Contains(inPosition))
         {
-            inPosition.SetZ(areaBounds.GetMin().GetZ());
-            if (areaBounds.Contains(inPosition))
-            {
-                Terrain::TerrainAreaHeightRequestBus::Event(
-                    areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition,
-                    Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
-            }
+            Terrain::TerrainAreaHeightRequestBus::Event(
+                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition,
+                Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
         }
     }
 
@@ -318,26 +342,34 @@ void TerrainSystem::SystemDeactivate()
 
 void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 {
-    {
-        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
-        AZ::Aabb aabb = AZ::Aabb::CreateNull();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        m_registeredAreas[areaId] = aabb;
-    }
-
-    RefreshArea(areaId);
+    AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    AZ::Aabb aabb = AZ::Aabb::CreateNull();
+    LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+    m_registeredAreas[areaId] = aabb;
+    m_dirtyRegion.AddAabb(aabb);
+    m_terrainHeightDirty = true;
 }
 
 void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 {
-    {
-        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
-        AZ::Aabb aabb = AZ::Aabb::CreateNull();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        m_registeredAreas.erase(areaId);
-    }
+    AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    RefreshArea(areaId);
+    // Remove the data for this entity from the registered areas.
+    // Erase_if is used as erase would use the comparator to lookup the entity id in the map.
+    // As the comparator will get the new layer/priority data for the entity, the id lookup will fail.
+    AZStd::erase_if(
+        m_registeredAreas,
+        [areaId, this](const auto& item)
+        {
+            auto const& [entityId, aabb] = item;
+            if (areaId == entityId)
+            {
+                m_dirtyRegion.AddAabb(aabb);
+                m_terrainHeightDirty = true;
+                return true;
+            }
+            return false;
+        });
 }
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId)
@@ -349,7 +381,6 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId)
     AZ::Aabb oldAabb = (areaAabb != m_registeredAreas.end()) ? areaAabb->second : AZ::Aabb::CreateNull();
     AZ::Aabb newAabb = AZ::Aabb::CreateNull();
     LmbrCentral::ShapeComponentRequestsBus::EventResult(newAabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
     m_registeredAreas[areaId] = newAabb;
 
     AZ::Aabb expandedAabb = oldAabb;
@@ -421,31 +452,37 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         const uint32_t pixelDataSize = width * height * sizeof(float);
         memset(pixels.data(), 0, pixelDataSize);
 
-        for (auto& [areaId, areaBounds] : m_registeredAreas)
+        for (uint32_t y = 0; y < height; y++)
         {
-            for (uint32_t y = 0; y < height; y++)
+            for (uint32_t x = 0; x < width; x++)
             {
-                for (uint32_t x = 0; x < width; x++)
+                // Find the first terrain layer that covers this position. This will be the highest priority, so others can be ignored.
+                for (auto& [areaId, areaBounds] : m_registeredAreas)
                 {
                     AZ::Vector3 inPosition(
                         (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
                         (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
                         areaBounds.GetMin().GetZ());
-                    if (areaBounds.Contains(inPosition))
+
+                    if (!areaBounds.Contains(inPosition))
                     {
-                        AZ::Vector3 outPosition;
-                        const Terrain::TerrainAreaHeightRequests::Sampler sampleFilter =
-                            Terrain::TerrainAreaHeightRequests::Sampler::DEFAULT;
-
-                        Terrain::TerrainAreaHeightRequestBus::Event(
-                            areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
-
-                        pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
-                            m_currentSettings.m_worldBounds.GetExtents().GetZ();
+                        continue;
                     }
+
+                    AZ::Vector3 outPosition;
+                    const Terrain::TerrainAreaHeightRequests::Sampler sampleFilter = Terrain::TerrainAreaHeightRequests::Sampler::DEFAULT;
+
+                    Terrain::TerrainAreaHeightRequestBus::Event(
+                        areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
+
+                    pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
+                        m_currentSettings.m_worldBounds.GetExtents().GetZ();
+
+                    break;
                 }
             }
         }
+        
 
         const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
         auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();

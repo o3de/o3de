@@ -25,6 +25,11 @@
 
 namespace Terrain
 {
+    struct TerrainLayerPriorityComparator
+    {
+        bool operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const;
+    };
+
     class TerrainSystem
         : public AzFramework::Terrain::TerrainDataRequestBus::Handler
         , private Terrain::TerrainSystemServiceRequestBus::Handler
@@ -115,6 +120,6 @@ namespace Terrain
         AZ::Aabb m_dirtyRegion;
 
         mutable AZStd::shared_mutex m_areaMutex;
-        AZStd::unordered_map<AZ::EntityId, AZ::Aabb> m_registeredAreas;
+        AZStd::map<AZ::EntityId, AZ::Aabb, TerrainLayerPriorityComparator> m_registeredAreas;
     };
 } // namespace Terrain
