@@ -293,7 +293,7 @@ namespace AZ::Render
         if (m_fpsHistory.size() > 1)
         {
             deltaTime = m_fpsHistory.back().m_beginFrameTime - m_fpsHistory.front().m_beginFrameTime;
-            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
+            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size() - 1) / deltaTime;
             averageFrameMs = aznumeric_cast<double>(totalFrameMS.count()) / (m_fpsHistory.size() - 1);
         }
 
