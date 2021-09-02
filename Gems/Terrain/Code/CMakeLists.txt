@@ -1,6 +1,6 @@
 #
 # Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -44,7 +44,7 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
-# the above module is for use in all client/server types 
+# the above module is for use in all client/server types
 ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain)
 ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain)
 
@@ -55,7 +55,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME Terrain.Editor MODULE
         NAMESPACE Gem
         AUTOMOC
-        OUTPUT_NAME Gem.Terrain.Editor
         FILES_CMAKE
             terrain_editor_shared_files.cmake
         COMPILE_DEFINITIONS
