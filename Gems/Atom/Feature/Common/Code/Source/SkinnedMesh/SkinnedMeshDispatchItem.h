@@ -68,7 +68,7 @@ namespace AZ
             Data::Instance<RPI::Buffer> GetBoneTransforms() const;
             AZStd::array_view<RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
             AZStd::array_view<RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
-            size_t GetVertexCount() const;
+            uint32_t GetVertexCount() const;
         private:
             // SkinnedMeshShaderOptionNotificationBus::Handler
             void OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions) override;

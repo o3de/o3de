@@ -130,7 +130,7 @@ namespace PhysX
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {
@@ -219,7 +219,7 @@ namespace PhysX
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
@@ -251,7 +251,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -312,7 +312,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(index);
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
                 }
             }
         }

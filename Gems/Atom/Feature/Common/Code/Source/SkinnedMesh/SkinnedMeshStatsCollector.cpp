@@ -61,7 +61,7 @@ namespace AZ
             AddBonesToSceneStats(dispatchItem->GetBoneTransforms());
             AddReadOnlyBufferViewsToSceneStats(dispatchItem->GetSourceUnskinnedBufferViews());
             AddWritableBufferViewsToSceneStats(dispatchItem->GetTargetSkinnedBufferViews());
-            AddVerticesToSceneStats(dispatchItem->GetVertexCount());
+            AddVerticesToSceneStats(aznumeric_cast<size_t>(dispatchItem->GetVertexCount()));
         }
 
         void SkinnedMeshStatsCollector::AddBonesToSceneStats(const Data::Instance<RPI::Buffer>& boneTransformBuffer)

@@ -12,7 +12,7 @@
 #pragma once
 
 #include "ISystem.h"
-
+#include <CryCommon/CryLegacyAllocator.h>
 #include <StlUtils.h>
 
 //TODO: Pull most of this into a cpp file!
@@ -216,8 +216,8 @@ public:
             CryFatalError("Can't replace strings in an xml node that reuses strings");
         }
 
-        int nStrLen1 = strlen(str1);
-        int nStrLen2 = strlen(str2);
+        int nStrLen1 = static_cast<int>(strlen(str1));
+        int nStrLen2 = static_cast<int>(strlen(str2));
 
         // undo ptr1 add.
         if (m_ptr != m_start)
@@ -263,23 +263,6 @@ public:
         }
         nUsedSpace += nStrLen;
         return ret;
-    }
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        BLOCK* pBlock = m_blocks;
-        while (pBlock)
-        {
-            pSizer->AddObject(pBlock, offsetof(BLOCK, s) + pBlock->size * sizeof(char));
-            pBlock = pBlock->next;
-        }
-
-        pBlock = m_free_blocks;
-        while (pBlock)
-        {
-            pSizer->AddObject(pBlock, offsetof(BLOCK, s) + pBlock->size * sizeof(char));
-            pBlock = pBlock->next;
-        }
     }
 
 private:

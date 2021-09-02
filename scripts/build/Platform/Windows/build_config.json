@@ -89,7 +89,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --test-failure-policy=continue --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --pipeline=!PIPELINE_NAME! --dest-commit=!CHANGE_ID! --seeding-branches=!BUILD_SNAPSHOTS! --seeding-pipelines=default"
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --s3-top-level-dir=!REPOSITORY_NAME! --build-number=!BUILD_NUMBER! --suite=main --test-failure-policy=continue"
     }
   },
   "debug_vs2019": {
@@ -213,10 +213,18 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "periodic_test_profile_vs2019": {
+  "periodic_test_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "periodic_test_profile_vs2019"
+    ]
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -376,5 +384,13 @@
       "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }

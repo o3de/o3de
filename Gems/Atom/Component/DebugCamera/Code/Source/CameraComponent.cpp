@@ -250,10 +250,15 @@ namespace AZ
             // do nothing
         }
 
+        bool CameraComponent::IsActiveView()
+        {
+            return false;
+        }
+
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)
         {
-            AZ_UNUSED(width)
-            AZ_UNUSED(height)
+            AZ_UNUSED(width);
+            AZ_UNUSED(height);
             UpdateAspectRatio();
             UpdateViewToClipMatrix();
         }

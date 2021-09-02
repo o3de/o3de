@@ -99,7 +99,7 @@ namespace AWSMetrics
 
     AZ::s64 ClientConfiguration::GetMaxQueueSizeInBytes() const
     {
-        return m_maxQueueSizeInMb * 1000000;
+        return static_cast<AZ::s64>(m_maxQueueSizeInMb * 1000000);
     }
 
     AZ::s64 ClientConfiguration::GetQueueFlushPeriodInSeconds() const

@@ -22,8 +22,6 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* ReflectionProbeDrawListTag("reflectionprobevisualization");
-
         ReflectionProbe::~ReflectionProbe()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
@@ -361,7 +359,7 @@ namespace AZ
             drawRequest.m_listTag = drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
-            drawRequest.m_stencilRef = stencilRef;
+            drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);
 

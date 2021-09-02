@@ -177,7 +177,7 @@ namespace AZ
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);
             
             // Set the vertex count
-            const uint32_t vertexCount = GetVertexCount();
+            const uint32_t vertexCount = aznumeric_cast<uint32_t>(GetVertexCount());
 
             RHI::ShaderInputConstantIndex numVerticesIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_numVertices" });
             AZ_Error("SkinnedMeshInputBuffers", numVerticesIndex.IsValid(), "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
@@ -202,9 +202,9 @@ namespace AZ
             if (numThreads)
             {
                 const auto& args = *numThreads;
-                arguments.m_threadsPerGroupX = args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1;
-                arguments.m_threadsPerGroupY = args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1;
-                arguments.m_threadsPerGroupZ = args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1;
+                arguments.m_threadsPerGroupX = static_cast<uint16_t>(args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1);
+                arguments.m_threadsPerGroupY = static_cast<uint16_t>(args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1);
+                arguments.m_threadsPerGroupZ = static_cast<uint16_t>(args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1);
             }
 
             arguments.m_totalNumberOfThreadsX = xThreads;
@@ -234,9 +234,9 @@ namespace AZ
             return m_actorInstanceBufferViews;
         }
 
-        size_t SkinnedMeshDispatchItem::GetVertexCount() const
+        uint32_t SkinnedMeshDispatchItem::GetVertexCount() const
         {
-            return aznumeric_cast<size_t>(m_inputBuffers->GetVertexCount(m_lodIndex, m_meshIndex));
+            return m_inputBuffers->GetVertexCount(m_lodIndex, m_meshIndex);
         }
 
         void SkinnedMeshDispatchItem::OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions)

@@ -7,17 +7,21 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzQtComponents/Components/GlobalEventFilter.h>
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
@@ -59,11 +63,33 @@ namespace AtomToolsFramework
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
+        // Suppress spam from the Source Control system
+        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
+
+        installEventFilter(new AzQtComponents::GlobalEventFilter(this));
+
+        AZ::IO::FixedMaxPath engineRootPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        m_styleManager.reset(new AzQtComponents::StyleManager(this));
+        m_styleManager->initialize(this, engineRootPath);
+
         connect(&m_timer, &QTimer::timeout, this, [&]()
         {
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
+
+    }
+
+    AtomToolsApplication ::~AtomToolsApplication()
+    {
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -140,17 +166,52 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
-        StartInternal();
+        m_traceLogger.PrepareLogFile(GetBuildTargetName() + ".log");
+
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
+        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
+            &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+
+        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+
+        LoadSettings();
+
+        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
+
+        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        if (editorPythonEventsInterface)
+        {
+            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
+            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to
+            // StopPython
+            editorPythonEventsInterface->StartPython();
+        }
+
+        // Delay execution of commands and scripts post initialization
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
 
         m_timer.start();
     }
 
+    void AtomToolsApplication::OnMainWindowClosing()
+    {
+        ExitMainLoop();
+    }
+
     void AtomToolsApplication::Destroy()
     {
+        // before modules are unloaded, destroy UI to free up any assets it cached
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
+
         Base::Destroy();
     }
 
@@ -177,6 +238,7 @@ namespace AtomToolsFramework
         connectionSettings.m_connectionIdentifier = GetBuildTargetName();
         connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
         {
+            AZ_UNUSED(targetName);  // Prevent unused warning in release builds
             AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
         AzFramework::AssetSystemRequestBus::BroadcastResult(
@@ -271,6 +333,13 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
+        {
+            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
+                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
+        }
+
         const AZStd::string timeoputSwitchName = "timeout";
         if (commandLine.HasSwitch(timeoputSwitchName))
         {
@@ -306,7 +375,7 @@ namespace AtomToolsFramework
         }
     }
     
-    bool AtomToolsApplication::LaunchDiscoveryService()
+    bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server
         if (m_socket.Connect(QApplication::applicationName()))
@@ -348,7 +417,7 @@ namespace AtomToolsFramework
                     {
                         AZ::CommandLine commandLine;
                         commandLine.Parse(tokens);
-                        ProcessCommandLine(commandLine);
+                        QTimer::singleShot(0, [this, commandLine]() { ProcessCommandLine(commandLine); });
                     }
                 }
             });
@@ -360,51 +429,6 @@ namespace AtomToolsFramework
         }
 
         return true;
-    }
-
-    void AtomToolsApplication::StartInternal()
-    {
-        if (WasExitMainLoopRequested())
-        {
-            return;
-        }
-
-        AZStd::string fileName = GetBuildTargetName() + ".log";
-
-        m_traceLogger.WriteStartupLog(fileName.c_str());
-
-        if (!LaunchDiscoveryService())
-        {
-            ExitMainLoop();
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
-        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
-            &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
-
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-
-        LoadSettings();
-
-        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-        if (editorPythonEventsInterface)
-        {
-            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
-            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to
-            // StopPython
-            editorPythonEventsInterface->StartPython();
-        }
-
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(
-            0,
-            [this]()
-            {
-                ProcessCommandLine(m_commandLine);
-            });
     }
 
     bool AtomToolsApplication::GetAssetDatabaseLocation(AZStd::string& result)
@@ -436,6 +460,8 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Stop()
     {
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         UnloadSettings();
         Base::Stop();
     }
@@ -445,7 +471,7 @@ namespace AtomToolsFramework
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
-        void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
+    void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
 #if defined(AZ_ENABLE_TRACING)
         AZStd::vector<AZStd::string> lines;

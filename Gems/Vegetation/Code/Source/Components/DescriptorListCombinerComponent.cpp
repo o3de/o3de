@@ -187,7 +187,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetDescriptors(DescriptorPtrVec& descriptors) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {
@@ -200,7 +200,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetInclusionSurfaceTags(SurfaceData::SurfaceTagVector& tags, bool& includeAll) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {
@@ -213,7 +213,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetExclusionSurfaceTags(SurfaceData::SurfaceTagVector& tags) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {

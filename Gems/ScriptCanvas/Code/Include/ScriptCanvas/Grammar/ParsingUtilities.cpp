@@ -707,8 +707,6 @@ namespace ScriptCanvas
                 return false;
             }
 
-            auto id = execution->GetId();
-
             if (ActivatesSelf(execution))
             {
                 return true;

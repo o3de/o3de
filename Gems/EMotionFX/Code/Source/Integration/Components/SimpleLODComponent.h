@@ -44,7 +44,7 @@ namespace EMotionFX
                 void Reset();
 
                 // Generate the default value based on LOD level.
-                void GenerateDefaultValue(AZ::u32 numLODs);
+                void GenerateDefaultValue(size_t numLODs);
                 bool GetEnableLodSampling();
 
                 static void Reflect(AZ::ReflectContext* context);
@@ -88,7 +88,7 @@ namespace EMotionFX
             // AZ::TickBus::Handler
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            static AZ::u32 GetLodByDistance(const AZStd::vector<float>& distances, float distance);
+            static size_t GetLodByDistance(const AZStd::vector<float>& distances, float distance);
             static void UpdateLodLevelByDistance(EMotionFX::ActorInstance* actorInstance, const Configuration& configuration, AZ::EntityId entityId);
 
             Configuration                               m_configuration;        // Component configuration.

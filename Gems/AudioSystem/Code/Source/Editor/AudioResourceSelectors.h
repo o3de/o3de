@@ -8,7 +8,16 @@
 
 #pragma once
 
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrl.h>
+
 namespace AudioControls
 {
-    void RegisterAudioControlsResourceSelectors();
+    class AudioControlSelectorHandler
+        : public AzToolsFramework::AudioControlSelectorRequestBus::MultiHandler
+    {
+    public:
+        AudioControlSelectorHandler();
+        ~AudioControlSelectorHandler();
+        AZStd::string SelectResource(AZStd::string_view previousValue) override;
+    };
 }

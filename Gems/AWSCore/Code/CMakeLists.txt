@@ -166,3 +166,5 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
     endif()
 endif()
+
+ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)

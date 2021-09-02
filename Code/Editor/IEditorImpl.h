@@ -22,7 +22,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzCore/std/string/string.h>
 
-#include "Commands/CommandManager.h"                
+#include "Commands/CommandManager.h"
 
 #include "Include/IErrorReport.h"
 #include "ErrorReport.h"
@@ -63,7 +63,7 @@ namespace AssetDatabase
     class AssetDatabaseLocationListener;
 }
 
-class CEditorImpl 
+class CEditorImpl
     : public IEditor
 {
     Q_DECLARE_TR_FUNCTIONS(CEditorImpl)
@@ -176,7 +176,7 @@ public:
         {
             return m_pSystem->GetIMovieSystem();
         }
-        return NULL;
+        return nullptr;
     };
 
     CPluginManager* GetPluginManager() { return m_pPluginManager; }
@@ -210,7 +210,7 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-   
+
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 
     /**
@@ -290,7 +290,6 @@ public:
     ESystemConfigPlatform GetEditorConfigPlatform() const;
     void ReloadTemplates();
     void AddErrorMessage(const QString& text, const QString& caption);
-    IResourceSelectorHost* GetResourceSelectorHost() { return m_pResourceSelectorHost.get(); }
     virtual void ShowStatusText(bool bEnable);
 
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
@@ -374,7 +373,6 @@ protected:
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
-    std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
@@ -401,7 +399,7 @@ protected:
     IImageUtil* m_pImageUtil;  // Vladimir@conffx
     ILogFile* m_pLogFile;  // Vladimir@conffx
 
-    CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
+    AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
 };
 

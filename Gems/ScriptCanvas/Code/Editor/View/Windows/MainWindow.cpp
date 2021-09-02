@@ -15,7 +15,6 @@
 
 #include <QSplitter>
 #include <QListView>
-#include <QFileDialog>
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
@@ -91,6 +90,7 @@
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
@@ -323,14 +323,13 @@ namespace ScriptCanvasEditor
                     m_mainWindow->OnWorkspaceRestoreStart();
                 }
 
-                AZ::Data::AssetId focusedAsset = workspace->GetFocusedAssetId();
                 m_queuedAssetFocus = workspace->GetFocusedAssetId();
 
                 for (const auto& assetSaveData : workspace->GetActiveAssetData())
                 {
                     AssetTrackerNotificationBus::MultiHandler::BusConnect(assetSaveData.m_assetId);
 
-                    Callbacks::OnAssetReadyCallback onAssetReady = [this, focusedAsset, assetSaveData](ScriptCanvasMemoryAsset& asset)
+                    Callbacks::OnAssetReadyCallback onAssetReady = [this, assetSaveData](ScriptCanvasMemoryAsset& asset)
                     {
                         // If we get an error callback. Just remove it from out active lists.
                         if (asset.IsSourceInError())
@@ -1020,7 +1019,7 @@ namespace ScriptCanvasEditor
             
             if (shouldSaveResults == UnsavedChangesOptions::SAVE)
             {
-                Callbacks::OnSave saveCB = [this, assetId](bool isSuccessful, AZ::Data::AssetPtr, AZ::Data::AssetId)
+                Callbacks::OnSave saveCB = [this](bool isSuccessful, AZ::Data::AssetPtr, AZ::Data::AssetId)
                 {
                     if (isSuccessful)
                     {
@@ -1384,7 +1383,7 @@ namespace ScriptCanvasEditor
         AZStd::string assetPath = scriptCanvasAsset.GetAbsolutePath();
         if (!assetPath.empty() && !m_loadingNewlySavedFile)
         {
-            int eraseCount = m_loadingWorkspaceAssets.erase(fileAssetId);
+            const size_t eraseCount = m_loadingWorkspaceAssets.erase(fileAssetId);
 
             if (eraseCount == 0)
             {
@@ -1610,7 +1609,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            Callbacks::OnAssetReadyCallback onAssetReady = [this, fullPath, assetInfo](ScriptCanvasMemoryAsset&)
+            Callbacks::OnAssetReadyCallback onAssetReady = [this, assetInfo](ScriptCanvasMemoryAsset&)
             {
                 ScriptCanvasMemoryAsset::pointer memoryAsset;
                 AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetInfo.m_assetId);
@@ -1869,7 +1868,7 @@ namespace ScriptCanvasEditor
 
         while (!isValidFileName)
         {
-            selectedFile = QFileDialog::getSaveFileName(this, tr("Save As..."), suggestedFilename.data(), filter);
+            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedFilename.data(), filter);
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
@@ -2527,9 +2526,8 @@ namespace ScriptCanvasEditor
     void MainWindow::UpdateWorkspaceStatus(const ScriptCanvasMemoryAsset& memoryAsset)
     {
         AZ::Data::AssetId fileAssetId = memoryAsset.GetFileAssetId();
-        AZ::Data::AssetId memoryAssetId = memoryAsset.GetId();
 
-        int eraseCount = m_loadingAssets.erase(fileAssetId);
+        size_t eraseCount = m_loadingAssets.erase(fileAssetId);
 
         if (eraseCount > 0)
         {

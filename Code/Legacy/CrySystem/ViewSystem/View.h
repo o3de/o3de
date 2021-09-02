@@ -15,6 +15,7 @@
 #include <Cry_Camera.h>
 
 class CGameObject;
+struct ISystem;
 
 namespace LegacyViewSystem
 {
@@ -106,11 +107,9 @@ public:
     virtual void SetActive(const bool bActive);
     // ~IView
 
-    void Serialize(TSerialize ser) override;
     void PostSerialize() override;
     CCamera& GetCamera() override { return m_camera; }
     const CCamera& GetCamera() const override { return m_camera; }
-    void UpdateAudioListener(const Matrix34& rMatrix) override;
 
     void GetMemoryUsage(ICrySizer* s) const;
 

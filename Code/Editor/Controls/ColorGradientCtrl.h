@@ -54,7 +54,7 @@ public:
     // Lock value of first and last key to be the same.
     void LockFirstAndLastKeys(bool bLock) { m_bLockFirstLastKey = bLock; }
 
-    void SetSpline(ISplineInterpolator* pSpline, BOOL bRedraw = FALSE);
+    void SetSpline(ISplineInterpolator* pSpline, bool bRedraw = false);
     ISplineInterpolator* GetSpline();
 
     void SetTimeMarker(float fTime);
@@ -130,7 +130,6 @@ private:
 private:
     ISplineInterpolator* m_pSpline;
 
-    bool m_bAutoDelete;
     bool m_bNoZoom;
 
     QRect m_rcClipRect;

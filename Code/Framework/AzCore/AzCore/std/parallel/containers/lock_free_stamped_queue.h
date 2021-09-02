@@ -21,7 +21,7 @@ namespace AZStd
         template<typename T>
         struct lock_free_stamped_node_ptr
         {
-            AZ_ALIGN(struct lock_free_stamped_queue_node<T>* m_node, 8);
+            alignas(8) struct lock_free_stamped_queue_node<T>* m_node;
             unsigned int m_stamp;
         };
 

@@ -10,7 +10,6 @@
 
 // Component includes
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -19,7 +18,6 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
-#include <AzCore/Statistics/StatisticalProfilerProxySystemComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Time/TimeSystemComponent.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
@@ -37,7 +35,6 @@ namespace AZ
             JsonSystemComponent::CreateDescriptor(),
             AssetManagerComponent::CreateDescriptor(),
             UserSettingsComponent::CreateDescriptor(),
-            Debug::FrameProfilerComponent::CreateDescriptor(),
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),
@@ -45,9 +42,6 @@ namespace AZ
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
 
-#if !defined(_RELEASE)
-            Statistics::StatisticalProfilerProxySystemComponent::CreateDescriptor(),
-#endif // #if !defined(_RELEASE)
 #if !defined(AZCORE_EXCLUDE_LUA)
             ScriptSystemComponent::CreateDescriptor(),
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
@@ -61,10 +55,6 @@ namespace AZ
             azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),
-
-#if !defined(_RELEASE)
-            azrtti_typeid<AZ::Statistics::StatisticalProfilerProxySystemComponent>(),
-#endif // #if !defined(_RELEASE)
         };
     }
 }

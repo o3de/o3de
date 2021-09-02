@@ -91,3 +91,20 @@ class ScreenshotHelper(object):
             else:
                 frames_waited = frames_waited + 1
         general.log(f"(waited {frames_waited} frames)")
+
+
+def take_screenshot_game_mode(screenshot_name, entity_name=None):
+    """
+    Enters game mode & takes a screenshot, then exits game mode after.
+    :param screenshot_name: name to give the captured screenshot .ppm file.
+    :param entity_name: name of the entity being tested (for generating unique log lines).
+    :return: None
+    """
+    general.enter_game_mode()
+    helper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
+    general.log(f"{entity_name}_test: Entered game mode: {general.is_in_game_mode()}")
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.ppm")
+    general.idle_wait(1.0)
+    general.exit_game_mode()
+    helper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
+    general.log(f"{entity_name}_test: Exit game mode: {not general.is_in_game_mode()}")

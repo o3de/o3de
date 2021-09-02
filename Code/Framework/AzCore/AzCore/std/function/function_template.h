@@ -9,13 +9,9 @@
 
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/allocator.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( push )
-#   pragma warning( disable : 4127 ) // "conditional expression is constant"
-#endif
 
 namespace AZStd
 {
@@ -363,7 +359,7 @@ namespace AZStd
                     {
                         functor.obj_ref.obj_ptr = (void*)&f.get();
                         functor.obj_ref.is_const_qualified = is_const<FunctionObj>::value;
-                        functor.obj_ref.is_volatile_qualified = is_volatile<FunctionObj>::value;
+                        functor.obj_ref.is_volatile_qualified = AZStd::is_volatile<FunctionObj>::value;
                         return true;
                     }
                     else
@@ -688,7 +684,3 @@ namespace AZStd
         }
     };
 } // end namespace AZStd
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( pop )
-#endif

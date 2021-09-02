@@ -61,7 +61,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/blast-family-mesh-data/")
+                        "https://o3de.org/docs/user-guide/components/reference/destruction/blast-family-mesh-data/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorBlastMeshDataComponent::m_showMeshAssets,
@@ -86,7 +86,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         OnMeshAssetsChanged();
 
         m_meshFeatureProcessor =
@@ -100,7 +100,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         EditorComponentBase::Deactivate();
         AZ::Render::MaterialComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusDisconnect(GetEntityId());

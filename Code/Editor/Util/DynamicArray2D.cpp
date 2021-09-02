@@ -58,14 +58,9 @@ CDynamicArray2D::~CDynamicArray2D()
     }
 
     delete [] m_Array;
-    m_Array = 0;
+    m_Array = nullptr;
 }
 
-
-void CDynamicArray2D::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->Add((char*)this, m_Dimension1 * m_Dimension2 * sizeof(float) + sizeof(*this));
-}
 
 void CDynamicArray2D::ScaleImage(CDynamicArray2D* pDestination)
 {

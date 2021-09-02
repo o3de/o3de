@@ -136,7 +136,7 @@ namespace LyShineExamples
         float m_overrideAlpha;
 
         // cached rendering data for performance optimization
-        IRenderer::DynUiPrimitive m_cachedPrimitive;
+        DynUiPrimitive m_cachedPrimitive;
         bool m_isRenderCacheDirty = true;
     };
 }

@@ -9,6 +9,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ
 {
@@ -19,7 +20,9 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            DWORD fileAttributes = GetFileAttributesA(resolvedPath);
+            wchar_t resolvedPathW[AZ_MAX_PATH_LEN];
+            AZStd::to_wstring(resolvedPathW, AZ_MAX_PATH_LEN, resolvedPath);
+            DWORD fileAttributes = GetFileAttributesW(resolvedPathW);
             if (fileAttributes == INVALID_FILE_ATTRIBUTES)
             {
                 return false;
@@ -33,7 +36,7 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZ::OSString searchPattern;
+            AZStd::string searchPattern;
             if ((resolvedPath[0] == 0) || (resolvedPath[1] == 0))
             {
                 return ResultCode::Error; // not a valid path.
@@ -54,7 +57,9 @@ namespace AZ
             searchPattern += "\\*.*"; // use our own filtering function!
 
             WIN32_FIND_DATA findData;
-            HANDLE hFind = FindFirstFile(searchPattern.c_str(), &findData);
+            AZStd::wstring searchPatternW;
+            AZStd::to_wstring(searchPatternW, searchPattern.c_str());
+            HANDLE hFind = FindFirstFileW(searchPatternW.c_str(), &findData);
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
@@ -63,15 +68,17 @@ namespace AZ
                 char tempBuffer[AZ_MAX_PATH_LEN];
                 do
                 {
-                    AZStd::string_view filenameView = findData.cFileName;
+                    AZStd::string fileName;
+                    AZStd::to_string(fileName, findData.cFileName);
+                    AZStd::string_view filenameView = fileName;
                     // Skip over the current directory and parent directory paths to prevent infinite recursion
-                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(findData.cFileName, filter))
+                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(fileName.c_str(), filter))
                     {
                         continue;
                     }
 
-                    AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
-                    foundFilePath += findData.cFileName;
+                    AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
+                    foundFilePath += fileName;
                     AZStd::replace(foundFilePath.begin(), foundFilePath.end(), '\\', '/');
 
                     // if aliased, de-alias!
@@ -121,7 +128,7 @@ namespace AZ
             }
 
             // make directories from bottom to top.
-            AZ::OSString buf;
+            AZStd::string buf;
             size_t pathLength = strlen(resolvedPath);
             buf.reserve(pathLength);
             for (size_t pos = 0; pos < pathLength; ++pos)
@@ -169,7 +176,7 @@ namespace AZ
 
         bool LocalFileIO::IsAbsolutePath(const char* path) const
         {
-            char drive[16];
+            char drive[16] = { 0 };
             _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
             return strlen(drive) > 0;
         }

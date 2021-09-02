@@ -160,7 +160,6 @@ namespace AzNetworking
             const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
                                       ? connectionQuality.m_varianceMs
                                       : AZ::TimeMs{ 1 });
-            const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
             const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
@@ -241,7 +240,7 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
     int32_t UdpSocket::SendInternalDeferred(const DeferredData& data) const
     {
-        return SendInternal(data.m_address, data.m_dataBuffer.GetBuffer(), data.m_dataBuffer.GetSize(), data.m_encrypt, *data.m_dtlsEndpoint);
+        return SendInternal(data.m_address, data.m_dataBuffer.GetBuffer(), static_cast<uint32_t>(data.m_dataBuffer.GetSize()), data.m_encrypt, *data.m_dtlsEndpoint);
     }
 #endif
 }

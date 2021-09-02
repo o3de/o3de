@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+
 #include <AzCore/base.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -13,8 +16,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
-
-#pragma once
 
 class QWidget;
 class QCheckBox;
@@ -161,7 +162,7 @@ namespace AzToolsFramework
 
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             for (size_t i = 0; i < node->GetNumInstances(); ++i)
             {

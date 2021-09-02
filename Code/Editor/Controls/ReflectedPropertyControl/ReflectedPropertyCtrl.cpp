@@ -198,12 +198,12 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node)
 
 void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlockPtr, IVariable::OnSetCallback* func, bool splitCamelCaseIntoWords)
 {
-    SelectItem(0);
+    SelectItem(nullptr);
 
     outBlockPtr = new CVarBlock;
     for (size_t i = 0, iGroupCount(node->getChildCount()); i < iGroupCount; ++i)
     {
-        XmlNodeRef groupNode = node->getChild(i);
+        XmlNodeRef groupNode = node->getChild(static_cast<int>(i));
 
         if (groupNode->haveAttr("hidden"))
         {
@@ -308,7 +308,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                 int nMin(0), nMax(0);
                 if (child->getAttr("min", nMin) && child->getAttr("max", nMax))
                 {
-                    intVar->SetLimits(nMin, nMax);
+                    intVar->SetLimits(static_cast<float>(nMin), static_cast<float>(nMax));
                 }
             }
             else if (!azstricmp(type, "float"))
@@ -505,7 +505,7 @@ void ReflectedPropertyControl::RemoveAllItems()
 void ReflectedPropertyControl::ClearVarBlock()
 {
     RemoveAllItems();
-    m_pVarBlock = 0;
+    m_pVarBlock = nullptr;
 }
 
 void ReflectedPropertyControl::RecreateAllItems()
@@ -560,7 +560,7 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
 
     // Popup Menu with Event selection.
     QMenu menu;
-    UINT i = 0;
+    unsigned int i = 0;
 
     const int ePPA_CustomItemBase = 10; // reserved from 10 to 99
     const int ePPA_CustomPopupBase = 100; // reserved from 100 to x*100+100 where x is size of m_customPopupMenuPopups
@@ -595,12 +595,12 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
         action->setData(ePPA_CustomItemBase + i);
     }
 
-    for (UINT j = 0; j < m_customPopupMenuPopups.size(); ++j)
+    for (unsigned int j = 0; j < m_customPopupMenuPopups.size(); ++j)
     {
         SCustomPopupMenu* pMenuInfo = &m_customPopupMenuPopups[j];
         QMenu* pSubMenu = menu.addMenu(pMenuInfo->m_text);
 
-        for (UINT k = 0; k < pMenuInfo->m_subMenuText.size(); ++k)
+        for (UINT k = 0; k < static_cast<UINT>(pMenuInfo->m_subMenuText.size()); ++k)
         {
             const UINT uID = ePPA_CustomPopupBase + ePPA_CustomPopupBase * j + k;
             QAction *action = pSubMenu->addAction(pMenuInfo->m_subMenuText[k]);
@@ -688,11 +688,11 @@ void ReflectedPropertyControl::OnItemChange(ReflectedPropertyItem *item, bool de
     // callback until after the current event queue is processed, so that we aren't changing other widgets
     // as a ton of them are still being created.
     Qt::ConnectionType connectionType = deferCallbacks ? Qt::QueuedConnection : Qt::DirectConnection;
-    if (m_updateVarFunc != 0 && m_bEnableCallback)
+    if (m_updateVarFunc && m_bEnableCallback)
     {
         QMetaObject::invokeMethod(this, "DoUpdateCallback", connectionType, Q_ARG(IVariable*, item->GetVariable()));
     }
-    if (m_updateObjectFunc != 0 && m_bEnableCallback)
+    if (m_updateObjectFunc && m_bEnableCallback)
     {
         // KDAB: This callback has same signature as DoUpdateCallback. I think the only reason there are 2 is because some
         // EntityObject registers callback and some derived objects want to register their own callback. the normal UpdateCallback
@@ -709,7 +709,7 @@ void ReflectedPropertyControl::DoUpdateCallback(IVariable *var)
     const bool variableStillExists = FindVariable(var);
     AZ_Assert(variableStillExists, "This variable and the item containing it were destroyed during a deferred callback. Change to non-deferred callback.");
 
-    if (m_updateVarFunc == 0 || !variableStillExists)
+    if (!m_updateVarFunc || !variableStillExists)
     {
         return;
     }
@@ -724,7 +724,7 @@ void ReflectedPropertyControl::DoUpdateObjectCallback(IVariable *var)
     const bool variableStillExists = FindVariable(var);
     AZ_Assert(variableStillExists, "This variable and the item containing it were destroyed during a deferred callback. Change to non-deferred callback.");
 
-    if (m_updateVarFunc == 0 || !variableStillExists)
+    if ( !m_updateVarFunc || !variableStillExists)
     {
         return;
     }
@@ -904,7 +904,7 @@ void ReflectedPropertyControl::SetUndoCallback(UndoCallback &callback)
 
 void ReflectedPropertyControl::ClearUndoCallback()
 {
-    m_undoFunc = 0;
+    m_undoFunc = nullptr;
 }
 
 bool ReflectedPropertyControl::FindVariable(IVariable *categoryItem) const

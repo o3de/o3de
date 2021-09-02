@@ -36,6 +36,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/ball-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &EditorBallJointComponent::m_swingLimit, "Swing Limit", "Limitations for the swing (Y and Z axis) about joint")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBallJointComponent::m_componentModeDelegate, "Component Mode", "Ball Joint Component Mode")
@@ -236,7 +237,6 @@ namespace PhysX
         debugDisplay.PushMatrix(localTransform);
 
         const float xAxisArrowLength = 2.0f;
-        const float yzAxisArrowLength = 1.0f;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
         debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f));
 

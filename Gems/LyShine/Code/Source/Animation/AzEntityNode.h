@@ -91,8 +91,8 @@ public:
     //////////////////////////////////////////////////////////////////////////
     virtual unsigned int GetParamCount() const;
     virtual CUiAnimParamType GetParamType(unsigned int nIndex) const;
-    virtual const char* GetParamName(const CUiAnimParamType& param) const;
-    const char* GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const override;
+    AZStd::string GetParamName(const CUiAnimParamType& param) const override;
+    AZStd::string GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const override;
 
     static int GetParamCountStatic();
     static bool GetParamInfoStatic(int nIndex, SParamInfo& info);
@@ -170,14 +170,14 @@ private:
 
     struct SScriptPropertyParamInfo
     {
-        string variableName;
-        string displayName;
+        AZStd::string variableName;
+        AZStd::string displayName;
         bool isVectorTable;
         SParamInfo animNodeParamInfo;
     };
 
     std::vector< SScriptPropertyParamInfo > m_entityScriptPropertiesParamInfos;
-    typedef AZStd::unordered_map< string, size_t, stl::hash_string_caseless<string>, stl::equality_string_caseless<string> > TScriptPropertyParamInfoMap;
+    typedef AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > TScriptPropertyParamInfoMap;
     TScriptPropertyParamInfoMap m_nameToScriptPropertyParamInfo;
     #ifdef CHECK_FOR_TOO_MANY_ONPROPERTY_SCRIPT_CALLS
     uint32 m_OnPropertyCalls;

@@ -1882,7 +1882,10 @@ namespace AzQtComponents
             return;
         }
 
-        QApplication::setOverrideCursor(m_dragCursor);
+        if (!QApplication::overrideCursor())
+        {
+            QApplication::setOverrideCursor(m_dragCursor);
+        }
 
         QPoint relativePressPos = pressPos;
 

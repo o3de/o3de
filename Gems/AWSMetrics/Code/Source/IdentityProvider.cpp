@@ -11,7 +11,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzFramework/FileFunc/FileFunc.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AWSMetrics
 {
@@ -39,8 +39,7 @@ namespace AWSMetrics
             return "";
         }
 
-        AZ::IO::Path configIoPath(resolvedPath);
-        auto readOutcome = AzFramework::FileFunc::ReadJsonFile(configIoPath, fileIO);
+        auto readOutcome = AZ::JsonSerializationUtils::ReadJsonFile(resolvedPath);
         if (!readOutcome.IsSuccess())
         {
             AZ_Error("AWSMetrics", false, readOutcome.GetError().c_str());

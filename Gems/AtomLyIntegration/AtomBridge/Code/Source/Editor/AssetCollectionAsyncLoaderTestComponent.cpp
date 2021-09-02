@@ -13,7 +13,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 // Included so we can deduce the asset type from asset paths.
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -238,7 +238,7 @@ namespace AZ
 
         uint32_t AssetCollectionAsyncLoaderTestComponent::GetCountOfPendingAssets() const
         {
-            return m_pendingAssets.size();
+            return static_cast<uint32_t>(m_pendingAssets.size());
         }
 
         bool AssetCollectionAsyncLoaderTestComponent::ValidateAssetWasLoaded(const AZStd::string& assetPath) const

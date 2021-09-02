@@ -206,11 +206,8 @@ namespace
 
     static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
     {
-#if defined(WIN32) || defined(WIN64)
-        OutputDebugStringW(L"Qt: ");
-        OutputDebugStringW(reinterpret_cast<const wchar_t*>(message.utf16()));
-        OutputDebugStringW(L"\n");
-#endif
+        AZ::Debug::Platform::OutputToDebugger("Qt", message.toUtf8().data());
+        AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
     }
 }
 
@@ -423,12 +420,12 @@ namespace Editor
             {
                 UINT rawInputSize;
                 const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-                GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
+                GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
 
                 AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
                 LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-                const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+                [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
                 CRY_ASSERT(bytesCopied == rawInputSize);
 
                 RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;

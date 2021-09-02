@@ -1320,7 +1320,7 @@ namespace AZ
                     (void)classElement;
                     void* reserveElement{};
                     using DummyArray = bool[];
-                    DummyArray{ true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
+                    [[maybe_unused]] DummyArray dummy = { true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
                     return reserveElement;
                 }
 

@@ -97,6 +97,7 @@ AZ_POP_DISABLE_WARNING
 #include "ActionManager.h"
 
 #include <ImGuiBus.h>
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -106,12 +107,6 @@ using namespace AzToolsFramework;
 #define LAYOUTS_EXTENSION ".layout"
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
-
-static const char* g_openViewPaneEventName = "OpenViewPaneEvent"; //Sent when users open view panes;
-static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the current view pane
-static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
-
-static const char* g_assetImporterName = "AssetImporter";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -161,45 +156,45 @@ public:
         }
     }
 
-    ~EngineConnectionListener()
+    ~EngineConnectionListener() override
     {
         AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
         AzFramework::EngineConnectionEvents::Bus::Handler::BusDisconnect();
     }
 
 public:
-    virtual void Connected([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Connected([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Connected;
     }
-    virtual void Connecting([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Connecting([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Connecting;
     }
-    virtual void Listening([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Listening([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Listening;
     }
-    virtual void Disconnecting([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Disconnecting([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Disconnecting;
     }
-    virtual void Disconnected([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Disconnected([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Disconnected;
     }
 
-    virtual void AssetCompilationSuccess(const AZStd::string& assetPath) override
+    void AssetCompilationSuccess(const AZStd::string& assetPath) override
     {
         m_lastAssetProcessorTask = assetPath;
     }
 
-    virtual void AssetCompilationFailed(const AZStd::string& assetPath) override
+    void AssetCompilationFailed(const AZStd::string& assetPath) override
     {
         m_failedJobs.insert(assetPath);
     }
 
-    virtual void CountOfAssetsInQueue(const int& count) override
+    void CountOfAssetsInQueue(const int& count) override
     {
         m_pendingJobsCount = count;
     }
@@ -299,10 +294,10 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("O3DE", "O3DE") 
+    , m_settings("O3DE", "O3DE")
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
-    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
+    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
@@ -574,7 +569,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     if (GetIEditor()->GetDocument())
     {
-        GetIEditor()->GetDocument()->SetModifiedFlag(FALSE);
+        GetIEditor()->GetDocument()->SetModifiedFlag(false);
         GetIEditor()->GetDocument()->SetModifiedModules(eModifiedNothing);
     }
     // Close all edit panels.
@@ -582,7 +577,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
-    qApp->sendPostedEvents(0, QEvent::DeferredDelete);
+    qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
     QMainWindow::closeEvent(event);
 }
@@ -1296,7 +1291,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
         }
     }
     break;
@@ -1305,7 +1300,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
         }
     }
     break;
@@ -1404,8 +1399,8 @@ void MainWindow::ResetAutoSaveTimers(bool bForceInit)
     {
         delete m_autoRemindTimer;
     }
-    m_autoSaveTimer = 0;
-    m_autoRemindTimer = 0;
+    m_autoSaveTimer = nullptr;
+    m_autoRemindTimer = nullptr;
 
     if (bForceInit)
     {
@@ -1442,7 +1437,7 @@ void MainWindow::ResetBackgroundUpdateTimer()
     if (m_backgroundUpdateTimer)
     {
         delete m_backgroundUpdateTimer;
-        m_backgroundUpdateTimer = 0;
+        m_backgroundUpdateTimer = nullptr;
     }
 
     ICVar* pBackgroundUpdatePeriod = gEnv->pConsole->GetCVar("ed_backgroundUpdatePeriod");
@@ -1474,25 +1469,22 @@ int MainWindow::ViewPaneVersion() const
 
 void MainWindow::OnStopAllSounds()
 {
-    Audio::SAudioRequest oStopAllSoundsRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_STOP_ALL_SOUNDS>   oStopAllSoundsRequestData;
-    oStopAllSoundsRequest.pData = &oStopAllSoundsRequestData;
-
-    CryLogAlways("<Audio> Executed \"Stop All Sounds\" command.");
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oStopAllSoundsRequest);
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalStopAllSounds);
 }
 
 void MainWindow::OnRefreshAudioSystem()
 {
-    QString sLevelName = GetIEditor()->GetGameEngine()->GetLevelName();
+    AZStd::string levelName;
+    AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequestBus::Events::GetLevelName);
+    AZStd::to_lower(levelName.begin(), levelName.end());
 
-    if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+    if (levelName == "untitled")
     {
-        // Rather pass NULL to indicate that no level is loaded!
-        sLevelName = QString();
+        levelName.clear();
     }
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+        &LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalRefreshAudio, AZStd::string_view{ levelName });
 }
 
 void MainWindow::SaveLayout()
@@ -1674,7 +1666,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";
@@ -1687,7 +1679,7 @@ void MainWindow::OnUpdateConnectionStatus()
 
         status = tr("Pending Jobs : %1  Failed Jobs : %2").arg(m_connectionListener->GetJobsCount()).arg(failureCount);
 
-        statusBar->SetItem(QtUtil::ToQString("connection"), status, tooltip, icon);
+        statusBar->SetItem("connection", status, tooltip, icon);
 
         if (m_showAPDisconnectDialog && m_connectionListener->GetState() != EConnectionState::Connected)
         {
@@ -1769,7 +1761,7 @@ void MainWindow::RegisterOpenWndCommands()
         cmdUI.tooltip = (QString("Open ") + className).toUtf8().data();
         cmdUI.iconFilename = className.toUtf8().data();
         GetIEditor()->GetCommandManager()->RegisterUICommand("editor", openCommandName.toUtf8().data(),
-            "", "", AZStd::bind(&CEditorOpenViewCommand::Execute, pCmd), cmdUI);
+            "", "", [pCmd] { pCmd->Execute(); }, cmdUI);
         GetIEditor()->GetCommandManager()->GetUIInfo("editor", openCommandName.toUtf8().data(), cmdUI);
     }
 }
@@ -1921,7 +1913,7 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
-        break; 
+        break;
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
         return nullptr;

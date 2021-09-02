@@ -96,7 +96,7 @@ namespace AZ
             const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
             float& distanceNormalized, AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             if (!m_modelTriangleCount)
             {

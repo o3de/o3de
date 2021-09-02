@@ -38,7 +38,8 @@ namespace UnitTest
         bufferData.resize(bufferSize);
 
         //The actual data doesn't matter
-        for (uint32_t i = 0; i < bufferData.size(); ++i)
+        const uint8_t bufferDataSize = static_cast<uint8_t>(bufferData.size());
+        for (uint8_t i = 0; i < bufferDataSize; ++i)
         {
             bufferData[i] = i;
         }
@@ -782,7 +783,6 @@ namespace UnitTest
 
         const uint32_t vertexCount = 36;
         const uint32_t vertexSize = sizeof(float) * 3;
-        const uint32_t vertexBufferSize = vertexCount * vertexSize;
 
         RHI::BufferViewDescriptor validStreamBufferViewDescriptor =
             RHI::BufferViewDescriptor::CreateStructured(0, vertexCount, vertexSize);
@@ -1045,23 +1045,23 @@ namespace UnitTest
             lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
 
             {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(indicesCount, sizeof(uint32_t));
+                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(static_cast<uint32_t>(indicesCount), sizeof(uint32_t));
                 AZStd::copy(indices, indices + indicesCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
                 lodCreator.SetMeshIndexBuffer({
                     indexBuffer,
-                    AZ::RHI::BufferViewDescriptor::CreateStructured(0, indicesCount, sizeof(uint32_t))
+                    AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(indicesCount), sizeof(uint32_t))
                 });
             }
 
             {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(positionCount / 3, sizeof(float) * 3);
+                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
                 AZStd::copy(positions, positions + positionCount, reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
                 lodCreator.AddMeshStreamBuffer(
                     AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
                     AZ::Name(),
                     {
                         positionBuffer,
-                        AZ::RHI::BufferViewDescriptor::CreateStructured(0, positionCount / 3, sizeof(float) * 3)
+                        AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3)
                     }
                 );
             }

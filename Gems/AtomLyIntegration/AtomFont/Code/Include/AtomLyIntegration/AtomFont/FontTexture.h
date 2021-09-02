@@ -39,7 +39,7 @@ namespace AZ
         void Reset()
         {
             m_slotUsage = 0;
-            m_currentCharacter = ~0;
+            m_currentCharacter = std::numeric_limits<uint32_t>::max();
             m_horizontalAdvance = 0;
             m_characterWidth = 0;
             m_characterHeight = 0;
@@ -74,7 +74,7 @@ namespace AZ
         FontTexture();
         ~FontTexture();
 
-        int CreateFromFile(const string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCharCount = 16, int heightCharCount = 16);
+        int CreateFromFile(const AZStd::string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCharCount = 16, int heightCharCount = 16);
 
         //! Default texture slot width/height is 16x8 slots, allowing for 128 glyphs to be stored in the font texture. This was
         //! previously 16x16, allowing 256 glyphs to be stored. For reference, there are 95 printable ASCII characters, so by
@@ -129,7 +129,7 @@ namespace AZ
         // useful for special feature rendering interleaved with fonts (e.g. box behind the text)
         void CreateGradientSlot();
 
-        int WriteToFile(const string& fileName);
+        int WriteToFile(const AZStd::string& fileName);
 
         void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 

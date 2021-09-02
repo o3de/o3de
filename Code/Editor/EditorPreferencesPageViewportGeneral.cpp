@@ -201,20 +201,24 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     ds->SetLabelsDistance(m_textLabels.m_labelsDistance);
 
     gSettings.objectColorSettings.fChildGeomAlpha = m_selectionPreviewColor.m_childObjectGeomAlpha;
-    gSettings.objectColorSettings.entityHighlight = QColor(m_selectionPreviewColor.m_colorEntityBBox.GetR() * 255.0f,
-            m_selectionPreviewColor.m_colorEntityBBox.GetG() * 255.0f,
-            m_selectionPreviewColor.m_colorEntityBBox.GetB() * 255.0f);
-    gSettings.objectColorSettings.groupHighlight = QColor(m_selectionPreviewColor.m_colorGroupBBox.GetR() * 255.0f,
-            m_selectionPreviewColor.m_colorGroupBBox.GetG() * 255.0f,
-            m_selectionPreviewColor.m_colorGroupBBox.GetB() * 255.0f);
+    gSettings.objectColorSettings.entityHighlight = QColor(
+            static_cast<int>(m_selectionPreviewColor.m_colorEntityBBox.GetR() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_colorEntityBBox.GetG() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_colorEntityBBox.GetB() * 255.0f));
+    gSettings.objectColorSettings.groupHighlight = QColor(
+            static_cast<int>(m_selectionPreviewColor.m_colorGroupBBox.GetR() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_colorGroupBBox.GetG() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_colorGroupBBox.GetB() * 255.0f));
     gSettings.objectColorSettings.fBBoxAlpha = m_selectionPreviewColor.m_fBBoxAlpha;
     gSettings.objectColorSettings.fGeomAlpha = m_selectionPreviewColor.m_fgeomAlpha;
-    gSettings.objectColorSettings.geometryHighlightColor = QColor(m_selectionPreviewColor.m_geometryHighlightColor.GetR() * 255.0f,
-            m_selectionPreviewColor.m_geometryHighlightColor.GetG() * 255.0f,
-            m_selectionPreviewColor.m_geometryHighlightColor.GetB() * 255.0f);
-    gSettings.objectColorSettings.solidBrushGeometryColor = QColor(m_selectionPreviewColor.m_solidBrushGeometryColor.GetR() * 255.0f,
-            m_selectionPreviewColor.m_solidBrushGeometryColor.GetG() * 255.0f,
-            m_selectionPreviewColor.m_solidBrushGeometryColor.GetB() * 255.0f);
+    gSettings.objectColorSettings.geometryHighlightColor = QColor(
+            static_cast<int>(m_selectionPreviewColor.m_geometryHighlightColor.GetR() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_geometryHighlightColor.GetG() * 255.0f),
+            static_cast<int>(m_selectionPreviewColor.m_geometryHighlightColor.GetB() * 255.0f));
+    gSettings.objectColorSettings.solidBrushGeometryColor = QColor(
+        static_cast<int>(m_selectionPreviewColor.m_solidBrushGeometryColor.GetR() * 255.0f),
+        static_cast<int>(m_selectionPreviewColor.m_solidBrushGeometryColor.GetG() * 255.0f),
+        static_cast<int>(m_selectionPreviewColor.m_solidBrushGeometryColor.GetB() * 255.0f));
 }
 
 void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
@@ -252,10 +256,10 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     m_textLabels.m_labelsDistance = ds->GetLabelsDistance();
 
     m_selectionPreviewColor.m_childObjectGeomAlpha = gSettings.objectColorSettings.fChildGeomAlpha;
-    m_selectionPreviewColor.m_colorEntityBBox.Set(gSettings.objectColorSettings.entityHighlight.redF(), gSettings.objectColorSettings.entityHighlight.greenF(), gSettings.objectColorSettings.entityHighlight.blueF(), 1.0f);
-    m_selectionPreviewColor.m_colorGroupBBox.Set(gSettings.objectColorSettings.groupHighlight.redF(), gSettings.objectColorSettings.groupHighlight.greenF(), gSettings.objectColorSettings.groupHighlight.blueF(), 1.0f);
+    m_selectionPreviewColor.m_colorEntityBBox.Set(static_cast<float>(gSettings.objectColorSettings.entityHighlight.redF()), static_cast<float>(gSettings.objectColorSettings.entityHighlight.greenF()), static_cast<float>(gSettings.objectColorSettings.entityHighlight.blueF()), 1.0f);
+    m_selectionPreviewColor.m_colorGroupBBox.Set(static_cast<float>(gSettings.objectColorSettings.groupHighlight.redF()), static_cast<float>(gSettings.objectColorSettings.groupHighlight.greenF()), static_cast<float>(gSettings.objectColorSettings.groupHighlight.blueF()), 1.0f);
     m_selectionPreviewColor.m_fBBoxAlpha = gSettings.objectColorSettings.fBBoxAlpha;
     m_selectionPreviewColor.m_fgeomAlpha = gSettings.objectColorSettings.fGeomAlpha;
-    m_selectionPreviewColor.m_geometryHighlightColor.Set(gSettings.objectColorSettings.geometryHighlightColor.redF(), gSettings.objectColorSettings.geometryHighlightColor.greenF(), gSettings.objectColorSettings.geometryHighlightColor.blueF(), 1.0f);
-    m_selectionPreviewColor.m_solidBrushGeometryColor.Set(gSettings.objectColorSettings.solidBrushGeometryColor.redF(), gSettings.objectColorSettings.solidBrushGeometryColor.greenF(), gSettings.objectColorSettings.solidBrushGeometryColor.blueF(), 1.0f);
+    m_selectionPreviewColor.m_geometryHighlightColor.Set(static_cast<float>(gSettings.objectColorSettings.geometryHighlightColor.redF()), static_cast<float>(gSettings.objectColorSettings.geometryHighlightColor.greenF()), static_cast<float>(gSettings.objectColorSettings.geometryHighlightColor.blueF()), 1.0f);
+    m_selectionPreviewColor.m_solidBrushGeometryColor.Set(static_cast<float>(gSettings.objectColorSettings.solidBrushGeometryColor.redF()), static_cast<float>(gSettings.objectColorSettings.solidBrushGeometryColor.greenF()), static_cast<float>(gSettings.objectColorSettings.solidBrushGeometryColor.blueF()), 1.0f);
 }

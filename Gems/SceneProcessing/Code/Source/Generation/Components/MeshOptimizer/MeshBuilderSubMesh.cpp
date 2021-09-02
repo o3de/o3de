@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include "MeshBuilder.h"
 #include "MeshBuilderSkinningInfo.h"
 #include "MeshBuilderSubMesh.h"

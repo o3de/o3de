@@ -12,6 +12,7 @@
 
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
+#include <CryCommon/ISystem.h>
 #include <CryAssert.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -29,7 +30,7 @@
     #include AZ_RESTRICTED_FILE(WinBase_cpp)
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
     #include <signal.h>
 #endif
@@ -38,6 +39,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/string/conversions.h>
 
 #ifdef APPLE
 #include <mach/mach.h>
@@ -77,8 +79,6 @@ unsigned int g_EnableMultipleAssert = 0;//set to something else than 0 if to ena
     #include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
-#include "StringUtils.h"
-
 #if AZ_TRAIT_COMPILER_DEFINE_FS_ERRNO_TYPE
 typedef int FS_ERRNO_TYPE;
 #if AZ_TRAIT_COMPILER_DEFINE_FS_STAT_TYPE
@@ -86,10 +86,6 @@ typedef struct stat FS_STAT_TYPE;
 #else
 typedef struct stat64 FS_STAT_TYPE;
 #endif
-static const int FS_O_RDWR = O_RDWR;
-static const int FS_O_RDONLY = O_RDONLY;
-static const int FS_O_WRONLY = O_WRONLY;
-static const FS_ERRNO_TYPE FS_EISDIR = EISDIR;
 
 #include <mutex>
 
@@ -349,23 +345,23 @@ void _makepath(char* path, const char* drive, const char* dir, const char* filen
     }
     if (dir && dir[0])
     {
-        cry_strcat(tmp, dir);
+        azstrcat(tmp, MAX_PATH, dir);
         ch = tmp[strlen(tmp) - 1];
         if (ch != '/' && ch != '\\')
         {
-            cry_strcat(tmp, "\\");
+            azstrcat(tmp, MAX_PATH, "\\");
         }
     }
     if (filename && filename[0])
     {
-        cry_strcat(tmp, filename);
+        azstrcat(tmp, MAX_PATH, filename);
         if (ext && ext[0])
         {
             if (ext[0] != '.')
             {
-                cry_strcat(tmp, ".");
+                azstrcat(tmp, MAX_PATH, ".");
             }
-            cry_strcat(tmp, ext);
+            azstrcat(tmp, MAX_PATH, ext);
         }
     }
     azstrcpy(path, strlen(tmp) + 1, tmp);
@@ -486,12 +482,12 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
         drv[0] = 0;
     }
 
-    typedef CryStackStringT<char, AZ_MAX_PATH_LEN> path_stack_string;
+    typedef AZStd::fixed_string<AZ_MAX_PATH_LEN> path_stack_string;
 
     const path_stack_string inPath(inpath);
-    string::size_type s = inPath.rfind('/', inPath.size());//position of last /
+    AZStd::string::size_type s = inPath.rfind('/', inPath.size());//position of last /
     path_stack_string fName;
-    if (s == string::npos)
+    if (s == AZStd::string::npos)
     {
         if (dir)
         {
@@ -503,9 +499,9 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
     {
         if (dir)
         {
-            azstrcpy(dir, AZ_MAX_PATH_LEN, (inPath.substr((string::size_type)0, (string::size_type)(s + 1))).c_str());    //assign directory
+            azstrcpy(dir, AZ_MAX_PATH_LEN, (inPath.substr((AZStd::string::size_type)0, (AZStd::string::size_type)(s + 1))).c_str());    //assign directory
         }
-        fName = inPath.substr((string::size_type)(s + 1));                    //assign remaining string as rest
+        fName = inPath.substr((AZStd::string::size_type)(s + 1));                    //assign remaining string as rest
     }
     if (fName.size() == 0)
     {
@@ -521,8 +517,8 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
     else
     {
         //dir and drive are now set
-        s = fName.find(".", (string::size_type)0);//position of first .
-        if (s == string::npos)
+        s = fName.find(".", (AZStd::string::size_type)0);//position of first .
+        if (s == AZStd::string::npos)
         {
             if (ext)
             {
@@ -547,7 +543,7 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
                 }
                 else
                 {
-                    azstrcpy(fname, AZ_MAX_PATH_LEN, (fName.substr((string::size_type)0, s)).c_str());  //assign filename
+                    azstrcpy(fname, AZ_MAX_PATH_LEN, (fName.substr((AZStd::string::size_type)0, s)).c_str());  //assign filename
                 }
             }
         }
@@ -779,17 +775,17 @@ BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
     return TRUE;
 }
 
-void adaptFilenameToLinux(string& rAdjustedFilename)
+void adaptFilenameToLinux(AZStd::string& rAdjustedFilename)
 {
     //first replace all \\ by /
-    string::size_type loc = 0;
-    while ((loc = rAdjustedFilename.find("\\", loc)) != string::npos)
+    AZStd::string::size_type loc = 0;
+    while ((loc = rAdjustedFilename.find("\\", loc)) != AZStd::string::npos)
     {
         rAdjustedFilename.replace(loc, 1, "/");
     }
     loc = 0;
     //remove /./
-    while ((loc = rAdjustedFilename.find("/./", loc)) != string::npos)
+    while ((loc = rAdjustedFilename.find("/./", loc)) != AZStd::string::npos)
     {
         rAdjustedFilename.replace(loc, 3, "/");
     }
@@ -798,16 +794,16 @@ void adaptFilenameToLinux(string& rAdjustedFilename)
 void replaceDoublePathFilename(char* szFileName)
 {
     //replace "\.\" by "\"
-    string s(szFileName);
-    string::size_type loc = 0;
+    AZStd::string s(szFileName);
+    AZStd::string::size_type loc = 0;
     //remove /./
-    while ((loc = s.find("/./", loc)) != string::npos)
+    while ((loc = s.find("/./", loc)) != AZStd::string::npos)
     {
         s.replace(loc, 3, "/");
     }
     loc = 0;
     //remove "\.\"
-    while ((loc = s.find("\\.\\", loc)) != string::npos)
+    while ((loc = s.find("\\.\\", loc)) != AZStd::string::npos)
     {
         s.replace(loc, 3, "\\");
     }
@@ -817,8 +813,8 @@ void replaceDoublePathFilename(char* szFileName)
 const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len)
 {
     //create two strings and replace the \\ by / and /./ by /
-    string first(cpFirst);
-    string second(cpSecond);
+    AZStd::string first(cpFirst);
+    AZStd::string second(cpSecond);
     adaptFilenameToLinux(first);
     adaptFilenameToLinux(second);
     if (strlen(cpFirst) < len || strlen(cpSecond) < len)
@@ -829,7 +825,7 @@ const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned i
     return memicmp(first.c_str(), second.c_str(), length);
 }
 
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_FIX_ONE_PATH_ELEMENT)
+#if FIX_FILENAME_CASE
 static bool FixOnePathElement(char* path)
 {
     if (*path == '\0')
@@ -924,21 +920,6 @@ threadID GetCurrentThreadId()
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-HANDLE CreateEvent
-(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateEvent not implemented yet");
-    return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 DWORD Sleep(DWORD dwMilliseconds)
 {
 #if defined(LINUX) || defined(APPLE)
@@ -1003,95 +984,6 @@ DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable)
     return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds,   BOOL bAlertable)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObjectEx not implemented yet");
-    return 0;
-}
-
-#if 0
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable)
-{
-    //TODO: implement
-    return 0;
-}
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObject not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL SetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "SetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ResetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ResetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateMutex
-(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateMutex not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ReleaseMutex(HANDLE hMutex)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ReleaseMutex not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateThread
-(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateThread not implemented yet");
-    return 0;
-}
-
 #if defined(LINUX) || defined(APPLE)
 BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize)
 {
@@ -1125,20 +1017,6 @@ DWORD GetCurrentProcessId(void)
 void CrySleep(unsigned int dwMilliseconds)
 {
     Sleep(dwMilliseconds);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION WINBASE_CPP_SECTION_6
-    #include AZ_RESTRICTED_FILE(WinBase_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    CrySleep(dwMilliseconds);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1284,127 +1162,13 @@ int CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType)
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-short CryGetAsyncKeyState(int vKey)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CryGetAsyncKeyState not implemented yet");
-    return 0;
-}
-
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_CRY_INTERLOCKED_INCREMENT)
-//[K01]: http://www.memoryhole.net/kyle/2007/05/atomic_incrementing.html
-//http://forums.devx.com/archive/index.php/t-160558.html
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG  CryInterlockedIncrement(LONG volatile* lpAddend)
-{
-    /*int r;
-    __asm__ __volatile__ (
-        "lock ; xaddl %0, (%1) \n\t"
-        : "=r" (r)
-        : "r" (lpAddend), "0" (1)
-        : "memory"
-    );
-    return (LONG) (r + 1); */// add, since we get the original value back.
-    return __sync_fetch_and_add(lpAddend, 1) + 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG  CryInterlockedDecrement(LONG volatile* lpAddend)
-{
-    /*int r;
-    __asm__ __volatile__ (
-        "lock ; xaddl %0, (%1) \n\t"
-        : "=r" (r)
-        : "r" (lpAddend), "0" (-1)
-        : "memory"
-    );
-    return (LONG) (r - 1);  */// subtract, since we get the original value back.
-    return __sync_fetch_and_sub(lpAddend, 1) - 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG      CryInterlockedExchangeAdd(LONG  volatile* lpAddend, LONG  Value)
-{
-    /*  LONG r;
-        __asm__ __volatile__ (
-        #if defined(LINUX64) || defined(APPLE)  // long is 64 bits on amd64.
-            "lock ; xaddq %0, (%1) \n\t"
-        #else
-            "lock ; xaddl %0, (%1) \n\t"
-        #endif
-            : "=r" (r)
-            : "r" (lpAddend), "0" (Value)
-            : "memory"
-        );
-        return r;*/
-    return __sync_fetch_and_add(lpAddend, Value);
-}
-
-DLL_EXPORT LONG     CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return __sync_fetch_and_or(Destination, Value);
-}
-
-DLL_EXPORT LONG     CryInterlockedCompareExchange(LONG  volatile* dst, LONG  exchange, LONG comperand)
-{
-    return __sync_val_compare_and_swap(dst, comperand, exchange);
-    /*LONG r;
-    __asm__ __volatile__ (
-    #if defined(LINUX64) || defined(APPLE)  // long is 64 bits on amd64.
-        "lock ; cmpxchgq %2, (%1) \n\t"
-    #else
-        "lock ; cmpxchgl %2, (%1) \n\t"
-    #endif
-        : "=a" (r)
-        : "r" (dst), "r" (exchange), "0" (comperand)
-        : "memory"
-    );
-    return r;*/
-}
-
-
-DLL_EXPORT void*     CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return __sync_val_compare_and_swap(dst, comperand, exchange);
-    //return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
-}
-
-DLL_EXPORT void*     CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    __sync_synchronize();
-    return __sync_lock_test_and_set(dst, exchange);
-    //return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
-}
-
-#if (defined(LINUX64) && !defined(ANDROID)) || defined(MAC) || defined(IOS_SIMULATOR)
-DLL_EXPORT unsigned char _InterlockedCompareExchange128(int64 volatile* dst, int64 exchangehigh, int64 exchangelow, int64* comperand)
-{
-    bool bEquals;
-    __asm__ __volatile__
-    (
-        "lock cmpxchg16b %1\n\t"
-        "setz %0"
-        : "=q" (bEquals), "+m" (*dst), "+d" (comperand[1]), "+a" (comperand[0])
-        : "c" (exchangehigh), "b" (exchangelow)
-        : "cc"
-    );
-    return (char)bEquals;
-}
-#elif defined(INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED)
-    // arm64 processors do not provide a cmpxchg16b (or equivalent) instruction,
-    // so _InterlockedCompareExchange128 is not implemented on arm64 platforms.
-#endif
+#if defined(LINUX) || defined(APPLE)
 
 threadID CryGetCurrentThreadId()
 {
     return GetCurrentThreadId();
 }
 
-void CryDebugBreak()
-{
-    __builtin_trap();
-}
 #endif//LINUX APPLE
 
 #if defined(APPLE) || defined(LINUX)
@@ -1417,11 +1181,6 @@ DLL_EXPORT void OutputDebugString(const char* outputString)
 #endif
 }
 
-DLL_EXPORT void DebugBreak()
-{
-    CryDebugBreak();
-}
-
 #endif
 
 // This code does not have a long life span and will be replaced soon
@@ -1430,9 +1189,7 @@ DLL_EXPORT void DebugBreak()
 typedef DIR* FS_DIR_TYPE;
 typedef dirent FS_DIRENT_TYPE;
 static const FS_ERRNO_TYPE FS_ENOENT = ENOENT;
-static const FS_ERRNO_TYPE FS_EINVAL = EINVAL;
 static const FS_DIR_TYPE FS_DIR_NULL = NULL;
-static const unsigned char FS_TYPE_DIRECTORY = DT_DIR;
 
 typedef int FS_ERRNO_TYPE;
 
@@ -1542,13 +1299,8 @@ const bool GetFilenameNoCase
     char* slash;
     const char* dirname;
     char* name;
-    FS_ERRNO_TYPE fsErr = 0;
-    FS_DIRENT_TYPE dirent;
-    uint64_t direntSize = 0;
-    FS_DIR_TYPE fd = FS_DIR_NULL;
 
-    if (
-        (pAdjustedFilename) == (char*)-1)
+    if ((pAdjustedFilename) == (char*)-1)
     {
         return false;
     }
@@ -1580,9 +1332,6 @@ const bool GetFilenameNoCase
 #endif
 
     // Scan for the file.
-    bool found = false;
-    bool skipScan = false;
-
     if (slash)
     {
         *slash = '/';
@@ -1618,14 +1367,16 @@ const bool GetFilenameNoCase
     return true;
 }
 
-DWORD GetFileAttributes(LPCSTR lpFileName)
+DWORD GetFileAttributes(LPCWSTR lpFileNameW)
 {
+    AZStd::string lpFileName;
+    AZStd::to_string(lpFileName, lpFileNameW);
     struct stat fileStats;
-    const int success = stat(lpFileName, &fileStats);
+    const int success = stat(lpFileName.c_str(), &fileStats);
     if (success == -1)
     {
         char adjustedFilename[MAX_PATH];
-        GetFilenameNoCase(lpFileName, adjustedFilename);
+        GetFilenameNoCase(lpFileName.c_str(), adjustedFilename);
         if (stat(adjustedFilename, &fileStats) == -1)
         {
             return (DWORD)INVALID_FILE_ATTRIBUTES;
@@ -1643,16 +1394,6 @@ DWORD GetFileAttributes(LPCSTR lpFileName)
         }
     }
     return (ret == 0) ? FILE_ATTRIBUTE_NORMAL : ret;//return file attribute normal as the default value, must only be set if no other attributes have been found
-}
-
-uint32 CryGetFileAttributes(const char* lpFileName)
-{
-    
-    string fn = lpFileName;
-    adaptFilenameToLinux(fn);
-    const char* buffer = fn.c_str();
-    return GetFileAttributes(buffer);
-    
 }
 
 __finddata64_t::~__finddata64_t()

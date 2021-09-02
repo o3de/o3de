@@ -162,22 +162,9 @@ namespace O3DE::ProjectManager
         QDesktopServices::openUrl(m_logUrl);
     }
 
-    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
+    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
         : QFrame(parent)
         , m_projectInfo(projectInfo)
-    {
-        BaseSetup();
-        if (processing)
-        {
-            ProcessingSetup();
-        }
-        else
-        {
-            ReadySetup();
-        }
-    }
-
-    void ProjectButton::BaseSetup()
     {
         setObjectName("projectButton");
 
@@ -199,50 +186,64 @@ namespace O3DE::ProjectManager
         }
         m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
-        m_projectFooter = new QFrame(this);
+        QFrame* projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
-        m_projectFooter->setLayout(hLayout);
+        projectFooter->setLayout(hLayout);
         {
             QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
+            projectNameLabel->setToolTip(m_projectInfo.m_path);
             hLayout->addWidget(projectNameLabel);
+
+            QMenu* menu = new QMenu(this);
+            menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+            menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
+            menu->addSeparator();
+            menu->addAction(tr("Open Project folder..."), this, [this]()
+            { 
+                AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
+            });
+            menu->addSeparator();
+            menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
+            menu->addSeparator();
+            menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
+            menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
+
+            m_projectMenuButton = new QPushButton(this);
+            m_projectMenuButton->setObjectName("projectMenuButton");
+            m_projectMenuButton->setMenu(menu);
+            hLayout->addWidget(m_projectMenuButton);
         }
 
-        vLayout->addWidget(m_projectFooter);
+        vLayout->addWidget(projectFooter);
+
+        connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this](){ emit OpenProject(m_projectInfo.m_path); });
     }
 
-    void ProjectButton::ProcessingSetup()
+    const ProjectInfo& ProjectButton::GetProjectInfo() const
     {
-        m_projectImageLabel->SetEnabled(false);
-        m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
+        return m_projectInfo;
+    }
+
+    void ProjectButton::RestoreDefaultState()
+    {
+        m_projectImageLabel->SetEnabled(true);
+        m_projectImageLabel->SetOverlayText("");
+        m_projectMenuButton->setVisible(true);
 
         QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
-        progressBar->setVisible(true);
+        progressBar->setVisible(false);
         progressBar->setValue(0);
-    }
 
-    void ProjectButton::ReadySetup()
-    {
-        connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this](){ emit OpenProject(m_projectInfo.m_path); });
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(false);
+        if (m_actionButtonConnection)
+        {
+            disconnect(m_actionButtonConnection);
+        }
 
-        QMenu* menu = new QMenu(this);
-        menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
-        menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
-        menu->addSeparator();
-        menu->addAction(tr("Open Project folder..."), this, [this]()
-        { 
-            AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
-        });
-        menu->addSeparator();
-        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
-        menu->addSeparator();
-        menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
-        menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
-
-        QPushButton* projectMenuButton = new QPushButton(this);
-        projectMenuButton->setObjectName("projectMenuButton");
-        projectMenuButton->setMenu(menu);
-        m_projectFooter->layout()->addWidget(projectMenuButton);
+        m_projectImageLabel->GetWarningIcon()->setVisible(false);
+        m_projectImageLabel->GetWarningLabel()->setVisible(false);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -292,9 +293,15 @@ namespace O3DE::ProjectManager
         SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
     }
 
-    void ProjectButton::BuildThisProject()
+    void ProjectButton::SetProjectBuilding()
     {
-        emit BuildProject(m_projectInfo);
+        m_projectImageLabel->SetEnabled(false);
+        m_projectImageLabel->SetOverlayText(tr("Building...\n\n"));
+        m_projectMenuButton->setVisible(false);
+
+        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
+        progressBar->setVisible(true);
+        progressBar->setValue(0);
     }
 
     void ProjectButton::SetLaunchButtonEnabled(bool enabled)

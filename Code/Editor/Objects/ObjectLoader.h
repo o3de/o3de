@@ -15,6 +15,8 @@
 #include "Util/GuidUtil.h"
 #include "ErrorReport.h"
 
+#include <set>
+
 class CPakFile;
 class CErrorRecord;
 struct IObjectManager;
@@ -67,10 +69,10 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     void LoadObjects(XmlNodeRef& rootObjectsNode);
 
     //! Load one object from archive.
-    CBaseObject* LoadObject(const XmlNodeRef& objNode, CBaseObject* pPrevObject = NULL);
+    CBaseObject* LoadObject(const XmlNodeRef& objNode, CBaseObject* pPrevObject = nullptr);
 
     //////////////////////////////////////////////////////////////////////////
-    int GetLoadedObjectsCount() { return m_loadedObjects.size(); }
+    int GetLoadedObjectsCount() { return static_cast<int>(m_loadedObjects.size()); }
     CBaseObject* GetLoadedObject(int nIndex) const { return m_loadedObjects[nIndex].pObject; }
 
     //! If true new loaded objects will be assigned new GUIDs.

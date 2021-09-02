@@ -12,8 +12,10 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Math/Guid.h>
 #include <CryCommon/platform.h>
 #include <CryCommon/Cry_Geo.h>
+#include <set>
 
 // forward declarations.
 class CEntityObject;
@@ -87,7 +89,7 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     virtual void GetObjects(CBaseObjectsArray& objects) const = 0;
-    virtual void GetObjects(DynArray<CBaseObject*>& objects) const = 0;
+    //virtual void GetObjects(DynArray<CBaseObject*>& objects) const = 0;
 
     //! Get array of objects that pass the filter.
     //! @param filter The filter functor, return true if you want to get the certain obj, return false if want to skip it.

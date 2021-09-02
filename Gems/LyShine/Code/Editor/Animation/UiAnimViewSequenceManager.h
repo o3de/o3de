@@ -15,6 +15,7 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
 #include "UiAnimUndoManager.h"
+#include "CryCommon/StlUtils.h"
 
 #include <IEditor.h>
 
@@ -36,7 +37,7 @@ public:
 
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
 
-    unsigned int GetCount() const { return m_sequences.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_sequences.size()); }
 
     void CreateSequence(QString name);
     void DeleteSequence(CUiAnimViewSequence* pSequence);

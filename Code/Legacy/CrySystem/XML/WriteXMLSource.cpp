@@ -12,7 +12,7 @@
 
 #include <stack>
 
-typedef std::map<string, XmlNodeRef> IdTable;
+typedef std::map<AZStd::string, XmlNodeRef> IdTable;
 
 static bool IsOptionalWriteXML(XmlNodeRef& definition);
 
@@ -66,7 +66,7 @@ struct WritePropertyTyped
 };
 
 template <>
-struct WritePropertyTyped<string>
+struct WritePropertyTyped<AZStd::string>
     : public WritePropertyTyped<const char*>
 {
 };
@@ -190,8 +190,9 @@ bool SaveArray(const IdTable& idTable, XmlNodeRef& definition, XmlNodeRef& data,
     }
 
     bool needIndex = false;
-    for (size_t i = 1; i <= numElems; i++)
+    for (size_t sizei = 1; sizei <= numElems; sizei++)
     {
+        const int i = static_cast<int>(sizei);
         if (!childSource->HaveElemAt(i))
         {
             needIndex = true;
