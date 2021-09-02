@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <Entity/EntityUtilityComponent.h>
 #include <ToolsComponents/TransformComponent.h>
 
 namespace UnitTest
@@ -175,5 +176,23 @@ namespace UnitTest
         AZ::Vector3 localRotation = transformComponent->GetLocalRotationQuaternion().GetEulerDegrees();
 
         EXPECT_EQ(localRotation, AZ::Vector3(.0f, 0.1f, 180.0f));
+    }
+
+    TEST_F(EntityUtilityComponentTests, GetComponentJson)
+    {
+        AZStd::string result;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            result, &AzToolsFramework::EntityUtilityBus::Events::GetComponentJson, "TransformComponent");
+
+        ASSERT_STRNE(result.c_str(), "");
+    }
+
+    TEST_F(EntityUtilityComponentTests, SearchComponents)
+    {
+        AZStd::vector<AZStd::string> result;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            result, &AzToolsFramework::EntityUtilityBus::Events::SearchComponents, "Transform*");
+
+        ASSERT_GT(result.size(), 0);
     }
 }
