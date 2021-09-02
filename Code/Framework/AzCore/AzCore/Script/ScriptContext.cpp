@@ -1463,9 +1463,9 @@ static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize
         {
             allocator->DeAllocate(ptr);
         }
-        return NULL;
+        return nullptr;
     }
-    else if (ptr == NULL)
+    else if (ptr == nullptr)
     {
         return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT, 0, "Script", __FILE__, __LINE__, 1);
     }
@@ -1708,7 +1708,7 @@ LUA_API const Node* lua_getDummyNode()
                 "Invalid stack!");
             lua_pop(m_nativeContext, (currentTop - m_startVariableIndex) + 1);
 
-            m_nativeContext = NULL;
+            m_nativeContext = nullptr;
             m_startVariableIndex = 0;
             m_numArguments = 0;
             m_numResults = 0;
@@ -2038,7 +2038,7 @@ LUA_API const Node* lua_getDummyNode()
         LSV_BEGIN_VARIABLE(m_nativeContext);
 
         valueIndex = 0;
-        name = NULL;
+        name = nullptr;
         index = -1;
         if (m_mode == MD_INSPECT)
         {

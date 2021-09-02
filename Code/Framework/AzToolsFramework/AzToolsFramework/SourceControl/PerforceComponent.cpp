@@ -1315,7 +1315,7 @@ namespace AzToolsFramework
     void PerforceComponent::ThreadWorker()
     {
         m_ProcessThreadID = AZStd::this_thread::get_id();
-        while (1)
+        while (true)
         {
             // block until signaled:
             m_WorkerSemaphore.acquire();
