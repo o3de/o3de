@@ -1400,9 +1400,6 @@ namespace {{ Component.attrib['Namespace'] }}
 {% if NetworkInputsExposedToScriptCount > 0 %}
     void {{ ControllerBaseName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
-{% if ControllerDerived %}
-        // Remember the call this baseclass method from the derived controllers ProccessInput method.
-{% endif %}
         {{ ComponentName }}NetworkInput result;
         {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::{{ ComponentName }}CreateInput, deltaTime);
 
