@@ -13,94 +13,88 @@
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 
-#include "BoxShapeComponent.h"
-#include "EditorBoxShapeComponent.h"
+#include "AxisAlignedBoxShapeComponent.h"
+#include "EditorAxisAlignedBoxShapeComponent.h"
 #include "EditorShapeComponentConverters.h"
 #include "ShapeDisplay.h"
 
 namespace LmbrCentral
 {
-    void EditorBoxShapeComponent::Reflect(AZ::ReflectContext* context)
+    void EditorAxisAlignedBoxShapeComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Deprecate: EditorBoxColliderComponent -> EditorBoxShapeComponent
-            serializeContext->ClassDeprecate(
-                "EditorBoxColliderComponent",
-                "{E1707478-4F5F-4C28-A31A-EF42B7BD2A68}",
-                &ClassConverters::DeprecateEditorBoxColliderComponent)
-                ;
-
-            serializeContext->Class<EditorBoxShapeComponent, EditorBaseShapeComponent>()
-                ->Version(3, &ClassConverters::UpgradeEditorBoxShapeComponent)
-                ->Field("BoxShape", &EditorBoxShapeComponent::m_boxShape)
-                ->Field("ComponentMode", &EditorBoxShapeComponent::m_componentModeDelegate)
+            serializeContext->Class<EditorAxisAlignedBoxShapeComponent, EditorBaseShapeComponent>()
+                ->Version(1)
+                ->Field("AxisAlignedBoxShape", &EditorAxisAlignedBoxShapeComponent::m_aaboxShape)
+                ->Field("ComponentMode", &EditorAxisAlignedBoxShapeComponent::m_componentModeDelegate)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorBoxShapeComponent>(
-                    "Box Shape", "The Box Shape component creates a box around the associated entity")
+                editContext->Class<EditorAxisAlignedBoxShapeComponent>(
+                    "Axis Aligned Box Shape", "The Axis Aligned Box Shape component creates a box around the associated entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/box-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_boxShape, "Box Shape", "Box Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAxisAlignedBoxShapeComponent::m_aaboxShape, "Axis Aligned Box Shape", "Axis Aligned Box Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBoxShapeComponent::ConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_componentModeDelegate, "Component Mode", "Box Shape Component Mode")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAxisAlignedBoxShapeComponent::ConfigurationChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAxisAlignedBoxShapeComponent::m_componentModeDelegate, "Component Mode", "Axis Aligned Box Shape Component Mode")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
             }
         }
     }
 
-    void EditorBoxShapeComponent::Init()
+    void EditorAxisAlignedBoxShapeComponent::Init()
     {
         EditorBaseShapeComponent::Init();
 
-        SetShapeComponentConfig(&m_boxShape.ModifyConfiguration());
+        SetShapeComponentConfig(&m_aaboxShape.ModifyConfiguration());
     }
 
-    void EditorBoxShapeComponent::Activate()
+    void EditorAxisAlignedBoxShapeComponent::Activate()
     {
         EditorBaseShapeComponent::Activate();
-        m_boxShape.Activate(GetEntityId());
+        m_aaboxShape.Activate(GetEntityId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
         m_componentModeDelegate.ConnectWithSingleComponentMode<
-            EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
+            EditorAxisAlignedBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
                 AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
     }
 
-    void EditorBoxShapeComponent::Deactivate()
+    void EditorAxisAlignedBoxShapeComponent::Deactivate()
     {
         m_componentModeDelegate.Disconnect();
 
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-        m_boxShape.Deactivate();
+        m_aaboxShape.Deactivate();
         EditorBaseShapeComponent::Deactivate();
     }
 
-    void EditorBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void EditorAxisAlignedBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC_CE("BoxShapeService"));
+        provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
-    void EditorBoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void EditorAxisAlignedBoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
-    void EditorBoxShapeComponent::DisplayEntityViewport(
+    void EditorAxisAlignedBoxShapeComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
@@ -109,15 +103,15 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawBoxShape(
-                    { m_boxShape.GetBoxConfiguration().GetDrawColor(), m_shapeWireColor, m_boxShape.GetBoxConfiguration().IsFilled() },
-                    m_boxShape.GetBoxConfiguration(), debugDisplay, m_boxShape.GetCurrentNonUniformScale());
+                    { m_aaboxShape.GetBoxConfiguration().GetDrawColor(), m_shapeWireColor, m_aaboxShape.GetBoxConfiguration().IsFilled() },
+                    m_aaboxShape.GetBoxConfiguration(), debugDisplay, m_aaboxShape.GetCurrentNonUniformScale());
             },
-            m_boxShape.GetCurrentTransform());
+            m_aaboxShape.GetCurrentTransform());
     }
 
-    void EditorBoxShapeComponent::ConfigurationChanged()
+    void EditorAxisAlignedBoxShapeComponent::ConfigurationChanged()
     {
-        m_boxShape.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        m_aaboxShape.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         ShapeComponentNotificationsBus::Event(GetEntityId(),
             &ShapeComponentNotificationsBus::Events::OnShapeChanged,
@@ -128,23 +122,23 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
-    void EditorBoxShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    void EditorAxisAlignedBoxShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        if (BoxShapeComponent* boxShapeComponent = gameEntity->CreateComponent<BoxShapeComponent>())
+        if (AxisAlignedBoxShapeComponent* boxShapeComponent = gameEntity->CreateComponent<AxisAlignedBoxShapeComponent>())
         {
-            boxShapeComponent->SetConfiguration(m_boxShape.GetBoxConfiguration());
+            boxShapeComponent->SetConfiguration(m_aaboxShape.GetBoxConfiguration());
         }
 
         if (m_visibleInGameView)
         {
-            if (auto component = gameEntity->CreateComponent<BoxShapeDebugDisplayComponent>())
+            if (auto component = gameEntity->CreateComponent<AxisAlignedBoxShapeDebugDisplayComponent>())
             {
-                component->SetConfiguration(m_boxShape.GetBoxConfiguration());
+                component->SetConfiguration(m_aaboxShape.GetBoxConfiguration());
             }
         }
     }
 
-    void EditorBoxShapeComponent::OnTransformChanged(
+    void EditorAxisAlignedBoxShapeComponent::OnTransformChanged(
         const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
     {
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
@@ -152,23 +146,23 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetDimensions()
+    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetDimensions()
     {
-        return m_boxShape.GetBoxDimensions();
+        return m_aaboxShape.GetBoxDimensions();
     }
 
-    void EditorBoxShapeComponent::SetDimensions(const AZ::Vector3& dimensions)
+    void EditorAxisAlignedBoxShapeComponent::SetDimensions(const AZ::Vector3& dimensions)
     {
-        return m_boxShape.SetBoxDimensions(dimensions);
+        return m_aaboxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentTransform()
+    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentTransform()
     {
-        return AzToolsFramework::TransformNormalizedScale(m_boxShape.GetCurrentTransform());
+        return AzToolsFramework::TransformNormalizedScale(m_aaboxShape.GetCurrentTransform());
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetBoxScale()
+    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetBoxScale()
     {
-        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetUniformScale() * m_boxShape.GetCurrentNonUniformScale());
+        return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale() * m_aaboxShape.GetCurrentNonUniformScale());
     }
 } // namespace LmbrCentral
