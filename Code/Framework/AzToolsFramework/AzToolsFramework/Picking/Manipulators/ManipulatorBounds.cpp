@@ -86,11 +86,10 @@ namespace AzToolsFramework
         bool ManipulatorBoundCone::IntersectRay(
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
-            float t1 = std::numeric_limits<float>::max();
-            float t2 = std::numeric_limits<float>::max();
-            if (AZ::Intersect::IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t1, t2) > 0)
+            float t = std::numeric_limits<float>::max();
+            if (AZ::Intersect::IntersectRayCone2(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t) > 0)
             {
-                rayIntersectionDistance = AZStd::GetMin(t1, t2);
+                rayIntersectionDistance = t;
                 return true;
             }
 
