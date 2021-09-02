@@ -125,11 +125,6 @@ namespace EMStudio
     {
         m_dialogStack                    = nullptr;
         m_selectedSet                    = nullptr;
-        m_adjustMotionSetCallback        = nullptr;
-        m_motionSetAddMotionCallback     = nullptr;
-        m_motionSetRemoveMotionCallback  = nullptr;
-        m_motionSetAdjustMotionCallback  = nullptr;
-        m_loadMotionSetCallback          = nullptr;
         m_motionSetManagementWindow      = nullptr;
         m_motionSetWindow                = nullptr;
         m_dirtyFilesCallback             = nullptr;
@@ -143,56 +138,33 @@ namespace EMStudio
             delete callback;
         }
 
-        GetCommandManager()->RemoveCommandCallback(m_adjustMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetAddMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetRemoveMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetAdjustMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_loadMotionSetCallback, false);
-
-        delete m_adjustMotionSetCallback;
-        delete m_motionSetAddMotionCallback;
-        delete m_motionSetRemoveMotionCallback;
-        delete m_motionSetAdjustMotionCallback;
-        delete m_loadMotionSetCallback;
-
         GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
         delete m_dirtyFilesCallback;
     }
 
-
-    // clone the log window
     EMStudioPlugin* MotionSetsWindowPlugin::Clone()
     {
         MotionSetsWindowPlugin* newPlugin = new MotionSetsWindowPlugin();
         return newPlugin;
     }
 
-
     // init after the parent dock window has been created
     bool MotionSetsWindowPlugin::Init()
     {
-        auto AddReinitCallback = [=](const char* commandName)
+        auto AddCallback = [=](const char* commandName, MCore::Command::Callback* callback)
         {
-            m_callbacks.emplace_back(new CommandReinitCallback(false));
+            m_callbacks.emplace_back(callback);
             GetCommandManager()->RegisterCommandCallback(commandName, m_callbacks.back());
         };
 
-        AddReinitCallback ("CreateMotionSet");
-        AddReinitCallback ("RemoveMotionSet");
-        AddReinitCallback ("RemoveMotion");
-
-        m_adjustMotionSetCallback        = new CommandAdjustMotionSetCallback(false);
-        m_motionSetAddMotionCallback     = new CommandMotionSetAddMotionCallback(false);
-        m_motionSetRemoveMotionCallback  = new CommandMotionSetRemoveMotionCallback(false);
-        m_motionSetAdjustMotionCallback  = new CommandMotionSetAdjustMotionCallback(false);
-        m_loadMotionSetCallback          = new CommandLoadMotionSetCallback(false);
-
-        GetCommandManager()->RegisterCommandCallback("AdjustMotionSet", m_adjustMotionSetCallback);
-
-        GetCommandManager()->RegisterCommandCallback("MotionSetAddMotion", m_motionSetAddMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetRemoveMotion", m_motionSetRemoveMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetAdjustMotion", m_motionSetAdjustMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("LoadMotionSet", m_loadMotionSetCallback);
+        AddCallback("CreateMotionSet", new CommandReinitCallback(false));
+        AddCallback("RemoveMotionSet", new CommandReinitCallback(false));
+        AddCallback("RemoveMotion", new CommandReinitCallback(false));
+        AddCallback("AdjustMotionSet", new CommandAdjustMotionSetCallback(false));
+        AddCallback("MotionSetAddMotion", new CommandMotionSetAddMotionCallback(false));
+        AddCallback("MotionSetRemoveMotion", new CommandMotionSetRemoveMotionCallback(false));
+        AddCallback("MotionSetAdjustMotion", new CommandMotionSetAdjustMotionCallback(false));
+        AddCallback("LoadMotionSet", new CommandLoadMotionSetCallback(false));
 
         // create the dialog stack
         assert(m_dialogStack == nullptr);
