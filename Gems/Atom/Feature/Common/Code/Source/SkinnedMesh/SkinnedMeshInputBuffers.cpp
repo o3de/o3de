@@ -302,18 +302,25 @@ namespace AZ
                                 uint32_t elementCount = streamBufferViews[meshStreamIndex].GetByteCount() / streamBufferViews[meshStreamIndex].GetByteStride();
 
                                 RHI::BufferViewDescriptor descriptor;
-                                if (streamInfo->m_enum != SkinnedMeshInputVertexStreams::BlendIndices)
+                                if (streamInfo->m_enum == SkinnedMeshInputVertexStreams::BlendIndices)
                                 {
-                                    // Create a descriptor for a typed buffer view from the StreamBufferView                                
-                                    descriptor = RHI::BufferViewDescriptor::CreateTyped(
-                                        elementOffset,
-                                        elementCount,
-                                        streamInfo->m_elementFormat);
+                                    // Create a descriptor for a raw view from the StreamBufferView
+                                    descriptor = RHI::BufferViewDescriptor::CreateRaw(
+                                        streamBufferViews[meshStreamIndex].GetByteOffset(),
+                                        streamBufferViews[meshStreamIndex].GetByteCount());
+                                }
+                                else if (streamInfo->m_elementFormat == RHI::Format::R32G32B32_FLOAT)
+                                {
+                                    // 3-component float buffers are not supported on metal for non-input assembly buffer views,
+                                    // so use a float view instead
+                                    descriptor =
+                                        RHI::BufferViewDescriptor::CreateTyped(elementOffset * 3, elementCount * 3, RHI::Format::R32_FLOAT);
                                 }
                                 else
                                 {
-                                    // Create a descriptor for a raw view from the StreamBufferView
-                                    descriptor = RHI::BufferViewDescriptor::CreateRaw(streamBufferViews[meshStreamIndex].GetByteOffset(), streamBufferViews[meshStreamIndex].GetByteCount());
+                                    // Create a descriptor for a typed buffer view from the StreamBufferView
+                                    descriptor =
+                                        RHI::BufferViewDescriptor::CreateTyped(elementOffset, elementCount, streamInfo->m_elementFormat);
                                 }
 
                                 AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
