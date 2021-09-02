@@ -17,9 +17,9 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        enum class SavePrefabsPreference
+        enum class SaveAllPrefabsPreference
         {
-            Unspecified,
+            AskEveryTime,
             SaveAll,
             SaveNone 
         };
@@ -91,8 +91,8 @@ namespace AzToolsFramework
             //! The path will always use the '/' separator.
             virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
-            virtual SavePrefabsPreference GetSavePrefabsPreference() = 0;
-            virtual void SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference) = 0;
+            virtual SaveAllPrefabsPreference GetSaveAllPrefabsPreference() = 0;
+            virtual void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) = 0;
 
         protected:
 
@@ -105,6 +105,6 @@ namespace AzToolsFramework
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::SavePrefabsPreference, "{7E61EA82-4DE4-4A3F-945F-C8FEDC1114B5}");
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::SaveAllPrefabsPreference, "{7E61EA82-4DE4-4A3F-945F-C8FEDC1114B5}");
 }
 

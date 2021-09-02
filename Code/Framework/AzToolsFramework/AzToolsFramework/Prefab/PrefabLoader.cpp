@@ -31,10 +31,10 @@ namespace AzToolsFramework
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Enum<SavePrefabsPreference>()
-                    ->Value("Unspecified", SavePrefabsPreference::Unspecified)
-                    ->Value("SaveAll", SavePrefabsPreference::SaveAll)
-                    ->Value("SaveNone", SavePrefabsPreference::SaveNone);
+                serializeContext->Enum<SaveAllPrefabsPreference>()
+                    ->Value("Ask every time", SaveAllPrefabsPreference::AskEveryTime)
+                    ->Value("Save all", SaveAllPrefabsPreference::SaveAll)
+                    ->Value("Save none", SaveAllPrefabsPreference::SaveNone);
             }
         }
 
@@ -669,21 +669,21 @@ namespace AzToolsFramework
             return finalPath;
         }
 
-        SavePrefabsPreference PrefabLoader::GetSavePrefabsPreference()
+        SaveAllPrefabsPreference PrefabLoader::GetSaveAllPrefabsPreference()
         {
-            SavePrefabsPreference savePrefabsPreference = SavePrefabsPreference::Unspecified;
+            SaveAllPrefabsPreference saveAllPrefabsPreference = SaveAllPrefabsPreference::AskEveryTime;
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
-                registry->GetObject(savePrefabsPreference, s_savePrefabsKey);
+                registry->GetObject(saveAllPrefabsPreference, s_savePrefabsKey);
             }
-            return savePrefabsPreference;
+            return saveAllPrefabsPreference;
         }
 
-        void PrefabLoader::SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference)
+        void PrefabLoader::SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference)
         {
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
-                registry->SetObject(s_savePrefabsKey, savePrefabsPreference);
+                registry->SetObject(s_savePrefabsKey, saveAllPrefabsPreference);
             }
         }
 

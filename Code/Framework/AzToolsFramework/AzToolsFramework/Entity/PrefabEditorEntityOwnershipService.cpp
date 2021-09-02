@@ -359,6 +359,16 @@ namespace AzToolsFramework
         return AZStd::nullopt;
     }
 
+    Prefab::TemplateId PrefabEditorEntityOwnershipService::GetRootPrefabTemplateId()
+    {
+        AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
+        if (m_rootInstance)
+        {
+            return m_rootInstance->GetTemplateId();
+        }
+        return Prefab::InvalidTemplateId;
+    }
+
     const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
     {
         return m_playInEditorData.m_assets;
@@ -605,6 +615,11 @@ namespace AzToolsFramework
         AZ::TickBus::ExecuteQueuedEvents();
 
         m_playInEditorData.m_isEnabled = false;
+    }
+
+    bool PrefabEditorEntityOwnershipService::IsRootTemplateDirty()
+    {
+        return (m_prefabSystemComponent->IsTemplateDirty(m_rootInstance->GetTemplateId()));
     }
 
     //////////////////////////////////////////////////////////////////////////

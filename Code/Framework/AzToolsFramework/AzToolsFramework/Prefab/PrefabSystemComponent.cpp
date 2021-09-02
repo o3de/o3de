@@ -754,25 +754,61 @@ namespace AzToolsFramework
             }
         }
 
-        bool PrefabSystemComponent::AreDirtyTemplatesPresent()
+        bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId templateId)
         {
-            for (const auto& [id, templateObject] : m_templateIdMap)
+            auto parentTemplate = FindTemplate(templateId);
+            if (IsTemplateDirty(templateId))
             {
-                if (IsTemplateDirty(id))
+                return true;
+            }
+
+            auto linkIds = parentTemplate->get().GetLinks();
+
+            for (auto linkId : linkIds)
+            {
+                auto linkIterator = m_linkIdMap.find(linkId);
+                if (linkIterator != m_linkIdMap.end())
                 {
-                    return true;
+                    return AreDirtyTemplatesPresent(linkIterator->second.GetSourceTemplateId());
                 }
             }
             return false;
         }
 
-        void PrefabSystemComponent::SaveAllDirtyTemplates()
+        void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId templateId)
         {
-            for (auto& [id, templateObject] : m_templateIdMap)
+            auto parentTemplate = FindTemplate(templateId);
+            if (IsTemplateDirty(templateId))
             {
-                if (IsTemplateDirty(id))
+                m_prefabLoader.SaveTemplate(templateId);
+            }
+            auto linkIds = parentTemplate->get().GetLinks();
+
+            for (auto linkId : linkIds)
+            {
+                auto linkIterator = m_linkIdMap.find(linkId);
+                if (linkIterator != m_linkIdMap.end())
                 {
-                    m_prefabLoader.SaveTemplate(id);
+                    SaveAllDirtyTemplates(linkIterator->second.GetSourceTemplateId());
+                }
+            }
+        }
+
+        void PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths)
+        {
+            auto parentTemplate = FindTemplate(parentTemplateId);
+            if (IsTemplateDirty(parentTemplateId))
+            {
+                dirtyTemplatePaths.emplace(parentTemplate->get().GetFilePath());
+            }
+            auto linkIds = parentTemplate->get().GetLinks();
+
+            for (auto linkId : linkIds)
+            {
+                auto linkIterator = m_linkIdMap.find(linkId);
+                if (linkIterator != m_linkIdMap.end())
+                {
+                    GetDirtyTemplatePaths(linkIterator->second.GetSourceTemplateId(), dirtyTemplatePaths);
                 }
             }
         }

@@ -183,9 +183,11 @@ namespace AzToolsFramework
              */
             void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
 
-            bool AreDirtyTemplatesPresent() override;
+            bool AreDirtyTemplatesPresent(TemplateId templateId) override;
 
-            void SaveAllDirtyTemplates() override;
+            void SaveAllDirtyTemplates(TemplateId templateId) override;
+
+            void GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths) override;
 
             //////////////////////////////////////////////////////////////////////////
 

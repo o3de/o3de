@@ -9,11 +9,12 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AzToolsFramework
 {
@@ -49,8 +50,9 @@ namespace AzToolsFramework
 
             virtual bool IsTemplateDirty(const TemplateId& templateId) = 0;
             virtual void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) = 0;
-            virtual bool AreDirtyTemplatesPresent() = 0;
-            virtual void SaveAllDirtyTemplates() = 0;
+            virtual bool AreDirtyTemplatesPresent(TemplateId templateId) = 0;
+            virtual void SaveAllDirtyTemplates(TemplateId templateId) = 0;
+            virtual void GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths) = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;
             virtual void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) = 0;

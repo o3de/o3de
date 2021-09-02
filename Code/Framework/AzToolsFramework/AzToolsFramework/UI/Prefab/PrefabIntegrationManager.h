@@ -15,11 +15,14 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
+
+#include <AzQtComponents/Components/Widgets/Card.h>
 
 namespace AzToolsFramework
 {
@@ -49,6 +52,7 @@ namespace AzToolsFramework
             , public AssetBrowser::AssetBrowserSourceDropBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
+            , public QObject
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -72,6 +76,8 @@ namespace AzToolsFramework
 
             // PrefabIntegrationInterface...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
+            int ExecuteClosePrefabDialog(TemplateId templateId) override;
+            void ExecuteSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
 
         private:
             // Manages the Edit Mode UI for prefabs
@@ -124,12 +130,19 @@ namespace AzToolsFramework
 
             static AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 
+            AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
+            AzQtComponents::Card* ConstructUnsavedPrefabsCard(TemplateId templateId);
+            AZStd::unique_ptr<QDialog> ConstructSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
+            void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
+
+
             static const AZStd::string s_prefabFileExtension;
 
             static EditorEntityUiInterface* s_editorEntityUiInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabEditInterface* s_prefabEditInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
+            static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
         };
     }
 }

@@ -728,19 +728,26 @@ void CCryEditApp::OnFileSave()
 
     const QScopedValueRollback<bool> rollback(m_savingLevel, true);
 
-    GetIEditor()->GetDocument()->DoFileSave();
+    
     
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
-    if (usePrefabSystemForLevels)
+    
+
+    if (!usePrefabSystemForLevels)
     {
-        auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-        if (prefabSystemComponentInterface->AreDirtyTemplatesPresent())
-        {
-            GetIEditor()->GetDocument()->ExecuteSavePrefabsDialog();
-        }
+        GetIEditor()->GetDocument()->DoFileSave();
+    }
+    else
+    {
+        //auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+        auto prefabEditorEntityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipService->GetRootPrefabTemplateId();
+        auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        prefabIntegrationInterface->ExecuteSavePrefabsDialog(rootPrefabTemplateId, true);
+        // prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId)
     }
 }
 
@@ -3186,18 +3193,12 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         }
         else
         {
-            using namespace AzToolsFramework::Prefab;
+            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
-            auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-            auto prefabSaveSelectionDialog = GetIEditor()->GetDocument()->ConstructSaveLevelDialog();
-
-            int prefabSaveSelection = prefabSaveSelectionDialog->exec();
-            QCheckBox* saveAllPrefabsPreferenceCheckBox =
-                prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsPreferenceCheckBox");
-            QCheckBox* saveAllPrefabsCheckBox = prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsCheckbox");
-            SavePrefabsPreference savePrefabsPreference = saveAllPrefabsCheckBox->isChecked()
-                ? SavePrefabsPreference::SaveAll
-                : SavePrefabsPreference::SaveNone;
+            int prefabSaveSelection =
+                prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
 
             // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
             switch (1 - prefabSaveSelection)
@@ -3210,16 +3211,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
                     wasCreateLevelOperationCancelled = true;
                     return false;
                 }
-                if (saveAllPrefabsPreferenceCheckBox->checkState() == Qt::CheckState::Checked)
-                {
-                    gSettings.SetSavePrefabsPreference(savePrefabsPreference);
-                    gSettings.Save();
-                }
-                if (savePrefabsPreference == SavePrefabsPreference::SaveAll)
-                {
-                    prefabSystemComponentInterface->SaveAllDirtyTemplates();
-                }
-                bIsDocModified = prefabSystemComponentInterface->AreDirtyTemplatesPresent();
+                bIsDocModified = false;
                 break;
             case QDialogButtonBox::RejectRole:
                 wasCreateLevelOperationCancelled = true;

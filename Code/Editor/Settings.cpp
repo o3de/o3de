@@ -255,7 +255,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
-    prefabSettings.savePrefabsPreference = AzToolsFramework::Prefab::SavePrefabsPreference::Unspecified;
+    globalSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
 void SEditorSettings::Connect()
@@ -672,7 +672,7 @@ void SEditorSettings::Save()
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-    prefabLoaderInterface->SetSavePrefabsPreference(prefabSettings.savePrefabsPreference);
+    prefabLoaderInterface->SetSaveAllPrefabsPreference(globalSaveSettings.saveAllPrefabsPreference);
 
     SaveSettingsRegistryFile();
 }
@@ -682,7 +682,7 @@ void SEditorSettings::Load()
 {
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-    prefabSettings.savePrefabsPreference = prefabLoaderInterface->GetSavePrefabsPreference();
+    globalSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
 
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -1080,11 +1080,6 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 
     // Replace pipes with backspaces in the category
     AZStd::replace(category.begin(), category.end(), '|', '\\');
-}
-
-void SEditorSettings::SetSavePrefabsPreference(AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference)
-{
-    prefabSettings.savePrefabsPreference = savePrefabsPreference;
 }
 
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::GetValue(const AZStd::string_view path)

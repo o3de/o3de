@@ -193,8 +193,10 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+        Prefab::TemplateId GetRootPrefabTemplateId() override;
         
         const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetPlayInEditorAssetData() override;
+        bool IsRootTemplateDirty() override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);

@@ -58,10 +58,10 @@ private:
         bool m_enableSceneInspector;
     };
 
-    struct PrefabSettings
+    struct GlobalSaveSettings
     {
-        AZ_TYPE_INFO(PrefabSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
-        AzToolsFramework::Prefab::SavePrefabsPreference m_savePrefabsPreference;
+        AZ_TYPE_INFO(GlobalSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
+        AzToolsFramework::Prefab::SaveAllPrefabsPreference m_saveAllPrefabsPreference;
     };
 
     struct Messaging
@@ -96,7 +96,7 @@ private:
     };
 
     GeneralSettings m_generalSettings;
-    PrefabSettings m_prefabSettings;
+    GlobalSaveSettings m_globalSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;

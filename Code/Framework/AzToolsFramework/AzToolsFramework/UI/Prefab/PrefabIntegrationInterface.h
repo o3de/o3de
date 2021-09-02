@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -28,6 +29,9 @@ namespace AzToolsFramework
              * @return The id of the newly created entity.
              */
             virtual AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) = 0;
+
+            virtual int ExecuteClosePrefabDialog(TemplateId templateId) = 0;
+            virtual void ExecuteSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference = false) = 0;
         };
 
     } // namespace Prefab

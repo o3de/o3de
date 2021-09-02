@@ -245,28 +245,43 @@ QTableWidget#recentLevelTable::item {
     qproperty-iconSize: 16px 16px;
 }
 
-#LevelSavedMessageFrame{
+QListWidget::item
+{
+    border : none;
+}
+
+#SavePrefabDialog, #SaveAllFilesDialog
+{
+    min-width : 640px;
+}
+
+#SaveDependentPrefabsCard
+{
+    margin: 0px 15px 10px 15px;
+}
+
+#PrefabSavedMessageFrame{
     border: 1px solid green;
+    margin: 10px 15px 10px 15px;
     border-radius: 2px;
-    margin: 5px 20px 5px 20px;
     padding: 5px 2px 5px 2px;
 }
 
-#SaveAllPrefabsDialog #PrefabSaveQuestionFrame, #SaveDirtyLevelDialog #LevelEntitiesSaveQuestionFrame, #SaveAllPrefabsCheckbox
+#SavePrefabDialog #PrefabSaveWarningFrame
 {
     border: 1px solid orange;
+    margin: 10px 15px 10px 15px;
     border-radius: 2px;
-    margin: 5px 20px 5px 20px;
     padding: 5px 2px 5px 2px;
     color : white;
 }
 
-#SaveAllPrefabsDialog #FooterSeparatorLine, #SaveDirtyLevelDialog #FooterSeparatorLine
+#SaveAllFilesDialog #FooterSeparatorLine, #SavePrefabDialog #FooterSeparatorLine
 {
     color: gray;
 }
 
-#SaveAllPrefabsDialog #PrefabSavePreferenceHint, #SaveDirtyLevelDialog #PrefabSavePreferenceHint
+#SaveAllFilesDialog #PrefabSavePreferenceHint, #SavePrefabDialog #PrefabSavePreferenceHint
 {
     font: italic;
     color: #999999;

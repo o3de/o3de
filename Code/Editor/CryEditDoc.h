@@ -13,8 +13,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include "DocMultiArchive.h"
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzCore/Component/Component.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <TimeValue.h>
 #include <IEditor.h>
 #endif
@@ -103,12 +108,6 @@ public: // Create from serialization only
     void SetLevelExported(bool boExported = true);
 
     bool CanCloseFrame();
-
-    //! Returns a Modal containing options to save the current level.
-    AZStd::shared_ptr<QDialog> ConstructSaveLevelDialog();
-
-    //! Executes a Modal asking users about their prefabs save preference.
-    void ExecuteSavePrefabsDialog();
 
     enum class FetchPolicy
     {
@@ -215,6 +214,10 @@ protected:
     const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
     const float m_envProbeHeight = 200.0f;
     bool m_hasErrors = false; ///< This is used to warn the user that they may lose work when they go to save.
+    AzToolsFramework::Prefab::PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+    AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
+    AzToolsFramework::Prefab::PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
 };
 
 class CAutoDocNotReady

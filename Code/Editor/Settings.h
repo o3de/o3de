@@ -231,9 +231,9 @@ struct SSliceSettings
     bool dynamicByDefault;
 };
 
-struct SPrefabSettings
+struct SGlobalSaveSettings
 {
-    AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference;
+    AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -472,11 +472,9 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SSliceSettings sliceSettings;
 
-    SPrefabSettings prefabSettings;
+    SGlobalSaveSettings globalSaveSettings;
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
-
-    void SetSavePrefabsPreference(AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference);
 
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);
