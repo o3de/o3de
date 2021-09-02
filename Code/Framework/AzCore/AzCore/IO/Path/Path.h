@@ -456,14 +456,15 @@ namespace AZ::IO
         constexpr void swap(BasicPath& rhs) noexcept;
 
         // native format observers
-        constexpr const string_type& Native() const noexcept;
+        constexpr const string_type& Native() const& noexcept;
+        constexpr const string_type&& Native() const&& noexcept;
         constexpr const value_type* c_str() const noexcept;
         constexpr explicit operator string_type() const;
 
         // Adds support for retrieving a modifiable copy of the underlying string
         // Any modifications to the string invalidates existing PathIterators
-        constexpr string_type& Native() noexcept;
-        constexpr explicit operator string_type&() noexcept;
+        constexpr string_type& Native() & noexcept;
+        constexpr string_type&& Native() && noexcept;
 
         //! The string and wstring functions cannot be constexpr until AZStd::basic_string is made constexpr.
         //! This cannot occur until C++20 as operator new/delete cannot be used within constexpr functions

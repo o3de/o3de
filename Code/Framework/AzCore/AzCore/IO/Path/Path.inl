@@ -1042,15 +1042,26 @@ namespace AZ::IO
 
     // native format observers
     template <typename StringType>
-    constexpr auto BasicPath<StringType>::Native() const noexcept -> const string_type&
+    constexpr auto BasicPath<StringType>::Native() const & noexcept -> const string_type&
+    {
+        return m_path;
+    }
+    template <typename StringType>
+    constexpr auto BasicPath<StringType>::Native() const && noexcept -> const string_type&&
+    {
+        return AZStd::move(m_path);
+    }
+
+    template <typename StringType>
+    constexpr auto BasicPath<StringType>::Native() & noexcept -> string_type&
     {
         return m_path;
     }
 
     template <typename StringType>
-    constexpr auto BasicPath<StringType>::Native() noexcept -> string_type&
+    constexpr auto BasicPath<StringType>::Native() && noexcept -> string_type&&
     {
-        return m_path;
+        return AZStd::move(m_path);
     }
 
     template <typename StringType>
@@ -1060,13 +1071,7 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    constexpr BasicPath<StringType>::operator string_type() const 
-    {
-        return m_path;
-    }
-
-    template <typename StringType>
-    constexpr BasicPath<StringType>::operator string_type&() noexcept
+    constexpr BasicPath<StringType>::operator string_type() const
     {
         return m_path;
     }
