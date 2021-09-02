@@ -214,8 +214,12 @@ namespace AzToolsFramework
         class ViewportSettingNotifications
         {
         public:
-            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled) {}
-            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled) {}
+            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+            {
+            }
 
         protected:
             ~ViewportSettingNotifications() = default;
@@ -339,5 +343,24 @@ namespace AzToolsFramework
             }
         }
         return AzFramework::ClickDetector::ClickEvent::Nil;
+    }
+
+    //! Wrap EBus call to retrieve manipulator line bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
+    inline float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId)
+    {
+        float lineBoundWidth = 0.0f;
+        if (viewportId != AzFramework::InvalidViewportId)
+        {
+            ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+                lineBoundWidth, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
+        }
+        else
+        {
+            ViewportInteraction::ViewportInteractionRequestBus::BroadcastResult(
+                lineBoundWidth, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
+        }
+
+        return lineBoundWidth;
     }
 } // namespace AzToolsFramework

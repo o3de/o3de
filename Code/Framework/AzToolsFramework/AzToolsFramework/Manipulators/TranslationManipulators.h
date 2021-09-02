@@ -65,7 +65,7 @@ namespace AzToolsFramework
 
         void ConfigureSurfaceView(float radius, const AZ::Color& color);
 
-        //! Sets the bound size to use for the line/axis of a linear manipulator.
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
         void SetLineBoundWidth(float lineBoundWidth);
 
     private:
