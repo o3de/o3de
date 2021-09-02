@@ -9,14 +9,14 @@
 #pragma once
 
 #include <RenderBus.h>
-#include <IMaterial.h>
 #include <AzCore/RTTI/TypeInfo.h>
+
+struct IMaterial;
 
 namespace AZ
 {
     class BehaviorContext;
 }
-
 namespace LmbrCentral
 {
     //! Wraps a IMaterial pointer in a way that BehaviorContext can use it
@@ -57,7 +57,7 @@ namespace LmbrCentral
             m_material = nullptr;
         }
 
-        _smart_ptr<IMaterial> m_material;
+        IMaterial* m_material;
 
         static void Reflect(AZ::BehaviorContext* behaviorContext);
         static void Reflect(AZ::SerializeContext* serializeContext);

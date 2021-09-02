@@ -122,7 +122,6 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     void GetObjects(CBaseObjectsArray& objects) const;
-    //void GetObjects(DynArray<CBaseObject*>& objects) const;
 
     //! Get array of objects that pass the filter.
     //! @param filter The filter functor, return true if you want to get the certain obj, return false if want to skip it.

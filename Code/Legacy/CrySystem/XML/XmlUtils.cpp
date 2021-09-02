@@ -11,7 +11,6 @@
 #include <IXml.h>
 #include "xml.h"
 #include "XmlUtils.h"
-#include "ReadWriteXMLSink.h"
 
 #include "../SimpleStringPool.h"
 #include "SerializeXMLReader.h"
@@ -20,7 +19,6 @@
 #include "XMLBinaryWriter.h"
 #include "XMLBinaryReader.h"
 
-#include "XMLPatcher.h"
 #include <md5.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,8 +33,6 @@ CXmlUtils::CXmlUtils(ISystem* pSystem)
 {
     m_pSystem = pSystem;
 
-    // create IReadWriteXMLSink object
-    m_pReadWriteXMLSink = new CReadWriteXMLSink();
 #ifdef CRY_COLLECT_XML_NODE_STATS
     g_pCXmlNode_Stats = new SXmlNodeStats();
 #endif
@@ -44,7 +40,6 @@ CXmlUtils::CXmlUtils(ISystem* pSystem)
 #ifndef _RELEASE
     m_statsThreadOwner = CryGetCurrentThreadId();
 #endif
-    m_pXMLPatcher = NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,7 +49,6 @@ CXmlUtils::~CXmlUtils()
     delete g_pCXmlNode_Stats;
 #endif
     SAFE_DELETE(m_pStatsXmlNodePool);
-    SAFE_DELETE(m_pXMLPatcher);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,21 +59,13 @@ IXmlParser* CXmlUtils::CreateXmlParser()
 }
 
 //////////////////////////////////////////////////////////////////////////
-XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings, bool bEnablePatching)
+XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    XmlParser parser(bReuseStrings);
-    XmlNodeRef node = parser.ParseFile(sFilename, true);
-
     // XmlParser is supposed to log warnings and errors (if any),
     // so we don't need to call parser.getErrorString(),
     // CryLog() etc here.
-
-    if (node && bEnablePatching && m_pXMLPatcher)
-    {
-        node = m_pXMLPatcher->ApplyXMLDataPatch(node, sFilename);
-    }
-
-    return node;
+    XmlParser parser(bReuseStrings);
+    return parser.ParseFile(sFilename, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,12 +100,6 @@ const char* CXmlUtils::HashXml(XmlNodeRef node)
     }
     signature[16 * 2] = 0;
     return signature;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IReadWriteXMLSink* CXmlUtils::GetIReadWriteXMLSink()
-{
-    return m_pReadWriteXMLSink;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,12 +152,6 @@ public:
         return m_pReaderSer;
     }
 
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->Add(*this);
-        pSizer->AddObject(m_pReaderImpl);
-        pSizer->AddObject(m_pWriterImpl);
-    }
     //////////////////////////////////////////////////////////////////////////
 private:
     int m_nRefCount;
@@ -192,62 +166,6 @@ private:
 IXmlSerializer* CXmlUtils::CreateXmlSerializer()
 {
     return new CXmlSerializer;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXmlUtils::GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer)
-{
-#ifdef CRY_COLLECT_XML_NODE_STATS
-    // yes, slow
-    std::vector<const CXmlNode*> rootNodes;
-    {
-        TXmlNodeSet::const_iterator iter = g_pCXmlNode_Stats->nodeSet.begin();
-        TXmlNodeSet::const_iterator iterEnd = g_pCXmlNode_Stats->nodeSet.end();
-        while (iter != iterEnd)
-        {
-            const CXmlNode* pNode = *iter;
-            if (pNode->getParent() == 0)
-            {
-                rootNodes.push_back(pNode);
-            }
-            ++iter;
-        }
-    }
-
-    // use the following to log to console
-#if 0
-    CryLogAlways("NumXMLRootNodes=%d NumXMLNodes=%d TotalAllocs=%d TotalFrees=%d",
-        rootNodes.size(), g_pCXmlNode_Stats->nodeSet.size(),
-        g_pCXmlNode_Stats->nAllocs, g_pCXmlNode_Stats->nFrees);
-#endif
-
-
-    // use the following to debug the nodes in the system
-#if 0
-    {
-        std::vector<const CXmlNode*>::const_iterator iter = rootNodes.begin();
-        std::vector<const CXmlNode*>::const_iterator iterEnd = rootNodes.end();
-        while (iter != iterEnd)
-        {
-            const CXmlNode* pNode = *iter;
-            CryLogAlways("Node 0x%p Tag='%s'", pNode, pNode->getTag());
-            ++iter;
-        }
-    }
-#endif
-
-    // only for debugging, add it as pseudo numbers to the CrySizer.
-    // shift it by 10, so we get the actual number
-    {
-        SIZER_COMPONENT_NAME(pSizer, "#NumTotalNodes");
-        pSizer->Add("#NumTotalNodes", g_pCXmlNode_Stats->nodeSet.size() << 10);
-    }
-
-    {
-        SIZER_COMPONENT_NAME(pSizer, "#NumRootNodes");
-        pSizer->Add("#NumRootNodes", rootNodes.size() << 10);
-    }
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -292,7 +210,7 @@ bool CXmlUtils::SaveBinaryXmlFile(const char* filename, XmlNodeRef root)
     }
     XMLBinary::CXMLBinaryWriter writer;
     AZStd::string error;
-    return writer.WriteNode(&fileSink, root, false, 0, error);
+    return writer.WriteNode(&fileSink, root, 0, error);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -300,14 +218,7 @@ XmlNodeRef CXmlUtils::LoadBinaryXmlFile(const char* filename, bool bEnablePatchi
 {
     XMLBinary::XMLBinaryReader reader;
     XMLBinary::XMLBinaryReader::EResult result;
-    XmlNodeRef root = reader.LoadFromFile(filename, result);
-
-    if (result == XMLBinary::XMLBinaryReader::eResult_Success && bEnablePatching == true && m_pXMLPatcher != NULL)
-    {
-        root = m_pXMLPatcher->ApplyXMLDataPatch(root, filename);
-    }
-
-    return root;
+    return reader.LoadFromFile(filename, result);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -324,7 +235,7 @@ class CXmlTableReader
 {
 public:
     CXmlTableReader();
-    virtual ~CXmlTableReader();
+    ~CXmlTableReader() override;
 
     virtual void Release();
 
@@ -678,14 +589,5 @@ void CXmlUtils::FlushStatsXmlNodePool()
     }
 }
 
-void CXmlUtils::SetXMLPatcher(XmlNodeRef* pPatcher)
-{
-    SAFE_DELETE(m_pXMLPatcher);
-
-    if (pPatcher != NULL)
-    {
-        m_pXMLPatcher = new CXMLPatcher(*pPatcher);
-    }
-}
 
 

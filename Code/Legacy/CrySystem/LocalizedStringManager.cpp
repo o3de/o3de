@@ -2418,16 +2418,6 @@ void CLocalizedStringsManager::FormatStringMessage(AZStd::string& outString, con
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CLocalizedStringsManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_languages);
-    pSizer->AddObject(m_prototypeEvents);
-    pSizer->AddObject(m_characterNameSet);
-    pSizer->AddObject(m_pLanguage);
-
-    return 0;
-}
 
 #if defined (WIN32) || defined(WIN64)
 namespace

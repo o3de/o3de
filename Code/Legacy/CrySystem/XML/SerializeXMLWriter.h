@@ -15,11 +15,10 @@
 #include <ISystem.h>
 #include <ITimer.h>
 #include <IXml.h>
-#include "IValidator.h"
 #include "SimpleSerialize.h"
 
 class CSerializeXMLWriterImpl
-    : public CSimpleSerializeImpl<false, eST_SaveGame>
+    : public CSimpleSerializeImpl<false, ESerializationTarget::eST_SaveGame>
 {
 public:
     CSerializeXMLWriterImpl(const XmlNodeRef& nodeRef);
@@ -32,20 +31,11 @@ public:
         return true;
     }
 
-    template <class T_Value, class T_Policy>
-    bool Value(const char* name, T_Value& value, [[maybe_unused]] const T_Policy& policy)
-    {
-        return Value(name, value);
-    }
-
     bool Value(const char* name, CTimeValue value);
-    bool Value(const char* name, XmlNodeRef& value);
 
     void BeginGroup(const char* szName);
     bool BeginOptionalGroup(const char* szName, bool condition);
     void EndGroup();
-
-    void GetMemoryUsage(ICrySizer* pSizer) const;
 
 private:
     //////////////////////////////////////////////////////////////////////////
@@ -98,10 +88,6 @@ private:
     void AddValue(const char* name, const SSerializeString& value)
     {
         AddValue(name, value.c_str());
-    }
-    void AddValue([[maybe_unused]] const char* name, [[maybe_unused]] const SNetObjectID& value)
-    {
-        assert(false);
     }
     template <class T>
     void AddTypedValue(const char* name, const T& value, const char* type)

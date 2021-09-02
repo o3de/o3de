@@ -28,32 +28,6 @@ private:
     float s, t;
 
 public:
-    explicit SMeshTexCoord(float x, float y)
-    {
-        s = x;
-        t = y;
-    }
-
-    explicit SMeshTexCoord(const Vec2f16& other)
-    {
-        const Vec2 uv = other.ToVec2();
-
-        s = uv.x;
-        t = uv.y;
-    }
-
-    explicit SMeshTexCoord(const Vec2& other)
-    {
-        s = other.x;
-        t = other.y;
-    }
-
-    explicit SMeshTexCoord(const Vec4& other)
-    {
-        s = other.x;
-        t = other.y;
-    }
-
     bool IsEquivalent(const SMeshTexCoord& other, float epsilon = 0.00005f) const
     {
         return
@@ -111,16 +85,6 @@ public:
 
     Vec3 GetN() const { return Normal; }
 
-};
-
-
-struct SMeshBoneMapping_uint8
-{
-    typedef uint8 BoneId;
-    typedef uint8 Weight;
-
-    BoneId boneIds[4];
-    Weight weights[4];
 };
 
 // Subset of mesh is a continuous range of vertices and indices that share same material.

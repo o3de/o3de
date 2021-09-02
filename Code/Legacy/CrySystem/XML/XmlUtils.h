@@ -20,7 +20,6 @@
 #endif
 
 class CXmlNodePool;
-class CXMLPatcher;
 
 //////////////////////////////////////////////////////////////////////////
 // Implements IXmlUtils interface.
@@ -39,16 +38,12 @@ public:
     virtual IXmlParser* CreateXmlParser();
 
     // Load xml from file, returns 0 if load failed.
-    virtual XmlNodeRef LoadXmlFromFile(const char* sFilename, bool bReuseStrings = false, bool bEnablePatching = true);
+    virtual XmlNodeRef LoadXmlFromFile(const char* sFilename, bool bReuseStrings = false);
     // Load xml from memory buffer, returns 0 if load failed.
     virtual XmlNodeRef LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings = false, bool bSuppressWarnings = false);
 
     // create an MD5 hash of an XML file
     virtual const char* HashXml(XmlNodeRef node);
-
-    // Get an object that can read a xml into a IReadXMLSink
-    // and write a xml from a IWriteXMLSource
-    virtual IReadWriteXMLSink* GetIReadWriteXMLSink();
 
     virtual IXmlSerializer* CreateXmlSerializer();
 
@@ -61,10 +56,6 @@ public:
     virtual IXmlTableReader* CreateXmlTableReader();
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    virtual void GetMemoryUsage(ICrySizer* pSizer);
-
-    //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     // Init xml stats nodes pool
     virtual void InitStatsXmlNodePool(uint32 nPoolSize = 1024*1024);
@@ -84,9 +75,7 @@ public:
 
 private:
     ISystem* m_pSystem;
-    IReadWriteXMLSink*    m_pReadWriteXMLSink;
     CXmlNodePool*                   m_pStatsXmlNodePool;
-    CXMLPatcher*                    m_pXMLPatcher;              //If set, applies data patches to any XML file that is loaded by this class
 #ifndef _RELEASE
     threadID m_statsThreadOwner;
 #endif
