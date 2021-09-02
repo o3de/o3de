@@ -148,7 +148,7 @@ namespace AZ
                 AZ_Assert(m_numAttached == 0, "We should not delete an environment while there are %d modules attached! Unload all DLLs first!", m_numAttached);
 #endif
 
-                for (auto variableIt : m_variableMap)
+                for (const auto &variableIt : m_variableMap)
                 {
                     EnvironmentVariableHolderBase* holder = reinterpret_cast<EnvironmentVariableHolderBase*>(variableIt.second);
                     if (holder)
