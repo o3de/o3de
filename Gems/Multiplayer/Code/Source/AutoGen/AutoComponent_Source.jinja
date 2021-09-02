@@ -1401,7 +1401,7 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ ControllerBaseName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
         {{ ComponentName }}NetworkInput result;
-        {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::{{ ComponentName }}CreateInput, deltaTime);
+        {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::CreateInput, deltaTime);
 
         // Inputs for your own component always exist
         {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();

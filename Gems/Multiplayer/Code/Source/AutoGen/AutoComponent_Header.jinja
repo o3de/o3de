@@ -368,7 +368,7 @@ namespace {{ Component.attrib['Namespace'] }}
     public:
         AZ_RTTI({{ ComponentName }}Requests, "{{ (ComponentName ~ "Requests") | createHashGuid }}")
 
-        virtual {{ ComponentName }}NetworkInput {{ ComponentName }}CreateInput(float deltaTime) = 0;
+        virtual {{ ComponentName }}NetworkInput CreateInput(float deltaTime) = 0;
     };
 
     using {{ ComponentName }}RequestBus = AZ::EBus<{{ ComponentName }}Requests>;
@@ -378,12 +378,12 @@ namespace {{ Component.attrib['Namespace'] }}
           , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER({{ ComponentName }}BusHandler, "{{ (ComponentName ~ "BusHandler") | createHashGuid }}", AZ::SystemAllocator, {{ ComponentName }}CreateInput)
+        AZ_EBUS_BEHAVIOR_BINDER({{ ComponentName }}BusHandler, "{{ (ComponentName ~ "BusHandler") | createHashGuid }}", AZ::SystemAllocator, CreateInput)
 
-        {{ ComponentName }}NetworkInput {{ ComponentName }}CreateInput(float deltaTime) override
+        {{ ComponentName }}NetworkInput CreateInput(float deltaTime) override
         {
             {{ ComponentName }}NetworkInput result;
-            CallResult(result, FN_{{ ComponentName }}CreateInput, deltaTime);
+            CallResult(result, FN_CreateInput, deltaTime);
             return result;
         }
     };
