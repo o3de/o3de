@@ -124,10 +124,10 @@ namespace ScriptCanvasEditor
                 settings.m_metadata.Create<SerializationListeners>();
                 // attempt JSON deserialization...
                 if (JSRU::LoadObjectFromStreamByType
-                        ( &scriptCanvasDataTarget
-                        , azrtti_typeid<ScriptCanvasData>()
-                        , byteStreamSource
-                        , &settings).IsSuccess())
+                    ( &scriptCanvasDataTarget
+                    , azrtti_typeid<ScriptCanvasData>()
+                    , byteStreamSource
+                    , &settings).IsSuccess())
                 {
                     if (auto graphData = scriptCanvasAssetTarget->GetScriptCanvasGraph()
                         ? scriptCanvasAssetTarget->GetScriptCanvasGraph()->GetGraphData()
@@ -156,7 +156,7 @@ namespace ScriptCanvasEditor
                     byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
                     // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
                     if (AZ::Utils::LoadObjectFromStreamInPlace
-                    (byteStreamSource
+                        ( byteStreamSource
                         , scriptCanvasDataTarget
                         , m_serializeContext
                         , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))

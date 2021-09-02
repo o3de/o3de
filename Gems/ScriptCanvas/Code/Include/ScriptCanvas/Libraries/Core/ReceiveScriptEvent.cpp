@@ -353,7 +353,7 @@ namespace ScriptCanvas
 
             AZStd::optional<size_t> ReceiveScriptEvent::GetEventIndex(AZStd::string eventName) const
             {
-                return m_handler->GetFunctionIndex(eventName.c_str());;
+                return m_handler ? AZStd::optional<size_t>(m_handler->GetFunctionIndex(eventName.c_str())) : AZStd::nullopt;
             }
 
             AZStd::vector<SlotId> ReceiveScriptEvent::GetEventSlotIds() const
