@@ -230,13 +230,8 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {% if ControllerDerived %}
 {%      set ControllerBaseName = ControllerName + "Base" %}
 {% endif %}
-{% set NetworkInputCount = Component.findall('NetworkInput') | len %}
-{% set NetworkInputsExposedToScript = namespace(value=0) %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
-{%      endif %}
-{% endfor %}
+{% set NetworkInputCount = AutoComponentMacros.GetNetworkInputCount(Component) | int %}
+{% set NetworkInputsExposedToScriptCount = AutoComponentMacros.GetNetworkInputsExposedToScriptCount(Component) | int %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "AutoComponentTypes.h"
@@ -256,7 +251,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
-{% if NetworkInputsExposedToScript.value > 0 %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
 #include <AzCore/RTTI/BehaviorContext.h>
 {% endif %}
 
@@ -273,7 +268,7 @@ namespace {{ Service.attrib['Namespace'] }}
 {%      endif %}
 {% endfor %}
 
-{{ AutoComponentMacros.EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentBaseName, ComponentDerived, ControllerName, ControllerBaseName, ControllerDerived, NetworkInputCount) }}
+{{ AutoComponentMacros.EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentBaseName, ComponentDerived, ControllerName, ControllerBaseName, ControllerDerived) }}
 namespace {{ Component.attrib['Namespace'] }}
 {
     //! Forward declarations
@@ -347,16 +342,10 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
-{%      if NetworkInputsExposedToScript.value > 0 %}
-{% set parameters = [] %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%              set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
-{%      endif %}
-{% endfor %}
+{%      if NetworkInputsExposedToScriptCount > 0 %}
         AZ_TYPE_INFO({{ ComponentName }}NetworkInput, "{{ (ComponentName ~ "NetworkInput") | createHashGuid }}") 
         {{ ComponentName }}NetworkInput() = default;
-        {{ ComponentName }}NetworkInput({{ parameters|join(', ') }});
+        {{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }});
         static void Reflect(AZ::ReflectContext* context);
         
 {%      endif%}
@@ -371,7 +360,7 @@ namespace {{ Component.attrib['Namespace'] }}
         static Multiplayer::NetComponentId s_netComponentId;
         friend void RegisterMultiplayerComponents();
     };
-{% if NetworkInputsExposedToScript.value > 0 %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
 
     class {{ ComponentName }}Requests
         : public AZ::ComponentBus
@@ -425,7 +414,7 @@ namespace {{ Component.attrib['Namespace'] }}
         //! @{
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
 
-{% if NetworkInputsExposedToScript.value > 0 %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
         void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
         void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
 {% else %}

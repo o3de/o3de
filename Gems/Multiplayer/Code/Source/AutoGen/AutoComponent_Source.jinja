@@ -1152,13 +1152,8 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% else %}
 {%      set ControllerBaseName = ControllerName %}
 {% endif %}
-{% set NetworkInputCount = Component.findall('NetworkInput') | len %}
-{% set NetworkInputsExposedToScript = namespace(value=0) %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
-{%      endif %}
-{% endfor %}
+{% set NetworkInputCount = AutoComponentMacros.GetNetworkInputCount(Component) | int %}
+{% set NetworkInputsExposedToScriptCount = AutoComponentMacros.GetNetworkInputsExposedToScriptCount(Component) | int %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "{{ includeFile }}"
@@ -1305,21 +1300,19 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {% if NetworkInputCount > 0 %}
-{% if NetworkInputsExposedToScript.value > 0 %}
-{% set net_input_parameters_type_and_name = [] %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
 {% set net_input_parameters_name = [] %}
 {% for netInput in Component.findall('NetworkInput') %}
 {%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%      set net_input_parameters_type_and_name = net_input_parameters_type_and_name.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
 {%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
 {%      endif %}
 {% endfor %}
-    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ net_input_parameters_type_and_name|join(', ') }})
+    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
     { 
         return {{ ComponentName }}NetworkInput({{ net_input_parameters_name|join(', ') }});
     }
 
-    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ net_input_parameters_type_and_name|join(', ') }})
+    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
     : {% for param_name in net_input_parameters_name %}m_{{ param_name }}({{ param_name }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
 
     void {{ ComponentName }}NetworkInput::Reflect(AZ::ReflectContext* context)
@@ -1404,7 +1397,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endif %}
     }
 
-{% if NetworkInputsExposedToScript.value > 0 %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
     void {{ ControllerBaseName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
 {% if ControllerDerived %}
@@ -1477,9 +1470,9 @@ namespace {{ Component.attrib['Namespace'] }}
         }
         ReflectToEditContext(context);
         ReflectToBehaviorContext(context);
-{%          if NetworkInputsExposedToScript.value > 0 %}
+{%      if NetworkInputsExposedToScriptCount > 0 %}
         {{ ComponentName }}NetworkInput::Reflect(context);
-{%          endif %}
+{%      endif %}
     }
 
     void {{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)

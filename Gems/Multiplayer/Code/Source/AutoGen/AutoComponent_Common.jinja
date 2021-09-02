@@ -252,7 +252,37 @@ void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
 {#
 
 #}
-{%- macro EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentNameBase, ComponentDerived, ControllerName, ControllerNameBase, ControllerDerived, NetworkInputCount) -%}
+{% macro GetNetworkInputCount(Component) -%}
+{{ Component.findall('NetworkInput') | len }}
+{%- endmacro -%}
+{#
+
+#}
+{% macro GetNetworkInputsExposedToScriptCount(Component) -%}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
+{%      endif %}
+{% endfor %}
+{{ NetworkInputsExposedToScript.value }}
+{%- endmacro -%}
+{#
+
+#}
+{% macro GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) -%}
+{% set parameters = [] %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%              set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{%      endif %}
+{% endfor %}
+{{ parameters | join(', ') }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentNameBase, ComponentDerived, ControllerName, ControllerNameBase, ControllerDerived) -%}
 {% if ComponentDerived or ControllerDerived %}
 /* 
 /// You may use the classes below as a basis for your new derived classes. Derived classes must be marked in {{ (dataFileNames[0] | basename) }}
@@ -293,7 +323,16 @@ namespace {{ Component.attrib['Namespace'] }}
 
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+{% set NetworkInputCount = GetNetworkInputCount(Component) | int %}
 {% if NetworkInputCount > 0 %}
+
+        //! Common input creation logic for the NetworkInput. 
+        //! Fill out the input struct and the MultiplayerInputDriver will send the input data over the network
+        //!    to ensure it's processed.
+        //! @param input  input structure which to store input data for sending to the authority
+        //! @param deltaTime amount of time to integrate the provided inputs over
+        void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+
         //! Common input processing logic for the NetworkInput.
         //! @param input  input structure to process
         //! @param deltaTime amount of time to integrate the provided inputs over
@@ -366,6 +405,21 @@ namespace {{ Component.attrib['Namespace'] }}
     {
     }
 {%     if NetworkInputCount > 0 %}
+{% set net_input_parameters_name = [] %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
+{%      endif %}
+{% endfor %}
+
+    void {{ ControllerName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+{%     if (GetNetworkInputsExposedToScriptCount(Component) | int) > 0 %}
+        // The following NetworkInputs have been exposed to script: {{ net_input_parameters_name|join(', ') }}.
+        // The base controller will request these inputs from script...
+        {{ ControllerName }}Base::CreateInput(input, deltaTime);
+{%     endif %}
+    }
 
     void {{ ControllerName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
