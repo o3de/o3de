@@ -387,6 +387,11 @@ namespace AZ
             }
         }
 
+        Data::Asset<RPI::ModelAsset> SkinnedMeshInputBuffers::GetModelAsset() const
+        {
+            return m_modelAsset;
+        }
+
         size_t SkinnedMeshInputBuffers::GetMeshCount(size_t lodIndex) const
         {
             return m_lods[lodIndex].m_meshes.size();
@@ -754,8 +759,8 @@ namespace AZ
                     Aabb localAabb = inputMesh.GetAabb();
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
 
-                    modelCreator.AddMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot);
-                    modelLodCreator.SetMeshMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot.m_stableId);
+                    modelCreator.AddMaterialSlot(m_modelAsset->FindMaterialSlot(inputMesh.GetMaterialSlotId()));
+                    modelLodCreator.SetMeshMaterialSlot(inputMesh.GetMaterialSlotId());
 
                     modelLodCreator.EndMesh();
                 }

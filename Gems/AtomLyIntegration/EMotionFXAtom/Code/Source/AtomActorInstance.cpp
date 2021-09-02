@@ -514,13 +514,14 @@ namespace AZ
                     Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
                     for (const RPI::ModelLodAsset::Mesh& submesh : modelLodAsset->GetMeshes())
                     {
-                        if (submesh.GetMaterialAsset() && !submesh.GetMaterialAsset()->IsReady())
+                        Data::Asset<RPI::Material> defaultSubmeshMaterial = m_skinnedMeshInputBuffers->GetModelAsset()->FindMaterialSlot(submesh.GetMaterialSlotId()).m_defaultMaterialAsset;
+                        if (defaultSubmeshMaterial && !defaultSubmeshMaterial.IsReady())
                         {
                             // Start listening for the material's OnAssetReady event.
                             // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
                             // since those events will also come from the main thread
-                            m_waitForMaterialLoadIds.insert(submesh.GetMaterialAsset()->GetId());
-                            Data::AssetBus::MultiHandler::BusConnect(submesh.GetMaterialAsset()->GetId());
+                            m_waitForMaterialLoadIds.insert(defaultSubmeshMaterial.GetId());
+                            Data::AssetBus::MultiHandler::BusConnect(defaultSubmeshMaterial.GetId());
                         }
                     }
                 }

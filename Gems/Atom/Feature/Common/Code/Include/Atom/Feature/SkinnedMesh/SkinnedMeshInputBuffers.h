@@ -185,6 +185,9 @@ namespace AZ
             //! Create SkinnedMeshInputBuffers from a model
             void CreateFromModelAsset(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
+            //! Get the ModelAsset used to create the SkinnedMeshInputBuffers
+            Data::Asset<RPI::ModelAsset> GetModelAsset() const;
+
             //! Get the number of meshes for the lod.
             size_t GetMeshCount(size_t lodIndex) const;
 
