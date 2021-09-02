@@ -261,7 +261,7 @@ namespace AZ::Render
         {
             m_fpsHistory.pop_front();
         }
-        m_fpsHistory.push_back({currentTime});
+        m_fpsHistory.push_back(FrameTimingInfo(currentTime));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()

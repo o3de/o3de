@@ -75,6 +75,11 @@ namespace AZ
             {
                 AZStd::chrono::system_clock::time_point m_beginFrameTime;
                 AZStd::optional<AZStd::chrono::system_clock::time_point> m_endFrameTime;
+
+                explicit FrameTimingInfo(AZStd::chrono::system_clock::time_point beginFrameTime)
+                    : m_beginFrameTime(beginFrameTime)
+                {
+                }
             };
             AZStd::deque<FrameTimingInfo> m_fpsHistory;
             AZStd::optional<AZStd::chrono::system_clock::time_point> m_lastMemoryUpdate;
