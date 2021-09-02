@@ -10,7 +10,7 @@
 #include <Blast/BlastMaterial.h>
 #include <Family/ActorTracker.h>
 #include <Blast/BlastSystemBus.h>
-#include <AZCore/Interface/Interface.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace Blast
 {
