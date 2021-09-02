@@ -2182,9 +2182,9 @@ namespace AZ
 
     AZ::SerializeContext::DataPatchUpgradeHandler::~DataPatchUpgradeHandler()
     {
-        for (const auto &fieldUpgrades : m_upgrades)
+        for (const auto& fieldUpgrades : m_upgrades)
         {
-            for (const auto &versionUpgrades : fieldUpgrades.second)
+            for (const auto& versionUpgrades : fieldUpgrades.second)
             {
                 for (auto* upgrade : versionUpgrades.second)
                 {

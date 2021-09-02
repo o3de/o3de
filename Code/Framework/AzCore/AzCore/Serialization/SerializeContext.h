@@ -1938,7 +1938,7 @@ namespace AZ
         if (m_context->IsRemovingReflection())
         {
             // Delete any attributes allocated for this call.
-            for (auto &attributePair : attributes)
+            for (auto& attributePair : attributes)
             {
                 delete attributePair.second;
             }

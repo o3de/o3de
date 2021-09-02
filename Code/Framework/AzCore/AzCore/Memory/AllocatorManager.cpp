@@ -40,7 +40,7 @@ namespace AZ
             }
         };
         using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
-        using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator *, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
+        using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
         using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
 
         // For allocators that are created before we have an environment, we keep some module-local data for them so that we can register them 
