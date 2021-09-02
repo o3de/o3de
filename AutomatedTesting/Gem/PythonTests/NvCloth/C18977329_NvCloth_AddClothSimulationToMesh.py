@@ -45,10 +45,6 @@ def C18977329_NvCloth_AddClothSimulationToMesh():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
     
-    # Helper file Imports
-    import ImportPathHelper as imports
-
-    imports.init()
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
     
@@ -84,7 +80,5 @@ def C18977329_NvCloth_AddClothSimulationToMesh():
     helper.close_editor()
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
     from editor_python_test_tools.utils import Report
     Report.start_test(C18977329_NvCloth_AddClothSimulationToMesh)

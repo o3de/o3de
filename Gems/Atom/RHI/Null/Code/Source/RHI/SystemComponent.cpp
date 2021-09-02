@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
+#include <RHI/Fence.h>
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Image.h>
@@ -99,7 +100,7 @@ namespace AZ
 
         RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
         {
-            return nullptr;
+            return Fence::Create();
         }
 
         RHI::Ptr<RHI::Buffer> SystemComponent::CreateBuffer()

@@ -67,7 +67,7 @@ echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 
 :: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python
+set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 set DCCSI_PY_IDE_PACKAGES=%DCCSI_PY_IDE%\Lib\site-packages
