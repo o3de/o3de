@@ -66,8 +66,10 @@ namespace AZ
                     switch (hr)
                     {
                     case D3D12_ERROR_DRIVER_VERSION_MISMATCH:
-                    case DXGI_ERROR_UNSUPPORTED:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to driver version mismatch. Contents will be rebuilt.");
+                        break;
+                    case DXGI_ERROR_UNSUPPORTED:
+                        AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to the specified device interface or feature level not supported on this system. Contents will be rebuilt.");
                         break;
                     case D3D12_ERROR_ADAPTER_NOT_FOUND:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to mismatched hardware. Contents will be rebuilt.");
@@ -203,6 +205,11 @@ namespace AZ
 
         RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
         {
+#if defined(USE_PIX) || defined(USE_RENDERDOC)
+            // StorePipeline api does not function properly if Pix or RenderDoc is enabled
+            return RHI::ResultCode::Fail;
+#else
+
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             size_t currentSize = m_pipelineStates.size();
@@ -218,7 +225,6 @@ namespace AZ
                         m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
 
                         m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
-                        
                     }
                 }
             }
@@ -229,8 +235,9 @@ namespace AZ
             }
 
 #endif
-
             return RHI::ResultCode::Fail;
+#endif
+            
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const

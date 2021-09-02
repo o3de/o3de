@@ -18,7 +18,7 @@
 #include <Atom/RHI/PipelineLibrary.h>
 
 #include <AtomCore/Instance/InstanceData.h>
-
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -203,6 +203,9 @@ namespace AZ
             
             //! DrawListTag associated with this shader.
             RHI::DrawListTag m_drawListTag;
+
+            //! PipelineLibrary file name
+            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
         };
     }
 }
