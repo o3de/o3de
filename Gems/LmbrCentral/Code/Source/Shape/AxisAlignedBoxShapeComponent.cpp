@@ -19,6 +19,7 @@ namespace LmbrCentral
     void AxisAlignedBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("BoxShapeService"));
         provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
@@ -122,12 +123,6 @@ namespace LmbrCentral
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Constant("AxisAlignedBoxShapeComponentTypeId", BehaviorConstant(AxisAlignedBoxShapeComponentTypeId));
-
-            behaviorContext->EBus<BoxShapeComponentRequestsBus>("AxisAlignedBoxShapeComponentRequestsBus")
-                ->Event("GetBoxConfiguration", &BoxShapeComponentRequestsBus::Events::GetBoxConfiguration)
-                ->Event("GetBoxDimensions", &BoxShapeComponentRequestsBus::Events::GetBoxDimensions)
-                ->Event("SetBoxDimensions", &BoxShapeComponentRequestsBus::Events::SetBoxDimensions)
-                ;
         }
     }
 

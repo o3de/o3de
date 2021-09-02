@@ -47,29 +47,13 @@ namespace LmbrCentral
 
     void AxisAlignedBoxShape::Activate(AZ::EntityId entityId)
     {
-        m_entityId = entityId;
-        m_currentTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(m_currentTransform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+        BoxShape::Activate(entityId);
         m_currentTransform.SetRotation(AZ::Quaternion::CreateIdentity());
-        m_currentNonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
-
-        AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
-        ShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
-        BoxShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
-
-        AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
-            m_nonUniformScaleChangedHandler);
     }
 
-    void AxisAlignedBoxShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void AxisAlignedBoxShape::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_currentTransform.SetRotation(AZ::Quaternion::CreateIdentity());
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
-        ShapeComponentNotificationsBus::Event(
-            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        AZ::Transform worldNoRotation(world.GetTranslation(), AZ::Quaternion::CreateIdentity(), world.GetUniformScale());
+        BoxShape::OnTransformChanged(local, worldNoRotation);
     }
 } // namespace LmbrCentral

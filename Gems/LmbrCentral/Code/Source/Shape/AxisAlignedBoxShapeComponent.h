@@ -21,7 +21,7 @@ namespace LmbrCentral
     /// Type ID for the EditorAxisAlignedBoxShapeComponent
     static const AZ::Uuid EditorAxisAlignedBoxShapeComponentTypeId = "{8C027DF6-E157-4159-9BF8-F1B925466F1F}";
 
-    /// Provide a Component interface for BoxShape functionality.
+    /// Provide a Component interface for AxisAlignedBoxShape functionality.
     class AxisAlignedBoxShapeComponent
         : public AZ::Component
     {

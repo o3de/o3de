@@ -88,7 +88,6 @@ namespace LmbrCentral
             bool m_axisAligned = true; ///< Indicates whether the box is axis or object aligned.
         };
 
-        friend class AxisAlignedBoxShape;
         BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.

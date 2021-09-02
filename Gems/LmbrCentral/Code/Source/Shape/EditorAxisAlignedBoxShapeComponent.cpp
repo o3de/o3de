@@ -85,6 +85,7 @@ namespace LmbrCentral
     void EditorAxisAlignedBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
+        provided.push_back(AZ_CRC_CE("BoxShapeService"));
         provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 

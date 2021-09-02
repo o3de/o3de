@@ -30,7 +30,7 @@ namespace LmbrCentral
     {
     public:
         AZ_CLASS_ALLOCATOR(AxisAlignedBoxShape, AZ::SystemAllocator, 0)
-        AZ_RTTI(AxisAlignedBoxShape, "{CFDC96C5-287A-4033-8D7D-BA9331C13F25}")
+        AZ_RTTI(AxisAlignedBoxShape, "{CFDC96C5-287A-4033-8D7D-BA9331C13F25}", BoxShape)
 
         AxisAlignedBoxShape();
 
