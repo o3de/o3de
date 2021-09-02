@@ -25,29 +25,22 @@
 namespace LmbrCentral
 {
     AxisAlignedBoxShape::AxisAlignedBoxShape()
-        : m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {this->OnNonUniformScaleChanged(scale); })
+        : BoxShape()
     {
     }
 
     void AxisAlignedBoxShape::Reflect(AZ::ReflectContext* context)
     {
-        BoxShapeConfig::Reflect(context);
-
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AxisAlignedBoxShape>()
+            serializeContext->Class<AxisAlignedBoxShape, BoxShape>()
                 ->Version(1)
-                ->Field("Configuration", &AxisAlignedBoxShape::m_boxShapeConfig)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<AxisAlignedBoxShape>("Axis Aligned Box Shape", "Axis Aligned Box shape configuration parameters")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AxisAlignedBoxShape::m_boxShapeConfig, "Axis Aligned Box Configuration", "Axis Aligned Box shape configuration")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ;
+                ;
             }
         }
     }
@@ -70,19 +63,6 @@ namespace LmbrCentral
             m_nonUniformScaleChangedHandler);
     }
 
-    void AxisAlignedBoxShape::Deactivate()
-    {
-        m_nonUniformScaleChangedHandler.Disconnect();
-        BoxShapeComponentRequestsBus::Handler::BusDisconnect();
-        ShapeComponentRequestsBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
-    }
-
-    void AxisAlignedBoxShape::InvalidateCache(InvalidateShapeCacheReason reason)
-    {
-        m_intersectionDataCache.InvalidateCache(reason);
-    }
-
     void AxisAlignedBoxShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         m_currentTransform = world;
@@ -92,7 +72,7 @@ namespace LmbrCentral
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
     }
-
+    #if 0
     void AxisAlignedBoxShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
     {
         m_currentNonUniformScale = scale;
@@ -244,4 +224,5 @@ namespace LmbrCentral
 
         m_aabb = AZ::Aabb::CreateFromMinMax(boxMin, boxMax);
     }
+    #endif
 } // namespace LmbrCentral

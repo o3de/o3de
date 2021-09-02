@@ -16,12 +16,6 @@
 
 namespace LmbrCentral
 {
-    void DrawBoxShape(
-        const ShapeDrawParams& shapeDrawParams,
-        const BoxShapeConfig& boxShapeConfig,
-        AzFramework::DebugDisplayRequests& debugDisplay,
-        const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
-
     void AxisAlignedBoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ShapeService"));
