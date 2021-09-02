@@ -514,7 +514,7 @@ namespace AZ
                     Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
                     for (const RPI::ModelLodAsset::Mesh& submesh : modelLodAsset->GetMeshes())
                     {
-                        Data::Asset<RPI::Material> defaultSubmeshMaterial = m_skinnedMeshInputBuffers->GetModelAsset()->FindMaterialSlot(submesh.GetMaterialSlotId()).m_defaultMaterialAsset;
+                        Data::Asset<RPI::MaterialAsset> defaultSubmeshMaterial = m_skinnedMeshInputBuffers->GetModelAsset()->FindMaterialSlot(submesh.GetMaterialSlotId()).m_defaultMaterialAsset;
                         if (defaultSubmeshMaterial && !defaultSubmeshMaterial.IsReady())
                         {
                             // Start listening for the material's OnAssetReady event.
