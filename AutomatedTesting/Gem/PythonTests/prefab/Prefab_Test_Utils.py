@@ -44,17 +44,17 @@ def find_entity_by_unique_name(entity_name):
         Report.info(f"{len(entities)} entities with name '{entity_name}' found")
         return EntityId()
 
-def check_entity_at_position(entity_id, expected_prefab_position):
-    prefab_at_expected_position_result = (
-        "prefab is at expected position",
-        "prefab is *not* at expected position")
+def check_entity_at_position(entity_id, expected_entity_position):
+    entity_at_expected_position_result = (
+        "entity is at expected position",
+        "entity is *not* at expected position")
 
-    actual_prefab_position = components.TransformBus(bus.Event, "GetWorldTranslation", entity_id)
-    is_at_position = actual_prefab_position.IsClose(expected_prefab_position)
-    Report.result(prefab_at_expected_position_result, is_at_position)
+    actual_entity_position = components.TransformBus(bus.Event, "GetWorldTranslation", entity_id)
+    is_at_position = actual_entity_position.IsClose(expected_entity_position)
+    Report.result(entity_at_expected_position_result, is_at_position)
 
     if not is_at_position:
-        Report.info(f"Entity '{entity_id.ToString()}'\'s expected position: {expected_prefab_position.ToString()}, actual position: {actual_prefab_position.ToString()}")
+        Report.info(f"Entity '{entity_id.ToString()}'\'s expected position: {expected_entity_position.ToString()}, actual position: {actual_entity_position.ToString()}")
     
     return is_at_position
 
