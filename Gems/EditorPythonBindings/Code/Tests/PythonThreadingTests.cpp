@@ -114,7 +114,7 @@ namespace UnitTest
         try
         {
             // prepare handler on this thread
-            const AZStd::string script =
+            const AZStd::string_view script =
                 "import azlmbr.test\n"
                 "\n"
                 "def on_notification(args) :\n"

@@ -870,7 +870,7 @@ namespace UnitTest
 
         const int numFiresInParallel = 220;
 
-        AZStd::string script = AZStd::string::format(
+        const AZStd::string script = AZStd::string::format(
             "import azlmbr.bus\n"
             "import azlmbr.test\n"
             "\n"

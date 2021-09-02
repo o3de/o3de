@@ -258,11 +258,13 @@ namespace EditorPythonBindings
         void Finalize() override {}
     };
 
-    class PythonSystemComponent::ScopedLock final
+    // Manages the acquisition and release of the Python GIL (Global Interpreter Lock).
+    // Used by PythonSystemComponent to lock the GIL when executing python.
+    class PythonSystemComponent::PythonGILScopedLock final
     {
     public:
-        ScopedLock(AZStd::recursive_mutex& lock, int& lockCounter, bool tryLock = false);
-        ~ScopedLock();
+        PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock = false);
+        ~PythonGILScopedLock();
 
         bool IsLocked() const;
 
@@ -271,30 +273,30 @@ namespace EditorPythonBindings
         void Unlock();
 
         AZStd::recursive_mutex& m_lock;
-        int& m_lockCounter;
+        int& m_lockRecursiveCounter;
         bool m_locked = false;
         AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
         AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
     };
 
-    PythonSystemComponent::ScopedLock::ScopedLock(AZStd::recursive_mutex& lock, int& lockCounter, bool tryLock)
+    PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
         : m_lock(lock)
-        , m_lockCounter(lockCounter)
+        , m_lockRecursiveCounter(lockRecursiveCounter)
     {
         Lock(tryLock);
     }
 
-    PythonSystemComponent::ScopedLock::~ScopedLock()
+    PythonSystemComponent::PythonGILScopedLock::~PythonGILScopedLock()
     {
         Unlock();
     }
 
-    bool PythonSystemComponent::ScopedLock::IsLocked() const
+    bool PythonSystemComponent::PythonGILScopedLock::IsLocked() const
     {
         return m_locked;
     }
 
-    void PythonSystemComponent::ScopedLock::Lock(bool tryLock)
+    void PythonSystemComponent::PythonGILScopedLock::Lock(bool tryLock)
     {
         if (tryLock)
         {
@@ -309,15 +311,19 @@ namespace EditorPythonBindings
         }
 
         m_locked = true;
-        m_lockCounter++;
-        if (m_lockCounter == 1)
+        m_lockRecursiveCounter++;
+
+        // Only Acquire the GIL when there is no recursion. If there is
+        // recursion that means it's the same thread (because the mutex was able
+        // to be locked) and therefore it's already got the GIL acquired.
+        if (m_lockRecursiveCounter == 1)
         {
             m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
             m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
         }
     }
 
-    void PythonSystemComponent::ScopedLock::Unlock()
+    void PythonSystemComponent::PythonGILScopedLock::Unlock()
     {
         if (!m_locked)
         {
@@ -326,7 +332,7 @@ namespace EditorPythonBindings
 
         m_acquireGIL.reset();
         m_releaseGIL.reset();
-        m_lockCounter--;
+        m_lockRecursiveCounter--;
         m_locked = false;
         m_lock.unlock();
     }
@@ -446,13 +452,13 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::ExecuteWithLock(AZStd::function<void()> executionCallback)
     {
-        ScopedLock lock(m_lock, m_lockCounter);
+        PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
         executionCallback();
     }
 
     bool PythonSystemComponent::TryExecuteWithLock(AZStd::function<void()> executionCallback)
     {
-        ScopedLock lock(m_lock, m_lockCounter, true /*tryLock*/);
+        PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter, true /*tryLock*/);
         if (lock.IsLocked())
         {
             executionCallback();
@@ -629,7 +635,7 @@ namespace EditorPythonBindings
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
 
             // Acquire GIL before calling Python code
-            ScopedLock lock(m_lock, m_lockCounter);
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
             {
@@ -702,7 +708,7 @@ namespace EditorPythonBindings
                 &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByString, script);
 
             // Acquire GIL before calling Python code
-            ScopedLock lock(m_lock, m_lockCounter);
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             // Acquire scope for __main__ for executing our script
             pybind11::object scope = pybind11::module::import("__main__").attr("__dict__");
@@ -820,7 +826,7 @@ namespace EditorPythonBindings
         try
         {
             // Acquire GIL before calling Python code
-            ScopedLock lock(m_lock, m_lockCounter);
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             // Create standard "argc" / "argv" command-line parameters to pass in to the Python script via sys.argv.
             // argc = number of parameters.  This will always be at least 1, since the first parameter is the script name.

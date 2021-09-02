@@ -61,13 +61,13 @@ namespace EditorPythonBindings
         
     private:
         class SymbolLogHelper;
-        class ScopedLock;
+        class PythonGILScopedLock;
 
         // handle multiple Python initializers and threads
         AZStd::atomic_int m_initalizeWaiterCount {0};
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
-        int m_lockCounter = 0;
+        int m_lockRecursiveCounter = 0;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
     
         enum class Result
