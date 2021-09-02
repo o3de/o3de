@@ -108,6 +108,11 @@ namespace AZ
         private:
             bool PostLoadInit() override;
 
+            //! Realigns property value and name indices with MaterialProperiesLayout by using m_propertyNames. Property names not found in the
+            //! MaterialPropertiesLayout are discarded, while property names not included in m_propertyNames will use the default value
+            //! from m_materialTypeAsset.
+            void RealignPropertyValuesAndNames();
+
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
@@ -121,11 +126,20 @@ namespace AZ
             // MaterialReloadNotificationBus overrides...
             void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
 
+            static const char* s_debugTraceName;
+
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
             AZStd::vector<MaterialPropertyValue> m_propertyValues;
+            //! This is used to realign m_propertyValues as well as itself with MaterialPropertiesLayout when not empty.
+            //! If empty, this implies that m_propertyValues is aligned with the entries in m_materialPropertiesLayout.
+            AZStd::vector<AZ::Name> m_propertyNames;
+
+            //! A flag to determine if m_propertyValues needs to be aligned with MaterialPropertiesLayout. Set to true whenever
+            //! m_materialTypeAsset is reinitializing.
+            bool m_isDirty = true;
         };
        
 
