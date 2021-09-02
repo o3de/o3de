@@ -108,7 +108,13 @@ ly_add_target(
             Gem::MaterialEditor.Window
             Gem::MaterialEditor.Viewport
             Gem::MaterialEditor.Document
+    RUNTIME_DEPENDENCIES
+        Gem::AtomToolsFramework.Editor
+        Gem::EditorPythonBindings.Editor
+        Gem::ImageProcessingAtom.Editor
 )
+
+ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)
 
 # Add a 'builders' alias to allow the MaterialEditor root gem path to be added to the generated
 # cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
@@ -118,24 +124,11 @@ ly_create_alias(NAME MaterialEditor.Builders NAMESPACE Gem)
 # Editor opens up the MaterialEditor
 ly_add_dependencies(Editor Gem::MaterialEditor)
 
-ly_add_target_files(
-    TARGETS
-        MaterialEditor
-    FILES
-        ${CMAKE_CURRENT_LIST_DIR}/../MaterialEditor.xml
-    OUTPUT_SUBDIRECTORY
-        Gems/Atom/Tools/MaterialEditor
-)
-
 ly_add_target_dependencies(
     TARGETS
         MaterialEditor
     DEPENDENCIES_FILES
-        tool_dependencies.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-    # The Material Editor needs the LyShine "Tools" gem variant for the custom LyShine pass
-    DEPENDENT_TARGETS
-        Gem::LyShine.Tools
 )
 
 # Inject the project path into the MaterialEditor VS debugger command arguments if the build system being invoked

@@ -78,14 +78,11 @@ ly_add_target(
             Gem::ShaderManagementConsole.Window
             Gem::ShaderManagementConsole.Document
     RUNTIME_DEPENDENCIES
-        Gem::Atom_RHI_DX12.Private
-        Gem::Atom_RHI_Vulkan.Private
-        Gem::Atom_RHI.Private
-        Gem::Atom_RPI.Private
-        Gem::Atom_RPI.Builders
-        Gem::Atom_Feature_Common.Editor
+        Gem::AtomToolsFramework.Editor
         Gem::EditorPythonBindings.Editor
 )
+
+ly_set_gem_variant_to_load(TARGETS ShaderManagementConsole VARIANTS Tools)
 
 # Add build dependency to Editor for the ShaderManagementConsole application since
 # Editor opens up the ShaderManagementConsole
@@ -95,7 +92,6 @@ ly_add_target_dependencies(
     TARGETS
         ShaderManagementConsole
     DEPENDENCIES_FILES
-        tool_dependencies.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 )
 

@@ -468,7 +468,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
-        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
+        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     }
 
     void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
