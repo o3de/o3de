@@ -31,7 +31,7 @@ namespace UnitTest
     class FileFuncTest : public ScopedAllocatorSetupFixture
     {
     public:
-        void SetUp()
+        void SetUp() override
         {
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
