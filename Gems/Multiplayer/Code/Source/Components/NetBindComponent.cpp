@@ -403,9 +403,9 @@ namespace Multiplayer
         m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
     }
 
-    void NetBindComponent::NotifyPreRender(float deltaTime, float blendFactor)
+    void NetBindComponent::NotifyPreRender(float deltaTime)
     {
-        m_entityPreRenderEvent.Signal(deltaTime, blendFactor);
+        m_entityPreRenderEvent.Signal(deltaTime);
     }
 
     void NetBindComponent::NotifyCorrection()

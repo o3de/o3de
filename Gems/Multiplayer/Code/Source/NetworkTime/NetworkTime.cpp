@@ -110,8 +110,15 @@ namespace Multiplayer
 
                     if (networkTransform != nullptr)
                     {
-                        // We're not presently factoring in interpolated position here
-                        const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
+                        // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
+                        AZ::Vector3 rewindCenter = networkTransform->GetTranslation();
+                        const AZ::Vector3 rewindCenterPrevious = networkTransform->GetTranslationPrevious();
+                        const float blendFactor = GetNetworkTime()->GetHostBlendFactor();
+                        if (!AZ::IsClose(blendFactor, 1.0f) && !rewindCenter.IsClose(rewindCenterPrevious))
+                        {
+                            // If we have a blend factor, lerp the translation for accuracy
+                            rewindCenter = rewindCenterPrevious.Lerp(rewindCenter, blendFactor);
+                        }
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
 
