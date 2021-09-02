@@ -119,6 +119,7 @@ namespace ScriptCanvasEditor
         bool IsUpgrading() const;
 
         bool m_inProgress = false;
+        // scan fields
         size_t m_currentAssetRowIndex = 0;
         size_t m_inspectedAssets = 0;
         size_t m_failedAssets = 0;
@@ -134,11 +135,13 @@ namespace ScriptCanvasEditor
 
         AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
 
+        // upgrade fields
         AZStd::recursive_mutex m_mutex;
         bool m_upgradeComplete = false;
         AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
         OperationResult m_upgradeResult;
         AZStd::string m_upgradeMessage;
+        AZStd::string m_tmpFileName;
 
         AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 

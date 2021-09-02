@@ -464,6 +464,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
         bool fullPathFound = false;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
+        m_tmpFileName.clear();
         AZStd::string tmpFileName;
         // here we are saving the graph to a temp file instead of the original file and then copying the temp file to the original file.
         // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing. Temp files are ignored by AP.
@@ -486,6 +487,8 @@ namespace ScriptCanvasEditor
             fileStream.Close();
         }
 
+        // attempt to remove temporary file no matter what
+        m_tmpFileName = tmpFileName;
         if (!tempSavedSucceeded)
         {
             GraphUpgradeComplete(asset, OperationResult::Failure, "Save asset data to temporary file failed");
@@ -543,11 +546,13 @@ namespace ScriptCanvasEditor
 
         if (remainingAttempts == 0)
         {
+            // all attempts failed, give up
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s. giving up", target.c_str());
             GraphUpgradeComplete(asset, OperationResult::Failure, "Failed to move updated file from backup to source destination");
         }
         else if (remainingAttempts == 2)
         {
+            // before the final attempt, flush all caches
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to source destination failed: %s, trying again", target.c_str());
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
             AZ::IO::FileRequestPtr flushRequest = streamer->FlushCaches();
@@ -562,9 +567,11 @@ namespace ScriptCanvasEditor
         }
         else
         {
+            // the actual move attempt
             auto moveResult = AZ::IO::SmartMove(source.c_str(), target.c_str());
             if (moveResult.GetResultCode() == AZ::IO::ResultCode::Success)
             {
+                m_tmpFileName.clear();
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                 // Bump the slice asset up in the asset processor's queue.
@@ -590,13 +597,26 @@ namespace ScriptCanvasEditor
     }
 
     void VersionExplorer::GraphUpgradeComplete
-        (const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message)
+        ( const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message)
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         m_upgradeComplete = true;
         m_upgradeResult = result;
         m_upgradeMessage = message;
         m_upgradeAsset = asset;
+
+        if (!m_tmpFileName.empty())
+        {
+            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ_Assert(fileIO, "GraphUpgradeComplete: No FileIO instance");
+
+            if (fileIO->Exists(m_tmpFileName.c_str()) && !fileIO->Remove(m_tmpFileName.c_str()))
+            {
+                AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "Failed to remove temporary file: %s", m_tmpFileName.c_str());
+            }
+        }
+
+        m_tmpFileName.clear();
     }
 
     void VersionExplorer::GraphUpgradeCompleteUIUpdate
@@ -641,7 +661,6 @@ namespace ScriptCanvasEditor
         Log("FinalizeUpgrade!");
         m_inProgress = false;
         m_assetsToUpgrade.clear();
-
         m_ui->upgradeAllButton->setEnabled(false);
         m_ui->onlyShowOutdated->setEnabled(true);
 
@@ -650,6 +669,10 @@ namespace ScriptCanvasEditor
         if (assetsThatNeedManualInspection > 0)
         {
             m_ui->spinner->SetText("<html><head/><body><img src=':/stylesheet/img/UI20/Info.svg' width='16' height='16'/>Some graphs will require manual corrections, you will be prompted to review them upon closing this dialog</body></html>");
+        }
+        else
+        {
+            m_ui->spinner->SetText("Upgrade complete.");
         }
 
         AZ::SystemTickBus::Handler::BusDisconnect();
@@ -691,6 +714,7 @@ namespace ScriptCanvasEditor
             m_inspectedAssets = 0;
             m_currentAssetRowIndex = 0;
             m_ui->progressFrame->setVisible(true);
+            m_ui->progressBar->setVisible(true);
             m_ui->progressBar->setRange(0, aznumeric_cast<int>(m_assetsToInspect.size()));
             m_ui->progressBar->setValue(0);
 
