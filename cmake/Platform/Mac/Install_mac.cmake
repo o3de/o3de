@@ -34,6 +34,12 @@ set(installed_binaries_setreg_path ${target_conf_dir}/Registry/installed_binarie
 
 file(GENERATE OUTPUT ${installed_binaries_setreg_path} CONTENT ${installed_binaries_path_template})
 
+foreach(config ${CMAKE_CONFIGURATION_TYPES})
+    configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_Mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_Mac.cmake @ONLY)
+endforeach()
+        
+install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_Mac.cmake)
+
 #! ly_install_target_override: Mac specific target installation
 function(ly_install_target_override)
 
@@ -108,6 +114,11 @@ function(ly_post_install_steps)
             install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
         endforeach()
     endif()
+
+    install(CODE
+"ly_download_and_codesign_sdk_python()
+ly_codesign_sdk()"
+    )
 
 endfunction()
 
