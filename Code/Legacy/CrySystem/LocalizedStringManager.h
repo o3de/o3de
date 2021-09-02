@@ -10,9 +10,11 @@
 #pragma once
 
 #include <ILocalizationManager.h>
+#include <ISystem.h>
 #include <StlUtils.h>
 #include <VectorMap.h>
 #include <AzCore/std/containers/map.h>
+#include <CryCommon/LegacyAllocator.h>
 
 #include "Huffman.h"
 
@@ -153,9 +155,9 @@ private:
         CryHalf     fVolume;
         CryHalf     fRadioRatio;
         // SoundMoods
-        DynArray<SLocalizedAdvancesSoundEntry> SoundMoods;
+        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> SoundMoods;
         // EventParameters
-        DynArray<SLocalizedAdvancesSoundEntry> EventParameters;
+        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> EventParameters;
         // ~audio specific part
 
         // subtitle & radio flags
@@ -312,5 +314,3 @@ private:
     mutable AZStd::mutex m_cs;
     typedef AZStd::lock_guard<AZStd::mutex> AutoLock;
 };
-
-

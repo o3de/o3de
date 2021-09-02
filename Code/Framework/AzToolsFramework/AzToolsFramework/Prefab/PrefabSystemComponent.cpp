@@ -783,7 +783,7 @@ namespace AzToolsFramework
 
             PrefabDomValue& instance = instanceIterator->value;
             AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
-            PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
+            [[maybe_unused]] PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
             AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
             AZ_Assert(
                 sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),

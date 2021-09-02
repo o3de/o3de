@@ -616,8 +616,6 @@ namespace ImageProcessingAtom
              a_FilterExtents[oppositeFaceIdx].Augment((a_SrcSize-1), (a_SrcSize-1), 0);            
           }
        }
-
-       minV=minV;
     }
 
 

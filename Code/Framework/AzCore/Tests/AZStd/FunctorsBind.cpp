@@ -285,7 +285,9 @@ namespace UnitTest
 
             // Invocation and self-assignment
             global_int = 0;
+            AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
             v1 = v1;
+            AZ_POP_DISABLE_WARNING
             v1();
             AZ_TEST_ASSERT(global_int == 3);
 
@@ -294,7 +296,9 @@ namespace UnitTest
 
             // Invocation and self-assignment
             global_int = 0;
+            AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
             v1 = (v1);
+            AZ_POP_DISABLE_WARNING
             v1();
             AZ_TEST_ASSERT(global_int == 5);
 

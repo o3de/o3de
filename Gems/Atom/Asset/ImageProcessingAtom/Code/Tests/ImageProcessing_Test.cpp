@@ -830,7 +830,7 @@ namespace UnitTest
                     continue;
                 }
 
-                auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+                [[maybe_unused]] auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
                 imageToProcess.Set(srcImage);
                 imageToProcess.ConvertFormat(pixelFormat);
 

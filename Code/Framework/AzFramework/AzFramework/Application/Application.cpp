@@ -72,7 +72,7 @@
 #include <cctype>
 #include <stdio.h>
 
-static const char* s_azFrameworkWarningWindow = "AzFramework";
+[[maybe_unused]] static const char* s_azFrameworkWarningWindow = "AzFramework";
 
 namespace AzFramework
 {
@@ -602,7 +602,7 @@ namespace AzFramework
 
     void Application::SetRootPath(RootPathType type, const char* source)
     {
-        const size_t sourceLen = strlen(source);
+        [[maybe_unused]] const size_t sourceLen = strlen(source);
 
         // Copy the source path to the intended root path and correct the path separators as well
         switch (type)

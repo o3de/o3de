@@ -1020,7 +1020,7 @@ namespace LUAEditor
     {
         AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("LUAEditor OnSaveDocumentAs" "%s\n", assetId.c_str()).c_str());
 
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
+        [[maybe_unused]] DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
         AZ_Assert(docInfoIter != m_documentInfoMap.end(), "LUAEditor OnSaveDocumentAs() : Cant find Document Info.");
 
         OnSaveDocument(assetId, bCloseAfterSave, true);

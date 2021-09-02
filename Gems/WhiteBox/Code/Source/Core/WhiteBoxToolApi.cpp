@@ -29,6 +29,46 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 
+namespace OpenMesh
+{
+    // Overload methods need to be declared before including OpenMesh so their definitions are found
+
+    inline AZ::Vector3 normalize(const AZ::Vector3& v)
+    {
+        AZ::Vector3 vret = v;
+        vret.Normalize();
+        return vret;
+    }
+
+    inline float dot(const AZ::Vector3& v1, const AZ::Vector3& v2)
+    {
+        return v1.Dot(v2);
+    }
+
+    inline float norm(const AZ::Vector3& v)
+    {
+        return v.GetLength();
+    }
+
+    inline AZ::Vector3 cross(const AZ::Vector3& v1, const AZ::Vector3& v2)
+    {
+        return v1.Cross(v2);
+    }
+
+    inline AZ::Vector3 vectorize(AZ::Vector3& v, float s)
+    {
+        v = AZ::Vector3(s);
+        return v;
+    }
+
+    inline void newell_norm(AZ::Vector3& n, const AZ::Vector3& a, const AZ::Vector3& b)
+    {
+        n.SetX(n.GetX() + (a.GetY() * b.GetZ()));
+        n.SetY(n.GetY() + (a.GetZ() * b.GetX()));
+        n.SetZ(n.GetZ() + (a.GetX() * b.GetY()));
+    }
+}
+
 // OpenMesh includes
 AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
 #include <OpenMesh/Core/IO/MeshIO.hh>
@@ -81,40 +121,6 @@ namespace OpenMesh
             return size_;
         }
     };
-
-    inline AZ::Vector3 normalize(AZ::Vector3& v)
-    {
-        v.Normalize();
-        return v;
-    }
-
-    inline float dot(const AZ::Vector3& v1, const AZ::Vector3& v2)
-    {
-        return v1.Dot(v2);
-    }
-
-    inline float norm(const AZ::Vector3& v)
-    {
-        return v.GetLength();
-    }
-
-    inline AZ::Vector3 cross(const AZ::Vector3& v1, const AZ::Vector3& v2)
-    {
-        return v1.Cross(v2);
-    }
-
-    inline AZ::Vector3 vectorize(AZ::Vector3& v, float s)
-    {
-        v = AZ::Vector3(s);
-        return v;
-    }
-
-    inline void newell_norm(AZ::Vector3& n, const AZ::Vector3& a, const AZ::Vector3& b)
-    {
-        n.SetX(n.GetX() + (a.GetY() * b.GetZ()));
-        n.SetY(n.GetY() + (a.GetZ() * b.GetX()));
-        n.SetZ(n.GetZ() + (a.GetX() * b.GetY()));
-    }
 
     template<>
     inline void vector_cast(const AZ::Vector3& src, OpenMesh::Vec3f& dst, GenProg::Int2Type<3> /*unused*/)
