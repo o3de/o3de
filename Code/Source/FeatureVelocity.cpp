@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <FrameDatabase.h>
-#include <VelocityFrameData.h>
+#include <FeatureVelocity.h>
 
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -26,15 +26,15 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(VelocityFrameData, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
 
-        VelocityFrameData::VelocityFrameData()
-            : FrameData()
+        FeatureVelocity::FeatureVelocity()
+            : Feature()
             , m_nodeIndex(MCORE_INVALIDINDEX32)
         {
         }
 
-        size_t VelocityFrameData::CalcMemoryUsageInBytes() const
+        size_t FeatureVelocity::CalcMemoryUsageInBytes() const
         {
             size_t total = 0;
             total += m_velocities.capacity() * sizeof(Velocity);
@@ -42,7 +42,7 @@ namespace EMotionFX
             return total;
         }
 
-        bool VelocityFrameData::Init(const InitSettings& settings)
+        bool FeatureVelocity::Init(const InitSettings& settings)
         {
             MCORE_UNUSED(settings);
 
@@ -55,17 +55,17 @@ namespace EMotionFX
             return true;
         }
 
-        void VelocityFrameData::SetNodeIndex(size_t nodeIndex)
+        void FeatureVelocity::SetNodeIndex(size_t nodeIndex)
         {
             m_nodeIndex = nodeIndex;
         }
 
-        size_t VelocityFrameData::GetNumDimensionsForKdTree() const
+        size_t FeatureVelocity::GetNumDimensionsForKdTree() const
         {
             return 4;
         }
 
-        void VelocityFrameData::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
+        void FeatureVelocity::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
             const Velocity& value = m_velocities[frameIndex];
             frameFloats[startIndex] = value.m_direction.GetX();
@@ -74,7 +74,7 @@ namespace EMotionFX
             frameFloats[startIndex + 3] = value.m_speed;
         }
 
-        void VelocityFrameData::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
+        void FeatureVelocity::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
         {
             frameFloats[startIndex + 0] = context.m_direction.GetX();
             frameFloats[startIndex + 1] = context.m_direction.GetY();
@@ -82,7 +82,7 @@ namespace EMotionFX
             frameFloats[startIndex + 3] = context.m_speed;
         }
 
-        void VelocityFrameData::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
+        void FeatureVelocity::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
         {
             float sums[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             const size_t numFrames = m_velocities.size();
@@ -101,7 +101,7 @@ namespace EMotionFX
             }
         }
 
-        void VelocityFrameData::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureVelocity::ExtractFrameData(const ExtractFrameContext& context)
         {
             Velocity& currentVelocity = m_velocities[context.m_frameIndex];
             CalculateVelocity(m_nodeIndex, context.m_pose, context.m_nextPose, context.m_timeDelta, currentVelocity.m_direction, currentVelocity.m_speed);
@@ -111,7 +111,7 @@ namespace EMotionFX
             currentVelocity.m_direction.NormalizeSafe();
         }
 
-        void VelocityFrameData::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeatureVelocity::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
         {
             AZ_UNUSED(behaviorInstance);
 
@@ -132,7 +132,7 @@ namespace EMotionFX
             }
         }
 
-        float VelocityFrameData::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             const Velocity& frameVelocity = m_velocities[frameIndex];
             const float dotResult = frameVelocity.m_direction.Dot(context.m_direction);
@@ -144,7 +144,7 @@ namespace EMotionFX
             return totalCost;
         }
 
-        void VelocityFrameData::Reflect(AZ::ReflectContext* context)
+        void FeatureVelocity::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -152,7 +152,7 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<VelocityFrameData, FrameData>()
+            serializeContext->Class<FeatureVelocity, Feature>()
                 ->Version(1);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -161,7 +161,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<VelocityFrameData>("VelocityFrameData", "Joint velocity data.")
+            editContext->Class<FeatureVelocity>("VelocityFrameData", "Joint velocity data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

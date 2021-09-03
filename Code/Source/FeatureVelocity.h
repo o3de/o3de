@@ -13,15 +13,13 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
-#include <FrameData.h>
-
+#include <Feature.h>
 
 namespace AZ
 {
@@ -34,52 +32,48 @@ namespace EMotionFX
     {
         class FrameDatabase;
 
-        class EMFX_API DirectionFrameData
-            : public FrameData
+        class EMFX_API FeatureVelocity
+            : public Feature
         {
         public:
-            AZ_RTTI(DirectionFrameData, "{FDA7C5B5-0B18-45E5-893B-433FB38897F1}", FrameData)
+            AZ_RTTI(FeatureVelocity, "{DEEA4F0F-CE70-4F16-9136-C2BFDDA29336}", Feature)
             AZ_CLASS_ALLOCATOR_DECL
 
-            enum EAxis
+            struct EMFX_API Velocity
             {
-                AXIS_X = 0,
-                AXIS_Y = 1,
-                AXIS_Z = 2
+                AZ::Vector3 m_direction; /**< Direction we are moving to. */
+                float m_speed; /**< The speed at which we move into this direction (m/s). */
             };
 
             struct EMFX_API FrameCostContext
             {
-                const Pose* m_pose;
+                AZ::Vector3 m_direction;
+                float m_speed;
             };
 
-            DirectionFrameData();
-            ~DirectionFrameData() override = default;
+            FeatureVelocity();
+            ~FeatureVelocity() override = default;
 
             bool Init(const InitSettings& settings) override;
             void ExtractFrameData(const ExtractFrameContext& context) override;
+            void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance) override;
             size_t GetNumDimensionsForKdTree() const override;
             void FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
+            void FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context);
             void CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const override;
 
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
+            AZ_INLINE const Velocity& GetVelocity(size_t frameIndex) const { return m_velocities[frameIndex]; }
+
             void SetNodeIndex(size_t nodeIndex);
-            AZ_INLINE const AZ::Vector3& GetDirection(size_t frameIndex) const { return m_directions[frameIndex]; }
-
             size_t CalcMemoryUsageInBytes() const override;
-
-            void DebugDrawDirection(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const AZ::Vector3 startPoint, const AZ::Transform& transform, const AZ::Color& color);
-
-            AZ::Vector3 ExtractDirection(const AZ::Quaternion& quaternion) const;
 
             static void Reflect(AZ::ReflectContext* context);
 
-        private:          
-            AZStd::vector<AZ::Vector3> m_directions; /**< A position for every frame. */
+        private:
+            AZStd::vector<Velocity> m_velocities; /**< The velocities for each frame. */
             size_t m_nodeIndex; /**< The node to grab the data from. */
-            EAxis m_axis; /**< The rotation axis to use as direction vector. */
-            bool m_flipAxis; /**< Flip the axis? */
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

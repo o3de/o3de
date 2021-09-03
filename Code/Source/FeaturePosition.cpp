@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <FrameDatabase.h>
-#include <PositionFrameData.h>
+#include <FeaturePosition.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -26,15 +26,15 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(PositionFrameData, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(FeaturePosition, MotionMatchAllocator, 0)
 
-        PositionFrameData::PositionFrameData()
-            : FrameData()
+        FeaturePosition::FeaturePosition()
+            : Feature()
             , m_nodeIndex(MCORE_INVALIDINDEX32)
         {
         }
 
-        size_t PositionFrameData::CalcMemoryUsageInBytes() const
+        size_t FeaturePosition::CalcMemoryUsageInBytes() const
         {
             size_t total = 0;
             total += m_positions.capacity() * sizeof(AZ::Vector3);
@@ -42,7 +42,7 @@ namespace EMotionFX
             return total;
         }
 
-        bool PositionFrameData::Init(const InitSettings& settings)
+        bool FeaturePosition::Init(const InitSettings& settings)
         {
             MCORE_UNUSED(settings);
 
@@ -55,17 +55,17 @@ namespace EMotionFX
             return true;
         }
 
-        void PositionFrameData::SetNodeIndex(size_t nodeIndex)
+        void FeaturePosition::SetNodeIndex(size_t nodeIndex)
         {
             m_nodeIndex = nodeIndex;
         }
 
-        size_t PositionFrameData::GetNumDimensionsForKdTree() const
+        size_t FeaturePosition::GetNumDimensionsForKdTree() const
         {
             return 3;
         }
 
-        void PositionFrameData::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
+        void FeaturePosition::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
             const AZ::Vector3& value = m_positions[frameIndex];
             frameFloats[startIndex] = value.GetX();
@@ -73,7 +73,7 @@ namespace EMotionFX
             frameFloats[startIndex + 2] = value.GetZ();
         }
 
-        void PositionFrameData::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
+        void FeaturePosition::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 worldInputPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
@@ -83,7 +83,7 @@ namespace EMotionFX
             frameFloats[startIndex + 2] = relativeInputPosition.GetZ();
         }
 
-        void PositionFrameData::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
+        void FeaturePosition::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
         {
             float sums[3] = { 0.0f, 0.0f, 0.0f };
             const size_t numFrames = m_positions.size();
@@ -101,14 +101,14 @@ namespace EMotionFX
             }
         }
 
-        void PositionFrameData::ExtractFrameData(const ExtractFrameContext& context)
+        void FeaturePosition::ExtractFrameData(const ExtractFrameContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 nodeWorldPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
             m_positions[context.m_frameIndex] = invRootTransform.TransformPoint(nodeWorldPosition);
         }
 
-        void PositionFrameData::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeaturePosition::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
         {
             AZ_UNUSED(behaviorInstance);
 
@@ -124,7 +124,7 @@ namespace EMotionFX
             }
         }
 
-        float PositionFrameData::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 worldInputPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
@@ -133,7 +133,7 @@ namespace EMotionFX
             return (framePosition - relativeInputPosition).GetLength();
         }
 
-        void PositionFrameData::Reflect(AZ::ReflectContext* context)
+        void FeaturePosition::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -141,7 +141,7 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<PositionFrameData, FrameData>()
+            serializeContext->Class<FeaturePosition, Feature>()
                 ->Version(1);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -150,7 +150,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<PositionFrameData>("PositionFrameData", "Joint position data.")
+            editContext->Class<FeaturePosition>("PositionFrameData", "Joint position data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

@@ -21,7 +21,7 @@
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Transform.h>
 #include <BehaviorInstance.h>
-#include <FrameData.h>
+#include <Feature.h>
 
 namespace AZ
 {
@@ -38,11 +38,11 @@ namespace EMotionFX
     {
         class FrameDatabase;
 
-        class EMFX_API TrajectoryFrameData
-            : public FrameData
+        class EMFX_API FeatureTrajectory
+            : public Feature
         {
         public:
-            AZ_RTTI(TrajectoryFrameData, "{0451E95B-A452-439A-81ED-3962A06A3992}", FrameData)
+            AZ_RTTI(FeatureTrajectory, "{0451E95B-A452-439A-81ED-3962A06A3992}", Feature)
             AZ_CLASS_ALLOCATOR_DECL
 
             enum class Axis
@@ -67,8 +67,8 @@ namespace EMotionFX
                 AZ::Vector3 m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             };
 
-            TrajectoryFrameData();
-            ~TrajectoryFrameData() override = default;
+            FeatureTrajectory();
+            ~FeatureTrajectory() override = default;
 
             bool Init(const InitSettings& settings) override;
             void ExtractFrameData(const ExtractFrameContext& context) override;

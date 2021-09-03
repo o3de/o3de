@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
-#include <DirectionFrameData.h>
+#include <FeatureDirection.h>
 #include <FrameDatabase.h>
 #include <EMotionFX/Source/Pose.h>
 
@@ -28,17 +28,17 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(DirectionFrameData, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(FeatureDirection, MotionMatchAllocator, 0)
 
-        DirectionFrameData::DirectionFrameData()
-            : FrameData()
+        FeatureDirection::FeatureDirection()
+            : Feature()
             , m_nodeIndex(MCORE_INVALIDINDEX32)
             , m_axis(AXIS_X)
             , m_flipAxis(false)
         {
         }
 
-        size_t DirectionFrameData::CalcMemoryUsageInBytes() const
+        size_t FeatureDirection::CalcMemoryUsageInBytes() const
         {
             size_t total = 0;
             total += m_directions.capacity() * sizeof(AZ::Vector3);
@@ -46,7 +46,7 @@ namespace EMotionFX
             return total;
         }
 
-        bool DirectionFrameData::Init(const InitSettings& settings)
+        bool FeatureDirection::Init(const InitSettings& settings)
         {
             AZ_UNUSED(settings);
 
@@ -59,17 +59,17 @@ namespace EMotionFX
             return true;
         }
 
-        void DirectionFrameData::SetNodeIndex(size_t nodeIndex)
+        void FeatureDirection::SetNodeIndex(size_t nodeIndex)
         {
             m_nodeIndex = nodeIndex;
         }
 
-        size_t DirectionFrameData::GetNumDimensionsForKdTree() const
+        size_t FeatureDirection::GetNumDimensionsForKdTree() const
         {
             return 3;
         }
         
-        void DirectionFrameData::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
+        void FeatureDirection::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
             const AZ::Vector3& value = m_directions[frameIndex];
             frameFloats[startIndex] = value.GetX();
@@ -77,7 +77,7 @@ namespace EMotionFX
             frameFloats[startIndex + 2] = value.GetZ();
         }
 
-        void DirectionFrameData::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
+        void FeatureDirection::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
         {
             float sums[3] = { 0.0f, 0.0f, 0.0f };
             const size_t numFrames = m_directions.size();
@@ -95,7 +95,7 @@ namespace EMotionFX
             }
         }
 
-        AZ::Vector3 DirectionFrameData::ExtractDirection(const AZ::Quaternion& quaternion) const
+        AZ::Vector3 FeatureDirection::ExtractDirection(const AZ::Quaternion& quaternion) const
         {
             AZ::Vector3 axis = AZ::Vector3::CreateZero();
             axis.SetElement(static_cast<int>(m_axis), 1.0f);
@@ -107,19 +107,19 @@ namespace EMotionFX
             return quaternion.TransformVector(axis);
         }
 
-        void DirectionFrameData::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureDirection::ExtractFrameData(const ExtractFrameContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 nodeWorldDirection = ExtractDirection(context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_rotation);
             m_directions[context.m_frameIndex] = invRootTransform.TransformVector(nodeWorldDirection);
         }
 
-        void DirectionFrameData::DebugDrawDirection(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const AZ::Vector3 startPoint, const AZ::Transform& transform, const AZ::Color& color)
+        void FeatureDirection::DebugDrawDirection(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const AZ::Vector3 startPoint, const AZ::Transform& transform, const AZ::Color& color)
         {
             draw.DrawLine(startPoint, startPoint + transform.TransformVector(m_directions[frameIndex]), color);
         }
 
-        float DirectionFrameData::CalculateFrameCost([[maybe_unused]] size_t frameIndex, [[maybe_unused]] const FrameCostContext& context) const
+        float FeatureDirection::CalculateFrameCost([[maybe_unused]] size_t frameIndex, [[maybe_unused]] const FrameCostContext& context) const
         {
 /*
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
@@ -131,7 +131,7 @@ namespace EMotionFX
             return 0.0f;
         }
 
-        void DirectionFrameData::Reflect(AZ::ReflectContext* context)
+        void FeatureDirection::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -139,7 +139,7 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<DirectionFrameData, FrameData>()
+            serializeContext->Class<FeatureDirection, Feature>()
                 ->Version(1);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -148,7 +148,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<DirectionFrameData>("DirectionFrameData", "Joint direction data.")
+            editContext->Class<FeatureDirection>("DirectionFrameData", "Joint direction data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
