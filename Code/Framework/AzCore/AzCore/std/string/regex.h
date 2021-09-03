@@ -1758,7 +1758,7 @@ namespace AZStd
             return (*this);
         }
 
-        ~basic_regex()
+        virtual ~basic_regex()
         {   // destroy the object
             Clear();
         }

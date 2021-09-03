@@ -1249,6 +1249,8 @@ namespace AZ
 
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
             {
                 // By default the auto load option is true

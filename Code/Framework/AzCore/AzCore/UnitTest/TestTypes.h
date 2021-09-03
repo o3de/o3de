@@ -130,17 +130,23 @@ namespace UnitTest
         , public AllocatorsBase
     {
     public:
-        // Bring in both const and non-const SetUp and TearDown function into scope to resolve warning 4266
-        // no override available for virtual member function from base 'benchmark::Fixture'; function is hidden
-        using ::benchmark::Fixture::SetUp, ::benchmark::Fixture::TearDown;
-
         //Benchmark interface
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            SetupAllocator();
+        }
         void SetUp(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
             SetupAllocator();
         }
 
+        void TearDown(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            TeardownAllocator();
+        }
         void TearDown(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
