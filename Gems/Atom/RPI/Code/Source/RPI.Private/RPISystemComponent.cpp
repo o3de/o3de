@@ -105,15 +105,14 @@ namespace AZ
             m_rpiSystem.Shutdown();
         }
 
-        void RPISystemComponent::OnTick(float deltaTime, ScriptTimePoint time)
+        void RPISystemComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]ScriptTimePoint time)
         {
             if (deltaTime == 0.f)
             {
                 return;
             }
 
-
-            m_rpiSystem.SimulationTick(deltaTime, static_cast<float>(time.GetMilliseconds()));
+            m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
         }
 

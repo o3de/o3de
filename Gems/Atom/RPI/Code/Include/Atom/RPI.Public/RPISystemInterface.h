@@ -64,7 +64,7 @@ namespace AZ
             
             //! Tick for graphics simulation that runs on the CPU. 
             //! This will drive FeatureProcessor simulation activity. It should be called once per game-tick.
-            virtual void SimulationTick(float deltaTime, float simulationTimeMs) = 0;
+            virtual void SimulationTick() = 0;
 
             //! Tick for rendering one frame.
             virtual void RenderTick() = 0;

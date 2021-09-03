@@ -304,6 +304,9 @@ namespace AZ
         void RenderPipeline::OnPrepareFrame()
         {
             m_lastRenderRequestTime = AZStd::chrono::system_clock::now();
+
+            // If we're attempting to render at a target interval, check to see if we're within
+            // 1ms of that interval, enabling rendering only if we are.
             if (m_renderMode == RenderMode::RenderAtTargetRate)
             {
                 constexpr AZStd::chrono::duration<float> updateThresholdMs(0.001f);

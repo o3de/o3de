@@ -141,19 +141,19 @@ namespace AZ
             UpdatePipelineRefreshRate();
         }
 
-        float ViewportContext::GetTargetFramerate() const
+        float ViewportContext::GetTargetFrameRate() const
         {
-            float targetFramerate = GetFpsLimit();
+            float targetFrameRate = GetFpsLimit();
             const AZ::u32 vsyncInterval = GetVsyncInterval();
             if (vsyncInterval != 0)
             {
-                const float vsyncFramerate = static_cast<float>(GetRefreshRate()) / static_cast<float>(vsyncInterval);
-                if (targetFramerate == 0.f || vsyncFramerate < targetFramerate)
+                const float vsyncFrameRate = static_cast<float>(GetRefreshRate()) / static_cast<float>(vsyncInterval);
+                if (targetFrameRate == 0.f || vsyncFrameRate < targetFrameRate)
                 {
-                    targetFramerate = vsyncFramerate;
+                    targetFrameRate = vsyncFrameRate;
                 }
             }
-            return targetFramerate;
+            return targetFrameRate;
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -324,7 +324,7 @@ namespace AZ
                 return;
             }
 
-            const float refreshRate = GetTargetFramerate();
+            const float refreshRate = GetTargetFrameRate();
             // If we have a truly unlimited framerate, just render every tick
             if (refreshRate == 0.f)
             {

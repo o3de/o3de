@@ -20,8 +20,6 @@
 #include <QFutureWatcher>
 #include <QValidator>
 
-#include <AzCore/std/chrono/chrono.h>
-
 class QStringListModel;
 
 namespace Ui
@@ -226,5 +224,4 @@ private:
     QScopedPointer<CPrefixValidator> m_prefixValidator;
 
     TrackView::AtomOutputFrameCapture m_atomOutputFrameCapture;
-    AZStd::chrono::system_clock::time_point m_lastTick;
 };

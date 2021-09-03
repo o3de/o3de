@@ -410,8 +410,7 @@ namespace AZ
             // Get active pipelines which need to be rendered and notify them of an impending frame.
             AZStd::vector<RenderPipelinePtr> activePipelines;
             {
-                // FIXME: this crashes the CPU profiler, need to figure out why
-                //AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnPrepareFrame");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnPrepareFrame");
                 for (auto& pipeline : m_pipelines)
                 {
                     pipeline->OnPrepareFrame();

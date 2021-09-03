@@ -65,7 +65,7 @@ namespace AZ
             //! Gets the target frame rate for this viewport context.
             //! This returns the lowest of either the current VSync refresh rate
             //! or 0 for an unlimited frame rate (if there's no FPS limit and vsync is off).
-            float GetTargetFramerate() const;
+            float GetTargetFrameRate() const;
 
             //! Gets the current name of this ViewportContext.
             //! This name is used to tie this ViewportContext to its View stack, and ViewportContexts may be

@@ -186,7 +186,7 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::OnFrameEnd()
     {
         auto currentTime = AZStd::chrono::system_clock::now();
-        if (m_fpsHistory.size() > 0)
+        if (!m_fpsHistory.empty())
         {
             m_fpsHistory.back().m_endFrameTime = currentTime;
         }

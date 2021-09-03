@@ -1242,12 +1242,8 @@ void CSequenceBatchRenderDialog::OnKickIdleTimout()
         // Directly tick the renderer, as it's no longer part of the system tick
         if (auto rpiSystem = AZ::RPI::RPISystemInterface::Get())
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-            rpiSystem->SimulationTick(
-                AZStd::chrono::duration<float>(now - m_lastTick).count(),
-                AZStd::chrono::duration<float, AZStd::milli>(now.time_since_epoch()).count());
+            rpiSystem->SimulationTick();
             rpiSystem->RenderTick();
-            m_lastTick = now;
         }
     }
 }
