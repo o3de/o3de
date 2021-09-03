@@ -258,13 +258,22 @@ void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
 {#
 
 #}
-{% macro GetNetworkInputsExposedToScriptCount(Component) -%}
+{% macro ParseNetworkInputsExposedToScript(Component) -%}
 {% set NetworkInputsExposedToScript = namespace(value=0) %}
 {% for netInput in Component.findall('NetworkInput') %}
 {%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%          set NetworkInputsExposedToScript.value =  NetworkInputsExposedToScript.value + 1 %}
+{{ caller(netInput) -}}
 {%      endif %}
 {% endfor %}
+{%- endmacro -%}
+{#
+
+#}
+{% macro GetNetworkInputsExposedToScriptCount(Component) -%}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
+{%      set NetworkInputsExposedToScript.value = NetworkInputsExposedToScript.value + 1 %}
+{% endcall %}
 {{ NetworkInputsExposedToScript.value }}
 {%- endmacro -%}
 {#
@@ -272,11 +281,9 @@ void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
 #}
 {% macro GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) -%}
 {% set parameters = [] %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%              set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
-{%      endif %}
-{% endfor %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
+{%      set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{% endcall %}
 {{ parameters | join(', ') }}
 {%- endmacro -%}
 {#
@@ -406,11 +413,9 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 {%     if NetworkInputCount > 0 %}
 {% set net_input_parameters_name = [] %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
 {%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
-{%      endif %}
-{% endfor %}
+{% endcall %}
 
     void {{ ControllerName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {

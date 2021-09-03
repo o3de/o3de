@@ -1300,20 +1300,18 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {% if NetworkInputCount > 0 %}
+{% set ScriptableNetworkInputParamNames = [] %}
+{% call(netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{% set ScriptableNetworkInputParamNames = ScriptableNetworkInputParamNames.append(LowerFirst(netInput.attrib['Name'])) %}
+{% endcall %}
 {% if NetworkInputsExposedToScriptCount > 0 %}
-{% set net_input_parameters_name = [] %}
-{% for netInput in Component.findall('NetworkInput') %}
-{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-{%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
-{%      endif %}
-{% endfor %}
     {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
     { 
-        return {{ ComponentName }}NetworkInput({{ net_input_parameters_name|join(', ') }});
+        return {{ ComponentName }}NetworkInput({{ ScriptableNetworkInputParamNames|join(', ') }});
     }
 
     {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
-    : {% for param_name in net_input_parameters_name %}m_{{ param_name }}({{ param_name }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
+    : {% for param_name in ScriptableNetworkInputParamNames %}m_{{ LowerFirst(param_name) }}({{ LowerFirst(param_name) }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
 
     void {{ ComponentName }}NetworkInput::Reflect(AZ::ReflectContext* context)
     {
@@ -1331,12 +1329,15 @@ namespace {{ Component.attrib['Namespace'] }}
             behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in net_input_parameters_name %}{"{{ param_name }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
-{%                  for netInput in Component.findall('NetworkInput') %}
-{%                      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
-                    ->Property("{{ netInput.attrib['Name'] }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(netInput.attrib['Name']) }}))
-{%                      endif %}
-{%                 endfor %}
+{%                  set ScriptableNetInputNames = [] %}
+{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
+{%                  endcall %}
+                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in ScriptableNetInputNames %}{"{{ LowerFirst(param_name) }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
+
+{%                  for param_name in ScriptableNetInputNames %}
+                    ->Property("{{ param_name }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}))
+{%                  endfor %}
             ;
 
             behaviorContext->EBus<{{ ComponentName }}RequestBus>("{{ ComponentName }}BusHandler")
@@ -1405,9 +1406,9 @@ namespace {{ Component.attrib['Namespace'] }}
 
         // Inputs for your own component always exist
         {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
-{%      for input_name in net_input_parameters_name %}
-        {{ LowerFirst(ComponentName) }}Input->m_{{ input_name }} = result.m_{{ input_name }};
-{%      endfor %}
+{%      call(netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+        {{ LowerFirst(ComponentName) }}Input->m_{{ LowerFirst(netInput.attrib['Name']) }} = result.m_{{ LowerFirst(netInput.attrib['Name']) }};
+{%      endcall %}
     }
 
     void {{ ControllerBaseName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
