@@ -460,7 +460,7 @@ namespace GridMate
         {
             return iter->second;
         }
-        return NULL;
+        return nullptr;
     }
     //-----------------------------------------------------------------------------
     RepIdSeed ReplicaManager::ReserveIdBlock(PeerId requestor)
@@ -995,7 +995,7 @@ namespace GridMate
             AZ_Assert(iObj->second, "Detected NULL replica pointer in replica map! (id=0x%x)", replicaId);
             return iObj->second;
         }
-        return ReplicaPtr(NULL);
+        return ReplicaPtr(nullptr);
     }
     //-----------------------------------------------------------------------------
     void ReplicaManager::_Unmarshal(ReadBuffer& rb, ReplicaPeer* pFrom)
