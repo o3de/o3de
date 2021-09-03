@@ -10,7 +10,6 @@
 *
 */
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -153,11 +152,14 @@ namespace EMotionFX
 
         void BlendTreeMotionMatchNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
         {
+            m_timer.Stamp();
+            
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
             UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
             uniqueData->Clear();
             if (uniqueData->GetHasError())
             {
+                m_updateTime = 0.0f;
                 return;
             }
 
@@ -187,10 +189,16 @@ namespace EMotionFX
             }
                 
             //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
+            
+            m_updateTime = m_timer.GetDeltaTimeInSeconds();
         }
 
         void BlendTreeMotionMatchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
         {
+            AZ_UNUSED(animGraphInstance);
+            AZ_UNUSED(timePassedInSeconds);
+            m_timer.Stamp();
+
             for (AZ::u32 i = 0; i < GetNumConnections(); ++i)
             {
                 AnimGraphNode* node = GetConnection(i)->GetSourceNode();
@@ -219,10 +227,15 @@ namespace EMotionFX
             behaviorInstance->GetMotionInstance()->ExtractMotion(trajectoryDelta);
             data->SetTrajectoryDelta(trajectoryDelta);
             data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
+
+            m_postUpdateTime = m_timer.GetDeltaTimeInSeconds();
         }
 
         void BlendTreeMotionMatchNode::Output(AnimGraphInstance* animGraphInstance)
         {
+            AZ_UNUSED(animGraphInstance);
+            m_timer.Stamp();
+
             AnimGraphPose* outputPose;
 
             // Initialize to bind pose.
@@ -273,6 +286,16 @@ namespace EMotionFX
                 //uniqueData->m_rootHistory.DebugDrawSampled(actorInstance, 6, AZ::Colors::Orange);
                 //actorInstance->DrawSkeleton(outTransformPose, mVisualizeColor);
             }
+
+            m_outputTime = m_timer.GetDeltaTimeInSeconds();
+
+            static int counter = 0;
+            counter++;
+            if (counter > 10)
+            {
+                AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime * 1000.0f, m_postUpdateTime * 1000.0f, m_outputTime * 1000.0f);
+                counter = 0;
+            }
         }
 
         void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)
@@ -287,7 +310,7 @@ namespace EMotionFX
             }
 
             serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
-                ->Version(7)
+                ->Version(8)
                 ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
                 ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
                 ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)

@@ -1,0 +1,281 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Allocators.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/AnimGraphPose.h>
+#include <EMotionFX/Source/AnimGraphPosePool.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MotionInstance.h>
+#include <EMotionFX/Source/MotionInstancePool.h>
+#include <EMotionFX/Source/TransformData.h>
+
+#include <FeatureDatabase.h>
+#include <FrameDatabase.h>
+#include <KdTree.h>
+
+namespace EMotionFX
+{
+    namespace MotionMatching
+    {
+        AZ_CLASS_ALLOCATOR_IMPL(FeatureDatabase, MotionMatchAllocator, 0)
+
+        FeatureDatabase::FeatureDatabase()
+        {
+            m_kdTree = AZStd::make_unique<KdTree>();
+        }
+
+        FeatureDatabase::~FeatureDatabase()
+        {
+            Clear();
+        }
+
+        void FeatureDatabase::Clear()
+        {
+            // Clear the frame data.
+            for (Feature* frameData : m_features)
+            {
+                delete frameData;
+            }
+            m_featuresByType.clear();
+            m_features.clear();
+            m_kdTree->Clear();
+        }
+
+        size_t FeatureDatabase::CalcMemoryUsageInBytes() const
+        {
+            size_t total = 0;
+            for (const Feature* frameData : m_features)
+            {
+                if (frameData && frameData->GetId().IsNull())
+                {
+                    continue;
+                }
+
+                total += frameData->CalcMemoryUsageInBytes();
+            }
+
+            total += sizeof(m_featuresByType);
+            return total;
+        }
+
+        const Feature* FeatureDatabase::GetFeature(size_t index) const
+        {
+            return m_features[index];
+        }
+
+        const AZStd::vector<Feature*>& FeatureDatabase::GetFeatures() const
+        {
+            return m_features;
+        }
+
+        void FeatureDatabase::RegisterFeature(Feature* frameData)
+        {
+            // Try to see if there is a frame data with the same Id.
+            auto location = AZStd::find_if(m_featuresByType.begin(), m_featuresByType.end(), [&frameData](const auto& curEntry) -> bool {
+                return (frameData->GetId() == curEntry.second->GetId());
+            });
+
+            // If we already found it.
+            if (location != m_featuresByType.end())
+            {
+                AZ_Assert(false, "Frame data with id '%s' has already been registered!", frameData->GetId().data);
+                return;
+            }
+
+            m_featuresByType.emplace(frameData->GetId(), frameData);
+            m_features.emplace_back(frameData);
+        }
+
+        bool FeatureDatabase::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
+        {
+            const size_t numFrames = frameDatabase->GetNumFrames();
+            if (numFrames == 0)
+            {
+                return true;
+            }
+
+            // Initialize all frame datas before we process each frame.
+            for (Feature* frameData : m_features)
+            {
+                if (frameData && frameData->GetId().IsNull())
+                {
+                    return false;
+                }
+
+                Feature::InitSettings frameSettings;
+                frameSettings.m_actorInstance = actorInstance;
+                frameData->SetData(frameDatabase);
+                if (!frameData->Init(frameSettings))
+                {
+                    return false;
+                }
+            }
+
+            const auto& frames = frameDatabase->GetFrames();
+
+            // Iterate over all frames and extract the data for this frame.
+            const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
+            MotionInstancePool& motionInstancePool = GetMotionInstancePool();
+            MotionInstance* motionInstance = motionInstancePool.RequestNew(frames[0].GetSourceMotion(), actorInstance);
+            MotionInstance* motionInstanceNext = motionInstancePool.RequestNew(frames[0].GetSourceMotion(), actorInstance);
+            AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
+            AnimGraphPose* pose = posePool.RequestPose(actorInstance);
+            AnimGraphPose* previousPose = posePool.RequestPose(actorInstance);
+            AnimGraphPose* nextPose = posePool.RequestPose(actorInstance);
+            Motion* previousSourceMotion = nullptr;
+            Feature::ExtractFrameContext context;
+            context.m_pose = &pose->GetPose();
+            context.m_previousPose = &previousPose->GetPose();
+            context.m_nextPose = &nextPose->GetPose();
+            context.m_motionInstance = motionInstance;
+            bool lastNextValid = false;
+            for (const Frame& frame : frames)
+            {
+                // Sample the pose.
+                if (lastNextValid)
+                {
+                    *pose = *nextPose;
+                }
+                else
+                {
+                    motionInstance->SetMirrorMotion(frame.GetMirrored());
+                    Feature::SamplePose(frame.GetSampleTime(), bindPose, frame.GetSourceMotion(), motionInstance, const_cast<Pose*>(context.m_pose));
+                }
+
+                size_t nextFrameIndex = frame.GetFrameIndex() + 1;
+                if (frame.GetFrameIndex() > frames.size() - 2 || frames[nextFrameIndex].GetSourceMotion() != frame.GetSourceMotion())
+                {
+                    *nextPose = *pose;
+                    lastNextValid = false;
+                    context.m_nextFrameIndex = frame.GetFrameIndex();
+                }
+                else
+                {
+                    const Frame& nextFrame = frames[nextFrameIndex];
+                    motionInstanceNext->SetMirrorMotion(nextFrame.GetMirrored());
+                    Feature::SamplePose(nextFrame.GetSampleTime(), bindPose, nextFrame.GetSourceMotion(), motionInstanceNext, const_cast<Pose*>(context.m_nextPose));
+                    lastNextValid = true;
+                    context.m_timeDelta = nextFrame.GetSampleTime() - frame.GetSampleTime();
+                    context.m_nextFrameIndex = nextFrame.GetFrameIndex();
+                }
+
+                context.m_data = frameDatabase;
+                context.m_frameIndex = frame.GetFrameIndex();
+                if (frame.GetFrameIndex() == 0 || frame.GetSourceMotion() != previousSourceMotion)
+                {
+                    *previousPose = *pose;
+                    context.m_prevFrameIndex = frame.GetFrameIndex();
+                }
+                else
+                {
+                    context.m_prevFrameIndex = frame.GetFrameIndex() - 1;
+                }
+
+                // Extract all frame datas.
+                for (const auto& frameDataEntry : m_featuresByType)
+                {
+                    Feature* frameData = frameDataEntry.second;
+                    context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
+                    frameData->ExtractFrameData(context);
+                }
+
+                *previousPose = *pose;
+                previousSourceMotion = frame.GetSourceMotion();
+            }
+
+            posePool.FreePose(pose);
+            posePool.FreePose(previousPose);
+            posePool.FreePose(nextPose);
+            motionInstancePool.Free(motionInstance);
+            motionInstancePool.Free(motionInstanceNext);
+
+            // Initialize the kd-tree used to accelerate the searches.
+            if (!m_kdTree->Init(*frameDatabase, *this, maxKdTreeDepth, minFramesPerKdTreeNode)) // Internally automatically clears any existing contents.
+            {
+                AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure inside motion matching behavior.");
+                return false;
+            }
+
+            return true;
+        }
+
+        size_t FeatureDatabase::GetNumFeatureTypes() const
+        {
+            return m_features.size();
+        }
+
+        Feature* FeatureDatabase::FindFeatureByType(const AZ::TypeId& frameDataTypeId) const
+        {
+            const auto result = m_featuresByType.find(frameDataTypeId);
+            if (result == m_featuresByType.end())
+            {
+                return nullptr;
+            }
+
+            return result->second;
+        }
+
+        void FeatureDatabase::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        {
+            for (Feature* frameData: m_features)
+            {
+                if (frameData && frameData->GetId().IsNull())
+                {
+                    continue;
+                }
+
+                if (frameData->GetDebugDrawEnabled())
+                {
+                    frameData->DebugDraw(draw, behaviorInstance);
+                }
+            }
+        }
+
+        Feature* FeatureDatabase::CreateFrameDataByType(const AZ::TypeId& typeId)
+        {
+            AZ::SerializeContext* context = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            if (!context)
+            {
+                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+                return nullptr;
+            }
+
+            const AZ::SerializeContext::ClassData* classData = context->FindClassData(typeId);
+            if (!classData)
+            {
+                AZ_Warning("EMotionFX", false, "Can't find class data for this type.");
+                return nullptr;
+            }
+
+            Feature* frameDataObject = reinterpret_cast<Feature*>(classData->m_factory->Create(classData->m_name));
+            return frameDataObject;
+        }
+
+        size_t FeatureDatabase::CalcNumDataDimensionsForKdTree() const
+        {
+            size_t totalDimensions = 0;
+            for (Feature* frameData: m_features)
+            {
+                if ((frameData && frameData->GetId().IsNull()) || !frameData->GetIncludeInKdTree())
+                {
+                    continue;
+                }
+
+                totalDimensions += frameData->GetNumDimensionsForKdTree();
+            }
+            return totalDimensions;
+        }
+    } // namespace MotionMatching
+} // namespace EMotionFX

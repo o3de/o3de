@@ -19,7 +19,7 @@
 #include <EMotionFX/Source/MotionInstancePool.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <FrameData.h>
+#include <Feature.h>
 #include <KdTree.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -87,7 +87,7 @@ namespace EMotionFX
             // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
             // It contains the value for each dimension.
             size_t numFloatsRequired = 0;
-            for (const FrameData* frameData : m_behavior->GetData().GetFrameData())
+            for (const Feature* frameData : m_behavior->GetFeatures().GetFeatures())
             {
                 if (!frameData->GetIncludeInKdTree())
                 {
@@ -101,7 +101,7 @@ namespace EMotionFX
 
         void BehaviorInstance::UpdateNearestFrames()
         {
-            m_behavior->GetData().GetKdTree().FindNearestNeighbors(m_frameFloats, m_nearestFrames);
+            m_behavior->GetFeatures().GetKdTree().FindNearestNeighbors(m_frameFloats, m_nearestFrames);
         }
 
         void BehaviorInstance::DebugDraw()

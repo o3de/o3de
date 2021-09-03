@@ -17,7 +17,7 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/MotionInstance.h>
 #include <FrameDatabase.h>
-#include <TrajectoryFrameData.h>
+#include <FeatureTrajectory.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -29,14 +29,14 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(TrajectoryFrameData, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator, 0)
 
-        TrajectoryFrameData::TrajectoryFrameData()
-            : FrameData()
+        FeatureTrajectory::FeatureTrajectory()
+            : Feature()
         {
         }
 
-        size_t TrajectoryFrameData::CalcMemoryUsageInBytes() const
+        size_t FeatureTrajectory::CalcMemoryUsageInBytes() const
         {
             size_t total = 0;
             total += m_samples.capacity() * sizeof(Sample);
@@ -44,7 +44,7 @@ namespace EMotionFX
             return total;
         }
 
-        bool TrajectoryFrameData::Init(const InitSettings& settings)
+        bool FeatureTrajectory::Init(const InitSettings& settings)
         {
             MCORE_UNUSED(settings);
 
@@ -58,27 +58,27 @@ namespace EMotionFX
             return true;
         }
 
-        void TrajectoryFrameData::SetNodeIndex(size_t nodeIndex)
+        void FeatureTrajectory::SetNodeIndex(size_t nodeIndex)
         {
             m_nodeIndex = nodeIndex;
         }
 
-        size_t TrajectoryFrameData::CalcNumSamplesPerFrame() const
+        size_t FeatureTrajectory::CalcNumSamplesPerFrame() const
         {
             return CalcFrameDataIndex(1);
         }
 
-        size_t TrajectoryFrameData::GetNumDimensionsForKdTree() const
+        size_t FeatureTrajectory::GetNumDimensionsForKdTree() const
         {
             return 0;
         }
 
-        void TrajectoryFrameData::SetFacingAxis(const Axis axis)
+        void FeatureTrajectory::SetFacingAxis(const Axis axis)
         {
             m_facingAxis = axis;
         }
 
-        AZ::Vector3 TrajectoryFrameData::CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const
+        AZ::Vector3 FeatureTrajectory::CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const
         {
             AZ::Vector3 facingDirection = AZ::Vector3::CreateZero();
             facingDirection.SetElement(static_cast<int>(facingAxis), 1.0f);
@@ -94,7 +94,7 @@ namespace EMotionFX
             return velocityDirection.Dot(relativeFacingDirection);
         }
 */
-        void TrajectoryFrameData::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureTrajectory::ExtractFrameData(const ExtractFrameContext& context)
         {
             // Get a temp sample pose.
             ActorInstance* actorInstance = context.m_motionInstance->GetActorInstance();
@@ -182,27 +182,27 @@ namespace EMotionFX
             posePool.FreePose(nextSamplePose);
         }
 
-        void TrajectoryFrameData::SetPastTimeRange(float timeInSeconds)
+        void FeatureTrajectory::SetPastTimeRange(float timeInSeconds)
         {
             m_pastTimeRange = timeInSeconds;
         }
 
-        void TrajectoryFrameData::SetFutureTimeRange(float timeInSeconds)
+        void FeatureTrajectory::SetFutureTimeRange(float timeInSeconds)
         {
             m_futureTimeRange = timeInSeconds;
         }
 
-        void TrajectoryFrameData::SetNumPastSamplesPerFrame(size_t numHistorySamples)
+        void FeatureTrajectory::SetNumPastSamplesPerFrame(size_t numHistorySamples)
         {
             m_numPastSamples = numHistorySamples;
         }
 
-        void TrajectoryFrameData::SetNumFutureSamplesPerFrame(size_t numFutureSamples)
+        void FeatureTrajectory::SetNumFutureSamplesPerFrame(size_t numFutureSamples)
         {
             m_numFutureSamples = numFutureSamples;
         }
 
-        void TrajectoryFrameData::DebugDrawFutureTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color)
+        void FeatureTrajectory::DebugDrawFutureTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color)
         {
             if (frameIndex == InvalidIndex)
             {
@@ -225,7 +225,7 @@ namespace EMotionFX
             }
         }
 
-        void TrajectoryFrameData::DebugDrawPastTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color)
+        void FeatureTrajectory::DebugDrawPastTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color)
         {
             if (frameIndex == InvalidIndex)
             {
@@ -243,7 +243,7 @@ namespace EMotionFX
             }
         }
 
-        void TrajectoryFrameData::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeatureTrajectory::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
         {
             AZ_UNUSED(behaviorInstance);
 
@@ -294,36 +294,36 @@ namespace EMotionFX
             }
         }
 
-        size_t TrajectoryFrameData::CalcMidFrameDataIndex(size_t frameIndex) const
+        size_t FeatureTrajectory::CalcMidFrameDataIndex(size_t frameIndex) const
         {
             return CalcFrameDataIndex(frameIndex) + m_numPastSamples;
         }
 
-        size_t TrajectoryFrameData::CalcFrameDataIndex(size_t frameIndex) const
+        size_t FeatureTrajectory::CalcFrameDataIndex(size_t frameIndex) const
         {
             return frameIndex * (m_numPastSamples + 1 + m_numFutureSamples);
         }
 
-        size_t TrajectoryFrameData::CalcPastFrameDataIndex(size_t frameIndex, size_t historyFrameIndex) const
+        size_t FeatureTrajectory::CalcPastFrameDataIndex(size_t frameIndex, size_t historyFrameIndex) const
         {
             AZ_Assert(historyFrameIndex < m_numPastSamples, "The history frame index is out of range");
             return CalcFrameDataIndex(frameIndex) + historyFrameIndex;
         }
 
-        size_t TrajectoryFrameData::CalcFutureFrameDataIndex(size_t frameIndex, size_t futureFrameIndex) const
+        size_t FeatureTrajectory::CalcFutureFrameDataIndex(size_t frameIndex, size_t futureFrameIndex) const
         {
             AZ_Assert(futureFrameIndex < m_numFutureSamples, "The future frame index is out of range");
             return CalcMidFrameDataIndex(frameIndex) + 1 + futureFrameIndex;
         }
 
-        float TrajectoryFrameData::CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const
+        float FeatureTrajectory::CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const
         {
             const AZ::Vector3 frameFacingDirection = m_samples[CalcMidFrameDataIndex(frameIndex)].m_facingDirection;
             const float dotResult = context.m_facingDirectionRelative.Dot(frameFacingDirection);
             return 2.0f - (1.0f - dotResult);
         }
 
-        float TrajectoryFrameData::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             //AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
             //AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
@@ -343,7 +343,7 @@ namespace EMotionFX
             return futureCost;
         }
 
-        float TrajectoryFrameData::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             //AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
             //AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
@@ -364,7 +364,7 @@ namespace EMotionFX
             return pastCost;
         }
 
-        void TrajectoryFrameData::Reflect(AZ::ReflectContext* context)
+        void FeatureTrajectory::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -372,7 +372,7 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<TrajectoryFrameData, FrameData>()
+            serializeContext->Class<FeatureTrajectory, Feature>()
                 ->Version(1);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -381,7 +381,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<TrajectoryFrameData>("TrajectoryFrameData", "Joint past and future trajectory data.")
+            editContext->Class<FeatureTrajectory>("TrajectoryFrameData", "Joint past and future trajectory data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
