@@ -35,10 +35,10 @@ set(installed_binaries_setreg_path ${target_conf_dir}/Registry/installed_binarie
 file(GENERATE OUTPUT ${installed_binaries_setreg_path} CONTENT ${installed_binaries_path_template})
 
 foreach(config ${CMAKE_CONFIGURATION_TYPES})
-    configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_Mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_Mac.cmake @ONLY)
+    configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_mac.cmake @ONLY)
 endforeach()
         
-install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_Mac.cmake)
+install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_mac.cmake)
 
 #! ly_install_target_override: Mac specific target installation
 function(ly_install_target_override)
@@ -111,6 +111,23 @@ function(ly_post_install_steps)
             if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
                 continue()
             endif()
+            
+            get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+            if (${is_bundle})
+                set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>.app")
+            else()
+                set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>")
+            endif()
+            get_target_property(entitlement_file ${target} ENTITLEMENT_FILE_PATH)
+            if (NOT entitlement_file)
+                set(entitlement_file "none")
+            endif()
+            ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
+            string(CONFIGURE "${template_file}" configured_template_file @ONLY)
+            file(GENERATE
+                OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake
+                CONTENT "${configured_template_file}"
+            )
             install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
         endforeach()
     endif()

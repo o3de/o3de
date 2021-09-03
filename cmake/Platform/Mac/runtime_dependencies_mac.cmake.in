@@ -214,8 +214,6 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
 
     endif()
 
-    cmake_path(SET exec_path "${bundle_path}")
-
 else() # Non-bundle case
 
     if(depends_on_python)
@@ -223,12 +221,4 @@ else() # Non-bundle case
         execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -change @rpath/Python @rpath/Python.framework/Versions/Current/Python @target_file@)
     endif()
 
-    cmake_path(SET exec_path "@target_file@")
-
 endif()
-
-cmake_path(GET exec_path FILENAME runtime_output_filename)
-cmake_path(SET entitlement_file "$ENV{TARGET_TEMP_DIR}/${runtime_output_filename}.xcent")
-foreach(config @CMAKE_CONFIGURATION_TYPES@)
-    configure_file(@LY_ROOT_FOLDER@/cmake/Platform/Mac/runtime_install_mac.cmake.in @CMAKE_BINARY_DIR@/runtime_install/${config}/$ENV{TARGET_NAME}.cmake @ONLY)
-endforeach()

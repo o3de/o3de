@@ -12,6 +12,7 @@ set_target_properties(Editor PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/gui_info.plist
     RESOURCE ${CMAKE_CURRENT_LIST_DIR}/Images.xcassets
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME EditorAppIcon
+    ENTITLEMENT_FILE_PATH ${CMAKE_CURRENT_LIST_DIR}/EditorEntitlements.plist
 )
 
 # We cannot use ly_add_target here because we're already including this file from inside ly_add_target

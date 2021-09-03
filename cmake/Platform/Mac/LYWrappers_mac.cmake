@@ -8,6 +8,15 @@
 
 set(LY_ENABLE_HARDENED_RUNTIME OFF CACHE BOOL "Enable hardened runtime capability for Mac builds. This should be ON when building the engine for notarization/distribution.")
 
+define_property(TARGET PROPERTY ENTITLEMENT_FILE_PATH
+    BRIEF_DOCS "Path to the entitlement file"
+    FULL_DOCS [[
+        On MacOS, entitlements are used to grant certain privileges
+        to applications at runtime. Use this propery to specify the
+        path to a .plist file containing entitlements.
+    ]]
+)
+
 function(ly_apply_platform_properties target)
 
     set_target_properties(${target} PROPERTIES
@@ -24,12 +33,6 @@ function(ly_apply_platform_properties target)
                 XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
                 XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO
             )
-
-            if(${target_type} STREQUAL "EXECUTABLE")
-                set_target_properties(${target} PROPERTIES
-                    XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS cmake/Platform/Mac/O3DE.entitlements
-                )
-            endif()
         endif()
     endif()
 
