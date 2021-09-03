@@ -31,7 +31,7 @@ namespace AzToolsFramework
             virtual AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) = 0;
 
             virtual int ExecuteClosePrefabDialog(TemplateId templateId) = 0;
-            virtual void ExecuteSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference = false) = 0;
+            virtual void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference = false) = 0;
         };
 
     } // namespace Prefab

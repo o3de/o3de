@@ -33,9 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
-#include <QCheckBox>
 #include <QDialogButtonBox>
-#include <QPixmap>
 
 // Aws Native SDK
 #include <aws/sts/STSClient.h>
@@ -71,12 +69,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
@@ -742,12 +738,10 @@ void CCryEditApp::OnFileSave()
     }
     else
     {
-        //auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
         auto prefabEditorEntityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipService->GetRootPrefabTemplateId();
         auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        prefabIntegrationInterface->ExecuteSavePrefabsDialog(rootPrefabTemplateId, true);
-        // prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId)
+        prefabIntegrationInterface->ExecuteSavePrefabDialog(rootPrefabTemplateId, true);
     }
 }
 
@@ -3204,13 +3198,6 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             switch (1 - prefabSaveSelection)
             {
             case QDialogButtonBox::AcceptRole:
-                if (!GetIEditor()->GetDocument()->DoFileSave())
-                {
-                    // if the file save operation failed, assume that the user was informed of why
-                    // already and treat it as a cancel
-                    wasCreateLevelOperationCancelled = true;
-                    return false;
-                }
                 bIsDocModified = false;
                 break;
             case QDialogButtonBox::RejectRole:

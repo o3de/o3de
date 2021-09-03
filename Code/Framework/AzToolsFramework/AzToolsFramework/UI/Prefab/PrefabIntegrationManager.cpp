@@ -1089,7 +1089,7 @@ namespace AzToolsFramework
             return prefabSaveSelection;
         }
 
-        void PrefabIntegrationManager::ExecuteSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
         {
             using namespace AzToolsFramework::Prefab;
 
@@ -1120,14 +1120,14 @@ namespace AzToolsFramework
                 }
             }
 
-            AZStd::unique_ptr<QDialog> savePrefabsDialog = ConstructSavePrefabsDialog(templateId, useSaveAllPrefabsPreference);
-            if (savePrefabsDialog)
+            AZStd::unique_ptr<QDialog> savePrefabDialog = ConstructSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
+            if (savePrefabDialog)
             {
-                int prefabSaveSelection = savePrefabsDialog->exec();
+                int prefabSaveSelection = savePrefabDialog->exec();
 
                 if (prefabSaveSelection == QDialog::Accepted)
                 {
-                    SavePrefabsInDialog(savePrefabsDialog.get());
+                    SavePrefabsInDialog(savePrefabDialog.get());
                 }
             }
         }
@@ -1148,7 +1148,7 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::unique_ptr<QDialog> PrefabIntegrationManager::ConstructSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        AZStd::unique_ptr<QDialog> PrefabIntegrationManager::ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
         {
             AZStd::unique_ptr<QDialog> saveModifiedMessageBox = AZStd::make_unique<QDialog>(AzToolsFramework::GetActiveWindow());
 

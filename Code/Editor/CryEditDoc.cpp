@@ -13,16 +13,7 @@
 
 // Qt
 #include <QDateTime>
-#include <QCheckBox>
 #include <QDialogButtonBox>
-#include <QGroupBox>
-#include <QListWidget>
-#include <QScrollArea>
-#include <QSizePolicy>
-#include <AzQtComponents/Components/FlowLayout.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzQtComponents/Components/Widgets/CardHeader.h>
 
 // AzCore
 #include <AzCore/Component/TransformBus.h>

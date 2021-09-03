@@ -617,11 +617,6 @@ namespace AzToolsFramework
         m_playInEditorData.m_isEnabled = false;
     }
 
-    bool PrefabEditorEntityOwnershipService::IsRootTemplateDirty()
-    {
-        return (m_prefabSystemComponent->IsTemplateDirty(m_rootInstance->GetTemplateId()));
-    }
-
     //////////////////////////////////////////////////////////////////////////
     // Slice Buses implementation with Assert(false), this will exist only during Slice->Prefab
     // development to pinpoint and replace specific calls to Slice system

@@ -56,6 +56,5 @@ namespace AzToolsFramework
         virtual void StopPlayInEditor() = 0;
 
         virtual void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) = 0;
-        virtual bool IsRootTemplateDirty() = 0;
     };
 }

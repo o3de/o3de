@@ -25,7 +25,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        static constexpr const char s_savePrefabsKey[] = "/O3DE/Preferences/SavePrefabs";
+        static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/SaveAllPrefabs";
 
         void PrefabLoader::Reflect(AZ::ReflectContext* context)
         {
@@ -674,7 +674,7 @@ namespace AzToolsFramework
             SaveAllPrefabsPreference saveAllPrefabsPreference = SaveAllPrefabsPreference::AskEveryTime;
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
-                registry->GetObject(saveAllPrefabsPreference, s_savePrefabsKey);
+                registry->GetObject(saveAllPrefabsPreference, s_saveAllPrefabsKey);
             }
             return saveAllPrefabsPreference;
         }
@@ -683,7 +683,7 @@ namespace AzToolsFramework
         {
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
-                registry->SetObject(s_savePrefabsKey, saveAllPrefabsPreference);
+                registry->SetObject(s_saveAllPrefabsKey, saveAllPrefabsPreference);
             }
         }
 

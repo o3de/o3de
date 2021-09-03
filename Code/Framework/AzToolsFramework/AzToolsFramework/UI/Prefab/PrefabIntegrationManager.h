@@ -77,7 +77,7 @@ namespace AzToolsFramework
             // PrefabIntegrationInterface...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
             int ExecuteClosePrefabDialog(TemplateId templateId) override;
-            void ExecuteSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
+            void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
 
         private:
             // Manages the Edit Mode UI for prefabs
@@ -132,7 +132,7 @@ namespace AzToolsFramework
 
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AzQtComponents::Card* ConstructUnsavedPrefabsCard(TemplateId templateId);
-            AZStd::unique_ptr<QDialog> ConstructSavePrefabsDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
+            AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
 

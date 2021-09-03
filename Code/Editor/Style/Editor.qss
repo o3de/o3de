@@ -245,11 +245,6 @@ QTableWidget#recentLevelTable::item {
     qproperty-iconSize: 16px 16px;
 }
 
-QListWidget::item
-{
-    border : none;
-}
-
 #SavePrefabDialog, #SaveAllFilesDialog
 {
     min-width : 640px;
