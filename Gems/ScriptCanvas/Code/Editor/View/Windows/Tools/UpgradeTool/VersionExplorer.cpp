@@ -283,6 +283,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Grammar::g_printAbstractCodeModel = false;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         AZ::Interface<IUpgradeRequests>::Get()->SetIsUpgrading(true);
+        AZ::Interface<IUpgradeRequests>::Get()->ClearGraphsThatNeedUpgrade();
         m_inProgressAsset = m_assetsToUpgrade.begin();
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();

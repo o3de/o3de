@@ -511,6 +511,8 @@ namespace ScriptCanvasEditor
         bool saveRawTranslationOuputToFile = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
 
+
+        // save parsing status before after, just because it didn't parse after doesn't mean it didn't before
         graph->Parse(validationResults);
 
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = saveRawTranslationOuputToFile;
