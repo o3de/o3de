@@ -420,10 +420,11 @@ def ExportTestScreenshots(Map options, String workspace, String platformName, St
         def screenshotsFolder = '${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots'
         def s3Uploader = '${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py'
         def command = '${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} ' +
-                      '--file_regex "(.*png$|.*ppm$)" --bucket ${env.TEST_SCREENSHOT_BUCKET} '
-                      '--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER}'
+                      '--file_regex "(.*zip$)" --bucket ${env.TEST_SCREENSHOT_BUCKET} ' +
+                      '--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER}' +
+                      '--extra-args {"ACL": "bucket-owner-full-control"}'
         bat label: "Uploading test screenshots for ${jobName}",
-        script: command
+            script: command
     }
 }
 
