@@ -20,6 +20,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
     constexpr AZStd::string_view CameraBoostMultiplierSetting = "/Amazon/Preferences/Editor/Camera/BoostMultiplier";
     constexpr AZStd::string_view CameraRotateSpeedSetting = "/Amazon/Preferences/Editor/Camera/RotateSpeed";
@@ -154,6 +155,16 @@ namespace SandboxEditor
     void SetShowingGrid(const bool showing)
     {
         SetRegistry(ShowGridSetting, showing);
+    }
+
+    float ManipulatorLineBoundWidth()
+    {
+        return aznumeric_cast<float>(GetRegistry(ManipulatorLineBoundWidthSetting, 0.1));
+    }
+
+    void SetManipulatorLineBoundWidth(const float lineBoundWidth)
+    {
+        SetRegistry(ManipulatorLineBoundWidthSetting, lineBoundWidth);
     }
 
     float CameraTranslateSpeed()

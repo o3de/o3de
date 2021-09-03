@@ -573,6 +573,10 @@ static CVarBlock* VarBlockFromConsoleVars()
     IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
+        if (!cmds[i].data())
+        {
+            continue;
+        }
         ICVar* pCVar = console->GetCVar(cmds[i].data());
         if (!pCVar)
         {

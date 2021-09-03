@@ -226,6 +226,8 @@ namespace AzToolsFramework
         m_translationManipulator = AZStd::make_shared<IndexedTranslationManipulator<Vertex>>(
             Dimensions(), vertexIndex, vertex, WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId()),
             GetNonUniformScale(entityComponentIdPair.GetEntityId()));
+        m_translationManipulator->m_manipulator.SetLineBoundWidth(
+            AzToolsFramework::ManipulatorLineBoundWidth(AzFramework::InvalidViewportId));
 
         // setup how the manipulator should look
         m_manipulatorConfiguratorFn(&m_translationManipulator->m_manipulator);

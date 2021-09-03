@@ -132,6 +132,7 @@ public:
         AZ::IO::FileIOBase::SetInstance(nullptr);
 
         delete m_localFileIO;
+        m_localFileIO = nullptr;
 
         if (m_otherFileIO)
         {

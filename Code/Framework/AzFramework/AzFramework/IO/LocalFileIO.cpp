@@ -673,18 +673,17 @@ namespace AZ
         {
             AZ_Assert(path && path[0] != '%', "%% is deprecated, @ is the only valid alias token");
             AZStd::string_view pathView(path);
-            AZStd::string_view aliasKey;
-            AZStd::string_view aliasValue;
-            for (const auto& alias : m_aliases)
-            {
-                AZStd::string_view key{ alias.first };
-                if (AZ::StringFunc::StartsWith(pathView, key)) // we only support aliases at the front of the path
+
+            const auto found = AZStd::find_if(m_aliases.begin(), m_aliases.end(),
+                [pathView](const auto& alias)
                 {
-                    aliasKey = key;
-                    aliasValue = alias.second;
-                    break;
-                }
-            }
+                    return pathView.starts_with(alias.first);
+                });
+
+            using string_view_pair = AZStd::pair<AZStd::string_view, AZStd::string_view>;
+            auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? string_view_pair(*found)
+                                                                     : string_view_pair{};
+
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
             AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
@@ -708,6 +707,7 @@ namespace AZ
                 resolvedPathLen += postAliasView.size();
                 // Null-Terminated the resolved path
                 resolvedPath[resolvedPathLen] = '\0';
+
                 // If the path started with one of the "asset cache" path aliases, lowercase the path
                 const char* assetAliasPath = GetAlias("@assets@");
                 const char* rootAliasPath = GetAlias("@root@");
@@ -715,10 +715,13 @@ namespace AZ
                 const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
                     (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
                     (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
+
                 if (lowercasePath)
                 {
-                    AZStd::to_lower(resolvedPath, resolvedPath + resolvedPathLen);
+                    // Lowercase only the relative part after the replaced alias.
+                    AZStd::to_lower(resolvedPath + aliasValue.size(), resolvedPath + resolvedPathLen);
                 }
+
                 // Replace any backslashes with posix slashes
                 AZStd::replace(resolvedPath, resolvedPath + resolvedPathLen, AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
                 return true;

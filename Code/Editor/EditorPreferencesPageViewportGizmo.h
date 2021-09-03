@@ -5,59 +5,57 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include "Include/IPreferencesPage.h"
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <QIcon>
 
-
-class CEditorPreferencesPage_ViewportGizmo
-    : public IPreferencesPage
+class CEditorPreferencesPage_ViewportManipulator : public IPreferencesPage
 {
 public:
-    AZ_RTTI(CEditorPreferencesPage_ViewportGizmo, "{14433511-8175-4348-954E-82D903475B06}", IPreferencesPage)
+    AZ_RTTI(CEditorPreferencesPage_ViewportManipulator, "{14433511-8175-4348-954E-82D903475B06}", IPreferencesPage)
 
     static void Reflect(AZ::SerializeContext& serialize);
 
-    CEditorPreferencesPage_ViewportGizmo();
-    virtual ~CEditorPreferencesPage_ViewportGizmo() = default;
+    CEditorPreferencesPage_ViewportManipulator();
+    virtual ~CEditorPreferencesPage_ViewportManipulator() = default;
 
-    virtual const char* GetCategory() override { return "Viewports"; }
-    virtual const char* GetTitle() override { return "Gizmos"; }
+    virtual const char* GetCategory() override
+    {
+        return "Viewports";
+    }
+
+    virtual const char* GetTitle() override
+    {
+        return "Manipulators";
+    }
+
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
-    virtual void OnCancel() override {}
-    virtual bool OnQueryCancel() override { return true; }
+    virtual void OnCancel() override
+    {
+    }
+
+    virtual bool OnQueryCancel() override
+    {
+        return true;
+    }
 
 private:
     void InitializeSettings();
 
-    struct AxisGizmo
+    struct Manipulators
     {
-        AZ_TYPE_INFO(AxisGizmo, "{7D90D60E-996B-4F54-8748-B26EFA781EE2}")
+        AZ_TYPE_INFO(Manipulators, "{2974439C-4839-41F6-B526-F317999B9DB9}")
 
-        float m_size;
-        bool m_text;
-        int m_maxCount;
+        float m_manipulatorLineBoundWidth;
     };
 
-    struct Helpers
-    {
-        AZ_TYPE_INFO(Helpers, "{EC99922E-F61C-4AA0-9A51-630E09AB55AA}")
-
-        float m_helpersGlobalScale;
-        float m_tagpointScaleMulti;
-        float m_rulerSphereScale;
-        float m_rulerSphereTrans;
-    };
-
-    AxisGizmo m_axisGizmo;
-    Helpers m_helpers;
+    Manipulators m_manipulators;
     QIcon m_icon;
 };
-
-

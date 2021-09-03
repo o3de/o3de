@@ -156,22 +156,24 @@ namespace AzToolsFramework
         class ViewportInteractionRequests
         {
         public:
-            //! Return the current camera state for this viewport.
+            //! Returns the current camera state for this viewport.
             virtual AzFramework::CameraState GetCameraState() = 0;
-            //! Return if grid snapping is enabled.
+            //! Returns if grid snapping is enabled.
             virtual bool GridSnappingEnabled() = 0;
-            //! Return the grid snapping size.
+            //! Returns the grid snapping size.
             virtual float GridSize() = 0;
             //! Does the grid currently want to be displayed.
             virtual bool ShowGrid() = 0;
-            //! Return if angle snapping is enabled.
+            //! Returns if angle snapping is enabled.
             virtual bool AngleSnappingEnabled() = 0;
-            //! Return the angle snapping/step size.
+            //! Returns the angle snapping/step size.
             virtual float AngleStep() = 0;
-            //! Transform a point in world space to screen space coordinates in Qt Widget space.
+            //! Returns the current line bound width for manipulators.
+            virtual float ManipulatorLineBoundWidth() = 0;
+            //! Transforms a point in world space to screen space coordinates in Qt Widget space.
             //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            //! Transform a point from Qt widget screen space to world space based on the given clip space depth.
+            //! Transforms a point from Qt widget screen space to world space based on the given clip space depth.
             //! Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             //! Returns the world space position if successful.
             virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
@@ -201,6 +203,8 @@ namespace AzToolsFramework
             virtual bool AngleSnappingEnabled() const = 0;
             //! Return the angle snapping/step size.
             virtual float AngleStep() const = 0;
+            //! Returns the current line bound width for manipulators.
+            virtual float ManipulatorLineBoundWidth() const = 0;
         };
 
         //! Type to inherit to implement ViewportInteractionRequests.
@@ -210,11 +214,15 @@ namespace AzToolsFramework
         class ViewportSettingNotifications
         {
         public:
-            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled) {}
-            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled) {}
+            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+            {
+            }
 
         protected:
-            ViewportSettingNotifications() = default;
+            ~ViewportSettingNotifications() = default;
         };
 
         using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
@@ -335,5 +343,24 @@ namespace AzToolsFramework
             }
         }
         return AzFramework::ClickDetector::ClickEvent::Nil;
+    }
+
+    //! Wrap EBus call to retrieve manipulator line bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
+    inline float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId)
+    {
+        float lineBoundWidth = 0.0f;
+        if (viewportId != AzFramework::InvalidViewportId)
+        {
+            ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+                lineBoundWidth, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
+        }
+        else
+        {
+            ViewportInteraction::ViewportInteractionRequestBus::BroadcastResult(
+                lineBoundWidth, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
+        }
+
+        return lineBoundWidth;
     }
 } // namespace AzToolsFramework
