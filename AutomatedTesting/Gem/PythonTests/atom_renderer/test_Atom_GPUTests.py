@@ -8,7 +8,6 @@ Tests that require a GPU in order to run.
 """
 
 import datetime
-import json
 import logging
 import os
 import re
