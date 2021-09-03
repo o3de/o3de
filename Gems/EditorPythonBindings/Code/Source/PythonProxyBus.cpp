@@ -289,7 +289,7 @@ namespace EditorPythonBindings
                     "This occurs when there is already another thread executing python, which has the GIL locked, "
                     "making it not possible for this thread to callback python at the same time. "
                     "This is a limitation of python interpreter. Python scripts executions and event callbacks "
-                    "from EBuses need be designed to avoid this scenario to happen.",
+                    "from EBuses need be designed to avoid this scenario.",
                     handler->m_ebus->m_name.c_str(), eventName);
             }
 
