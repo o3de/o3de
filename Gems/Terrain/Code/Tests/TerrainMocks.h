@@ -74,19 +74,11 @@ namespace UnitTest
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetWorldMin([[maybe_unused]] AZ::Vector3 worldOrigin) override
-        {
-        }
-
-        void SetWorldMax([[maybe_unused]] AZ::Vector3 worldBounds) override
+        void SetWorldBounds(const AZ::Aabb& worldBounds) override
         {
         }
 
         void SetHeightQueryResolution([[maybe_unused]] AZ::Vector2 queryResolution) override
-        {
-        }
-
-        void SetDebugWireframe([[maybe_unused]] bool wireframeEnabled) override
         {
         }
 

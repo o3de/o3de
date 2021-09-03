@@ -85,18 +85,13 @@ protected:
     }
 };
 
-TEST_F(LayerSpawnerComponentTest, SanityTest)
-{
-    ASSERT_TRUE(true);
-}
-
 TEST_F(LayerSpawnerComponentTest, ActivatEntityActivateSuccess)
 {
     CreateEntity();
     AddLayerSpawnerAndShapeComponentToEntity();
 
     m_entity->Activate();
-    EXPECT_TRUE(m_entity->GetState() == AZ::Entity::State::Active);
+    EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
      
     ResetEntity();
 }
@@ -118,7 +113,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 
     Terrain::TerrainSpawnerRequestBus::EventResult(useGroundPlane, m_entity->GetId(),  &Terrain::TerrainSpawnerRequestBus::Events::GetUseGroundPlane);
 
-    EXPECT_EQ(true, useGroundPlane);
+    EXPECT_TRUE(useGroundPlane);
 
     ResetEntity();
 }
@@ -150,7 +145,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
     Terrain::TerrainSpawnerRequestBus::EventResult(
         useGroundPlane, m_entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetUseGroundPlane);
 
-    EXPECT_EQ(false, useGroundPlane);
+    EXPECT_FALSE(useGroundPlane);
 
     ResetEntity();
 }
