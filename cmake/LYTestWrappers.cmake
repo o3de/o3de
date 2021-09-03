@@ -329,6 +329,7 @@ endfunction()
 #                     googletest tests through AzTestRunner
 # \arg:NAME Name to for the test run target
 # \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
+# \arg:TEST_SERIAL (bool) disable parallel execution alongside other test modules, important when this test depends on shared resources or environment state
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
@@ -343,6 +344,7 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
+    set(options TEST_SERIAL)
     set(one_value_args NAME TARGET TEST_SUITE) 
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -357,6 +359,7 @@ function(ly_add_googletest)
     # AzTestRunner modules only supports google test libraries, regardless of whether or not 
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
+    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_googletest_TEST_SERIAL}")
 
     if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
         return()
