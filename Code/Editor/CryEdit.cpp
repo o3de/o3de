@@ -723,14 +723,10 @@ void CCryEditApp::OnFileSave()
     }
 
     const QScopedValueRollback<bool> rollback(m_savingLevel, true);
-
-    
     
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-
-    
 
     if (!usePrefabSystemForLevels)
     {
@@ -738,9 +734,11 @@ void CCryEditApp::OnFileSave()
     }
     else
     {
-        auto prefabEditorEntityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipService->GetRootPrefabTemplateId();
-        auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
+        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
         prefabIntegrationInterface->ExecuteSavePrefabDialog(rootPrefabTemplateId, true);
     }
 }
@@ -3187,12 +3185,18 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         }
         else
         {
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+            auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+            AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+            AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
 
-            int prefabSaveSelection =
-                prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
+            if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
+            {
+                return false;
+            }
+
+            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+            int prefabSaveSelection = prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
 
             // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
             switch (1 - prefabSaveSelection)

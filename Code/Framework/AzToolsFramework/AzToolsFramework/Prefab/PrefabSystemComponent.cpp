@@ -756,13 +756,20 @@ namespace AzToolsFramework
 
         bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId templateId)
         {
-            auto parentTemplate = FindTemplate(templateId);
+            auto prefabTemplate = FindTemplate(templateId);
+
+            if (!prefabTemplate.has_value())
+            {
+                AZ_Assert(false, "Template with id %llu is not found", templateId);
+                return false;
+            }
+
             if (IsTemplateDirty(templateId))
             {
                 return true;
             }
 
-            auto linkIds = parentTemplate->get().GetLinks();
+            auto linkIds = prefabTemplate->get().GetLinks();
 
             for (auto linkId : linkIds)
             {
@@ -777,31 +784,39 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId templateId)
         {
-            auto parentTemplate = FindTemplate(templateId);
-            if (IsTemplateDirty(templateId))
-            {
-                m_prefabLoader.SaveTemplate(templateId);
-            }
-            auto linkIds = parentTemplate->get().GetLinks();
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
+            GetDirtyTemplatePaths(templateId, dirtyTemplatePaths);
 
-            for (auto linkId : linkIds)
+            for (auto dirtyTemplatePath : dirtyTemplatePaths)
             {
-                auto linkIterator = m_linkIdMap.find(linkId);
-                if (linkIterator != m_linkIdMap.end())
+                auto dirtyTemplateIterator = m_templateFilePathToIdMap.find(dirtyTemplatePath);
+                if (dirtyTemplateIterator == m_templateFilePathToIdMap.end())
                 {
-                    SaveAllDirtyTemplates(linkIterator->second.GetSourceTemplateId());
+                    AZ_Assert(false, "Template id for template with path '%s' is not found.", dirtyTemplatePath);
+                }
+                else
+                {
+                    m_prefabLoader.SaveTemplate(dirtyTemplateIterator->second);
                 }
             }
         }
 
-        void PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths)
+        void PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId templateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths)
         {
-            auto parentTemplate = FindTemplate(parentTemplateId);
-            if (IsTemplateDirty(parentTemplateId))
+            auto prefabTemplate = FindTemplate(templateId);
+
+            if (!prefabTemplate.has_value())
             {
-                dirtyTemplatePaths.emplace(parentTemplate->get().GetFilePath());
+                AZ_Assert(false, "Template with id %llu is not found", templateId);
+                return;
             }
-            auto linkIds = parentTemplate->get().GetLinks();
+
+            if (IsTemplateDirty(templateId))
+            {
+                dirtyTemplatePaths.emplace(prefabTemplate->get().GetFilePath());
+            }
+
+            auto linkIds = prefabTemplate->get().GetLinks();
 
             for (auto linkId : linkIds)
             {

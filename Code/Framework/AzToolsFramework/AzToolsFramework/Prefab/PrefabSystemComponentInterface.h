@@ -50,8 +50,18 @@ namespace AzToolsFramework
 
             virtual bool IsTemplateDirty(const TemplateId& templateId) = 0;
             virtual void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) = 0;
+
+            //! Recursive function to check if the template is dirty or if any dirty templates are presents in the links of the template.
+            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
             virtual bool AreDirtyTemplatesPresent(TemplateId templateId) = 0;
+
+            //! Recursive function to save if the template is dirty and save all the dirty templates in the links of the template.
+            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
             virtual void SaveAllDirtyTemplates(TemplateId templateId) = 0;
+
+            //! Recursive function that fetches the set of dirty templates given a starting template to check for outgoing links.
+            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
+            //! @param[out] dirtyTemplatePaths The set of dirty template paths populated.
             virtual void GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths) = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;

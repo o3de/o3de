@@ -245,7 +245,8 @@ QTableWidget#recentLevelTable::item {
     qproperty-iconSize: 16px 16px;
 }
 
-#SavePrefabDialog, #SaveAllFilesDialog
+
+#ClosePrefabDialog, #SavePrefabDialog
 {
     min-width : 640px;
 }
@@ -262,7 +263,7 @@ QTableWidget#recentLevelTable::item {
     padding: 5px 2px 5px 2px;
 }
 
-#SavePrefabDialog #PrefabSaveWarningFrame
+#ClosePrefabDialog #PrefabSaveWarningFrame
 {
     border: 1px solid orange;
     margin: 10px 15px 10px 15px;
@@ -271,12 +272,12 @@ QTableWidget#recentLevelTable::item {
     color : white;
 }
 
-#SaveAllFilesDialog #FooterSeparatorLine, #SavePrefabDialog #FooterSeparatorLine
+#SavePrefabDialog #FooterSeparatorLine
 {
     color: gray;
 }
 
-#SaveAllFilesDialog #PrefabSavePreferenceHint, #SavePrefabDialog #PrefabSavePreferenceHint
+#SavePrefabDialog #PrefabSavePreferenceHint
 {
     font: italic;
     color: #999999;

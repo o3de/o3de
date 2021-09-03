@@ -30,7 +30,13 @@ namespace AzToolsFramework
              */
             virtual AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) = 0;
 
+            //! Constructs and executes the close dialog on a prefab template corresponding to templateId.
+            //! @param templateId The id of the template the user chose to close.
             virtual int ExecuteClosePrefabDialog(TemplateId templateId) = 0;
+
+            //! Constructs and executes the save dialog on a prefab template corresponding to templateId.
+            //! @param templateId The id of the template the user chose to save.
+            //! @param useSaveAllPrefabsPreference A flag indicating whether SaveAllPrefabsPreference should be used for saving templates. 
             virtual void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference = false) = 0;
         };
 

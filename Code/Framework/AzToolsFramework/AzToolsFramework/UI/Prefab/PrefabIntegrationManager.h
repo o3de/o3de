@@ -131,7 +131,7 @@ namespace AzToolsFramework
             static AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
-            AzQtComponents::Card* ConstructUnsavedPrefabsCard(TemplateId templateId);
+            AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
