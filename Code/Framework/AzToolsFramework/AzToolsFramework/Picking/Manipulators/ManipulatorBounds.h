@@ -32,7 +32,7 @@ namespace AzToolsFramework
         //! @param      coneHeight     The height of the cone, from the apex to the base.
         //! @param      coneBaseRadius The radius of the cone base.
         //! @param[out] t              A possible coefficient in the ray's explicit equation from which an intersecting point is calculated
-        //!                            as "rayOrigin + t * rayDir". 't' is the closest intersecting point to the ray origin.
+        //!                            as "rayOrigin + t * rayDirection". 't' is the closest intersecting point to the ray origin.
         //! @return                    true for intersecting, false for not intersecting.
         bool IntersectRayCone(
             const AZ::Vector3& rayOrigin,

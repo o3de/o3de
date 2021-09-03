@@ -48,16 +48,8 @@ namespace AzToolsFramework
                 return v.Dot(v);
             };
 
-            // caps
-            if (m1 < 0.0f)
-            {
-                if (dot2(oa * m3 - rd * m1) < 0.0f)
-                {
-                    t = -m1 / m3;
-                    return true;
-                }
-            }
-            else if (m2 > 0.0f)
+            // cap
+            if (m2 > 0.0f)
             {
                 if (dot2(ob * m3 - rd * m2) < (rb * rb * m3 * m3))
                 {
@@ -69,20 +61,19 @@ namespace AzToolsFramework
             // body
             float m4 = rd.Dot(oa);
             float m5 = oa.Dot(oa);
-            float rr = -rb;
-            float hy = m0 + rr * rr;
+            float hy = m0 + rb * rb;
 
             float k2 = m0 * m0 - m3 * m3 * hy;
             float k1 = m0 * m0 * m4 - m1 * m3 * hy;
             float k0 = m0 * m0 * m5 - m1 * m1 * hy;
 
-            float h = k1 * k1 - k2 * k0;
-            if (h < 0.0f)
+            float discriminant = k1 * k1 - k2 * k0;
+            if (discriminant < 0.0f)
             {
                 return false;
             }
 
-            float tt = (-k1 - AZ::Sqrt(h)) / k2;
+            float tt = (-k1 - AZ::Sqrt(discriminant)) / k2;
             float y = m1 + tt * m3;
             if (y >= 0.0f && y < m0)
             {
