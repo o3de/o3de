@@ -709,7 +709,7 @@ void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& 
         );
 
         // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, sRenameWarning.toUtf8().data());
+        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
 
         if (bShowMsgBox)
         {
