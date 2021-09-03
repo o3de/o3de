@@ -127,7 +127,7 @@ bool SystemFile::Open(const char* fileName, int mode, int platformFlags)
 bool SystemFile::ReOpen(int mode, int platformFlags)
 {
     AZ_Assert(!m_fileName.empty(), "Missing filename. You must call open first!");
-    return Open(0, mode, platformFlags);
+    return Open(nullptr, mode, platformFlags);
 }
 
 void SystemFile::Close()

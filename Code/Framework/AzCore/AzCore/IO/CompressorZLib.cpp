@@ -22,10 +22,10 @@ namespace AZ
         // [12/13/2012]
         //=========================================================================
         CompressorZLib::CompressorZLib(unsigned int decompressionCachePerStream, unsigned int dataBufferSize)
-            : m_lastReadStream(NULL)
+            : m_lastReadStream(nullptr)
             , m_lastReadStreamOffset(0)
             , m_lastReadStreamSize(0)
-            , m_compressedDataBuffer(NULL)
+            , m_compressedDataBuffer(nullptr)
             , m_compressedDataBufferSize(dataBufferSize)
             , m_compressedDataBufferUseCount(0)
             , m_decompressionCachePerStream(decompressionCachePerStream)
@@ -63,7 +63,7 @@ namespace AZ
         //=========================================================================
         bool        CompressorZLib::ReadHeaderAndData(CompressorStream* stream, AZ::u8* data, unsigned int dataSize)
         {
-            if (stream->GetCompressorData() != NULL)  // we already have compressor data
+            if (stream->GetCompressorData() != nullptr)  // we already have compressor data
             {
                 return false;
             }
@@ -347,7 +347,7 @@ namespace AZ
             AZ_Assert(stream && stream->GetCompressorData(), "This stream doesn't have compression enabled! Call Stream::WriteCompressed after you create the file!");
             AZ_Assert(offset == SizeType(-1) || offset == stream->GetCurPos(), "We can write compressed data only at the end of the stream!");
 
-            m_lastReadStream = NULL; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
+            m_lastReadStream = nullptr; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
 
             CompressorZLibData* zlibData = static_cast<CompressorZLibData*>(stream->GetCompressorData());
             AZ_Assert(!zlibData->m_zlib.IsDecompressorStarted(), "You can't write while reading/decompressing a compressed stream!");
@@ -398,13 +398,13 @@ namespace AZ
             AZ_Assert(stream && stream->GetCompressorData(), "This stream doesn't have compression enabled! Call Stream::WriteCompressed after you create the file!");
             CompressorZLibData* zlibData = static_cast<CompressorZLibData*>(stream->GetCompressorData());
 
-            m_lastReadStream = NULL; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
+            m_lastReadStream = nullptr; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
 
             unsigned int compressedSize;
             unsigned int dataToCompress = 0;
             do
             {
-                compressedSize = zlibData->m_zlib.Compress(NULL, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FULL_FLUSH);
+                compressedSize = zlibData->m_zlib.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FULL_FLUSH);
                 if (compressedSize)
                 {
                     GenericStream* baseStream = stream->GetWrappedStream();
@@ -429,7 +429,7 @@ namespace AZ
         //=========================================================================
         bool        CompressorZLib::StartCompressor(CompressorStream* stream, int compressionLevel, SizeType autoSeekDataSize)
         {
-            AZ_Assert(stream && stream->GetCompressorData() == NULL, "Stream has compressor already enabled!");
+            AZ_Assert(stream && stream->GetCompressorData() == nullptr, "Stream has compressor already enabled!");
 
             AcquireDataBuffer();
 
@@ -470,14 +470,14 @@ namespace AZ
             bool result = true;
             if (zlibData->m_zlib.IsCompressorStarted())
             {
-                m_lastReadStream = NULL; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
+                m_lastReadStream = nullptr; // invalidate last read position, otherwise m_dataBuffer will be corrupted (as we are about to write in it).
 
                 // flush all compressed data
                 unsigned int compressedSize;
                 unsigned int dataToCompress = 0;
                 do
                 {
-                    compressedSize = zlibData->m_zlib.Compress(NULL, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FINISH);
+                    compressedSize = zlibData->m_zlib.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FINISH);
                     if (compressedSize)
                     {
                         baseStream->Write(compressedSize, m_compressedDataBuffer);
@@ -502,7 +502,7 @@ namespace AZ
             {
                 if (m_lastReadStream == stream)
                 {
-                    m_lastReadStream = NULL; // invalidate the data in m_dataBuffer if it was from the current stream.
+                    m_lastReadStream = nullptr; // invalidate the data in m_dataBuffer if it was from the current stream.
                 }
             }
 
@@ -525,11 +525,11 @@ namespace AZ
         //=========================================================================
         void CompressorZLib::AcquireDataBuffer()
         {
-            if (m_compressedDataBuffer == NULL)
+            if (m_compressedDataBuffer == nullptr)
             {
                 AZ_Assert(m_compressedDataBufferUseCount == 0, "Buffer usecount should be 0 if the buffer is NULL");
                 m_compressedDataBuffer = reinterpret_cast<unsigned char*>(azmalloc(m_compressedDataBufferSize, m_CompressedDataBufferAlignment, AZ::SystemAllocator, "CompressorZLib"));
-                m_lastReadStream = NULL; // reset the cache info in the m_dataBuffer
+                m_lastReadStream = nullptr; // reset the cache info in the m_dataBuffer
             }
             ++m_compressedDataBufferUseCount;
         }
@@ -543,10 +543,10 @@ namespace AZ
             --m_compressedDataBufferUseCount;
             if (m_compressedDataBufferUseCount == 0)
             {
-                AZ_Assert(m_compressedDataBuffer != NULL, "Invalid data buffer! We should have a non null pointer!");
+                AZ_Assert(m_compressedDataBuffer != nullptr, "Invalid data buffer! We should have a non null pointer!");
                 azfree(m_compressedDataBuffer, AZ::SystemAllocator, m_compressedDataBufferSize, m_CompressedDataBufferAlignment);
-                m_compressedDataBuffer = NULL;
-                m_lastReadStream = NULL; // reset the cache info in the m_dataBuffer
+                m_compressedDataBuffer = nullptr;
+                m_lastReadStream = nullptr; // reset the cache info in the m_dataBuffer
             }
         }
     }   // namespace IO

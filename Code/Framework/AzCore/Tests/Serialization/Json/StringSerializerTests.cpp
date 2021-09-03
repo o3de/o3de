@@ -33,7 +33,7 @@ namespace JsonSerializationTests
             return AZStd::make_shared<String>("Hello");
         }
 
-        AZStd::string_view GetJsonForFullySetInstance()
+        AZStd::string_view GetJsonForFullySetInstance() override
         {
             return R"("Hello")";
         }
@@ -48,7 +48,7 @@ namespace JsonSerializationTests
             features.m_supportsInjection = false;
         }
 
-        bool AreEqual(const String& lhs, const String& rhs)
+        bool AreEqual(const String& lhs, const String& rhs) override
         {
             return lhs.compare(rhs) == 0;
         }

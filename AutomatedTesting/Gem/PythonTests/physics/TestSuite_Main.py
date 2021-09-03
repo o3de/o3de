@@ -84,3 +84,8 @@ class TestAutomation(TestAutomationBase):
     def test_C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(self, request, workspace, editor, launcher_platform):
         from .collider import C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
+        from .general import C15425929_Undo_Redo as test_module
+        self._run_test(request, workspace, editor, test_module)
