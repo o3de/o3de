@@ -30,6 +30,7 @@ namespace AzNetworking
     {
 
     public:
+        virtual ~UdpFragmentQueue() = default;
 
         //! Updates the UdpFragmentQueue timeout queue.
         void Update();
