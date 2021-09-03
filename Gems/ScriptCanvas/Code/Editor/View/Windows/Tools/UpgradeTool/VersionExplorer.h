@@ -139,6 +139,7 @@ namespace ScriptCanvasEditor
         AZStd::recursive_mutex m_mutex;
         bool m_upgradeComplete = false;
         AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
+        int m_upgradeAssetIndex = 0;
         OperationResult m_upgradeResult;
         AZStd::string m_upgradeMessage;
         AZStd::string m_tmpFileName;

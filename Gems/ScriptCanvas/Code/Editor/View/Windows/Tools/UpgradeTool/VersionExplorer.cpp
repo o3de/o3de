@@ -189,7 +189,10 @@ namespace ScriptCanvasEditor
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             if (m_upgradeComplete)
             {
+                ++m_upgradeAssetIndex;
                 m_inProgress = false;
+                m_ui->progressBar->setVisible(true);
+                m_ui->progressBar->setValue(m_upgradeAssetIndex);
 
                 if (m_scriptCanvasEntity)
                 {
@@ -275,7 +278,7 @@ namespace ScriptCanvasEditor
     void VersionExplorer::OnUpgradeAll()
     {
         m_state = ProcessState::Upgrade;
-        // cache these
+        // cache these...with a widget thing
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         ScriptCanvas::Grammar::g_printAbstractCodeModel = false;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
@@ -283,6 +286,9 @@ namespace ScriptCanvasEditor
         m_inProgressAsset = m_assetsToUpgrade.begin();
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
+        m_ui->progressBar->setVisible(true);
+        m_ui->progressBar->setRange(0, aznumeric_cast<int>(m_assetsToUpgrade.size()));
+        m_ui->progressBar->setValue(m_upgradeAssetIndex);
     }
 
     AZStd::string VersionExplorer::BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
@@ -669,6 +675,7 @@ namespace ScriptCanvasEditor
         m_ui->upgradeAllButton->setEnabled(false);
         m_ui->onlyShowOutdated->setEnabled(true);
 
+        m_ui->progressBar->setVisible(false);
         // Manual correction
         size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
         if (assetsThatNeedManualInspection > 0)
