@@ -237,7 +237,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
 
         AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -249,7 +249,7 @@ namespace LegacyFramework
 #endif
 
         delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = NULL;
+        m_ptrCommandLineParser = nullptr;
 
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
@@ -269,7 +269,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
     }
 
