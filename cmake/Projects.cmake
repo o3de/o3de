@@ -142,6 +142,21 @@ foreach(project ${LY_PROJECTS})
     add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
     ly_generate_project_build_path_setreg(${full_directory_path})
     add_project_json_external_subdirectories(${full_directory_path})
+
+    # Generate pak for project in release installs
+    cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
+    ly_install_run_code("
+if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$\")
+    set(install_output_folder \"\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/\${CMAKE_INSTALL_CONFIG_NAME}\")
+    message(STATUS \"Generating \${install_output_folder}/Engine.pak from ${full_directory_path}/Cache\")
+    file(ARCHIVE_CREATE OUTPUT \${install_output_folder}/Engine.pak
+        PATHS ${full_directory_path}/Cache
+        FORMAT zip
+    )
+    message(STATUS \"\${install_output_folder}/Engine.pak generated\")
+endif()
+")
+
 endforeach()
 
 # If just one project is defined we pass it as a parameter to the applications

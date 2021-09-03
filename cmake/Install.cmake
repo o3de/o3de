@@ -135,3 +135,20 @@ function(ly_install_files)
     )
 
 endfunction()
+
+#! ly_install_run_code: specifies code to be added to the install process (will run at install time)
+#
+# \notes: 
+#  - refer to cmake's install(CODE documentation for more information
+#
+function(ly_install_run_code CODE)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
+
+    install(CODE ${CODE}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
+    )
+
+endfunction()
