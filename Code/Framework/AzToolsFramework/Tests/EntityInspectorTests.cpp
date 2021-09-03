@@ -67,7 +67,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService1"));
         }
 
-        virtual ~Inspector_TestComponent1() override
+        ~Inspector_TestComponent1() override
         {
         }
 
@@ -136,7 +136,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService2"));
         }
 
-        virtual ~Inspector_TestComponent2() override
+        ~Inspector_TestComponent2() override
         {
         }
 
@@ -205,7 +205,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService3"));
         }
 
-        virtual ~Inspector_TestComponent3() override
+        ~Inspector_TestComponent3() override
         {
         }
 

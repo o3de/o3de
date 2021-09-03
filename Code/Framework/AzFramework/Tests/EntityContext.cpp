@@ -41,7 +41,7 @@ namespace UnitTest
             Data::AssetManager::Create(desc);
         }
 
-        virtual ~EntityContextBasicTest()
+        ~EntityContextBasicTest() override
         {
         }
 

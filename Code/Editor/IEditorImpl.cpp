@@ -680,8 +680,8 @@ const SGizmoParameters& CEditorImpl::GetGlobalGizmoParameters()
 
     m_pGizmoParameters->axisConstraint = m_selectedAxis;
     m_pGizmoParameters->referenceCoordSys = m_refCoordsSys;
-    m_pGizmoParameters->axisGizmoScale = gSettings.gizmo.axisGizmoSize;
-    m_pGizmoParameters->axisGizmoText = gSettings.gizmo.axisGizmoText;
+    m_pGizmoParameters->axisGizmoScale = 1.0f;
+    m_pGizmoParameters->axisGizmoText = false;
 
     return *m_pGizmoParameters;
 }
