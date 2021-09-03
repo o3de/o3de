@@ -77,6 +77,9 @@ namespace AZ
         AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonStream(IO::GenericStream& stream);
         
         //! Load object with known class type
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
+            const JsonDeserializerSettings* settings = nullptr);
+
         AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
             const JsonDeserializerSettings* settings = nullptr);
         
