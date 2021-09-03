@@ -230,7 +230,7 @@ namespace ScriptCanvasEditor
                 m_upgradeComplete = false;
             }
 
-            if (!IsUpgrading())
+            if (!IsUpgrading() && m_state == ProcessState::Upgrade)
             {
                 AZStd::string errorMessage = BackupGraph(*m_inProgressAsset);
                 // Make the backup
@@ -614,6 +614,11 @@ namespace ScriptCanvasEditor
             {
                 AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "Failed to remove temporary file: %s", m_tmpFileName.c_str());
             }
+        }
+
+        if (m_upgradeResult == OperationResult::Failure)
+        {
+            AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(asset.GetId());
         }
 
         m_tmpFileName.clear();

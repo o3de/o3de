@@ -515,13 +515,13 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = saveRawTranslationOuputToFile;
 
-        if (validationResults.HasResults())
+        if (validationResults.HasErrors())
         {
+            AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(sm->m_asset.GetId());
+
             for (auto& err : validationResults.GetEvents())
             {
                 // Register this graph as needing manual updates
-                AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(sm->m_asset.GetId());
-
                 Log("%s: %s\n", err->GetIdentifier().c_str(), err->GetDescription().data());
             }
         }

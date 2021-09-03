@@ -315,11 +315,11 @@ namespace ScriptCanvasBuilder
         else
         {
             // force load all dependencies into memory
-            for (auto& dependency : m_processEditorAssetDependencies)
-            {
-                auto depAsset = AZ::Data::AssetManager::Instance().GetAsset(dependency.m_assetId, dependency.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-                depAsset.BlockUntilLoadComplete();
-            }
+//             for (auto& dependency : m_processEditorAssetDependencies)
+//             {
+//                 auto depAsset = AZ::Data::AssetManager::Instance().GetAsset(dependency.m_assetId, dependency.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
+//                 depAsset.BlockUntilLoadComplete();
+//             }
 
             AZ::Entity* buildEntity = asset.Get()->GetScriptCanvasEntity();
 
