@@ -91,7 +91,7 @@ namespace AzToolsFramework
             //! The path will always use the '/' separator.
             virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
-            virtual SaveAllPrefabsPreference GetSaveAllPrefabsPreference() = 0;
+            virtual SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const = 0;
             virtual void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) = 0;
 
         protected:

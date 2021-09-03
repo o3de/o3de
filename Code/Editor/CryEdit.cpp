@@ -3193,6 +3193,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             int prefabSaveSelection = prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
 
             // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
+            // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
+            // QDialogButtonBox::AcceptRole(0).
             switch (1 - prefabSaveSelection)
             {
             case QDialogButtonBox::AcceptRole:

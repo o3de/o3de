@@ -756,7 +756,7 @@ namespace AzToolsFramework
 
         bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId templateId)
         {
-            auto prefabTemplate = FindTemplate(templateId);
+            TemplateReference prefabTemplate = FindTemplate(templateId);
 
             if (!prefabTemplate.has_value())
             {
@@ -769,9 +769,9 @@ namespace AzToolsFramework
                 return true;
             }
 
-            auto linkIds = prefabTemplate->get().GetLinks();
+            const Template::Links& linkIds = prefabTemplate->get().GetLinks();
 
-            for (auto linkId : linkIds)
+            for (LinkId linkId : linkIds)
             {
                 auto linkIterator = m_linkIdMap.find(linkId);
                 if (linkIterator != m_linkIdMap.end())
@@ -784,10 +784,9 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId templateId)
         {
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
-            GetDirtyTemplatePaths(templateId, dirtyTemplatePaths);
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(templateId);  
 
-            for (auto dirtyTemplatePath : dirtyTemplatePaths)
+            for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
             {
                 auto dirtyTemplateIterator = m_templateFilePathToIdMap.find(dirtyTemplatePath);
                 if (dirtyTemplateIterator == m_templateFilePathToIdMap.end())
@@ -801,9 +800,18 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId templateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths)
+        AZStd::set<AZ::IO::PathView> PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId templateId)
         {
-            auto prefabTemplate = FindTemplate(templateId);
+            AZStd::vector<AZ::IO::PathView> dirtyTemplatePathVector;
+            GetDirtyTemplatePathsHelper(templateId, dirtyTemplatePathVector);
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
+            dirtyTemplatePaths.insert(dirtyTemplatePathVector.begin(), dirtyTemplatePathVector.end());
+            return AZStd::move(dirtyTemplatePaths);
+        }
+
+        void PrefabSystemComponent::GetDirtyTemplatePathsHelper(TemplateId templateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths)
+        {
+            TemplateReference prefabTemplate = FindTemplate(templateId);
 
             if (!prefabTemplate.has_value())
             {
@@ -813,17 +821,17 @@ namespace AzToolsFramework
 
             if (IsTemplateDirty(templateId))
             {
-                dirtyTemplatePaths.emplace(prefabTemplate->get().GetFilePath());
+                dirtyTemplatePaths.emplace_back(prefabTemplate->get().GetFilePath());
             }
 
-            auto linkIds = prefabTemplate->get().GetLinks();
+            const Template::Links& linkIds = prefabTemplate->get().GetLinks();
 
-            for (auto linkId : linkIds)
+            for (LinkId linkId : linkIds)
             {
                 auto linkIterator = m_linkIdMap.find(linkId);
                 if (linkIterator != m_linkIdMap.end())
                 {
-                    GetDirtyTemplatePaths(linkIterator->second.GetSourceTemplateId(), dirtyTemplatePaths);
+                    GetDirtyTemplatePathsHelper(linkIterator->second.GetSourceTemplateId(), dirtyTemplatePaths);
                 }
             }
         }

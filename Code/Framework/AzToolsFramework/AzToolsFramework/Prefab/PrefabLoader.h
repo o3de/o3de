@@ -110,7 +110,7 @@ namespace AzToolsFramework
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
-            SaveAllPrefabsPreference GetSaveAllPrefabsPreference() override;
+            SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const override;
             void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) override;
 
         private:

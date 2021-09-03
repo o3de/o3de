@@ -670,7 +670,7 @@ namespace AzToolsFramework
             return finalPath;
         }
 
-        SaveAllPrefabsPreference PrefabLoader::GetSaveAllPrefabsPreference()
+        SaveAllPrefabsPreference PrefabLoader::GetSaveAllPrefabsPreference() const
         {
             SaveAllPrefabsPreference saveAllPrefabsPreference = SaveAllPrefabsPreference::AskEveryTime;
             if (auto* registry = AZ::SettingsRegistry::Get())

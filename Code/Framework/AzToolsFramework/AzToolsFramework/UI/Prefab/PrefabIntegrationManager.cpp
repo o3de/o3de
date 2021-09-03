@@ -1096,13 +1096,12 @@ namespace AzToolsFramework
             {
                 SavePrefabsInDialog(prefabSaveSelectionDialog.get());
             }
+
             return prefabSaveSelection;
         }
 
         void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
         {
-            using namespace AzToolsFramework::Prefab;
-
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
 
@@ -1252,8 +1251,8 @@ namespace AzToolsFramework
             levelEntitiesSaveQuestionLayout->addWidget(prefabSaveQuestionLabel);
             contentLayout->addWidget(prefabSaveWarningFrame);
 
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
-            s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId, dirtyTemplatePaths);
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
+
             auto templateToSave = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path templateToSaveFilePath = templateToSave->get().GetFilePath();
             AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsCard = ConstructUnsavedPrefabsCard(templateId);
@@ -1284,8 +1283,7 @@ namespace AzToolsFramework
         {
             FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
 
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
-            s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId, dirtyTemplatePaths);
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
 
             for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
             {

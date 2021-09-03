@@ -187,7 +187,7 @@ namespace AzToolsFramework
 
             void SaveAllDirtyTemplates(TemplateId templateId) override;
 
-            void GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths) override;
+            AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId parentTemplateId) override;
 
             //////////////////////////////////////////////////////////////////////////
 
@@ -340,6 +340,9 @@ namespace AzToolsFramework
              * @return bool on whether the operation succeeded.
              */
             bool RemoveLinkFromTargetTemplate(const LinkId& linkId, const Link& link);
+
+            // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
+            void GetDirtyTemplatePathsHelper(TemplateId parentTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;

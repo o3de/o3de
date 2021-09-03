@@ -61,8 +61,8 @@ namespace AzToolsFramework
 
             //! Recursive function that fetches the set of dirty templates given a starting template to check for outgoing links.
             //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
-            //! @param[out] dirtyTemplatePaths The set of dirty template paths populated.
-            virtual void GetDirtyTemplatePaths(TemplateId parentTemplateId, AZStd::set<AZ::IO::PathView>& dirtyTemplatePaths) = 0;
+            //! @return The set of dirty template paths populated.
+            virtual AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId parentTemplateId) = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;
             virtual void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) = 0;
