@@ -7,7 +7,6 @@
  */
 #include "Sprite.h"
 #include <CryPath.h>
-#include <IRenderer.h>
 #include <ISerialize.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>

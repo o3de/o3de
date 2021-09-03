@@ -11,6 +11,7 @@
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/UiComponentTypes.h>
+#include <LyShine/UiRenderFormats.h>
 #include <LyShine/IRenderGraph.h>
 
 #include <LyShineExamples/UiCustomImageBus.h>
@@ -136,7 +137,7 @@ namespace LyShineExamples
         float m_overrideAlpha;
 
         // cached rendering data for performance optimization
-        DynUiPrimitive m_cachedPrimitive;
+        LyShine::UiPrimitive m_cachedPrimitive;
         bool m_isRenderCacheDirty = true;
     };
 }

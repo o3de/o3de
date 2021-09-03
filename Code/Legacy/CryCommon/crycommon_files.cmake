@@ -136,6 +136,7 @@ set(FILES
     LyShine/UiBase.h
     LyShine/UiEntityContext.h
     LyShine/UiLayoutCellBase.h
+    LyShine/UiRenderFormats.h
     LyShine/UiSerializeHelpers.h
     LyShine/Animation/IUiAnimation.h
     LyShine/Bus/UiAnimateEntityBus.h

@@ -13,8 +13,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <IRenderer.h>
-
 #include <LyShine/Draw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -188,7 +186,7 @@ namespace
 
     //! Set the values for an image vertex
     //! This helper function is used so that we only have to initialize textIndex and texHasColorChannel in one place
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const Vec2& pos, uint32 color, const Vec2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const Vec2& pos, uint32 color, const Vec2& uv)
     {
         vert.xy = pos;
         vert.color.dcolor = color;
@@ -201,7 +199,7 @@ namespace
 
     //! Set the values for an image vertex
     //! This version of the helper function takes AZ vectors
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
     {
         SetVertex(vert, Vec2(pos.GetX(), pos.GetY()), color, Vec2(uv.GetX(), uv.GetY()));
     }
@@ -215,7 +213,7 @@ namespace
     //! \param packedColor The color value to be put in every vertex
     //! \param transform The transform to be applied to the points
     //! \param xValues The x-values for the edges and borders
-    void FillVerts(SVF_P2F_C4B_T2F_F4B* verts, [[maybe_unused]] uint32 numVerts, uint32 numX, uint32 numY, uint32 packedColor, const AZ::Matrix4x4& transform,
+    void FillVerts(LyShine::UiPrimitiveVertex* verts, [[maybe_unused]] uint32 numVerts, uint32 numX, uint32 numY, uint32 packedColor, const AZ::Matrix4x4& transform,
         float* xValues, float* yValues, float* sValues, float* tValues,
         bool isPixelAligned)
     {
@@ -463,7 +461,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
         {
             // go through all the cached vertices and update the alpha values
-            UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+            LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
             desiredPackedColor.a = desiredPackedAlpha;
             for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
             {
@@ -1535,7 +1533,7 @@ void UiImageComponent::RenderSingleQuad(const AZ::Vector2* positions, const AZ::
     // points are a clockwise quad
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);
@@ -1594,7 +1592,7 @@ void UiImageComponent::RenderLinearFilledQuad(const AZ::Vector2* positions, cons
     // points are a clockwise quad
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
 
     for (int i = 0; i < numVertices; ++i)
     {
@@ -1653,7 +1651,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     // Fill vertices (rotated based on startingEdge).
     const int numVertices = 7; // The maximum amount of vertices that can be used
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
     for (int i = 1; i < 5; ++i)
     {
         int srcIndex = (4 + i + startingEdge) % 4;
@@ -1701,7 +1699,7 @@ void UiImageComponent::RenderRadialCornerFilledQuad(const AZ::Vector2* positions
 {
     // This fills the vertices (rotating them based on the origin edge) similar to RenderSingleQuad, then edits a vertex based on m_fillAmount.
     const uint32 numVerts = 4;
-    SVF_P2F_C4B_T2F_F4B verts[numVerts];
+    LyShine::UiPrimitiveVertex verts[numVerts];
     int vertexOffset = 0;
     if (m_fillCornerOrigin == FillCornerOrigin::TopLeft)
     {
@@ -1754,7 +1752,7 @@ void UiImageComponent::RenderRadialEdgeFilledQuad(const AZ::Vector2* positions, 
 {
     // This fills the vertices (rotating them based on the origin edge) similar to RenderSingleQuad, then edits a vertex based on m_fillAmount.
     const uint32 numVertices = 5; // Need an extra vertex for the origin.
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
     int vertexOffset = 0;
     if (m_fillEdgeOrigin == FillEdgeOrigin::Left)
     {
@@ -1916,7 +1914,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedFillModeNoneSprite
 {
     // fill out the verts
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
     FillVerts(vertices, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
 
     int totalIndices = m_fillCenter ? numIndicesIn9Slice : numIndicesIn9SliceExcludingCenter;
@@ -1932,7 +1930,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedLinearFilledSprite
     // 2. Fill vertices in the same way as a standard sliced sprite
 
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
 
     ClipValuesForSlicedLinearFill(numValues, xValues, yValues, sValues, tValues);
 
@@ -1950,7 +1948,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedRadialFilledSprite
 {
     // build the verts on the stack
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
 
     // Fill the vertices with the generated xy and st values.
     FillVerts(verts, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
@@ -1968,7 +1966,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedRadialCornerOrEdge
 {
     // build the verts on the stack
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
 
     // Fill the vertices with the generated xy and st values.
     FillVerts(verts, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
@@ -2053,12 +2051,12 @@ void UiImageComponent::ClipValuesForSlicedLinearFill(uint32 numValues, float* xV
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices)
+void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices)
 {
     // 1. Calculate two points of lines from the center to a point based on m_fillAmount and m_fillOrigin.
     // 2. Clip the triangles of the sprite against those lines based on the fill amount.
 
-    SVF_P2F_C4B_T2F_F4B renderVerts[numIndicesIn9Slice * 4]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
+    LyShine::UiPrimitiveVertex renderVerts[numIndicesIn9Slice * 4]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
     uint16 renderIndices[numIndicesIn9Slice * 4] = { 0 };
 
     float fillOffset = AZ::DegToRad(m_fillStartAngle);
@@ -2102,7 +2100,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
         // Clips against first half line and then rotating line and adds results to render list.
         for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
-            SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
+            LyShine::UiPrimitiveVertex intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
             int intermedateVertexOffset = 0;
             int intermediateIndicesUsed = ClipToLine(verts, &indices[currentIndex], intermediateVerts, intermediateIndices, intermedateVertexOffset, 0, lineOrigin, firstHalfFixedLineEnd);
@@ -2118,7 +2116,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
         // Clips against first half line and adds results to render list then clips against the second half line and rotating line and also adds those results to render list.
         for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
-            SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
+            LyShine::UiPrimitiveVertex intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
             indicesUsed = ClipToLine(verts, &indices[currentIndex], renderVerts, renderIndices, vertexOffset, numIndicesToRender, lineOrigin, firstHalfFixedLineEnd);
             numIndicesToRender += indicesUsed;
@@ -2137,12 +2135,12 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerSide, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices)
+void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerSide, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices)
 {
     // 1. Calculate two points of a line from either the corner or center of an edge to a point based on m_fillAmount.
     // 2. Clip the triangles of the sprite against that line.
 
-    SVF_P2F_C4B_T2F_F4B renderVerts[numIndicesIn9Slice * 2]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
+    LyShine::UiPrimitiveVertex renderVerts[numIndicesIn9Slice * 2]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
     uint16 renderIndices[numIndicesIn9Slice * 2] = { 0 };
 
     // Generate the start and direction of the line to clip against based on the fill origin and fill amount.
@@ -2209,11 +2207,11 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, SVF_P2F_C4B_T2F_F4B* renderVertices, uint16* renderIndices, int& vertexOffset, int renderIndexOffset, const Vec2& lineOrigin, const Vec2& lineEnd)
+int UiImageComponent::ClipToLine(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, LyShine::UiPrimitiveVertex* renderVertices, uint16* renderIndices, int& vertexOffset, int renderIndexOffset, const Vec2& lineOrigin, const Vec2& lineEnd)
 {
     Vec2 lineVector = lineEnd - lineOrigin;
-    SVF_P2F_C4B_T2F_F4B lastVertex = vertices[indices[2]];
-    SVF_P2F_C4B_T2F_F4B currentVertex;
+    LyShine::UiPrimitiveVertex lastVertex = vertices[indices[2]];
+    LyShine::UiPrimitiveVertex currentVertex;
     int verticesAdded = 0;
 
     for (int i = 0; i < 3; ++i)
@@ -2235,7 +2233,7 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
             {
                 //add calculated intersection
                 float intersectionDistance = (vertexToLine.x * perpendicularLineVector.x + vertexToLine.y * perpendicularLineVector.y) / (triangleEdgeDirection.x * perpendicularLineVector.x + triangleEdgeDirection.y * perpendicularLineVector.y);
-                SVF_P2F_C4B_T2F_F4B intersectPoint;
+                LyShine::UiPrimitiveVertex intersectPoint;
                 SetVertex(intersectPoint, lastVertex.xy + triangleEdgeDirection * intersectionDistance,
                     lastVertex.color.dcolor, lastVertex.st + (currentVertex.st - lastVertex.st) * intersectionDistance);
 
@@ -2252,7 +2250,7 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
         {
             //add calculated intersection
             float intersectionDistance = (vertexToLine.x * perpendicularLineVector.x + vertexToLine.y * perpendicularLineVector.y) / (triangleEdgeDirection.x * perpendicularLineVector.x + triangleEdgeDirection.y * perpendicularLineVector.y);
-            SVF_P2F_C4B_T2F_F4B intersectPoint;
+            LyShine::UiPrimitiveVertex intersectPoint;
             SetVertex(intersectPoint, lastVertex.xy + triangleEdgeDirection * intersectionDistance,
                 lastVertex.color.dcolor, lastVertex.st + (currentVertex.st - lastVertex.st) * intersectionDistance);
 
@@ -2288,12 +2286,12 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, int numVertices, int numIndices)
+void UiImageComponent::RenderTriangleList(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, int numVertices, int numIndices)
 {
     if (numVertices != m_cachedPrimitive.m_numVertices)
     {
         ClearCachedVertices();
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
     }
 
@@ -2304,7 +2302,7 @@ void UiImageComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, c
         m_cachedPrimitive.m_numIndices = numIndices;
     }
 
-    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(SVF_P2F_C4B_T2F_F4B) * numVertices);
+    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(LyShine::UiPrimitiveVertex) * numVertices);
     memcpy(m_cachedPrimitive.m_indices, indices, sizeof(uint16) * numIndices);
 
     m_isRenderCacheDirty = false;

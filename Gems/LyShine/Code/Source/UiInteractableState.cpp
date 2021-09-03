@@ -23,7 +23,6 @@
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <CryCommon/LyShine/ILyShine.h>
 
-#include <IRenderer.h>
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"
 

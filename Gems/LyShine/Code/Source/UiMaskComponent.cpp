@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include "IRenderer.h"
 #include "RenderToTextureBus.h"
 #include "RenderGraph.h"
 #include <LyShine/Bus/UiTransformBus.h>
@@ -624,7 +623,7 @@ void UiMaskComponent::UpdateCachedPrimitive(const AZ::Vector2& pixelAlignedTopLe
     {
         // verts not yet allocated, allocate them now
         const int numIndices = 6;
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
 
         static uint16 indices[numIndices] = { 0, 1, 2, 2, 3, 0 };
@@ -761,7 +760,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
                 // go through all the cached vertices and update the alpha values
-                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
                 desiredPackedColor.a = static_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {

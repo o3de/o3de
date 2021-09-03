@@ -16,7 +16,6 @@
 #include "UiRenderer.h"
 #include "LyShine.h"
 
-#include <IRenderer.h>
 #include <Random.h>
 #include <CryFile.h>
 #include <CryPath.h>

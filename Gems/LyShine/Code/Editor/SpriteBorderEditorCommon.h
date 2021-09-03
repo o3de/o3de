@@ -10,7 +10,6 @@
 #include <vector> // required to be included before platform.h
 #include <platform.h>
 #include <ISystem.h>
-#include <IRenderer.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/ISprite.h>
 

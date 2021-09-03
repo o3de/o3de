@@ -16,7 +16,7 @@
 #include <Animation/AnimSplineTrack.h>
 #include <Animation/CompoundSplineTrack.h>
 
-#include <VertexFormats.h>
+#include <LyShine/UiRenderFormats.h>
 
 class UiParticle
 {
@@ -81,7 +81,7 @@ public:
 
     //! Fill out the four vertices for the particle. 
     //! Returns false if the vertex was not added because it was fully transparent.
-    bool FillVertices(SVF_P2F_C4B_T2F_F4B* outputVertices, const UiParticleRenderParameters& renderParameters, const AZ::Matrix4x4& transform);
+    bool FillVertices(LyShine::UiPrimitiveVertex* outputVertices, const UiParticleRenderParameters& renderParameters, const AZ::Matrix4x4& transform);
 
     bool IsActive(bool infiniteLifetime) const;
 

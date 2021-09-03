@@ -21,7 +21,6 @@
 #include <ILog.h>
 #include <IConsole.h>
 #include <ITimer.h>
-#include <IRenderer.h>
 #include <IViewSystem.h>
 
 //////////////////////////////////////////////////////////////////////////

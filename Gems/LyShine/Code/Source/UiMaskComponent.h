@@ -13,6 +13,7 @@
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/IRenderGraph.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
@@ -205,7 +206,7 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
 
 #ifndef _RELEASE
     //! This variable is only used to prevent spamming a warning message each frame (for nested stencil masks)

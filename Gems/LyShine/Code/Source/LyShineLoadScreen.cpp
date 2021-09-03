@@ -10,8 +10,6 @@
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
 
-#include <IRenderer.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>

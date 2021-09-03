@@ -14,8 +14,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <IRenderer.h>
-
 #include <LyShine/Draw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -371,7 +369,7 @@ namespace LyShineExamples
                 delete [] m_cachedPrimitive.m_vertices;
             }
     
-            m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+            m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
             m_cachedPrimitive.m_numVertices = numVertices;
         }
 
