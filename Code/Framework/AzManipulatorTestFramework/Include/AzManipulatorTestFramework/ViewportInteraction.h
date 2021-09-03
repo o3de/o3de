@@ -50,6 +50,7 @@ namespace AzManipulatorTestFramework
         bool AngleSnappingEnabled() const override;
         float AngleStep() const override;
         float ManipulatorLineBoundWidth() const override;
+        float ManipulatorCircleBoundWidth() const override;
 
     private:
         AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;

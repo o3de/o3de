@@ -194,6 +194,8 @@ namespace AzToolsFramework
             virtual float AngleStep() const = 0;
             //! Returns the current line bound width for manipulators.
             virtual float ManipulatorLineBoundWidth() const = 0;
+            //! Returns the current circle (torus) bound width for manipulators.
+            virtual float ManipulatorCircleBoundWidth() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -354,5 +356,24 @@ namespace AzToolsFramework
         }
 
         return lineBoundWidth;
+    }
+
+    //! Wrap EBus call to retrieve manipulator line bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
+    inline float ManipulatorCicleBoundWidth(const AzFramework::ViewportId viewportId)
+    {
+        float circleBoundWidth = 0.0f;
+        if (viewportId != AzFramework::InvalidViewportId)
+        {
+            ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+                circleBoundWidth, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorCircleBoundWidth);
+        }
+        else
+        {
+            ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
+                circleBoundWidth, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorCircleBoundWidth);
+        }
+
+        return circleBoundWidth;
     }
 } // namespace AzToolsFramework

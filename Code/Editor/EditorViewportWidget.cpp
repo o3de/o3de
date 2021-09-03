@@ -2563,6 +2563,11 @@ float EditorViewportSettings::ManipulatorLineBoundWidth() const
     return SandboxEditor::ManipulatorLineBoundWidth();
 }
 
+float EditorViewportSettings::ManipulatorCircleBoundWidth() const
+{
+    return SandboxEditor::ManipulatorCircleBoundWidth();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const

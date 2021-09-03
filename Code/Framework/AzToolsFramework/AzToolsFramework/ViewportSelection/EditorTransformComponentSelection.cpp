@@ -1377,6 +1377,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<RotationManipulators> rotationManipulators =
             AZStd::make_unique<RotationManipulators>(AZ::Transform::CreateIdentity());
+        rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*rotationManipulators);
 

@@ -16,7 +16,10 @@
 
 void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& serialize)
 {
-    serialize.Class<Manipulators>()->Version(1)->Field("LineBoundWidth", &Manipulators::m_manipulatorLineBoundWidth);
+    serialize.Class<Manipulators>()
+        ->Version(1)
+        ->Field("LineBoundWidth", &Manipulators::m_manipulatorLineBoundWidth)
+        ->Field("CircleBoundWidth", &Manipulators::m_manipulatorCircleBoundWidth);
 
     serialize.Class<CEditorPreferencesPage_ViewportManipulator>()->Version(2)->Field(
         "Manipulators", &CEditorPreferencesPage_ViewportManipulator::m_manipulators);
@@ -27,6 +30,11 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &Manipulators::m_manipulatorLineBoundWidth, "Line Bound Width",
                 "Manipulator Line Bound Width")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+            ->Attribute(AZ::Edit::Attributes::Max, 2.0f)
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &Manipulators::m_manipulatorCircleBoundWidth, "Circle Bound Width",
+                "Manipulator Circle Bound Width")
             ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
             ->Attribute(AZ::Edit::Attributes::Max, 2.0f);
 
@@ -53,9 +61,11 @@ QIcon& CEditorPreferencesPage_ViewportManipulator::GetIcon()
 void CEditorPreferencesPage_ViewportManipulator::OnApply()
 {
     SandboxEditor::SetManipulatorLineBoundWidth(m_manipulators.m_manipulatorLineBoundWidth);
+    SandboxEditor::SetManipulatorCircleBoundWidth(m_manipulators.m_manipulatorCircleBoundWidth);
 }
 
 void CEditorPreferencesPage_ViewportManipulator::InitializeSettings()
 {
     m_manipulators.m_manipulatorLineBoundWidth = SandboxEditor::ManipulatorLineBoundWidth();
+    m_manipulators.m_manipulatorCircleBoundWidth = SandboxEditor::ManipulatorCircleBoundWidth();
 }

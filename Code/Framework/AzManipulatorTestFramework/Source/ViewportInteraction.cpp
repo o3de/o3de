@@ -69,6 +69,11 @@ namespace AzManipulatorTestFramework
         return 0.1f;
     }
 
+    float ViewportInteraction::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
         return AzFramework::WorldToScreen(worldPosition, m_cameraState);

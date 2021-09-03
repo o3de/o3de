@@ -76,6 +76,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     bool AngleSnappingEnabled() const override;
     float AngleStep() const override;
     float ManipulatorLineBoundWidth() const override;
+    float ManipulatorCircleBoundWidth() const override;
 };
 
 // EditorViewportWidget window
