@@ -157,15 +157,16 @@ QTabBar::tab:focus {
     font-size:14px;
     text-align:left;
     margin:0;
-    padding-top:10px;
-    padding-bottom:-5px;
-    min-height:15px;
-    max-height:15px;
+    padding-top:0px;
+    padding-bottom:0px;
+    min-height:20px;
+    max-height:20px;
 }
 #headerSubTitle {
     font-size:24px;
     text-align:left;
     margin:0;
+    padding-top:-5px;
     min-height:42px;
     max-height:42px;
 }

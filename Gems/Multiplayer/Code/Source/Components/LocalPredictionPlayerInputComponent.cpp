@@ -81,6 +81,12 @@ namespace Multiplayer
         LocalPredictionPlayerInputComponentBase::Reflect(context);
     }
 
+    void LocalPredictionPlayerInputComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        LocalPredictionPlayerInputComponentBase::GetProvidedServices(provided);
+        provided.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
+    }
+
     void LocalPredictionPlayerInputComponent::OnInit()
     {
         ;

@@ -121,6 +121,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     bool ShowGrid() const override;
     bool AngleSnappingEnabled() const override;
     float AngleStep() const override;
+    float ManipulatorLineBoundWidth() const override;
 };
 
 static const EditorViewportSettings g_EditorViewportSettings;
@@ -2557,6 +2558,11 @@ bool EditorViewportSettings::AngleSnappingEnabled() const
 float EditorViewportSettings::AngleStep() const
 {
     return SandboxEditor::AngleSnappingSize();
+}
+
+float EditorViewportSettings::ManipulatorLineBoundWidth() const
+{
+    return SandboxEditor::ManipulatorLineBoundWidth();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
