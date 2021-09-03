@@ -24,7 +24,7 @@ template <typename F>
 struct Vec2_tpl;
 template <typename F>
 struct Vec3_tpl;
-struct Vec4_tpl;
+struct Vec4;
 
 template <typename F>
 struct Ang3_tpl;

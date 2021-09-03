@@ -10,13 +10,8 @@
 #pragma once
 
 #include "Cry_Color.h"
-#include "StlUtils.h"
-#include "CryEndian.h"
-
-#include <Cry_Geo.h>    // for AABB
 #include <VertexFormats.h>
 #include <Vertex.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 // Description:
 //    2D Texture coordinates used by CMesh.
@@ -145,7 +140,6 @@ struct IIndexedMesh
         int m_nIndexCount; // number of elements in m_pIndices array
     };
 
-    // <interfuscator:shuffle>
     virtual ~IIndexedMesh() {}
 
     // Release indexed mesh.
@@ -154,14 +148,8 @@ struct IIndexedMesh
     //! Gives read-only access to mesh data
     virtual void GetMeshDescription(SMeshDescription& meshDesc) const = 0;
 
-    /*! Frees vertex and face streams. Calling this function invalidates SMeshDescription pointers */
-    virtual void FreeStreams() = 0;
-
     //! Return number of allocated faces
     virtual int GetFaceCount() const = 0;
-
-    /*! Reallocates faces. Calling this function invalidates SMeshDescription pointers */
-    virtual void SetFaceCount(int nNewCount) = 0;
 
     //! Return number of allocated vertices, normals and colors
     virtual int GetVertexCount() const = 0;
@@ -180,6 +168,4 @@ struct IIndexedMesh
     //////////////////////////////////////////////////////////////////////////
     virtual int GetSubSetCount() const = 0;
     virtual const SMeshSubset& GetSubSet(int nIndex) const = 0;
-
-    // </interfuscator:shuffle>
 };

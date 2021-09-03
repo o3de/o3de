@@ -5,10 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_IXML_H
-#define CRYINCLUDE_CRYCOMMON_IXML_H
 #pragma once
 
 #include <platform.h>
@@ -27,7 +23,7 @@ template <typename F>
 struct Vec3_tpl;
 typedef Vec3_tpl<f32>   Vec3;
 
-typedef Vec4_tpl   Vec4;
+struct Vec4;
 
 template <typename F>
 struct Quat_tpl;
@@ -782,7 +778,6 @@ struct IXmlSerializer
 //   XML Parser interface.
 struct IXmlParser
 {
-    // <interfuscator:shuffle>
     virtual ~IXmlParser(){}
     virtual void AddRef() = 0;
     virtual void Release() = 0;
@@ -794,7 +789,6 @@ struct IXmlParser
     // Summary:
     //   Parses xml from memory buffer.
     virtual XmlNodeRef ParseBuffer(const char* buffer, int nBufLen, bool bCleanPools, bool bSuppressWarnings = false) = 0;
-    // </interfuscator:shuffle>
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -841,7 +835,6 @@ struct IXmlTableReader
     // to know absolute cell index (i.e. column).
     // Returns false if no cells left in the row.
     virtual bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize) = 0;
-    virtual float GetCurrentRowHeight() = 0;
     // </interfuscator:shuffle>
 };
 
@@ -861,17 +854,11 @@ struct IXmlUtils
     virtual XmlNodeRef LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings = false, bool bSuppressWarnings = false) = 0;
 
     // Summary:
-    //   Creates an MD5 hash of an XML file
-    virtual const char* HashXml(XmlNodeRef node) = 0;
-
-    // Summary:
     //   Creates XML Writer for ISerialize interface.
     // See also:
     //   IXmlSerializer
     virtual IXmlSerializer* CreateXmlSerializer() = 0;
-    // </interfuscator:shuffle>
 
-    // <interfuscator:shuffle>
     // Summary:
     //   Creates XML Parser.
     // Notes:
@@ -882,36 +869,8 @@ struct IXmlUtils
     virtual IXmlParser* CreateXmlParser() = 0;
 
     // Summary:
-    //   Creates XML to file in the binary form.
-    virtual bool SaveBinaryXmlFile(const char* sFilename, XmlNodeRef root) = 0;
-    // Summary:
-    //   Reads XML data from file in the binary form.
-    virtual XmlNodeRef LoadBinaryXmlFile(const char* sFilename, bool bEnablePatching = true) = 0;
-
-    // Summary:
-    //   Enables or disables checking for binary xml files.
-    // Return Value:
-    //   The previous status.
-    virtual bool EnableBinaryXmlLoading(bool bEnable) = 0;
-
-    // Summary:
     //   Creates XML Table reader.
     // Notes:
     //   After use it must be released with call to Release method.
     virtual IXmlTableReader* CreateXmlTableReader() = 0;
-
-    // Init xml stats nodes pool
-    virtual void InitStatsXmlNodePool(uint32 nPoolSize) = 0;
-
-    // Creates new xml node for statistics.
-    virtual XmlNodeRef CreateStatsXmlNode(const char* sNodeName) = 0;
-    // Set owner thread
-    virtual void SetStatsOwnerThread(threadID threadId) = 0;
-
-    // Free memory held on to by xml pool if empty
-    virtual void FlushStatsXmlNodePool() = 0;
-
-    // </interfuscator:shuffle>
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_IXML_H

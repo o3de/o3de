@@ -76,7 +76,6 @@ static int __cdecl ascii_stricmp(const char* dst, const char* src)
 
 //////////////////////////////////////////////////////////////////////////
 XmlStrCmpFunc g_pXmlStrCmp = &ascii_stricmp;
-bool g_bEnableBinaryXmlLoading = true;
 
 //////////////////////////////////////////////////////////////////////////
 class CXmlStringData
@@ -1653,38 +1652,35 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         AZStd::replace(pakPath.begin(), pakPath.end(), '\\', '/');
     }
 
-    if (g_bEnableBinaryXmlLoading)
+    XMLBinary::XMLBinaryReader reader;
+    XMLBinary::XMLBinaryReader::EResult result;
+    root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
+    if (root)
     {
-        XMLBinary::XMLBinaryReader reader;
-        XMLBinary::XMLBinaryReader::EResult result;
-        root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
-        if (root)
+        return root;
+    }
+    if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
+    {
+        delete [] pFileContents;
+        sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
+        errorString = str;
+        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
+        return 0;
+    }
+    else
+    {
+        // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
+        // wish we could compile the text xml parser out, but too much work to get everything moved over
+        constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
+        // exclude files and PAKs from Mods folder
+        constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
+        if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
+            _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
+            _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
         {
-            return root;
-        }
-        if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
-        {
-            delete [] pFileContents;
-            sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
-            errorString = str;
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-            return 0;
-        }
-        else
-        {
-            // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
-            // wish we could compile the text xml parser out, but too much work to get everything moved over
-            constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
-            // exclude files and PAKs from Mods folder
-            constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
-            if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
-                _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
-                _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
-            {
 #ifdef _RELEASE
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Non binary XML found in scripts dir (%s)", filename);
 #endif
-            }
         }
     }
 

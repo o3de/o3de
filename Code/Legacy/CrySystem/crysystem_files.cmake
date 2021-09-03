@@ -16,6 +16,7 @@ set(FILES
     IDebugCallStack.cpp
     Log.cpp
     System.cpp
+    SystemCFG.cpp
     SystemEventDispatcher.cpp
     SystemInit.cpp
     SystemWin32.cpp

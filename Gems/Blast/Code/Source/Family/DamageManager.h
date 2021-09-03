@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include "AzCore/Interface/Interface.h"
+
 #include <Blast/BlastMaterial.h>
 #include <Family/ActorTracker.h>
 #include <Blast/BlastSystemBus.h>

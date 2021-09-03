@@ -5,23 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
 // Description : Common vector class
-
-
 #pragma once
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// class Vec4
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-// class Vec4_tpl
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-struct Vec4_tpl
+struct Vec4
 {
     using value_type = f32;
     enum
@@ -44,13 +39,13 @@ struct Vec4_tpl
         }
     }
 #else
-    ILINE Vec4_tpl() {}
+    ILINE Vec4() {}
 #endif
 
-    ILINE Vec4_tpl(f32 vx, f32 vy, f32 vz, f32 vw) { x = vx; y = vy; z = vz; w = vw; }
-    ILINE Vec4_tpl(const Vec3_tpl<f32>& v, f32 vw) {  x = v.x; y = v.y; z = v.z; w = vw; }
-    explicit ILINE Vec4_tpl(f32 m) { x = y = z = w = m; }
-    ILINE Vec4_tpl(type_zero) { x = y = z = w = f32(0); }
+    ILINE Vec4(f32 vx, f32 vy, f32 vz, f32 vw) { x = vx; y = vy; z = vz; w = vw; }
+    ILINE Vec4(const Vec3_tpl<f32>& v, f32 vw) {  x = v.x; y = v.y; z = v.z; w = vw; }
+    explicit ILINE Vec4(f32 m) { x = y = z = w = m; }
+    ILINE Vec4(type_zero) { x = y = z = w = f32(0); }
 
     ILINE void operator () (f32 vx, f32 vy, f32 vz, f32 vw) { x = vx; y = vy; z = vz; w = vw; }
     ILINE void operator () (const Vec3_tpl<f32>& v, f32 vw) {  x = v.x; y = v.y; z = v.z; w = vw; }
@@ -58,9 +53,9 @@ struct Vec4_tpl
     ILINE f32& operator [] (int index)          { assert(index >= 0 && index <= 3);  return ((f32*)this)[index]; }
     ILINE f32 operator [] (int index) const { assert(index >= 0 && index <= 3);  return ((f32*)this)[index]; }
 
-    ILINE Vec4_tpl& zero() { x = y = z = w = 0; return *this; }
+    ILINE Vec4& zero() { x = y = z = w = 0; return *this; }
 
-    ILINE bool IsEquivalent(const Vec4_tpl& v1, f32 epsilon = VEC_EPSILON) const
+    ILINE bool IsEquivalent(const Vec4& v1, f32 epsilon = VEC_EPSILON) const
     {
         assert(v1.IsValid());
         assert(this->IsValid());
@@ -68,7 +63,7 @@ struct Vec4_tpl
     }
 
 
-    ILINE Vec4_tpl& operator=(const Vec4_tpl& src)
+    ILINE Vec4& operator=(const Vec4& src)
     {
         x = src.x;
         y = src.y;
@@ -77,17 +72,17 @@ struct Vec4_tpl
         return *this;
     }
 
-    ILINE Vec4_tpl operator * (f32 k) const
+    ILINE Vec4 operator * (f32 k) const
     {
-        return Vec4_tpl(x * k, y * k, z * k, w * k);
+        return Vec4(x * k, y * k, z * k, w * k);
     }
-    ILINE Vec4_tpl operator / (f32 k) const
+    ILINE Vec4 operator / (f32 k) const
     {
         k = (f32)1.0 / k;
-        return Vec4_tpl(x * k, y * k, z * k, w * k);
+        return Vec4(x * k, y * k, z * k, w * k);
     }
 
-    ILINE Vec4_tpl& operator *= (f32 k)
+    ILINE Vec4& operator *= (f32 k)
     {
         x *= k;
         y *= k;
@@ -95,7 +90,7 @@ struct Vec4_tpl
         w *= k;
         return *this;
     }
-    ILINE Vec4_tpl& operator /= (f32 k)
+    ILINE Vec4& operator /= (f32 k)
     {
         k = (f32)1.0 / k;
         x *= k;
@@ -105,7 +100,7 @@ struct Vec4_tpl
         return *this;
     }
 
-    ILINE void operator += (const Vec4_tpl& v)
+    ILINE void operator += (const Vec4& v)
     {
         x += v.x;
         y += v.y;
@@ -113,7 +108,7 @@ struct Vec4_tpl
         w += v.w;
     }
 
-    ILINE void operator -= (const Vec4_tpl& v)
+    ILINE void operator -= (const Vec4& v)
     {
         x -= v.x;
         y -= v.y;
@@ -122,7 +117,7 @@ struct Vec4_tpl
     }
 
 
-    ILINE f32 Dot (const Vec4_tpl& vec2)   const
+    ILINE f32 Dot (const Vec4& vec2)   const
     {
         return x * vec2.x + y * vec2.y + z * vec2.z + w * vec2.w;
     }
@@ -165,17 +160,17 @@ struct Vec4_tpl
     * Example:
     *  if (v0==v1) dosomething;
     */
-    ILINE bool operator==(const Vec4_tpl& vec)
+    ILINE bool operator==(const Vec4& vec)
     {
         return x == vec.x && y == vec.y && z == vec.z && w == vec.w;
     }
-    ILINE bool operator!=(const Vec4_tpl& vec) { return !(*this == vec); }
+    ILINE bool operator!=(const Vec4& vec) { return !(*this == vec); }
 
-    ILINE friend bool operator ==(const Vec4_tpl& v0, const Vec4_tpl& v1)
+    ILINE friend bool operator ==(const Vec4& v0, const Vec4& v1)
     {
         return ((v0.x == v1.x) && (v0.y == v1.y) && (v0.z == v1.z) && (v0.w == v1.w));
     }
-    ILINE friend bool operator !=(const Vec4_tpl& v0, const Vec4_tpl& v1) {   return !(v0 == v1);   }
+    ILINE friend bool operator !=(const Vec4& v0, const Vec4& v1) {   return !(v0 == v1);   }
 
     //! normalize the vector
     // The default Normalize function is in fact "safe". 0 vectors remain unchanged.
@@ -201,38 +196,13 @@ struct Vec4_tpl
     }
 };
 
-
-typedef Vec4_tpl    Vec4;  // always 32 bit
-
-////vector self-addition
-//template<class F1, class F2>
-//ILINE Vec4_tpl<F1>& operator += (Vec4_tpl<F1>& v0, const Vec4_tpl<F2>& v1)
-//{
-//    v0 = v0 + v1;
-//    return v0;
-//}
-
 //vector addition
-ILINE Vec4_tpl operator + (const Vec4_tpl& v0, const Vec4_tpl& v1)
+ILINE Vec4 operator + (const Vec4& v0, const Vec4& v1)
 {
-    return Vec4_tpl(v0.x + v1.x, v0.y + v1.y, v0.z + v1.z, v0.w + v1.w);
+    return Vec4(v0.x + v1.x, v0.y + v1.y, v0.z + v1.z, v0.w + v1.w);
 }
 //vector subtraction
-ILINE Vec4_tpl operator - (const Vec4_tpl& v0, const Vec4_tpl& v1)
+ILINE Vec4 operator - (const Vec4& v0, const Vec4& v1)
 {
-    return Vec4_tpl(v0.x - v1.x, v0.y - v1.y, v0.z - v1.z, v0.w - v1.w);
+    return Vec4(v0.x - v1.x, v0.y - v1.y, v0.z - v1.z, v0.w - v1.w);
 }
-
-////vector multiplication
-//template<class F1, class F2>
-//ILINE Vec4_tpl<F1> operator * (const Vec4_tpl<F1> v0, const Vec4_tpl<F2>& v1)
-//{
-//    return Vec4_tpl<F1>(v0.x * v1.x, v0.y * v1.y, v0.z * v1.z, v0.w * v1.w);
-//}
-
-////vector division
-//template<class F1, class F2>
-//ILINE Vec4_tpl<F1> operator / (const Vec4_tpl<F1>& v0, const Vec4_tpl<F2>& v1)
-//{
-//    return Vec4_tpl<F1>(v0.x / v1.x, v0.y / v1.y, v0.z / v1.z, v0.w / v1.w);
-//}

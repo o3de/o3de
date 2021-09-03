@@ -682,7 +682,7 @@ struct Matrix34_tpl
     ILINE void SetRow(int i, const Vec3_tpl<F>& v)  {   assert(i < 3);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;       }
 
     ILINE const Vec3_tpl<F>& GetRow(int i) const    {   assert(i < 3); return *(const Vec3_tpl<F>*)(&m00 + 4 * i);  }
-    ILINE const Vec4_tpl& GetRow4(int i) const   {   assert(i < 3); return *(const Vec4_tpl*)(&m00 + 4 * i);  }
+    ILINE const Vec4& GetRow4(int i) const   {   assert(i < 3); return *(const Vec4*)(&m00 + 4 * i);  }
 
     ILINE void SetColumn(int i, const Vec3_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[i + 4 * 0] = v.x;   p[i + 4 * 1] = v.y;   p[i + 4 * 2] = v.z;       }
     ILINE Vec3_tpl<F> GetColumn(int i) const    {   assert(i < 4);    F* p = (F*)(&m00);    return Vec3(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2]);    }
