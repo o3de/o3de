@@ -113,7 +113,7 @@
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
+      "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
   "asset_profile_nounity": {
@@ -127,7 +127,7 @@
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
+      "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
   "periodic_test_profile": {

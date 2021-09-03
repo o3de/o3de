@@ -1,0 +1,24 @@
+{
+    "O3DE": {
+        "Atom": {
+            "RPI": {
+                "Initialization": {
+                    "CommonSrgsShaderAssetPath": "shader/sceneandviewsrgs.azshader",
+                    "ImageSystemDescriptor": {
+                        "AssetStreamingImagePoolSize": 2147483648, // 2 * 1024 * 1024 * 1024
+                        "SystemStreamingImagePoolSize": 134217728, // 128 * 1024 * 1024
+                        "SystemAttachmentImagePoolSize": 536870912 // 512 * 1024 * 1024
+                    },
+                    "GpuQuerySystemDescriptor": {
+                        "OcclusionQueryCount": 128,
+                        "StatisticsQueryCount": 256,
+                        "TimestampQueryCount": 256
+                    },
+                    "DynamicDrawSystemDescriptor": {
+                        "DynamicBufferPoolSize": 50331648 // 3 * 16 * 1024 * 1024 (for 3 frames)
+                    }
+                }
+            }
+        }
+    }
+}

@@ -655,8 +655,6 @@ struct Matrix44_tpl
             (fabs_tpl(m0.m30 - m1.m30) <= e) && (fabs_tpl(m0.m31 - m1.m31) <= e) && (fabs_tpl(m0.m32 - m1.m32) <= e) && (fabs_tpl(m0.m33 - m1.m33) <= e)
             );
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -666,7 +664,11 @@ struct Matrix44_tpl
 typedef Matrix44_tpl<f32>  Matrix44;   //always 32 bit
 typedef Matrix44_tpl<f64>  Matrix44d;  //always 64 bit
 typedef Matrix44_tpl<real> Matrix44r;  //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-typedef _MS_ALIGN(16) Matrix44_tpl<f32> _ALIGN (16) Matrix44A;
+#if AZ_COMPILER_MSVC
+    typedef __declspec(align(16)) Matrix44_tpl<f32> Matrix44A;
+#elif AZ_COMPILER_CLANG
+    typedef Matrix44_tpl<f32> __attribute__((aligned(16))) Matrix44A;
+#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -675,63 +677,6 @@ typedef _MS_ALIGN(16) Matrix44_tpl<f32> _ALIGN (16) Matrix44A;
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-
-/*!
-*  Implements the multiplication operator: Matrix44=Matrix44*Matrix33diag
-*
-*  Matrix44 and Matrix33diag are specified in collumn order.
-*  AxB = operation B followed by operation A.
-*  This operation takes 12 mults.
-*
-*  Example:
-*   Matrix33diag diag(1,2,3);
-*   Matrix44 m44=CreateRotationZ33(3.14192f);
-*     Matrix44 result=m44*diag;
-*/
-template<class F1,  class F2>
-ILINE Matrix44_tpl<F1> operator * (const Matrix44_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    Matrix44_tpl<F1> m;
-    m.m00 = l.m00 * r.x;
-    m.m01 = l.m01 * r.y;
-    m.m02 = l.m02 * r.z;
-    m.m03 = l.m03;
-    m.m10 = l.m10 * r.x;
-    m.m11 = l.m11 * r.y;
-    m.m12 = l.m12 * r.z;
-    m.m13 = l.m13;
-    m.m20 = l.m20 * r.x;
-    m.m21 = l.m21 * r.y;
-    m.m22 = l.m22 * r.z;
-    m.m23 = l.m23;
-    m.m30 = l.m30 * r.x;
-    m.m31 = l.m31 * r.y;
-    m.m32 = l.m32 * r.z;
-    m.m33 = l.m33;
-    return m;
-}
-template<class F1, class F2>
-ILINE Matrix44_tpl<F1>& operator *= (Matrix44_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    l.m00 *= r.x;
-    l.m01 *= r.y;
-    l.m02 *= r.z;
-    l.m10 *= r.x;
-    l.m11 *= r.y;
-    l.m12 *= r.z;
-    l.m20 *= r.x;
-    l.m21 *= r.y;
-    l.m22 *= r.z;
-    l.m30 *= r.x;
-    l.m31 *= r.y;
-    l.m32 *= r.z;
-    return l;
-}
-
 
 /*!
 *  Implements the multiplication operator: Matrix44=Matrix44*Matrix33

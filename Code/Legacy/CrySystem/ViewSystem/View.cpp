@@ -13,7 +13,6 @@
 #include <HMDBus.h>
 #include "View.h"
 #include <AzCore/Math/MathUtils.h>
-#include <IStereoRenderer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/Entity.h>
 #include <Random.h>
@@ -541,13 +540,13 @@ void CView::GetMemoryUsage(ICrySizer* s) const
     s->AddObject(m_shakes);
 }
 
-void CView::Serialize(TSerialize ser)
-{
-    if (ser.IsReading())
-    {
-        ResetShaking();
-    }
-}
+//void CView::Serialize(TSerialize ser)
+//{
+//    if (ser.IsReading())
+//    {
+//        ResetShaking();
+//    }
+//}
 
 void CView::PostSerialize()
 {

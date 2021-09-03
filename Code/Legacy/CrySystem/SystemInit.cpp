@@ -97,7 +97,6 @@
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
-#include <AzFramework/Driller/DrillerConsoleAPI.h>
 
 #if defined(ANDROID)
     #include <AzCore/Android/Utils.h>
@@ -258,8 +257,8 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         {
             float a = 1.0f;
             memset(&a, 0, sizeof(a));
-            float* b = &a;
-            float c = 3;
+            [[maybe_unused]] float* b = &a;
+            [[maybe_unused]] float c = 3;
             CryLog("%f", (c / *b));
         }
         break;
@@ -432,8 +431,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const cha
 //////////////////////////////////////////////////////////////////////////
 AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
@@ -476,7 +473,7 @@ bool CSystem::UnloadDLL(const char* dllName)
 {
     bool isSuccess = false;
 
-    CCryNameCRC key(dllName);
+    AZ::Crc32 key(dllName);
     AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
     AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
     if ((hModule) && (hModule->IsLoaded()))
@@ -612,8 +609,6 @@ AZStd::wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gp
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (m_env.pConsole)
     {
         m_env.pConsole->Init(this);
@@ -662,7 +657,6 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem()
 {
-    LOADING_TIME_PROFILE_SECTION;
     using namespace AzFramework::AssetSystem;
 
     if (m_pUserCallback)
@@ -748,11 +742,8 @@ void CSystem::ShutdownFileSystem()
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
-    LOADING_TIME_PROFILE_SECTION;
-    {
-        LoadConfiguration(m_systemConfigName.c_str());
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
-    }
+    LoadConfiguration(m_systemConfigName.c_str());
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
 
 #if defined(AZ_PLATFORM_ANDROID)
     AZ::Android::Utils::SetLoadFilesToMemory(m_sys_load_files_to_memory->GetString());
@@ -783,8 +774,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!Audio::Gem::AudioSystemGemRequestBus::HasHandlers())
     {
         // AudioSystem Gem has not been enabled for this project.
@@ -826,8 +815,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitVTuneProfiler()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
 #ifdef PROFILE_WITH_VTUNE
 
     WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
@@ -855,7 +842,6 @@ bool CSystem::InitVTuneProfiler()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
     // Set the localization folder
     ICVar* pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("sys_localization_folder") : 0;
     if (pCVar)
@@ -916,8 +902,6 @@ void CSystem::OpenBasicPaks()
         return;
     }
     bBasicPaksLoaded = true;
-
-    LOADING_TIME_PROFILE_SECTION;
 
     // open pak files
     constexpr AZStd::string_view paksFolder = "@assets@/*.pak"; // (@assets@ assumed)
@@ -1153,8 +1137,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         gEnv = &m_env;
     }
 
-    LOADING_TIME_PROFILE_SECTION;
-
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
     gEnv->mMainThreadId = GetCurrentThreadId();         //Set this ASAP on startup
 
@@ -1185,7 +1167,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-    
+
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
@@ -1626,6 +1608,9 @@ AZ_POP_DISABLE_WARNING
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
+    // Execute any deferred commands that uses the CVar commands that were just registered
+    AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+
     // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
     if (gEnv->IsEditor() && !gEnv->pMovieSystem)
     {
@@ -1641,7 +1626,7 @@ AZ_POP_DISABLE_WARNING
 
     m_bInitializedSuccessfully = true;
 
-    return (true);
+    return true;
 }
 
 
@@ -1690,46 +1675,6 @@ void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
         int logLevel = atoi(pArgs->GetArg(1));
         *logVar = logLevel;
         AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
-}
-
-void CmdDrillToFile(IConsoleCmdArgs* pArgs)
-{
-    if (azstricmp(pArgs->GetArg(0), "DrillerStop") == 0)
-    {
-        EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StopDrillerSession, AZ::Crc32("DefaultDrillerSession"));
-    }
-    else
-    {
-        if (pArgs->GetArgCount() > 1)
-        {
-            AZ::Debug::DrillerManager::DrillerListType drillersToEnable;
-            for (int iArg = 1; iArg < pArgs->GetArgCount(); ++iArg)
-            {
-                if (azstricmp(pArgs->GetArg(iArg), "Replica") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("ReplicaDriller");
-                }
-                else if (azstricmp(pArgs->GetArg(iArg), "Carrier") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("CarrierDriller");
-                }
-                else
-                {
-                    CryLogAlways("Driller %s not supported.", pArgs->GetArg(iArg));
-                }
-            }
-            EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StartDrillerSession, drillersToEnable, AZ::Crc32("DefaultDrillerSession"));
-        }
-        else
-        {
-            CryLogAlways("Syntax: DrillerStart [Driller1] [Driller2] [...]");
-            CryLogAlways("Supported Drillers:");
-            CryLogAlways("    Carrier");
-            CryLogAlways("    Replica");
-        }
     }
 }
 
@@ -1874,19 +1819,6 @@ void CSystem::CreateSystemVars()
             "Entities marked with lower level will not be spawned - 0 means no level.\n"
             "Usage: e_EntitySuppressionLevel [0-infinity]\n"
             "Default is 0 (off)");
-
-#if defined(WIN32) || defined(WIN64)
-    const uint32 nJobSystemDefaultCoreNumber = 8;
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_11
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    const uint32 nJobSystemDefaultCoreNumber = 4;
-#endif
 
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
@@ -2110,9 +2042,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND_DEV_ONLY("DrillerStart", CmdDrillToFile, VF_DEV_ONLY, "Start a driller capture.");
-    REGISTER_COMMAND_DEV_ONLY("DrillerStop", CmdDrillToFile, VF_DEV_ONLY, "Stop a driller capture.");
 
     REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }

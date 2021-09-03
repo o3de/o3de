@@ -177,44 +177,6 @@ struct Matrix33_tpl
         m22 = F(vz.z);
     }
 
-
-
-
-
-    //CONSTRUCTOR for identical float-types. It converts a Diag33 into a Matrix33.
-    //Matrix33(diag33);
-    ILINE Matrix33_tpl<F>(const Diag33_tpl<F>&d)
-    {
-        assert(d.IsValid());
-        m00 = d.x;
-        m01 = 0;
-        m02 = 0;
-        m10 = 0;
-        m11 = d.y;
-        m12 = 0;
-        m20 = 0;
-        m21 = 0;
-        m22 = d.z;
-    }
-    //CONSTRUCTOR for different float-types. It converts a Diag33 into a Matrix33 and also converts between double/float.
-    //Matrix33(diag33);
-    template<class F1>
-    ILINE Matrix33_tpl<F>(const Diag33_tpl<F1>&d)
-    {
-        assert(d.IsValid());
-        m00 = F(d.x);
-        m01 = 0;
-        m02 = 0;
-        m10 = 0;
-        m11 = F(d.y);
-        m12 = 0;
-        m20 = 0;
-        m21 = 0;
-        m22 = F(d.z);
-    }
-
-
-
     //CONSTRUCTOR for identical float-types
     //Matrix33 m=m33;
     ILINE Matrix33_tpl<F>(const Matrix33_tpl<F>&m)
@@ -1232,8 +1194,6 @@ struct Matrix33_tpl
         return true;
     }
 
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1243,7 +1203,6 @@ struct Matrix33_tpl
 typedef Matrix33_tpl<f32>  Matrix33;  //always 32 bit
 typedef Matrix33_tpl<f64>  Matrix33d; //always 64 bit
 typedef Matrix33_tpl<real> Matrix33r; //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-typedef _MS_ALIGN(16) Matrix33_tpl<f32> _ALIGN (16) Matrix33A;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -1252,40 +1211,6 @@ typedef _MS_ALIGN(16) Matrix33_tpl<f32> _ALIGN (16) Matrix33A;
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-
-template<class F1, class F2>
-ILINE Matrix33_tpl<F1> operator*(const Matrix33_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    Matrix33_tpl<F1> res;
-    res.m00 = l.m00 * r.x;
-    res.m01 = l.m01 * r.y;
-    res.m02 = l.m02 * r.z;
-    res.m10 = l.m10 * r.x;
-    res.m11 = l.m11 * r.y;
-    res.m12 = l.m12 * r.z;
-    res.m20 = l.m20 * r.x;
-    res.m21 = l.m21 * r.y;
-    res.m22 = l.m22 * r.z;
-    return res;
-}
-template<class F1, class F2>
-ILINE Matrix33_tpl<F1>& operator *= (Matrix33_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    l.m00 *= r.x;
-    l.m01 *= r.y;
-    l.m02 *= r.z;
-    l.m10 *= r.x;
-    l.m11 *= r.y;
-    l.m12 *= r.z;
-    l.m20 *= r.x;
-    l.m21 *= r.y;
-    l.m22 *= r.z;
-    return l;
-}
 
 //Matrix33 operations with another Matrix33
 template<class F1, class F2>

@@ -7,20 +7,12 @@
  */
 
 #include <ImageProcessing_Traits_Platform.h>
+#include <AzCore/PlatformIncl.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Processing/ImageFlags.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Compressors/PVRTC.h>
 
-#if AZ_TRAIT_IMAGEPROCESSING_PVRTEXLIB_USE_WINDLL_IMPORT
-//_WINDLL_IMPORT need to be defined before including PVRTexLib header files to avoid linking error on windows.
-#define _WINDLL_IMPORT
-// NOMINMAX needs to be defined before including PVRTexLib header files (which include Windows.h)
-// so that Windows.h doesn't define min/max. Otherwise, a compile error may arise in Uber builds
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#endif
 #include <PVRTexture.h>
 #include <PVRTextureUtilities.h>
 
@@ -105,6 +97,11 @@ namespace ImageProcessingAtom
     ColorSpace PVRTCCompressor::GetSupportedColorSpace([[maybe_unused]] EPixelFormat compressFormat) const
     {
         return ColorSpace::autoSelect;
+    }
+
+    const char* PVRTCCompressor::GetName() const
+    {
+        return "PVRTCCompressor";
     }
 
     bool PVRTCCompressor::DoesSupportDecompress([[maybe_unused]] EPixelFormat fmtDst)

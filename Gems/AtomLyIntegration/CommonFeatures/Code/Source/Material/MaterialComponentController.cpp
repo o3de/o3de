@@ -8,6 +8,7 @@
 
 #include <Material/MaterialComponentController.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -133,7 +134,7 @@ namespace AZ
         {
             InitializeMaterialInstance(asset);
         }
-
+        
         void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             AZStd::unordered_set<MaterialAssignmentId> propertyOverrides;
@@ -208,6 +209,7 @@ namespace AZ
             for (auto& materialPair : m_configuration.m_materials)
             {
                 auto& materialAsset = materialPair.second.m_materialAsset;
+
                 if (materialAsset.GetId().IsValid() && !Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
                 {
                     anyQueued = true;
@@ -221,7 +223,7 @@ namespace AZ
                 ReleaseMaterials();
             }
         }
-
+        
         void MaterialComponentController::InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset)
         {
             bool allReady = true;

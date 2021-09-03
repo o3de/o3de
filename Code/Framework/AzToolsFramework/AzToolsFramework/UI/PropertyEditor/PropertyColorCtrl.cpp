@@ -373,8 +373,8 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Color asAZColor((float)val.redF(), (float)val.greenF(), (float)val.blueF(), (float)val.alphaF());
         instance = static_cast<property_t>(asAZColor);
@@ -382,8 +382,8 @@ namespace AzToolsFramework
 
     bool AZColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector4 asVector4 = static_cast<AZ::Vector4>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector4.GetX());
@@ -410,8 +410,8 @@ namespace AzToolsFramework
     }
     void Vector3ColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Vector3 asVector3((float)val.redF(), (float)val.greenF(), (float)val.blueF());
         instance = static_cast<property_t>(asVector3);
@@ -419,8 +419,8 @@ namespace AzToolsFramework
 
     bool Vector3ColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector3 asVector3 = static_cast<AZ::Vector3>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector3.GetX());

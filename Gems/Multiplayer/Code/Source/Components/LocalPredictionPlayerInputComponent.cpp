@@ -40,7 +40,6 @@ namespace Multiplayer
         AzNetworking::StringifySerializer::ValueMap differences = clientMap;
         for (auto iter = server.GetValueMap().begin(); iter != server.GetValueMap().end(); ++iter)
         {
-            auto serverValueIter = clientMap.find(iter->first);
             if (iter->second == differences[iter->first])
             {
                 differences.erase(iter->first);
@@ -80,6 +79,12 @@ namespace Multiplayer
                 ->Version(1);
         }
         LocalPredictionPlayerInputComponentBase::Reflect(context);
+    }
+
+    void LocalPredictionPlayerInputComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        LocalPredictionPlayerInputComponentBase::GetProvidedServices(provided);
+        provided.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
     }
 
     void LocalPredictionPlayerInputComponent::OnInit()
@@ -492,7 +497,6 @@ namespace Multiplayer
     {
         const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
         const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
-        const double maxRewindHistory = static_cast<double>(static_cast<AZ::TimeMs>(cl_MaxRewindHistoryMs)) / 1000.0;
 
         // Update banked time accumulator
         m_clientBankedTime -= deltaTime;

@@ -238,6 +238,7 @@ namespace AtomToolsFramework
         connectionSettings.m_connectionIdentifier = GetBuildTargetName();
         connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
         {
+            AZ_UNUSED(targetName);  // Prevent unused warning in release builds
             AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
         AzFramework::AssetSystemRequestBus::BroadcastResult(

@@ -80,9 +80,7 @@ namespace ScriptCanvas
         using ResultType = FunctionTraits::result_type;\
         static const size_t s_numArgs = FunctionTraits::arity;\
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
-        static const size_t s_argsSlotIndicesStart = 2;\
-        static const size_t s_resultsSlotIndicesStart = s_argsSlotIndicesStart + s_numArgs;\
-        static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;\
+        /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
         \
         static const char* GetArgName(size_t i)\
         {\
@@ -104,7 +102,9 @@ namespace ScriptCanvas
     private:\
         static AZStd::string_view GetName(size_t i)\
         {\
+            AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")\
             static_assert(s_numArgs <= s_numNames, "Number of arguments is greater than number of names in " #NODE_NAME );\
+            AZ_POP_DISABLE_WARNING\
             /*static_assert(s_numResults <= s_numNames, "Number of results is greater than number of names in " #NODE_NAME );*/\
             /*static_assert((s_numResults + s_numArgs) == s_numNames, "Argument name count + result name count != name count in " #NODE_NAME );*/\
             static const AZStd::array<AZStd::string_view, s_numNames> s_names = {{ __VA_ARGS__ }};\
@@ -148,7 +148,7 @@ namespace ScriptCanvas
         {
             static int indices[] = { inputDatumIndices... };
             static_assert(sizeof...(Is) == AZ_ARRAY_SIZE(indices), "size of default values doesn't match input datum indices for them");
-            std::initializer_list<int> { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
+            [[maybe_unused]] std::initializer_list<int> dummy = { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
         }
 
         template<typename ArgType>

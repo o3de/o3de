@@ -86,7 +86,7 @@ public:
     // IUiAnimViewNode
     virtual EUiAnimViewNodeType GetNodeType() const override { return eUiAVNT_Sequence; }
 
-    virtual const char* GetName() const override { return m_pAnimSequence->GetName(); }
+    AZStd::string GetName() const override { return m_pAnimSequence->GetName(); }
     virtual bool SetName(const char* pName) override;
     virtual bool CanBeRenamed() const override { return true; }
 

@@ -21,7 +21,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -460,6 +460,10 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
+                }
                 else if (platformIdentifier == "mac")
                 {
                     platformId = AzFramework::PlatformId::MAC_ID;
@@ -517,7 +521,7 @@ namespace AZ
                     {
                         // Search the function name into the list of valid entry points into the shader.
                         auto findId =
-                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item) {
+                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName](const auto& item) {
                                 return item.first == functionName;
                             });
 

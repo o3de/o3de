@@ -211,7 +211,6 @@ namespace AZ::Render
             return;
         }
 
-        auto viewportSize = viewportContext->GetViewportSize();
         AzFramework::CameraState cameraState;
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
         const AZ::Transform transform = currentView->GetCameraTransform();

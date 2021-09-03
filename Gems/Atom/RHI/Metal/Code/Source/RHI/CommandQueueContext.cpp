@@ -79,7 +79,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
             
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
@@ -91,7 +91,7 @@ namespace AZ
             m_currentFrameIndex = (m_currentFrameIndex + 1) % aznumeric_cast<uint32_t>(m_frameFences.size());
 
             {
-                AZ_PROFILE_SCOPE(AzRender, "Wait and Reset Fence");
+                AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueueContext: Wait on Fences");
 
                 //Synchronize the CPU with the GPU by waiting on the fence until signalled by the GPU. CPU can only go upto

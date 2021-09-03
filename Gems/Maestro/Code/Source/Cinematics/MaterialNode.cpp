@@ -180,7 +180,7 @@ unsigned int CAnimMaterialNode::GetParamCount() const
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimMaterialNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
@@ -217,7 +217,7 @@ bool CAnimMaterialNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
+AZStd::string CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
 {
     if (param.GetType() == AnimParamType::ByString)
     {

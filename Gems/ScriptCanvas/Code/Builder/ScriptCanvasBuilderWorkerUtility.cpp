@@ -486,7 +486,6 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
-        const bool saveRawLua{ true };
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
@@ -651,11 +650,6 @@ namespace ScriptCanvasBuilder
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
         {
-            auto filterScripts = [](const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-            {
-                return asset.GetType() != azrtti_typeid<AZ::ScriptAsset>();
-            };
-
             if (AZ::Data::AssetManager::Instance().GetAsset(assetDependency.GetId(), assetDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
                 jobProduct.m_dependencies.push_back({ assetDependency.GetId(), {} });

@@ -24,7 +24,7 @@
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -43,6 +43,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Debug/Timer.h>
 
 #include "AzslCompiler.h"
 #include "ShaderVariantAssetBuilder.h"
@@ -236,7 +237,9 @@ namespace AZ
 
         void ShaderAssetBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
+            AZ::Debug::Timer timer;
+            timer.Stamp();
+
             AZStd::string shaderFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), shaderFullPath, true);
             // Save .shader file name (no extension and no parent directory path)
@@ -459,7 +462,7 @@ namespace AZ
                     {
                         finalShaderOptionGroupLayout = shaderOptionGroupLayout;
                         shaderAssetCreator.SetShaderOptionGroupLayout(finalShaderOptionGroupLayout);
-                        const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
+                        [[maybe_unused]] const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
                         AZ_TracePrintf(
                             ShaderAssetBuilderName, "Note: This shader uses %u of %u available shader variant key bits. \n",
                             usedShaderOptionBits, RPI::ShaderVariantKeyBitCount);
@@ -579,7 +582,7 @@ namespace AZ
                         request.m_platformInfo,
                         buildOptions.m_compilerArguments,
                         request.m_tempDirPath,
-                        startTime,
+                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -660,12 +663,8 @@ namespace AZ
             }
             
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            
-            const AZStd::sys_time_t endTime = AZStd::GetTimeNowTicks();
-            const AZStd::sys_time_t deltaTime = endTime - startTime;
-            const float elapsedTimeSeconds = (float)(deltaTime) / (float)AZStd::GetTimeTicksPerSecond();
-            
-            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.2f seconds\n", request.m_sourceFile.c_str(), elapsedTimeSeconds);
+                        
+            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
             
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
         }

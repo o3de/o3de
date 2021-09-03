@@ -845,8 +845,6 @@ struct Vec3_tpl
     {
         return Vec3_tpl<F1>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
     }
-
-    AUTO_STRUCT_INFO
 };
 
 // dot product (2 versions)
@@ -1175,8 +1173,6 @@ struct Ang3_tpl
         }
         return true;
     }
-
-    AUTO_STRUCT_INFO
 };
 
 typedef Ang3_tpl<f32>       Ang3;
@@ -1406,8 +1402,6 @@ struct Plane_tpl
     Vec3_tpl<F> MirrorPosition(const Vec3_tpl<F>& i) {  return i - n * (2 * ((n | i) + d)); }
 
     ILINE bool IsValid() const { return !n.IsZeroFast(); } //A plane with a zero normal isn't valid.
-
-    AUTO_STRUCT_INFO
 };
 
 typedef Plane_tpl<f32>  Plane; //always 32 bit

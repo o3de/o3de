@@ -38,7 +38,6 @@
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
-
 namespace {
     QColor kLinkColorParent = QColor(0, 255, 255);
     QColor kLinkColorChild = QColor(0, 0, 255);
@@ -1928,7 +1927,7 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::HitTestRect(HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(Entity);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AABB box;
 
@@ -1965,7 +1964,7 @@ bool CBaseObject::HitHelperTest(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
 {
-    AZ_PROFILE_FUNCTION(Entity);
+    AZ_PROFILE_FUNCTION(Editor);
 
     bool bResult = false;
 
@@ -2038,7 +2037,7 @@ bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CBaseObject::GetChild(size_t const i) const
 {
-    assert(i >= 0 && i < m_childs.size());
+    assert(i < m_childs.size());
     return m_childs[i];
 }
 
@@ -2058,53 +2057,7 @@ bool CBaseObject::IsChildOf(CBaseObject* node)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.AddObject(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::CloneChildren(CBaseObject* pFromObject)
@@ -2729,7 +2682,7 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
     // Set min spec for all childs.
     if (bSetChildren)
     {
-        for (size_t i = m_childs.size() - 1; i >= 0; --i)
+        for (int i = static_cast<int>(m_childs.size()) - 1; i >= 0; --i)
         {
             m_childs[i]->SetMinSpec(nSpec, true);
         }

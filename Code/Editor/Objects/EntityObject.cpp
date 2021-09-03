@@ -497,7 +497,7 @@ bool CEntityObject::HitTestRect(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(Entity);
 
     if (event == eMouseMove || event == eMouseLDown)
     {
@@ -1416,7 +1416,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.
-    assert(index >= 0 && index < m_eventTargets.size());
+    assert(index < m_eventTargets.size());
     if (object)
     {
         object->AddEventListener(this);
