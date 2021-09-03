@@ -1602,9 +1602,6 @@ AZ_POP_DISABLE_WARNING
         LoadConfiguration("client.cfg", &CVarsClientConfigSink);
     }
 
-    //Connect to the render bus
-    AZ::RenderNotificationsBus::Handler::BusConnect();
-
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 

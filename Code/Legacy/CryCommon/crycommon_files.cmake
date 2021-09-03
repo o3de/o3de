@@ -76,7 +76,6 @@ set(FILES
     VectorMap.h
     VertexFormats.h
     XMLBinaryHeaders.h
-    RenderBus.h
     MainThreadRenderRequestBus.h
     Cry_Matrix33.h
     Cry_Matrix34.h

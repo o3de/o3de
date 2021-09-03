@@ -18,8 +18,6 @@
 #include "CmdLine.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
-#include "RenderBus.h"
-
 #include <LoadScreenBus.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -202,7 +200,6 @@ class CSystem
     , public ILoadConfigurationEntrySink
     , public ISystemEventListener
     , public IWindowMessageHandler
-    , public AZ::RenderNotificationsBus::Handler
     , public CrySystemRequestBus::Handler
 {
 public:

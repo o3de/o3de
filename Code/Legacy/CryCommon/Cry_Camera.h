@@ -8,9 +8,6 @@
 
 
 // Description : Common Camera class implementation
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_CAMERA_H
-#define CRYINCLUDE_CRYCOMMON_CRY_CAMERA_H
 #pragma once
 
 
@@ -96,43 +93,25 @@ public:
     ILINE static Ang3 CreateAnglesYPR(const Vec3& vdir, f32 r = 0);
 
     ILINE void SetMatrix(const Matrix34& mat) { assert(mat.IsOrthonormal()); m_Matrix = mat; UpdateFrustum(); };
-    ILINE void SetMatrixNoUpdate(const Matrix34& mat) { assert(mat.IsOrthonormal()); m_Matrix = mat; };
     ILINE const Matrix34& GetMatrix() const { return m_Matrix; };
     ILINE Vec3 GetViewdir() const { return m_Matrix.GetColumn1(); };
 
-    ILINE void SetEntityPos(const Vec3& entityPos) { m_entityPos = entityPos; }
-    ILINE Vec3 GetEntityPos() const { return m_entityPos; };
-
-    ILINE Matrix34 GetViewMatrix() const { return m_Matrix.GetInverted(); };
     ILINE Vec3 GetPosition() const { return m_Matrix.GetTranslation(); }
     ILINE void SetPosition(const Vec3& p)   { m_Matrix.SetTranslation(p); UpdateFrustum(); }
-    ILINE void SetPositionNoUpdate(const Vec3& p)   { m_Matrix.SetTranslation(p); }
-    ILINE Vec3 GetUp() const { return m_Matrix.GetColumn2(); }
 
     //------------------------------------------------------------
 
     void SetFrustum(int nWidth, int nHeight, f32 FOV = DEFAULT_FOV, f32 nearplane = DEFAULT_NEAR, f32 farplane = DEFAULT_FAR, f32 fPixelAspectRatio = 1.0f);
 
-    ILINE int GetViewSurfaceX() const { return m_Width; }
     ILINE int GetViewSurfaceZ() const { return m_Height; }
     ILINE f32 GetFov() const { return m_fov; }
-    ILINE f32 GetNearPlane() const { return m_edge_nlt.y; }
-    ILINE f32 GetFarPlane() const { return m_edge_flt.y; }
-    ILINE f32 GetAngularResolution() const { return m_Height / m_fov; }
     ILINE f32 GetPixelAspectRatio() const { return m_PixelAspectRatio; }
-
-    ILINE Vec3 GetEdgeP() const { return m_edge_plt; }
-    ILINE Vec3 GetEdgeN() const { return m_edge_nlt; }
-    ILINE Vec3 GetEdgeF() const { return m_edge_flt; }
 
     //////////////////////////////////////////////////////////////////////////
 
     //-----------------------------------------------------------------------------------
     //--------                Frustum-Culling                ----------------------------
     //-----------------------------------------------------------------------------------
-
-    //Check if a point lies within camera's frustum
-    bool IsPointVisible(const Vec3& p) const;
 
     // AABB-frustum test
     // Fast
@@ -147,40 +126,16 @@ public:
         m_asymBottom = 0;
         m_asymTop = 0;
         SetFrustum(640, 480);
-        m_zrangeMin = 0.0f;
-        m_zrangeMax = 1.0f;
-        m_pPortal = NULL;
-        m_JustActivated = 0;
         m_nPosX = m_nPosY = m_nSizeX = m_nSizeY = 0;
         m_entityPos = Vec3(0, 0, 0);
     }
     ~CCamera() {}
 
-    void SetJustActivated(const bool justActivated) {m_JustActivated = (int)justActivated; }
-    bool IsJustActivated() const {return m_JustActivated != 0; }
-
-    void SetViewPort(int nPosX, int nPosY, int nSizeX, int nSizeY)
-    {
-        m_nPosX = nPosX;
-        m_nPosY = nPosY;
-        m_nSizeX = nSizeX;
-        m_nSizeY = nSizeY;
-    }
-
-    void GetViewPort(int& nPosX, int& nPosY, int& nSizeX, int& nSizeY) const
-    {
-        nPosX = m_nPosX;
-        nPosY = m_nPosY;
-        nSizeX = m_nSizeX;
-        nSizeY = m_nSizeY;
-    }
+    void SetJustActivated([[maybe_unused]] const bool justActivated) {}
 
     void UpdateFrustum();
 
 private:
-    bool AdditionalCheck(const AABB& aabb) const;
-    bool AdditionalCheck(const Vec3& wpos, const OBB& obb, f32 uscale) const;
-
     Matrix34 m_Matrix;              // world space-matrix
 
     f32     m_fov;                          // vertical fov in radiants [0..1*PI[
@@ -207,69 +162,7 @@ private:
     uint32  m_idx1[FRUSTUM_PLANES], m_idy1[FRUSTUM_PLANES], m_idz1[FRUSTUM_PLANES]; //
     uint32  m_idx2[FRUSTUM_PLANES], m_idy2[FRUSTUM_PLANES], m_idz2[FRUSTUM_PLANES]; //
 
-    // Near Far range of the z-buffer to use for this camera.
-    float m_zrangeMin;
-    float m_zrangeMax;
-
     int m_nPosX, m_nPosY, m_nSizeX, m_nSizeY;
-
-    //------------------------------------------------------------------------
-    //---   OLD STUFF
-    //------------------------------------------------------------------------
-public:
-
-    void SetFrustumVertices(Vec3* arrvVerts)
-    {
-        m_clbp = arrvVerts[0];
-        m_cltp = arrvVerts[1];
-        m_crtp = arrvVerts[2];
-        m_crbp = arrvVerts[3];
-    }
-    inline void SetFrustumPlane(int i, const Plane_tpl<f32>& plane)
-    {
-        m_fp[i] = plane;
-        //do not break strict aliasing rules, use union instead of reinterpret_casts
-        union f32_u
-        {
-            float floatVal;
-            uint32 uintVal;
-        };
-
-        {
-            f32_u ux;
-            ux.floatVal = m_fp[i].n.x;
-            f32_u uy;
-            uy.floatVal = m_fp[i].n.y;
-            f32_u uz;
-            uz.floatVal = m_fp[i].n.z;
-            uint32 bitX =   ux.uintVal >> 31;
-            uint32 bitY =   uy.uintVal >> 31;
-            uint32 bitZ =   uz.uintVal >> 31;
-            m_idx1[i] = bitX * 3 + 0;
-            m_idx2[i] = (1 - bitX) * 3 + 0;
-            m_idy1[i] = bitY * 3 + 1;
-            m_idy2[i] = (1 - bitY) * 3 + 1;
-            m_idz1[i] = bitZ * 3 + 2;
-            m_idz2[i] = (1 - bitZ) * 3 + 2;
-        }
-    }
-
-    inline Ang3 GetAngles()   const { return CreateAnglesYPR(Matrix33(m_Matrix)); }
-    void SetAngles(const Ang3& angles)  { SetMatrix(Matrix34::CreateRotationXYZ(angles)); }
-
-
-    struct IVisArea* m_pPortal; // pointer to portal used to create this camera
-    struct ScissorInfo
-    {
-        ScissorInfo() { x1 = y1 = x2 = y2 = 0; }
-        uint16 x1, y1, x2, y2;
-    };
-    ScissorInfo m_ScissorInfo;
-
-    Vec3    m_OccPosition;      //Position for calculate occlusions (needed for portals rendering)
-    inline const Vec3& GetOccPos() const { return(m_OccPosition); }
-
-    int m_JustActivated;        //Camera activated in this frame, used for disabling motion blur effect at camera changes in movies
 };
 
 // Description
@@ -492,45 +385,6 @@ inline void CCamera::UpdateFrustum()
         m_idz1[i] = bitZ * 3 + 2;
         m_idz2[i] = (1 - bitZ) * 3 + 2;
     }
-    m_OccPosition = GetPosition();
-}
-
-// Description
-//   Check if a point lies within camera's frustum
-//
-// Example
-//   u8 InOut=camera.IsPointVisible(point);
-//
-// return values
-//   CULL_EXCLUSION = point outside of frustum
-//   CULL_INTERSECT = point inside of frustum
-inline bool CCamera::IsPointVisible(const Vec3& p) const
-{
-    if ((m_fp[FR_PLANE_NEAR  ] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    if ((m_fp[FR_PLANE_RIGHT ] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    if ((m_fp[FR_PLANE_LEFT  ] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    if ((m_fp[FR_PLANE_TOP   ] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    if ((m_fp[FR_PLANE_BOTTOM] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    if ((m_fp[FR_PLANE_FAR   ] | p) > 0)
-    {
-        return CULL_EXCLUSION;
-    }
-    return CULL_OVERLAP;
 }
 
 // Description
@@ -594,289 +448,3 @@ inline bool CCamera::IsAABBVisible_F(const AABB& aabb) const
     }
     return CULL_OVERLAP;
 }
-
-//------------------------------------------------------------------------------
-//---                         ADDITIONAL-TEST                                ---
-//------------------------------------------------------------------------------
-
-alignas(64) extern uint32 BoxSides[];
-
-// Description:
-//   A box can easily straddle one of the view-frustum planes far
-//   outside the view-frustum and in this case the previous test would
-//   return CULL_OVERLAP.
-//
-// Note:  With this check, we make sure the AABB is really not visble
-NO_INLINE_WEAK bool CCamera::AdditionalCheck(const AABB& aabb) const
-{
-    Vec3 m = (aabb.min + aabb.max) * 0.5;
-    uint32 o = 1; //will be reset to 0 if center is outside
-    o &= isneg(m_fp[0] | m);
-    o &= isneg(m_fp[2] | m);
-    o &= isneg(m_fp[3] | m);
-    o &= isneg(m_fp[4] | m);
-    o &= isneg(m_fp[5] | m);
-    o &= isneg(m_fp[1] | m);
-    if (o)
-    {
-        return CULL_OVERLAP;    //if obb-center is in view-frustum, then stop further calculation
-    }
-    Vec3 vmin(aabb.min - GetPosition());  //AABB in camera-space
-    Vec3 vmax(aabb.max - GetPosition());  //AABB in camera-space
-
-    uint32 frontx8 = 0; // make the flags using the fact that the upper bit in f32 is its sign
-
-    union f64_u
-    {
-        f64 floatVal;
-        int64 intVal;
-    };
-    f64_u uminx, uminy, uminz, umaxx, umaxy, umaxz;
-    uminx.floatVal = vmin.x;
-    uminy.floatVal = vmin.y;
-    uminz.floatVal = vmin.z;
-    umaxx.floatVal = vmax.x;
-    umaxy.floatVal = vmax.y;
-    umaxz.floatVal = vmax.z;
-
-    frontx8 |= (-uminx.intVal >> 0x3f) & 0x008; //if (AABB.min.x>0.0f)  frontx8|=0x008;
-    frontx8 |= (umaxx.intVal >> 0x3f) & 0x010; //if (AABB.max.x<0.0f)  frontx8|=0x010;
-    frontx8 |= (-uminy.intVal >> 0x3f) & 0x020; //if (AABB.min.y>0.0f)  frontx8|=0x020;
-    frontx8 |= (umaxy.intVal >> 0x3f) & 0x040; //if (AABB.max.y<0.0f)  frontx8|=0x040;
-    frontx8 |= (-uminz.intVal >> 0x3f) & 0x080; //if (AABB.min.z>0.0f)  frontx8|=0x080;
-    frontx8 |= (umaxz.intVal >> 0x3f) & 0x100; //if (AABB.max.z<0.0f)  frontx8|=0x100;
-
-    //check if camera is inside the aabb
-    if (frontx8 == 0)
-    {
-        return CULL_OVERLAP;             //AABB is patially visible
-    }
-    Vec3 v[8] = {
-        Vec3(vmin.x, vmin.y, vmin.z),
-        Vec3(vmax.x, vmin.y, vmin.z),
-        Vec3(vmin.x, vmax.y, vmin.z),
-        Vec3(vmax.x, vmax.y, vmin.z),
-        Vec3(vmin.x, vmin.y, vmax.z),
-        Vec3(vmax.x, vmin.y, vmax.z),
-        Vec3(vmin.x, vmax.y, vmax.z),
-        Vec3(vmax.x, vmax.y, vmax.z)
-    };
-
-    //---------------------------------------------------------------------
-    //---            find the silhouette-vertices of the AABB            ---
-    //---------------------------------------------------------------------
-    uint32 p0   =   BoxSides[frontx8 + 0];
-    uint32 p1   =   BoxSides[frontx8 + 1];
-    uint32 p2   =   BoxSides[frontx8 + 2];
-    uint32 p3   =   BoxSides[frontx8 + 3];
-    uint32 p4   =   BoxSides[frontx8 + 4];
-    uint32 p5   =   BoxSides[frontx8 + 5];
-    uint32 sideamount = BoxSides[frontx8 + 7];
-
-    if (sideamount == 4)
-    {
-        //--------------------------------------------------------------------------
-        //---     we take the 4 vertices of projection-plane in cam-space,       ---
-        //-----  and clip them against the 4 side-frustum-planes of the AABB        -
-        //--------------------------------------------------------------------------
-        Vec3 s0 = v[p0] % v[p1];
-        if ((s0 | m_cltp) > 0 && (s0 | m_crtp) > 0 && (s0 | m_crbp) > 0 && (s0 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s1 = v[p1] % v[p2];
-        if ((s1 | m_cltp) > 0 && (s1 | m_crtp) > 0 && (s1 | m_crbp) > 0 && (s1 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s2 = v[p2] % v[p3];
-        if ((s2 | m_cltp) > 0 && (s2 | m_crtp) > 0 && (s2 | m_crbp) > 0 && (s2 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s3 = v[p3] % v[p0];
-        if ((s3 | m_cltp) > 0 && (s3 | m_crtp) > 0 && (s3 | m_crbp) > 0 && (s3 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-    }
-
-    if (sideamount == 6)
-    {
-        //--------------------------------------------------------------------------
-        //---     we take the 4 vertices of projection-plane in cam-space,       ---
-        //---    and clip them against the 6 side-frustum-planes of the AABB      ---
-        //--------------------------------------------------------------------------
-        Vec3 s0 = v[p0] % v[p1];
-        if ((s0 | m_cltp) > 0 && (s0 | m_crtp) > 0 && (s0 | m_crbp) > 0 && (s0 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s1 = v[p1] % v[p2];
-        if ((s1 | m_cltp) > 0 && (s1 | m_crtp) > 0 && (s1 | m_crbp) > 0 && (s1 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s2 = v[p2] % v[p3];
-        if ((s2 | m_cltp) > 0 && (s2 | m_crtp) > 0 && (s2 | m_crbp) > 0 && (s2 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s3 = v[p3] % v[p4];
-        if ((s3 | m_cltp) > 0 && (s3 | m_crtp) > 0 && (s3 | m_crbp) > 0 && (s3 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s4 = v[p4] % v[p5];
-        if ((s4 | m_cltp) > 0 && (s4 | m_crtp) > 0 && (s4 | m_crbp) > 0 && (s4 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s5 = v[p5] % v[p0];
-        if ((s5 | m_cltp) > 0 && (s5 | m_crtp) > 0 && (s5 | m_crbp) > 0 && (s5 | m_clbp) > 0)
-        {
-            return CULL_EXCLUSION;
-        }
-    }
-    return CULL_OVERLAP; //AABB is patially visible
-}
-
-//------------------------------------------------------------------------------
-//---                         ADDITIONAL-TEST                                ---
-//------------------------------------------------------------------------------
-
-// Description:
-//   A box can easily straddle one of the view-frustum planes far
-//   outside the view-frustum and in this case the previous test would
-//   return CULL_OVERLAP.
-// Note:
-//   With this check, we make sure the OBB is really not visible
-NO_INLINE_WEAK bool CCamera::AdditionalCheck(const Vec3& wpos, const OBB& obb, f32 uscale) const
-{
-    Vec3 CamInOBBSpace  = wpos - GetPosition();
-    Vec3 iCamPos = -CamInOBBSpace * obb.m33;
-    uint32 front8 = 0;
-    AABB aabb = AABB((obb.c - obb.h) * uscale, (obb.c + obb.h) * uscale);
-    if (iCamPos.x < aabb.min.x)
-    {
-        front8 |= 0x008;
-    }
-    if (iCamPos.x > aabb.max.x)
-    {
-        front8 |= 0x010;
-    }
-    if (iCamPos.y < aabb.min.y)
-    {
-        front8 |= 0x020;
-    }
-    if (iCamPos.y > aabb.max.y)
-    {
-        front8 |= 0x040;
-    }
-    if (iCamPos.z < aabb.min.z)
-    {
-        front8 |= 0x080;
-    }
-    if (iCamPos.z > aabb.max.z)
-    {
-        front8 |= 0x100;
-    }
-
-    if (front8 == 0)
-    {
-        return CULL_OVERLAP;
-    }
-
-    //the transformed OBB-vertices in cam-space
-    Vec3 v[8] = {
-        obb.m33 * Vec3(aabb.min.x, aabb.min.y, aabb.min.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.max.x, aabb.min.y, aabb.min.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.min.x, aabb.max.y, aabb.min.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.max.x, aabb.max.y, aabb.min.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.min.x, aabb.min.y, aabb.max.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.max.x, aabb.min.y, aabb.max.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.min.x, aabb.max.y, aabb.max.z) + CamInOBBSpace,
-        obb.m33 * Vec3(aabb.max.x, aabb.max.y, aabb.max.z) + CamInOBBSpace
-    };
-
-    //---------------------------------------------------------------------
-    //---            find the silhouette-vertices of the OBB            ---
-    //---------------------------------------------------------------------
-    uint32 p0   =   BoxSides[front8 + 0];
-    uint32 p1   =   BoxSides[front8 + 1];
-    uint32 p2   =   BoxSides[front8 + 2];
-    uint32 p3   =   BoxSides[front8 + 3];
-    uint32 p4   =   BoxSides[front8 + 4];
-    uint32 p5   =   BoxSides[front8 + 5];
-    uint32 sideamount = BoxSides[front8 + 7];
-
-    if (sideamount == 4)
-    {
-        //--------------------------------------------------------------------------
-        //---     we take the 4 vertices of projection-plane in cam-space,       ---
-        //-----  and clip them against the 4 side-frustum-planes of the OBB        -
-        //--------------------------------------------------------------------------
-        Vec3 s0 = v[p0] % v[p1];
-        if (((s0 | m_cltp) >= 0) && ((s0 | m_crtp) >= 0) && ((s0 | m_crbp) >= 0) && ((s0 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s1 = v[p1] % v[p2];
-        if (((s1 | m_cltp) >= 0) && ((s1 | m_crtp) >= 0) && ((s1 | m_crbp) >= 0) && ((s1 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s2 = v[p2] % v[p3];
-        if (((s2 | m_cltp) >= 0) && ((s2 | m_crtp) >= 0) && ((s2 | m_crbp) >= 0) && ((s2 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s3 = v[p3] % v[p0];
-        if (((s3 | m_cltp) >= 0) && ((s3 | m_crtp) >= 0) && ((s3 | m_crbp) >= 0) && ((s3 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-    }
-
-    if (sideamount == 6)
-    {
-        //--------------------------------------------------------------------------
-        //---     we take the 4 vertices of projection-plane in cam-space,       ---
-        //---    and clip them against the 6 side-frustum-planes of the OBB      ---
-        //--------------------------------------------------------------------------
-        Vec3 s0 = v[p0] % v[p1];
-        if (((s0 | m_cltp) >= 0) && ((s0 | m_crtp) >= 0) && ((s0 | m_crbp) >= 0) && ((s0 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s1 = v[p1] % v[p2];
-        if (((s1 | m_cltp) >= 0) && ((s1 | m_crtp) >= 0) && ((s1 | m_crbp) >= 0) && ((s1 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s2 = v[p2] % v[p3];
-        if (((s2 | m_cltp) >= 0) && ((s2 | m_crtp) >= 0) && ((s2 | m_crbp) >= 0) && ((s2 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s3 = v[p3] % v[p4];
-        if (((s3 | m_cltp) >= 0) && ((s3 | m_crtp) >= 0) && ((s3 | m_crbp) >= 0) && ((s3 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s4 = v[p4] % v[p5];
-        if (((s4 | m_cltp) >= 0) && ((s4 | m_crtp) >= 0) && ((s4 | m_crbp) >= 0) && ((s4 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-        Vec3 s5 = v[p5] % v[p0];
-        if (((s5 | m_cltp) >= 0) && ((s5 | m_crtp) >= 0) && ((s5 | m_crbp) >= 0) && ((s5 | m_clbp) >= 0))
-        {
-            return CULL_EXCLUSION;
-        }
-    }
-    //now we are 100% sure that the OBB is visible on the screen
-    return CULL_OVERLAP;
-}
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_CAMERA_H
