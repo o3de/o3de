@@ -40,9 +40,14 @@ ly_append_configurations_options(
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
+        /we4263 # 'function': member function does not override any base class virtual member function
+        /we4264 # 'virtual_function': no override available for virtual member function from base 'class'; function is hidden
+        /we4265 # 'class': class has virtual functions, but destructor is not virtual
+        /we4266 # 'function': no override available for virtual member function from base 'type'; function is hidden
         /we4296 # 'operator': expression is always false
         /we5233 # explicit lambda capture 'identifier' is not used
         /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
+        /we4437 # dynamic_cast from virtual base 'class1' to 'class2' could fail in some contexts
         #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
         /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
