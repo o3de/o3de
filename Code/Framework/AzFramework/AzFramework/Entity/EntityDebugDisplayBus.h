@@ -102,7 +102,7 @@ namespace AzFramework
         virtual void PopMatrix() {}
 
     protected:
-        ~DebugDisplayRequests() = default;
+        virtual ~DebugDisplayRequests() = default;
     };
 
     /// Inherit from DebugDisplayRequestBus::Handler to implement the DebugDisplayRequests interface.
