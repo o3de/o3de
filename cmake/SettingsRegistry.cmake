@@ -120,6 +120,7 @@ endfunction()
 function(ly_delayed_generate_settings_registry)
 
     if(LY_MONOLITHIC_GAME) # No need to generate setregs for monolithic builds
+        set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES) # Clear out the load targets from the global load dependencies list
         return()
     endif()
 
@@ -206,7 +207,7 @@ function(ly_delayed_generate_settings_registry)
         set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
     endforeach()
 
-    # Clear out the load targets from the glboal load dependencies list
+    # Clear out the load targets from the global load dependencies list
     set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
 endfunction()
 

@@ -145,17 +145,19 @@ foreach(project ${LY_PROJECTS})
 
     # Generate pak for project in release installs
     cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
-    ly_install_run_code("
-if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$\")
-    set(install_output_folder \"\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/\${CMAKE_INSTALL_CONFIG_NAME}\")
-    message(STATUS \"Generating \${install_output_folder}/Engine.pak from ${full_directory_path}/Cache\")
-    file(ARCHIVE_CREATE OUTPUT \${install_output_folder}/Engine.pak
-        PATHS ${full_directory_path}/Cache
+    set(install_engine_pak_template [=[
+if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+    set(install_output_folder "${CMAKE_INSTALL_PREFIX}/@runtime_output_directory@/@PAL_PLATFORM_NAME@/${CMAKE_INSTALL_CONFIG_NAME}")
+    message(STATUS "Generating ${install_output_folder}/Engine.pak from @full_directory_path@/Cache")
+    file(ARCHIVE_CREATE OUTPUT ${install_output_folder}/Engine.pak
+        PATHS @full_directory_path@/Cache
         FORMAT zip
     )
-    message(STATUS \"\${install_output_folder}/Engine.pak generated\")
+    message(STATUS "${install_output_folder}/Engine.pak generated")
 endif()
-")
+]=])
+    string(CONFIGURE "${install_engine_pak_template}" install_engine_pak_code @ONLY)
+    ly_install_run_code("${install_engine_pak_code}")
 
 endforeach()
 

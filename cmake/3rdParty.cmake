@@ -305,7 +305,7 @@ endfunction()
 # \arg:3RDPARTY_ROOT_DIRECTORY custom 3rd party directory which needs to be installed
 function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
 
-    # Install the Find file to our <install_location>/cmake directory
+    # Install the Find file to our <install_location>/cmake/3rdParty directory
     ly_install_files(FILES ${CMAKE_CURRENT_LIST_FILE}
         DESTINATION cmake/3rdParty
     )
