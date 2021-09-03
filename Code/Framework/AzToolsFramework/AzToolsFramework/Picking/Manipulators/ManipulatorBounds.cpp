@@ -16,6 +16,83 @@ namespace AzToolsFramework
 {
     namespace Picking
     {
+        // this intersection algorithm is adapted from 'Capped Cone' by Inigo Quilez
+        // ref: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm and https://www.shadertoy.com/view/llcfRf
+        // all algorithms/code snippets are kindly made available under the MIT License - https://www.iquilezles.org/www/index.htm
+        bool IntersectRayCone(
+            const AZ::Vector3& rayOrigin,
+            const AZ::Vector3& rayDirection,
+            const AZ::Vector3& coneApex,
+            const AZ::Vector3& coneAxis,
+            float coneHeight,
+            float coneBaseRadius,
+            float& t)
+        {
+            const AZ::Vector3& pa = coneApex;
+            const AZ::Vector3& pb = coneApex + coneHeight * coneAxis;
+            const AZ::Vector3& ro = rayOrigin;
+            const AZ::Vector3& rd = rayDirection;
+            float rb = coneBaseRadius;
+
+            AZ::Vector3 ba = pb - pa;
+            AZ::Vector3 oa = ro - pa;
+            AZ::Vector3 ob = ro - pb;
+
+            float m0 = ba.Dot(ba);
+            float m1 = oa.Dot(ba);
+            float m2 = ob.Dot(ba);
+            float m3 = rd.Dot(ba);
+
+            auto dot2 = [](const AZ::Vector3& v)
+            {
+                return v.Dot(v);
+            };
+
+            // caps
+            if (m1 < 0.0f)
+            {
+                if (dot2(oa * m3 - rd * m1) < 0.0f)
+                {
+                    t = -m1 / m3;
+                    return true;
+                }
+            }
+            else if (m2 > 0.0f)
+            {
+                if (dot2(ob * m3 - rd * m2) < (rb * rb * m3 * m3))
+                {
+                    t = -m2 / m3;
+                    return true;
+                }
+            }
+
+            // body
+            float m4 = rd.Dot(oa);
+            float m5 = oa.Dot(oa);
+            float rr = -rb;
+            float hy = m0 + rr * rr;
+
+            float k2 = m0 * m0 - m3 * m3 * hy;
+            float k1 = m0 * m0 * m4 - m1 * m3 * hy;
+            float k0 = m0 * m0 * m5 - m1 * m1 * hy;
+
+            float h = k1 * k1 - k2 * k0;
+            if (h < 0.0f)
+            {
+                return false;
+            }
+
+            float tt = (-k1 - AZ::Sqrt(h)) / k2;
+            float y = m1 + tt * m3;
+            if (y >= 0.0f && y < m0)
+            {
+                t = tt;
+                return true;
+            }
+
+            return false;
+        }
+
         bool ManipulatorBoundSphere::IntersectRay(
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
@@ -87,7 +164,7 @@ namespace AzToolsFramework
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
             float t = std::numeric_limits<float>::max();
-            if (AZ::Intersect::IntersectRayCone2(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t) > 0)
+            if (IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t))
             {
                 rayIntersectionDistance = t;
                 return true;

@@ -243,21 +243,6 @@ namespace AZ
             const Vector3& coneApex, const Vector3& coneDir, float coneHeight, float coneBaseRadius,
             float& t1, float& t2);
 
-        //! Returns 1 if ray intersects the cone, 0 otherwise.
-        //! @note Does not give reliable results if the ray origin is inside the cone.
-        //! @param      rayOrigin      The origin of the ray to test.
-        //! @param      rayDir         The direction of the ray to test. It has to be unit length.
-        //! @param      coneApex       The apex of the cone.
-        //! @param      coneDir        The unit-length direction from the apex to the base.
-        //! @param      coneHeight     The height of the cone, from the apex to the base.
-        //! @param      coneBaseRadius The radius of the cone base.
-        //! @param[out] t              A possible coefficient in the ray's explicit equation from which an intersecting point is calculated
-        //!                            as "rayOrigin + t * rayDir". 't' is the closest intersecting point to the ray origin.
-        //! @return                    1 for intersecting, 0 for not intersecting.
-        int IntersectRayCone2(
-            const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& coneApex, const Vector3& coneDir, float coneHeight,
-            float coneBaseRadius, float& t);
-
         //! Test intersection between a ray and a plane in 3D.
         //! @param rayOrigin    The origin of the ray to test intersection with.
         //! @param rayDir       The direction of the ray to test intersection with.

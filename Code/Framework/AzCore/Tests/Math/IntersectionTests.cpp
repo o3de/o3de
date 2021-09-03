@@ -609,50 +609,19 @@ namespace UnitTest
         EXPECT_EQ(hits, 0);
     }
 
-    // replicates a scenario in the Editor using a cone and a pick ray which should have failed but passed with Intersect::IntersectRayCone
-    TEST(MATH_IntersectRayConeTest2, RayConeEditorScenarioTest)
+    // replicates a scenario in the Editor using a cone and a pick ray which should have failed but passed
+    // note: To replicate this, select an entity so the default translation manipulator appears, move very close to the
+    // entity, hover the mouse over one of the manipulator linear manipulator arrows (cone part) and move the mouse away
+    // notice the manipulator will remain highlighted as a successful intersection is still reported
+    TEST(MATH_IntersectRayConeTestEditor, DISABLED_RayConeEditorScenarioTest)
     {
         auto rayOrigin = Vector3(0.0f, -0.808944702f, 0.0f);
         auto rayDir = Vector3(0.301363617f, 0.939044654f, 0.165454566f);
-        float t = 0.0f;
-        int hits = Intersect::IntersectRayCone2(
-            rayOrigin, rayDir, AZ::Vector3(0.0f, 0.0f, 0.161788940f), AZ::Vector3(0.0f, 0.0f, -1.0f),
-            0.0453009047, 0.0113252262, t);
+        float t1 = 0.0f;
+        float t2 = 0.0f;
+        int hits = Intersect::IntersectRayCone(
+            rayOrigin, rayDir, AZ::Vector3(0.0f, 0.0f, 0.161788940f), AZ::Vector3(0.0f, 0.0f, -1.0f), 0.0453009047, 0.0113252262, t1, t2);
         EXPECT_EQ(hits, 0);
-    }
-
-    // cone lying flat, ray going towards base of cone
-    TEST(MATH_IntersectRayConeTest2, RayIntersectsConeBase)
-    {
-        auto rayOrigin = Vector3::CreateZero();
-        auto rayDir = Vector3::CreateAxisY();
-        float t = 0.0f;
-        int hits = Intersect::IntersectRayCone2(
-            rayOrigin, rayDir, Vector3::CreateAxisY(10.0f), Vector3::CreateAxisY(-1.0f), 5.0f, 1.0f, t);
-        EXPECT_EQ(hits, 1);
-        EXPECT_THAT(t, ::testing::FloatNear(5.0f, 0.0001f));
-    }
-
-    // cone standing up, ray going towards mid side of cone
-    TEST(MATH_IntersectRayConeTest2, RayIntersectsConeSide)
-    {
-        auto rayOrigin = Vector3::CreateZero();
-        auto rayDir = Vector3::CreateAxisY();
-        float t = 0.0f;
-        int hits = Intersect::IntersectRayCone2(rayOrigin, rayDir, Vector3(0.0f, 10.0f, 5.0f), Vector3::CreateAxisZ(-1.0f), 10.0f, 5.0f, t);
-        EXPECT_EQ(hits, 1);
-        EXPECT_THAT(t, ::testing::FloatNear(7.5f, 0.0001f));
-    }
-
-    // cone standing up, ray going towards mid side of cone
-    TEST(MATH_IntersectRayConeTest2, RayIntersectsConeApex)
-    {
-        auto rayOrigin = Vector3::CreateZero();
-        auto rayDir = Vector3::CreateAxisY();
-        float t = 0.0f;
-        int hits = Intersect::IntersectRayCone2(rayOrigin, rayDir, Vector3::CreateAxisY(2.5f), Vector3::CreateAxisY(1.0f), 5.0f, 1.0f, t);
-        EXPECT_EQ(hits, 1);
-        EXPECT_THAT(t, ::testing::FloatNear(2.5f, 0.0001f));
     }
 
     class MATH_IntersectRayQuadTest
