@@ -64,14 +64,14 @@ namespace AzToolsFramework
 
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
         
-        static constexpr char* const ClosePrefabDialog = "ClosePrefabDialog";
-        static constexpr char* const FooterSeparatorLine = "FooterSeparatorLine";
-        static constexpr char* const PrefabSavedMessageFrame = "PrefabSavedMessageFrame";
-        static constexpr char* const PrefabSavePreferenceHint = "PrefabSavePreferenceHint";
-        static constexpr char* const PrefabSaveWarningFrame = "PrefabSaveWarningFrame";
-        static constexpr char* const SaveDependentPrefabsCard = "SaveDependentPrefabsCard";
-        static constexpr char* const SavePrefabDialog = "SavePrefabDialog";
-        static constexpr char* const UnsavedPrefabFileName = "UnsavedPrefabFileName";
+        static const char* const ClosePrefabDialog = "ClosePrefabDialog";
+        static const char* const FooterSeparatorLine = "FooterSeparatorLine";
+        static const char* const PrefabSavedMessageFrame = "PrefabSavedMessageFrame";
+        static const char* const PrefabSavePreferenceHint = "PrefabSavePreferenceHint";
+        static const char* const PrefabSaveWarningFrame = "PrefabSaveWarningFrame";
+        static const char* const SaveDependentPrefabsCard = "SaveDependentPrefabsCard";
+        static const char* const SavePrefabDialog = "SavePrefabDialog";
+        static const char* const UnsavedPrefabFileName = "UnsavedPrefabFileName";
         
 
         void PrefabUserSettings::Reflect(AZ::ReflectContext* context)
