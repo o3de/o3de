@@ -79,7 +79,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME Terrain.Tools    NAMESPACE Gem TARGETS Gem::Terrain.Editor)
 endif()
 
-ly_set(PAL_TRAIT_TERRAIN_TEST_SUPPORTED TRUE)
 ################################################################################
 # Tests
 ################################################################################
