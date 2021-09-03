@@ -91,7 +91,7 @@ endfunction()
 #      ly_add_* function below, not by user code
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
-    set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
+    set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE TEST_SERIAL)
     set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
     # note that we dont use TEST_LIBRARY here, but PAL files might so do not remove!
@@ -176,6 +176,7 @@ function(ly_add_test)
         PROPERTIES 
             LABELS "${final_labels}"
             TIMEOUT ${ly_add_test_TIMEOUT}
+            RUN_SERIAL ${ly_add_test_TEST_SERIAL}
     )
     
     # ly_add_test_NAME could be an alias, we need the actual un-aliased target
@@ -318,11 +319,11 @@ function(ly_add_pytest)
         TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
         TEST_LIBRARY pytest
         COMPONENT ${ly_add_pytest_COMPONENT}
+        TEST_SERIAL
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
-    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
@@ -359,7 +360,6 @@ function(ly_add_googletest)
     # AzTestRunner modules only supports google test libraries, regardless of whether or not 
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
-    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_googletest_TEST_SERIAL}")
 
     if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
         return()
@@ -418,6 +418,7 @@ function(ly_add_googletest)
         NON_IDE_PARAMS ${non_ide_params}
         RUNTIME_DEPENDENCIES AZ::AzTestRunner
         COMPONENT ${ly_add_googletest_COMPONENT}
+        TEST_SERIAL
     )
 endfunction()
 
