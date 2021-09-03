@@ -488,8 +488,8 @@ namespace AzToolsFramework
     void SnappingCluster::TrySetVisible(const bool visible)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         // show snapping viewport ui only if there are entities selected and snapping is enabled
         SetViewportUiClusterVisible(m_clusterId, visible && snapping);
@@ -2546,8 +2546,8 @@ namespace AzToolsFramework
             if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
             {
                 float gridSize = 1.0f;
-                ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+                ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
                 SnapSelectedEntitiesToWorldGrid(gridSize);
             }
