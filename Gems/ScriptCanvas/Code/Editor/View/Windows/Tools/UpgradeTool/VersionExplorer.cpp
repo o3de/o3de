@@ -111,7 +111,6 @@ namespace ScriptCanvasEditor
         m_ui->progressBar->setVisible(false);
 
         m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
-
         m_inspectingAsset = m_assetsToInspect.end();
 
     }
@@ -290,6 +289,7 @@ namespace ScriptCanvasEditor
         m_ui->progressBar->setVisible(true);
         m_ui->progressBar->setRange(0, aznumeric_cast<int>(m_assetsToUpgrade.size()));
         m_ui->progressBar->setValue(m_upgradeAssetIndex);
+        m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
     }
 
     AZStd::string VersionExplorer::BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
@@ -675,8 +675,9 @@ namespace ScriptCanvasEditor
         m_assetsToUpgrade.clear();
         m_ui->upgradeAllButton->setEnabled(false);
         m_ui->onlyShowOutdated->setEnabled(true);
-
+        m_keepEditorAlive.reset();
         m_ui->progressBar->setVisible(false);
+
         // Manual correction
         size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
         if (assetsThatNeedManualInspection > 0)
@@ -739,6 +740,7 @@ namespace ScriptCanvasEditor
             m_ui->onlyShowOutdated->setEnabled(false);
 
             m_inspectingAsset = m_assetsToInspect.begin();
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
         }
     }
 
