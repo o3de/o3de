@@ -340,6 +340,11 @@ namespace AtomToolsFramework
         return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
     }
 
+    float RenderViewportWidget::ManipulatorLineBoundWidth()
+    {
+        return m_viewportSettings ? m_viewportSettings->ManipulatorLineBoundWidth() : 0.1f;
+    }
+
     void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
     {
         m_viewportSettings = viewportSettings;
