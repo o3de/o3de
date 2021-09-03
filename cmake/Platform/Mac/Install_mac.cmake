@@ -99,38 +99,36 @@ endfunction()
 #! ly_post_install_steps: Any additional platform specific post install steps
 function(ly_post_install_steps)
 
-    if(LY_ENABLE_HARDENED_RUNTIME)
-        # On Mac, after CMake is done installing, the code signatures on all our built binaries will be invalid.
-        # We need to now codesign each dynamic library, executable, and app bundle. It's specific to each target
-        # because there could potentially be different entitlements for different targets.
-        get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
-        foreach(alias_target IN LISTS all_targets)
-            ly_de_alias_target(${alias_target} target)
-            # Exclude targets that dont produce runtime outputs
-            get_target_property(target_type ${target} TYPE)
-            if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
-                continue()
-            endif()
-            
-            get_target_property(is_bundle ${target} MACOSX_BUNDLE)
-            if (${is_bundle})
-                set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>.app")
-            else()
-                set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>")
-            endif()
-            get_target_property(entitlement_file ${target} ENTITLEMENT_FILE_PATH)
-            if (NOT entitlement_file)
-                set(entitlement_file "none")
-            endif()
-            ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
-            string(CONFIGURE "${template_file}" configured_template_file @ONLY)
-            file(GENERATE
-                OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake
-                CONTENT "${configured_template_file}"
-            )
-            install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
-        endforeach()
-    endif()
+    # On Mac, after CMake is done installing, the code signatures on all our built binaries will be invalid.
+    # We need to now codesign each dynamic library, executable, and app bundle. It's specific to each target
+    # because there could potentially be different entitlements for different targets.
+    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+    foreach(alias_target IN LISTS all_targets)
+        ly_de_alias_target(${alias_target} target)
+        # Exclude targets that dont produce runtime outputs
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+            continue()
+        endif()
+        
+        get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+        if (${is_bundle})
+            set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>.app")
+        else()
+            set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>")
+        endif()
+        get_target_property(entitlement_file ${target} ENTITLEMENT_FILE_PATH)
+        if (NOT entitlement_file)
+            set(entitlement_file "none")
+        endif()
+        ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
+        string(CONFIGURE "${template_file}" configured_template_file @ONLY)
+        file(GENERATE
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake
+            CONTENT "${configured_template_file}"
+        )
+        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
+    endforeach()
 
     install(CODE
 "ly_download_and_codesign_sdk_python()
