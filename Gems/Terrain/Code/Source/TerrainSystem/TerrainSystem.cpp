@@ -49,15 +49,9 @@ void TerrainSystem::Deactivate()
     m_terrainSettingsDirty = true;
 }
 
-void TerrainSystem::SetWorldMin(AZ::Vector3 worldOrigin)
-{
-    m_requestedSettings.m_worldBounds.SetMin(worldOrigin);
-    m_terrainSettingsDirty = true;
-}
-
-void TerrainSystem::SetWorldMax(AZ::Vector3 worldBounds)
-{
-    m_requestedSettings.m_worldBounds.SetMax(worldBounds);
+void TerrainSystem::SetWorldBounds(const AZ::Aabb& worldBounds)
+{   
+    m_requestedSettings.m_worldBounds = worldBounds;
     m_terrainSettingsDirty = true;
 }
 
@@ -66,13 +60,6 @@ void TerrainSystem::SetHeightQueryResolution(AZ::Vector2 queryResolution)
     m_requestedSettings.m_heightQueryResolution = queryResolution;
     m_terrainSettingsDirty = true;
 }
-
-void TerrainSystem::SetDebugWireframe(bool wireframeEnabled)
-{
-    m_requestedSettings.m_debugWireframeEnabled = wireframeEnabled;
-    m_terrainSettingsDirty = true;
-}
-
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
 {
@@ -378,13 +365,6 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             terrainSettingsChanged = true;
         }
 
-        if (m_requestedSettings.m_debugWireframeEnabled != m_currentSettings.m_debugWireframeEnabled)
-        {
-            m_dirtyRegion = AZ::Aabb::CreateNull();
-            m_terrainHeightDirty = true;
-            terrainSettingsChanged = true;
-        }
-
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
             m_dirtyRegion = AZ::Aabb::CreateNull();
@@ -409,7 +389,6 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-        AZ::EntityId entityId(0);
         AZ::Transform transform = AZ::Transform::CreateTranslation(m_currentSettings.m_worldBounds.GetCenter());
 
         uint32_t width = aznumeric_cast<uint32_t>(
@@ -417,7 +396,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         uint32_t height = aznumeric_cast<uint32_t>(
             (float)m_currentSettings.m_worldBounds.GetYExtent() / m_currentSettings.m_heightQueryResolution.GetY());
         AZStd::vector<float> pixels;
-        pixels.resize(width * height);
+        pixels.resize_no_construct(width * height);
         const uint32_t pixelDataSize = width * height * sizeof(float);
         memset(pixels.data(), 0, pixelDataSize);
 
@@ -454,8 +433,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         if (terrainFeatureProcessor)
         {
             terrainFeatureProcessor->UpdateTerrainData(
-                entityId, transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height,
-                pixels);
+                transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height, pixels);
         }
     }
 

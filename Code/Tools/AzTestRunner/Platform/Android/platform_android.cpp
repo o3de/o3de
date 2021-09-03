@@ -64,7 +64,7 @@ namespace AzTestRunner
     {
         static char cwd_buffer[AZ_MAX_PATH_LEN] = { '\0' };
 
-        AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
+        [[maybe_unused]] AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
         AZ_Assert(result == AZ::Utils::ExecutablePathResult::Success, "Error retrieving executable path");
 
         return static_cast<const char*>(cwd_buffer);

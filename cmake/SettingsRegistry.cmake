@@ -28,7 +28,7 @@ set(gems_json_template [[
  string(APPEND gem_module_template
 [=[            "@stripped_gem_target@":]=] "\n"
 [=[            {]=] "\n"
-[=[$<$<NOT:$<IN_LIST:$<TARGET_PROPERTY:@gem_target@,TYPE>,INTERFACE_LIBRARY>>:                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"]]=] "$<COMMA>\n>"
+[=[$<$<IN_LIST:$<TARGET_PROPERTY:@gem_target@,TYPE>,MODULE_LIBRARY$<SEMICOLON>SHARED_LIBRARY>:                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"]]=] "$<COMMA>\n>"
 [=[                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]]=] "\n"
 [=[            }]=]
 )
@@ -87,7 +87,7 @@ endfunction()
 #
 # \arg:gem_target(TARGET) - Target to look upwards from using its SOURCE_DIR property
 function(ly_get_gem_module_root output_gem_module_root gem_target)
-    unset(gem_module_roots)
+    unset(${output_gem_module_root} PARENT_SCOPE)
     get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
 
     if(gem_source_dir)
@@ -96,8 +96,8 @@ function(ly_get_gem_module_root output_gem_module_root gem_target)
         while(NOT EXISTS ${candidate_gem_dir}/gem.json)
             get_filename_component(parent_dir ${candidate_gem_dir} DIRECTORY)
             if (${parent_dir} STREQUAL ${candidate_gem_dir})
-                message(WARNING "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!")
-                break()
+                # "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!"
+                return()
             endif()
             set(candidate_gem_dir ${parent_dir})
         endwhile()
@@ -160,11 +160,15 @@ function(ly_delayed_generate_settings_registry)
             endif()
 
             ly_get_gem_module_root(gem_module_root ${gem_target})
+            if (NOT gem_module_root)
+                # If the target doesn't have a gem.json, skip it
+                continue()
+            endif()
             file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
             # De-alias namespace from gem targets before configuring them into the json template
             ly_de_alias_target(${gem_target} stripped_gem_target)
-            string(CONFIGURE ${gem_module_template} gem_module_json @ONLY)
+            string(CONFIGURE "${gem_module_template}" gem_module_json @ONLY)
             list(APPEND target_gem_dependencies_names ${gem_module_json})
         endforeach()
 
@@ -177,7 +181,8 @@ function(ly_delayed_generate_settings_registry)
         string(CONFIGURE ${gems_json_template} gem_json @ONLY)
         get_target_property(is_imported ${target} IMPORTED)
         get_target_property(target_type ${target} TYPE)
-        if(is_imported OR target_type STREQUAL UTILITY)
+        set(non_loadable_types "UTILITY" "INTERFACE_LIBRARY" "STATIC_LIBRARY")
+        if(is_imported OR (target_type IN_LIST non_loadable_types))
             unset(target_dir)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
                 string(TOUPPER ${conf} UCONF)

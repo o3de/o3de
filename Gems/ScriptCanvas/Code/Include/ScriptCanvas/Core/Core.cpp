@@ -165,4 +165,22 @@ namespace ScriptCanvas
         runtimeVersion = RuntimeVersion::Current;
         fileVersion = FileVersion::Current;
     }
+
+    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper)
+    {
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ::SerializeContext::ClassData classData;
+        classData.m_name = name.data();
+        classData.m_typeId = typeId;
+        classData.m_azRtti = rttiHelper;
+
+        auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
+        {
+            return AZStd::make_any<AZStd::monostate>();
+        };
+
+        serializeContext->RegisterType(typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
+    }
+
 }

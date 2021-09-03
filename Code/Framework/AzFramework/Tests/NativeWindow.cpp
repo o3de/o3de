@@ -27,19 +27,19 @@ namespace UnitTest
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowHandle);
         }
 
-        ~NativeWindowListener()
+        ~NativeWindowListener() override
         {
             AzFramework::WindowNotificationBus::Handler::BusDisconnect(m_windowHandle);
         }
 
         // WindowNotificationBus::Handler overrides...
-        void OnWindowResized(uint32_t width, uint32_t height)
+        void OnWindowResized(uint32_t width, uint32_t height) override
         {
             AZ_UNUSED(width);
             AZ_UNUSED(height);
             m_wasOnWindowResizedReceived = true;
         }
-        void OnWindowClosed()
+        void OnWindowClosed() override
         {
             m_wasOnWindowClosedReceived = true;
         }

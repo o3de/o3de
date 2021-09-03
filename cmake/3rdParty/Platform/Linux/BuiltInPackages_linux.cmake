@@ -43,7 +43,7 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux                     
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 88c4a359325d749bc34090b9ac466424847f3b71ba0de15045cf355c17c07099)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux                  TARGETS SPIRVCross                  PACKAGE_HASH 7889ee5460a688e9b910c0168b31445c0079d363affa07b25d4c8aeb608a0b80)
 ly_associate_package(PACKAGE_NAME azslc-1.7.23-rev2-linux                           TARGETS azslc                       PACKAGE_HASH 1ba84d8321a566d35a1e9aa7400211ba8e6d1c11c08e4be3c93e6e74b8f7aef1)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-linux                            TARGETS zlib                        PACKAGE_HASH 6418e93b9f4e6188f3b62cbd3a7822e1c4398a716e786d1522b809a727d08ba9)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-linux                            TARGETS zlib                        PACKAGE_HASH 16f3b9e11cda525efb62144f354c1cfc30a5def9eff020dbe49cb00ee7d8234f)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                     TARGETS squish-ccr                  PACKAGE_HASH 85fecafbddc6a41a27c5f59ed4a5dfb123a94cb4666782cf26e63c0a4724c530)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 

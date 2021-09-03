@@ -112,7 +112,7 @@ QLayoutItem* FlowLayout::takeAt(int index)
     }
     else
     {
-        return 0;
+        return nullptr;
     }
 }
 
@@ -207,7 +207,7 @@ int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const
     else if (parent->isWidgetType())
     {
         QWidget* pw = static_cast<QWidget*>(parent);
-        return pw->style()->pixelMetric(pm, 0, pw);
+        return pw->style()->pixelMetric(pm, nullptr, pw);
     }
     else
     {
