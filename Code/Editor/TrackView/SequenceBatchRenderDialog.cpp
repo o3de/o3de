@@ -36,6 +36,9 @@
 #include "CryEdit.h"
 #include "Viewport.h"
 
+// Atom Renderer
+#include <Atom/RPI.Public/RPISystemInterface.h>
+
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_SequenceBatchRenderDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -1234,6 +1237,17 @@ void CSequenceBatchRenderDialog::OnKickIdleTimout()
         if (componentApplication)
         {
             componentApplication->TickSystem();
+        }
+
+        // Directly tick the renderer, as it's no longer part of the system tick
+        if (auto rpiSystem = AZ::RPI::RPISystemInterface::Get())
+        {
+            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            rpiSystem->SimulationTick(
+                AZStd::chrono::duration<float>(now - m_lastTick).count(),
+                AZStd::chrono::duration<float, AZStd::milli>(now.time_since_epoch()).count());
+            rpiSystem->RenderTick();
+            m_lastTick = now;
         }
     }
 }
