@@ -63,12 +63,14 @@ namespace UnitTest
             my_result = PrefabLoaderRequestBus.Broadcast.SaveTemplateToString(template_id)
 
             if my_result:IsSuccess() then
-                g_globalPrefabString = "my_result:GetValue()"
+                g_globalPrefabString = my_result:GetValue()
             end
             )LUA");
 
         EXPECT_STRNE(g_globalPrefabString.c_str(), "");
+        TemplateId templateFromString = AZ::Interface<PrefabLoaderInterface>::Get()->LoadTemplateFromString(g_globalPrefabString);
 
+        EXPECT_NE(templateFromString, InvalidTemplateId);
         g_globalPrefabString.set_capacity(0); // Free all memory
     }
     
