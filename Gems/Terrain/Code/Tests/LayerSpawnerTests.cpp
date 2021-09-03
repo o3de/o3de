@@ -36,8 +36,6 @@ protected:
         appDesc.m_stackRecordLevels = 20;
 
         m_app.Create(appDesc);
-
-        
     }
 
     void TearDown() override
