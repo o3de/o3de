@@ -36,7 +36,7 @@ CStdPreferencesClassDesc::CStdPreferencesClassDesc()
         [](){ return new CEditorPreferencesPage_Files(); },
         [](){ return new CEditorPreferencesPage_ViewportGeneral(); },
         [](){ return new CEditorPreferencesPage_ViewportMovement(); },
-        [](){ return new CEditorPreferencesPage_ViewportGizmo(); },
+        [](){ return new CEditorPreferencesPage_ViewportManipulator(); },
         [](){ return new CEditorPreferencesPage_ViewportDebug(); }
     };
 
