@@ -118,6 +118,11 @@ endfunction()
 #  The generated file contains the file to the each dependent targets
 #  This can be used for example to determine which list of gems to load with an application
 function(ly_delayed_generate_settings_registry)
+
+    if(LY_MONOLITHIC_GAME) # No need to generate setregs for monolithic builds
+        return()
+    endif()
+
     get_property(ly_delayed_load_targets GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
     foreach(prefix_target ${ly_delayed_load_targets})
         string(REPLACE "," ";" prefix_target_list "${prefix_target}")

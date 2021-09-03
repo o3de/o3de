@@ -15,5 +15,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build dir
 # be installed together. We also have an exclusion rule in the AP that filters out the 
 # "install" folder to avoid the AP picking it up
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    ly_set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install CACHE PATH "Install directory" FORCE)
 endif()
