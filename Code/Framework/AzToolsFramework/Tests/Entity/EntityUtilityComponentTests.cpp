@@ -18,8 +18,9 @@
 namespace UnitTest
 {
     AZ::EntityId g_globalEntityId = AZ::EntityId{};
-    AZStd::string g_globalEntityName = "";
+    AZStd::string g_globalString = "";
     AzFramework::BehaviorComponentId g_globalComponentId = {};
+    AZStd::vector<AZStd::string> g_globalStringVector = {};
     bool g_globalBool = false;
 
     class EntityUtilityComponentTests
@@ -36,19 +37,27 @@ namespace UnitTest
             ASSERT_NE(behaviorContext, nullptr);
 
             behaviorContext->Property("g_globalEntityId", BehaviorValueProperty(&g_globalEntityId));
-            behaviorContext->Property("g_globalEntityName", BehaviorValueProperty(&g_globalEntityName));
+            behaviorContext->Property("g_globalString", BehaviorValueProperty(&g_globalString));
             behaviorContext->Property("g_globalComponentId", BehaviorValueProperty(&g_globalComponentId));
             behaviorContext->Property("g_globalBool", BehaviorValueProperty(&g_globalBool));
+            behaviorContext->Property("g_globalStringVector", BehaviorValueProperty(&g_globalStringVector));
 
             g_globalEntityId = AZ::EntityId{};
-            g_globalEntityName = AZStd::string{};
+            g_globalString = AZStd::string{};
             g_globalComponentId = AzFramework::BehaviorComponentId{};
             g_globalBool = false;
+            g_globalStringVector = AZStd::vector<AZStd::string>{};
         }
 
         void SetUpEditorFixtureImpl() override
         {
             InitProperties();
+        }
+        
+        void TearDownEditorFixtureImpl() override
+        {
+            g_globalString.set_capacity(0); // Free all memory
+            g_globalStringVector.set_capacity(0);
         }
     };
 
@@ -61,11 +70,11 @@ namespace UnitTest
         sc.Execute(R"LUA(
             g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             my_entity = Entity(g_globalEntityId)
-            g_globalEntityName = my_entity:GetName()
+            g_globalString = my_entity:GetName()
             )LUA");
 
         EXPECT_NE(g_globalEntityId, AZ::EntityId{});
-        EXPECT_STREQ(g_globalEntityName.c_str(), "test");
+        EXPECT_STREQ(g_globalString.c_str(), "test");
 
         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(g_globalEntityId);
 
@@ -180,19 +189,56 @@ namespace UnitTest
 
     TEST_F(EntityUtilityComponentTests, GetComponentJson)
     {
-        AZStd::string result;
-        AzToolsFramework::EntityUtilityBus::BroadcastResult(
-            result, &AzToolsFramework::EntityUtilityBus::Events::GetComponentJson, "TransformComponent");
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
 
-        ASSERT_STRNE(result.c_str(), "");
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            g_globalString = EntityUtilityBus.Broadcast.GetComponentJson("ScriptEditorComponent")
+            )LUA");
+
+        EXPECT_STRNE(g_globalString.c_str(), "");
+    }
+
+    TEST_F(EntityUtilityComponentTests, GetComponentJsonDoesNotExist)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+
+        sc.BindTo(behaviorContext);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        sc.Execute(R"LUA(
+            g_globalString = EntityUtilityBus.Broadcast.GetComponentJson("404")
+            )LUA");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 error: Failed to find component id for type name 404
+
+        EXPECT_STREQ(g_globalString.c_str(), "");
     }
 
     TEST_F(EntityUtilityComponentTests, SearchComponents)
     {
-        AZStd::vector<AZStd::string> result;
-        AzToolsFramework::EntityUtilityBus::BroadcastResult(
-            result, &AzToolsFramework::EntityUtilityBus::Events::SearchComponents, "Transform*");
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
 
-        ASSERT_GT(result.size(), 0);
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            g_globalStringVector = EntityUtilityBus.Broadcast.SearchComponents("Transform*")
+            )LUA");
+
+        // There should be 2 transform components
+        EXPECT_EQ(g_globalStringVector.size(), 2);
+    }
+
+    TEST_F(EntityUtilityComponentTests, SearchComponentsNotFound)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            g_globalStringVector = EntityUtilityBus.Broadcast.SearchComponents("404")
+            )LUA");
+        
+        EXPECT_EQ(g_globalStringVector.size(), 0);
     }
 }

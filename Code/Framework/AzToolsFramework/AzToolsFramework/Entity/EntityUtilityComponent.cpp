@@ -228,7 +228,7 @@ namespace AzToolsFramework
             serializeContext->EnumerateDerived<AZ::Component>(
                 [this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/)
                 {
-                    m_typeNames.emplace_back(classData->m_name + classData->m_typeId.ToString<AZStd::string>());
+                    m_typeNames.emplace_back(classData->m_typeId, classData->m_name);
 
                     return true;
                 });
@@ -236,11 +236,12 @@ namespace AzToolsFramework
         
         AZStd::vector<AZStd::string> matches;
 
-        for (const auto& typeName : m_typeNames)
+        for (const auto& [typeId, typeName] : m_typeNames)
         {
             if (AZStd::wildcard_match(searchTerm, typeName))
             {
-                matches.emplace_back(typeName);
+                matches.emplace_back(
+                    AZStd::string::format("%s %s", typeId.ToString<AZStd::string>().c_str(), typeName.c_str()));
             }
         }
 
@@ -265,7 +266,10 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity)
                 ->Event("GetOrAddComponentByTypeName", &EntityUtilityBus::Events::GetOrAddComponentByTypeName)
-                ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity);
+                ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity)
+                ->Event("SearchComponents", &EntityUtilityBus::Events::SearchComponents)
+                ->Event("GetComponentJson", &EntityUtilityBus::Events::GetComponentJson)
+            ;
         }
     }
 

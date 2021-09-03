@@ -66,6 +66,6 @@ namespace AzToolsFramework
         // Additionally, an entity context is needed when using the Behavior Entity class
         AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
 
-        AZStd::vector<AZStd::string> m_typeNames;
+        AZStd::vector<AZStd::pair<AZ::TypeId, AZStd::string>> m_typeNames;
     };
 }; // namespace AzToolsFramework
