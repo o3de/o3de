@@ -67,6 +67,11 @@ namespace AzToolsFramework
             float k1 = m0 * m0 * m4 - m1 * m3 * hy;
             float k0 = m0 * m0 * m5 - m1 * m1 * hy;
 
+            // note: solving for simultaneously being on the sloping surface of the cone and being on the ray boils down
+            // to a quadratic equation - the discriminant of the quadratic determines if there are 1, 2 or no solutions
+            //
+            // if the discriminant is less than 0 the ray is not intersecting the cone, if it is equal to 0 then the ray
+            // is intersecting the cone once and if it is greater than 0 the ray is intersecting the cone twice
             float discriminant = k1 * k1 - k2 * k0;
             if (discriminant < 0.0f)
             {
