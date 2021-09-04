@@ -19,6 +19,7 @@
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiComponentTypes.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
