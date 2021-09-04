@@ -6,120 +6,90 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
-
-
-struct VertexInput
-{
-    float2 Position : POSITION;
-    float2 UV : UV;
-};
+#include "TerrainCommon.azsli"
 
 struct VertexOutput
 {
-    float4 Position : SV_Position;
-    float3 Normal : NORMAL;
-    float2 UV : UV;
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal : NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float2 m_uv : UV;
 };
 
-ShaderResourceGroup ObjectSrg : SRG_PerObject
+struct ForwardPassOutput
 {
-    Texture2D<float4> HeightmapImage;
-    
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    
-    row_major float3x4 m_modelToWorld;
-    float m_heightScale;
-    float2 m_uvMin;
-    float2 m_uvMax;
-    float2 m_uvStep;
-}
-
-float4x4 GetObject_WorldMatrix()
-{
-    float4x4 modelToWorld = float4x4(
-        float4(1, 0, 0, 0),
-        float4(0, 1, 0, 0),
-        float4(0, 0, 1, 0),
-        float4(0, 0, 0, 1));
-
-    modelToWorld[0] = ObjectSrg::m_modelToWorld[0];
-    modelToWorld[1] = ObjectSrg::m_modelToWorld[1];
-    modelToWorld[2] = ObjectSrg::m_modelToWorld[2];
-    return modelToWorld;
-}
-
-float GetHeight(float2 origUv)
-{
-    float2 uv = clamp(origUv, 0.0f, 1.0f);
-    return ObjectSrg::m_heightScale * (ObjectSrg::HeightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
-}
-
-VertexOutput MainVS(in VertexInput input)
-{
-    VertexOutput output;
-
-    // Clamp the UVs *after* lerping to ensure that everything aligns properly right to the edge.
-    // We use out-of-bounds UV values to denote vertices that need to be removed.
-    float2 origUv = lerp(ObjectSrg::m_uvMin, ObjectSrg::m_uvMax, input.UV);
-    float2 uv = clamp(origUv, 0.0f, 1.0f);
-
-    // Loop up the height and calculate our final position.
-    float height = GetHeight(uv);
-    float3 worldPosition = mul(GetObject_WorldMatrix(), float4(input.Position, height, 1.0f)).xyz;
-    output.Position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0f));
-
-    // Remove all vertices outside our bounds by turning them into NaN positions.
-    output.Position = output.Position / ((origUv.x >= 0.0f && origUv.x < 1.0f && origUv.y >= 0.0f && origUv.y < 1.0f) ? 1.0f : 0.0f);
-
-    // Calculate normal
-    float2 gridSize = {1.0f, 1.0f};
-    float up    = GetHeight(uv + ObjectSrg::m_uvStep * float2(-1.0f,  0.0f));
-    float right = GetHeight(uv + ObjectSrg::m_uvStep * float2( 0.0f,  1.0f));
-    float down  = GetHeight(uv + ObjectSrg::m_uvStep * float2( 1.0f,  0.0f));
-    float left  = GetHeight(uv + ObjectSrg::m_uvStep * float2( 0.0f, -1.0f));
-
-    float dydx = (right - left) * gridSize[0];
-    float dydz = (down - up) * gridSize[1];
-    
-    output.Normal = normalize(float3(dydx, 2.0f, dydz));
-
-    output.UV = uv;
-    return output;
-}
+    float4 m_diffuseColor  : SV_Target0;     //!< RGB = Diffuse Lighting, A = Blend Alpha (for blended surfaces) OR A = special encoding of surfaceScatteringFactor, m_subsurfaceScatteringQuality, o_enableSubsurfaceScattering
+    float4 m_specularColor : SV_Target1;     //!< RGB = Specular Lighting, A = Unused
+    float4 m_albedo : SV_Target2;            //!< RGB = Surface albedo pre-multiplied by other factors that will be multiplied later by diffuse GI, A = specularOcclusion
+    float4 m_specularF0 : SV_Target3;        //!< RGB = Specular F0, A = roughness
+    float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = multiScatterCompensationEnabled
+};
 
 struct PixelOutput
 {
      float4 m_color : SV_Target0;
 };  
-    
-PixelOutput MainPS(in VertexOutput input)
+
+VertexOutput MainVS(in VertexInput input)
 {
-    PixelOutput output;
+    VertexOutput output;
+    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
 
-   // Hard-coded fake light direction
-    float3 lightDirection = normalize(float3(1.0, -1.0, 1.0));
+    float2 uv = input.m_uv;
+    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, uv);
+    output.m_position = GetTerrainProjectedPosition(terrainData, input.m_position, origUv);
 
+    // Calculate normal
+    float up    = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f, -1.0f));
+    float right = GetHeight(origUv + terrainData.m_uvStep * float2( 1.0f,  0.0f));
+    float down  = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f,  1.0f));
+    float left  = GetHeight(origUv + terrainData.m_uvStep * float2(-1.0f,  0.0f));
+
+    output.m_bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
+    output.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
+    output.m_normal = cross(output.m_tangent, output.m_bitangent);
+
+    output.m_uv = uv;
+    return output;
+}
+
+ForwardPassOutput MainPS(in VertexOutput input)
+{
+    ForwardPassOutput output;
+
+    float3 lightDirection = normalize(float3(-1.0, 1.0, -1.0));
+    float3 lightIntensity = float3(1.0, 1.0, 1.0);
+    if (SceneSrg::m_directionalLightCount > 0)
+    {
+        lightDirection = SceneSrg::m_directionalLights[0].m_direction;
+        lightIntensity = SceneSrg::m_directionalLights[0].m_rgbIntensityLux;
+    }
+    
     // Fake light intensity ranges from 1.0 for normals directly facing the light to zero for those
     // directly facing away.
-    float lightDot = dot(normalize(input.Normal), lightDirection);
-    float lightIntensity = lightDot * 0.5 + 0.5;
+    const float minLight = 0.01;
+    const float midLight = 0.1;
+    float lightDot = dot(normalize(input.m_normal), -lightDirection);
+    lightIntensity *= lightDot > 0.0 ? 
+        lightDot * (1.0 - midLight) + midLight : // surface facing light
+        (lightDot + 1.0) * (midLight - minLight) + minLight; // surface facing away
 
-    // add a small amount of ambient and reduce direct light to keep in 0-1 range
-    lightIntensity = saturate(0.1 + lightIntensity * 0.9);
+    output.m_diffuseColor.rgb = 0.5 * lightIntensity;
+    output.m_diffuseColor.a = 0.0f;
 
-    // The lightIntensity should not affect alpha so only apply it to rgb.
-    //output.m_color.rgb = ((input.Normal + float3(1.0, 1.0, 1.0)) / 2.0);
-    output.m_color.rgb = float3(1.0, 1.0, 1.0) * lightIntensity;
-    output.m_color.a = 1.0f;
+    output.m_specularColor.rgb = 0.0;
+
+    output.m_albedo.rgb = 0.5;
+    output.m_albedo.a = 0.0;
+
+    output.m_specularF0.rgb = 0.04;
+    output.m_specularF0.a = 1.0;
+
+    output.m_normal.rgb = input.m_normal;
+    output.m_normal.a = 0.0;
 
     return output;
 }
