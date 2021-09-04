@@ -1,5 +1,5 @@
 {
-    "Source" : "./Terrain_DepthPass_WithPS.azsl",
+    "Source" : "./Terrain_DepthPass.azsl",
 
     "DepthStencilState" :
     { 
