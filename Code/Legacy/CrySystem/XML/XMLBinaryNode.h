@@ -155,6 +155,7 @@ public:
     bool saveToFile([[maybe_unused]] const char* fileName, [[maybe_unused]] size_t chunkSizeBytes, [[maybe_unused]] AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle) { assert(0); return false; };   // save in small memory chunks
 
     //! Set new XML Node attribute (or override attribute with same key).
+    using IXmlNode::setAttr;
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const char* value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] int value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] unsigned int value) { assert(0); };
