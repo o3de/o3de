@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+ShaderResourceGroup ObjectSrg : SRG_PerObject
+{
+    Texture2D<float> m_heightmapImage;
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    row_major float3x4 m_modelToWorld;
+
+    struct TerrainData
+    {
+        float2 m_uvMin;
+        float2 m_uvMax;
+        float2 m_uvStep;
+        float m_sampleSpacing;
+        float m_heightScale;
+    };
+
+    TerrainData m_terrainData;
+}
+
+struct VertexInput
+{
+    float2 m_position : POSITION;
+    float2 m_uv : UV;
+};
+
+float4x4 GetObject_WorldMatrix()
+{
+    float4x4 modelToWorld = float4x4(
+        float4(1, 0, 0, 0),
+        float4(0, 1, 0, 0),
+        float4(0, 0, 1, 0),
+        float4(0, 0, 0, 1));
+
+    modelToWorld[0] = ObjectSrg::m_modelToWorld[0];
+    modelToWorld[1] = ObjectSrg::m_modelToWorld[1];
+    modelToWorld[2] = ObjectSrg::m_modelToWorld[2];
+    return modelToWorld;
+}
+
+float GetHeight(float2 origUv)
+{
+    float2 uv = clamp(origUv, 0.0f, 1.0f);
+    return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
+}
+
+float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 origUv)
+{
+    // Remove all vertices outside our bounds by turning them into NaN positions.
+    if (any(origUv > 1.0f) || any (origUv < 0.0))
+    {
+        return asfloat(0x7fc00000); // NaN
+    }
+
+    // Clamp the UVs *after* lerping to ensure that everything aligns properly right to the edge.
+    // We use out-of-bounds UV values to denote vertices that need to be removed.
+    float2 uv = clamp(origUv, 0.0f, 1.0f);
+
+    // Loop up the height and calculate our final position.
+    float height = GetHeight(uv);
+    float4 worldPosition = mul(GetObject_WorldMatrix(), float4(vertexPosition, height, 1.0f));
+    return mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+}

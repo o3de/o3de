@@ -16,7 +16,7 @@ struct VertexOutput
     float3 m_normal : NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
-    float2 m_uv : UV;
+    float m_height : UV;
 };
 
 struct ForwardPassOutput
@@ -52,7 +52,7 @@ VertexOutput MainVS(in VertexInput input)
     output.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
     output.m_normal = cross(output.m_tangent, output.m_bitangent);
 
-    output.m_uv = uv;
+    output.m_height = GetHeight(origUv);
     return output;
 }
 
@@ -82,7 +82,7 @@ ForwardPassOutput MainPS(in VertexOutput input)
 
     output.m_specularColor.rgb = 0.0;
 
-    output.m_albedo.rgb = 0.5;
+    output.m_albedo.rgb = 0.25 + input.m_height * 0.5;
     output.m_albedo.a = 0.0;
 
     output.m_specularF0.rgb = 0.04;
