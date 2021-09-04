@@ -6,26 +6,13 @@
 #
 #
 
-# Prevent bundling the renderdoc dll with a packaged title
-if(NOT LY_MONOLITHIC_GAME)
-    # Common installation path for renderdoc path
-    set(RENDERDOC_PATH "$ENV{PROGRAMFILES}/RenderDoc")
-    if(DEFINED ENV{"ATOM_RENDERDOC_PATH"})
-        set(RENDERDOC_PATH ENV{"ATOM_RENDERDOC_PATH"})
-    endif()
+set(PAL_TRAIT_BUILD_RENDERDOC_ENABLED FALSE)
+set(LY_RENDERDOC_PATH "$ENV{PROGRAMFILES}/RenderDoc" CACHE PATH "Path to RenderDoc.")
 
-    if(RENDERDOC_PATH)
-        # Normalize file path
-        file(TO_CMAKE_PATH "${RENDERDOC_PATH}" RENDERDOC_PATH)
+# Normalize file path
+file(TO_CMAKE_PATH "${LY_RENDERDOC_PATH}" LY_RENDERDOC_PATH)
 
-        if(EXISTS "${RENDERDOC_PATH}/renderdoc.dll")
-            ly_add_external_target(
-                NAME renderdoc
-                VERSION
-                3RDPARTY_ROOT_DIRECTORY ${RENDERDOC_PATH}
-                INCLUDE_DIRECTORIES "."
-                RUNTIME_DEPENDENCIES "${RENDERDOC_PATH}/renderdoc.dll"
-            )
-        endif()
-    endif()
+if(EXISTS "${LY_RENDERDOC_PATH}/renderdoc.dll")
+    set(RENDERDOC_RUNTIME_DEPENDENCIES "${RENDERDOC_PATH}/renderdoc.dll")
+    set(PAL_TRAIT_BUILD_RENDERDOC_ENABLED TRUE)
 endif()

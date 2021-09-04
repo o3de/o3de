@@ -6,5 +6,9 @@
 #
 #
 
-set(ATOM_RHI_TRAIT_BUILD_SUPPORTS_TEST FALSE)
-set(ATOM_RHI_TRAIT_BUILD_SUPPORTS_EDIT FALSE)
+# Prevent bundling the renderdoc dll with a packaged title
+if(LY_MONOLITHIC_GAME)
+    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED FALSE)
+else()
+    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED TRUE)
+endif()
