@@ -106,6 +106,8 @@ namespace AZ
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_pipelineStateType = shaderAsset.GetPipelineStateType();
 
+            GetPipelineLibraryPath(m_pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
+
             {
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
                 m_shaderVariants.clear();
@@ -142,8 +144,6 @@ namespace AZ
                     AZ_Error("Shader", false, "Failed to acquire a DrawListTag. Entries are full.");
                 }
             }
-
-            GetPipelineLibraryPath(m_pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
 
             ShaderVariantFinderNotificationBus::Handler::BusConnect(m_asset.GetId());
             Data::AssetBus::Handler::BusConnect(m_asset.GetId());

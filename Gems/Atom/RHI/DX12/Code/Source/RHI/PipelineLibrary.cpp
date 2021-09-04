@@ -212,12 +212,9 @@ namespace AZ
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            size_t currentSize = m_pipelineStates.size();
-
             for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
-
                 for (const auto& pipelineStateEntry : library->m_pipelineStates)
                 {
                     if (m_pipelineStates.find(pipelineStateEntry.first) == m_pipelineStates.end())
@@ -228,16 +225,9 @@ namespace AZ
                     }
                 }
             }
-
-            if (m_pipelineStates.size() != currentSize)
-            {
-                return RHI::ResultCode::Success;
-            }
-
 #endif
-            return RHI::ResultCode::Fail;
-#endif
-            
+            return RHI::ResultCode::Success;
+#endif           
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
@@ -258,6 +248,11 @@ namespace AZ
 #else
             return nullptr;
 #endif
+        }
+
+        bool PipelineLibrary::IsMergeRequired() const
+        {
+            return !m_pipelineStates.empty();
         }
     }
 }
