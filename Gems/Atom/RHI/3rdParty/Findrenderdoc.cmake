@@ -6,9 +6,10 @@
 #
 #
 
-# Prevent bundling the renderdoc dll with a packaged title
-if(LY_MONOLITHIC_GAME)
-    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED FALSE)
-else()
-    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED TRUE)
-endif()
+ly_add_external_target(
+    NAME renderdoc
+    3RDPARTY_ROOT_DIRECTORY "${LY_RENDERDOC_PATH}"
+    VERSION
+    INCLUDE_DIRECTORIES .
+    COMPILE_DEFINITIONS USE_RENDER_DOC
+)

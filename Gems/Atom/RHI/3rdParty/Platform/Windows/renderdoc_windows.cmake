@@ -6,9 +6,4 @@
 #
 #
 
-# Prevent bundling the renderdoc dll with a packaged title
-if(LY_MONOLITHIC_GAME)
-    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED FALSE)
-else()
-    set(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED TRUE)
-endif()
+set(RENDERDOC_RUNTIME_DEPENDENCIES "${BASE_PATH}/renderdoc.dll")
