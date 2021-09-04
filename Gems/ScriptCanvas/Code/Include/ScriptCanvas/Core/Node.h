@@ -178,8 +178,8 @@ namespace ScriptCanvas
         NodePropertyInterface() = default;
 
     public:
-
         AZ_RTTI(NodePropertyInterface, "{265A2163-D3AE-4C4E-BDCC-37BA0084BF88}");
+        virtual ~NodePropertyInterface() = default;
 
         virtual Data::Type GetDataType() = 0;
 
@@ -217,7 +217,7 @@ namespace ScriptCanvas
         AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
-        ~TypedNodePropertyInterface() = default;
+        virtual ~TypedNodePropertyInterface() = default;
 
         void SetPropertyReference(DataType* dataReference)
         {
@@ -283,7 +283,7 @@ namespace ScriptCanvas
         AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
-        ~TypedComboBoxNodePropertyInterface() = default;
+        virtual ~TypedComboBoxNodePropertyInterface() = default;
 
         // TypedNodePropertyInterface
         void ResetToDefault() override
@@ -354,6 +354,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(EnumComboBoxNodePropertyInterface, "{7D46B998-9E05-401A-AC92-37A90BAF8F60}", TypedComboBoxNodePropertyInterface<int32_t>);
+        virtual ~EnumComboBoxNodePropertyInterface() = default;
 
         // No way of identifying Enum types properly yet. Going to fake a BCO object type for now.
         static const AZ::Uuid k_EnumUUID;
