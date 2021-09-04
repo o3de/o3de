@@ -11,15 +11,9 @@
 
 struct VSDepthOutput
 {
-    //linear centroid float4 m_position : SV_Position;
     float4 m_position : SV_Position;
 };
-/*
-struct PSDepthOutput
-{
-    float m_depth : SV_Depth;
-};
-*/
+
 VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
@@ -29,11 +23,3 @@ VSDepthOutput MainVS(in VertexInput input)
     output.m_position = GetTerrainProjectedPosition(terrainData, input.m_position, origUv);
     return output;
 }
-/*
-PSDepthOutput MainPS(in VSDepthOutput input)
-{
-    PSDepthOutput output;
-    output.m_depth = input.m_position.z;
-    return output;
-}
-*/
