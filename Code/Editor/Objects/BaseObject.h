@@ -743,9 +743,6 @@ private:
     //! Only called once after creation by ObjectManager.
     void SetClassDesc(CObjectClassDesc* classDesc);
 
-    // From CObject, (not implemented)
-    virtual void Serialize([[maybe_unused]] CArchive& ar) {};
-
     EScaleWarningLevel GetScaleWarningLevel() const;
     ERotationWarningLevel GetRotationWarningLevel() const;
 

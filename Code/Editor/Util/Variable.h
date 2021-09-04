@@ -379,11 +379,11 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     virtual ~CVariableBase() {}
 
-    void SetName(const QString& name) { m_name = name; };
+    void SetName(const QString& name) override { m_name = name; };
     //! Get name of parameter.
-    QString GetName() const { return m_name; };
+    QString GetName() const override { return m_name; };
 
-    QString GetHumanName() const
+    QString GetHumanName() const override
     {
         if (!m_humanName.isEmpty())
         {
@@ -391,23 +391,23 @@ public:
         }
         return m_name;
     }
-    void SetHumanName(const QString& name) { m_humanName = name; }
+    void SetHumanName(const QString& name) override { m_humanName = name; }
 
-    void SetDescription(const char* desc) { m_description = desc; };
-    void SetDescription(const QString& desc) { m_description = desc; };
+    void SetDescription(const char* desc) override { m_description = desc; };
+    void SetDescription(const QString& desc) override { m_description = desc; };
 
     //! Get name of parameter.
-    QString GetDescription() const { return m_description; };
+    QString GetDescription() const override { return m_description; };
 
     EType   GetType() const { return IVariable::UNKNOWN; };
-    int GetSize() const { return sizeof(*this); };
+    int GetSize() const override { return sizeof(*this); };
 
-    unsigned char   GetDataType() const { return m_dataType; };
-    void SetDataType(unsigned char dataType) { m_dataType = dataType; }
+    unsigned char   GetDataType() const override { return m_dataType; };
+    void SetDataType(unsigned char dataType) override { m_dataType = dataType; }
 
-    void SetFlags(int flags) { m_flags = static_cast<uint16>(flags); }
-    int  GetFlags() const { return m_flags; }
-    void  SetFlagRecursive(EFlags flag) { m_flags |= flag; }
+    void SetFlags(int flags) override { m_flags = static_cast<uint16>(flags); }
+    int  GetFlags() const override { return m_flags; }
+    void  SetFlagRecursive(EFlags flag) override { m_flags |= flag; }
 
     void SetUserData(const QVariant &data){ m_userData = data; };
     QVariant GetUserData() const { return m_userData; }
@@ -415,58 +415,58 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
     //////////////////////////////////////////////////////////////////////////
-    void Set([[maybe_unused]] int value)                   { assert(0); }
-    void Set([[maybe_unused]] bool value)                  { assert(0); }
-    void Set([[maybe_unused]] float value)                 { assert(0); }
-    void Set([[maybe_unused]] double value)                { assert(0); }
-    void Set([[maybe_unused]] const Vec2& value)           { assert(0); }
-    void Set([[maybe_unused]] const Vec3& value)           { assert(0); }
-    void Set([[maybe_unused]] const Vec4& value)           { assert(0); }
-    void Set([[maybe_unused]] const Ang3& value)           { assert(0); }
-    void Set([[maybe_unused]] const Quat& value)           { assert(0); }
-    void Set([[maybe_unused]] const QString& value)        { assert(0); }
-    void Set([[maybe_unused]] const char* value)            { assert(0); }
-    void SetDisplayValue(const QString& value)    { Set(value); }
+    void Set([[maybe_unused]] int value) override                   { assert(0); }
+    void Set([[maybe_unused]] bool value) override                  { assert(0); }
+    void Set([[maybe_unused]] float value) override                 { assert(0); }
+    void Set([[maybe_unused]] double value) override                { assert(0); }
+    void Set([[maybe_unused]] const Vec2& value) override           { assert(0); }
+    void Set([[maybe_unused]] const Vec3& value) override           { assert(0); }
+    void Set([[maybe_unused]] const Vec4& value) override           { assert(0); }
+    void Set([[maybe_unused]] const Ang3& value) override           { assert(0); }
+    void Set([[maybe_unused]] const Quat& value) override           { assert(0); }
+    void Set([[maybe_unused]] const QString& value) override        { assert(0); }
+    void Set([[maybe_unused]] const char* value) override            { assert(0); }
+    void SetDisplayValue(const QString& value) override    { Set(value); }
 
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    void Get([[maybe_unused]] int& value) const        { assert(0); }
-    void Get([[maybe_unused]] bool& value) const       { assert(0); }
-    void Get([[maybe_unused]] float& value) const      { assert(0); }
-    void Get([[maybe_unused]] double& value) const     { assert(0); }
-    void Get([[maybe_unused]] Vec2& value) const       { assert(0); }
-    void Get([[maybe_unused]] Vec3& value) const       { assert(0); }
-    void Get([[maybe_unused]] Vec4& value) const       { assert(0); }
-    void Get([[maybe_unused]] Ang3& value) const       { assert(0); }
-    void Get([[maybe_unused]] Quat& value) const       { assert(0); }
-    void Get([[maybe_unused]] QString& value) const    { assert(0); }
-    QString GetDisplayValue() const     { QString val; Get(val); return val; }
+    void Get([[maybe_unused]] int& value) const override        { assert(0); }
+    void Get([[maybe_unused]] bool& value) const override       { assert(0); }
+    void Get([[maybe_unused]] float& value) const override      { assert(0); }
+    void Get([[maybe_unused]] double& value) const override     { assert(0); }
+    void Get([[maybe_unused]] Vec2& value) const override       { assert(0); }
+    void Get([[maybe_unused]] Vec3& value) const override       { assert(0); }
+    void Get([[maybe_unused]] Vec4& value) const override       { assert(0); }
+    void Get([[maybe_unused]] Ang3& value) const override       { assert(0); }
+    void Get([[maybe_unused]] Quat& value) const override       { assert(0); }
+    void Get([[maybe_unused]] QString& value) const override    { assert(0); }
+    QString GetDisplayValue() const override     { QString val; Get(val); return val; }
 
     //////////////////////////////////////////////////////////////////////////
     // IVariableContainer functions
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddVariable([[maybe_unused]] IVariable* var) { assert(0); }
+    void AddVariable([[maybe_unused]] IVariable* var) override { assert(0); }
 
-    virtual bool DeleteVariable([[maybe_unused]] IVariable* var, [[maybe_unused]] bool recursive = false) { return false; }
-    virtual void DeleteAllVariables() {}
+    bool DeleteVariable([[maybe_unused]] IVariable* var, [[maybe_unused]] bool recursive = false) override { return false; }
+    void DeleteAllVariables() override {}
 
-    virtual int GetNumVariables() const { return 0; }
-    virtual IVariable* GetVariable([[maybe_unused]] int index) const { return nullptr; }
+    int GetNumVariables() const override { return 0; }
+    IVariable* GetVariable([[maybe_unused]] int index) const override { return nullptr; }
 
-    virtual bool IsContainsVariable([[maybe_unused]] IVariable* pVar, [[maybe_unused]] bool bRecursive = false) const { return false; }
+    bool IsContainsVariable([[maybe_unused]] IVariable* pVar, [[maybe_unused]] bool bRecursive = false) const override { return false; }
 
-    virtual IVariable* FindVariable([[maybe_unused]] const char* name, [[maybe_unused]] bool bRecursive = false, [[maybe_unused]] bool bHumanName = false) const { return nullptr; }
+    IVariable* FindVariable([[maybe_unused]] const char* name, [[maybe_unused]] bool bRecursive = false, [[maybe_unused]] bool bHumanName = false) const override { return nullptr; }
 
-    virtual bool IsEmpty() const { return true; }
+    bool IsEmpty() const override { return true; }
 
     //////////////////////////////////////////////////////////////////////////
-    void Wire(IVariable* var)
+    void Wire(IVariable* var) override
     {
         m_wiredVars.push_back(var);
     }
     //////////////////////////////////////////////////////////////////////////
-    void Unwire(IVariable* var)
+    void Unwire(IVariable* var) override
     {
         if (!var)
         {
@@ -480,7 +480,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void AddOnSetCallback(OnSetCallback* func)
+    void AddOnSetCallback(OnSetCallback* func) override
     {
         if (!stl::find(m_onSetFuncs, func))
         {
@@ -489,13 +489,13 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void RemoveOnSetCallback(OnSetCallback* func)
+    void RemoveOnSetCallback(OnSetCallback* func) override
     {
         stl::find_and_erase(m_onSetFuncs, func);
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void ClearOnSetCallbacks()
+    void ClearOnSetCallbacks() override
     {
         m_onSetFuncs.clear();
     }
@@ -509,7 +509,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void RemoveOnSetEnumCallback(OnSetCallback* func)
+    void RemoveOnSetEnumCallback(OnSetCallback* func) override
     {
         stl::find_and_erase(m_onSetEnumFuncs, func);
     }
@@ -520,7 +520,7 @@ public:
     }
 
 
-    virtual void OnSetValue([[maybe_unused]] bool bRecursive)
+    void OnSetValue([[maybe_unused]] bool bRecursive) override
     {
         // If have wired variables or OnSet callback, process them.
         // Send value to wired variable.
@@ -549,7 +549,8 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void Serialize(XmlNodeRef node, bool load)
+    using IVariable::Serialize;
+    void Serialize(XmlNodeRef node, bool load) override
     {
         if (load)
         {
@@ -567,8 +568,8 @@ public:
         }
     }
 
-    virtual void EnableUpdateCallbacks(bool boEnable){m_boUpdateCallbacksEnabled = boEnable; };
-    virtual void SetForceModified(bool bForceModified) { m_bForceModified = bForceModified; }
+    void EnableUpdateCallbacks(bool boEnable) override{m_boUpdateCallbacksEnabled = boEnable; };
+    void SetForceModified(bool bForceModified) override { m_bForceModified = bForceModified; }
 protected:
     // Constructor.
     CVariableBase()
@@ -641,13 +642,13 @@ public:
     CVariableArray(){}
 
     //! Get name of parameter.
-    virtual EType   GetType() const { return IVariable::ARRAY; };
-    virtual int     GetSize() const { return sizeof(CVariableArray); };
+    EType   GetType() const override { return IVariable::ARRAY; };
+    int     GetSize() const override { return sizeof(CVariableArray); };
 
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
     //////////////////////////////////////////////////////////////////////////
-    virtual void Set(const QString& value)
+    void Set(const QString& value) override
     {
         if (m_strValue != value)
         {
@@ -655,7 +656,7 @@ public:
             OnSetValue(false);
         }
     }
-    void OnSetValue(bool bRecursive)
+    void OnSetValue(bool bRecursive) override
     {
         CVariableBase::OnSetValue(bRecursive);
         if (bRecursive)
@@ -666,7 +667,7 @@ public:
             }
         }
     }
-    void SetFlagRecursive(EFlags flag)
+    void SetFlagRecursive(EFlags flag) override
     {
         CVariableBase::SetFlagRecursive(flag);
         for (Variables::iterator it = m_vars.begin(); it != m_vars.end(); ++it)
@@ -677,9 +678,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    virtual void Get(QString& value) const { value = m_strValue; }
+    void Get(QString& value) const override { value = m_strValue; }
 
-    virtual bool HasDefaultValue() const
+    bool HasDefaultValue() const override
     {
         for (Variables::const_iterator it = m_vars.begin(); it != m_vars.end(); ++it)
         {
@@ -691,7 +692,7 @@ public:
         return true;
     }
 
-    virtual void ResetToDefault()
+    void ResetToDefault() override
     {
         for (Variables::const_iterator it = m_vars.begin(); it != m_vars.end(); ++it)
         {
@@ -700,7 +701,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    IVariable* Clone(bool bRecursive) const
+    IVariable* Clone(bool bRecursive) const override
     {
         CVariableArray* var = new CVariableArray(*this);
 
@@ -713,7 +714,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void CopyValue(IVariable* fromVar)
+    void CopyValue(IVariable* fromVar) override
     {
         assert(fromVar);
         if (fromVar->GetType() != IVariable::ARRAY)
@@ -733,20 +734,20 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    virtual int GetNumVariables() const { return static_cast<int>(m_vars.size()); }
+    int GetNumVariables() const override { return static_cast<int>(m_vars.size()); }
 
-    virtual IVariable* GetVariable(int index) const
+    IVariable* GetVariable(int index) const override
     {
         assert(index >= 0 && index < (int)m_vars.size());
         return m_vars[index];
     }
 
-    virtual void AddVariable(IVariable* var)
+    void AddVariable(IVariable* var) override
     {
         m_vars.push_back(var);
     }
 
-    virtual bool DeleteVariable(IVariable* var, bool recursive /*=false*/)
+    bool DeleteVariable(IVariable* var, bool recursive /*=false*/) override
     {
         bool found = stl::find_and_erase(m_vars, var);
         if (!found && recursive)
@@ -762,12 +763,12 @@ public:
         return found;
     }
 
-    virtual void DeleteAllVariables()
+    void DeleteAllVariables() override
     {
         m_vars.clear();
     }
 
-    virtual bool IsContainsVariable(IVariable* pVar, bool bRecursive) const
+    bool IsContainsVariable(IVariable* pVar, bool bRecursive) const override
     {
         for (Variables::const_iterator it = m_vars.begin(); it != m_vars.end(); ++it)
         {
@@ -793,14 +794,15 @@ public:
         return false;
     }
 
-    virtual IVariable* FindVariable(const char* name, bool bRecursive, bool bHumanName) const;
+    IVariable* FindVariable(const char* name, bool bRecursive, bool bHumanName) const override;
 
-    virtual bool IsEmpty() const
+    bool IsEmpty() const override
     {
         return m_vars.empty();
     }
 
-    void Serialize(XmlNodeRef node, bool load)
+    using IVariable::Serialize;
+    void Serialize(XmlNodeRef node, bool load) override
     {
         if (load)
         {
@@ -1074,11 +1076,11 @@ class CVariableVoid
 {
 public:
     CVariableVoid(){};
-    virtual EType GetType() const { return IVariable::UNKNOWN; };
-    virtual IVariable* Clone([[maybe_unused]] bool bRecursive) const { return new CVariableVoid(*this); }
-    virtual void CopyValue([[maybe_unused]] IVariable* fromVar) {};
-    virtual bool HasDefaultValue() const { return true; }
-    virtual void ResetToDefault() {};
+    EType GetType() const override { return IVariable::UNKNOWN; };
+    IVariable* Clone([[maybe_unused]] bool bRecursive) const override { return new CVariableVoid(*this); }
+    void CopyValue([[maybe_unused]] IVariable* fromVar) override {};
+    bool HasDefaultValue() const override { return true; }
+    void ResetToDefault() override {};
 protected:
     CVariableVoid(const CVariableVoid& v)
         : CVariableBase(v) {};

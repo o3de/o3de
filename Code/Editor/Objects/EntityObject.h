@@ -116,7 +116,8 @@ public:
     void UpdateVisibility(bool bVisible);
     bool ConvertFromObject(CBaseObject* object);
 
-    virtual void Serialize(CObjectArchive& ar);
+    using CBaseObject::Serialize;
+    void Serialize(CObjectArchive& ar) override;
     virtual void PostLoad(CObjectArchive& ar);
 
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode);

@@ -397,6 +397,7 @@ public:
 
     //! This method return a vector (p2-p1) in world space alligned to construction plane and restriction axises.
     //! p1 and p2 must be given in world space and lie on construction plane.
+    using CViewport::GetCPVector;
     virtual Vec3 GetCPVector(const Vec3& p1, const Vec3& p2, int axis);
 
     //! Snap any given 3D world position to grid lines if snap is enabled.

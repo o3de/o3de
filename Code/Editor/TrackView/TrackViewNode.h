@@ -117,6 +117,7 @@ class CTrackViewKeyBundle
 public:
     CTrackViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CTrackViewKeyBundle() = default;
 
     virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 

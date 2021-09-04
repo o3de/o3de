@@ -92,6 +92,8 @@ namespace Export
         : public IData
     {
     public:
+        virtual ~CData() = default;
+
         virtual int GetObjectCount() const { return static_cast<int>(m_objects.size()); }
         virtual Object* GetObject(int index) const { return m_objects[index]; }
         virtual Object* AddObject(const char* objectName);
