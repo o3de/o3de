@@ -588,6 +588,8 @@ namespace EMStudio
             {
                 return false;
             }
+
+            animGraph->SetDirtyFlag(false);
         }
 
         return saveResult;
