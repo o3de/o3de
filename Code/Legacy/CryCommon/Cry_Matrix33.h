@@ -316,23 +316,6 @@ struct Matrix33_tpl
         SetRotationXYZ(Ang3_tpl<F>(F(ang.x), F(ang.y), F(ang.z)));
     }
 
-    //Bracket OPERATOR: initializes a Matrix33 with 9 floats.
-    //Matrix33 m; m(0,1,2, 3,4,5, 6,7,8);
-    ILINE void operator () (F x00, F x01, F x02, F x10, F x11, F x12, F x20, F x21, F x22)
-    {
-        m00 = x00;
-        m01 = x01;
-        m02 = x02;
-        m10 = x10;
-        m11 = x11;
-        m12 = x12;
-        m20 = x20;
-        m21 = x21;
-        m22 = x22;
-        assert(IsValid());
-    }
-
-
     //---------------------------------------------------------------------------------------
 
     ILINE void SetIdentity(void)
@@ -346,13 +329,6 @@ struct Matrix33_tpl
         m20 = 0;
         m21 = 0;
         m22 = 1;
-    }
-
-    ILINE static Matrix33_tpl<F> CreateIdentity()
-    {
-        Matrix33_tpl<F> m33;
-        m33.SetIdentity();
-        return m33;
     }
 
     /*!

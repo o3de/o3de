@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include "Cry_Color.h"
 #include "Cry_Math.h"
 #include "Cry_Geo.h"
 #include "IMaterial.h"
@@ -103,7 +102,7 @@ struct IStatObj
     virtual int GetSubObjectCount() const = 0;
     // Summary:
     //    Retrieve sub object by index, where 0 <= nIndex < GetSubObjectCount()
-    virtual IStatObj::SSubObject* GetSubObject(int nIndex) = 0;
+    virtual SSubObject* GetSubObject(int nIndex) = 0;
 
     // Intersect ray with static object.
     // Ray must be in object local space.

@@ -8,15 +8,7 @@
 
 
 // Description : Common matrix class
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
-#define CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
 #pragma once
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -366,7 +358,7 @@ struct Matrix34_tpl
     *  Initializes the Matrix34 with the identity.
     *
     */
-    void SetIdentity(void)
+    void SetIdentity()
     {
         m00 = 1.0f;
         m01 = 0.0f;
@@ -382,58 +374,12 @@ struct Matrix34_tpl
         m23 = 0.0f;
     }
 
-    ILINE static Matrix34_tpl<F> CreateIdentity(void)
+    ILINE static Matrix34_tpl<F> CreateIdentity()
     {
         Matrix34_tpl<F> m;
         m.SetIdentity();
         return m;
     }
-
-    ILINE bool IsIdentity() const
-    {
-        return 0 == (fabs_tpl((F)1 - m00) + fabs_tpl(m01) + fabs_tpl(m02) + fabs_tpl(m03) + fabs_tpl(m10) + fabs_tpl((F)1 - m11) + fabs_tpl(m12) + fabs_tpl(m13) + fabs_tpl(m20) + fabs_tpl(m21) + fabs_tpl((F)1 - m22)) + fabs_tpl(m23);
-    }
-
-    ILINE int IsZero() const
-    {
-        return 0 == (fabs_tpl(m00) + fabs_tpl(m01) + fabs_tpl(m02) + fabs_tpl(m03) + fabs_tpl(m10) + fabs_tpl(m11) + fabs_tpl(m12) + fabs_tpl(m13) + fabs_tpl(m20) + fabs_tpl(m21) + fabs_tpl(m22)) + fabs_tpl(m23);
-    }
-
-    /*!
-    *  Create a rotation matrix around an arbitrary axis (Eulers Theorem).
-    *  The axis is specified as an normalized Vec3. The angle is assumed to be in radians.
-    *  This function also assumes a translation-vector and stores it in the right column.
-    *
-    *  Example:
-    *       Matrix34 m34;
-    *       Vec3 axis=GetNormalized( Vec3(-1.0f,-0.3f,0.0f) );
-    *       m34.SetRotationAA( 3.14314f, axis, Vec3(5,5,5) );
-    */
-    ILINE void SetRotationAA(const F rad, const Vec3_tpl<F>& axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationAA(rad, axis);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(const F rad, const Vec3_tpl<F>& axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(rad, axis, t);
-        return m34;
-    }
-
-    ILINE void SetRotationAA(const Vec3_tpl<F>& rot, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationAA(rot);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(const Vec3_tpl<F>& rot, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(rot, t);
-        return m34;
-    }
-
-
     /*!
     * Create rotation-matrix about X axis using an angle.
     * The angle is assumed to be in radians.
@@ -477,28 +423,6 @@ struct Matrix34_tpl
     }
 
     /*!
-    * Create rotation-matrix about Z axis using an angle.
-    * The angle is assumed to be in radians.
-    * The translation-vector is set to zero.
-    *
-    *  Example:
-    *       Matrix34 m34;
-    *       m34.SetRotationZ(0.5f);
-    */
-    ILINE void SetRotationZ(const f32 rad, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationZ(rad);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationZ(const f32 rad, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationZ(rad, t);
-        return m34;
-    }
-
-
-    /*!
     *
     * Convert three Euler angle to mat33 (rotation order:XYZ)
     * The Euler angles are assumed to be in radians.
@@ -527,22 +451,6 @@ struct Matrix34_tpl
         return m34;
     }
 
-
-    ILINE void SetRotationAA(F c, F s, Vec3_tpl<F> axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        assert(axis.IsValid());
-        assert(t.IsValid());
-        *this = Matrix33_tpl<F>::CreateRotationAA(c, s, axis);
-        m03 = t.x;
-        m13 = t.y;
-        m23 = t.z;
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(F c, F s, Vec3_tpl<F> axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(c, s, axis, t);
-        return m34;
-    }
 
     ILINE void SetTranslationMat(const Vec3_tpl<F>& v)
     {
@@ -588,25 +496,6 @@ struct Matrix34_tpl
         Matrix34_tpl<F> m;
         m.SetFromVectors(vx, vy, vz, pos);
         return m;
-    }
-
-    void InvertFast()
-    { // in-place transposition
-        assert(IsOrthonormal());
-        F t;
-        Vec3 v(m03, m13, m23);
-        t = m01;
-        m01 = m10;
-        m10 = t;
-        m03 = -v.x * m00 - v.y * m01 - v.z * m20;
-        t = m02;
-        m02 = m20;
-        m20 = t;
-        m13 = -v.x * m10 - v.y * m11 - v.z * m21;
-        t = m12;
-        m12 = m21;
-        m21 = t;
-        m23 = -v.x * m20 - v.y * m21 - v.z * m22;
     }
 
     Matrix34_tpl<F> GetInvertedFast() const
@@ -661,14 +550,6 @@ struct Matrix34_tpl
         m22 = z.z;
     }
 
-
-    //determinant is ambiguous: only the upper-left-submatrix's determinant is calculated
-    ILINE f32 Determinant() const
-    {
-        return (m00 * m11 * m22) + (m01 * m12 * m20) + (m02 * m10 * m21) - (m02 * m11 * m20) - (m00 * m12 * m21) - (m01 * m10 * m22);
-    }
-
-
     //--------------------------------------------------------------------------------
     //----                  helper functions to access matrix-members     ------------
     //--------------------------------------------------------------------------------
@@ -684,8 +565,6 @@ struct Matrix34_tpl
     ILINE const Vec3_tpl<F>& GetRow(int i) const    {   assert(i < 3); return *(const Vec3_tpl<F>*)(&m00 + 4 * i);  }
     ILINE const Vec4& GetRow4(int i) const   {   assert(i < 3); return *(const Vec4*)(&m00 + 4 * i);  }
 
-    ILINE void SetColumn(int i, const Vec3_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[i + 4 * 0] = v.x;   p[i + 4 * 1] = v.y;   p[i + 4 * 2] = v.z;       }
-    ILINE Vec3_tpl<F> GetColumn(int i) const    {   assert(i < 4);    F* p = (F*)(&m00);    return Vec3(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2]);    }
     ILINE Vec3_tpl<F> GetColumn0() const    { return Vec3_tpl<F>(m00, m10, m20);  }
     ILINE Vec3_tpl<F> GetColumn1() const    { return Vec3_tpl<F>(m01, m11, m21);  }
     ILINE Vec3_tpl<F> GetColumn2() const    { return Vec3_tpl<F>(m02, m12, m22);  }
@@ -694,8 +573,6 @@ struct Matrix34_tpl
 
     ILINE void SetTranslation(const Vec3_tpl<F>& t) { m03 = t.x;    m13 = t.y; m23 = t.z;   }
     ILINE Vec3_tpl<F> GetTranslation() const { return Vec3_tpl<F>(m03, m13, m23); }
-    ILINE void ScaleTranslation (F s)                       {   m03 *= s;     m13 *= s;     m23 *= s;     }
-    ILINE Matrix34_tpl<F> AddTranslation(const Vec3_tpl<F>& t)    {   m03 += t.x;   m13 += t.y;   m23 += t.z;   return *this; }
 
     ILINE void SetRotation33(const Matrix33_tpl<F>& m33)
     {
@@ -708,43 +585,6 @@ struct Matrix34_tpl
         m20 = m33.m20;
         m21 = m33.m21;
         m22 = m33.m22;
-    }
-
-    ILINE void GetRotation33(Matrix33_tpl<F>& m33) const
-    {
-        m33.m00 = m00;
-        m33.m01 = m01;
-        m33.m02 = m02;
-        m33.m10 = m10;
-        m33.m11 = m11;
-        m33.m12 = m12;
-        m33.m20 = m20;
-        m33.m21 = m21;
-        m33.m22 = m22;
-    }
-
-    //check if we have an orthonormal-base (general case, works even with reflection matrices)
-    int IsOrthonormal(F threshold = 0.001) const
-    {
-        f32 d0 = fabs_tpl(GetColumn0() | GetColumn1());
-        if  (d0 > threshold)
-        {
-            return 0;
-        }
-        f32 d1 = fabs_tpl(GetColumn0() | GetColumn2());
-        if  (d1 > threshold)
-        {
-            return 0;
-        }
-        f32 d2 = fabs_tpl(GetColumn1() | GetColumn2());
-        if  (d2 > threshold)
-        {
-            return 0;
-        }
-        int a = (fabs_tpl(1 - (GetColumn0() | GetColumn0()))) < threshold;
-        int b = (fabs_tpl(1 - (GetColumn1() | GetColumn1()))) < threshold;
-        int c = (fabs_tpl(1 - (GetColumn2() | GetColumn2()))) < threshold;
-        return a & b & c;
     }
 
     //check if we have an orthonormal-base (assuming we are using a right-handed coordinate system)
@@ -762,68 +602,6 @@ struct Matrix34_tpl
             (fabs_tpl(m0.m10 - m1.m10) <= e) && (fabs_tpl(m0.m11 - m1.m11) <= e) && (fabs_tpl(m0.m12 - m1.m12) <= e) && (fabs_tpl(m0.m13 - m1.m13) <= e) &&
             (fabs_tpl(m0.m20 - m1.m20) <= e) && (fabs_tpl(m0.m21 - m1.m21) <= e) && (fabs_tpl(m0.m22 - m1.m22) <= e) && (fabs_tpl(m0.m23 - m1.m23) <= e)
             );
-    }
-
-    bool IsValid() const
-    {
-        if (!NumberValid(m00))
-        {
-            return false;
-        }
-        if (!NumberValid(m01))
-        {
-            return false;
-        }
-        if (!NumberValid(m02))
-        {
-            return false;
-        }
-        if (!NumberValid(m03))
-        {
-            return false;
-        }
-        if (!NumberValid(m10))
-        {
-            return false;
-        }
-        if (!NumberValid(m11))
-        {
-            return false;
-        }
-        if (!NumberValid(m12))
-        {
-            return false;
-        }
-        if (!NumberValid(m13))
-        {
-            return false;
-        }
-        if (!NumberValid(m20))
-        {
-            return false;
-        }
-        if (!NumberValid(m21))
-        {
-            return false;
-        }
-        if (!NumberValid(m22))
-        {
-            return false;
-        }
-        if (!NumberValid(m23))
-        {
-            return false;
-        }
-        return true;
-    }
-
-
-    bool IsDegenerate(float epsilon = FLT_EPSILON) const
-    {
-        //check the basis vectors for 0 vector
-        return GetColumn0().len2() < epsilon
-               || GetColumn1().len2() < epsilon
-               || GetColumn2().len2() < epsilon;
     }
 
     /*!
@@ -879,42 +657,11 @@ struct Matrix34_tpl
     *  Example 1:
     *       Matrix m34;
     *       m34.SetScale( Vec3(0.5f, 1.0f, 2.0f) );
-    *  Example 2:
-    *       Matrix34 m34 = Matrix34::CreateScale( Vec3(0.5f, 1.0f, 2.0f) );
     */
     ILINE void SetScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
     {
         *this = Matrix33::CreateScale(s);
         this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetScale(s, t);
-        return m34;
-    }
-
-
-    ILINE Matrix44_tpl<F> GetTransposed() const
-    {
-        Matrix44_tpl<F> tmp;
-        tmp.m00 = m00;
-        tmp.m01 = m10;
-        tmp.m02 = m20;
-        tmp.m03 = 0;
-        tmp.m10 = m01;
-        tmp.m11 = m11;
-        tmp.m12 = m21;
-        tmp.m13 = 0;
-        tmp.m20 = m02;
-        tmp.m21 = m12;
-        tmp.m22 = m22;
-        tmp.m23 = 0;
-        tmp.m30 = m03;
-        tmp.m31 = m13;
-        tmp.m32 = m23;
-        tmp.m33 = 1;
-        return tmp;
     }
 
     /*!
@@ -927,7 +674,7 @@ struct Matrix34_tpl
     *  Example 2:
     *   Matrix34 im34 = m34.GetInverted();
     */
-    void Invert(void)
+    void Invert()
     {
         //rescue members
         Matrix34_tpl<F> m = *this;
@@ -967,37 +714,6 @@ struct Matrix34_tpl
         Matrix34_tpl<F> dst = *this;
         dst.Invert();
         return dst;
-    }
-
-    /*!
-    *  Name:             ReflectMat34
-    *  Description:      reflect a rotation matrix with respect to a plane.
-    *
-    *  Example:
-    *       Vec3 normal( 0.0f,-1.0f, 0.0f);
-    *       Vec3 pos(0,1000,0);
-    *       Matrix34 m34=CreateReflectionMat( pos, normal );
-    */
-    ILINE static Matrix34_tpl<F> CreateReflectionMat (const Vec3_tpl<F>& p, const Vec3_tpl<F>& n)
-    {
-        Matrix34_tpl<F> m;
-        F vxy   = -2.0f * n.x * n.y;
-        F vxz   = -2.0f * n.x * n.z;
-        F vyz   = -2.0f * n.y * n.z;
-        F pdotn = 2.0f * (p | n);
-        m.m00 = 1.0f - 2.0f * n.x * n.x;
-        m.m01 = vxy;
-        m.m02 = vxz;
-        m.m03 = pdotn * n.x;
-        m.m10 = vxy;
-        m.m11 = 1.0f - 2.0f * n.y * n.y;
-        m.m12 = vyz;
-        m.m13 = pdotn * n.y;
-        m.m20 = vxz;
-        m.m21 = vyz;
-        m.m22 = 1.0f - 2.0f * n.z * n.z;
-        m.m23 = pdotn * n.z;
-        return m;
     }
 };
 
@@ -1207,6 +923,3 @@ ILINE Matrix44_tpl<F> operator * (const Matrix34_tpl<F>& l, const Matrix44_tpl<F
     m.m33 = r.m33;
     return m;
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
-
