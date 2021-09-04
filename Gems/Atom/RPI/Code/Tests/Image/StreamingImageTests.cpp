@@ -40,10 +40,9 @@ namespace AZ
             : public UnitTest::AssetTester<StreamingImageAsset>
         {
         public:
-            StreamingImageAssetTester()
-            {
+            StreamingImageAssetTester() = default;
+            ~StreamingImageAssetTester() override = default;
 
-            }
             void SetAssetReady(Data::Asset<StreamingImageAsset>& asset) override
             {
                 asset->SetReady();
@@ -55,6 +54,7 @@ namespace AZ
         {
         public:
             ImageMipChainAssetTester() {}
+            ~ImageMipChainAssetTester() override = default;
 
             void SetAssetReady(Data::Asset<ImageMipChainAsset>& asset) override
             {
