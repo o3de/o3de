@@ -5,7 +5,7 @@
 				<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 					<Class name="AZ::u64" field="id" value="12712835119694" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 				</Class>
-				<Class name="AZStd::string" field="Name" value="C6224408_ScriptCanvas_EntitySpawn" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="ScriptCanvas_SpawnEntityWithPhysComponents" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
 					<Class name="Graph" field="element" version="8" type="{4D755CA9-AB92-462C-B24F-0B3376F19967}">
 						<Class name="Graph" field="BaseClass1" version="17" type="{C3267D77-EEDC-490E-9E42-F1D1F473E184}">
