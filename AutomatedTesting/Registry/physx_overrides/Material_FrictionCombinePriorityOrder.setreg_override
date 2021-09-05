@@ -103,10 +103,10 @@
                     },
                     "MaterialLibrary": {
                         "assetId": {
-                            "guid": "{70D4A444-AFD4-57C4-9885-63F25AC3C281}"
+                            "guid": "{FBC1EFDC-2A29-5542-92BB-0389FDE72DBD}"
                         },
                         "loadBehavior": "QueueLoad",
-                        "assetHint": "levels/physics/c15556261_physxmaterials_charactercontrollermaterialassignment/library.physmaterial"
+                        "assetHint": "levels/physics/material_frictioncombinepriorityorder/friction_combine.physmaterial"
                     }
                 }
             }

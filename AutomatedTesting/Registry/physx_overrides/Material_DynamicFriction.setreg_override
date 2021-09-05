@@ -103,10 +103,10 @@
                     },
                     "MaterialLibrary": {
                         "assetId": {
-                            "guid": "{AED48B18-0F3F-5E59-A8FF-30DB134B307B}"
+                            "guid": "{7A6CD646-26CA-5A70-AECC-4D55CA4581FE}"
                         },
                         "loadBehavior": "QueueLoad",
-                        "assetHint": "levels/physics/c18981526_material_restitutioncombinepriority/restitution_combine.physmaterial"
+                        "assetHint": "levels/physics/material_dynamicfriction/dynamic_friction.physmaterial"
                     }
                 }
             }

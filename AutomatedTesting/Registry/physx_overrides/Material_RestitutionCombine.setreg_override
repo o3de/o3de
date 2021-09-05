@@ -103,10 +103,10 @@
                     },
                     "MaterialLibrary": {
                         "assetId": {
-                            "guid": "{2E85B457-ED19-5FE3-90B4-6EFFB4D0E682}"
+                            "guid": "{2A29B7DB-A736-537D-B9B2-56EF32CA4647}"
                         },
                         "loadBehavior": "QueueLoad",
-                        "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test_library.physmaterial"
+                        "assetHint": "levels/physics/material_restitutioncombine/restitution_combine.physmaterial"
                     }
                 }
             }

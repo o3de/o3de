@@ -69,7 +69,7 @@
                                 {},
                                 {},
                                 {},
-                                {}
+                                "TouchBend"
                             ]
                         },
                         "Groups": {
@@ -103,10 +103,10 @@
                     },
                     "MaterialLibrary": {
                         "assetId": {
-                            "guid": "{E4117B5B-8D9A-5C1D-BA1E-C36542A6588D}"
+                            "guid": "{966C6F3D-A27F-5591-B84E-939D11DDEAC9}"
                         },
                         "loadBehavior": "QueueLoad",
-                        "assetHint": "levels/physics/c4044461_material_restitution/restitution.physmaterial"
+                        "assetHint": "levels/physics/material_defaultlibraryupdatedacrosslevels/after.physmaterial"
                     }
                 }
             }
