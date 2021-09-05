@@ -90,5 +90,5 @@ class TestAutomation(TestAutomationBase):
 
     @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
-        from .general import C15425929_Undo_Redo as test_module
+        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
