@@ -9,23 +9,18 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ActorSplitsAfterDamage import Tests
-
-def ActorSplitsAfterRadialDamage():
-    from ActorSplitsAfterDamage import base_run as internal_run
+def Blast_ActorSplitsAfterImpactSpreadDamage():
+    from BaseDamageTest import base_run as internal_run
     from BlastUtils import Constants
 
-    def RadialDamage(target_id, position):
-        azlmbr.destruction.BlastFamilyDamageRequestBus(azlmbr.bus.Event, "Radial Damage", target_id,
+    def ImpactSpreadDamage(target_id, position):
+        azlmbr.destruction.BlastFamilyDamageRequestBus(azlmbr.bus.Event, "Impact Spread Damage", target_id,
                                                        position, Constants.DAMAGE_MIN_RADIUS,
                                                        Constants.DAMAGE_MAX_RADIUS, Constants.DAMAGE_AMOUNT)
 
-    internal_run(RadialDamage)
+    internal_run(ImpactSpreadDamage)
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
-    Report.start_test(ActorSplitsAfterRadialDamage)
+    Report.start_test(Blast_ActorSplitsAfterImpactSpreadDamage)

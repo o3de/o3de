@@ -9,10 +9,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ActorSplitsAfterDamage import Tests
-
-def ActorSplitsAfterShearDamage():
-    from ActorSplitsAfterDamage import base_run as internal_run
+def Blast_ActorSplitsAfterShearDamage():
+    from BaseDamageTest import base_run as internal_run
     from BlastUtils import Constants
 
     def ShearDamage(target_id, position):
@@ -25,8 +23,5 @@ def ActorSplitsAfterShearDamage():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
-    Report.start_test(ActorSplitsAfterShearDamage)
+    Report.start_test(Blast_ActorSplitsAfterShearDamage)

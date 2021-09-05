@@ -9,10 +9,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ActorSplitsAfterDamage import Tests
-
-def ActorSplitsAfterCapsuleDamage():
-    from ActorSplitsAfterDamage import base_run as internal_run
+def Blast_ActorSplitsAfterCapsuleDamage():
+    from BaseDamageTest import base_run as internal_run
     from BlastUtils import Constants
 
     def CapsuleDamage(target_id, position0):
@@ -26,8 +24,5 @@ def ActorSplitsAfterCapsuleDamage():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
-    imports.init()
-
     from editor_python_test_tools.utils import Report
-    Report.start_test(ActorSplitsAfterCapsuleDamage)
+    Report.start_test(Blast_ActorSplitsAfterCapsuleDamage)
