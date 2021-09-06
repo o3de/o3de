@@ -19,15 +19,15 @@ inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
     return enabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
 }
 
-class CEditorPreferencesPage_ViewportMovement : public IPreferencesPage
+class CEditorPreferencesPage_ViewportCamera : public IPreferencesPage
 {
 public:
-    AZ_RTTI(CEditorPreferencesPage_ViewportMovement, "{BC593332-7EAF-4171-8A35-1C5DE5B40909}", IPreferencesPage)
+    AZ_RTTI(CEditorPreferencesPage_ViewportCamera, "{BC593332-7EAF-4171-8A35-1C5DE5B40909}", IPreferencesPage)
 
     static void Reflect(AZ::SerializeContext& serialize);
 
-    CEditorPreferencesPage_ViewportMovement();
-    virtual ~CEditorPreferencesPage_ViewportMovement() = default;
+    CEditorPreferencesPage_ViewportCamera();
+    virtual ~CEditorPreferencesPage_ViewportCamera() = default;
 
     virtual const char* GetCategory() override
     {
