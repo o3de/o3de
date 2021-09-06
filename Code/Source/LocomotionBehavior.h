@@ -26,10 +26,10 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        class PositionFrameData;
-        class VelocityFrameData;
-        class TrajectoryFrameData;
-        class DirectionFrameData;
+        class FeaturePosition;
+        class FeatureVelocity;
+        class FeatureTrajectory;
+        class FeatureDirection;
 
         enum EControlSplineMode : AZ::u8
         {
@@ -85,12 +85,12 @@ namespace EMotionFX
         private:
             void OnSettingsChanged();
 
-            PositionFrameData* m_leftFootPositionData = nullptr;
-            PositionFrameData* m_rightFootPositionData = nullptr;
-            VelocityFrameData* m_leftFootVelocityData = nullptr;
-            VelocityFrameData* m_rightFootVelocityData = nullptr;
-            DirectionFrameData* m_rootDirectionData = nullptr;
-            TrajectoryFrameData* m_rootTrajectoryData = nullptr;
+            FeaturePosition* m_leftFootPositionData = nullptr;
+            FeaturePosition* m_rightFootPositionData = nullptr;
+            FeatureVelocity* m_leftFootVelocityData = nullptr;
+            FeatureVelocity* m_rightFootVelocityData = nullptr;
+            FeatureDirection* m_rootDirectionData = nullptr;
+            FeatureTrajectory* m_rootTrajectoryData = nullptr;
             size_t m_rootNodeIndex = InvalidIndex32;
             size_t m_leftFootNodeIndex = InvalidIndex32;
             size_t m_rightFootNodeIndex = InvalidIndex32;

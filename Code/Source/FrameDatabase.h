@@ -29,10 +29,9 @@ namespace EMotionFX
 
     namespace MotionMatching
     {
-        class FrameData;
+        class Feature;
         class BehaviorInstance;
         class MotionMatchEventData;
-        class KdTree;
 
         // The motion matching data.
         // This is basically a database of frames (which point to motion objects), together with meta data per frame.
@@ -58,11 +57,9 @@ namespace EMotionFX
             // Main functions.
             AZStd::tuple<size_t, size_t> ImportFrames(Motion* motion, const FrameImportSettings& settings, bool mirrored); // Returns the number of imported frames and the number of discarded frames as second element.
             void Clear(); // Clear the data, so you can re-initialize it with new data.
-            void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance);
 
             // Statistics.
             size_t GetNumFrames() const;
-            size_t GetNumFrameDataTypes() const;
             size_t GetNumUsedMotions() const;
             size_t CalcMemoryUsageInBytes() const;
 
@@ -72,32 +69,15 @@ namespace EMotionFX
             const AZStd::vector<Frame>& GetFrames() const;
             AZStd::vector<Frame>& GetFrames();
             const AZStd::vector<const Motion*>& GetUsedMotions() const;
-            FrameData* FindFrameData(const AZ::TypeId& frameDataTypeId) const;
-            const FrameData* GetFrameData(size_t index) const;
-            const AZStd::vector<FrameData*>& GetFrameData() const;
-
-            //
-            void RegisterFrameData(FrameData* frameData);
-            bool GenerateFrameDatas(ActorInstance* actorInstance, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
-
-            size_t CalcNumDataDimensionsForKdTree() const;
-            AZStd::vector<float> CalcMedians() const;
-
-            KdTree& GetKdTree() { return *m_kdTree; }
-            const KdTree& GetKdTree() const { return *m_kdTree; }
 
         private:
-            static FrameData* CreateFrameDataByType(const AZ::TypeId& typeId); // create from RTTI type
             void ImportFrame(Motion* motion, float timeValue, bool mirrored);
             bool IsFrameDiscarded(const AZStd::vector<MotionMatchEventData*>& activeEventDatas) const;
             void ExtractActiveMotionMatchEventDatas(const Motion* motion, float time, AZStd::vector<MotionMatchEventData*>& activeEventDatas); // Vector will be cleared internally.
 
         private:
             AZStd::vector<Frame> m_frames; /**< The collection of frames. Keep in mind these don't hold a pose, but reference to a given frame/time value inside a given motion. */
-            AZStd::unordered_map<AZ::TypeId, FrameData*> m_frameDatas; /**< The per frame additional data. */
-            AZStd::vector<FrameData*> m_frameDataVector; /**< This is a flat vector of all frame datas. */
             AZStd::vector<const Motion*> m_usedMotions; /**< The list of used motions. */
-            KdTree* m_kdTree = nullptr; /**< The acceleration structure to speed up the search for lowest cost frames. */
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

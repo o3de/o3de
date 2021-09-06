@@ -13,14 +13,14 @@
 #include <Allocators.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <DirectionFrameData.h>
-#include <FrameData.h>
+#include <FeatureDirection.h>
+#include <Feature.h>
 #include <LocomotionBehavior.h>
 #include <MotionMatchEventData.h>
 #include <MotionMatchSystem.h>
-#include <PositionFrameData.h>
-#include <TrajectoryFrameData.h>
-#include <VelocityFrameData.h>
+#include <FeaturePosition.h>
+#include <FeatureTrajectory.h>
+#include <FeatureVelocity.h>
 
 namespace EMotionFX
 {
@@ -37,11 +37,11 @@ namespace EMotionFX
             LocomotionBehavior::Reflect(context);
 
             // Frame Data.
-            FrameData::Reflect(context);
-            PositionFrameData::Reflect(context);
-            TrajectoryFrameData::Reflect(context);
-            VelocityFrameData::Reflect(context);
-            DirectionFrameData::Reflect(context);
+            Feature::Reflect(context);
+            FeaturePosition::Reflect(context);
+            FeatureTrajectory::Reflect(context);
+            FeatureVelocity::Reflect(context);
+            FeatureDirection::Reflect(context);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

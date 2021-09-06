@@ -17,6 +17,7 @@
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <FrameDatabase.h>
+#include <FeatureDatabase.h>
 
 namespace EMotionFX
 {
@@ -31,7 +32,7 @@ namespace EMotionFX
             KdTree() = default;
             ~KdTree();
 
-            bool Init(const FrameDatabase& frameDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
+            bool Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
             void Clear();
             void PrintStats();
 
@@ -52,9 +53,9 @@ namespace EMotionFX
                 AZStd::vector<size_t> m_frames;
             };
 
-            void BuildTreeNodes(const FrameDatabase& frameDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
-            void FillFrameFloats(const FrameDatabase& frameDatabase, size_t frameIndex);
-            void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, Node* parent, bool leftSide);
+            void BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
+            void FillFrameFloats(const FeatureDatabase& featureDatabase, size_t frameIndex);
+            void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide);
             void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
             void ClearFramesForNonEssentialNodes();
             void MergeSmallLeafNodesToParents();

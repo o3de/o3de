@@ -19,7 +19,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
-#include <FrameData.h>
+#include <Feature.h>
 
 namespace AZ
 {
@@ -34,11 +34,11 @@ namespace EMotionFX
     {
         class FrameDatabase;
 
-        class EMFX_API PositionFrameData
-            : public FrameData
+        class EMFX_API FeaturePosition
+            : public Feature
         {
         public:
-            AZ_RTTI(PositionFrameData, "{3EAA6459-DB59-4EA1-B8B3-C933A83AA77D}", FrameData)
+            AZ_RTTI(FeaturePosition, "{3EAA6459-DB59-4EA1-B8B3-C933A83AA77D}", Feature)
             AZ_CLASS_ALLOCATOR_DECL
 
             struct EMFX_API FrameCostContext
@@ -46,8 +46,8 @@ namespace EMotionFX
                 const Pose* m_pose;
             };
 
-            PositionFrameData();
-            ~PositionFrameData() override = default;
+            FeaturePosition();
+            ~FeaturePosition() override = default;
 
             bool Init(const InitSettings& settings) override;
             void ExtractFrameData(const ExtractFrameContext& context) override;

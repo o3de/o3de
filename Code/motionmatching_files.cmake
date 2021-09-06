@@ -12,12 +12,22 @@ set(FILES
     Source/BehaviorInstance.h
     Source/BlendTreeMotionMatchNode.cpp
     Source/BlendTreeMotionMatchNode.h
-    Source/DirectionFrameData.cpp
-    Source/DirectionFrameData.h
     Source/Frame.cpp
     Source/Frame.h
-    Source/FrameData.cpp
-    Source/FrameData.h
+    Source/Feature.cpp
+    Source/Feature.h
+    Source/FeatureDatabase.cpp
+    Source/FeatureDatabase.h
+    Source/FeatureDirection.cpp
+    Source/FeatureDirection.h
+    Source/FeaturePosition.cpp
+    Source/FeaturePosition.h
+    Source/FeatureTrajectory.h
+    Source/FeatureTrajectory.cpp
+    Source/FeatureVelocity.cpp
+    Source/FeatureVelocity.h
+    Source/TrajectoryHistory.cpp
+    Source/TrajectoryHistory.h
     Source/FrameDatabase.cpp
     Source/FrameDatabase.h
     Source/KdTree.cpp
@@ -28,12 +38,4 @@ set(FILES
     Source/MotionMatchEventData.h
     Source/MotionMatchSystem.cpp
     Source/MotionMatchSystem.h
-    Source/PositionFrameData.cpp
-    Source/PositionFrameData.h
-    Source/TrajectoryFrameData.cpp
-    Source/TrajectoryFrameData.h
-    Source/TrajectoryHistory.cpp
-    Source/TrajectoryHistory.h
-    Source/VelocityFrameData.cpp
-    Source/VelocityFrameData.h
 )

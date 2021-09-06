@@ -19,11 +19,11 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <DirectionFrameData.h>
+#include <FeatureDirection.h>
 #include <LocomotionBehavior.h>
-#include <PositionFrameData.h>
-#include <TrajectoryFrameData.h>
-#include <VelocityFrameData.h>
+#include <FeaturePosition.h>
+#include <FeatureTrajectory.h>
+#include <FeatureVelocity.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Parameter/FloatSliderParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
@@ -68,7 +68,7 @@ namespace EMotionFX
             // Register the motion extraction trajectory (includes history and future)
             const Node* rootNode = settings.m_actorInstance->GetActor()->GetMotionExtractionNode();//GetActor()->GetSkeleton()->FindNodeByNameNoCase("root");
             m_rootNodeIndex = rootNode ? rootNode->GetNodeIndex() : 0;
-            m_rootTrajectoryData = aznew TrajectoryFrameData();
+            m_rootTrajectoryData = aznew FeatureTrajectory();
             m_rootTrajectoryData->SetNodeIndex(m_rootNodeIndex);
             m_rootTrajectoryData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rootTrajectoryData->SetId(s_rootTrajectoryId);
@@ -79,7 +79,7 @@ namespace EMotionFX
             m_rootTrajectoryData->SetPastTimeRange(1.0f);
             m_rootTrajectoryData->SetDebugDrawEnabled(false);
             m_rootTrajectoryData->SetIncludeInKdTree(false);
-            m_data.RegisterFrameData(m_rootTrajectoryData);
+            m_features.RegisterFeature(m_rootTrajectoryData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -90,14 +90,14 @@ namespace EMotionFX
             {
                 return false;
             }
-            m_leftFootPositionData = aznew PositionFrameData();
+            m_leftFootPositionData = aznew FeaturePosition();
             m_leftFootPositionData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootPositionData->SetId(s_leftFootPositionsId);
             m_leftFootPositionData->SetDebugDrawColor(AZ::Colors::Red);
             m_leftFootPositionData->SetDebugDrawEnabled(false);
             m_leftFootPositionData->SetIncludeInKdTree(true);
-            m_data.RegisterFrameData(m_leftFootPositionData);
+            m_features.RegisterFeature(m_leftFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -108,49 +108,49 @@ namespace EMotionFX
             {
                 return false;
             }
-            m_rightFootPositionData = aznew PositionFrameData();
+            m_rightFootPositionData = aznew FeaturePosition();
             m_rightFootPositionData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootPositionData->SetId(s_rightFootPositionsId);
             m_rightFootPositionData->SetDebugDrawColor(AZ::Colors::Green);
             m_rightFootPositionData->SetDebugDrawEnabled(false);
             m_rightFootPositionData->SetIncludeInKdTree(true);
-            m_data.RegisterFrameData(m_rightFootPositionData);
+            m_features.RegisterFeature(m_rightFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
             // Grab the left foot velocities
-            m_leftFootVelocityData = aznew VelocityFrameData();
+            m_leftFootVelocityData = aznew FeatureVelocity();
             m_leftFootVelocityData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootVelocityData->SetId(s_leftFootVelocitiesId);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Teal);
             m_leftFootVelocityData->SetDebugDrawEnabled(false);
             m_leftFootVelocityData->SetIncludeInKdTree(true);
-            m_data.RegisterFrameData(m_leftFootVelocityData);
+            m_features.RegisterFeature(m_leftFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
             // Grab the right foot velocities
-            m_rightFootVelocityData = aznew VelocityFrameData();
+            m_rightFootVelocityData = aznew FeatureVelocity();
             m_rightFootVelocityData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootVelocityData->SetId(s_rightFootVelocitiesId);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
             m_rightFootVelocityData->SetDebugDrawEnabled(false);
             m_rightFootVelocityData->SetIncludeInKdTree(true);
-            m_data.RegisterFrameData(m_rightFootVelocityData);
+            m_features.RegisterFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             // Root direction.
-            m_rootDirectionData = aznew DirectionFrameData();
+            m_rootDirectionData = aznew FeatureDirection();
             m_rootDirectionData->SetNodeIndex(m_rootNodeIndex);
             m_rootDirectionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rootDirectionData->SetId(s_rootDirectionId);
             m_rootDirectionData->SetDebugDrawColor(AZ::Colors::Yellow);
             m_rootDirectionData->SetDebugDrawEnabled(false);
             m_rootDirectionData->SetIncludeInKdTree(false);
-            m_data.RegisterFrameData(m_rootDirectionData);
+            m_features.RegisterFeature(m_rootDirectionData);
             //----------------------------------------------------------------------------------------------------------
 
             return true;
@@ -225,14 +225,14 @@ namespace EMotionFX
             //const BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
             const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
-            PositionFrameData::FrameCostContext leftFootPosContext;
-            PositionFrameData::FrameCostContext rightFootPosContext;
-            TrajectoryFrameData::FrameCostContext rootTrajectoryContext;
-            VelocityFrameData::FrameCostContext leftFootVelocityContext;
-            VelocityFrameData::FrameCostContext rightFootVelocityContext;
+            FeaturePosition::FrameCostContext leftFootPosContext;
+            FeaturePosition::FrameCostContext rightFootPosContext;
+            FeatureTrajectory::FrameCostContext rootTrajectoryContext;
+            FeatureVelocity::FrameCostContext leftFootVelocityContext;
+            FeatureVelocity::FrameCostContext rightFootVelocityContext;
             //DirectionFrameData::FrameCostContext rootDirectionContext;
-            FrameData::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
-            FrameData::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
+            Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
+            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
             leftFootPosContext.m_pose = &inputPose;
             rightFootPosContext.m_pose = &inputPose;
             rootTrajectoryContext.m_pose = &inputPose;
