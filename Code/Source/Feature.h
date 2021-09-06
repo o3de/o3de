@@ -32,10 +32,10 @@ namespace EMotionFX
         class FrameDatabase;
         class BehaviorInstance;
 
-        class EMFX_API FrameData
+        class EMFX_API Feature
         {
         public:
-            AZ_RTTI(FrameData, "{DE9CBC48-9176-4DF1-8306-4B1E621F0E76}")
+            AZ_RTTI(Feature, "{DE9CBC48-9176-4DF1-8306-4B1E621F0E76}")
             AZ_CLASS_ALLOCATOR_DECL
 
             struct EMFX_API InitSettings
@@ -56,8 +56,8 @@ namespace EMotionFX
                 float m_timeDelta = 0.0f;
             };
 
-            FrameData();
-            virtual ~FrameData() = default;
+            Feature();
+            virtual ~Feature() = default;
 
             virtual bool Init(const InitSettings& settings) = 0;
             virtual void ExtractFrameData(const ExtractFrameContext& context) = 0;

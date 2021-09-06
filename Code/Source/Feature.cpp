@@ -16,7 +16,7 @@
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/MotionInstance.h>
-#include <FrameData.h>
+#include <Feature.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
 
@@ -30,9 +30,9 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(FrameData, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
-        FrameData::FrameData()
+        Feature::Feature()
             : m_id(AZ::TypeId::CreateNull())
             , m_data(nullptr)
             , m_relativeToNodeIndex(0)
@@ -41,47 +41,47 @@ namespace EMotionFX
         {
         }
 
-        void FrameData::SetId(const AZ::TypeId& id)
+        void Feature::SetId(const AZ::TypeId& id)
         {
             m_id = id;
         }
 
-        void FrameData::SetDebugDrawColor(const AZ::Color& color)
+        void Feature::SetDebugDrawColor(const AZ::Color& color)
         {
             m_debugColor = color;
         }
 
-        const AZ::Color& FrameData::GetDebugDrawColor() const
+        const AZ::Color& Feature::GetDebugDrawColor() const
         {
             return m_debugColor;
         }
 
-        void FrameData::SetDebugDrawEnabled(bool enabled)
+        void Feature::SetDebugDrawEnabled(bool enabled)
         {
             m_debugDrawEnabled = enabled;
         }
 
-        bool FrameData::GetDebugDrawEnabled() const
+        bool Feature::GetDebugDrawEnabled() const
         {
             return m_debugDrawEnabled;
         }
 
-        void FrameData::SetData(FrameDatabase* data)
+        void Feature::SetData(FrameDatabase* data)
         {
             m_data = data;
         }
 
-        FrameDatabase* FrameData::GetData() const
+        FrameDatabase* Feature::GetData() const
         {
             return m_data;
         }
 
-        void FrameData::SetRelativeToNodeIndex(size_t nodeIndex)
+        void Feature::SetRelativeToNodeIndex(size_t nodeIndex)
         {
             m_relativeToNodeIndex = nodeIndex;
         }
 
-        void FrameData::SamplePose(float sampleTime, const Pose* bindPose, Motion* sourceMotion, MotionInstance* motionInstance, Pose* samplePose)
+        void Feature::SamplePose(float sampleTime, const Pose* bindPose, Motion* sourceMotion, MotionInstance* motionInstance, Pose* samplePose)
         {
             motionInstance->SetMotion(sourceMotion);
             motionInstance->SetCurrentTime(sampleTime, true);
@@ -92,7 +92,7 @@ namespace EMotionFX
             sourceMotion->Update(bindPose, samplePose, motionInstance);
         }
 
-        void FrameData::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outDirection, float& outSpeed)
+        void Feature::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outDirection, float& outSpeed)
         {
             const AZ::Vector3 currentPosition = curPose->GetWorldSpaceTransform(jointIndex).m_position;
             const AZ::Vector3 nextPosition = nextPose->GetWorldSpaceTransform(jointIndex).m_position;
@@ -110,7 +110,7 @@ namespace EMotionFX
             }
         }
 
-        void FrameData::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed)
+        void Feature::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed)
         {
             // Prepare for sampling.
             ActorInstance* actorInstance = motionInstance->GetActorInstance();
@@ -142,17 +142,17 @@ namespace EMotionFX
             posePool.FreePose(nextPose);
         }
 
-        void FrameData::SetIncludeInKdTree(bool include)
+        void Feature::SetIncludeInKdTree(bool include)
         {
             m_includeInKdTree = include;
         }
 
-        bool FrameData::GetIncludeInKdTree() const
+        bool Feature::GetIncludeInKdTree() const
         {
             return m_includeInKdTree;
         }
 
-        void FrameData::Reflect(AZ::ReflectContext* context)
+        void Feature::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -160,9 +160,9 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<FrameData>()
+            serializeContext->Class<Feature>()
                 ->Version(1)
-                ->Field("id", &FrameData::m_id);
+                ->Field("id", &Feature::m_id);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (!editContext)
@@ -170,7 +170,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<FrameData>("MotionMatchFrameData", "Base class for the frame data")
+            editContext->Class<Feature>("MotionMatchFrameData", "Base class for the frame data")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

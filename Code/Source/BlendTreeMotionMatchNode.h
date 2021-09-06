@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Debug/Timer.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <BehaviorInstance.h>
@@ -106,6 +107,11 @@ namespace EMotionFX
             AZ::u32 m_minFramesPerKdTreeNode = 1000;
             EControlSplineMode m_controlSplineMode = MODE_TARGETDRIVEN;
             bool m_mirror = false;
+
+            AZ::Debug::Timer m_timer;
+            float m_updateTime = 0.0f;
+            float m_postUpdateTime = 0.0f;
+            float m_outputTime = 0.0f;
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

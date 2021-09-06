@@ -18,6 +18,7 @@
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Pose.h>
+#include <FeatureDatabase.h>
 #include <FrameDatabase.h>
 
 namespace AZ
@@ -66,8 +67,12 @@ namespace EMotionFX
             AZ_INLINE const FrameDatabase& GetData() const { return m_data; }
             AZ_INLINE FrameDatabase& GetData() { return m_data; }
 
+            const FeatureDatabase& GetFeatures() const { return m_features; }
+            FeatureDatabase& GetFeatures() { return m_features; }
+
         protected:
             FrameDatabase m_data; /**< The frames and their data. */
+            FeatureDatabase m_features;
             float m_newMotionTime = 0.0f; /**< New motion instance time before sync. */
         };
     } // namespace MotionMatching

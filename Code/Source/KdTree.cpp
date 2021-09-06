@@ -11,7 +11,7 @@
 */
 
 #include <KdTree.h>
-#include <FrameData.h>
+#include <Feature.h>
 #include <Allocators.h>
 
 #include <AzCore/Debug/Timer.h>
@@ -29,7 +29,7 @@ namespace EMotionFX
             Clear();
         }
 
-        bool KdTree::Init(const FrameDatabase& frameDatabase, size_t maxDepth, size_t minFramesPerLeaf)
+        bool KdTree::Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth, size_t minFramesPerLeaf)
         {
             AZ::Debug::Timer timer;
             timer.Stamp();
@@ -38,7 +38,7 @@ namespace EMotionFX
 
             // Verify the dimensions.
             // Going above a 20 dimensional tree would start eating up too much memory.
-            m_numDimensions = frameDatabase.CalcNumDataDimensionsForKdTree();
+            m_numDimensions = featureDatabase.CalcNumDataDimensionsForKdTree();
             if (m_numDimensions == 0 || m_numDimensions > 20)
             {
                 AZ_Error("EMotionFX", false, "KdTree dimension (%d) have to be between 1 and 20. Cannot continue. Please use FrameData::SetIncludeInKdTree(false) on some of your frame data objects for your behavior.", m_numDimensions);
@@ -62,7 +62,7 @@ namespace EMotionFX
 
             // Build the tree.
             m_frameFloats.resize(m_numDimensions);
-            BuildTreeNodes(frameDatabase, new Node(), nullptr, 0);
+            BuildTreeNodes(frameDatabase, featureDatabase, new Node(), nullptr, 0);
             MergeSmallLeafNodesToParents();
             ClearFramesForNonEssentialNodes();
             RemoveZeroFrameLeafNodes();
@@ -111,14 +111,14 @@ namespace EMotionFX
             return m_numDimensions;
         }
 
-        void KdTree::BuildTreeNodes(const FrameDatabase& frameDatabase, Node* node, Node* parent, size_t dimension, bool leftSide)
+        void KdTree::BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension, bool leftSide)
         {
             node->m_parent = parent;
             node->m_dimension = dimension;
             m_nodes.emplace_back(node);
 
             // Fill the frames array and calculate the median.
-            FillFramesForNode(node, frameDatabase, parent, leftSide);
+            FillFramesForNode(node, frameDatabase, featureDatabase, parent, leftSide);
 
             // Prevent splitting further when we don't want to.
             const size_t maxDimensions = AZ::GetMin(m_numDimensions, m_maxDepth);
@@ -132,13 +132,13 @@ namespace EMotionFX
             Node* leftNode = new Node();
             AZ_Assert(!node->m_leftNode, "Expected the parent left node to be a nullptr");
             node->m_leftNode = leftNode;
-            BuildTreeNodes(frameDatabase, leftNode, node, dimension + 1, true);
+            BuildTreeNodes(frameDatabase, featureDatabase, leftNode, node, dimension + 1, true);
 
             // Create the right node.
             Node* rightNode = new Node();
             AZ_Assert(!node->m_rightNode, "Expected the parent right node to be a nullptr");
             node->m_rightNode = rightNode;
-            BuildTreeNodes(frameDatabase, rightNode, node, dimension + 1, false);
+            BuildTreeNodes(frameDatabase, featureDatabase, rightNode, node, dimension + 1, false);
         }
 
         void KdTree::ClearFramesForNonEssentialNodes()
@@ -217,7 +217,7 @@ namespace EMotionFX
             }
         }
 
-        void KdTree::FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, Node* parent, bool leftSide)
+        void KdTree::FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide)
         {
             float median = 0.0f;
             if (parent)
@@ -228,7 +228,7 @@ namespace EMotionFX
                 // Add parent frames to this node, but only ones that should be on this side.
                 for (const size_t frameIndex : parent->m_frames)
                 {
-                    FillFrameFloats(frameDatabase, frameIndex);
+                    FillFrameFloats(featureDatabase, frameIndex);
 
                     const float value = m_frameFloats[parent->m_dimension];
                     if (leftSide)
@@ -256,7 +256,7 @@ namespace EMotionFX
                 {
                     const size_t frameIndex = frame.GetFrameIndex();
                     node->m_frames.emplace_back(frameIndex);
-                    FillFrameFloats(frameDatabase, frameIndex);
+                    FillFrameFloats(featureDatabase, frameIndex);
                     median += m_frameFloats[node->m_dimension];
                 }
             }
@@ -268,10 +268,10 @@ namespace EMotionFX
             node->m_median = median;
         }
 
-        void KdTree::FillFrameFloats(const FrameDatabase& frameDatabase, size_t frameIndex)
+        void KdTree::FillFrameFloats(const FeatureDatabase& featureDatabase, size_t frameIndex)
         {
             size_t startDimension = 0;
-            for (const FrameData* frameData : frameDatabase.GetFrameData())
+            for (const Feature* frameData : featureDatabase.GetFeatures())
             {
                 if ((frameData && frameData->GetId().IsNull()) || !frameData->GetIncludeInKdTree())
                 {

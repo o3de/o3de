@@ -16,7 +16,7 @@
 #include <EMotionFX/Source/MotionInstance.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <FrameData.h>
+#include <Feature.h>
 #include <FrameDatabase.h>
 #include <EMotionFX/Source/TransformData.h>
 
@@ -73,7 +73,7 @@ namespace EMotionFX
             }
 
             // Now build the per frame data (slow).
-            if (!m_data.GenerateFrameDatas(settings.m_actorInstance, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
+            if (!m_features.ExtractFeatures(settings.m_actorInstance, &m_data, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
             {
                 AZ_Error("EMotionFX", false, "Failed to generate frame datas inside motion matching behavior.");
                 return false;
@@ -106,7 +106,7 @@ namespace EMotionFX
 
         void Behavior::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
         {
-            m_data.DebugDraw(draw, behaviorInstance);
+            m_features.DebugDraw(draw, behaviorInstance);
         }
 
         void Behavior::Reflect(AZ::ReflectContext* context)
