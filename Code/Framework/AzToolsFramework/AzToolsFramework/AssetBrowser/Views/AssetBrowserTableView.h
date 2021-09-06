@@ -25,7 +25,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class AssetBrowserTableModel;
         class AssetBrowserFilterModel;
-        class EntryDelegate;
+        class SearchEntryDelegate;
 
         class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
             : public QTableView
@@ -39,6 +39,7 @@ namespace AzToolsFramework
 
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);
+            QModelIndex GetHoveredIndex() const { return model()->index(m_hoveredRow, m_hoveredColumn);}
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 
@@ -53,6 +54,8 @@ namespace AzToolsFramework
             // AssetBrowserComponentNotificationBus
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
+        protected:
+            void mouseMoveEvent(QMouseEvent* mouseEvent) override;
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -68,8 +71,9 @@ namespace AzToolsFramework
             QString m_name;
             QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
-            EntryDelegate* m_delegate = nullptr;
-
+            SearchEntryDelegate* m_delegate = nullptr;
+            int m_hoveredRow = -1;
+            int m_hoveredColumn = -1;
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
         };

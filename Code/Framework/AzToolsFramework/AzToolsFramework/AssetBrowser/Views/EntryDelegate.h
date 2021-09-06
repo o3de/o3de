@@ -52,5 +52,17 @@ namespace AzToolsFramework
             //! Draw a thumbnail and return its width
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;
         };
+
+        class SearchEntryDelegate
+            : public EntryDelegate
+        {
+            Q_OBJECT
+        public:
+            explicit SearchEntryDelegate(QWidget* parent = nullptr)
+                : EntryDelegate(parent)
+            {
+            }
+            void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

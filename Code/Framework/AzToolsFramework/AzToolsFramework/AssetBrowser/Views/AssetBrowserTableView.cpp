@@ -20,7 +20,7 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-
+#include <QMouseEvent>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
@@ -29,7 +29,7 @@ namespace AzToolsFramework
     {
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QTableView(parent)
-            , m_delegate(new EntryDelegate(this))
+            , m_delegate(new SearchEntryDelegate(this))
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
@@ -146,6 +146,25 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
+        }
+
+        void AssetBrowserTableView::mouseMoveEvent(QMouseEvent* mouseEvent)
+        {
+            QTableView::mouseMoveEvent(mouseEvent);
+
+            QModelIndex hoveredIndex = indexAt(mouseEvent->pos());
+            int oldHeveredRow = m_hoveredRow;
+
+            m_hoveredRow = hoveredIndex.row();
+            m_hoveredColumn = hoveredIndex.column();
+
+            if (selectionBehavior() == SelectRows && oldHeveredRow != m_hoveredRow)
+            {
+                for (int i = 0; i < model()->columnCount(); ++i)
+                {
+                    update(model()->index(m_hoveredRow, i));
+                }
+            }
         }
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)

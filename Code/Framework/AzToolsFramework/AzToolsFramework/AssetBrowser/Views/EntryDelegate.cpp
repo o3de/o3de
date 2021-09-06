@@ -9,6 +9,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 
@@ -148,6 +149,80 @@ namespace AzToolsFramework
             return m_iconSize;
         }
 
+        void SearchEntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+        {
+            auto data = index.data(AssetBrowserModel::Roles::EntryRole);
+            if (data.canConvert<const AssetBrowserEntry*>())
+            {
+                QStyleOptionViewItem opt(option);
+
+
+                bool isEnabled = (opt.state & QStyle::State_Enabled) != 0;
+                bool isSelected = (opt.state & QStyle::State_Selected) != 0;
+
+                opt.state &= ~QStyle::State_HasFocus;
+
+                // Get the hovered index in order to highlight the whole row.
+                AssetBrowserTableView* view = qobject_cast<AssetBrowserTableView*>(opt.styleObject);
+                QTableView::SelectionBehavior behavior = view->selectionBehavior();
+                QModelIndex hoveredIndex = view->GetHoveredIndex();
+                if (!isSelected && behavior != QTableView::SelectItems)
+                {
+                    if (behavior == QTableView::SelectRows && hoveredIndex.row() == index.row())
+                    {
+                        opt.state |= QStyle::State_MouseOver;
+                    }
+                }
+
+                QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
+
+                // draw the background
+                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
+
+                auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
+                auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+
+                // Draw main entry thumbnail.
+                QRect remainingRect(opt.rect);
+                remainingRect.adjust(
+                    ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0,
+                    0); // bump it rightwards to give some margin to the icon.
+
+                QSize iconSize(m_iconSize, m_iconSize);
+                // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
+                // so it needs to center vertically with padding in that case:
+                QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+
+                QPalette actualPalette(opt.palette);
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+                {
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    if (sourceEntry)
+                    {
+                        if (m_showSourceControl)
+                        {
+                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                        }
+                        // sources with no children should be greyed out.
+                        if (sourceEntry->GetChildCount() == 0)
+                        {
+                            isEnabled = false; // draw in disabled style.
+                            actualPalette.setCurrentColorGroup(QPalette::Disabled);
+                        }
+                    }
+
+                    remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
+                    remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
+                }
+                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
+
+                style->drawItemText(
+                    painter, remainingRect, opt.displayAlignment, actualPalette, isEnabled, displayString,
+                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+            }
+        }
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
