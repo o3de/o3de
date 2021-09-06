@@ -340,10 +340,10 @@ namespace AzToolsFramework
     }
 
     //! Wrap EBus call to retrieve manipulator line bound width.
-    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
     float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
-    //! Wrap EBus call to retrieve manipulator line bound width.
-    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
+    //! Wrap EBus call to retrieve manipulator circle bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
     float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
