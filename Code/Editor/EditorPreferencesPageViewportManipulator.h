@@ -25,26 +25,12 @@ public:
     CEditorPreferencesPage_ViewportManipulator();
     virtual ~CEditorPreferencesPage_ViewportManipulator() = default;
 
-    virtual const char* GetCategory() override
-    {
-        return "Viewports";
-    }
-
-    virtual const char* GetTitle() override
-    {
-        return "Manipulators";
-    }
-
-    virtual QIcon& GetIcon() override;
-    virtual void OnApply() override;
-    virtual void OnCancel() override
-    {
-    }
-
-    virtual bool OnQueryCancel() override
-    {
-        return true;
-    }
+    const char* GetCategory() override;
+    const char* GetTitle() override;
+    QIcon& GetIcon() override;
+    void OnApply() override;
+    void OnCancel() override;
+    bool OnQueryCancel() override;
 
 private:
     void InitializeSettings();

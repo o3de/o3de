@@ -8,7 +8,7 @@
 
 #include "EditorDefs.h"
 
-#include "EditorPreferencesPageViewportMovement.h"
+#include "EditorPreferencesPageViewportCamera.h"
 
 #include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputDeviceRequestBus.h>
@@ -226,6 +226,11 @@ CEditorPreferencesPage_ViewportCamera::CEditorPreferencesPage_ViewportCamera()
     m_icon = QIcon(":/res/Camera.svg");
 }
 
+const char* CEditorPreferencesPage_ViewportCamera::GetCategory()
+{
+    return "Viewports";
+}
+
 const char* CEditorPreferencesPage_ViewportCamera::GetTitle()
 {
     return "Camera";
@@ -234,6 +239,16 @@ const char* CEditorPreferencesPage_ViewportCamera::GetTitle()
 QIcon& CEditorPreferencesPage_ViewportCamera::GetIcon()
 {
     return m_icon;
+}
+
+void CEditorPreferencesPage_ViewportCamera::OnCancel()
+{
+    // noop
+}
+
+bool CEditorPreferencesPage_ViewportCamera::OnQueryCancel()
+{
+    return true;
 }
 
 void CEditorPreferencesPage_ViewportCamera::OnApply()
