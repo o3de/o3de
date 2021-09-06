@@ -341,39 +341,9 @@ namespace AzToolsFramework
 
     //! Wrap EBus call to retrieve manipulator line bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
-    inline float ManipulatorLineBoundWidth(const AzFramework::ViewportId viewportId)
-    {
-        float lineBoundWidth = 0.0f;
-        if (viewportId != AzFramework::InvalidViewportId)
-        {
-            ViewportInteraction::ViewportSettingsRequestBus::EventResult(
-                lineBoundWidth, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorLineBoundWidth);
-        }
-        else
-        {
-            ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
-                lineBoundWidth, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorLineBoundWidth);
-        }
-
-        return lineBoundWidth;
-    }
+    float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
     //! Wrap EBus call to retrieve manipulator line bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
-    inline float ManipulatorCicleBoundWidth(const AzFramework::ViewportId viewportId)
-    {
-        float circleBoundWidth = 0.0f;
-        if (viewportId != AzFramework::InvalidViewportId)
-        {
-            ViewportInteraction::ViewportSettingsRequestBus::EventResult(
-                circleBoundWidth, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorCircleBoundWidth);
-        }
-        else
-        {
-            ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
-                circleBoundWidth, &ViewportInteraction::ViewportSettingsRequestBus::Events::ManipulatorCircleBoundWidth);
-        }
-
-        return circleBoundWidth;
-    }
+    float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
