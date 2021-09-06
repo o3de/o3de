@@ -53,7 +53,8 @@ private:
     {
         AZ_TYPE_INFO(Manipulators, "{2974439C-4839-41F6-B526-F317999B9DB9}")
 
-        float m_manipulatorLineBoundWidth;
+        float m_manipulatorLineBoundWidth = 0.0f;
+        float m_manipulatorCircleBoundWidth = 0.0f;
     };
 
     Manipulators m_manipulators;

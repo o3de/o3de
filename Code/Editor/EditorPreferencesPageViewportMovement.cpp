@@ -100,29 +100,30 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
     {
+        const float minValue = 0.0001f;
         editContext->Class<CameraMovementSettings>("Camera Movement Settings", "")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_translateSpeed, "Camera Movement Speed", "Camera movement speed")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_rotateSpeed, "Camera Rotation Speed", "Camera rotation speed")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_boostMultiplier, "Camera Boost Multiplier",
                 "Camera boost multiplier to apply to movement speed")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_scrollSpeed, "Camera Scroll Speed",
                 "Camera movement speed while using scroll/wheel input")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_dollySpeed, "Camera Dolly Speed",
                 "Camera movement speed while using mouse motion to move in and out")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_panSpeed, "Camera Pan Speed",
                 "Camera movement speed while panning using the mouse")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_rotateSmoothing, "Camera Rotate Smoothing",
                 "Is camera rotation smoothing enabled or disabled")
@@ -130,7 +131,7 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_rotateSmoothness, "Camera Rotate Smoothness",
                 "Amount of camera smoothing to apply while rotating the camera")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::RotateSmoothingVisibility)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_translateSmoothing, "Camera Translate Smoothing",
@@ -139,7 +140,7 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_translateSmoothness, "Camera Translate Smoothness",
                 "Amount of camera smoothing to apply while translating the camera")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::TranslateSmoothingVisibility)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_orbitYawRotationInverted, "Camera Orbit Yaw Inverted",
