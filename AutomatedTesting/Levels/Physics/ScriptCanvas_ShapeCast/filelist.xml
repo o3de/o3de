@@ -1,0 +1,6 @@
+<download name="ScriptCanvas_ShapeCast" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="98C9" md5="7756a398952b61a1ba7d4753ec01b030"/>
+ </files>
+</download>
