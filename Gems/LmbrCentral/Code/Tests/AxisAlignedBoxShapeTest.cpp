@@ -95,69 +95,7 @@ namespace UnitTest
         CreateAxisAlignedBox(transform, AZ::Vector3(10.0f, 10.0f, 10.0f), entity);
     }
 
-    bool RandomPointsAreInAxisAlignedBox(const AZ::Entity& entity, const AZ::RandomDistributionType distributionType)
-    {
-        const size_t testPoints = 10000;
-
-        AZ::Vector3 testPoint;
-        bool testPointInVolume = false;
-
-        // test a bunch of random points generated with a random distribution type
-        // they should all end up in the volume
-        for (size_t i = 0; i < testPoints; ++i)
-        {
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                testPoint, entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GenerateRandomPointInside, distributionType);
-
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                testPointInVolume, entity.GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, testPoint);
-
-            if (!testPointInVolume)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    TEST_F(AxisAlignedBoxShapeTest, NormalDistributionRandomPointsAreInBox)
-    {
-        // don't rotate transform so that this is an AABB
-        const AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 5.0f, 5.0f));
-
-        AZ::Entity entity;
-        CreateDefaultAxisAlignedBox(transform, entity);
-
-        const bool allRandomPointsInVolume = RandomPointsAreInAxisAlignedBox(entity, AZ::RandomDistributionType::Normal);
-        EXPECT_TRUE(allRandomPointsInVolume);
-    }
-
-    TEST_F(AxisAlignedBoxShapeTest, UniformRealDistributionRandomPointsAreInBox)
-    {
-        // don't rotate transform so that this is an AABB
-        const AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 5.0f, 5.0f));
-
-        AZ::Entity entity;
-        CreateDefaultAxisAlignedBox(transform, entity);
-
-        const bool allRandomPointsInVolume = RandomPointsAreInAxisAlignedBox(entity, AZ::RandomDistributionType::UniformReal);
-        EXPECT_TRUE(allRandomPointsInVolume);
-    }
-
-    TEST_F(AxisAlignedBoxShapeTest, UniformRealDistributionRandomPointsAreInBoxWithNonUniformScale)
-    {
-        AZ::Entity entity;
-        const AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, 6.0f, -3.0f));
-        const AZ::Vector3 dimensions(2.4f, 1.2f, 0.6f);
-        const AZ::Vector3 nonUniformScale(0.2f, 0.3f, 0.1f);
-        CreateAxisAlignedBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
-
-        const bool allRandomPointsInVolume = RandomPointsAreInAxisAlignedBox(entity, AZ::RandomDistributionType::UniformReal);
-        EXPECT_TRUE(allRandomPointsInVolume);
-    }
-
-    TEST_F(AxisAlignedBoxShapeTest, EntityTransformCorrect)
+    TEST_F(AxisAlignedBoxShapeTest, EntityTransformIsCorrect)
     {
         AZ::Entity entity;
         CreateAxisAlignedBox(
@@ -170,25 +108,26 @@ namespace UnitTest
         EXPECT_EQ(transform, AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi));
     }
 
-    TEST_F(AxisAlignedBoxShapeTest, GetRayIntersectBoxSuccess1)
+    TEST_F(AxisAlignedBoxShapeTest, BoxWithZRotationHasCorrectRayIntersection)
     {
         AZ::Entity entity;
         CreateAxisAlignedBox(
-            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 5.0f)) * AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi),
+            AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi),
             AZ::Vector3(1.0f), entity);
 
         bool rayHit = false;
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(0.0f, 5.0f, 5.0f),
-            AZ::Vector3(0.0f, -1.0f, 0.0f), distance);
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(5.0f, 0.0f, 0.0f),
+            AZ::Vector3(-1.0f, 0.0f, 0.0f), distance);
 
-        // 5.0 - 0.5 ~= 4.5 (box not rotated even though entity is created with 45 degree rotation)
+        // This test creates a unit box centred on (0, 0, 0) and rotated by 45 degrees. The distance to the box should
+        // be 4.5 if it isn't rotated but less if there is any rotation.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 4.5f, 1e-2f);
     }
 
-    TEST_F(AxisAlignedBoxShapeTest, GetRayIntersectBoxSuccess2)
+    TEST_F(AxisAlignedBoxShapeTest, BoxWithTranslationAndRotationsHasCorrectRayIntersection)
     {
         AZ::Entity entity;
         CreateAxisAlignedBox(
@@ -204,16 +143,17 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(-10.0f, -10.0f, 0.0f),
             AZ::Vector3(0.0f, 0.0f, -1.0f), distance);
 
-        // 10.0 - 1.0 ~= 9 (box not rotated even though entity is created with rotation in X and Z)
+        // This test creates a box of dimensions (4.0, 4.0, 2.0) centred on (-10, -10, 0) and rotated in X and Z. The distance to the box should
+        // be 9.0 if it isn't rotated but less if there is any rotation.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 9.00f, 1e-2f);
     }
 
-   TEST_F(AxisAlignedBoxShapeTest, GetRayIntersectBoxSuccess3)
+   TEST_F(AxisAlignedBoxShapeTest, BoxWithTranslationHasCorrectRayIntersection)
     {
         AZ::Entity entity;
         CreateAxisAlignedBox(
-            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(100.0f, 100.0f, 0.0f)),
+            AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 100.0f, 0.0f)),
             AZ::Vector3(5.0f, 5.0f, 5.0f), entity);
 
         bool rayHit = false;
@@ -222,18 +162,18 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(100.0f, 100.0f, -100.0f),
             AZ::Vector3(0.0f, 0.0f, 1.0f), distance);
 
+        // This test creates a box of dimensions (5.0, 5.0, 5.0) centred on (100, 100, 0) and not rotated. The distance to the box
+        // should be 97.5.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 97.5f, 1e-2f);
     }
 
-       // transformed scaled
-    TEST_F(AxisAlignedBoxShapeTest, GetRayIntersectBoxSuccess4)
+    TEST_F(AxisAlignedBoxShapeTest, BoxWithTranslationRotationAndScaleHasCorrectRayIntersection)
     {
         AZ::Entity entity;
         CreateAxisAlignedBox(
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(0.0f, 0.0f, 5.0f)) *
-                AZ::Transform::CreateUniformScale(3.0f),
+            AZ::Transform(
+                AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), 3.0f),
             AZ::Vector3(2.0f, 4.0f, 1.0f), entity);
 
         bool rayHit = false;
@@ -242,23 +182,60 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.0f, -10.0f, 4.0f),
             AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
 
+        // This test creates a box of dimensions (2.0, 4.0, 1.0) centred on (0, 0, 5) and rotated about the Y axis by 45 degrees.
+        // The distance to the box should be 4.0 if not rotated but scaled and less if it is.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 4.0f, 1e-2f);
     }
 
-    TEST_F(AxisAlignedBoxShapeTest, GetRayIntersectBoxFailure)
+    TEST_F(AxisAlignedBoxShapeTest, RayIntersectWithBoxRotatedNonUniformScale)
     {
         AZ::Entity entity;
-        CreateAxisAlignedBox(
-            AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(0.0f, -10.0f, 0.0f)),
-            AZ::Vector3(2.0f, 6.0f, 4.0f), entity);
+//        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+//            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(2.0f, -5.0f, 3.0f));
+//        transform.MultiplyByUniformScale(0.5f);
+        CreateAxisAlignedBoxWithNonUniformScale(
+            AZ::Transform(
+                AZ::Vector3(2.0f, -5.0f, 3.0f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
+                0.5f),
+            AZ::Vector3(2.2f, 1.8f, 0.4f), AZ::Vector3(0.2f, 2.6f, 1.2f), entity);
 
+        // This test creates a box of dimensions (2.2, 1.8, 0.4) centred on (2.0, -5, 3) and rotated about the Y axis by 45 degrees.
+        // The box is tested for axis-alignment by firing various rays and ensuring they either hot or miss the box. Any failure hre
+        // would show the box has been rotated.
+
+        // Ray should just miss the box
         bool rayHit = false;
-        float distance;
+        float distance = AZ::Constants::FloatMax;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3::CreateZero(),
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.8f, -6.2f, 3.0f),
             AZ::Vector3(1.0f, 0.0f, 0.0f), distance);
-
         EXPECT_FALSE(rayHit);
+
+        // Ray should just hit the box
+        rayHit = false;
+        distance = AZ::Constants::FloatMax;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.8f, -6.1f, 3.0f),
+            AZ::Vector3(1.0f, 0.0f, 0.0f), distance);
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 0.09f, 1e-3f);
+
+        // Ray should just miss the box
+        rayHit = false;
+        distance = AZ::Constants::FloatMax;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(2.2f, -6.2f, 3.0f),
+            AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
+        EXPECT_FALSE(rayHit);
+
+        // Ray should just hit the box
+        rayHit = false;
+        distance = AZ::Constants::FloatMax;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(2.1f, -6.2f, 3.0f),
+            AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
+        EXPECT_TRUE(rayHit);
+        EXPECT_NEAR(distance, 0.03f, 1e-3f);
     }
 } // namespace UnitTest
