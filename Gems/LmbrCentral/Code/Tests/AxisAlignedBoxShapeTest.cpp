@@ -191,9 +191,6 @@ namespace UnitTest
     TEST_F(AxisAlignedBoxShapeTest, RayIntersectWithBoxRotatedNonUniformScale)
     {
         AZ::Entity entity;
-//        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
-//            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(2.0f, -5.0f, 3.0f));
-//        transform.MultiplyByUniformScale(0.5f);
         CreateAxisAlignedBoxWithNonUniformScale(
             AZ::Transform(
                 AZ::Vector3(2.0f, -5.0f, 3.0f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
