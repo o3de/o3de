@@ -111,6 +111,7 @@ ly_install_directory(
         Platform/${PAL_PLATFORM_NAME}
         Platform/Common
     DESTINATION LauncherGenerator/Platform
+    VERBATIM
 )
 ly_install_files(
     FILES FindLauncherGenerator.cmake

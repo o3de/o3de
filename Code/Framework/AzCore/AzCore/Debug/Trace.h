@@ -278,7 +278,7 @@ namespace AZ
 
 #define AZ_Printf(window, ...)       AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);
 
-#if !defined(RELEASE) || defined(PERFORMANCE_BUILD)
+#if !defined(RELEASE)
 // Unconditional critical error log, enabled up to Performance config
 #define AZ_Fatal(window, format, ...)       AZ::Debug::Trace::Instance().Printf(window, "[FATAL] " format "\n", ##__VA_ARGS__);
 #define AZ_Crash()                          AZ::Debug::Trace::Instance().Crash();

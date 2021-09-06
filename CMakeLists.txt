@@ -132,7 +132,7 @@ ly_delayed_generate_runtime_dependencies()
 ly_test_impact_post_step()
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(NOT INSTALLED_ENGINE)
+if(LY_INSTALL_ENABLED)
     # 8. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
     ly_setup_o3de_install()
     # 9. CPack information (to be included after install)

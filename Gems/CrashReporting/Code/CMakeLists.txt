@@ -35,17 +35,20 @@ ly_add_target(
 ly_create_alias(NAME CrashReporting.Clients NAMESPACE Gem TARGETS Gem::CrashReporting)
 ly_create_alias(NAME CrashReporting.Servers NAMESPACE Gem TARGETS Gem::CrashReporting)
 
+if(NOT LY_MONOLITHIC_GAME)
 
-ly_add_target(
-    NAME CrashReporting.Uploader APPLICATION
-    NAMESPACE AZ
-    FILES_CMAKE
-        game_crash_uploader_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/game_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::CrashUploaderSupport
-)
+    ly_add_target(
+        NAME CrashReporting.Uploader APPLICATION
+        NAMESPACE AZ
+        FILES_CMAKE
+            game_crash_uploader_files.cmake
+            Platform/${PAL_PLATFORM_NAME}/game_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::CrashUploaderSupport
+    )
+
+endif()
