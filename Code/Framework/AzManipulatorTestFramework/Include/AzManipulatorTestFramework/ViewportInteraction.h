@@ -40,11 +40,13 @@ namespace AzManipulatorTestFramework
         float DeviceScalingFactor() override;
     private:
         // ViewportInteractionRequestBus ...
-        bool GridSnappingEnabled();
-        float GridSize();
-        bool ShowGrid();
-        bool AngleSnappingEnabled();
-        float AngleStep();
+        bool GridSnappingEnabled() override;
+        float GridSize() override;
+        bool ShowGrid() override;
+        bool AngleSnappingEnabled() override;
+        float AngleStep() override;
+        float ManipulatorLineBoundWidth() override;
+
         AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
     private:
         AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;

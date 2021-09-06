@@ -2378,7 +2378,7 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < gSettings.gizmo.axisGizmoMaxCount)
+        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
         {
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));

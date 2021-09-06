@@ -413,7 +413,7 @@ namespace UnitTest
             *m_completedFlag = false;
         }
 
-        ~UndoDestructorTest()
+        ~UndoDestructorTest() override
         {
             *m_completedFlag = true;
         }
