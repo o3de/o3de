@@ -13,7 +13,7 @@ endif()
 unset(minimum_supported_toolset)
 
 include(cmake/Platform/Common/Configurations_common.cmake)
-include(cmake/Platform/Common/VisualStudio_common.cmake)
+include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
