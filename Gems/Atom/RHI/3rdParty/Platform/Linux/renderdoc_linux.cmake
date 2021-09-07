@@ -6,10 +6,4 @@
 #
 #
 
-ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-
-add_subdirectory(Code)
-add_subdirectory(DX12)
-add_subdirectory(Metal)
-add_subdirectory(Vulkan)
-add_subdirectory(Null)
+set(RENDERDOC_RUNTIME_DEPENDENCIES "${BASE_PATH}/librenderdoc.so")

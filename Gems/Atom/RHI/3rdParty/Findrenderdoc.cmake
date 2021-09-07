@@ -6,10 +6,10 @@
 #
 #
 
-ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-
-add_subdirectory(Code)
-add_subdirectory(DX12)
-add_subdirectory(Metal)
-add_subdirectory(Vulkan)
-add_subdirectory(Null)
+ly_add_external_target(
+    NAME renderdoc
+    3RDPARTY_ROOT_DIRECTORY "${LY_RENDERDOC_PATH}"
+    VERSION
+    INCLUDE_DIRECTORIES .
+    COMPILE_DEFINITIONS USE_RENDER_DOC
+)
