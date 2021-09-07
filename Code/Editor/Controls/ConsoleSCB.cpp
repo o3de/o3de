@@ -421,9 +421,6 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
-    m_colorTable[0] = textColor;
-    m_colorTable[1] = textColor;
-
     const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
 
     QColor bgColor;
@@ -435,8 +432,13 @@ void CConsoleSCB::RefreshStyle()
     else
     {
         bgColor = Qt::white;
+        textColor = Qt::black;
         AzQtComponents::ScrollBar::applyDarkStyle(ui->textEdit);
     }
+
+    m_colorTable[0] = textColor;
+    m_colorTable[1] = textColor;
+
     ui->textEdit->setBackgroundVisible(!uiAndDark);
     ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
 
