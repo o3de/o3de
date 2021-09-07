@@ -20,7 +20,6 @@ ly_append_configurations_options(
         -Wrange-loop-analysis
         -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
         -Wno-format-security
-        -Wno-inconsistent-missing-override
         -Wno-parentheses
         -Wno-reorder
         -Wno-switch
