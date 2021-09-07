@@ -588,6 +588,11 @@ namespace AzFramework
                     // pass through the camera's position and look vector for use in the lookAt function
                     if (const auto lookAt = lookAtFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()))
                     {
+                        if (targetCamera.m_lookAt.IsClose(*lookAt))
+                        {
+                            return false;
+                        }
+
                         auto transform = AZ::Transform::CreateLookAt(targetCamera.m_lookAt, *lookAt);
                         nextCamera.m_lookDist = -lookAt->GetDistance(targetCamera.m_lookAt);
                         UpdateCameraFromTransform(nextCamera, transform);
