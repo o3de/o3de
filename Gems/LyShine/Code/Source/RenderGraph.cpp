@@ -666,13 +666,6 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::BeginRenderToTexture([[maybe_unused]] int renderTargetHandle, [[maybe_unused]] SDepthTexture* renderTargetDepthSurface,
-        [[maybe_unused]] const AZ::Vector2& viewportTopLeft, [[maybe_unused]] const AZ::Vector2& viewportSize, [[maybe_unused]] const AZ::Color& clearColor)
-    {
-        // LYSHINE_ATOM_TODO - this function will be removed when all IRenderer references are gone from UI components
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
         const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor)
     {

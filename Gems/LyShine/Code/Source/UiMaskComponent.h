@@ -188,10 +188,6 @@ private: // data
 
     //! When rendering to a texture this is the attachment image for the render target
     AZ::RHI::AttachmentId m_contentAttachmentImageId;
-
-    //! When rendering to a texture this is our depth surface, we use the same one for rendering the mask elements
-    //! and the content elements - it is cleared in between.
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
     
     //! When rendering to a texture this is the texture ID of the render target
     //! When rendering to a texture this is the attachment image for the render target

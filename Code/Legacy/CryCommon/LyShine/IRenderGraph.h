@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <ITexture.h>
 #include <LyShine/UiBase.h>
 #include <LyShine/UiRenderFormats.h>
 
@@ -41,10 +40,6 @@ namespace LyShine
 
         //! End the setup of a mask render node, this marks the end of adding child primitives
         virtual void EndMask() = 0;
-
-        //! Begin rendering to a texture
-        virtual void BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
-            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor) = 0;
 
         //! End rendering to a texture
         virtual void EndRenderToTexture() = 0;

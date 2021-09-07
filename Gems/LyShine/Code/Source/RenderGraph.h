@@ -262,10 +262,6 @@ namespace LyShine
         void StartChildrenForMask() override;
         void EndMask() override;
 
-        //! Begin rendering to a texture
-        void BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
-            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor) override;
-
         void EndRenderToTexture() override;
 
         LyShine::UiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
