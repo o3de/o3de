@@ -34,7 +34,6 @@ set(FILES
     include/LmbrCentral/Rendering/LightComponentBus.h
     include/LmbrCentral/Rendering/MaterialAsset.h
     include/LmbrCentral/Rendering/MaterialHandle.h
-    include/LmbrCentral/Rendering/MaterialOwnerBus.h
     include/LmbrCentral/Rendering/MeshAsset.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
     include/LmbrCentral/Rendering/RenderNodeBus.h

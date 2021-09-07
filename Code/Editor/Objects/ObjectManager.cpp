@@ -759,17 +759,6 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     }
 }
 
-//void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
-//{
-//    CBaseObjectsArray objectArray;
-//    GetObjects(objectArray);
-//    objects.clear();
-//    for (size_t i = 0, iCount(objectArray.size()); i < iCount; ++i)
-//    {
-//        objects.push_back(objectArray[i]);
-//    }
-//}
-
 void CObjectManager::GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const
 {
     objects.clear();
