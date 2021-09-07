@@ -593,11 +593,11 @@ void CLog::LogPlus(const char* szFormat, ...)
 
     if (bfile)
     {
-        LogToFilePlus(szTemp);
+        LogToFilePlus("%s", szTemp);
     }
     if (bconsole)
     {
-        LogToConsolePlus(szTemp);
+        LogToConsolePlus("%s", szTemp);
     }
 }
 

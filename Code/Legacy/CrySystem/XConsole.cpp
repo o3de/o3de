@@ -389,12 +389,12 @@ void CXConsole::LogChangeMessage(const char* name, const bool isConst, const boo
 
     if (allowChange)
     {
-        gEnv->pLog->LogWarning(logMessage.c_str());
+        gEnv->pLog->LogWarning("%s", logMessage.c_str());
         gEnv->pLog->LogWarning("Modifying marked variables will not be allowed in Release mode!");
     }
     else
     {
-        gEnv->pLog->LogError(logMessage.c_str());
+        gEnv->pLog->LogError("%s", logMessage.c_str());
     }
 }
 
