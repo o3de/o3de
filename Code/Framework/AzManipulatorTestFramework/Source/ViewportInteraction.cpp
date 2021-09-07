@@ -26,10 +26,12 @@ namespace AzManipulatorTestFramework
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
+        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
     }
 
     ViewportInteraction::~ViewportInteraction()
     {
+        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
@@ -72,6 +74,16 @@ namespace AzManipulatorTestFramework
     float ViewportInteraction::ManipulatorCircleBoundWidth() const
     {
         return 0.1f;
+    }
+
+    void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
+    {
+        visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
+    }
+
+    void ViewportInteraction::UpdateVisibility()
+    {
+        m_entityVisibilityQuery.UpdateVisibility(m_cameraState);
     }
 
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
