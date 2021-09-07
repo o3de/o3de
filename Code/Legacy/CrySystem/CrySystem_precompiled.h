@@ -81,7 +81,6 @@
 #include <Cry_Camera.h>
 #include <smartptr.h>
 #include <Range.h>
-#include <CrySizer.h>
 #include <StlUtils.h>
 
 

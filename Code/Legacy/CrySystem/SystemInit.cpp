@@ -1433,10 +1433,6 @@ AZ_POP_DISABLE_WARNING
 #endif
         }
 
-#if defined(PERFORMANCE_BUILD)
-        LoadConfiguration("performance.cfg");
-#endif
-
         //////////////////////////////////////////////////////////////////////////
         if (g_cvars.sys_asserts == 0)
         {
@@ -1601,9 +1597,6 @@ AZ_POP_DISABLE_WARNING
         SCVarsClientConfigSink CVarsClientConfigSink;
         LoadConfiguration("client.cfg", &CVarsClientConfigSink);
     }
-
-    //Connect to the render bus
-    AZ::RenderNotificationsBus::Handler::BusConnect();
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);

@@ -29,14 +29,14 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 class TestAutomation(TestAutomationBase):
 
     ## Seems to be flaky, need to investigate
-    def test_C19536274_GetCollisionName_PrintsName(self, request, workspace, editor, launcher_platform):
-        from .general import C19536274_GetCollisionName_PrintsName as test_module
+    def test_ScriptCanvas_GetCollisionNameReturnsName(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_GetCollisionNameReturnsName as test_module
         # Fixme: expected_lines=["Layer Name: Right"]
         self._run_test(request, workspace, editor, test_module)
 
     ## Seems to be flaky, need to investigate
-    def test_C19536277_GetCollisionName_PrintsNothing(self, request, workspace, editor, launcher_platform):
-        from .general import C19536277_GetCollisionName_PrintsNothing as test_module
+    def test_ScriptCanvas_GetCollisionNameReturnsNothingWhenHasToggledLayer(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_GetCollisionNameReturnsNothingWhenHasToggledLayer as test_module
         # All groups present in the PhysX Collider that could show up in test
         # Fixme: collision_groups = ["All", "None", "All_NoTouchBend", "All_3", "None_1", "All_NoTouchBend_1", "All_2", "None_1_1", "All_NoTouchBend_1_1", "All_1", "None_1_1_1", "All_NoTouchBend_1_1_1", "All_4", "None_1_1_1_1", "All_NoTouchBend_1_1_1_1", "GroupLeft", "GroupRight"]
         # Fixme: for group in collision_groups:

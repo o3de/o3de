@@ -6,86 +6,13 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XCONSOLEVARIABLE_H
-#define CRYINCLUDE_CRYSYSTEM_XCONSOLEVARIABLE_H
 #pragma once
 
+#include <IConsole.h>
 #include <ISystem.h>
-#include "BitFiddling.h"
-#include "SFunctor.h"
+#include <AzCore/std/function/function_template.h>
 
 class CXConsole;
-typedef AZStd::fixed_string<512> stack_string;
-
-inline int64 TextToInt64(const char* s, int64 nCurrent, bool bBitfield)
-{
-    int64 nValue = 0;
-    if (s)
-    {
-        char* e;
-        if (bBitfield)
-        {
-            // Bit manipulation.
-            if (*s == '^')
-            // Bit number
-#if defined(_MSC_VER)
-            {
-                nValue = 1LL << _strtoi64(++s, &e, 10);
-            }
-#else
-            {
-                nValue = 1LL << strtoll(++s, &e, 10);
-            }
-#endif
-            else
-            // Full number
-#if defined(_MSC_VER)
-            {
-                nValue = _strtoi64(s, &e, 10);
-            }
-#else
-            {
-                nValue = strtoll(s, &e, 10);
-            }
-#endif
-            // Check letter codes.
-            for (; (*e >= 'a' && *e <= 'z') || (*e >= 'A' && *e <= 'Z'); e++)
-            {
-                nValue |= AlphaBit64(*e);
-            }
-
-            if (*e == '+')
-            {
-                nValue = nCurrent | nValue;
-            }
-            else if (*e == '-')
-            {
-                nValue = nCurrent & ~nValue;
-            }
-            else if (*e == '^')
-            {
-                nValue = nCurrent ^ nValue;
-            }
-        }
-        else
-#if defined(_MSC_VER)
-        {
-            nValue = _strtoi64(s, &e, 10);
-        }
-#else
-        {
-            nValue = strtoll(s, &e, 10);
-        }
-#endif
-    }
-    return nValue;
-}
-
-inline int TextToInt(const char* s, int nCurrent, bool bBitfield)
-{
-    return (int)TextToInt64(s, nCurrent, bBitfield);
-}
 
 class CXConsoleVariableBase
     : public ICVar
@@ -107,7 +34,7 @@ public:
     virtual void Release();
     virtual void ForceSet(const char* s);
     virtual void SetOnChangeCallback(ConsoleVarFunc pChangeFunc);
-    virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) override;
+    virtual uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) override;
     virtual ConsoleVarFunc GetOnChangeCallback() const;
 
     virtual bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
@@ -133,14 +60,7 @@ public:
         m_pDataProbeString = new char[ strlen(pDataProbeString) + 1 ];
         azstrcpy(m_pDataProbeString, strlen(pDataProbeString) + 1, pDataProbeString);
     }
-    virtual const char* GetDataProbeString() const
-    {
-        if (gEnv->IsDedicated() && m_pDataProbeString)
-        {
-            return m_pDataProbeString;
-        }
-        return GetOwnDataProbeString();
-    }
+    virtual const char* GetDataProbeString() const;
 
 protected: // ------------------------------------------------------------------------------------------
 
@@ -157,7 +77,7 @@ protected: // ------------------------------------------------------------------
     char*            m_pDataProbeString;            // value client is required to have for data probes
     int                             m_nFlags;                                           // e.g. VF_CHEAT, ...
 
-    typedef std::vector<std::pair<int, SFunctor> > ChangeFunctorContainer;
+    typedef std::vector<std::pair<int, AZStd::function<void ()>> > ChangeFunctorContainer;
     ChangeFunctorContainer m_changeFunctors;
     ConsoleVarFunc    m_pChangeFunc;                // Callback function that is called when this variable changes.
     CXConsole*             m_pConsole;                                      // used for the callback OnBeforeVarChange()
@@ -185,67 +105,19 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return atoi(m_sValue.c_str()); }
-    virtual int64 GetI64Val() const { return _atoi64(m_sValue.c_str()); }
-    virtual float GetFVal() const { return (float)atof(m_sValue.c_str()); }
-    virtual const char* GetString() const { return m_sValue.c_str(); }
-    virtual void ResetImpl()
+    int GetIVal() const override { return atoi(m_sValue.c_str()); }
+    int64 GetI64Val() const override { return _atoi64(m_sValue.c_str()); }
+    float GetFVal() const override { return (float)atof(m_sValue.c_str()); }
+    const char* GetString() const override { return m_sValue.c_str(); }
+    void ResetImpl() override
     {
         Set(m_sDefault.c_str());
     }
-    virtual void Set(const char* s)
-    {
-        if (!s)
-        {
-            return;
-        }
+    void Set(const char* s) override;
+    void Set(float f) override;
+    void Set(int i) override;
+    int GetType() override { return CVAR_STRING; }
 
-        if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        if (m_pConsole->OnBeforeVarChange(this, s))
-        {
-            m_nFlags |= VF_MODIFIED;
-            {
-                m_sValue = s;
-            }
-
-            CallOnChangeFunctions();
-
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-
-    virtual void Set(float f)
-    {
-        stack_string s = stack_string::format("%g", f);
-
-        if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        m_nFlags |= VF_MODIFIED;
-        Set(s.c_str());
-    }
-
-    virtual void Set(int i)
-    {
-        stack_string s = stack_string::format("%d", i);
-
-        if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        m_nFlags |= VF_MODIFIED;
-        Set(s.c_str());
-    }
-    virtual int GetType() { return CVAR_STRING; }
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
     AZStd::string m_sValue;
     AZStd::string m_sDefault;                                                                              //!<
@@ -267,120 +139,19 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return m_iValue; }
-    virtual int64 GetI64Val() const { return m_iValue; }
-    virtual float GetFVal() const { return (float)GetIVal(); }
-    virtual const char* GetString() const
-    {
-        static char szReturnString[256];
-
-        sprintf_s(szReturnString, "%d", GetIVal());
-        return szReturnString;
-    }
-    virtual void ResetImpl() { Set(m_iDefault); }
-    virtual void Set(const char* s)
-    {
-        int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
-
-        Set(nValue);
-    }
-    virtual void Set(float f)
-    {
-        Set((int)f);
-    }
-    virtual void Set(int i)
-    {
-        if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        stack_string s = stack_string::format("%d", i);
-
-        if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_iValue = i;
-
-            CallOnChangeFunctions();
-
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual int GetType() { return CVAR_INT; }
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
+    int GetIVal() const override { return m_iValue; }
+    int64 GetI64Val() const override { return m_iValue; }
+    float GetFVal() const override { return (float)GetIVal(); }
+    const char* GetString() const override;
+    void ResetImpl() override { Set(m_iDefault); }
+    void Set(const char* s) override;
+    void Set(float f) override;
+    void Set(int i) override;
+    int GetType() override { return CVAR_INT; }
 protected: // --------------------------------------------------------------------------------------------
 
     int                             m_iValue;
     int                             m_iDefault;                                 //!<
-};
-
-
-class CXConsoleVariableInt64
-    : public CXConsoleVariableBase
-{
-public:
-    // constructor
-    CXConsoleVariableInt64(CXConsole* pConsole, const char* sName, const int64 iDefault, int nFlags, const char* help)
-        : CXConsoleVariableBase(pConsole, sName, nFlags, help)
-        , m_iValue(iDefault)
-        , m_iDefault(iDefault)
-    {
-    }
-
-    // interface ICVar --------------------------------------------------------------------------------------
-
-    virtual int GetIVal() const { return (int)m_iValue; }
-    virtual int64 GetI64Val() const { return m_iValue; }
-    virtual float GetFVal() const { return (float)GetIVal(); }
-    virtual const char* GetString() const
-    {
-        static char szReturnString[256];
-        sprintf_s(szReturnString, "%lld", GetI64Val());
-        return szReturnString;
-    }
-    virtual void ResetImpl() { Set(m_iDefault); }
-    virtual void Set(const char* s)
-    {
-        int64 nValue = TextToInt64(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
-
-        Set(nValue);
-    }
-    virtual void Set(float f)
-    {
-        Set((int)f);
-    }
-    virtual void Set(int i)
-    {
-        Set((int64)i);
-    }
-    virtual void Set(int64 i)
-    {
-        if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        stack_string s = stack_string::format("%lld", i);
-
-        if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_iValue = i;
-
-            CallOnChangeFunctions();
-
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual int GetType() { return CVAR_INT; }
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
-protected: // --------------------------------------------------------------------------------------------
-
-    int64                           m_iValue;
-    int64                           m_iDefault;                                 //!<
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -401,77 +172,12 @@ public:
     virtual int GetIVal() const { return (int)m_fValue; }
     virtual int64 GetI64Val() const { return (int64)m_fValue; }
     virtual float GetFVal() const { return m_fValue; }
-    virtual const char* GetString() const
-    {
-        static char szReturnString[256];
-
-        sprintf_s(szReturnString, "%g", m_fValue);        // %g -> "2.01",   %f -> "2.01000"
-        return szReturnString;
-    }
+    virtual const char* GetString() const;
     virtual void ResetImpl() { Set(m_fDefault); }
-    virtual void Set(const char* s)
-    {
-        float fValue = 0;
-        if (s)
-        {
-            fValue = (float)atof(s);
-        }
-
-        if (fValue == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        if (m_pConsole->OnBeforeVarChange(this, s))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = fValue;
-
-            CallOnChangeFunctions();
-
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(float f)
-    {
-        if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        stack_string s = stack_string::format("%g", f);
-
-        if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = f;
-
-            CallOnChangeFunctions();
-
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(int i)
-    {
-        if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        char sTemp[128];
-        sprintf_s(sTemp, "%d", i);
-
-        if (m_pConsole->OnBeforeVarChange(this, sTemp))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = (float)i;
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
+    virtual void Set(const char* s);
+    virtual void Set(float f);
+    virtual void Set(int i);
     virtual int GetType() { return CVAR_FLOAT; }
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 
 protected:
 
@@ -509,185 +215,18 @@ public:
     virtual int GetIVal() const { return m_iValue; }
     virtual int64 GetI64Val() const { return m_iValue; }
     virtual float GetFVal() const { return (float)m_iValue; }
-    virtual const char* GetString() const
-    {
-        static char szReturnString[256];
-
-        sprintf_s(szReturnString, "%d", m_iValue);
-        return szReturnString;
-    }
+    virtual const char* GetString() const;
     virtual void ResetImpl() { Set(m_iDefault); }
-    virtual void Set(const char* s)
-    {
-        int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
-        if (nValue == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        if (m_pConsole->OnBeforeVarChange(this, s))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_iValue = nValue;
-
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(float f)
-    {
-        if ((int)f == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        char sTemp[128];
-        sprintf_s(sTemp, "%g", f);
-
-        if (m_pConsole->OnBeforeVarChange(this, sTemp))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_iValue = (int)f;
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(int i)
-    {
-        if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        char sTemp[128];
-        sprintf_s(sTemp, "%d", i);
-
-        if (m_pConsole->OnBeforeVarChange(this, sTemp))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_iValue = i;
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
+    virtual void Set(const char* s);
+    virtual void Set(float f);
+    virtual void Set(int i);
     virtual int GetType() { return CVAR_INT; }
 
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
 
     int&                           m_iValue;
     int                            m_iDefault;                                  //!<
 };
-
-
-
-
-
-class CXConsoleVariableFloatRef
-    : public CXConsoleVariableBase
-{
-public:
-    //! constructor
-    //!\param pVar must not be 0
-    CXConsoleVariableFloatRef(CXConsole* pConsole, const char* sName, float* pVar, int nFlags, const char* help)
-        : CXConsoleVariableBase(pConsole, sName, nFlags, help)
-        , m_fValue(*pVar)
-        , m_fDefault(*pVar)
-    {
-        assert(pVar);
-    }
-
-    // interface ICVar --------------------------------------------------------------------------------------
-
-    virtual int GetIVal() const { return (int)m_fValue; }
-    virtual int64 GetI64Val() const { return (int64)m_fValue; }
-    virtual float GetFVal() const { return m_fValue; }
-    virtual const char* GetString() const
-    {
-        static char szReturnString[256];
-
-        sprintf_s(szReturnString, "%g", m_fValue);
-        return szReturnString;
-    }
-    virtual void ResetImpl() { Set(m_fDefault); }
-    virtual void Set(const char* s)
-    {
-        float fValue = 0;
-        if (s)
-        {
-            fValue = (float)atof(s);
-        }
-        if (fValue == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        if (m_pConsole->OnBeforeVarChange(this, s))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = fValue;
-
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(float f)
-    {
-        if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        char sTemp[128];
-        sprintf_s(sTemp, "%g", f);
-
-        if (m_pConsole->OnBeforeVarChange(this, sTemp))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = f;
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual void Set(int i)
-    {
-        if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        char sTemp[128];
-        sprintf_s(sTemp, "%d", i);
-
-        if (m_pConsole->OnBeforeVarChange(this, sTemp))
-        {
-            m_nFlags |= VF_MODIFIED;
-            m_fValue = (float)i;
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
-    virtual int GetType() { return CVAR_FLOAT; }
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
-
-protected:
-
-    virtual const char* GetOwnDataProbeString() const
-    {
-        static char szReturnString[8];
-
-        sprintf_s(szReturnString, "%.1g", m_fValue);
-        return szReturnString;
-    }
-
-private: // --------------------------------------------------------------------------------------------
-
-    float&                         m_fValue;
-    float                          m_fDefault;                                  //!<
-};
-
-
 
 class CXConsoleVariableStringRef
     : public CXConsoleVariableBase
@@ -715,25 +254,7 @@ public:
         return m_sValue.c_str();
     }
     virtual void ResetImpl() { Set(m_sDefault.c_str()); }
-    virtual void Set(const char* s)
-    {
-        if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
-        {
-            return;
-        }
-
-        if (m_pConsole->OnBeforeVarChange(this, s))
-        {
-            m_nFlags |= VF_MODIFIED;
-            {
-                m_sValue = s;
-                m_userPtr = m_sValue.c_str();
-            }
-
-            CallOnChangeFunctions();
-            m_pConsole->OnAfterVarChange(this);
-        }
-    }
+    virtual void Set(const char* s);
     virtual void Set(float f)
     {
         stack_string s = stack_string::format("%g", f);
@@ -746,7 +267,6 @@ public:
     }
     virtual int GetType() { return CVAR_STRING; }
 
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
 
     AZStd::string m_sValue;
@@ -754,84 +274,44 @@ private: // --------------------------------------------------------------------
     const char*& m_userPtr;                                         //!<
 };
 
-
-
-// works like CXConsoleVariableInt but when changing it sets other console variables
-// getting the value returns the last value it was set to - if that is still what was applied
-// to the cvars can be tested with GetRealIVal()
-class CXConsoleVariableCVarGroup
-    : public CXConsoleVariableInt
-    , public ILoadConfigurationEntrySink
+class CXConsoleVariableFloatRef
+    : public CXConsoleVariableBase
 {
 public:
-    // constructor
-    CXConsoleVariableCVarGroup(CXConsole* pConsole, const char* sName, const char* szFileName, int nFlags);
-
-    // destructor
-    ~CXConsoleVariableCVarGroup();
-
-    // Returns:
-    //   part of the help string - useful to log out detailed description without additional help text
-    AZStd::string GetDetailedInfo() const;
-
-    // interface ICVar -----------------------------------------------------------------------------------
-
-    virtual const char* GetHelp();
-
-    virtual int GetRealIVal() const;
-
-    virtual void DebugLog(const int iExpectedValue, const ICVar::EConsoleLogMode mode) const;
-
-    virtual void Set(int i);
-
-    // ConsoleVarFunc ------------------------------------------------------------------------------------
-
-    static void OnCVarChangeFunc(ICVar* pVar);
-
-    // interface ILoadConfigurationEntrySink -------------------------------------------------------------
-
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup);
-    virtual void OnLoadConfigurationEntry_End();
-
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const
+    //! constructor
+    //!\param pVar must not be 0
+    CXConsoleVariableFloatRef(CXConsole* pConsole, const char* sName, float* pVar, int nFlags, const char* help)
+        : CXConsoleVariableBase(pConsole, sName, nFlags, help)
+        , m_fValue(*pVar)
+        , m_fDefault(*pVar)
     {
-        pSizer->AddObject(this, sizeof(*this));
-        pSizer->AddObject(m_sDefaultValue);
-        pSizer->AddObject(m_CVarGroupStates);
+        assert(pVar);
     }
+
+    // interface ICVar --------------------------------------------------------------------------------------
+
+    virtual int GetIVal() const { return (int)m_fValue; }
+    virtual int64 GetI64Val() const { return (int64)m_fValue; }
+    virtual float GetFVal() const { return m_fValue; }
+    virtual const char* GetString() const;
+    virtual void ResetImpl() { Set(m_fDefault); }
+    virtual void Set(const char* s);
+    virtual void Set(float f);
+    virtual void Set(int i);
+    virtual int GetType() { return CVAR_FLOAT; }
+
+protected:
+
+    virtual const char *GetOwnDataProbeString() const
+    {
+        static char szReturnString[8];
+
+        sprintf_s(szReturnString, "%.1g", m_fValue);
+        return szReturnString;
+    }
+
 private: // --------------------------------------------------------------------------------------------
 
-    struct SCVarGroup
-    {
-        std::map<AZStd::string, AZStd::string>                      m_KeyValuePair;                 // e.g. m_KeyValuePair["r_fullscreen"]="0"
-        void GetMemoryUsage(class ICrySizer* pSizer) const
-        {
-            pSizer->AddObject(m_KeyValuePair);
-        }
-    };
-
-    SCVarGroup                                                      m_CVarGroupDefault;
-    typedef std::map<int, SCVarGroup*>      TCVarGroupStateMap;
-    TCVarGroupStateMap                                              m_CVarGroupStates;
-    AZStd::string                                                   m_sDefaultValue;                // used by OnLoadConfigurationEntry_End()
-
-    void ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude = 0);
-
-    // Arguments:
-    //   sKey - must exist, at least in default
-    //   pSpec - can be 0
-    AZStd::string GetValueSpec(const AZStd::string& sKey, const int* pSpec = 0) const;
-
-    // should only be used by TestCVars()
-    // Returns:
-    //   true=all console variables match the state (excluding default state), false otherwise
-    bool TestCVars(const SCVarGroup& rGroup, const ICVar::EConsoleLogMode mode, const SCVarGroup* pExclude = 0) const;
-
-    // Arguments:
-    //   pGroup - can be 0 to test if the default state is set
-    // Returns:
-    //   true=all console variables match the state (including default state), false otherwise
-    bool TestCVars(const SCVarGroup* pGroup, const ICVar::EConsoleLogMode mode = ICVar::eCLM_Off) const;
+    float&                         m_fValue;
+    float                          m_fDefault;                                  //!<
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XCONSOLEVARIABLE_H
