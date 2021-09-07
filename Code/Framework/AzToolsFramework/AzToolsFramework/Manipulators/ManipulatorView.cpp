@@ -8,9 +8,9 @@
 
 #include "ManipulatorView.h"
 
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -413,8 +413,8 @@ namespace AzToolsFramework
             m_axis, m_cameraCorrectedAxis, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
             manipulatorState.m_localPosition, cameraState);
 
-        const auto worldLine = CalculateLine(
-            manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis, m_length * viewScale);
+        const auto worldLine =
+            CalculateLine(manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis, m_length * viewScale);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
         debugDisplay.SetLineWidth(defaultLineWidth(manipulatorState.m_mouseOver));
@@ -612,12 +612,29 @@ namespace AzToolsFramework
         const Picking::BoundShapeTorus torusBound = CalculateTorusBound(
             manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_axis, m_radius * viewScale, m_width * viewScale);
 
-        // transform circle based on delta between default z up axis and other axes
-        const AZ::Transform worldFromLocalWithOrientation =
-            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) *
+        const AZ::Transform orientation =
             AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
                                                  AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), m_axis))
                                                     .GetNormalized());
+
+        // transform circle based on delta between default z up axis and other axes
+        const AZ::Transform worldFromLocalWithOrientation =
+            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
+
+        if (ed_manipulatorDisplayBoundDebug)
+        {
+            debugDisplay.SetColor(AZ::Colors::BlanchedAlmond);
+            debugDisplay.PushMatrix(orientation);
+            debugDisplay.DrawCircle(torusBound.m_center + AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius, torusBound.m_majorRadius);
+            debugDisplay.DrawCircle(
+                torusBound.m_center + AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius,
+                torusBound.m_majorRadius + torusBound.m_minorRadius);
+            debugDisplay.DrawCircle(torusBound.m_center - AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius, torusBound.m_majorRadius);
+            debugDisplay.DrawCircle(
+                torusBound.m_center - AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius,
+                torusBound.m_majorRadius + torusBound.m_minorRadius);
+            debugDisplay.PopMatrix();
+        }
 
         debugDisplay.CullOn();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
@@ -638,7 +655,10 @@ namespace AzToolsFramework
     }
 
     void DrawFullCircle(
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, const float radius, const AZ::Vector3& /*viewPos*/)
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::Vector3& position,
+        const float radius,
+        [[maybe_unused]] const AZ::Vector3& viewPos)
     {
         debugDisplay.DrawCircle(position, radius);
     }

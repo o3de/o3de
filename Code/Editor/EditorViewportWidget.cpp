@@ -113,19 +113,6 @@ void StartFixedCursorMode(QObject *viewport);
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
 
-//! Viewport settings for the EditorViewportWidget
-struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
-{
-    bool GridSnappingEnabled() const override;
-    float GridSize() const override;
-    bool ShowGrid() const override;
-    bool AngleSnappingEnabled() const override;
-    float AngleStep() const override;
-    float ManipulatorLineBoundWidth() const override;
-};
-
-static const EditorViewportSettings g_EditorViewportSettings;
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -219,6 +206,7 @@ EditorViewportWidget::~EditorViewportWidget()
         m_pPrimaryViewport = nullptr;
     }
 
+    m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
     m_editorEntityNotifications.reset();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
@@ -1074,7 +1062,7 @@ void EditorViewportWidget::SetViewportId(int id)
     m_editorModularViewportCameraComposer = AZStd::make_unique<SandboxEditor::EditorModularViewportCameraComposer>(AzFramework::ViewportId(id));
     m_renderViewport->GetControllerList()->Add(m_editorModularViewportCameraComposer->CreateModularViewportCameraController());
 
-    m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
+    m_editorViewportSettings.Connect(AzFramework::ViewportId(id));
 
     UpdateScene();
 
@@ -2535,6 +2523,16 @@ void EditorViewportWidget::SetAsActiveViewport()
     }
 }
 
+void EditorViewportSettings::Connect(const AzFramework::ViewportId viewportId)
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(viewportId);
+}
+
+void EditorViewportSettings::Disconnect()
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
+}
+
 bool EditorViewportSettings::GridSnappingEnabled() const
 {
     return SandboxEditor::GridSnappingEnabled();
@@ -2563,6 +2561,11 @@ float EditorViewportSettings::AngleStep() const
 float EditorViewportSettings::ManipulatorLineBoundWidth() const
 {
     return SandboxEditor::ManipulatorLineBoundWidth();
+}
+
+float EditorViewportSettings::ManipulatorCircleBoundWidth() const
+{
+    return SandboxEditor::ManipulatorCircleBoundWidth();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

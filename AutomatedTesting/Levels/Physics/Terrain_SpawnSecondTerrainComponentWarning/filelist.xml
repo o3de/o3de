@@ -1,0 +1,6 @@
+<download name="Terrain_SpawnSecondTerrainComponentWarning" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39324" md5="8c4ff3ac13a44b745cecba7b7199ddbb"/>
+ </files>
+</download>

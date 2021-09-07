@@ -137,8 +137,8 @@ namespace AzToolsFramework
     bool GridSnapping(const int viewportId)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         return snapping;
     }
@@ -146,8 +146,8 @@ namespace AzToolsFramework
     float GridSize(const int viewportId)
     {
         float gridSize = 0.0f;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            gridSize, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            gridSize, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
         return gridSize;
     }
@@ -168,8 +168,8 @@ namespace AzToolsFramework
     bool AngleSnapping(const int viewportId)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
 
         return snapping;
     }
@@ -177,8 +177,8 @@ namespace AzToolsFramework
     float AngleStep(const int viewportId)
     {
         float angle = 0.0f;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            angle, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::AngleStep);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            angle, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::AngleStep);
 
         return angle;
     }
@@ -186,8 +186,8 @@ namespace AzToolsFramework
     bool ShowingGrid(const int viewportId)
     {
         bool show = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            show, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ShowGrid);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            show, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::ShowGrid);
 
         return show;
     }
