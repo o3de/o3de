@@ -58,9 +58,9 @@ private:
         bool m_enableSceneInspector;
     };
 
-    struct GlobalSaveSettings
+    struct LevelSaveSettings
     {
-        AZ_TYPE_INFO(GlobalSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
+        AZ_TYPE_INFO(LevelSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
         AzToolsFramework::Prefab::SaveAllPrefabsPreference m_saveAllPrefabsPreference;
     };
 
@@ -96,7 +96,7 @@ private:
     };
 
     GeneralSettings m_generalSettings;
-    GlobalSaveSettings m_globalSaveSettings;
+    LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;

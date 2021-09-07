@@ -370,7 +370,7 @@ namespace AzToolsFramework
         PrefabDom& PrefabSystemComponent::FindTemplateDom(TemplateId templateId)
         {
             AZStd::optional<AZStd::reference_wrapper<Template>> findTemplateResult = FindTemplate(templateId);
-            AZ_Assert(findTemplateResult.has_value(),
+            AZ_Assert(false,
                 "PrefabSystemComponent::FindTemplateDom - Unable to retrieve Prefab template with id: '%llu'. "
                 "Template could not be found", templateId);
 
@@ -754,17 +754,17 @@ namespace AzToolsFramework
             }
         }
 
-        bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId templateId)
+        bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId rootTemplateId)
         {
-            TemplateReference prefabTemplate = FindTemplate(templateId);
+            TemplateReference prefabTemplate = FindTemplate(rootTemplateId);
 
             if (!prefabTemplate.has_value())
             {
-                AZ_Assert(false, "Template with id %llu is not found", templateId);
+                AZ_Assert(false, "Template with id %llu is not found", rootTemplateId);
                 return false;
             }
 
-            if (IsTemplateDirty(templateId))
+            if (IsTemplateDirty(rootTemplateId))
             {
                 return true;
             }
@@ -782,9 +782,9 @@ namespace AzToolsFramework
             return false;
         }
 
-        void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId templateId)
+        void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId rootTemplateId)
         {
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(templateId);  
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(rootTemplateId);  
 
             for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
             {
@@ -800,26 +800,27 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::set<AZ::IO::PathView> PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId templateId)
+        AZStd::set<AZ::IO::PathView> PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId rootTemplateId)
         {
             AZStd::vector<AZ::IO::PathView> dirtyTemplatePathVector;
-            GetDirtyTemplatePathsHelper(templateId, dirtyTemplatePathVector);
+            GetDirtyTemplatePathsHelper(rootTemplateId, dirtyTemplatePathVector);
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
             dirtyTemplatePaths.insert(dirtyTemplatePathVector.begin(), dirtyTemplatePathVector.end());
             return AZStd::move(dirtyTemplatePaths);
         }
 
-        void PrefabSystemComponent::GetDirtyTemplatePathsHelper(TemplateId templateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths)
+        void PrefabSystemComponent::GetDirtyTemplatePathsHelper(
+            TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths)
         {
-            TemplateReference prefabTemplate = FindTemplate(templateId);
+            TemplateReference prefabTemplate = FindTemplate(rootTemplateId);
 
             if (!prefabTemplate.has_value())
             {
-                AZ_Assert(false, "Template with id %llu is not found", templateId);
+                AZ_Assert(false, "Template with id %llu is not found", rootTemplateId);
                 return;
             }
 
-            if (IsTemplateDirty(templateId))
+            if (IsTemplateDirty(rootTemplateId))
             {
                 dirtyTemplatePaths.emplace_back(prefabTemplate->get().GetFilePath());
             }

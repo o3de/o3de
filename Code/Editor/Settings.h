@@ -231,7 +231,7 @@ struct SSliceSettings
     bool dynamicByDefault;
 };
 
-struct SGlobalSaveSettings
+struct SLevelSaveSettings
 {
     AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
 };
@@ -472,7 +472,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SSliceSettings sliceSettings;
 
-    SGlobalSaveSettings globalSaveSettings;
+    SLevelSaveSettings levelSaveSettings;
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 

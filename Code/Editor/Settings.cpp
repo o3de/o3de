@@ -254,7 +254,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
-    globalSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
+    levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
 void SEditorSettings::Connect()
@@ -671,7 +671,7 @@ void SEditorSettings::Save()
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-    prefabLoaderInterface->SetSaveAllPrefabsPreference(globalSaveSettings.saveAllPrefabsPreference);
+    prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
     SaveSettingsRegistryFile();
 }
@@ -681,7 +681,7 @@ void SEditorSettings::Load()
 {
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-    globalSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
+    levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
 
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(

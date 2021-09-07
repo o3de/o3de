@@ -1088,16 +1088,21 @@ namespace AzToolsFramework
 
         int PrefabIntegrationManager::ExecuteClosePrefabDialog(TemplateId templateId)
         {
-            auto prefabSaveSelectionDialog = ConstructClosePrefabDialog(templateId);
-
-            int prefabSaveSelection =  prefabSaveSelectionDialog->exec();
-
-            if (prefabSaveSelection == QDialog::Accepted)
+            if (s_prefabSystemComponentInterface->AreDirtyTemplatesPresent(templateId))
             {
-                SavePrefabsInDialog(prefabSaveSelectionDialog.get());
+                auto prefabSaveSelectionDialog = ConstructClosePrefabDialog(templateId);
+
+                int prefabSaveSelection = prefabSaveSelectionDialog->exec();
+
+                if (prefabSaveSelection == QDialog::Accepted)
+                {
+                    SavePrefabsInDialog(prefabSaveSelectionDialog.get());
+                }
+
+                return prefabSaveSelection;
             }
 
-            return prefabSaveSelection;
+            return QDialogButtonBox::DestructiveRole;
         }
 
         void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
@@ -1114,29 +1119,32 @@ namespace AzToolsFramework
                 }
             }
 
-            if (useSaveAllPrefabsPreference)
+            if (s_prefabSystemComponentInterface->AreDirtyTemplatesPresent(templateId))
             {
-                SaveAllPrefabsPreference saveAllPrefabsPreference = s_prefabLoaderInterface->GetSaveAllPrefabsPreference();
-
-                if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveAll)
+                if (useSaveAllPrefabsPreference)
                 {
-                    s_prefabSystemComponentInterface->SaveAllDirtyTemplates(templateId);
-                    return;
+                    SaveAllPrefabsPreference saveAllPrefabsPreference = s_prefabLoaderInterface->GetSaveAllPrefabsPreference();
+
+                    if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveAll)
+                    {
+                        s_prefabSystemComponentInterface->SaveAllDirtyTemplates(templateId);
+                        return;
+                    }
+                    else if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveNone)
+                    {
+                        return;
+                    }
                 }
-                else if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveNone)
-                {
-                    return;
-                }
-            }
 
-            AZStd::unique_ptr<QDialog> savePrefabDialog = ConstructSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
-            if (savePrefabDialog)
-            {
-                int prefabSaveSelection = savePrefabDialog->exec();
-
-                if (prefabSaveSelection == QDialog::Accepted)
+                AZStd::unique_ptr<QDialog> savePrefabDialog = ConstructSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
+                if (savePrefabDialog)
                 {
-                    SavePrefabsInDialog(savePrefabDialog.get());
+                    int prefabSaveSelection = savePrefabDialog->exec();
+
+                    if (prefabSaveSelection == QDialog::Accepted)
+                    {
+                        SavePrefabsInDialog(savePrefabDialog.get());
+                    }
                 }
             }
         }
@@ -1152,7 +1160,7 @@ namespace AzToolsFramework
                     AzToolsFramework::Prefab::TemplateId unsavedPrefabTemplateId =
                         s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(unsavedPrefabFileName.data());
                     bool isTemplateSavedSuccessfully = s_prefabLoaderInterface->SaveTemplate(unsavedPrefabTemplateId);
-                    AZ_Assert(isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.", unsavedPrefabFileName.c_str());
+                    AZ_Error("Prefab", isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.", unsavedPrefabFileName.c_str());
                 }
             }
         }
@@ -1222,6 +1230,7 @@ namespace AzToolsFramework
             connect(prefabSaveConfirmationButtons, &QDialogButtonBox::rejected, savePrefabDialog.get(), &QDialog::reject);
             AzQtComponents::StyleManager::setStyleSheet(savePrefabDialog->parentWidget(), QStringLiteral("style:Editor.qss"));
 
+            savePrefabDialog->setLayout(contentLayout);
             return AZStd::move(savePrefabDialog);
         }
 
@@ -1251,8 +1260,6 @@ namespace AzToolsFramework
             levelEntitiesSaveQuestionLayout->addWidget(prefabSaveQuestionLabel);
             contentLayout->addWidget(prefabSaveWarningFrame);
 
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
-
             auto templateToSave = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path templateToSaveFilePath = templateToSave->get().GetFilePath();
             AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsCard = ConstructUnsavedPrefabsCard(templateId);
@@ -1276,6 +1283,7 @@ namespace AzToolsFramework
                     closePrefabDialogWeakPtr.lock()->done(prefabSaveSelection);
                 });
             AzQtComponents::StyleManager::setStyleSheet(closePrefabDialog.get(), QStringLiteral("style:Editor.qss"));
+            closePrefabDialog->setLayout(contentLayout);
             return closePrefabDialog;
         }
 

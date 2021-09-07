@@ -52,17 +52,17 @@ namespace AzToolsFramework
             virtual void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) = 0;
 
             //! Recursive function to check if the template is dirty or if any dirty templates are presents in the links of the template.
-            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
-            virtual bool AreDirtyTemplatesPresent(TemplateId templateId) = 0;
+            //! @param rootTemplateId The id of the template provided as the beginning template to check the outgoing links.
+            virtual bool AreDirtyTemplatesPresent(TemplateId rootTemplateId) = 0;
 
             //! Recursive function to save if the template is dirty and save all the dirty templates in the links of the template.
-            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
-            virtual void SaveAllDirtyTemplates(TemplateId templateId) = 0;
+            //! @param rootTemplateId The id of the template provided as the beginning template to check the outgoing links.
+            virtual void SaveAllDirtyTemplates(TemplateId rootTemplateId) = 0;
 
             //! Recursive function that fetches the set of dirty templates given a starting template to check for outgoing links.
-            //! @param templateId The id of the template provided as the beginning template to check the outgoing links.
+            //! @param rootTemplateId The id of the template provided as the beginning template to check the outgoing links.
             //! @return The set of dirty template paths populated.
-            virtual AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId parentTemplateId) = 0;
+            virtual AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId rootTemplateId) = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;
             virtual void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) = 0;
