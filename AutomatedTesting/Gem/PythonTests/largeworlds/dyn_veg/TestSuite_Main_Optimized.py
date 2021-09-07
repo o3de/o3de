@@ -63,3 +63,22 @@ class TestAutomation(EditorTestSuite):
 
     class test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(EditorParallelTest):
         from .EditorScripts import InstanceSpawnerPriority_LayerAndSubPriority as test_module
+
+    class test_LayerBlocker_InstancesBlockedInConfiguredArea(EditorParallelTest):
+        from .EditorScripts import LayerBlocker_InstancesBlockedInConfiguredArea as test_module
+
+    class test_LayerSpawner_InheritBehaviorFlag(EditorParallelTest):
+        from .EditorScripts import LayerSpawner_InheritBehaviorFlag as test_module
+
+    class test_LayerSpawner_InstancesPlantInAllSupportedShapes(EditorParallelTest):
+        from .EditorScripts import LayerSpawner_InstancesPlantInAllSupportedShapes as test_module
+
+    class test_LayerSpawner_FilterStageToggle(EditorParallelTest):
+        from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2038")
+    class test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(EditorParallelTest):
+        from .EditorScripts import LayerSpawner_InstancesRefreshUsingCorrectViewportCamera as test_module
+
+    class test_MeshBlocker_InstancesBlockedByMesh(EditorParallelTest):
+        from .EditorScripts import MeshBlocker_InstancesBlockedByMesh as test_module
