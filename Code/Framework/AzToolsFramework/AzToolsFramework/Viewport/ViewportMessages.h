@@ -280,7 +280,7 @@ namespace AzToolsFramework
 
         using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
 
-        //! Viewport requests for managing the viewports cursor state.
+        //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
         public:
