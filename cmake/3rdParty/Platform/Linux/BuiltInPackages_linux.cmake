@@ -15,7 +15,7 @@ ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform            
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform                       TARGETS RapidXML                    PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
 ly_associate_package(PACKAGE_NAME pybind11-2.4.3-rev2-multiplatform                 TARGETS pybind11                    PACKAGE_HASH d8012f907b6c54ac990b899a0788280857e7c93a9595405a28114b48c354eb1b)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
-ly_associate_package(PACKAGE_NAME lz4-r128-multiplatform                            TARGETS lz4                         PACKAGE_HASH d7b1d5651191db2c339827ad24f669d9d37754143e9173abc986184532f57c9d)
+ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev1-linux                        TARGETS lz4                         PACKAGE_HASH 2e2653ce04a036c38fe28f3971bc3bfb8a4e771335aa8d1b95b0feb3423f1b0a)
 ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                         TARGETS expat                       PACKAGE_HASH 452256acd1fd699cef24162575b3524fccfb712f5321c83f1df1ce878de5b418)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                  TARGETS SQLite                      PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
@@ -43,7 +43,7 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux                     
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 88c4a359325d749bc34090b9ac466424847f3b71ba0de15045cf355c17c07099)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux                  TARGETS SPIRVCross                  PACKAGE_HASH 7889ee5460a688e9b910c0168b31445c0079d363affa07b25d4c8aeb608a0b80)
 ly_associate_package(PACKAGE_NAME azslc-1.7.23-rev2-linux                           TARGETS azslc                       PACKAGE_HASH 1ba84d8321a566d35a1e9aa7400211ba8e6d1c11c08e4be3c93e6e74b8f7aef1)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-linux                            TARGETS zlib                        PACKAGE_HASH 6418e93b9f4e6188f3b62cbd3a7822e1c4398a716e786d1522b809a727d08ba9)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-linux                            TARGETS zlib                        PACKAGE_HASH 16f3b9e11cda525efb62144f354c1cfc30a5def9eff020dbe49cb00ee7d8234f)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                     TARGETS squish-ccr                  PACKAGE_HASH 85fecafbddc6a41a27c5f59ed4a5dfb123a94cb4666782cf26e63c0a4724c530)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 

@@ -147,7 +147,7 @@ namespace AzQtComponents
         TabBar::tabLayoutChange();
 
         // Only the active tab's close button should be shown
-        const ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+        const ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         const int numTabs = count();
         const int activeTabIndex = currentIndex();
         for (int i = 0; i < numTabs; ++i)
@@ -190,7 +190,7 @@ namespace AzQtComponents
             }
         });
 
-        const ButtonPosition closeSide = (ButtonPosition) style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+        const ButtonPosition closeSide = (ButtonPosition) style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         setTabButton(index, closeSide, closeButton);
     }
 

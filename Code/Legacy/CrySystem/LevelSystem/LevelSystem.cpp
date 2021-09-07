@@ -37,12 +37,6 @@ namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";
 
-void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_levelName);
-    pSizer->AddObject(m_levelPath);
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
@@ -827,14 +821,6 @@ void CLevelSystem::LogLoadingTime()
     AZStd::string text;
     text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     gEnv->pLog->Log(text.c_str());
-}
-
-void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_levelInfos);
-    pSizer->AddObject(m_levelsFolder);
-    pSizer->AddObject(m_listeners);
 }
 
 //////////////////////////////////////////////////////////////////////////

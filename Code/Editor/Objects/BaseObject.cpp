@@ -2735,7 +2735,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
         return false;
     }
 
-    Matrix34A worldTM;
+    Matrix34 worldTM;
     IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
     if (!pStatObj)
     {
@@ -2743,7 +2743,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     }
 
     // transform decal into object space
-    Matrix34A worldTM_Inverted = worldTM.GetInverted();
+    Matrix34 worldTM_Inverted = worldTM.GetInverted();
     Matrix33 worldRot(worldTM_Inverted);
     worldRot.Transpose();
     // put hit direction into the object space

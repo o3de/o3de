@@ -37,7 +37,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
-#include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
 #include <CryCommon/Cry_GeoIntersect.h>

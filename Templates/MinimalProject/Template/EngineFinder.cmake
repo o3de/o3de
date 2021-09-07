@@ -21,6 +21,21 @@ if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine' from 'project.json', error: ${json_error}")
 endif()
 
+if(CMAKE_MODULE_PATH)
+    foreach(module_path ${CMAKE_MODULE_PATH})
+        if(EXISTS ${module_path}/Findo3de.cmake)
+            file(READ ${module_path}/../engine.json engine_json)
+            string(JSON engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
+            if(json_error)
+                message(FATAL_ERROR "Unable to read key 'engine_name' from 'engine.json', error: ${json_error}")
+            endif()
+            if(LY_ENGINE_NAME_TO_USE STREQUAL engine_name)
+                return() # Engine being forced through CMAKE_MODULE_PATH
+            endif()
+        endif()
+    endforeach()
+endif()
+
 if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
     set(manifest_path $ENV{USERPROFILE}/.o3de/o3de_manifest.json) # Windows
 else()

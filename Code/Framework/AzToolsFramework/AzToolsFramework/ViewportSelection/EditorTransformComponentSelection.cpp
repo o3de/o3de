@@ -488,8 +488,8 @@ namespace AzToolsFramework
     void SnappingCluster::TrySetVisible(const bool visible)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         // show snapping viewport ui only if there are entities selected and snapping is enabled
         SetViewportUiClusterVisible(m_clusterId, visible && snapping);
@@ -1249,6 +1249,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<TranslationManipulators> translationManipulators = AZStd::make_unique<TranslationManipulators>(
             TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
+        translationManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*translationManipulators);
 
@@ -1376,6 +1377,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<RotationManipulators> rotationManipulators =
             AZStd::make_unique<RotationManipulators>(AZ::Transform::CreateIdentity());
+        rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*rotationManipulators);
 
@@ -1545,6 +1547,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZStd::unique_ptr<ScaleManipulators> scaleManipulators = AZStd::make_unique<ScaleManipulators>(AZ::Transform::CreateIdentity());
+        scaleManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*scaleManipulators);
 
@@ -2544,8 +2547,8 @@ namespace AzToolsFramework
             if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
             {
                 float gridSize = 1.0f;
-                ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+                ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
                 SnapSelectedEntitiesToWorldGrid(gridSize);
             }

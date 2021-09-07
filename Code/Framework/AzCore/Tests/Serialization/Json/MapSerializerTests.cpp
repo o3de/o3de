@@ -169,7 +169,7 @@ namespace JsonSerializationTests
             return AZStd::shared_ptr<Map>(new Map{}, &Delete);
         }
 
-        AZStd::shared_ptr<Map> CreatePartialDefaultInstance()
+        AZStd::shared_ptr<Map> CreatePartialDefaultInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
             instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass(188, 188.0)));
