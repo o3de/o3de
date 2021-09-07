@@ -117,7 +117,7 @@ namespace AzManipulatorTestFramework
 
     RetainedModeActionDispatcher* RetainedModeActionDispatcher::Execute()
     {
-        Log("%s", "Executing %u actions", m_actions.size());
+        Log("Executing %u actions", m_actions.size());
         for (auto& action : m_actions)
         {
             action();
