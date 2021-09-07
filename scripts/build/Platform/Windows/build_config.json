@@ -228,6 +228,9 @@
     "TAGS": [
         "weekly-build-metrics"
     ],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
