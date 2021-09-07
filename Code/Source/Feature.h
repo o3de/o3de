@@ -61,7 +61,7 @@ namespace EMotionFX
 
             virtual bool Init(const InitSettings& settings) = 0;
             virtual void ExtractFrameData(const ExtractFrameContext& context) = 0;
-            virtual void DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
+            virtual void DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex) {}
             virtual void PrepareForFrameSampling([[maybe_unused]] const Pose& currentPose) {}
             virtual size_t GetNumDimensionsForKdTree() const = 0;
             virtual void FillFrameFloats([[maybe_unused]] size_t frameIndex, [[maybe_unused]] size_t startIndex, [[maybe_unused]] AZStd::vector<float>& frameFloats) const {}

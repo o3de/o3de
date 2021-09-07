@@ -243,26 +243,15 @@ namespace EMotionFX
             }
         }
 
-        void FeatureTrajectory::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeatureTrajectory::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
         {
-            AZ_UNUSED(behaviorInstance);
-
+            /*
             if (m_samples.empty())
             {
                 return;
             }
 
             const size_t numFrames = m_data->GetNumFrames();
-            /*
-            for (size_t i = 0; i < numFrames-1; ++i)
-            {
-                const Sample& firstSample = m_samples[CalcMidFrameDataIndex(i)];
-                const Sample& nextSample = m_samples[CalcMidFrameDataIndex(i+1)];
-                //draw.OnDrawLine(firstSample.m_position, nextSample.m_position, AZ::Colors::Gray);
-                //draw.DrawLine(firstSample.m_position, nextSample.m_position, m_debugColor);
-                //draw.DrawLine(firstSample.m_position, firstSample.m_position + (firstSample.m_direction * firstSample.m_speed)*0.1f, AZ::Colors::White);
-            }
-            */
 
             static float offset = 0.0f;
             offset += 0.15f * GetEMotionFX().GetGlobalSimulationSpeed();
@@ -291,7 +280,7 @@ namespace EMotionFX
                 //const Sample& nextSample = m_samples[CalcPastFrameDataIndex(frameNr, i + 1)];
                 //draw.DrawLine(firstSample.m_position, nextSample.m_position, m_debugColor);
                 draw.DrawLine(firstSample.m_position, firstSample.m_position + (firstSample.m_direction * firstSample.m_speed) * 0.1f, AZ::Colors::Red);
-            }
+            }*/
         }
 
         size_t FeatureTrajectory::CalcMidFrameDataIndex(size_t frameIndex) const
