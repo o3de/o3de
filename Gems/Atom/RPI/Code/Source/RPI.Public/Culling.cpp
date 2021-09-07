@@ -730,10 +730,25 @@ namespace AZ
 
             m_debugCtx.ResetCullStats();
             m_debugCtx.m_numCullablesInScene = GetNumCullables();
+            AZ::JobCompletion* beginCullingCompletion = aznew AZ::JobCompletion();
 
             for (auto& view : views)
             {
-                view->BeginCulling();
+                const auto cullingLambda = [&view]()
+                {
+                    view->BeginCulling();
+                };
+
+                AZ::Job* cullingJob = AZ::CreateJobFunction(AZStd::move(cullingLambda), true, nullptr);
+                cullingJob->SetDependent(beginCullingCompletion);
+                cullingJob->Start();
+            }
+
+            if (beginCullingCompletion)
+            {
+                beginCullingCompletion->StartAndWaitForCompletion();
+                delete beginCullingCompletion;
+                beginCullingCompletion = nullptr;
             }
 
             AuxGeomDrawPtr auxGeom;
