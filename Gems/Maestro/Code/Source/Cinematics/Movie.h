@@ -154,7 +154,6 @@ public:
     bool IsRecording() const { return m_bRecording; };
 
     void EnableCameraShake(bool bEnabled){ m_bEnableCameraShake = bEnabled; };
-    bool IsCameraShakeEnabled() const {return m_bEnableCameraShake; };
 
     void SetCallback(IMovieCallback* pCallback) { m_pCallback = pCallback; }
     IMovieCallback* GetCallback() { return m_pCallback; }
@@ -186,8 +185,6 @@ public:
 
     virtual void EnableBatchRenderMode(bool bOn) { m_bBatchRenderMode = bOn; }
     virtual bool IsInBatchRenderMode() const { return m_bBatchRenderMode; }
-
-    ILightAnimWrapper* CreateLightAnimWrapper(const char* name) const;
 
     void SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags) override;
     virtual void LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version) override;

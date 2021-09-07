@@ -18,7 +18,7 @@ namespace LmbrCentral
         : public AZ::Data::AssetData
     {
     public:
-        using MeshPtr = _smart_ptr<IStatObj>;
+        using MeshPtr = IStatObj*;
 
         AZ_RTTI(MeshAsset, "{C2869E3B-DDA0-4E01-8FE3-6770D788866B}", AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);

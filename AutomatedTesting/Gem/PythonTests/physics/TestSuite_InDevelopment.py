@@ -20,368 +20,164 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 from base import TestAutomationBase
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(TestAutomationBase):
     @fm.file_revert("ragdollbones.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C4925582_Material_AddModifyDeleteOnRagdollBones")
-    def test_C4925582_Material_AddModifyDeleteOnRagdollBones(self, request, workspace, editor):
-        from .material import C4925582_Material_AddModifyDeleteOnRagdollBones as test_module
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnRagdollBones")
+    def test_Material_LibraryCrudOperationsReflectOnRagdollBones(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnRagdollBones as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C4925580_Material_RagdollBonesMaterial(self, request, workspace, editor):
-        from .material import C4925580_Material_RagdollBonesMaterial as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Material_RagdollBones(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_RagdollBones as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @fm.file_revert("c15308221_material_componentsinsyncwithlibrary.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C15308221_Material_ComponentsInSyncWithLibrary")
-    def test_C15308221_Material_ComponentsInSyncWithLibrary(self, request, workspace, editor):
-        from .material import C15308221_Material_ComponentsInSyncWithLibrary as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+                    r"AutomatedTesting\Levels\Physics\Material_ComponentsInSyncWithLibrary")
+    def test_Material_ComponentsInSyncWithLibrary(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_ComponentsInSyncWithLibrary as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # BUG: LY-107723")
-    def test_C14976308_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor):
-        from .script_canvas import C14976308_ScriptCanvas_SetKinematicTargetTransform as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
     @fm.file_revert("c4925579_material_addmodifydeleteonterrain.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C4925579_Material_AddModifyDeleteOnTerrain")
-    def test_C4925579_Material_AddModifyDeleteOnTerrain(self, request, workspace, editor):
-        from .material import C4925579_Material_AddModifyDeleteOnTerrain as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnTerrain")
+    def test_Material_LibraryCrudOperationsReflectOnTerrain(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnTerrain as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    def test_C13508019_Terrain_TerrainTexturePainterWorks(self, request, workspace, editor):
-        from .terrain import C13508019_Terrain_TerrainTexturePainterWorks as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Terrain_TerrainTexturePainterWorks(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_TerrainTexturePainterWorks as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    def test_C4925577_Materials_MaterialAssignedToTerrain(self, request, workspace, editor):
-        from .material import C4925577_Materials_MaterialAssignedToTerrain as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Material_CanBeAssignedToTerrain(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_CanBeAssignedToTerrain as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    def test_C15096735_Materials_DefaultLibraryConsistency(self, request, workspace, editor):
-        from .material import C15096735_Materials_DefaultLibraryConsistency as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Material_DefaultLibraryConsistentOnAllFeatures(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_DefaultLibraryConsistentOnAllFeatures as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    @fm.file_revert("all_ones_1.physmaterial", r"AutomatedTesting\Levels\Physics\C15096737_Materials_DefaultMaterialLibraryChanges")
-    @fm.file_override("default.physxconfiguration", "C15096737_Materials_DefaultMaterialLibraryChanges.physxconfiguration", "AutomatedTesting")
-    def test_C15096737_Materials_DefaultMaterialLibraryChanges(self, request, workspace, editor):
-        from .material import C15096737_Materials_DefaultMaterialLibraryChanges as test_module
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    @fm.file_revert("all_ones_1.physmaterial", r"AutomatedTesting\Levels\Physics\Material_DefaultMaterialLibraryChangesWork")
+    @fm.file_override("default.physxconfiguration", "Material_DefaultMaterialLibraryChangesWork.physxconfiguration", "AutomatedTesting")
+    def test_Material_DefaultMaterialLibraryChangesWork(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_DefaultMaterialLibraryChangesWork as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C4976242_Collision_SameCollisionlayerSameCollisiongroup(self, request, workspace, editor):
-        from .collider import C4976242_Collision_SameCollisionlayerSameCollisiongroup as test_module
+    def test_Collider_SameCollisionGroupSameLayerCollide(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import Collider_SameCollisionGroupSameLayerCollide as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Ragdoll_OldRagdollSerializationNoErrors(self, request, workspace, editor, launcher_platform):
+        from .tests.ragdoll import Ragdoll_OldRagdollSerializationNoErrors as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C15096732_Material_DefaultLibraryUpdatedAcrossLevels(self, request, workspace, editor):
-        @fm.file_override("default.physxconfiguration",
-                          "Material_DefaultLibraryUpdatedAcrossLevels_before.physxconfiguration", "AutomatedTesting",
-                          search_subdirs=True)
-        def test_levels_before(self, request, workspace, editor):
-            from .material import C15096732_Material_DefaultLibraryUpdatedAcrossLevels_before as test_module_0
-            expected_lines = []
-            unexpected_lines = ["Assert"]
-            self._run_test(request, workspace, editor, test_module_0, expected_lines, unexpected_lines)
+    @fm.file_override("default.physxconfiguration", "ScriptCanvas_OverlapNode.physxconfiguration")
+    def test_ScriptCanvas_OverlapNode(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_OverlapNode as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        # File override replaces the previous physxconfiguration file with another where the only difference is the default material library
-        @fm.file_override("default.physxconfiguration",
-                          "Material_DefaultLibraryUpdatedAcrossLevels_after.physxconfiguration", "AutomatedTesting",
-                          search_subdirs=True)
-        def test_levels_after(self, request, workspace, editor):
-            from .material import C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after as test_module_1
-            expected_lines = []
-            unexpected_lines = ["Assert"]
-            self._run_test(request, workspace, editor, test_module_1, expected_lines, unexpected_lines)
-
-        test_levels_before(self, request, workspace, editor)
-        test_levels_after(self, request, workspace, editor)
-
-    def test_C14654882_Ragdoll_ragdollAPTest(self, request, workspace, editor):
-        from .ragdoll import C14654882_Ragdoll_ragdollAPTest as test_module
-
-        expected_lines = []
-        unexpected_lines = test_module.UnexpectedLines.lines
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    @fm.file_override("default.physxconfiguration", "C12712454_ScriptCanvas_OverlapNodeVerification.physxconfiguration")
-    def test_C12712454_ScriptCanvas_OverlapNodeVerification(self, request, workspace, editor):
-        from .script_canvas import C12712454_ScriptCanvas_OverlapNodeVerification as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C4044460_Material_StaticFriction(self, request, workspace, editor):
-        from .material import C4044460_Material_StaticFriction as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-        
-    
+    def test_Material_StaticFriction(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_StaticFriction as test_module
+        self._run_test(request, workspace, editor, test_module)
         
     @fm.file_revert("c4888315_material_addmodifydeleteoncollider.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C4888315_Material_AddModifyDeleteOnCollider")
-    def test_C4888315_Material_AddModifyDeleteOnCollider(self, request, workspace, editor):
-        from .material import C4888315_Material_AddModifyDeleteOnCollider as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCollider")
+    def test_Material_LibraryCrudOperationsReflectOnCollider(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnCollider as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @fm.file_revert("c15563573_material_addmodifydeleteoncharactercontroller.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C15563573_Material_AddModifyDeleteOnCharacterController")
-    def test_C15563573_Material_AddModifyDeleteOnCharacterController(self, request, workspace, editor):
-        from .material import C15563573_Material_AddModifyDeleteOnCharacterController as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCharacterController")
+    def test_Material_LibraryCrudOperationsReflectOnCharacterController(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnCharacterController as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @fm.file_revert("c4888315_material_addmodifydeleteoncollider.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C4888315_Material_AddModifyDeleteOnCollider")
-    def test_C4888315_Material_AddModifyDeleteOnCollider(self, request, workspace, editor):
-        from .material import C4888315_Material_AddModifyDeleteOnCollider as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-        
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCollider")
+    def test_Material_LibraryCrudOperationsReflectOnCollider(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnCollider as test_module
+        self._run_test(request, workspace, editor, test_module)
     
 
     @fm.file_revert("c15563573_material_addmodifydeleteoncharactercontroller.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C15563573_Material_AddModifyDeleteOnCharacterController")
-    def test_C15563573_Material_AddModifyDeleteOnCharacterController(self, request, workspace, editor):
-        from .material import C15563573_Material_AddModifyDeleteOnCharacterController as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCharacterController")
+    def test_Material_LibraryCrudOperationsReflectOnCharacterController(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryCrudOperationsReflectOnCharacterController as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @fm.file_revert("c4044455_material_librarychangesinstantly.physmaterial",
                     r"AutomatedTesting\Levels\Physics\C4044455_Material_LibraryChangesInstantly")
-    def test_C4044455_Material_libraryChangesInstantly(self, request, workspace, editor):
-        from .material import C4044455_Material_libraryChangesInstantly as test_module
+    def test_Material_LibraryChangesReflectInstantly(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryChangesReflectInstantly as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-
-    @fm.file_revert("C15425935_Material_LibraryUpdatedAcrossLevels.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C15425935_Material_LibraryUpdatedAcrossLevels")
-    def test_C15425935_Material_LibraryUpdatedAcrossLevels(self, request, workspace, editor):
-        from .material import C15425935_Material_LibraryUpdatedAcrossLevels as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    @fm.file_revert("Material_LibraryUpdatedAcrossLevels.physmaterial",
+                    r"AutomatedTesting\Levels\Physics\Material_LibraryUpdatedAcrossLevels")
+    def test_Material_LibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_LibraryUpdatedAcrossLevels as test_module
+        self._run_test(request, workspace, editor, test_module)
     
-    def test_C4976199_RigidBodies_LinearDampingObjectMotion(self, request, workspace, editor):
-        from .rigid_body import C4976199_RigidBodies_LinearDampingObjectMotion as test_module
+    def test_RigidBody_LinearDampingAffectsMotion(self, request, workspace, editor, launcher_platform):
+        from .tests.rigid_body import RigidBody_LinearDampingAffectsMotion as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Terrain_CollisionAgainstRigidBody(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_CollisionAgainstRigidBody as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C5689518_PhysXTerrain_CollidesWithPhysXTerrain(self, request, workspace, editor):
-        from .terrain import C5689518_PhysXTerrain_CollidesWithPhysXTerrain as test_module
+    def test_ShapeCollider_CylinderShapeCollides(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import ShapeCollider_CylinderShapeCollides as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
+        from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(self, request, workspace, editor):
-        from .collider import C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain as test_module
+    def test_Collider_PxMeshErrorIfNoMesh(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import Collider_PxMeshErrorIfNoMesh as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_ForceRegion_ImpulsesBoxShapedRigidBody(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_ImpulsesBoxShapedRigidBody as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C29032500_EditorComponents_WorldBodyBusWorks(self, request, workspace, editor):
-        from .general import C29032500_EditorComponents_WorldBodyBusWorks as test_module
+    def test_Terrain_SpawnSecondTerrainComponentWarning(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_SpawnSecondTerrainComponentWarning as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Terrain_AddPhysTerrainComponent(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_AddPhysTerrainComponent as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C14861498_ConfirmError_NoPxMesh(self, request, workspace, editor, launcher_platform):
-        from .collider import C14861498_ConfirmError_NoPxMesh as test_module
+    def test_Terrain_CanAddMultipleTerrainComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_CanAddMultipleTerrainComponents as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Terrain_MultipleTerrainComponentsWarning(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_MultipleTerrainComponentsWarning as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C5959763_ForceRegion_ForceRegionImpulsesCube(self, request, workspace, editor, launcher_platform):
-        from .force_region import C5959763_ForceRegion_ForceRegionImpulsesCube as test_module
+    def test_Terrain_MultipleTerrainComponentsWarning(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_MultipleTerrainComponentsWarning as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_ForceRegion_HighValuesDirectionAxesWorkWithNoError(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_HighValuesDirectionAxesWorkWithNoError as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C5689531_Warning_TerrainSliceTerrainComponent(self, request, workspace, editor, launcher_platform):
-        from .terrain import C5689531_Warning_TerrainSliceTerrainComponent as test_module
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_Terrain_MultipleResolutionsValid(self, request, workspace, editor, launcher_platform):
+        from .tests.terrain import Terrain_MultipleResolutionsValid as test_module
+        self._run_test(request, workspace, editor, test_module)
 
-    def test_C5689522_Physxterrain_AddPhysxterrainNoEditorCrash(self, request, workspace, editor, launcher_platform):
-        from .terrain import C5689522_Physxterrain_AddPhysxterrainNoEditorCrash as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C5689524_MultipleTerrains_CheckWarningInConsole(self, request, workspace, editor, launcher_platform):
-        from .terrain import C5689524_MultipleTerrains_CheckWarningInConsole as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C5689528_Terrain_MultipleTerrainComponents(self, request, workspace, editor, launcher_platform):
-        from .terrain import C5689528_Terrain_MultipleTerrainComponents as test_module
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C5689528_Terrain_MultipleTerrainComponents(self, request, workspace, editor, launcher_platform):
-        from .terrain import C5689528_Terrain_MultipleTerrainComponents as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C6321601_Force_HighValuesDirectionAxes(self, request, workspace, editor, launcher_platform):
-        from .force_region import C6321601_Force_HighValuesDirectionAxes as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C6032082_Terrain_MultipleResolutionsValid(self, request, workspace, editor, launcher_platform):
-        from .terrain import C6032082_Terrain_MultipleResolutionsValid as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    def test_C12905527_ForceRegion_MagnitudeDeviation(self, request, workspace, editor, launcher_platform):
-        from .force_region import C12905527_ForceRegion_MagnitudeDeviation as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243580_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243580_Joints_Fixed2BodiesConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243583_Joints_Hinge2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243583_Joints_Hinge2BodiesConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243588_Joints_Ball2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243588_Joints_Ball2BodiesConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243581_Joints_FixedBreakable(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243581_Joints_FixedBreakable as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243587_Joints_HingeBreakable(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243587_Joints_HingeBreakable as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243592_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243592_Joints_BallBreakable as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243585_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243585_Joints_HingeNoLimitsConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243590_Joints_BallNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243590_Joints_BallNoLimitsConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243582_Joints_FixedLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243582_Joints_FixedLeadFollowerCollide as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
-
-    # Removed from active suite to meet 60 minutes limit in AR job
-    def test_C18243593_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
-        from .joints import C18243593_Joints_GlobalFrameConstrained as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+    def test_ForceRegion_SmallMagnitudeDeviationOnLargeForces(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_SmallMagnitudeDeviationOnLargeForces as test_module
+        self._run_test(request, workspace, editor, test_module)

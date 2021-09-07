@@ -208,7 +208,7 @@ namespace AZ
         {
             if (drillerList.empty())
             {
-                return NULL;
+                return nullptr;
             }
 
             m_sessions.push_back();
@@ -246,21 +246,21 @@ namespace AZ
                 AZStd::lock_guard<DrillerEBusMutex::MutexType> lock(DrillerEBusMutex::GetMutex());  ///< Make sure no driller is writing to the stream
                 for (DrillerListType::const_iterator iDriller = drillerList.begin(); iDriller != drillerList.end(); ++iDriller)
                 {
-                    Driller* driller = NULL;
+                    Driller* driller = nullptr;
                     const DrillerInfo& di = *iDriller;
                     for (size_t iDesc = 0; iDesc < m_drillers.size(); ++iDesc)
                     {
                         if (m_drillers[iDesc]->GetId() == di.id)
                         {
                             driller = m_drillers[iDesc];
-                            AZ_Assert(driller->m_output == NULL, "Driller with id %08x is already have an output stream %p (currently we support only 1 at a time)", di.id, driller->m_output);
+                            AZ_Assert(driller->m_output == nullptr, "Driller with id %08x is already have an output stream %p (currently we support only 1 at a time)", di.id, driller->m_output);
                             driller->m_output = &output;
                             driller->Start(di.params.data(), static_cast<unsigned int>(di.params.size()));
                             s.drillers.push_back(driller);
                             break;
                         }
                     }
-                    AZ_Warning("Driller", driller != NULL, "We can't start a driller with id %d!", di.id);
+                    AZ_Warning("Driller", driller != nullptr, "We can't start a driller with id %d!", di.id);
                 }
             }
             return &s;
@@ -293,7 +293,7 @@ namespace AZ
                     for (size_t i = 0; i < s.drillers.size(); ++i)
                     {
                         s.drillers[i]->Stop();
-                        s.drillers[i]->m_output = NULL;
+                        s.drillers[i]->m_output = nullptr;
                     }
                 }
                 s.output->EndTag(AZ_CRC("Frame", 0xb5f83ccd));

@@ -219,7 +219,7 @@ class OtherClass
     double rubbish; // to ensure this class has non-zero size.
 public:
     virtual ~OtherClass() {}
-    virtual void UnusedVirtualFunction(void) { (void)rubbish; }
+    virtual void UnusedVirtualFunction() { (void)rubbish; }
     virtual void TrickyVirtualFunction(int num, char* str) = 0;
 };
 
@@ -268,7 +268,7 @@ namespace UnitTest
 
             // Assignment to an empty function
             v1 = five;
-            AZ_TEST_ASSERT(v1 != 0);
+            AZ_TEST_ASSERT(v1 != nullptr);
 
             // Invocation of a function
             global_int = 0;
@@ -277,7 +277,7 @@ namespace UnitTest
 
             // clear() method
             v1.clear();
-            AZ_TEST_ASSERT(v1 == 0);
+            AZ_TEST_ASSERT(v1 == nullptr);
 
             // Assignment to an empty function
             v1 = three;
@@ -303,12 +303,12 @@ namespace UnitTest
             AZ_TEST_ASSERT(global_int == 5);
 
             // clear
-            v1 = 0;
-            AZ_TEST_ASSERT(0 == v1);
+            v1 = nullptr;
+            AZ_TEST_ASSERT(nullptr == v1);
 
             // Assignment to an empty function from a free function
             v1 = AZSTD_FUNCTION_TARGET_FIX(&) write_five;
-            AZ_TEST_ASSERT(0 != v1);
+            AZ_TEST_ASSERT(nullptr != v1);
 
             // Invocation
             global_int = 0;
@@ -697,9 +697,9 @@ namespace UnitTest
             AZ_TEST_ASSERT(global_int == 2);
 
             // Test construction from 0 and comparison to 0
-            func_void_type v9(0);
-            AZ_TEST_ASSERT(v9 == 0);
-            AZ_TEST_ASSERT(0 == v9);
+            func_void_type v9(nullptr);
+            AZ_TEST_ASSERT(v9 == nullptr);
+            AZ_TEST_ASSERT(nullptr == v9);
 
             // Test return values
             typedef function<int ()> func_int_type;
@@ -941,7 +941,7 @@ namespace UnitTest
 
     TEST_F(Function, FunctionWithNonAZStdAllocatorDestructsSuccessfully)
     {
-        // 64 Byte buffer is used to prevent AZStd::function for storing the 
+        // 64 Byte buffer is used to prevent AZStd::function for storing the
         // lambda internal storage using the small buffer optimization
         // Therefore causing the supplied allocator to be used
         [[maybe_unused]] AZStd::aligned_storage_t<64, 1> bufferToAvoidSmallBufferOptimization;
@@ -994,7 +994,7 @@ namespace UnitTest
                 return static_cast<double>(lhs) + rhs;
             }
 
-            // Make sure the functor have a specific size so 
+            // Make sure the functor have a specific size so
             // that it can be used to test both the AZStd::function small_object_optimization path
             // and the heap allocated function object path
             AZStd::aligned_storage_t<FunctorSize, 1> m_functorPadding;
@@ -1044,7 +1044,7 @@ namespace UnitTest
         TestFunctor testFunctor;
         AZStd::function<double(int, double)> testFunction2(AZStd::move(testFunctor));
         EXPECT_GT(s_functorMoveConstructorCount, 0);
-        
+
         double testFunc2Result = testFunction2(16, 4.0);
         EXPECT_DOUBLE_EQ(20, testFunc2Result);
 
@@ -1068,7 +1068,7 @@ namespace UnitTest
         AZStd::function<double(int, double)> testFunction2;
         testFunction2 = AZStd::move(testFunctor);
         EXPECT_GT(s_functorMoveConstructorCount + s_functorMoveAssignmentCount, 0);
-        
+
         double testFunc2Result = testFunction2(16, 4.0);
         EXPECT_DOUBLE_EQ(20, testFunc2Result);
 
@@ -1643,7 +1643,7 @@ namespace UnitTest
         AZStd::reference_wrapper<uint64_t> refTimeStamp(timeStamp);
         double result = nestedFunc(32, refTimeStamp, 64.0);
         EXPECT_EQ(512, timeStamp);
-        
+
         constexpr double expectedResult = static_cast<double>(32 + 16 + 128.0 + 512);
         EXPECT_DOUBLE_EQ(expectedResult, result);
     }

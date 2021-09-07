@@ -235,24 +235,25 @@ namespace AzToolsFramework
     }
 
     void TranslationManipulators::ConfigureLinearView(
-        float axisLength,
+        const float axisLength,
         const AZ::Color& axis1Color,
         const AZ::Color& axis2Color,
         const AZ::Color& axis3Color /*= AZ::Color(0.0f, 0.0f, 1.0f, 0.5f)*/)
     {
         const float coneLength = 0.28f;
         const float coneRadius = 0.07f;
-        const float lineWidth = 0.05f;
 
         const AZ::Color axesColor[] = { axis1Color, axis2Color, axis3Color };
 
-        const auto configureLinearView =
-            [lineWidth, coneLength, axisLength, coneRadius](LinearManipulator* linearManipulator, const AZ::Color& color)
+        const auto configureLinearView = [lineBoundWidth = m_lineBoundWidth, coneLength, axisLength,
+                                          coneRadius](LinearManipulator* linearManipulator, const AZ::Color& color)
         {
+            const auto lineLength = axisLength - coneLength;
+
             ManipulatorViews views;
-            views.emplace_back(CreateManipulatorViewLine(*linearManipulator, color, axisLength, lineWidth));
-            views.emplace_back(CreateManipulatorViewCone(
-                *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength), coneLength, coneRadius));
+            views.emplace_back(CreateManipulatorViewLine(*linearManipulator, color, lineLength, lineBoundWidth));
+            views.emplace_back(
+                CreateManipulatorViewCone(*linearManipulator, color, linearManipulator->GetAxis() * lineLength, coneLength, coneRadius));
             linearManipulator->SetViews(AZStd::move(views));
         };
 
@@ -314,6 +315,11 @@ namespace AzToolsFramework
         {
             manipulatorFn(m_surfaceManipulator.get());
         }
+    }
+
+    void TranslationManipulators::SetLineBoundWidth(const float lineBoundWidth)
+    {
+        m_lineBoundWidth = lineBoundWidth;
     }
 
     void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators)
