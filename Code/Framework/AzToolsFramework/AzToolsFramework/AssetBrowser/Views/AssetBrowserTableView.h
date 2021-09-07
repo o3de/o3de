@@ -39,7 +39,7 @@ namespace AzToolsFramework
 
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);
-            QModelIndex GetHoveredIndex() const { return model()->index(m_hoveredRow, m_hoveredColumn);}
+            QModelIndex GetHoveredIndex() const;
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 

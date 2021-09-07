@@ -80,6 +80,11 @@ namespace AzToolsFramework
             }
         }
 
+        QModelIndex AssetBrowserTableView::GetHoveredIndex() const
+        {
+            return model()->index(m_hoveredRow, m_hoveredColumn);
+        }
+
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
         {
             QModelIndexList sourceIndexes;
