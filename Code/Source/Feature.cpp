@@ -112,34 +112,67 @@ namespace EMotionFX
 
         void Feature::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed)
         {
+            const float originalTime = motionInstance->GetCurrentTime();
+
             // Prepare for sampling.
             ActorInstance* actorInstance = motionInstance->GetActorInstance();
             AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-            AnimGraphPose* curPose = posePool.RequestPose(actorInstance);
-            AnimGraphPose* nextPose = posePool.RequestPose(actorInstance);
-            /*if (!motionInstance->GetIsReadyForSampling())
-            {
-                motionInstance->InitForSampling();
-            }*/
-
-            // Sample the two poses.
-            const float originalTime = motionInstance->GetCurrentTime();
-            const float timeDelta = 1.0f / 30.0f;
+            AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
+            AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
             Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-            motionInstance->GetMotion()->Update(bindPose, &curPose->GetPose(), motionInstance);
-            motionInstance->SetCurrentTime(originalTime + timeDelta);
-            motionInstance->GetMotion()->Update(bindPose, &nextPose->GetPose(), motionInstance);
-            motionInstance->SetCurrentTime(originalTime, false);
 
-            const Transform inverseJointWorldTransform = curPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+            const size_t numSamples = 3;
+            const float timeRange = 0.05f; // secs
+            const float halfTimeRange = timeRange * 0.5f;
+            const float startTime = originalTime - halfTimeRange;
+            const float frameDelta = timeRange / numSamples;
 
-            // Calculate the velocity.
-            CalculateVelocity(jointIndex, &curPose->GetPose(), &nextPose->GetPose(), timeDelta, outDirection, outSpeed);
-            outDirection = inverseJointWorldTransform.TransformVector(outDirection);
+            AZ::Vector3 accumulatedDirection = AZ::Vector3::CreateZero();
+            float accumulatedSpeed = 0.0f;
+
+            for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
+            {
+                float sampleTime = startTime + sampleIndex * frameDelta;
+                if (sampleTime < 0.0f)
+                {
+                    sampleTime = 0.0f;
+                }
+                if (sampleTime >= motionInstance->GetMotion()->GetDuration())
+                {
+                    sampleTime = motionInstance->GetMotion()->GetDuration();
+                }
+
+                if (sampleIndex == 0)
+                {
+                    motionInstance->SetCurrentTime(sampleTime);
+                    motionInstance->GetMotion()->Update(bindPose, &prevPose->GetPose(), motionInstance);
+                    continue;
+                }
+
+                motionInstance->SetCurrentTime(sampleTime);
+                motionInstance->GetMotion()->Update(bindPose, &currentPose->GetPose(), motionInstance);
+
+                const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+
+                // Calculate the velocity.
+                AZ::Vector3 direction = AZ::Vector3::CreateZero();
+                float speed = 0.0f;
+                CalculateVelocity(jointIndex, &prevPose->GetPose(), &currentPose->GetPose(), frameDelta, direction, speed);
+                
+                accumulatedDirection += inverseJointWorldTransform.TransformVector(direction);
+                accumulatedSpeed += speed;
+
+                *prevPose = *currentPose;
+            }
+
+            outDirection = accumulatedDirection;
             outDirection.NormalizeSafe();
+            outSpeed = accumulatedSpeed / numSamples;
 
-            posePool.FreePose(curPose);
-            posePool.FreePose(nextPose);
+            motionInstance->SetCurrentTime(originalTime); // set back to what it was
+
+            posePool.FreePose(prevPose);
+            posePool.FreePose(currentPose);
         }
 
         void Feature::SetIncludeInKdTree(bool include)

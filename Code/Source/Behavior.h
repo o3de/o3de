@@ -57,7 +57,7 @@ namespace EMotionFX
             virtual bool RegisterParameters(const InitSettings& settings) = 0;
             virtual bool RegisterFrameDatas(const InitSettings& settings) = 0;
             virtual bool Init(const InitSettings& settings);
-            virtual void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance);
+            virtual void DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
 
             virtual size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) = 0;
 

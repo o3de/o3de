@@ -229,5 +229,22 @@ namespace EMotionFX
         {
             return m_usedMotions;
         }
+
+        size_t FrameDatabase::FindFrameIndex(Motion* motion, float playtime) const
+        {
+            const size_t numFrames = m_frames.size();
+            for (size_t index = 0; index < numFrames-1; ++index)
+            {
+                const Frame& frame = m_frames[index];
+                if (motion == frame.GetSourceMotion() &&
+                    playtime >= frame.GetSampleTime() &&
+                    playtime <= m_frames[index+1].GetSampleTime())
+                {
+                    return index;
+                }
+            }
+
+            return InvalidIndex;
+        }
     } // namespace MotionMatching
 } // namespace EMotionFX

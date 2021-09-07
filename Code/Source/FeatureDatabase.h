@@ -51,7 +51,7 @@ namespace EMotionFX
             size_t CalcMemoryUsageInBytes() const;
 
             bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
-            void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance);
+            void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex);
 
             // KD-Tree
             KdTree& GetKdTree() { return *m_kdTree.get(); }
