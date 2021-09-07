@@ -154,36 +154,32 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                QStyleOptionViewItem opt(option);
+                QStyleOptionViewItem optionCopy(option);
 
+                bool isEnabled = (optionCopy.state & QStyle::State_Enabled) != 0;
+                bool isSelected = (optionCopy.state & QStyle::State_Selected) != 0;
 
-                bool isEnabled = (opt.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (opt.state & QStyle::State_Selected) != 0;
-
-                opt.state &= ~QStyle::State_HasFocus;
+                optionCopy.state &= ~QStyle::State_HasFocus;
 
                 // Get the hovered index in order to highlight the whole row.
-                AssetBrowserTableView* view = qobject_cast<AssetBrowserTableView*>(opt.styleObject);
+                AssetBrowserTableView* view = qobject_cast<AssetBrowserTableView*>(optionCopy.styleObject);
                 QTableView::SelectionBehavior behavior = view->selectionBehavior();
                 QModelIndex hoveredIndex = view->GetHoveredIndex();
                 if (!isSelected && behavior != QTableView::SelectItems)
                 {
                     if (behavior == QTableView::SelectRows && hoveredIndex.row() == index.row())
                     {
-                        opt.state |= QStyle::State_MouseOver;
+                        optionCopy.state |= QStyle::State_MouseOver;
                     }
                 }
 
-                QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
+                QStyle* style = optionCopy.widget ? optionCopy.widget->style() : QApplication::style();
 
                 // draw the background
-                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
-
-                auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
-                auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &optionCopy, painter, optionCopy.widget);
 
                 // Draw main entry thumbnail.
-                QRect remainingRect(opt.rect);
+                QRect remainingRect(optionCopy.rect);
                 remainingRect.adjust(
                     ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0,
                     0); // bump it rightwards to give some margin to the icon.
@@ -193,7 +189,11 @@ namespace AzToolsFramework
                 // so it needs to center vertically with padding in that case:
                 QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
 
-                QPalette actualPalette(opt.palette);
+                QPalette actualPalette(optionCopy.palette);
+
+                auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
+                auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
                     int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
@@ -219,7 +219,7 @@ namespace AzToolsFramework
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
                 style->drawItemText(
-                    painter, remainingRect, opt.displayAlignment, actualPalette, isEnabled, displayString,
+                    painter, remainingRect, optionCopy.displayAlignment, actualPalette, isEnabled, displayString,
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }

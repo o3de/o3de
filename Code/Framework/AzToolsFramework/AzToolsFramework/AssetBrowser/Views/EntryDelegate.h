@@ -53,6 +53,7 @@ namespace AzToolsFramework
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;
         };
 
+        //! SearchEntryDelegate draws a single item in AssetBrowserTableView
         class SearchEntryDelegate
             : public EntryDelegate
         {

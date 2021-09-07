@@ -167,6 +167,7 @@ namespace AzToolsFramework
             {
                 for (int i = 0; i < model()->columnCount(); ++i)
                 {
+                    //trigger an update of the indexes that are in the same row as the hovered index.
                     update(model()->index(m_hoveredRow, i));
                 }
             }
