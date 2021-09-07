@@ -61,17 +61,13 @@ float GetHeight(float2 origUv)
     return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
 }
 
-float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 origUv)
+float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
 {
     // Remove all vertices outside our bounds by turning them into NaN positions.
-    if (any(origUv > 1.0f) || any (origUv < 0.0))
+    if (any(uv > 1.0) || any (uv < 0.0))
     {
         return asfloat(0x7fc00000); // NaN
     }
-
-    // Clamp the UVs *after* lerping to ensure that everything aligns properly right to the edge.
-    // We use out-of-bounds UV values to denote vertices that need to be removed.
-    float2 uv = clamp(origUv, 0.0f, 1.0f);
 
     // Loop up the height and calculate our final position.
     float height = GetHeight(uv);
