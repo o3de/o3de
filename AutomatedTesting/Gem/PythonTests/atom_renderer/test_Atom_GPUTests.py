@@ -10,7 +10,6 @@ Tests that require a GPU in order to run.
 import datetime
 import logging
 import os
-import re
 import zipfile
 
 import pytest
@@ -43,29 +42,28 @@ def golden_images_directory():
     return golden_images_dir
 
 
-def create_zip_archive(archive_path):
+def create_zip_archive(screenshot_path):
     """
     Creates a new zip file archive at archive_path containing all files listed within archive_path.
-    :param archive_path: location containing the files to archive, the zip archive file will also be saved here.
+    :param screenshot_path: location containing the files to archive, the zip archive file will also be saved here.
     :return: None, but creates a new zip file archive inside path containing all of the files inside archive_path.
     """
     files_to_archive = []
 
     # Search for .png and .ppm files to add to the zip archive file.
-    for (folder_name, sub_folders, file_names) in os.walk(archive_path):
+    for (folder_name, sub_folders, file_names) in os.walk(screenshot_path):
         for file_name in file_names:
-            screenshot_regex = "(.*png$|.*ppm$)"
-            if bool(re.search(screenshot_regex, file_name)):
+            if file_name.endswith(".png") or file_name.endswith(".ppm"):
                 file_path = os.path.join(folder_name, file_name)
                 files_to_archive.append(file_path)
 
     # Setup variables for naming the zip archive file.
     timestamp = datetime.datetime.now().timestamp()
     formatted_timestamp = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d_%H-%M-%S")
-    zip_archive_file = os.path.join(archive_path, f'zip_archive_{formatted_timestamp}.zip')
+    screenshots_file = os.path.join(screenshot_path, f'zip_archive_{formatted_timestamp}.zip')
 
     # Write all of the valid .png and .ppm files to the archive file.
-    with zipfile.ZipFile(zip_archive_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
+    with zipfile.ZipFile(screenshots_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
         for file_path in files_to_archive:
             file_name = os.path.basename(file_path)
             zip_archive.write(file_path, file_name)
