@@ -6,12 +6,14 @@
  *
  */
 
+#include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/ToString.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
@@ -20,10 +22,12 @@
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityModel.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -32,9 +36,13 @@
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
 
 namespace AZ
 {
@@ -110,14 +118,93 @@ namespace UnitTest
         EXPECT_FALSE(m_cache.IsVisibleEntityVisible(m_cache.GetVisibleEntityIndexFromId(m_entityIds[2]).value()));
     }
 
+    class BoundsTestComponent
+        : public AzToolsFramework::Components::EditorComponentBase
+        , public AzFramework::BoundsRequestBus::Handler
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
+    {
+    public:
+        AZ_EDITOR_COMPONENT(
+            BoundsTestComponent, "{E6312E9D-8489-4677-9980-C93C328BC92C}", AzToolsFramework::Components::EditorComponentBase);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        // AZ::Component ...
+        void Activate() override;
+        void Deactivate() override;
+
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        bool SupportsEditorRayIntersect() override;
+
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
+    };
+
+    AZ::Aabb BoundsTestComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
+    {
+        return GetWorldBounds();
+    }
+
+    bool BoundsTestComponent::EditorSelectionIntersectRayViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    {
+        return AzToolsFramework::AabbIntersectRay(src, dir, GetWorldBounds(), distance);
+    }
+
+    bool BoundsTestComponent::SupportsEditorRayIntersect()
+    {
+        return true;
+    }
+
+    void BoundsTestComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    {
+        // noop
+    }
+
+    void BoundsTestComponent::Activate()
+    {
+        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void BoundsTestComponent::Deactivate()
+    {
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
+    }
+
+    AZ::Aabb BoundsTestComponent::GetWorldBounds()
+    {
+        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        return GetLocalBounds().GetTransformedAabb(worldFromLocal);
+    }
+
+    AZ::Aabb BoundsTestComponent::GetLocalBounds()
+    {
+        return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
+    }
+
     // Fixture to support testing EditorTransformComponentSelection functionality on an Entity selection.
     class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture
     {
     public:
         void SetUpEditorFixtureImpl() override
         {
+            auto* app = GetApplication();
+            app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
+
             m_entityId1 = CreateDefaultEditorEntity("Entity1");
             m_entityIds.push_back(m_entityId1);
+
+            AZ::Entity* entity1 = AzToolsFramework::GetEntityById(m_entityId1);
+
+            entity1->Deactivate();
+            entity1->CreateComponent<BoundsTestComponent>();
+            entity1->Activate();
         }
 
         void ArrangeIndividualRotatedEntitySelection(const AZ::Quaternion& orientation);
@@ -190,7 +277,7 @@ namespace UnitTest
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // EditorTransformComponentSelection Tests
 
-    TEST_F(EditorTransformComponentSelectionFixture, Focus_is_not_changed_while_switching_viewport_interaction_request_instance)
+    TEST_F(EditorTransformComponentSelectionFixture, FocusIsNotChangedWhileSwitchingViewportInteractionRequestInstance)
     {
         // setup a dummy widget and make it the active window to ensure focus in/out events are fired
         auto dummyWidget = AZStd::make_unique<QWidget>();
@@ -480,6 +567,27 @@ namespace UnitTest
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;
+
+    TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, SingleClickWithNoSelectionWillSelectEntity)
+    {
+        // the initial starting position of the entity (in front and to the left of the camera)
+        const auto initialTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f));
+        AZ::TransformBus::Event(m_entityId1, &AZ::TransformBus::Events::SetWorldTM, initialTransformWorld);
+
+        // initial camera position
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(initialPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
+
+        int i;
+        i = 0;
+    }
 
     TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, CanMoveEntityUsingManipulatorMouseMovement)
     {
@@ -1638,3 +1746,6 @@ namespace UnitTest
     }
 
 } // namespace UnitTest
+
+#pragma optimize("", on)
+#pragma inline_depth()

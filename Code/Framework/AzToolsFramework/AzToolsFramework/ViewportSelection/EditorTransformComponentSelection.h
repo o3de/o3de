@@ -206,7 +206,8 @@ namespace AzToolsFramework
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
         void DeselectEntities();
-        bool SelectDeselect(AZ::EntityId entityIdUnderCursor);
+        bool SelectDeselect(AZ::EntityId entityId);
+        void ChangeSelectedEntity(AZ::EntityId entityId);
 
         void RefreshSelectedEntityIds();
         void RefreshSelectedEntityIds(const EntityIdList& selectedEntityIds);

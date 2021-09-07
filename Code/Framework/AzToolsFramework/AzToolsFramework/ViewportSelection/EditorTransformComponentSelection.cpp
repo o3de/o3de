@@ -38,6 +38,9 @@
 #include <QApplication>
 #include <QRect>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -77,6 +80,8 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
+
+    AZ_CVAR(bool, ed_viewportStickySelect, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Does a single click change selection or not");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const s_togglePivotTitleRightClick = "Toggle pivot";
@@ -991,14 +996,18 @@ namespace AzToolsFramework
 
     // ask the visible entity data cache if the entity is selectable in the viewport
     // (useful in the context of drawing when we only care about entities we can see)
-    static bool SelectableInVisibleViewportCache(const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
+    static AZStd::optional<size_t> SelectableInVisibleViewportCache(
+        const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
-            return entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex);
+            if (entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex))
+            {
+                return *entityIndex;
+            }
         }
 
-        return false;
+        return AZStd::nullopt;
     }
 
     static AZ::ComponentId GetTransformComponentId(const AZ::EntityId entityId)
@@ -1709,17 +1718,25 @@ namespace AzToolsFramework
         m_pivotOverrideFrame.Reset();
     }
 
-    bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityIdUnderCursor)
+    void EditorTransformComponentSelection::ChangeSelectedEntity(const AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        if (entityIdUnderCursor.IsValid())
+        DeselectEntities();
+        SelectDeselect(entityId);
+    }
+
+    bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityId)
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (entityId.IsValid())
         {
-            if (IsEntitySelectedInternal(entityIdUnderCursor, m_selectedEntityIds))
+            if (IsEntitySelectedInternal(entityId, m_selectedEntityIds))
             {
                 if (!UndoRedoOperationInProgress())
                 {
-                    RemoveEntityFromSelection(entityIdUnderCursor);
+                    RemoveEntityFromSelection(entityId);
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
@@ -1742,7 +1759,7 @@ namespace AzToolsFramework
             {
                 if (!UndoRedoOperationInProgress())
                 {
-                    AddEntityToSelection(entityIdUnderCursor);
+                    AddEntityToSelection(entityId);
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
@@ -1783,25 +1800,21 @@ namespace AzToolsFramework
 
         // for entities selected with no bounds of their own (just TransformComponent)
         // check selection against the selection indicator aabb
-        for (AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId entityId : m_selectedEntityIds)
         {
-            if (!SelectableInVisibleViewportCache(*m_entityDataCache, entityId))
+            if (const auto entityIndex = SelectableInVisibleViewportCache(*m_entityDataCache, entityId); entityIndex.has_value())
             {
-                continue;
-            }
+                const AZ::Transform& worldFromLocal = m_entityDataCache->GetVisibleEntityTransform(*entityIndex);
+                const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
+                const AZ::Vector3 scaledSize =
+                    AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
 
-            AZ::Transform worldFromLocal;
-            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
-            const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
-
-            const AZ::Vector3 scaledSize =
-                AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
-
-            if (AabbIntersectMouseRay(
-                    mouseInteraction.m_mouseInteraction, AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
-            {
-                m_cachedEntityIdUnderCursor = entityId;
+                if (AabbIntersectMouseRay(
+                        mouseInteraction.m_mouseInteraction,
+                        AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
+                {
+                    m_cachedEntityIdUnderCursor = entityId;
+                }
             }
         }
 
@@ -1822,15 +1835,26 @@ namespace AzToolsFramework
             return true;
         }
 
-        // double click to deselect all
-        if (Input::DeselectAll(mouseInteraction))
+        if (ed_viewportStickySelect)
         {
-            // note: even if m_selectedEntityIds is technically empty, we
-            // may still have an entity selected that was clicked in the
-            // entity outliner - we still want to make sure the deselect all
-            // action clears the selection
-            DeselectEntities();
-            return false;
+            // double click to deselect all
+            if (Input::DeselectAll(mouseInteraction))
+            {
+                // note: even if m_selectedEntityIds is technically empty, we
+                // may still have an entity selected that was clicked in the
+                // entity outliner - we still want to make sure the deselect all
+                // action clears the selection
+                DeselectEntities();
+                return false;
+            }
+        }
+
+        if (!ed_viewportStickySelect)
+        {
+            if (Input::IndividualSelect(clickOutcome))
+            {
+                ChangeSelectedEntity(entityIdUnderCursor);
+            }
         }
 
         if (!m_selectedEntityIds.empty())
@@ -3795,3 +3819,6 @@ namespace AzToolsFramework
     template ETCS::PivotOrientationResult ETCS::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
