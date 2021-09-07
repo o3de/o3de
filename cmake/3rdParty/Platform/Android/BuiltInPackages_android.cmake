@@ -11,7 +11,6 @@ ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform TARGETS RapidJSON PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML  PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform         TARGETS cityhash  PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
-ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev1-android       TARGETS lz4       PACKAGE_HASH da8ec7736640a3e9834f6db1c69e8a0ea61c054fe8b6324509f36928cfc21dc9)
 ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform          TARGETS expat     PACKAGE_HASH 452256acd1fd699cef24162575b3524fccfb712f5321c83f1df1ce878de5b418)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zstd      PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad      PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
@@ -28,3 +27,5 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS Goo
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-android        TARGETS OpenSSL         PACKAGE_HASH 4036d4019d722f0e1b7a1621bf60b5a17ca6a65c9c78fd8701cee1131eec8480)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-android           TARGETS zlib            PACKAGE_HASH 85b730b97176772538cfcacd6b6aaf4655fc2d368d134d6dd55e02f28f183826)
+ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev3-android       TARGETS lz4             PACKAGE_HASH c9e2aca5a58b3c9aff57ab2059a102cce08305b9861585bbc864c2013f148352
+)

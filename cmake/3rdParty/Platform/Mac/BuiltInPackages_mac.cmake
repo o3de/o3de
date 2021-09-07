@@ -15,7 +15,6 @@ ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform            
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform                       TARGETS RapidXML                    PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
 ly_associate_package(PACKAGE_NAME pybind11-2.4.3-rev2-multiplatform                 TARGETS pybind11                    PACKAGE_HASH d8012f907b6c54ac990b899a0788280857e7c93a9595405a28114b48c354eb1b)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
-ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev1-mac                          TARGETS lz4                         PACKAGE_HASH 3ce6866b43d024452c0412f385ae46aba0e1ae99eb64f7099d3fc539c8460881)
 ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                         TARGETS expat                       PACKAGE_HASH 452256acd1fd699cef24162575b3524fccfb712f5321c83f1df1ce878de5b418)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                  TARGETS SQLite                      PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
@@ -44,4 +43,5 @@ ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                  
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-mac                              TARGETS zlib                        PACKAGE_HASH 21714e8a6de4f2523ee92a7f52d51fbee29c5f37ced334e00dc3c029115b472e)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac                       TARGETS squish-ccr                  PACKAGE_HASH 155bfbfa17c19a9cd2ef025de14c5db598f4290045d5b0d83ab58cb345089a77)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 8a4e93277b8face6ea2fd57c6d017bdb55643ed3d6387110bc5f6b3b884dd169)
+ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev3-mac                          TARGETS lz4                         PACKAGE_HASH 5ca0bcdf0326a4903c6dd2ac306d8c8e62dec60e2a5b7038c16088f56e02ea68)
 
