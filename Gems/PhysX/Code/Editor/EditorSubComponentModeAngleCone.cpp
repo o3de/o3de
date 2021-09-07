@@ -345,7 +345,7 @@ namespace PhysX
         {
             AzToolsFramework::ManipulatorViews views;
             views.emplace_back(CreateManipulatorViewLine(
-                *linearManipulator, color, axisLength, AzToolsFramework::ManipulatorLineBoundWidth(AzFramework::InvalidViewportId)));
+                *linearManipulator, color, axisLength, AzToolsFramework::ManipulatorLineBoundWidth()));
             views.emplace_back(CreateManipulatorViewCone(
                 *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength),
                 coneLength, coneRadius));
