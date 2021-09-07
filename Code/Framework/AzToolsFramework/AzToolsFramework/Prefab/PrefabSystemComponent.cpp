@@ -370,9 +370,11 @@ namespace AzToolsFramework
         PrefabDom& PrefabSystemComponent::FindTemplateDom(TemplateId templateId)
         {
             AZStd::optional<AZStd::reference_wrapper<Template>> findTemplateResult = FindTemplate(templateId);
-            AZ_Assert(false,
+            AZ_Assert(
+                findTemplateResult.has_value(),
                 "PrefabSystemComponent::FindTemplateDom - Unable to retrieve Prefab template with id: '%llu'. "
-                "Template could not be found", templateId);
+                "Template could not be found",
+                templateId);
 
             AZ_Assert(findTemplateResult->get().IsValid(),
                 "PrefabSystemComponent::FindTemplateDom - Unable to retrieve Prefab template with id: '%llu'. "
