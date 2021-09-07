@@ -8,7 +8,7 @@
 
 #include "EditorDefs.h"
 
-#include "EditorPreferencesPageViewportGizmo.h"
+#include "EditorPreferencesPageViewportManipulator.h"
 
 // Editor
 #include "EditorViewportSettings.h"
@@ -53,9 +53,29 @@ CEditorPreferencesPage_ViewportManipulator::CEditorPreferencesPage_ViewportManip
     m_icon = QIcon(":/res/Gizmos.svg");
 }
 
+const char* CEditorPreferencesPage_ViewportManipulator::GetCategory()
+{
+    return "Viewports";
+}
+
+const char* CEditorPreferencesPage_ViewportManipulator::GetTitle()
+{
+    return "Manipulators";
+}
+
 QIcon& CEditorPreferencesPage_ViewportManipulator::GetIcon()
 {
     return m_icon;
+}
+
+void CEditorPreferencesPage_ViewportManipulator::OnCancel()
+{
+    // noop
+}
+
+bool CEditorPreferencesPage_ViewportManipulator::OnQueryCancel()
+{
+    return true;
 }
 
 void CEditorPreferencesPage_ViewportManipulator::OnApply()

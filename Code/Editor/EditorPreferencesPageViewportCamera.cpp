@@ -8,7 +8,7 @@
 
 #include "EditorDefs.h"
 
-#include "EditorPreferencesPageViewportMovement.h"
+#include "EditorPreferencesPageViewportCamera.h"
 
 #include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputDeviceRequestBus.h>
@@ -58,7 +58,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
     return inputNames;
 }
 
-void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& serialize)
+void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
         ->Version(2)
@@ -93,10 +93,10 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
         ->Field("OrbitDolly", &CameraInputSettings::m_orbitDollyChannelId)
         ->Field("OrbitPan", &CameraInputSettings::m_orbitPanChannelId);
 
-    serialize.Class<CEditorPreferencesPage_ViewportMovement>()
+    serialize.Class<CEditorPreferencesPage_ViewportCamera>()
         ->Version(1)
-        ->Field("CameraMovementSettings", &CEditorPreferencesPage_ViewportMovement::m_cameraMovementSettings)
-        ->Field("CameraInputSettings", &CEditorPreferencesPage_ViewportMovement::m_cameraInputSettings);
+        ->Field("CameraMovementSettings", &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings)
+        ->Field("CameraInputSettings", &CEditorPreferencesPage_ViewportCamera::m_cameraInputSettings);
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
     {
@@ -208,35 +208,50 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
                 "Key/button to begin camera orbit pan")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames);
 
-        editContext->Class<CEditorPreferencesPage_ViewportMovement>("Viewport Preferences", "Viewport Preferences")
+        editContext->Class<CEditorPreferencesPage_ViewportCamera>("Viewport Preferences", "Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportMovement::m_cameraMovementSettings,
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings,
                 "Camera Movement Settings", "Camera Movement Settings")
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportMovement::m_cameraInputSettings, "Camera Input Settings",
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraInputSettings, "Camera Input Settings",
                 "Camera Input Settings");
     }
 }
 
-CEditorPreferencesPage_ViewportMovement::CEditorPreferencesPage_ViewportMovement()
+CEditorPreferencesPage_ViewportCamera::CEditorPreferencesPage_ViewportCamera()
 {
     InitializeSettings();
     m_icon = QIcon(":/res/Camera.svg");
 }
 
-const char* CEditorPreferencesPage_ViewportMovement::GetTitle()
+const char* CEditorPreferencesPage_ViewportCamera::GetCategory()
+{
+    return "Viewports";
+}
+
+const char* CEditorPreferencesPage_ViewportCamera::GetTitle()
 {
     return "Camera";
 }
 
-QIcon& CEditorPreferencesPage_ViewportMovement::GetIcon()
+QIcon& CEditorPreferencesPage_ViewportCamera::GetIcon()
 {
     return m_icon;
 }
 
-void CEditorPreferencesPage_ViewportMovement::OnApply()
+void CEditorPreferencesPage_ViewportCamera::OnCancel()
+{
+    // noop
+}
+
+bool CEditorPreferencesPage_ViewportCamera::OnQueryCancel()
+{
+    return true;
+}
+
+void CEditorPreferencesPage_ViewportCamera::OnApply()
 {
     SandboxEditor::SetCameraTranslateSpeed(m_cameraMovementSettings.m_translateSpeed);
     SandboxEditor::SetCameraRotateSpeed(m_cameraMovementSettings.m_rotateSpeed);
@@ -271,7 +286,7 @@ void CEditorPreferencesPage_ViewportMovement::OnApply()
         &SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Events::OnEditorModularViewportCameraComposerSettingsChanged);
 }
 
-void CEditorPreferencesPage_ViewportMovement::InitializeSettings()
+void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
 {
     m_cameraMovementSettings.m_translateSpeed = SandboxEditor::CameraTranslateSpeed();
     m_cameraMovementSettings.m_rotateSpeed = SandboxEditor::CameraRotateSpeed();
