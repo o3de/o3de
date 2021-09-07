@@ -42,7 +42,7 @@ def golden_images_directory():
     return golden_images_dir
 
 
-def create_zip_archive(screenshot_path):
+def create_screenshots_archive(screenshot_path):
     """
     Creates a new zip file archive at archive_path containing all files listed within archive_path.
     :param screenshot_path: location containing the files to archive, the zip archive file will also be saved here.
@@ -115,7 +115,7 @@ class TestAllComponentsIndepthTests(object):
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
 
-        create_zip_archive(screenshot_directory)
+        create_screenshots_archive(screenshot_directory)
 
     def test_LightComponent_ScreenshotMatchesGoldenImage(
             self, request, editor, workspace, project, launcher_platform, level):
@@ -171,7 +171,7 @@ class TestAllComponentsIndepthTests(object):
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
 
-        create_zip_archive(screenshot_directory)
+        create_screenshots_archive(screenshot_directory)
 
 
 @pytest.mark.parametrize('rhi', ['dx12', 'vulkan'])
