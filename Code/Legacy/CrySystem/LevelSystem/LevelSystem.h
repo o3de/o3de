@@ -31,8 +31,6 @@ public:
     // ~ILevelInfo
 
 
-    void GetMemoryUsage(ICrySizer*) const;
-
 private:
     bool ReadInfo();
 
@@ -113,8 +111,6 @@ public:
     virtual AZ::Data::AssetType GetLevelAssetType() const { return {}; }
 
     // ~ILevelSystem
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
 private:
 

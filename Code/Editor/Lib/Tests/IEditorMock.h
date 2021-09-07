@@ -170,7 +170,6 @@ public:
     MOCK_METHOD0(IsSourceControlConnected, bool());
     MOCK_METHOD0(GetUIEnumsDatabase, CUIEnumsDatabase* ());
     MOCK_METHOD0(AddUIEnums, void());
-    MOCK_METHOD1(GetMemoryUsage, void(ICrySizer* ));
     MOCK_METHOD0(ReduceMemory, void());
     MOCK_METHOD0(GetExportManager, IExportManager* ());
     MOCK_METHOD2(SetEditorConfigSpec, void(ESystemConfigSpec , ESystemConfigPlatform ));

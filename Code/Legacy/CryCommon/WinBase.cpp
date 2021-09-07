@@ -810,21 +810,6 @@ void replaceDoublePathFilename(char* szFileName)
     azstrcpy((char*)szFileName, AZ_MAX_PATH_LEN, s.c_str());
 }
 
-const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len)
-{
-    //create two strings and replace the \\ by / and /./ by /
-    AZStd::string first(cpFirst);
-    AZStd::string second(cpSecond);
-    adaptFilenameToLinux(first);
-    adaptFilenameToLinux(second);
-    if (strlen(cpFirst) < len || strlen(cpSecond) < len)
-    {
-        return -1;
-    }
-    unsigned int length = std::min(std::min(first.size(), second.size()), (size_t)len);    //make sure not to access invalid memory
-    return memicmp(first.c_str(), second.c_str(), length);
-}
-
 #if FIX_FILENAME_CASE
 static bool FixOnePathElement(char* path)
 {

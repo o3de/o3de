@@ -19,7 +19,7 @@
 
 struct IEditorMaterialManager
 {
-    virtual void GotoMaterial(_smart_ptr<IMaterial> pMaterial) = 0;
+    virtual void GotoMaterial(IMaterial* pMaterial) = 0;
 };
 
 #endif // CRYINCLUDE_EDITOR_MATERIAL_MATERIALMANAGER_H
