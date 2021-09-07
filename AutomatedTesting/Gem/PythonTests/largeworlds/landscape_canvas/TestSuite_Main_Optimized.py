@@ -12,6 +12,7 @@ import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -58,11 +59,11 @@ class TestAutomation(EditorTestSuite):
         from .EditorScripts import GraphClosed_TabbedGraph as test_module
 
     class test_LandscapeCanvas_Slice_CreateInstantiate(EditorSingleTest):
+        from .EditorScripts import Slice_CreateInstantiate as test_module
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
                                              "TestSlice.slice")], True, True)
-        from .EditorScripts import Slice_CreateInstantiate as test_module
 
     class test_LandscapeCanvas_GradientModifierNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
         from .EditorScripts import GradientModifierNodes_EntityCreatedOnNodeAdd as test_module

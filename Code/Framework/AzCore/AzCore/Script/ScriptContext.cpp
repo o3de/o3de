@@ -3727,7 +3727,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 if (m_handler)
                 {
-#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
+#if !defined(_RELEASE)
                     const AZStd::string_view luaString("Lua");
                     lua_Debug info;
                     for (int level = 0; lua_getstack(m_lua, level, &info); ++level)
@@ -3739,7 +3739,7 @@ LUA_API const Node* lua_getDummyNode()
                             break;
                         }
                     }
-#endif//defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
+#endif
 
                     BindEvents(scriptTable);
 

@@ -6,7 +6,12 @@
 #
 #
 
-if(NOT INSTALLED_ENGINE)
+ly_set(LY_INSTALL_ENABLED TRUE)
+if(INSTALLED_ENGINE)
+    ly_set(LY_INSTALL_ENABLED FALSE)
+endif()
+
+if(LY_INSTALL_ENABLED)
     ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
     include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 endif()
@@ -26,6 +31,10 @@ endif()
 #      need to be installed, use ly_install_files. Use VERBATIM to exclude such filters.
 #
 function(ly_install_directory)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
 
     set(options VERBATIM)
     set(oneValueArgs DESTINATION)
@@ -91,6 +100,10 @@ endfunction()
 #
 function(ly_install_files)
 
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
+
     set(options PROGRAMS)
     set(oneValueArgs DESTINATION)
     set(multiValueArgs FILES)
@@ -118,6 +131,23 @@ function(ly_install_files)
 
     install(${install_type} ${files}
         DESTINATION ${ly_install_files_DESTINATION}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
+    )
+
+endfunction()
+
+#! ly_install_run_code: specifies code to be added to the install process (will run at install time)
+#
+# \notes: 
+#  - refer to cmake's install(CODE documentation for more information
+#
+function(ly_install_run_code CODE)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
+
+    install(CODE ${CODE}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
 
