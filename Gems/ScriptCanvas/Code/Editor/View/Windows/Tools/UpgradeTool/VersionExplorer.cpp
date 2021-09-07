@@ -218,6 +218,7 @@ namespace ScriptCanvasEditor
                     m_inProgressAsset = m_assetsToUpgrade.erase(m_inProgressAsset);
                     m_inProgress = false;
                     m_state = ProcessState::Inactive;
+                    m_settingsCache.reset();
                     AZ::SystemTickBus::Handler::BusDisconnect();
                     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
                 }
@@ -277,7 +278,7 @@ namespace ScriptCanvasEditor
     void VersionExplorer::OnUpgradeAll()
     {
         m_state = ProcessState::Upgrade;
-        // cache these...with a widget thing
+        m_settingsCache = AZStd::make_unique<ScriptCanvas::Grammar::SettingsCache>();
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         ScriptCanvas::Grammar::g_printAbstractCodeModel = false;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
@@ -693,6 +694,7 @@ namespace ScriptCanvasEditor
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         UpgradeNotifications::Bus::Handler::BusDisconnect();
         AZ::Interface<IUpgradeRequests>::Get()->SetIsUpgrading(false);
+        m_settingsCache.reset();
     }
 
     // Scanning
@@ -712,8 +714,7 @@ namespace ScriptCanvasEditor
     void VersionExplorer::DoScan()
     {
         m_state = ProcessState::Scan;
-        // cache pre-tool values (make a little widget that does that, actually
-        // so one can destroy it and reset it
+        m_settingsCache = AZStd::make_unique<ScriptCanvas::Grammar::SettingsCache>();
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         ScriptCanvas::Grammar::g_printAbstractCodeModel = false;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
@@ -938,6 +939,7 @@ namespace ScriptCanvasEditor
         UpgradeNotifications::Bus::Handler::BusDisconnect();
 
         m_keepEditorAlive.reset();
+        m_settingsCache.reset();
         m_state = ProcessState::Inactive;
     }
 

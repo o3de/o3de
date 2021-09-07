@@ -135,6 +135,8 @@ namespace ScriptCanvasEditor
 
         AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
 
+        AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
+
         // upgrade fields
         AZStd::recursive_mutex m_mutex;
         bool m_upgradeComplete = false;
