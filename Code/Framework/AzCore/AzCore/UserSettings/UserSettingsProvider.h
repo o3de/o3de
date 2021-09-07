@@ -116,9 +116,9 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // UserSettingsBus
-        virtual AZStd::intrusive_ptr<UserSettings>  FindUserSettings(u32 id);
-        virtual void                                AddUserSettings(u32 id, UserSettings* settings);
-        virtual bool                                Save(const char* settingsPath, SerializeContext* sc);
+        AZStd::intrusive_ptr<UserSettings>  FindUserSettings(u32 id) override;
+        void                                AddUserSettings(u32 id, UserSettings* settings) override;
+        bool                                Save(const char* settingsPath, SerializeContext* sc) override;
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(ReflectContext* reflection);
