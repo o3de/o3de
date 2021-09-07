@@ -126,7 +126,7 @@ namespace LmbrCentral
         ManipulatorViews views;
         views.emplace_back(CreateManipulatorViewLine(
             *m_heightManipulator, AZ::Color(0.0f, 0.0f, 1.0f, 1.0f),
-            lineLength, AzToolsFramework::ManipulatorLineBoundWidth(AzFramework::InvalidViewportId)));
+            lineLength, AzToolsFramework::ManipulatorLineBoundWidth()));
         views.emplace_back(CreateManipulatorViewCone(*m_heightManipulator,
             AZ::Color(0.0f, 0.0f, 1.0f, 1.0f), m_heightManipulator->GetAxis() *
             (lineLength - coneLength), coneLength, coneRadius));
