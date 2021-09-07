@@ -121,7 +121,7 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(5.0f, 0.0f, 0.0f),
             AZ::Vector3(-1.0f, 0.0f, 0.0f), distance);
 
-        // This test creates a unit box centred on (0, 0, 0) and rotated by 45 degrees. The distance to the box should
+        // This test creates a unit box centered on (0, 0, 0) and rotated by 45 degrees. The distance to the box should
         // be 4.5 if it isn't rotated but less if there is any rotation.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 4.5f, 1e-2f);
@@ -143,7 +143,7 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(-10.0f, -10.0f, 0.0f),
             AZ::Vector3(0.0f, 0.0f, -1.0f), distance);
 
-        // This test creates a box of dimensions (4.0, 4.0, 2.0) centred on (-10, -10, 0) and rotated in X and Z. The distance to the box should
+        // This test creates a box of dimensions (4.0, 4.0, 2.0) centered on (-10, -10, 0) and rotated in X and Z. The distance to the box should
         // be 9.0 if it isn't rotated but less if there is any rotation.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 9.00f, 1e-2f);
@@ -162,7 +162,7 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(100.0f, 100.0f, -100.0f),
             AZ::Vector3(0.0f, 0.0f, 1.0f), distance);
 
-        // This test creates a box of dimensions (5.0, 5.0, 5.0) centred on (100, 100, 0) and not rotated. The distance to the box
+        // This test creates a box of dimensions (5.0, 5.0, 5.0) centered on (100, 100, 0) and not rotated. The distance to the box
         // should be 97.5.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 97.5f, 1e-2f);
@@ -182,7 +182,7 @@ namespace UnitTest
             rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.0f, -10.0f, 4.0f),
             AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
 
-        // This test creates a box of dimensions (2.0, 4.0, 1.0) centred on (0, 0, 5) and rotated about the Y axis by 45 degrees.
+        // This test creates a box of dimensions (2.0, 4.0, 1.0) centered on (0, 0, 5) and rotated about the Y axis by 45 degrees.
         // The distance to the box should be 4.0 if not rotated but scaled and less if it is.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 4.0f, 1e-2f);
@@ -197,8 +197,8 @@ namespace UnitTest
                 0.5f),
             AZ::Vector3(2.2f, 1.8f, 0.4f), AZ::Vector3(0.2f, 2.6f, 1.2f), entity);
 
-        // This test creates a box of dimensions (2.2, 1.8, 0.4) centred on (2.0, -5, 3) and rotated about the Y axis by 45 degrees.
-        // The box is tested for axis-alignment by firing various rays and ensuring they either hot or miss the box. Any failure hre
+        // This test creates a box of dimensions (2.2, 1.8, 0.4) centered on (2.0, -5, 3) and rotated about the Y axis by 45 degrees.
+        // The box is tested for axis-alignment by firing various rays and ensuring they either hit or miss the box. Any failure hre
         // would show the box has been rotated.
 
         // Ray should just miss the box
