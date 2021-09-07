@@ -23,7 +23,7 @@
 #include <AzCore/std/createdestroy.h>
 
 #define AZSTD_FUNCTION_TARGET_FIX(x)
-#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor>, Type>
+#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor> && !std::is_null_pointer_v<Functor>, Type>
 
 
 

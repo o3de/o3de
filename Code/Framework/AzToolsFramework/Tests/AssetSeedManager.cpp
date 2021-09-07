@@ -219,7 +219,7 @@ namespace UnitTest
             delete m_application;
         }
 
-        AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) 
+        AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) override 
         {
             auto foundIter = m_assetRegistry->m_assetIdToInfo.find(id);
             if (foundIter != m_assetRegistry->m_assetIdToInfo.end())

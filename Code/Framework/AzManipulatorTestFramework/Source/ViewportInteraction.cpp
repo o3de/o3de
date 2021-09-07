@@ -25,10 +25,12 @@ namespace AzManipulatorTestFramework
         : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
     }
 
     ViewportInteraction::~ViewportInteraction()
     {
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
 
@@ -37,29 +39,39 @@ namespace AzManipulatorTestFramework
         return m_cameraState;
     }
 
-    bool ViewportInteraction::GridSnappingEnabled()
+    bool ViewportInteraction::GridSnappingEnabled() const
     {
         return m_gridSnapping;
     }
 
-    float ViewportInteraction::GridSize()
+    float ViewportInteraction::GridSize() const
     {
         return m_gridSize;
     }
 
-    bool ViewportInteraction::ShowGrid()
+    bool ViewportInteraction::ShowGrid() const
     {
         return false;
     }
 
-    bool ViewportInteraction::AngleSnappingEnabled()
+    bool ViewportInteraction::AngleSnappingEnabled() const
     {
         return m_angularSnapping;
     }
 
-    float ViewportInteraction::AngleStep()
+    float ViewportInteraction::AngleStep() const
     {
         return m_angularStep;
+    }
+
+    float ViewportInteraction::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportInteraction::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
     }
 
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)

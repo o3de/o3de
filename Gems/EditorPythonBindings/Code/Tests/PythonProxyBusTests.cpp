@@ -207,11 +207,13 @@ namespace UnitTest
         : AZ::EBusTraits
     {
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        using MutexType = AZStd::mutex;
         virtual ~PythonTestSingleAddressNotifications() = default;
         virtual void OnPing(AZ::u64 count) = 0;
         virtual void OnPong(AZ::u64 count) = 0;
         virtual void MultipleInputs(AZ::u64 one, AZ::s8 two, AZStd::string_view three) = 0;
         virtual AZStd::string OnAddFish(AZStd::string_view value) = 0;
+        virtual void OnFire() = 0;
     };
     using PythonTestSingleAddressNotificationBus = AZ::EBus<PythonTestSingleAddressNotifications>;
 
@@ -220,7 +222,7 @@ namespace UnitTest
         , public AZ::BehaviorEBusHandler
     {
         AZ_EBUS_BEHAVIOR_BINDER(PythonTestNotificationHandler, "{97052D15-A4E8-461B-B065-91D16E31C4F7}", AZ::SystemAllocator, 
-            OnPing, OnPong, MultipleInputs, OnAddFish);
+            OnPing, OnPong, MultipleInputs, OnAddFish, OnFire);
 
         virtual ~PythonTestNotificationHandler() = default;
 
@@ -244,6 +246,11 @@ namespace UnitTest
             AZStd::string result;
             CallResult(result, FN_OnAddFish, value);
             return result;
+        }
+
+        void OnFire() override
+        {
+            Call(FN_OnFire);
         }
 
         static AZ::u64 s_pongCount;
@@ -270,6 +277,25 @@ namespace UnitTest
             return result;
         }
 
+        static void DoFire()
+        {
+            PythonTestSingleAddressNotificationBus::Broadcast(&PythonTestSingleAddressNotificationBus::Events::OnFire);
+        }
+
+        static void DoFiresInParallel(int value)
+        {
+            AZStd::vector<AZStd::thread> threads;
+            threads.reserve(value);
+            for (size_t i = 0; i < value; ++i)
+            {
+                threads.emplace_back(&DoFire);
+            }
+            for (AZStd::thread& thread : threads)
+            {
+                thread.join();
+            }
+        }
+
         static void Reset()
         {
             s_pingCount = 0;
@@ -288,6 +314,7 @@ namespace UnitTest
                     ->Event("on_pong", &PythonTestSingleAddressNotificationBus::Events::OnPong)
                     ->Event("MultipleInputs", &PythonTestSingleAddressNotificationBus::Events::MultipleInputs)
                     ->Event("OnAddFish", &PythonTestSingleAddressNotificationBus::Events::OnAddFish)
+                    ->Event("OnFire", &PythonTestSingleAddressNotificationBus::Events::OnFire)
                     ;
 
                 // for testing from Python to send out the events
@@ -297,6 +324,8 @@ namespace UnitTest
                     ->Method("do_ping", &PythonTestNotificationHandler::DoPing)
                     ->Method("do_pong", &PythonTestNotificationHandler::DoPong)
                     ->Method("do_add_fish", &PythonTestNotificationHandler::DoAddFish)
+                    ->Method("do_fire", &PythonTestNotificationHandler::DoFire)
+                    ->Method("do_fires_in_parallel", &PythonTestNotificationHandler::DoFiresInParallel)
                     ;
             }
         }
@@ -358,7 +387,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };
@@ -807,6 +836,65 @@ namespace UnitTest
         e.Deactivate();
 
         EXPECT_EQ(2, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::AtAddress_Match)]);
+    }
+
+    TEST_F(PythonBusProxyTests, SingleAddressNotifications_InParallel_Errors)
+    {
+        PythonTestNotificationHandler pythonTestNotificationHandler;
+        pythonTestNotificationHandler.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+
+        SimulateEditorBecomingInitialized();
+
+        enum class LogTypes
+        {
+            Skip = 0,
+            Notifications_OnFire,
+        };
+
+        m_testSink.m_evaluateMessage = [](const char* window, const char* message) -> int
+        {
+            if (AzFramework::StringFunc::Equal(window, "python"))
+            {
+                if (AzFramework::StringFunc::Equal(message, "Notifications_OnFire"))
+                {
+                    return static_cast<int>(LogTypes::Notifications_OnFire);
+                }
+            }
+            return static_cast<int>(LogTypes::Skip);
+        };
+
+        UnitTest::PythonTestNotificationHandler::Reset();
+
+        const int numFiresInParallel = 220;
+
+        const AZStd::string script = AZStd::string::format(
+            "import azlmbr.bus\n"
+            "import azlmbr.test\n"
+            "\n"
+            "def OnFire(parameters) :\n"
+            "    print('Notifications_OnFire')\n"
+            "\n"
+            "handler = azlmbr.bus.NotificationHandler('PythonTestSingleAddressNotificationBus')\n"
+            "handler.connect(None)\n"
+            "handler.add_callback('OnFire', OnFire)\n"
+            "\n"
+            "azlmbr.test.PythonTestNotificationHandler_do_fire()\n"
+            "\n"
+            "azlmbr.test.PythonTestNotificationHandler_do_fires_in_parallel(%d)\n"
+            "\n"
+            "handler.disconnect()\n",
+            numFiresInParallel);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByString, script, false);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(numFiresInParallel); // Expect numFiresInParallel errors
+
+        e.Deactivate();
+
+        EXPECT_EQ(1, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::Notifications_OnFire)]);
     }
 
     TEST_F(PythonBusProxyTests, NotificationsWithNoAddress)

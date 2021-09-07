@@ -1,0 +1,6 @@
+<download name="RigidBody_ComputeInertiaWorks" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39459" md5="8fe72a2add369202293babbd21bdeaa7"/>
+ </files>
+</download>
