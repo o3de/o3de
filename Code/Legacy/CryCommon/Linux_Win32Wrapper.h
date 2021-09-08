@@ -429,7 +429,6 @@ extern DWORD GetCurrentProcessId(void);
 
 //helper function
 extern void adaptFilenameToLinux(char* rAdjustedFilename);
-extern const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len);//returns 0 if identical
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
 //////////////////////////////////////////////////////////////////////////

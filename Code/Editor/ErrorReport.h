@@ -121,11 +121,6 @@ public:
     //! Assign current filename.
     void SetCurrentFile(const QString& file);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Implement IValidator interface.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void Report(SValidatorRecord& record);
-
 private:
     //! Array of all error records added to report.
     std::vector<CErrorRecord> m_errors;
