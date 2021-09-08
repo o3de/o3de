@@ -612,6 +612,7 @@ namespace AZ
         AZ_Assert(m_systemEntity, "SystemEntity failed to initialize!");
 
         AddRequiredSystemComponents(m_systemEntity.get());
+        //m_currentTime = GetElapsedTimeUs();
         m_isStarted = true;
         return m_systemEntity.get();
     }
@@ -652,7 +653,6 @@ namespace AZ
 
         ComponentApplicationBus::Handler::BusConnect();
 
-        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -1368,14 +1368,18 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            TimeUs now = GetElapsedTimeUs();
+            if (m_currentTime == TimeUs{ 0 })
+            {
+                m_currentTime = now;
+            }
 
             m_deltaTime = 0.0f;
 
             if (now >= m_currentTime)
             {
-                AZStd::chrono::duration<float> delta = now - m_currentTime;
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
+                float delta = TimeUsToSeconds(now - m_currentTime);
+                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta;
             }
 
             {
@@ -1385,7 +1389,9 @@ namespace AZ
             m_currentTime = now;
             {
                 AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
+                auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+                auto chronoNow = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(now));
+                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(epoch + chronoNow));
             }
         }
     }
@@ -1508,7 +1514,9 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        return ScriptTimePoint(m_currentTime);
+        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        auto chronoCurrent = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(m_currentTime));
+        return ScriptTimePoint(epoch + chronoCurrent);
     }
 
     //=========================================================================

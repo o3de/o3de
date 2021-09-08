@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Time/ITime.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -368,7 +369,7 @@ namespace AZ
             }
         }
 
-        AZStd::chrono::system_clock::time_point     m_currentTime{ AZStd::chrono::system_clock::time_point::max() };
+        AZ::TimeUs                                  m_currentTime{ 0 };
         float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
