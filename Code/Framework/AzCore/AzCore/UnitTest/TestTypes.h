@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>
@@ -162,7 +163,7 @@ namespace UnitTest
     struct CreationCounter
     {
         AZ_TYPE_INFO(CreationCounter, "{E9E35486-4366-4066-86E5-1A8CEB44198B}");
-        AZ_ALIGN(int test[size / sizeof(int)], alignment);
+        alignas(alignment) int test[size / sizeof(int)];
 
         static int s_count;
         static int s_copied;

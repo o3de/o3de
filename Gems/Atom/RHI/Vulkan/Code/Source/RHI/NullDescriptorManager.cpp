@@ -73,7 +73,6 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
 
             const uint32_t imageDimension = 8;
-            const uint32_t pixelSize = 4;
 
             // fill out the different options for the types of image null descriptors
             m_imageNullDescriptor.m_images.resize(static_cast<uint32_t>(ImageTypes::Count));

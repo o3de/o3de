@@ -38,34 +38,3 @@ ly_add_target(
         PRIVATE
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
-
-ly_add_target(
-    NAME Profiler APPLICATION
-    NAMESPACE AZ
-    AUTOMOC
-    AUTOUIC
-    AUTORCC
-    FILES_CMAKE
-        standalone_tools_files.cmake
-        profiler_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/profiler_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source/Editor
-            Source/Driller
-            Source/Driller/Carrier
-            Source/Driller/Profiler
-            Source/Driller/IO
-    BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
-            AZ::AzCore
-            AZ::AzFramework
-            AZ::AzToolsFramework
-            AZ::GridMate
-            ${additional_dependencies}
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            STANDALONETOOLS_ENABLE_PROFILER
-)

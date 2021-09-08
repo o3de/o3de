@@ -86,7 +86,6 @@ namespace ScriptCanvas
 
                     if (!wasConfigured)
                     {
-                        AZ::Uuid addressTypeId = m_definition.GetAddressType();
                         AZ::Uuid addressId = m_definition.GetAddressTypeProperty().GetId();
 
                         if (m_definition.IsAddressRequired())

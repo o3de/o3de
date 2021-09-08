@@ -9,6 +9,7 @@
 #include "ProfilingCaptureSystemComponent.h"
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
@@ -19,7 +20,7 @@
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -139,36 +140,6 @@ namespace AZ
             PipelineStatisticsSerializer(AZStd::vector<const RPI::Pass*>&& passes);
 
             AZStd::vector<PipelineStatisticsSerializerEntry> m_pipelineStatisticsEntries;
-        };
-
-        // Intermediate class to serialize Cpu TimedRegion data.
-        class CpuProfilingStatisticsSerializer
-        {
-        public:
-            class CpuProfilingStatisticsSerializerEntry
-            {
-            public:
-                AZ_TYPE_INFO(CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry, "{26B78F65-EB96-46E2-BE7E-A1233880B225}");
-                static void Reflect(AZ::ReflectContext* context);
-
-                CpuProfilingStatisticsSerializerEntry() = default;
-                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion);
-
-            private:
-                Name m_groupName;
-                Name m_regionName;
-                uint16_t m_stackDepth;
-                AZStd::sys_time_t m_startTick;
-                AZStd::sys_time_t m_endTick;
-            };
-
-            AZ_TYPE_INFO(CpuProfilingStatisticsSerializer, "{D5B02946-0D27-474F-9A44-364C2706DD41}");
-            static void Reflect(AZ::ReflectContext* context);
-
-            CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData);
-
-            AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
 
         // Intermediate class to serialize benchmark metadata.
@@ -327,65 +298,6 @@ namespace AZ
             }
         }
 
-        // --- CpuProfilingStatisticsSerializer ---
-
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData)
-        {
-            // Create serializable entries
-            for (const auto& timeRegionMap : continuousData)
-            {
-                for (const auto& threadEntry : timeRegionMap)
-                {
-                    for (const auto& cachedRegionEntry : threadEntry.second)
-                    {
-                        m_cpuProfilingStatisticsSerializerEntries.insert(
-                            m_cpuProfilingStatisticsSerializerEntries.end(),
-                            cachedRegionEntry.second.begin(),
-                            cachedRegionEntry.second.end());
-                    }
-                }
-            }
-        }
-
-        void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<CpuProfilingStatisticsSerializer>()
-                    ->Version(1)
-                    ->Field("cpuProfilingStatisticsSerializerEntry", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
-                    ;
-            }
-
-            CpuProfilingStatisticsSerializerEntry::Reflect(context);
-        }
-
-        // --- CpuProfilingStatisticsSerializerEntry ---
-
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion)
-        {
-            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
-            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
-            m_stackDepth = cachedTimeRegion.m_stackDepth;
-            m_startTick = cachedTimeRegion.m_startTick;
-            m_endTick = cachedTimeRegion.m_endTick;
-        }
-
-        void CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<CpuProfilingStatisticsSerializerEntry>()
-                    ->Version(1)
-                    ->Field("groupName", &CpuProfilingStatisticsSerializerEntry::m_groupName)
-                    ->Field("regionName", &CpuProfilingStatisticsSerializerEntry::m_regionName)
-                    ->Field("stackDepth", &CpuProfilingStatisticsSerializerEntry::m_stackDepth)
-                    ->Field("startTick", &CpuProfilingStatisticsSerializerEntry::m_startTick)
-                    ->Field("endTick", &CpuProfilingStatisticsSerializerEntry::m_endTick)
-                    ;
-            }
-        }
-
         // --- BenchmarkMetadataSerializer ---
 
         BenchmarkMetadataSerializer::BenchmarkMetadataSerializer(const AZStd::string& benchmarkName, const RHI::PhysicalDeviceDescriptor& gpuDescriptor)
@@ -458,7 +370,7 @@ namespace AZ
             TimestampSerializer::Reflect(context);
             CpuFrameTimeSerializer::Reflect(context);
             PipelineStatisticsSerializer::Reflect(context);
-            CpuProfilingStatisticsSerializer::Reflect(context);
+            RHI::CpuProfilingStatisticsSerializer::Reflect(context);
             BenchmarkMetadataSerializer::Reflect(context);
         }
 
@@ -541,7 +453,7 @@ namespace AZ
                 RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
             }
 
-            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
+            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([outputFilePath, wasEnabled]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
@@ -651,10 +563,10 @@ namespace AZ
             JsonSerializerSettings serializationSettings;
             serializationSettings.m_keepDefaults = true;
 
-            CpuProfilingStatisticsSerializer serializer(data);
+            RHI::CpuProfilingStatisticsSerializer serializer(data);
 
             const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
-                outputFilePath, (CpuProfilingStatisticsSerializer*)nullptr, &serializationSettings);
+                outputFilePath, (RHI::CpuProfilingStatisticsSerializer*)nullptr, &serializationSettings);
 
             AZStd::string captureInfo = outputFilePath;
             if (!saveResult.IsSuccess())
@@ -691,10 +603,10 @@ namespace AZ
                 RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
             }
 
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
+            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead
-                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData;
+                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData(1);
                 singleFrameData.push_back(RHI::CpuProfiler::Get()->GetTimeRegionMap());
                 SerializeCpuProfilingData(singleFrameData, outputFilePath, wasEnabled);
             });
@@ -757,7 +669,7 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
         {
-            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([this, benchmarkName, outputFilePath]()
+            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([benchmarkName, outputFilePath]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;

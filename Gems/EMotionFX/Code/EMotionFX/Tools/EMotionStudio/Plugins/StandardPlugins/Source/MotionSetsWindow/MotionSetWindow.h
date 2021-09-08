@@ -187,7 +187,6 @@ namespace EMStudio
         size_t CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
 
     private:
-        QVBoxLayout* m_vLayout = nullptr;
         MotionSetTableWidget* m_tableWidget = nullptr;
 
         QAction* m_addAction = nullptr;

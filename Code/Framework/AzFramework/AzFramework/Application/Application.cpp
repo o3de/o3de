@@ -11,6 +11,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -24,7 +25,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -59,7 +59,6 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -73,7 +72,7 @@
 #include <cctype>
 #include <stdio.h>
 
-static const char* s_azFrameworkWarningWindow = "AzFramework";
+[[maybe_unused]] static const char* s_azFrameworkWarningWindow = "AzFramework";
 
 namespace AzFramework
 {
@@ -295,7 +294,6 @@ namespace AzFramework
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
-            azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
@@ -311,7 +309,6 @@ namespace AzFramework
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
 
 #if !defined(AZCORE_EXCLUDE_LUA)
             azrtti_typeid<AZ::ScriptSystemComponent>(),
@@ -373,7 +370,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
@@ -540,7 +536,7 @@ namespace AzFramework
         const AZStd::function<void()>& workForNewThread,
         const char* newThreadName)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZStd::thread_desc newThreadDesc;
         newThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
@@ -548,7 +544,7 @@ namespace AzFramework
         AZStd::binary_semaphore binarySemaphore;
         AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
+            AZ_PROFILE_SCOPE(AzFramework,
                 "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
             workForNewThread();
@@ -559,7 +555,7 @@ namespace AzFramework
             PumpSystemEventLoopUntilEmpty();
         }
         {
-            AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
+            AZ_PROFILE_SCOPE(AzFramework,
                 "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:WaitOnThread %s", newThreadName);
             newThread.join();
         }
@@ -571,10 +567,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////
     void Application::RunMainLoop()
     {
+        uint32_t frameCounter = 0;
         while (!m_exitMainLoopRequested)
         {
             PumpSystemEventLoopUntilEmpty();
+
+            AZ_PROFILE_SCOPE(AzCore, "Frame %i", frameCounter);
             Tick();
+            ++frameCounter;
         }
     }
 
@@ -602,7 +602,7 @@ namespace AzFramework
 
     void Application::SetRootPath(RootPathType type, const char* source)
     {
-        const size_t sourceLen = strlen(source);
+        [[maybe_unused]] const size_t sourceLen = strlen(source);
 
         // Copy the source path to the intended root path and correct the path separators as well
         switch (type)
@@ -627,6 +627,9 @@ namespace AzFramework
 
     static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
     {
+        constexpr const char* userCachePathFilename{ "Cache" };
+        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
@@ -635,9 +638,6 @@ namespace AzFramework
         // 128 seems like a reasonable compromise.
         constexpr int maxAttempts = 128;
 
-        constexpr const char* userCachePathFilename{ "Cache" };
-        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         int attemptNumber;
         for (attemptNumber = 0; attemptNumber < maxAttempts; ++attemptNumber)
         {

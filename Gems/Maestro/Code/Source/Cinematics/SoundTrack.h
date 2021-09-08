@@ -6,34 +6,20 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SOUNDTRACK_H
-#define CRYINCLUDE_CRYMOVIE_SOUNDTRACK_H
+#pragma once
 
 #include "AnimTrack.h"
 
 struct SSoundInfo
 {
-    SSoundInfo()
-        : nSoundKeyStart(-1)
-        , nSoundKeyStop(-1)
-    {
-        Reset();
-    }
-
     void Reset()
     {
         nSoundKeyStart = -1;
         nSoundKeyStop = -1;
     }
 
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-    }
-
-    int nSoundKeyStart;
-    int nSoundKeyStop;
+    int nSoundKeyStart = -1;
+    int nSoundKeyStop = -1;
 };
 
 class CSoundTrack
@@ -53,5 +39,3 @@ public:
 
     static void Reflect(AZ::ReflectContext* context);
 };
-
-#endif // CRYINCLUDE_CRYMOVIE_SOUNDTRACK_H

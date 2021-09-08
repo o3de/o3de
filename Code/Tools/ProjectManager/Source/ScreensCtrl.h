@@ -19,7 +19,7 @@ QT_FORWARD_DECLARE_CLASS(QTabWidget)
 
 namespace O3DE::ProjectManager
 {
-    class ScreenWidget;
+    QT_FORWARD_DECLARE_CLASS(ScreenWidget);
 
     class ScreensCtrl
         : public QWidget

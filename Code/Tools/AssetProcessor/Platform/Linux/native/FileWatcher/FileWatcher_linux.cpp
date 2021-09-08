@@ -192,7 +192,6 @@ void FolderRootWatch::WatchFolderLoop()
             for (size_t index=0; index<bytesRead;)
             {
                 struct inotify_event *event = ( struct inotify_event * ) &eventBuffer[ index ];
-                const char* eventName = event->name;
 
                 if (event->mask & (IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVE ))
                 {

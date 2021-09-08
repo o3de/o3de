@@ -305,10 +305,20 @@ namespace O3DELauncher
             m_commandLine[m_commandLineLen++] = ' ';
         }
 
-        azsnprintf(m_commandLine + m_commandLineLen,
-            AZ_COMMAND_LINE_LEN - m_commandLineLen,
-            needsQuote ? "\"%s\"" : "%s",
-            arg);
+        if (needsQuote) // Branching instead of using a ternary on the format string to avoid warning 4774 (format literal expected)
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "\"%s\"",
+                arg);
+        }
+        else
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "%s",
+                arg);
+        }
 
         // Inject the argument in the argument buffer to preserve/replicate argC and argV
         azstrncpy(&m_commandLineArgBuffer[m_nextCommandLineArgInsertPoint],
@@ -451,8 +461,6 @@ namespace O3DELauncher
         // The command line overrides are stored in the following fixed strings
         // until the ComponentApplication constructor can parse the command line parameters
         FixedValueString projectNameOptionOverride;
-        FixedValueString projectPathOptionOverride;
-        FixedValueString enginePathOptionOverride;
 
         // Insert the project_name option to the front
         const AZStd::string_view launcherProjectName = GetProjectName();
@@ -467,6 +475,8 @@ namespace O3DELauncher
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        FixedValueString projectPathOptionOverride;
+        FixedValueString enginePathOptionOverride;
         AZStd::string_view projectPath;
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();

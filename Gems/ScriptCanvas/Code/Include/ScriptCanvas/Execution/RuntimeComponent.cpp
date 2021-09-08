@@ -19,9 +19,11 @@
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
 
-#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if !defined(_RELEASE)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
 #endif
+
+AZ_DECLARE_BUDGET(ScriptCanvas);
 
 namespace RuntimeComponentCpp
 {
@@ -61,7 +63,7 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Execute()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "RuntimeComponent::Execute (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
+        AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::Execute (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         AZ_Assert(m_executionState, "RuntimeComponent::Execute called without an execution state");
         SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState->GetScriptCanvasId(), m_runtimeOverrides.m_runtimeAsset.GetId());
@@ -117,7 +119,7 @@ namespace ScriptCanvas
         AZ_Assert(m_runtimeAsset.Get(), "RuntimeComponent::m_runtimeAsset AssetId: %s was valid, but the data was not pre-loaded, so this script will not run", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
+        AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_scriptCanvasId, m_runtimeOverrides.m_runtimeAsset.GetId());
         m_executionState = ExecutionState::Create(ExecutionStateConfig(m_runtimeOverrides.m_runtimeAsset, *this));
 

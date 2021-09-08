@@ -33,7 +33,7 @@ namespace AWSGameLift
 
             // Required attributes
             request.SetGameSessionQueueName(createSessionOnQueueRequest.m_queueName.c_str());
-            request.SetMaximumPlayerSessionCount(createSessionOnQueueRequest.m_maxPlayer);
+            request.SetMaximumPlayerSessionCount(static_cast<int>(createSessionOnQueueRequest.m_maxPlayer));
             request.SetPlacementId(createSessionOnQueueRequest.m_placementId.c_str());
 
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
@@ -79,7 +79,7 @@ namespace AWSGameLift
             auto gameliftCreateSessionOnQueueRequest =
                 azrtti_cast<const AWSGameLiftCreateSessionOnQueueRequest*>(&createSessionRequest);
 
-            return gameliftCreateSessionOnQueueRequest && gameliftCreateSessionOnQueueRequest->m_maxPlayer >= 0 &&
+            return gameliftCreateSessionOnQueueRequest &&
                 !gameliftCreateSessionOnQueueRequest->m_queueName.empty() && !gameliftCreateSessionOnQueueRequest->m_placementId.empty();
         }
     } // namespace CreateSessionOnQueueActivity

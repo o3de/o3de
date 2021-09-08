@@ -151,16 +151,6 @@ namespace GridMate
             writeBuffer.Write(PackByte<AZ::u64, 0>(value));
         }
 
-        AZ_INLINE static AZ::u32 CalculatePeerCRC32(const SecureSocketDriver::AddrPtr& from)
-        {
-            // Calculate CRC32 from remote address
-            AZ::u32 port = from->GetPort();
-            AZ::Crc32 crc;
-            crc.Add(from->GetIP().c_str());
-            crc.Add(&port, sizeof(port));
-            return crc;
-        }
-
         // Structures
         //
         struct RecordHeader                 // 13 bytes = DTLS1_RT_HEADER_LENGTH

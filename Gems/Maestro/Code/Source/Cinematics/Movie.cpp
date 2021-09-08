@@ -27,6 +27,7 @@
 
 #include <StlUtils.h>
 #include <MathConversion.h>
+#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
@@ -708,7 +709,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     {
         /*
             * When a sequence is stopped, Resume is called just before stopped (not sure why). To ensure that a OnStop notification is sent out after the Resume,
-            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop 
+            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop
             */
         case IMovieListener::eMovieEvent_Aborted:
         {
@@ -725,7 +726,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
             // do nothing for unhandled IMovieListener events
             break;
         }
-    }    
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -973,9 +974,6 @@ void CMovieSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     std::vector<const char*> names;
 
@@ -1860,12 +1858,6 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 {
     // Queue for processing, sequences will be removed after checked for auto start.
     m_newlyActivatedSequences.push_back(sequence);
-}
-
-//////////////////////////////////////////////////////////////////////////
-ILightAnimWrapper* CMovieSystem::CreateLightAnimWrapper(const char* name) const
-{
-    return CLightAnimWrapper::Create(name);
 }
 
 //////////////////////////////////////////////////////////////////////////

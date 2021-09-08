@@ -203,7 +203,7 @@ namespace AZ
 
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
 
-            uint32_t bufferPageSize = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            uint32_t bufferPageSize = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes);
 
             // The DX12 descriptor provides an explicit buffer page size override.
             if (const DX12::BufferPoolDescriptor* descriptor = azrtti_cast<const DX12::BufferPoolDescriptor*>(&descriptorBase))

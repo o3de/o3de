@@ -11,8 +11,6 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
-#include <AzFramework/Driller/DrillToFileComponent.h>
 #include <GridMate/Drillers/CarrierDriller.h>
 #include <GridMate/Drillers/ReplicaDriller.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
@@ -37,12 +35,6 @@ namespace AzGameFramework
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
         AzFramework::Application::StartCommon(systemEntity);
-
-        if (GetDrillerManager())
-        {
-            GetDrillerManager()->Register(aznew GridMate::Debug::CarrierDriller());
-            GetDrillerManager()->Register(aznew GridMate::Debug::ReplicaDriller());
-        }
     }
 
     void GameApplication::MergeSettingsToRegistry(AZ::SettingsRegistryInterface& registry)
@@ -62,6 +54,12 @@ namespace AzGameFramework
 #endif
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM && (defined (AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD))
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+#endif
 
         // Used the lowercase the platform name since the bootstrap.game.<config>.<platform>.setreg is being loaded
         // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
@@ -92,10 +90,6 @@ namespace AzGameFramework
         components.emplace_back(azrtti_typeid<AzFramework::TargetManagementComponent>());
 #endif
 
-        // Note that this component is registered by AzFramework.
-        // It must be registered here instead of in the module so that existence of AzFrameworkModule is guaranteed.
-        components.emplace_back(azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>());
-
         return components;
     }
 
@@ -104,9 +98,6 @@ namespace AzGameFramework
         AzFramework::Application::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzGameFrameworkModule());
-
-        // have to let the metrics system know that it's ok to send back the name of the DrillerNetworkAgentComponent to Amazon as plain text, without hashing
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, AZStd::vector<AZ::Uuid>{ azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>() });
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const

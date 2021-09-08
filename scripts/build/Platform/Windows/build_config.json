@@ -213,11 +213,38 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "periodic_test_profile_vs2019": {
+  "awsi_test_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
-      "weekly-build-metrics"
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "awsi_test_profile_vs2019"
+    ]
+  },
+  "awsi_test_profile_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_awsi",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
+        "nightly-incremental",
+        "nightly-clean",
+        "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
@@ -376,5 +403,13 @@
       "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }

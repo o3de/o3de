@@ -11,6 +11,8 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -18,8 +20,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
 #include <Atom/Document/MaterialDocumentSettings.h>
-
-#include <QFileDialog>
 
 namespace MaterialEditor
 {
@@ -95,7 +95,7 @@ namespace MaterialEditor
 
         //When the file selection button is pressed, open a file dialog to select where the material will be saved
         QObject::connect(m_ui->m_materialFilePicker, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_ui->m_materialFilePicker, [this]() {
-            QFileInfo fileInfo = QFileDialog::getSaveFileName(this,
+            QFileInfo fileInfo = AzQtComponents::FileDialog::GetSaveFileName(this,
                 QString("Select Material Filename"),
                 m_materialFileInfo.absoluteFilePath(),
                 QString("Material (*.material)"));

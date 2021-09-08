@@ -254,8 +254,8 @@ namespace AzToolsFramework
             QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
 
             int top = mapFromGlobal(globalRect.topLeft()).y();
-            int imageHeight = dragImage.height() / dragImage.devicePixelRatioF();
-            int imageWidth = dragImage.width() / dragImage.devicePixelRatioF();
+            int imageHeight = static_cast<int>(dragImage.height() / dragImage.devicePixelRatioF());
+            int imageWidth = static_cast<int>(dragImage.width() / dragImage.devicePixelRatioF());
             QRect currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + imageWidth, top + imageHeight));
 
             painter.setOpacity(alpha);
@@ -699,7 +699,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::BeforeEntitySelectionChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (IsLockedToSpecificEntities())
         {
             return;
@@ -723,7 +723,7 @@ namespace AzToolsFramework
         const AzToolsFramework::EntityIdList& newlySelectedEntities,
         const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (IsLockedToSpecificEntities())
         {
             // ensure we refresh all entity property editors when
@@ -951,7 +951,7 @@ namespace AzToolsFramework
 
     EntityPropertyEditor::SelectionEntityTypeInfo EntityPropertyEditor::GetSelectionEntityTypeInfo(const EntityIdList& selection) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         SelectionEntityTypeInfo result = SelectionEntityTypeInfo::None;
 
         InspectorLayout layout = GetCurrentInspectorLayout();
@@ -1069,7 +1069,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::UpdateContents()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         setUpdatesEnabled(false);
 
         m_isBuildingProperties = true;
@@ -1921,7 +1921,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::QueuePropertyRefresh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!m_isAlreadyQueuedRefresh)
         {
             m_isAlreadyQueuedRefresh = true;
@@ -2352,6 +2352,13 @@ namespace AzToolsFramework
     {
         QMenu* revertMenu = nullptr;
 
+        auto addRevertMenu = [&menu]()
+        {
+            QMenu* revertOverridesMenu = menu.addMenu(tr("Revert overrides"));
+            revertOverridesMenu->setToolTipsVisible(true);
+            return revertOverridesMenu;
+        };
+
         //check for changes on selected property
         if (componentClassData)
         {
@@ -2372,8 +2379,7 @@ namespace AzToolsFramework
             }
 
             // Only add the "Revert overrides" menu option if it belongs to a slice
-            revertMenu = menu.addMenu(tr("Revert overrides"));
-            revertMenu->setToolTipsVisible(true);
+            revertMenu = addRevertMenu();
             revertMenu->setEnabled(false);
 
             if (fieldNode)
@@ -2447,6 +2453,10 @@ namespace AzToolsFramework
 
         if (isPartOfSlice && hasSliceChanges)
         {
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
 
             QAction* revertComponentAction = revertMenu->addAction(tr("Component"));
@@ -2487,11 +2497,15 @@ namespace AzToolsFramework
                 relevantEntities.push_back(id);
             }
 
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
             QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
             revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));
 
-            QObject::connect(revertAction, &QAction::triggered, [this, relevantEntities]
+            QObject::connect(revertAction, &QAction::triggered, [relevantEntities]
             {
                 SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
                     &SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, relevantEntities);
@@ -3234,7 +3248,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::UpdateActions()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_disabled)
         {
@@ -3282,7 +3296,7 @@ namespace AzToolsFramework
         // Even though this causes two loops on the selected entity list, calling GetSelectionEntityTypeInfo avoids duplicating code.
         SelectionEntityTypeInfo selectionTypeInfo;
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EntityPropertyEditor::UpdateActions GetSelectionEntityTypeInfo");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EntityPropertyEditor::UpdateActions GetSelectionEntityTypeInfo");
             selectionTypeInfo = GetSelectionEntityTypeInfo(m_selectedEntityIds);
         }
         m_actionToAddComponents->setEnabled(CanAddComponentsToSelection(selectionTypeInfo));
@@ -3907,7 +3921,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ClearComponentEditorDragging()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         for (auto componentEditor : m_componentEditors)
         {
             componentEditor->SetDragged(false);
@@ -3918,7 +3932,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ClearComponentEditorSelection()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         for (auto componentEditor : m_componentEditors)
         {
             componentEditor->SetSelected(false);
@@ -4043,7 +4057,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::UpdateSelectionCache()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_selectedComponentEditors.clear();
         m_selectedComponentEditors.reserve(m_componentEditors.size());
         for (auto componentEditor : m_componentEditors)
@@ -4070,7 +4084,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::SaveComponentEditorState()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // SaveComponentEditorState can be called when adding or removing a
         // component, the components list stored by the component editor
@@ -4394,7 +4408,6 @@ namespace AzToolsFramework
     {
         ResetDrag(event);
 
-        Qt::MouseButtons realButtons = QApplication::mouseButtons();
         if (QApplication::overrideCursor() && !(event->buttons() & Qt::LeftButton))
         {
             QApplication::restoreOverrideCursor();
@@ -4606,7 +4619,6 @@ namespace AzToolsFramework
     bool EntityPropertyEditor::GetComponentsAtDropEventPosition(QDropEvent* event, AZ::Entity::ComponentArrayType& targetComponents)
     {
         const QPoint globalPos(mapToGlobal(event->pos()));
-        const QRect globalRect(GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
 
         //get component editor(s) where drop will occur
         ComponentEditor* targetComponentEditor = GetReorderDropTarget(
@@ -5584,14 +5596,14 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ConnectToEntityBuses(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusConnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(entityId);
     }
 
     void EntityPropertyEditor::DisconnectFromEntityBuses(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusDisconnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(entityId);
     }

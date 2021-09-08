@@ -24,7 +24,7 @@ namespace AzFramework
             LinuxXcbConnectionManagerBus::Handler::BusConnect();
         }
 
-        ~LinuxXcbConnectionManagerImpl()
+        ~LinuxXcbConnectionManagerImpl() override
         {
             LinuxXcbConnectionManagerBus::Handler::BusDisconnect();
             xcb_disconnect(m_xcbConnection);   

@@ -202,8 +202,6 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
-        bool result = false;
-
         // note that the convention here is that it uses windows-shell style escaping of combined args with spaces in it
         // (so surrounding with quotes like param="hello world")
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
@@ -279,7 +277,7 @@ namespace AzFramework
                 environmentVariables[i][0] = '\0';
                 azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
             }
-            environmentVariables[numEnvironmentVars] = NULL;
+            environmentVariables[numEnvironmentVars] = nullptr;
         }
 
         pid_t child_pid = fork();
@@ -375,7 +373,7 @@ namespace AzFramework
         }
 
         bool isProcessDone = false;
-        time_t startTime = time(0);
+        time_t startTime = time(nullptr);
         time_t currentTime = startTime;
         AZ_Assert(currentTime != -1, "time(0) returned an invalid time");
         while (((currentTime - startTime) < waitTimeInSeconds) && !isProcessDone)
@@ -387,7 +385,7 @@ namespace AzFramework
                 m_pWatcherData->m_childProcessIsDone = true;
                 break;
             }
-            currentTime = time(0);
+            currentTime = time(nullptr);
         }
         //returns false if process is still running after time
         return isProcessDone;

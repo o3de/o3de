@@ -145,7 +145,7 @@ bool UserPopupWidgetHandler::ReadValuesIntoGUI(size_t index, UserPropertyEditor*
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {
     CSplineCtrl *cSpline = new CSplineCtrl(pParent);
-    cSpline->SetUpdateCallback(AZStd::bind(&FloatCurveHandler::OnSplineChange, this, AZStd::placeholders::_1));
+    cSpline->SetUpdateCallback([this](CSplineCtrl* spl) { OnSplineChange(spl); });
     cSpline->SetTimeRange(0, 1);
     cSpline->SetValueRange(0, 1);
     cSpline->SetGrid(12, 12);
