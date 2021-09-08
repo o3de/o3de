@@ -1087,6 +1087,7 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
 {
     AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
 
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
@@ -1097,6 +1098,7 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
     m_viewportUi.DisconnectViewportUiBus();
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusDisconnect();
 }
