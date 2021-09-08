@@ -1795,7 +1795,7 @@ namespace AzToolsFramework
 
         // for entities selected with no bounds of their own (just TransformComponent)
         // check selection against the selection indicator aabb
-        for (const AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
             if (const auto entityIndex = SelectableInVisibleViewportCache(*m_entityDataCache, entityId); entityIndex.has_value())
             {
