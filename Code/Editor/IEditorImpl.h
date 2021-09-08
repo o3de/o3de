@@ -280,7 +280,6 @@ public:
     void SetMatEditMode(bool bIsMatEditMode);
     CUIEnumsDatabase* GetUIEnumsDatabase() { return m_pUIEnumsDatabase; };
     void AddUIEnums();
-    void GetMemoryUsage(ICrySizer* pSizer);
     void ReduceMemory();
     // Get Export manager
     IExportManager* GetExportManager();

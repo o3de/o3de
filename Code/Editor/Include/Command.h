@@ -24,16 +24,15 @@ inline AZStd::string ToString(const QString& s)
 
 class CCommand
 {
-    static inline bool FromString(int32 &val, const char* s) {
-        if(!s)
+    static inline bool FromString(int32& val, const char* s)
+    {
+        if (!s)
         {
             return false;
         }
-        val = (int)strtol(s, nullptr, 10);
-        if(val==0 && errno!=0) {
-            return false;
-        }
-        return true;
+        val = static_cast<int>(strtol(s, nullptr, 10));
+        const bool parsing_error = val == 0 && errno != 0;
+        return !parsing_error;
     }
 public:
     CCommand(

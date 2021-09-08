@@ -53,6 +53,8 @@ namespace TestImpact
             return "periodic";
         case SuiteType::Sandbox:
             return "sandbox";
+        case SuiteType::AWSI:
+            return "awsi";
         default:
             throw(Exception("Unexpected suite type"));
         }

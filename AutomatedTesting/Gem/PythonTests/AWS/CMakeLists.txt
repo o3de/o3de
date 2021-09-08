@@ -17,15 +17,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         return()
     endif()
 
-    # Enable after installing NodeJS and CDK on jenkins Windows AMI.
     ly_add_pytest(
         NAME AutomatedTesting::AWSTests
-        TEST_SUITE periodic
+        TEST_SUITE awsi
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/${PAL_PLATFORM_NAME}/
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor
+            AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
         COMPONENT
             AWS

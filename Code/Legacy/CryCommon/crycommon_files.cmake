@@ -25,7 +25,6 @@ set(FILES
     IMiniLog.h
     IMovieSystem.h
     IProcess.h
-    IReadWriteXMLSink.h
     IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
@@ -33,7 +32,6 @@ set(FILES
     ISplines.h
     IStatObj.h
     StatObjBus.h
-    ISurfaceType.h
     ISystem.h
     ITexture.h
     ITimer.h
@@ -46,9 +44,6 @@ set(FILES
     VRCommon.h
     INavigationSystem.h
     IMNM.h
-    SFunctor.h
-    FunctorBaseFunction.h
-    FunctorBaseMember.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -56,21 +51,15 @@ set(FILES
     LCGRandom.h
     BaseTypes.h
     AnimKey.h
-    BitFiddling.h
-    Common_TypeInfo.cpp
     CryAssert.h
-    CryCrc32.h
     CryFile.h
     CryListenerSet.h
     CryLegacyAllocator.h
     CryPath.h
-    CryPodArray.h
-    CrySizer.h
     CrySystemBus.h
     CryVersion.h
     LegacyAllocator.cpp
     LegacyAllocator.h
-    MetaUtils.h
     MiniQueue.h
     MultiThread_Containers.h
     NullAudioSystem.h
@@ -82,13 +71,11 @@ set(FILES
     SimpleSerialize.h
     smartptr.h
     StlUtils.h
-    Synchronization.h
     Timer.h
     TimeValue.h
     VectorMap.h
     VertexFormats.h
     XMLBinaryHeaders.h
-    RenderBus.h
     MainThreadRenderRequestBus.h
     Cry_Matrix33.h
     Cry_Matrix34.h
@@ -106,8 +93,6 @@ set(FILES
     Cry_Vector3.h
     CryHalf.inl
     MathConversion.h
-    Cry_HWMatrix.h
-    Cry_HWVector3.h
     AndroidSpecific.h
     AppleSpecific.h
     CryAssert_Android.h
