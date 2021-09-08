@@ -98,9 +98,9 @@ namespace AZ
                 jobCompletion.StartAndWaitForCompletion();
             }
 
-            PngImage image = PngImage::Create(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, *buffer);
+            Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, *buffer);
 
-            PngImage::SaveSettings saveSettings;
+            Utils::PngFile::SaveSettings saveSettings;
             saveSettings.m_compressionLevel = r_pngCompressionLevel;
             // We should probably strip alpha to save space, especially for automated test screenshots. Alpha is left in to maintain
             // prior behavior, changing this is out of scope for the current task. Note, it would have bit of a cascade effect where
