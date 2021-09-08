@@ -941,10 +941,7 @@ namespace AZ
         {
             return AZStd::shared_ptr<DestType>(ptr, castPtr);
         }
-        else
-        {
-            return AZStd::shared_ptr<DestType>();
-        }
+        return AZStd::shared_ptr<DestType>();
     }
 
     // RttiCast specialization for intrusive_ptr.
