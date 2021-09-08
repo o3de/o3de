@@ -38,9 +38,6 @@
 #include <QApplication>
 #include <QRect>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -1001,6 +998,7 @@ namespace AzToolsFramework
 
     // ask the visible entity data cache if the entity is selectable in the viewport
     // (useful in the context of drawing when we only care about entities we can see)
+    // note: return the index if it is selectable, nullopt otherwise
     static AZStd::optional<size_t> SelectableInVisibleViewportCache(
         const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
     {
@@ -3805,6 +3803,3 @@ namespace AzToolsFramework
     template ETCS::PivotOrientationResult ETCS::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

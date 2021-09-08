@@ -41,9 +41,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     std::ostream& operator<<(std::ostream& os, const EntityId entityId)
@@ -126,6 +123,9 @@ namespace UnitTest
         EXPECT_FALSE(m_cache.IsVisibleEntityVisible(m_cache.GetVisibleEntityIndexFromId(m_entityIds[2]).value()));
     }
 
+    //! Basic component that implements BoundsRequestBus and EditorComponentSelectionRequestsBus to be compatible
+    //! with the Editor visibility system.
+    //! Note: Used for simulating selection (picking) in the viewport.
     class BoundsTestComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public AzFramework::BoundsRequestBus::Handler
@@ -203,17 +203,8 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
-            auto* app = GetApplication();
-            app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
-
             m_entityId1 = CreateDefaultEditorEntity("Entity1");
             m_entityIds.push_back(m_entityId1);
-
-            AZ::Entity* entity1 = AzToolsFramework::GetEntityById(m_entityId1);
-
-            entity1->Deactivate();
-            entity1->CreateComponent<BoundsTestComponent>();
-            entity1->Activate();
         }
 
     public:
@@ -226,14 +217,14 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
-            // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
             auto* app = GetApplication();
+            // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
             app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
 
-            auto createEntityWithBounds = [](const char* name)
+            auto createEntityWithBoundsFn = [](const char* entityName)
             {
                 AZ::Entity* entity = nullptr;
-                AZ::EntityId entityId = CreateDefaultEditorEntity(name, &entity);
+                AZ::EntityId entityId = CreateDefaultEditorEntity(entityName, &entity);
 
                 entity->Deactivate();
                 entity->CreateComponent<BoundsTestComponent>();
@@ -242,9 +233,9 @@ namespace UnitTest
                 return entityId;
             };
 
-            m_entityId1 = createEntityWithBounds("Entity1");
-            m_entityId2 = createEntityWithBounds("Entity2");
-            m_entityId3 = createEntityWithBounds("Entity3");
+            m_entityId1 = createEntityWithBoundsFn("Entity1");
+            m_entityId2 = createEntityWithBoundsFn("Entity2");
+            m_entityId3 = createEntityWithBoundsFn("Entity3");
         }
 
     public:
@@ -597,6 +588,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
+    // fixture for use with the indirect manipulator test framework
     using EditorTransformComponentSelectionViewportPickingManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionViewportPickingFixture>;
 
@@ -1977,6 +1969,3 @@ namespace UnitTest
     }
 
 } // namespace UnitTest
-
-#pragma optimize("", on)
-#pragma inline_depth()

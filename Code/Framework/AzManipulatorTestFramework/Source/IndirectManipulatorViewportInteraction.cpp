@@ -40,6 +40,8 @@ namespace AzManipulatorTestFramework
     {
         m_viewportInteraction.UpdateVisibility();
 
+        // ensure we call display viewport 2d to simulate this update step (some state may be
+        // updated here, e.g. box select)
         AzFramework::ViewportDebugDisplayEventBus::Event(
             AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
             AzFramework::ViewportInfo{ m_viewportInteraction.GetViewportId() }, m_viewportInteraction.GetDebugDisplay());
