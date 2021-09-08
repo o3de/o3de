@@ -45,6 +45,9 @@ namespace AzManipulatorTestFramework
         virtual void SetAngularStep(float step) = 0;
         //! Get the viewport id.
         virtual int GetViewportId() const = 0;
+        //! Updates the visibility state.
+        //! Updates which entities are currently visible given the current camera state.
+        virtual void UpdateVisibility() = 0;
     };
 
     //! This interface is used to simulate the manipulator manager while the manipulators are under test.

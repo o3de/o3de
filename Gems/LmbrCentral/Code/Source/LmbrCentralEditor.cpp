@@ -24,6 +24,7 @@
 #include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
+#include "Shape/EditorAxisAlignedBoxShapeComponent.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorQuadShapeComponent.h"
 #include "Shape/EditorSphereShapeComponent.h"
@@ -67,6 +68,7 @@ namespace LmbrCentral
             EditorDiskShapeComponent::CreateDescriptor(),
             EditorTubeShapeComponent::CreateDescriptor(),
             EditorBoxShapeComponent::CreateDescriptor(),
+            EditorAxisAlignedBoxShapeComponent::CreateDescriptor(),
             EditorQuadShapeComponent::CreateDescriptor(),
             EditorLookAtComponent::CreateDescriptor(),
             EditorCylinderShapeComponent::CreateDescriptor(),
