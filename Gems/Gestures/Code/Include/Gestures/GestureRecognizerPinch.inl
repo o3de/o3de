@@ -106,7 +106,7 @@ inline float AngleInDegreesBetweenVectors(const AZ::Vector2& vec0, const AZ::Vec
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerPinch::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (pointerIndex > s_maxPinchPointerIndex)
+    if (!gEnv || !gEnv->pTimer || pointerIndex > s_maxPinchPointerIndex)
     {
         return false;
     }

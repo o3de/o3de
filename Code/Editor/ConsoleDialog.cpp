@@ -36,7 +36,7 @@ void CConsoleDialog::SetInfoText(const char* text)
 {
     if (gEnv && gEnv->pLog)                             // before log system was initialized
     {
-        CryLogAlways(text);
+        CryLogAlways("%s", text);
     }
 }
 

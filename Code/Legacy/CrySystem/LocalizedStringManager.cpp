@@ -802,16 +802,6 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
             m_pLanguage->m_vLocalizedStrings.clear();
             m_pLanguage->m_vLocalizedStrings = newVec;
         }
-
-        /*LARGE_INTEGER liEnd, liFreq;
-        QueryPerformanceCounter(&liEnd);
-        QueryPerformanceFrequency(&liFreq);
-
-        CTimeValue lockTime = CTimeValue((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart);
-        if (m_cvarLocalizationDebug >= 2)
-        {
-            CryLog("<Localization> ReleaseLocalizationDataByTag %s lock time %fMS", sTag, lockTime.GetMilliSeconds());
-        }*/
     }
 
     if (m_cvarLocalizationDebug >= 2)
@@ -2418,16 +2408,6 @@ void CLocalizedStringsManager::FormatStringMessage(AZStd::string& outString, con
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CLocalizedStringsManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_languages);
-    pSizer->AddObject(m_prototypeEvents);
-    pSizer->AddObject(m_characterNameSet);
-    pSizer->AddObject(m_pLanguage);
-
-    return 0;
-}
 
 #if defined (WIN32) || defined(WIN64)
 namespace

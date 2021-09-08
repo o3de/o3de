@@ -1887,16 +1887,6 @@ void CCryEditDoc::SetDocumentReady(bool bReady)
     m_bDocumentReady = bReady;
 }
 
-void CCryEditDoc::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    {
-        SIZER_COMPONENT_NAME(pSizer, "UndoManager(estimate)");
-        GetIEditor()->GetUndoManager()->GetMemoryUsage(pSizer);
-    }
-
-    pSizer->Add(*this);
-}
-
 void CCryEditDoc::RegisterConsoleVariables()
 {
     doc_validate_surface_types = gEnv->pConsole->GetCVar("doc_validate_surface_types");
