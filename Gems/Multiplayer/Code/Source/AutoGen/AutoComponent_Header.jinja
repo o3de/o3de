@@ -369,7 +369,7 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ_RTTI({{ ComponentName }}Requests, "{{ (ComponentName ~ "Requests") | createHashGuid }}")
 
         virtual {{ ComponentName }}NetworkInput CreateInput(float deltaTime) = 0;
-        virtual void ProcessInput({{ ComponentName }}NetworkInput& networkInput, float deltaTime) = 0;
+        virtual void ProcessInput({{ ComponentName }}NetworkInput* networkInput, float deltaTime) = 0;
     };
 
     using {{ ComponentName }}RequestBus = AZ::EBus<{{ ComponentName }}Requests>;
@@ -388,7 +388,7 @@ namespace {{ Component.attrib['Namespace'] }}
             return result;
         }
 
-        void ProcessInput({{ ComponentName }}NetworkInput& networkInput, float deltaTime) override
+        void ProcessInput({{ ComponentName }}NetworkInput* networkInput, float deltaTime) override
         {
             Call(FN_ProcessInput, networkInput, deltaTime);
         }

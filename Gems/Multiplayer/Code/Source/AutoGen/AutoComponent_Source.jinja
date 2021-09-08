@@ -1413,6 +1413,8 @@ namespace {{ Component.attrib['Namespace'] }}
 
     void {{ ControllerBaseName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
+        {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
+        {{ ComponentName }}RequestBus::Event(GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::ProcessInput, {{ LowerFirst(ComponentName) }}Input, deltaTime);
     }
 {% endif %}
 
