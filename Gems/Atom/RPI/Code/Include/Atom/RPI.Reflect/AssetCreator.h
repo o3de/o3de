@@ -150,7 +150,7 @@ namespace AZ
 
         template<typename AssetDataT>
         template<typename ... Args>
-        void AssetCreator<AssetDataT>::ReportError([[maybe_unused]] const char* format, [[maybe_unused]] Args... args)
+        void AssetCreator<AssetDataT>::ReportError(const char* format, Args... args)
         {
             ++m_errorCount;
             AZ_Error(m_assetClassName, false, format, args...);
@@ -158,7 +158,7 @@ namespace AZ
 
         template<typename AssetDataT>
         template<typename ... Args>
-        void AssetCreator<AssetDataT>::ReportWarning([[maybe_unused]] const char* format, [[maybe_unused]] Args... args)
+        void AssetCreator<AssetDataT>::ReportWarning(const char* format, Args... args)
         {
             ++m_warningCount;
             AZ_Warning(m_assetClassName, false, format, args...);
