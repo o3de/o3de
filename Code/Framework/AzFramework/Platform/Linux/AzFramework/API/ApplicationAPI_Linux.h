@@ -55,6 +55,7 @@ namespace AzFramework
 
     using LinuxXcbConnectionManagerBus = AZ::EBus<LinuxXcbConnectionManager, LinuxXcbConnectionManagerBusTraits>;
     using LinuxXcbConnectionManagerInterface = AZ::Interface<LinuxXcbConnectionManager>;
+    
     class LinuxXcbEventHandler
     {
     public:

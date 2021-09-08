@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
+
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +32,6 @@ namespace AzFramework
         void PumpSystemEventLoopUntilEmpty() override;
 
     private:
-    
         AZStd::unique_ptr<LinuxXcbConnectionManager>    m_xcbConnectionManager;
     };
 

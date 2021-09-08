@@ -16,6 +16,7 @@
 namespace AzFramework
 {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
     static constexpr uint8_t s_XcbFormatDataSize = 32;
     static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4;
 
@@ -28,7 +29,7 @@ namespace AzFramework
         {
             m_xcbConnection = xcbConnectionManager->GetXcbConnection();
         }
-        AZ_Error("AtomVulkan_RHI", m_xcbConnection!=nullptr, "Unable to get XCB Connection");
+        AZ_Error("NativeWindow_Linux_xcb", m_xcbConnection!=nullptr, "Unable to get XCB Connection");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +44,7 @@ namespace AzFramework
     {
         // Get the parent window 
         const xcb_setup_t* xcbSetup = xcb_get_setup(m_xcbConnection);
-        xcb_screen_t * xcbRootScreen = xcb_setup_roots_iterator(xcbSetup).data;
+        xcb_screen_t* xcbRootScreen = xcb_setup_roots_iterator(xcbSetup).data;
         xcb_window_t xcbParentWindow = xcbRootScreen->root;
 
         // Create an XCB window from the connection
@@ -65,15 +66,15 @@ namespace AzFramework
         xcb_void_cookie_t xcb_check_result;
 
         xcb_check_result = xcb_create_window_checked(m_xcbConnection,
-                                                     XCB_COPY_FROM_PARENT,                         //depth
-                                                     m_xcbWindow,                                  // Window ID
-                                                     xcbParentWindow,                              // parent.
-                                                     aznumeric_cast<int16_t>(geometry.m_posX),     // X
-                                                     aznumeric_cast<int16_t>(geometry.m_posY),     // Y
-                                                     aznumeric_cast<int16_t>(geometry.m_width),    // Width
-                                                     aznumeric_cast<int16_t>(geometry.m_height),   // Height
-                                                     borderWidth,                                  // Border Width
-                                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,                // Class
+                                                     XCB_COPY_FROM_PARENT,
+                                                     m_xcbWindow,
+                                                     xcbParentWindow,
+                                                     aznumeric_cast<int16_t>(geometry.m_posX),
+                                                     aznumeric_cast<int16_t>(geometry.m_posY),
+                                                     aznumeric_cast<int16_t>(geometry.m_width),
+                                                     aznumeric_cast<int16_t>(geometry.m_height),
+                                                     borderWidth,
+                                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                      xcbRootScreen->root_visual,
                                                      eventMask,
                                                      valueList);
@@ -98,12 +99,12 @@ namespace AzFramework
 
         xcb_check_result = xcb_change_property_checked(m_xcbConnection, 
                                                        XCB_PROP_MODE_REPLACE, 
-                                                       m_xcbWindow,
-			                                           m_xcbAtomProtocols, 
+                                                       m_xcbWindow, 
+                                                       m_xcbAtomProtocols, 
                                                        XCB_ATOM_ATOM, 
                                                        s_XcbFormatDataSize, 
                                                        1,
-			                                           &m_xcbAtomDeleteWindow);
+                                                       &m_xcbAtomDeleteWindow);
                                                     
         AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to change atom property for WM_CLOSE event");
 
@@ -210,17 +211,17 @@ namespace AzFramework
             case XCB_CLIENT_MESSAGE:
             {
                 xcb_client_message_event_t *cme = reinterpret_cast<xcb_client_message_event_t *>(event);
-	            if ((cme->type == m_xcbAtomProtocols) && 
+                if ((cme->type == m_xcbAtomProtocols) && 
                     (cme->format == s_XcbFormatDataSize) &&
-			        (cme->data.data32[0] == m_xcbAtomDeleteWindow))
+                    (cme->data.data32[0] == m_xcbAtomDeleteWindow))
                 {
                     Deactivate();
+
                     ApplicationRequests::Bus::Broadcast(&ApplicationRequests::ExitMainLoop);
                 }
                 break;
             }
         }
-        AZ_UNUSED(event);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +238,7 @@ namespace AzFramework
             }
         }
     }
+    
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
 } // namespace AzFramework

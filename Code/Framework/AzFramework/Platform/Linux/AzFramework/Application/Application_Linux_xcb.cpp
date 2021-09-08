@@ -38,7 +38,6 @@ namespace AzFramework
         }
 
     private:
-    
         xcb_connection_t*   m_xcbConnection = nullptr;
     };
 
