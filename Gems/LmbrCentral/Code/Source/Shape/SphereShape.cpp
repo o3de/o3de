@@ -141,7 +141,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawBall(AZ::Vector3::CreateZero(), sphereConfig.m_radius);
+            debugDisplay.DrawBall(AZ::Vector3::CreateZero(), sphereConfig.m_radius, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());

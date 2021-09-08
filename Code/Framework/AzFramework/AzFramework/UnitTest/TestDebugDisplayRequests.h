@@ -32,7 +32,7 @@ namespace UnitTest
         using AzFramework::DebugDisplayRequests::DrawWireQuad;
         void DrawWireQuad(float width, float height) override;
         using AzFramework::DebugDisplayRequests::DrawQuad;
-        void DrawQuad(float width, float height) override;
+        void DrawQuad(float width, float height, [[maybe_unused]] bool drawShaded) override;
         void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) override;
         void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2) override;

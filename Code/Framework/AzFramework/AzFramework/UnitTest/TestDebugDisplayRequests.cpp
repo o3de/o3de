@@ -57,7 +57,7 @@ namespace UnitTest
         m_points.push_back(tm.TransformPoint(AZ::Vector3(0.5f * width, 0.0f, 0.5f * height)));
     }
 
-    void TestDebugDisplayRequests::DrawQuad(float width, float height)
+    void TestDebugDisplayRequests::DrawQuad(float width, float height, [[maybe_unused]] bool drawShaded)
     {
         DrawWireQuad(width, height);
     }
