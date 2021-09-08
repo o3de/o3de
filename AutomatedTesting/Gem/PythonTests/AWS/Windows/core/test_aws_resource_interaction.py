@@ -74,7 +74,7 @@ def write_test_data_to_dynamodb_table(resource_mappings: pytest.fixture, aws_uti
         raise
 
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('asset_processor')
 @pytest.mark.parametrize('feature_name', [AWS_CORE_FEATURE_NAME])

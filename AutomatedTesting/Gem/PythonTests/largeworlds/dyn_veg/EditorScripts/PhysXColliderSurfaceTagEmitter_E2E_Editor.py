@@ -156,7 +156,7 @@ class TestPhysXColliderSurfaceTagEmitter(EditorTestHelper):
         # Setup collider entity with a PhysX Mesh
         test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", os.path.join("levels", "physics",
-                                                            "c4044697_material_perfacematerialvalidation",
+                                                            "Material_PerFaceMaterialGetsCorrectMaterial",
                                                             "test.pxmesh"), math.Uuid(), False)
 
         # Remove/re-add component due to LYN-5496

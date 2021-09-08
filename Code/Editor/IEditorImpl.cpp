@@ -1506,18 +1506,6 @@ void CEditorImpl::ShowStatusText(bool bEnable)
     m_bShowStatusText = bEnable;
 }
 
-void CEditorImpl::GetMemoryUsage(ICrySizer* pSizer)
-{
-    SIZER_COMPONENT_NAME(pSizer, "Editor");
-
-    if (GetDocument())
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Document");
-
-        GetDocument()->GetMemoryUsage(pSizer);
-    }
-}
-
 void CEditorImpl::ReduceMemory()
 {
     GetIEditor()->GetUndoManager()->ClearRedoStack();

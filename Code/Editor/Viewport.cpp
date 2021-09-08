@@ -1092,9 +1092,8 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     const int viewportId = GetViewportId();
 
     AzToolsFramework::EntityIdList visibleEntityIds;
-    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-        viewportId,
-        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+        viewportId, &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
         visibleEntityIds);
 
     // Look through all visible entities to find the closest one to the specified mouse point

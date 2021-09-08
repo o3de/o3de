@@ -158,18 +158,6 @@ namespace AzToolsFramework
         public:
             //! Returns the current camera state for this viewport.
             virtual AzFramework::CameraState GetCameraState() = 0;
-            //! Returns if grid snapping is enabled.
-            virtual bool GridSnappingEnabled() = 0;
-            //! Returns the grid snapping size.
-            virtual float GridSize() = 0;
-            //! Does the grid currently want to be displayed.
-            virtual bool ShowGrid() = 0;
-            //! Returns if angle snapping is enabled.
-            virtual bool AngleSnappingEnabled() = 0;
-            //! Returns the angle snapping/step size.
-            virtual float AngleStep() = 0;
-            //! Returns the current line bound width for manipulators.
-            virtual float ManipulatorLineBoundWidth() = 0;
             //! Transforms a point in world space to screen space coordinates in Qt Widget space.
             //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
@@ -187,12 +175,13 @@ namespace AzToolsFramework
             ~ViewportInteractionRequests() = default;
         };
 
+        //! Type to inherit to implement ViewportInteractionRequests.
+        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+
         //! Interface to return only viewport specific settings (e.g. snapping).
-        class ViewportSettings
+        class ViewportSettingsRequests
         {
         public:
-            virtual ~ViewportSettings() = default;
-
             //! Return if grid snapping is enabled.
             virtual bool GridSnappingEnabled() const = 0;
             //! Return the grid snapping size.
@@ -205,10 +194,15 @@ namespace AzToolsFramework
             virtual float AngleStep() const = 0;
             //! Returns the current line bound width for manipulators.
             virtual float ManipulatorLineBoundWidth() const = 0;
+            //! Returns the current circle (torus) bound width for manipulators.
+            virtual float ManipulatorCircleBoundWidth() const = 0;
+
+        protected:
+            ~ViewportSettingsRequests() = default;
         };
 
-        //! Type to inherit to implement ViewportInteractionRequests.
-        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+        //! Type to inherit to implement ViewportSettingsRequests.
+        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportEBusTraits>;
 
         //! An interface to notify when changes to viewport settings have happened.
         class ViewportSettingNotifications
@@ -256,8 +250,6 @@ namespace AzToolsFramework
             virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             //! Return the terrain height given a world position in 2d (xy plane).
             virtual float TerrainHeight(const AZ::Vector2& position) = 0;
-            //! Given the current view frustum (viewport) return all visible entities.
-            virtual void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) = 0;
             //! Is the user holding a modifier key to move the manipulator space from local to world.
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
@@ -275,7 +267,20 @@ namespace AzToolsFramework
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
         using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportEBusTraits>;
 
-        //! Viewport requests for managing the viewport's cursor state.
+        //! Editor entity requests to be made about the viewport.
+        class EditorEntityViewportInteractionRequests
+        {
+        public:
+            //! Given the current view frustum (viewport) return all visible entities.
+            virtual void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) = 0;
+
+        protected:
+            ~EditorEntityViewportInteractionRequests() = default;
+        };
+
+        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
+
+        //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
         public:
@@ -327,40 +332,14 @@ namespace AzToolsFramework
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
-    inline AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
-        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
-    {
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-        {
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
-            {
-                return AzFramework::ClickDetector::ClickEvent::Down;
-            }
-
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-            {
-                return AzFramework::ClickDetector::ClickEvent::Up;
-            }
-        }
-        return AzFramework::ClickDetector::ClickEvent::Nil;
-    }
+    AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+        const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
     //! Wrap EBus call to retrieve manipulator line bound width.
-    //! @note It is possible to pass AzFramework::InvalidViewportId to perform a Broadcast as opposed to a targeted Event.
-    inline float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId)
-    {
-        float lineBoundWidth = 0.0f;
-        if (viewportId != AzFramework::InvalidViewportId)
-        {
-            ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-                lineBoundWidth, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
-        }
-        else
-        {
-            ViewportInteraction::ViewportInteractionRequestBus::BroadcastResult(
-                lineBoundWidth, &ViewportInteraction::ViewportInteractionRequestBus::Events::ManipulatorLineBoundWidth);
-        }
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
+    float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
-        return lineBoundWidth;
-    }
+    //! Wrap EBus call to retrieve manipulator circle bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
+    float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
