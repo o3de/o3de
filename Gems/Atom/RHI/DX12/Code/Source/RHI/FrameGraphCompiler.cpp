@@ -530,7 +530,6 @@ namespace AZ
                 transition.StateAfter = GetResourceState(*scopeAttachment);
                 logger.SetStateAfter(transition.StateAfter);
 
-                const bool isCopyQueueAfter = scopeAfter.GetHardwareQueueClass() == RHI::HardwareQueueClass::Copy;
                 RHI::ImageSubresourceRange viewRange = RHI::ImageSubresourceRange(scopeAttachment->GetImageView()->GetDescriptor());
                 for (const auto& subresourceState : image.GetAttachmentStateByIndex(&viewRange))
                 {

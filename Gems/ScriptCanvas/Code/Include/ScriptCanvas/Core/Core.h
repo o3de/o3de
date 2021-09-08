@@ -279,6 +279,8 @@ namespace ScriptCanvas
         bool m_wasAdded = false;
         AZ::Entity* m_buildEntity = nullptr;
     };
+
+    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
 }
 
 namespace AZStd

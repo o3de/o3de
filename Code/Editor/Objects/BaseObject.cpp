@@ -2057,53 +2057,7 @@ bool CBaseObject::IsChildOf(CBaseObject* node)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.push_back(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
-
-void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj) const
-{
-    const CBaseObject* pBaseObj = pObj ? pObj : this;
-
-    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
-    {
-        CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == nullptr)
-        {
-            continue;
-        }
-        outAllChildren.AddObject(pChild);
-        GetAllChildren(outAllChildren, pChild);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::CloneChildren(CBaseObject* pFromObject)
@@ -2781,7 +2735,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
         return false;
     }
 
-    Matrix34A worldTM;
+    Matrix34 worldTM;
     IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
     if (!pStatObj)
     {
@@ -2789,7 +2743,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     }
 
     // transform decal into object space
-    Matrix34A worldTM_Inverted = worldTM.GetInverted();
+    Matrix34 worldTM_Inverted = worldTM.GetInverted();
     Matrix33 worldRot(worldTM_Inverted);
     worldRot.Transpose();
     // put hit direction into the object space

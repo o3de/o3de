@@ -10,8 +10,11 @@
 #include <AWSGameLiftSessionConstants.h>
 #include <GameLiftServerSDKWrapper.h>
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/std/bind/bind.h>
@@ -32,6 +35,18 @@ namespace AWSGameLift
         m_connectedPlayers.clear();
     }
 
+    void AWSGameLiftServerManager::ActivateManager()
+    {
+        AZ::Interface<IAWSGameLiftServerRequests>::Register(this);
+        AWSGameLiftServerRequestBus::Handler::BusConnect();
+    }
+
+    void AWSGameLiftServerManager::DeactivateManager()
+    {
+        AWSGameLiftServerRequestBus::Handler::BusDisconnect();
+        AZ::Interface<IAWSGameLiftServerRequests>::Unregister(this);
+    }
+
     bool AWSGameLiftServerManager::AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_gameliftMutex);
@@ -49,6 +64,37 @@ namespace AWSGameLift
             m_connectedPlayers.emplace(playerConnectionConfig.m_playerConnectionId, playerConnectionConfig.m_playerSessionId);
             return true;
         }
+    }
+
+    GameLiftServerProcessDesc AWSGameLiftServerManager::BuildGameLiftServerProcessDesc()
+    {
+        GameLiftServerProcessDesc serverProcessDesc;
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
+        if (fileIO)
+        {
+            const char pathToLogFolder[] = "@log@/";
+            char resolvedPath[AZ_MAX_PATH_LEN];
+            if (fileIO->ResolvePath(pathToLogFolder, resolvedPath, AZ_ARRAY_SIZE(resolvedPath)))
+            {
+                serverProcessDesc.m_logPaths.push_back(resolvedPath);
+            }
+            else
+            {
+                AZ_Error(AWSGameLiftServerManagerName, false, "Failed to resolve the path to the log folder.");
+            }
+        }
+        else
+        {
+            AZ_Error(AWSGameLiftServerManagerName, false, "Failed to get File IO.");
+        }
+
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
+            AZ_Error(AWSGameLiftServerManagerName, getCvarResult == AZ::GetValueResult::Success,
+                "Lookup of 'sv_port' console variable failed with error %s", AZ::GetEnumString(getCvarResult));
+        }
+        return serverProcessDesc;
     }
 
     AzFramework::SessionConfig AWSGameLiftServerManager::BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession)
@@ -99,12 +145,12 @@ namespace AWSGameLift
         return AZ::IO::Path();
     }
 
-    bool AWSGameLiftServerManager::InitializeGameLiftServerSDK()
+    void AWSGameLiftServerManager::InitializeGameLiftServerSDK()
     {
         if (m_serverSDKInitialized)
         {
             AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerSDKAlreadyInitErrorMessage);
-            return false;
+            return;
         }
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
@@ -115,8 +161,6 @@ namespace AWSGameLift
 
         AZ_Error(AWSGameLiftServerManagerName, m_serverSDKInitialized,
             AWSGameLiftServerInitSDKErrorMessage, initOutcome.GetError().GetErrorMessage().c_str());
-
-        return m_serverSDKInitialized;
     }
 
     void AWSGameLiftServerManager::HandleDestroySession()
@@ -170,7 +214,7 @@ namespace AWSGameLift
             playerSessionId.c_str(), disconnectOutcome.GetError().GetErrorMessage().c_str());
     }
 
-    bool AWSGameLiftServerManager::NotifyGameLiftProcessReady(const GameLiftServerProcessDesc& desc)
+    bool AWSGameLiftServerManager::NotifyGameLiftProcessReady()
     {
         if (!m_serverSDKInitialized)
         {
@@ -178,6 +222,7 @@ namespace AWSGameLift
             return false;
         }
 
+        GameLiftServerProcessDesc desc = BuildGameLiftServerProcessDesc();
         AZ_Warning(AWSGameLiftServerManagerName, desc.m_port != 0, AWSGameLiftServerTempPortErrorMessage);
 
         AZ::JobContext* jobContext = nullptr;

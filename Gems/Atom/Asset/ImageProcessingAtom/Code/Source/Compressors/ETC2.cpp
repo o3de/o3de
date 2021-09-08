@@ -111,6 +111,11 @@ namespace ImageProcessingAtom
     {
         return ColorSpace::autoSelect;
     }
+        
+    const char* ETC2Compressor::GetName() const
+    {
+        return "ETC2Compressor";
+    }
 
     IImageObjectPtr ETC2Compressor::CompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst,
         const CompressOption* compressOption) const

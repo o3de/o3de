@@ -7,12 +7,12 @@
     <Include File="Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h" />
     <Include File="Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h" />
 
-    <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
+    <Packet Name="Connect" HandshakePacket="true" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 
-    <Packet Name="Accept" Desc="Server accept packet">
+    <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
         <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>

@@ -51,8 +51,6 @@ namespace AZ
         {
             m_slotUsage = 0xffff;
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
     };
 
     //! Stores the glyphs of a font within a single cpu texture.
@@ -130,8 +128,6 @@ namespace AZ
         void CreateGradientSlot();
 
         int WriteToFile(const AZStd::string& fileName);
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return m_glyphCache.GetMonospaced(); }
 

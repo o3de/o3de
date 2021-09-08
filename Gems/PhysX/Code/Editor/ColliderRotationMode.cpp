@@ -21,7 +21,7 @@ namespace PhysX
     ColliderRotationMode::ColliderRotationMode()
         : m_rotationManipulators(AZ::Transform::Identity())
     {
-
+        m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
     }
 
     void ColliderRotationMode::Setup(const AZ::EntityComponentIdPair& idPair)

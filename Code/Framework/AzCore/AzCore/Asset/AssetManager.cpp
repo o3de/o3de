@@ -71,8 +71,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            typedef AssetId                 BusIdType;
-            typedef AZStd::recursive_mutex  MutexType;
+            using BusIdType = AssetId;
+            using MutexType = AZStd::recursive_mutex;
 
             template <class Bus>
             struct AssetJobConnectionPolicy
@@ -107,7 +107,7 @@ namespace AZ
             virtual void OnLoadCanceled(AssetId assetId) = 0;
         };
 
-        typedef EBus<BlockingAssetLoadEvents> BlockingAssetLoadBus;
+        using BlockingAssetLoadBus = EBus<BlockingAssetLoadEvents>;
 
         /*
          * This class processes async AssetDatabase load jobs
@@ -1478,7 +1478,7 @@ namespace AZ
 
                     // Resolve the asset handler and account for the new asset instance.
                     {
-                        AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
+                        [[maybe_unused]] AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
                         AZ_Assert(
                             handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
                             newData->GetType().ToString<AZ::OSString>().c_str(), newData->GetId().ToString<AZ::OSString>().c_str());
@@ -1869,7 +1869,7 @@ namespace AZ
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
 
-            auto inserted = m_activeBlockingRequests.insert(AZStd::make_pair(assetId, blockingRequest));
+            [[maybe_unused]] auto inserted = m_activeBlockingRequests.insert(AZStd::make_pair(assetId, blockingRequest));
             AZ_Assert(inserted.second, "Failed to track blocking request for asset %s", assetId.ToString<AZStd::string>().c_str());
         }
 

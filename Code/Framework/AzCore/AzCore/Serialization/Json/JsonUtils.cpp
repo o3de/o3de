@@ -209,6 +209,11 @@ namespace AZ
 
         AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonString(AZStd::string_view jsonText)
         {
+            if (jsonText.empty())
+            {
+                return AZ::Failure(AZStd::string("Failed to parse JSON: input string is empty."));
+            }
+
             rapidjson::Document jsonDocument;
             jsonDocument.Parse<rapidjson::kParseCommentsFlag>(jsonText.data(), jsonText.size());
             if (jsonDocument.HasParseError())

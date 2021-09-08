@@ -356,10 +356,9 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
 
     for (int v = 0; v < meshDesc.m_nCoorCount; ++v)
     {
-        Export::UV tc;
-        meshDesc.m_pTexCoord[v].ExportTo(tc.u, tc.v);
-        tc.v = 1.0f - tc.v;
-        pObj->m_texCoords.push_back(tc);
+        Vec2 uv = meshDesc.m_pTexCoord[v].GetUV();
+        uv.y = 1.0f - uv.y;
+        pObj->m_texCoords.push_back({uv.x,uv.y});
     }
 
     if (pIndMesh->GetSubSetCount() && !(pIndMesh->GetSubSetCount() == 1 && pIndMesh->GetSubSet(0).nNumIndices == 0))
