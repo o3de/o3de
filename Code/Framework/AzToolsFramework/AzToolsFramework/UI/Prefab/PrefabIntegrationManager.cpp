@@ -1305,7 +1305,7 @@ namespace AzToolsFramework
             }
 
             AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsContainer = AZStd::make_unique<AzQtComponents::Card>(AzToolsFramework::GetActiveWindow());
-            unsavedPrefabsContainer->setObjectName("SaveDependentPrefabsCard");
+            unsavedPrefabsContainer->setObjectName(SaveDependentPrefabsCard);
             unsavedPrefabsContainer->setTitle("Unsaved Prefabs");
             unsavedPrefabsContainer->header()->setHasContextMenu(false);
             unsavedPrefabsContainer->header()->setIcon(QIcon(QStringLiteral(":/Entity/prefab_edit.svg")));
