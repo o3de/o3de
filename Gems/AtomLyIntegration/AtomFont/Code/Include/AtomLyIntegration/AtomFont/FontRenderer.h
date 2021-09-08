@@ -79,8 +79,6 @@ namespace AZ
         int         GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance, uint8_t* glyphWidth, uint8_t* glyphHeight, int32_t& m_characterOffsetX, int32_t& m_characterOffsetY, int iX, int iY, int characterCode, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
         int         GetGlyphScaled(GlyphBitmap* glyphBitmap, int* glyphWidth, int* glyphHeight, int iX, int iY, float scaleX, float scaleY, int characterCode);
 
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
-
         bool GetMonospaced() const { return FT_IS_FIXED_WIDTH(m_face) != 0; }
 
         Vec2 GetKerning(uint32_t leftGlyph, uint32_t rightGlyph);
