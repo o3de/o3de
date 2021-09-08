@@ -311,7 +311,6 @@ namespace AzFramework
         // On some platforms, threadid is just a number but on other platforms it is a pointer of some kind
         // uintptr_t will ensure that the data will always fit
         uintptr_t threadID = threadId ? threadId : (uintptr_t)(AZStd::this_thread::get_id().m_id);
-        const char* printFormatter = m_machineReadable ? "~~%p~~%s~~" : "{%p}[%14s]";
         // while it may be tempting to check the fileio Pointer here, any emit of any warning or error would be fatal
         // since we're already logging, and we don't want to log while you log.
 
@@ -331,7 +330,14 @@ namespace AzFramework
 
                 azsnprintf(buffer, 80, "~~%llu~~%i", rawTime, severity);
                 m_fileIO->Write(m_fileHandle, buffer, strlen(buffer));
-                azsnprintf(buffer, 80, printFormatter, threadID, categoryActual);
+                if (m_machineReadable) // Branching instead of using a ternary on the format string to avoid warning 4774 (format literal expected)
+                {
+                    azsnprintf(buffer, 80, "~~%p~~%s~~", reinterpret_cast<void*>(threadID), categoryActual);
+                }
+                else
+                {
+                    azsnprintf(buffer, 80, "{%p}[%14s]", reinterpret_cast<void*>(threadID), categoryActual);
+                }
                 m_fileIO->Write(m_fileHandle, buffer, strlen(buffer));
 
                 m_fileIO->Write(m_fileHandle, dataSource, dataLength);
@@ -349,8 +355,14 @@ namespace AzFramework
                 {
                     return;
                 }
-
-                azsnprintf(categorybuffer, 64, printFormatter, threadID, categoryActual);
+                if (m_machineReadable) // Branching instead of using a ternary on the format string to avoid warning 4774 (format literal expected)
+                {
+                    azsnprintf(categorybuffer, 64, "~~%p~~%s~~", reinterpret_cast<void*>(threadID), categoryActual);
+                }
+                else
+                {
+                    azsnprintf(categorybuffer, 64, "{%p}[%14s]", reinterpret_cast<void*>(threadID), categoryActual);
+                }
 
                 if ((category) && (categoryLen))
                 {

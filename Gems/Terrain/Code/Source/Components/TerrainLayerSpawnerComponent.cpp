@@ -105,17 +105,19 @@ namespace Terrain
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
+        TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::Deactivate()
     {
-        TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
-
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        TerrainSpawnerRequestBus::Handler::BusDisconnect();
+        TerrainAreaRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -146,6 +148,17 @@ namespace Terrain
     void TerrainLayerSpawnerComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
         RefreshArea();
+    }
+    
+    void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
+    {
+        outLayer = m_configuration.m_layer;
+        outPriority = m_configuration.m_priority;
+    }
+
+    bool TerrainLayerSpawnerComponent::GetUseGroundPlane()
+    {
+        return m_configuration.m_useGroundPlane;
     }
 
     void TerrainLayerSpawnerComponent::RegisterArea()

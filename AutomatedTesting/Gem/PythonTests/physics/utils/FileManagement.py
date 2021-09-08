@@ -270,7 +270,7 @@ class FileManagement:
                     file_list = FileManagement._find_files(file_names, root_path, search_subdirs)
                 except RuntimeWarning as w:
                     assert False, (
-                        w.message
+                        w.args[0]
                         + " Please check use of search_subdirs; make sure you are using the correct parent directory."
                     )
 
@@ -331,7 +331,7 @@ class FileManagement:
                     file_list = FileManagement._find_files([target_file, src_file], root_path, search_subdirs)
                 except RuntimeWarning as w:
                     assert False, (
-                        w.message
+                        w.args[0]
                         + " Please check use of search_subdirs; make sure you are using the correct parent directory."
                     )
 
