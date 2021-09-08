@@ -28,12 +28,12 @@ namespace JsonSerializationTests
             AZ::NameDictionary::Destroy();
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::Name::Reflect(context.get());
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
             AZ::Name::Reflect(context.get());
         }

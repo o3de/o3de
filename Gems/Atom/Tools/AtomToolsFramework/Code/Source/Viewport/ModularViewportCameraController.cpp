@@ -73,6 +73,7 @@ namespace AtomToolsFramework
 
         return AZ::Transform::CreateIdentity();
     }
+
     void ModularCameraViewportContextImpl::SetCameraTransform(const AZ::Transform& transform)
     {
         if (auto viewportContext = RetrieveViewportContext(m_viewportId))
@@ -80,6 +81,7 @@ namespace AtomToolsFramework
             viewportContext->SetCameraTransform(transform);
         }
     }
+
     void ModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler)
     {
         if (auto viewportContext = RetrieveViewportContext(m_viewportId))

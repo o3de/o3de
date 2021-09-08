@@ -722,8 +722,7 @@ bool CSequenceBatchRenderDialog::GetResolutionFromCustomResText(const char* cust
     int     scannedWidth  = retCustomWidth;      // initialize with default fall-back values - they'll be overwritten in the case of a succesful sscanf below.
     int     scannedHeight = retCustomHeight;
 
-    QString strFormat = QString::fromLatin1(customResFormat).replace(QRegularExpression(QStringLiteral("%\\d")), QStringLiteral("%d"));
-    scanSuccess = (azsscanf(customResText, strFormat.toStdString().c_str(), &scannedWidth, &scannedHeight) == 2);
+    scanSuccess = (azsscanf(customResText, "Custom(%d x %d)...", &scannedWidth, &scannedHeight) == 2);
     if (scanSuccess)
     {
         retCustomWidth = scannedWidth;

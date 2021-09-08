@@ -64,10 +64,7 @@ void CIconManager::Reset()
     int i;
     for (i = 0; i < sizeof(m_objects) / sizeof(m_objects[0]); i++)
     {
-        if (m_objects[i])
-        {
-            m_objects[i]->Release();
-        }
+        delete m_objects[i];
         m_objects[i] = nullptr;
     }
     for (i = 0; i < eIcon_COUNT; i++)

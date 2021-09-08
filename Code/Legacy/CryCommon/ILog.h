@@ -16,9 +16,6 @@
 // this code is disable by default due it's runtime cost
 //#define SUPPORT_LOG_IDENTER
 
-// forward declarations
-class ICrySizer;
-
 // Summary:
 //   Callback interface to the ILog.
 struct ILogCallback
@@ -120,10 +117,6 @@ struct ILog
     virtual void Update() = 0;
 
     virtual const char* GetModuleFilter() = 0;
-
-    // Notes:
-    //   Collect memory statistics in CrySizer
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 
     // Asset scope strings help to figure out asset dependencies in case of asset loading errors.
     // Should not be used directly, only by using define CRY_DEFINE_ASSET_SCOPE

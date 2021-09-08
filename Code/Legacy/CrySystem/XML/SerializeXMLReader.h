@@ -6,22 +6,16 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLREADER_H
-#define CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLREADER_H
 #pragma once
-
 
 #include "SimpleSerialize.h"
 #include <stack>
 #include <IXml.h>
 #include <ITimer.h>
-#include <IValidator.h>
-#include <ISystem.h>
 #include "xml.h"
 
 class CSerializeXMLReaderImpl
-    : public CSimpleSerializeImpl<true, eST_SaveGame>
+    : public CSimpleSerializeImpl<true, ESerializationTarget::eST_SaveGame>
 {
 public:
     CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef);
@@ -41,17 +35,13 @@ public:
         g_pXmlStrCmp = &strcmp; // Do case-sensitive compare
         bool bReturn = node->haveAttr(name);
         if (bReturn)
-        {            
+        {
             value = node->getAttr(name);
         }
         g_pXmlStrCmp = pPrevCmpFunc;
         return bReturn;
     }
     ILINE bool GetAttr([[maybe_unused]] XmlNodeRef& node, [[maybe_unused]] const char* name, [[maybe_unused]] const AZStd::string& value)
-    {
-        return false;
-    }
-    ILINE bool GetAttr([[maybe_unused]] const XmlNodeRef& node, [[maybe_unused]] const char* name, [[maybe_unused]] SNetObjectID& value)
     {
         return false;
     }
@@ -77,23 +67,12 @@ public:
     bool Value(const char* name, int8& value);
     bool Value(const char* name, AZStd::string& value);
     bool Value(const char* name, CTimeValue& value);
-    bool Value(const char* name, XmlNodeRef& value);
-
-    template <class T_Value, class T_Policy>
-    bool Value(const char* name, T_Value& value, [[maybe_unused]] const T_Policy& policy)
-    {
-        return Value(name, value);
-    }
 
     void BeginGroup(const char* szName);
     bool BeginOptionalGroup(const char* szName, bool condition);
     void EndGroup();
-    AZStd::string GetStackInfo() const;
-
-    void GetMemoryUsage(ICrySizer* pSizer) const;
 
 private:
-    //CTimeValue m_curTime;
     XmlNodeRef CurNode() { return m_nodeStack.back().m_node; }
     XmlNodeRef NextOf(const char* name)
     {
@@ -171,13 +150,9 @@ private:
     void DefaultValue(Ang3& v) const { v.x = 0; v.y = 0; v.z = 0; }
     void DefaultValue(Quat& v) const { v.w = 1.0f; v.v.x = 0; v.v.y = 0; v.v.z = 0; }
     void DefaultValue(CTimeValue& v) const { v.SetValue(0); }
-    //void DefaultValue( char *str ) const { if (str) str[0] = 0; }
     void DefaultValue(AZStd::string& str) const { str = ""; }
     void DefaultValue([[maybe_unused]] const AZStd::string& str) const {}
-    void DefaultValue([[maybe_unused]] SNetObjectID& id) const {}
     void DefaultValue([[maybe_unused]] SSerializeString& str) const {}
     void DefaultValue(XmlNodeRef& ref) const { ref = NULL; }
     //////////////////////////////////////////////////////////////////////////
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLREADER_H

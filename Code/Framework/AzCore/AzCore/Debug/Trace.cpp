@@ -218,7 +218,7 @@ namespace AZ
 
     void Debug::Trace::Crash()
     {
-        int* p = 0;
+        int* p = nullptr;
         *p = 1;
     }
 

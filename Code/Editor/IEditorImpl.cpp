@@ -680,8 +680,8 @@ const SGizmoParameters& CEditorImpl::GetGlobalGizmoParameters()
 
     m_pGizmoParameters->axisConstraint = m_selectedAxis;
     m_pGizmoParameters->referenceCoordSys = m_refCoordsSys;
-    m_pGizmoParameters->axisGizmoScale = gSettings.gizmo.axisGizmoSize;
-    m_pGizmoParameters->axisGizmoText = gSettings.gizmo.axisGizmoText;
+    m_pGizmoParameters->axisGizmoScale = 1.0f;
+    m_pGizmoParameters->axisGizmoText = false;
 
     return *m_pGizmoParameters;
 }
@@ -1504,18 +1504,6 @@ void CEditorImpl::SetMatEditMode(bool bIsMatEditMode)
 void CEditorImpl::ShowStatusText(bool bEnable)
 {
     m_bShowStatusText = bEnable;
-}
-
-void CEditorImpl::GetMemoryUsage(ICrySizer* pSizer)
-{
-    SIZER_COMPONENT_NAME(pSizer, "Editor");
-
-    if (GetDocument())
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Document");
-
-        GetDocument()->GetMemoryUsage(pSizer);
-    }
 }
 
 void CEditorImpl::ReduceMemory()
