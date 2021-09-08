@@ -59,7 +59,7 @@ inline Gestures::RecognizerSwipe::~RecognizerSwipe()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerSwipe::OnPressedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
+    if (pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -68,7 +68,7 @@ inline bool Gestures::RecognizerSwipe::OnPressedEvent(const AZ::Vector2& screenP
     {
     case State::Idle:
     {
-        m_startTime = gEnv->pTimer->GetFrameStartTime().GetValue();
+        m_startTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
         m_startPosition = screenPosition;
         m_endPosition = screenPosition;
         m_currentState = State::Pressed;
@@ -89,7 +89,7 @@ inline bool Gestures::RecognizerSwipe::OnPressedEvent(const AZ::Vector2& screenP
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerSwipe::OnDownEvent([[maybe_unused]] const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
+    if (pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -98,7 +98,7 @@ inline bool Gestures::RecognizerSwipe::OnDownEvent([[maybe_unused]] const AZ::Ve
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if (currentTime.GetDifferenceInSeconds(m_startTime) > m_config.maxSecondsHeld)
         {
             // Swipe recognition failed because we took too long.
@@ -125,7 +125,7 @@ inline bool Gestures::RecognizerSwipe::OnDownEvent([[maybe_unused]] const AZ::Ve
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerSwipe::OnReleasedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
+    if (pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -134,7 +134,7 @@ inline bool Gestures::RecognizerSwipe::OnReleasedEvent(const AZ::Vector2& screen
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if ((currentTime.GetDifferenceInSeconds(m_startTime) <= m_config.maxSecondsHeld) &&
             (screenPosition.GetDistance(m_startPosition) >= m_config.minPixelsMoved))
         {
