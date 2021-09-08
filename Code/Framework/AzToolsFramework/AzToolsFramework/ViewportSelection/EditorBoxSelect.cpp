@@ -9,8 +9,8 @@
 #include "EditorBoxSelect.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <QApplication>
 
@@ -19,10 +19,14 @@ namespace AzToolsFramework
     static const AZ::Color s_boxSelectColor = AZ::Color(1.0f, 1.0f, 1.0f, 0.4f);
     static const float s_boxSelectLineWidth = 2.0f;
 
-    void EditorBoxSelect::HandleMouseInteraction(
-        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+        {
+            m_cursorPositionAtDownEvent = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
+        }
 
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
@@ -35,12 +39,7 @@ namespace AzToolsFramework
                 m_leftMouseDown(mouseInteraction);
             }
 
-            m_boxSelectRegion = QRect
-            {
-                ViewportInteraction::QPointFromScreenPoint(
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates),
-                QSize { 0, 0 }
-            };
+            m_boxSelectRegion = QRect{ ViewportInteraction::QPointFromScreenPoint(m_cursorPositionAtDownEvent), QSize{ 0, 0 } };
         }
 
         if (m_boxSelectRegion)
@@ -87,11 +86,11 @@ namespace AzToolsFramework
             AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
 
             debugDisplay.DrawWireQuad2d(
-                AZ::Vector2(
-                    aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
+                AZ::Vector2(aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
                 AZ::Vector2(
                     aznumeric_cast<float>(m_boxSelectRegion->x()) + aznumeric_cast<float>(m_boxSelectRegion->width()),
-                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) / viewportSize,
+                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) /
+                    viewportSize,
                 0.f);
 
             debugDisplay.DepthTestOn();
@@ -101,8 +100,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorBoxSelect::DisplayScene(
-        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    void EditorBoxSelect::DisplayScene(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (m_displayScene)
         {
@@ -122,15 +120,14 @@ namespace AzToolsFramework
         m_mouseMove = mouseMove;
     }
 
-    void EditorBoxSelect::InstallLeftMouseUp(
-        const AZStd::function<void()>& leftMouseUp)
+    void EditorBoxSelect::InstallLeftMouseUp(const AZStd::function<void()>& leftMouseUp)
     {
         m_leftMouseUp = leftMouseUp;
     }
 
     void EditorBoxSelect::InstallDisplayScene(
-        const AZStd::function<void(const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay)>& displayScene)
+        const AZStd::function<void(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)>&
+            displayScene)
     {
         m_displayScene = displayScene;
     }

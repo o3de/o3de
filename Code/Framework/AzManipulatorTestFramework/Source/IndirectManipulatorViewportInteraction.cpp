@@ -40,6 +40,10 @@ namespace AzManipulatorTestFramework
     {
         m_viewportInteraction.UpdateVisibility();
 
+        AzFramework::ViewportDebugDisplayEventBus::Event(
+            AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
+            AzFramework::ViewportInfo{ m_viewportInteraction.GetViewportId() }, m_viewportInteraction.GetDebugDisplay());
+
         DrawManipulators();
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(),
