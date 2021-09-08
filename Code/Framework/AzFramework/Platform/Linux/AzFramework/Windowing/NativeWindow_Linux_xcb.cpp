@@ -17,8 +17,9 @@ namespace AzFramework
 {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
-    static constexpr uint8_t s_XcbFormatDataSize = 32;
-    static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4;
+    static constexpr uint8_t s_XcbFormatDataSize = 32;              // Format indicator for xcb for client messages
+    static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4;    // The default border with in pixels if a border was specified
+    static constexpr uint8_t s_XcbResponseTypeMask = 0x7f;          // Mask to extract the specific event type from an xcb event
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     NativeWindowImpl_Linux_xcb::NativeWindowImpl_Linux_xcb() 
@@ -38,9 +39,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::InitWindow([[maybe_unused]]const AZStd::string& title,
+    void NativeWindowImpl_Linux_xcb::InitWindow(const AZStd::string& title,
                                                 const WindowGeometry& geometry,
-                                                [[maybe_unused]]const WindowStyleMasks& styleMasks)
+                                                const WindowStyleMasks& styleMasks)
     {
         // Get the parent window 
         const xcb_setup_t* xcbSetup = xcb_get_setup(m_xcbConnection);
@@ -106,7 +107,7 @@ namespace AzFramework
                                                        1,
                                                        &m_xcbAtomDeleteWindow);
                                                     
-        AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to change atom property for WM_CLOSE event");
+        AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to change the xcb atom property for WM_CLOSE event");
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
@@ -165,7 +166,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void NativeWindowImpl_Linux_xcb::ResizeClientArea(WindowSize clientAreaSize)
     {
-        const static uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
+        const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
 
         xcb_configure_window (m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
         
@@ -195,17 +196,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void NativeWindowImpl_Linux_xcb::HandleXcbEvent(xcb_generic_event_t* event)
     {
-        switch (event->response_type & 0x7f)
+        switch (event->response_type & s_XcbResponseTypeMask)
         {
             case XCB_CONFIGURE_NOTIFY:
             {
                 xcb_configure_notify_event_t *cne = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-                if ((cne->width != m_width) ||
-                    (cne->height != m_height))
-                {
-                    WindowSizeChanged(static_cast<uint32_t>(cne->width), 
-                                      static_cast<uint32_t>(cne->height));
-                }
+                WindowSizeChanged(aznumeric_cast<uint32_t>(cne->width), 
+                                  aznumeric_cast<uint32_t>(cne->height));
+
                 break;
             }
             case XCB_CLIENT_MESSAGE:

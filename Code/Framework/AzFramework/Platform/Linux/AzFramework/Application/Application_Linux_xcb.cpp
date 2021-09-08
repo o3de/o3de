@@ -68,7 +68,7 @@ namespace AzFramework
     {
         if (xcb_connection_t* xcbConnection = m_xcbConnectionManager->GetXcbConnection())
         {
-            if (xcb_generic_event_t *event = xcb_poll_for_event(xcbConnection))
+            if (xcb_generic_event_t* event = xcb_poll_for_event(xcbConnection))
             {
                 LinuxXcbEventHandlerBus::Broadcast(&LinuxXcbEventHandlerBus::Events::HandleXcbEvent, event);
                 free(event);
