@@ -543,12 +543,12 @@ namespace AZ
             return m_drawFilterMask;
         }
 
-        void RenderPipeline::ConnectPrepareFrameHandler(NotificationEvent::Handler& handler)
+        void RenderPipeline::ConnectPrepareFrameHandler(FrameNotificationEvent::Handler& handler)
         {
             handler.Connect(m_prepareFrameEvent);
         }
 
-        void RenderPipeline::ConnectEndFrameHandler(NotificationEvent::Handler& handler)
+        void RenderPipeline::ConnectEndFrameHandler(FrameNotificationEvent::Handler& handler)
         {
             handler.Connect(m_endFrameEvent);
         }

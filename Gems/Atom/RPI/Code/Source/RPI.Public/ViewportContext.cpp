@@ -45,17 +45,19 @@ namespace AZ
                 m_viewMatrixChangedEvent.Signal(matrix);
             });
 
-            m_prepareFrameHandler = RenderPipeline::NotificationEvent::Handler([this]()
-            {
-                ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
-                ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
-            });
+            m_prepareFrameHandler = RenderPipeline::FrameNotificationEvent::Handler(
+                [this]()
+                {
+                    ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+                    ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
+                });
 
-            m_endFrameHandler = RenderPipeline::NotificationEvent::Handler([this]()
-            {
-                ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnFrameEnd);
-                ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnFrameEnd);
-            });
+            m_endFrameHandler = RenderPipeline::FrameNotificationEvent::Handler(
+                [this]()
+                {
+                    ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnFrameEnd);
+                    ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnFrameEnd);
+                });
 
             SetRenderScene(renderScene);
         }
