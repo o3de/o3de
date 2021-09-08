@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
                  handles external headers in MSVC, we can remove that code and this
             -->
             <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+            <!-- We also disable the analysis of external headers. -->
+            <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
         </ClCompile>
     </ItemDefinitionGroup>
     <!-- Continue scanning upwards to pick up all Directory.Build.props -->
