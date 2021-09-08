@@ -415,6 +415,19 @@ def ExportTestResults(Map options, String platform, String type, String workspac
     }
 }
 
+def ExportTestScreenshots(Map options, String workspace, String platformName, String jobName, Map params) {
+    catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        def screenshotsFolder = '${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots'
+        def s3Uploader = '${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py'
+        def command = '${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} ' +
+                      '--file_regex "(.*zip$)" --bucket ${env.TEST_SCREENSHOT_BUCKET} ' +
+                      '--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER}' +
+                      '--extra-args {"ACL": "bucket-owner-full-control"}'
+        bat label: "Uploading test screenshots for ${jobName}",
+            script: command
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -466,6 +479,14 @@ def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String
     return {
         stage("${jobName}_results") {
             ExportTestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
+        }
+    }
+}
+
+def CreateExportTestScreenshotsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+    return {
+        stage("${jobName}_screenshots") {
+            ExportTestScreenshots(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
         }
     }
 }
@@ -531,6 +552,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                     }
                     if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                         CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                    }
+                    if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
+                        CreateExportTestScreenshotsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
                     }
                     CreateTeardownStage(envVars).call()
                 }
