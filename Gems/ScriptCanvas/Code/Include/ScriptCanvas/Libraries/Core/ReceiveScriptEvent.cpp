@@ -556,29 +556,6 @@ namespace ScriptCanvas
                 return true;
             }
 
-            bool ReceiveScriptEvent::SetupHandler()
-            {
-                if (!m_handler)
-                {
-                    if (!m_asset.IsReady() && m_scriptEventAssetId.IsValid())
-                    {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                        m_asset.BlockUntilLoadComplete();
-                        CreateHandler(m_asset);
-                        CreateEbus();
-                    }
-
-                    if (!m_handler)
-                    {
-                        AZStd::string error = AZStd::string::format("Script Event receiver node was not initialized (%s)!", m_definition.GetName().c_str());
-                        SCRIPTCANVAS_REPORT_ERROR((*this), error.c_str());
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
             bool ReceiveScriptEvent::IsOutOfDate(const VersionData& graphVersion) const
             {
                 AZ_UNUSED(graphVersion);
