@@ -198,7 +198,7 @@ namespace UnitTest
             AZ::Vector3(2.2f, 1.8f, 0.4f), AZ::Vector3(0.2f, 2.6f, 1.2f), entity);
 
         // This test creates a box of dimensions (2.2, 1.8, 0.4) centered on (2.0, -5, 3) and rotated about the Y axis by 45 degrees.
-        // The box is tested for axis-alignment by firing various rays and ensuring they either hit or miss the box. Any failure hre
+        // The box is tested for axis-alignment by firing various rays and ensuring they either hit or miss the box. Any failure here
         // would show the box has been rotated.
 
         // Ray should just miss the box
