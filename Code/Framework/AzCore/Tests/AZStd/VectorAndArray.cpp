@@ -824,7 +824,7 @@ namespace UnitTest
             {1, 2, 3, 4}
         };
         AZ_TEST_ASSERT(myArr.empty() == false);
-        AZ_TEST_ASSERT(myArr.data() != 0);
+        AZ_TEST_ASSERT(myArr.data() != nullptr);
         AZ_TEST_ASSERT(myArr.size() == 10);
         AZ_TEST_ASSERT(myArr.front() == 1);
         AZ_TEST_ASSERT(myArr.back() == 0);

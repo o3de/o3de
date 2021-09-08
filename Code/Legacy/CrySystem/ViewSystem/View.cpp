@@ -534,20 +534,6 @@ void CView::SetFrameAdditiveCameraAngles(const Ang3& addFrameAngles)
     m_frameAdditiveAngles = addFrameAngles;
 }
 
-void CView::GetMemoryUsage(ICrySizer* s) const
-{
-    s->AddObject(this, sizeof(*this));
-    s->AddObject(m_shakes);
-}
-
-//void CView::Serialize(TSerialize ser)
-//{
-//    if (ser.IsReading())
-//    {
-//        ResetShaking();
-//    }
-//}
-
 void CView::PostSerialize()
 {
 }

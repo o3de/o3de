@@ -8,6 +8,7 @@
 
 set(FILES
     Tests/AudioComponentTests.cpp
+    Tests/AxisAlignedBoxShapeTest.cpp
     Tests/BoxShapeTest.cpp
     Tests/BundlingSystemComponentTests.cpp
     Tests/SphereShapeTest.cpp

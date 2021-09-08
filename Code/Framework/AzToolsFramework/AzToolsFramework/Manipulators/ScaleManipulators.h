@@ -41,6 +41,9 @@ namespace AzToolsFramework
 
         void ConfigureView(float axisLength, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const AZ::Color& axis3Color);
 
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
+        void SetLineBoundWidth(float lineBoundWidth);
+
     private:
         AZ_DISABLE_COPY_MOVE(ScaleManipulators)
 
@@ -49,5 +52,6 @@ namespace AzToolsFramework
 
         AZStd::array<AZStd::shared_ptr<LinearManipulator>, 3> m_axisScaleManipulators;
         AZStd::shared_ptr<LinearManipulator> m_uniformScaleManipulator;
+        float m_lineBoundWidth = 0.01f; //!< The default line bound width for the linear manipulator axis.
     };
 } // namespace AzToolsFramework

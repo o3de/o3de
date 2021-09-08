@@ -216,9 +216,9 @@ namespace AZ
     class OverrunDetectionSchemaImpl
     {
     public:
-        typedef void*       pointer_type;
-        typedef size_t      size_type;
-        typedef ptrdiff_t   difference_type;
+        using pointer_type = void *;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
 
         OverrunDetectionSchemaImpl(const OverrunDetectionSchema::Descriptor& desc);
         ~OverrunDetectionSchemaImpl();
@@ -241,8 +241,8 @@ namespace AZ
         Internal::AllocationRecord* CreateAllocationRecord(void* p, size_t size) const;
 
     private:
-        typedef AZStd::mutex mutex_type;
-        typedef AZStd::lock_guard<mutex_type> lock_type;
+        using mutex_type = AZStd::mutex;
+        using lock_type = AZStd::lock_guard<mutex_type>;
 
         AZStd::unique_ptr<OverrunDetectionSchema::PlatformAllocator> m_platformAllocator;
         mutex_type m_mutex;

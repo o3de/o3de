@@ -465,12 +465,7 @@ namespace ScriptCanvas
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
-#if defined(PERFORMANCE_BUILD)
-            lua_pushboolean(lua, true);
-            lua_setglobal(lua, k_InterpretedConfigurationPerformance);
-            lua_pushboolean(lua, false);
-            lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#elif defined(_RELEASE)
+#if defined(_RELEASE)
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, true);
@@ -481,7 +476,7 @@ namespace ScriptCanvas
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#endif//defined(PERFORMANCE_BUILD) 
+#endif
 
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
