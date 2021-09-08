@@ -1723,14 +1723,6 @@ namespace AzToolsFramework
         m_pivotOverrideFrame.Reset();
     }
 
-    void EditorTransformComponentSelection::ChangeSelectedEntity(const AZ::EntityId entityId)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        DeselectEntities();
-        SelectDeselect(entityId);
-    }
-
     bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
