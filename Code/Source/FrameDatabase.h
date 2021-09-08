@@ -83,6 +83,7 @@ namespace EMotionFX
 
         private:
             AZStd::vector<Frame> m_frames; /**< The collection of frames. Keep in mind these don't hold a pose, but reference to a given frame/time value inside a given motion. */
+            AZStd::unordered_map<Motion*, AZStd::vector<size_t>> m_frameIndexByMotion;
             AZStd::vector<const Motion*> m_usedMotions; /**< The list of used motions. */
         };
     } // namespace MotionMatching
