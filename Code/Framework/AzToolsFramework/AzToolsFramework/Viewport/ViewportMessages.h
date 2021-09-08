@@ -254,11 +254,6 @@ namespace AzToolsFramework
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
             virtual QWidget* GetWidgetForViewportContextMenu() = 0;
-            //! Set the render context for the viewport.
-            virtual void BeginWidgetContext() = 0;
-            //! End the render context for the viewport.
-            //! Return to previous context before Begin was called.
-            virtual void EndWidgetContext() = 0;
 
         protected:
             ~MainEditorViewportInteractionRequests() = default;
@@ -297,28 +292,6 @@ namespace AzToolsFramework
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
         using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportEBusTraits>;
-
-        //! A helper to wrap Begin/EndWidgetContext.
-        class WidgetContextGuard
-        {
-        public:
-            explicit WidgetContextGuard(const int viewportId)
-                : m_viewportId(viewportId)
-            {
-                MainEditorViewportInteractionRequestBus::Event(
-                    viewportId, &MainEditorViewportInteractionRequestBus::Events::BeginWidgetContext);
-            }
-
-            ~WidgetContextGuard()
-            {
-                MainEditorViewportInteractionRequestBus::Event(
-                    m_viewportId, &MainEditorViewportInteractionRequestBus::Events::EndWidgetContext);
-            }
-
-        private:
-            int m_viewportId; //!< The viewport id the widget context is being set on.
-        };
-
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.

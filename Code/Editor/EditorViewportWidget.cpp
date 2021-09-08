@@ -295,28 +295,17 @@ void EditorViewportWidget::mousePressEvent(QMouseEvent* event)
     QtViewport::mousePressEvent(event);
 }
 
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePickInternal(const QPoint& point) const
+AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MousePick mousePick;
-    mousePick.m_screenCoordinates = ScreenPointFromQPoint(point);
-    const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
-    if (ray.has_value())
+    AzToolsFramework::ViewportInteraction::MousePick mousePick;
+    mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
+    if (const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
+        ray.has_value())
     {
         mousePick.m_rayOrigin = ray.value().origin;
         mousePick.m_rayDirection = ray.value().direction;
     }
-    return mousePick;
-}
 
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point)
-{
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    PreWidgetRendering();
-    const MousePick mousePick = BuildMousePickInternal(point);
-    PostWidgetRendering();
     return mousePick;
 }
 
@@ -325,9 +314,7 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
     const AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
     const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MouseInteraction mouse;
+    AzToolsFramework::ViewportInteraction::MouseInteraction mouse;
     mouse.m_interactionId.m_cameraId = m_viewEntityId;
     mouse.m_interactionId.m_viewportId = GetViewportId();
     mouse.m_mouseButtons = buttons;
@@ -339,11 +326,11 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
 AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::BuildMouseInteraction(
     const Qt::MouseButtons buttons, const Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    using namespace AzToolsFramework::ViewportInteraction;
+    namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
     return BuildMouseInteractionInternal(
-        BuildMouseButtons(buttons),
-        BuildKeyboardModifiers(modifiers),
+        AztfVi::BuildMouseButtons(buttons),
+        AztfVi::BuildKeyboardModifiers(modifiers),
         BuildMousePick(WidgetToViewport(point)));
 }
 
@@ -769,15 +756,15 @@ void EditorViewportWidget::RenderAll()
 
     if (m_manipulatorManager != nullptr)
     {
-        using namespace AzToolsFramework::ViewportInteraction;
+        namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
             *m_debugDisplay, GetCameraState(),
             BuildMouseInteractionInternal(
-                MouseButtons(TranslateMouseButtons(QGuiApplication::mouseButtons())),
-                BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
-                BuildMousePickInternal(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
+                AztfVi::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
+                BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
     }
 }
@@ -999,28 +986,17 @@ QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
     return this;
 }
 
-void EditorViewportWidget::BeginWidgetContext()
-{
-    PreWidgetRendering();
-}
-
-void EditorViewportWidget::EndWidgetContext()
-{
-    PostWidgetRendering();
-}
-
 bool EditorViewportWidget::ShowingWorldSpace()
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-    return BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
+    return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
 }
 
 void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
 
-    // Clear the cached debugdisplay pointer. we're about to delete that render viewport, and deleting the render
-    // viewport invalidates the debugdisplay.
+    // Clear the cached DebugDisplay pointer. we're about to delete that render viewport, and deleting the render
+    // viewport invalidates the DebugDisplay.
     m_debugDisplay = nullptr;
 
     // First delete any existing layout

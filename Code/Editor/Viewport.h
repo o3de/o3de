@@ -572,12 +572,6 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
-    //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts
-    //from screen-space to world-space.
-    virtual void PreWidgetRendering() {}
-    virtual void PostWidgetRendering() {}
-
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
