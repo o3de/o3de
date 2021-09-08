@@ -18,6 +18,7 @@
 
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
+#include <Atom/Utils/PngFile.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -97,26 +98,21 @@ namespace AZ
                 jobCompletion.StartAndWaitForCompletion();
             }
 
-            using namespace OIIO;
-            AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
-            if (out)
-            {
-                ImageSpec spec(
-                    readbackResult.m_imageDescriptor.m_size.m_width,
-                    readbackResult.m_imageDescriptor.m_size.m_height,
-                    numChannels
-                );
-                spec.attribute("png:compressionLevel", r_pngCompressionLevel);
+            PngImage image = PngImage::Create(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, *buffer);
 
-                if (out->open(outputFilePath.c_str(), spec))
-                {
-                    out->write_image(TypeDesc::UINT8, buffer->data());
-                    out->close();
-                    return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
-                }
+            PngImage::SaveSettings saveSettings;
+            saveSettings.m_compressionLevel = r_pngCompressionLevel;
+            // We should probably strip alpha to save space, especially for automated test screenshots. Alpha is left in to maintain
+            // prior behavior, changing this is out of scope for the current task. Note, it would have bit of a cascade effect where
+            // AtomSampleViewer's ScriptReporter assumes an RGBA image.
+            saveSettings.m_stripAlpha = false; 
+
+            if(image && image.Save(outputFilePath.c_str(), saveSettings))
+            {
+                return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
             }
 
-            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
+            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to '" + outputFilePath + "'"};
         }
 #endif
 
