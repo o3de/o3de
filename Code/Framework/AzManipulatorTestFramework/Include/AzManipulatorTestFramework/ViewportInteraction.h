@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Visibility/EntityVisibilityQuery.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 
 namespace AzManipulatorTestFramework
@@ -19,6 +20,7 @@ namespace AzManipulatorTestFramework
         : public ViewportInteractionInterface
         , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
         , public AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler
+        , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     {
     public:
         ViewportInteraction();
@@ -34,6 +36,7 @@ namespace AzManipulatorTestFramework
         void SetGridSize(float size) override;
         void SetAngularStep(float step) override;
         int GetViewportId() const override;
+        void UpdateVisibility() override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;
@@ -52,7 +55,11 @@ namespace AzManipulatorTestFramework
         float ManipulatorLineBoundWidth() const override;
         float ManipulatorCircleBoundWidth() const override;
 
+        // EditorEntityViewportInteractionRequestBus overrides ...
+        void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
+
     private:
+        AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
         AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;
         const int m_viewportId = 1234; // Arbitrary viewport id for manipulator tests
         AzFramework::CameraState m_cameraState;

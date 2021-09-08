@@ -19,7 +19,7 @@
 namespace AzToolsFramework
 {
     // default ray length for picking in the viewport
-    static const float s_pickRayLength = 1000.0f;
+    static const float EditorPickRayLength = 1000.0f;
 
     AZ::Vector3 CalculateCenterOffset(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {
@@ -60,16 +60,27 @@ namespace AzToolsFramework
         return screenPosition;
     }
 
-    bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb)
+    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::Vector3 rayScaledDir = mouseInteraction.m_mousePick.m_rayDirection * s_pickRayLength;
+        const AZ::Vector3 rayScaledDir = direction * EditorPickRayLength;
 
-        AZ::Vector3 startNormal;
         float t, end;
-        return AZ::Intersect::IntersectRayAABB(
-                   mouseInteraction.m_mousePick.m_rayOrigin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0;
+        AZ::Vector3 startNormal;
+        if (AZ::Intersect::IntersectRayAABB(origin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0)
+        {
+            distance = t * EditorPickRayLength;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb)
+    {
+        float unused;
+        return AabbIntersectRay(mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, aabb, unused);
     }
 
     bool PickEntity(
@@ -117,8 +128,7 @@ namespace AzToolsFramework
     {
         float scaling = 1.0f;
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            scaling, viewportId,
-            &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
+            scaling, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
 
         return scaling;
     }

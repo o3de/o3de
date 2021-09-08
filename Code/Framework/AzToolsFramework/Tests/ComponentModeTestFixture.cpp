@@ -6,8 +6,8 @@
  *
  */
 
-#include "ComponentModeTestDoubles.h"
 #include "ComponentModeTestFixture.h"
+#include "ComponentModeTestDoubles.h"
 
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -15,17 +15,15 @@ namespace UnitTest
 {
     void ComponentModeTestFixture::SetUpEditorFixtureImpl()
     {
-        using namespace AzToolsFramework;
-        using namespace AzToolsFramework::ComponentModeFramework;
+        namespace AztfCmf = AzToolsFramework::ComponentModeFramework;
 
         auto* app = GetApplication();
-        ASSERT_TRUE(app);
 
-        app->RegisterComponentDescriptor(PlaceholderEditorComponent::CreateDescriptor());
-        app->RegisterComponentDescriptor(AnotherPlaceholderEditorComponent::CreateDescriptor());
-        app->RegisterComponentDescriptor(DependentPlaceholderEditorComponent::CreateDescriptor());
+        app->RegisterComponentDescriptor(AztfCmf::PlaceholderEditorComponent::CreateDescriptor());
+        app->RegisterComponentDescriptor(AztfCmf::AnotherPlaceholderEditorComponent::CreateDescriptor());
+        app->RegisterComponentDescriptor(AztfCmf::DependentPlaceholderEditorComponent::CreateDescriptor());
         app->RegisterComponentDescriptor(
-            TestComponentModeComponent<OverrideMouseInteractionComponentMode>::CreateDescriptor());
-        app->RegisterComponentDescriptor(IncompatiblePlaceholderEditorComponent::CreateDescriptor());
+            AztfCmf::TestComponentModeComponent<AztfCmf::OverrideMouseInteractionComponentMode>::CreateDescriptor());
+        app->RegisterComponentDescriptor(AztfCmf::IncompatiblePlaceholderEditorComponent::CreateDescriptor());
     }
 } // namespace UnitTest

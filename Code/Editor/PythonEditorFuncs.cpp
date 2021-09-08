@@ -313,7 +313,7 @@ namespace
     {
         if (strcmp(pMessage, "") != 0)
         {
-            CryLogAlways(pMessage);
+            CryLogAlways("%s", pMessage);
         }
     }
 

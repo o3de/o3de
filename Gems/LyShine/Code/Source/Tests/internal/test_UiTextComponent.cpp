@@ -110,7 +110,7 @@ namespace
             ++drawBatchIt)
         {
             const UiTextComponent::DrawBatch& drawBatch = *drawBatchIt;
-            numNewlinesFound += static_cast<int>(AZStd::count_if(drawBatch.text.begin(), drawBatch.text.end(), 
+            numNewlinesFound += static_cast<int>(AZStd::count_if(drawBatch.text.begin(), drawBatch.text.end(),
             [](char c) -> bool
             {
                 return c == '\n';
@@ -135,11 +135,11 @@ namespace
     }
 
     //! \brief Verify fonts that ship with Open 3D Engine load correctly.
-    //! 
+    //!
     //! This test depends on the LyShineExamples and UiBasics gems being
     //! included in the project.
     //!
-    //! There are other fonts that ship in other projects (SamplesProject, 
+    //! There are other fonts that ship in other projects (SamplesProject,
     //! FeatureTests), but that would call for project-specific unit-tests
     //! which don't belong here.
     void VerifyShippingFonts()
@@ -168,7 +168,7 @@ namespace
                 AZ_Assert(AZStd::string(inputStringCopy.c_str()) == inputString, "Test failed");
             }
         }
-        
+
     }
 
     void BuildDrawBatchesTests(FontFamily* fontFamily)
@@ -179,7 +179,7 @@ namespace
         STextDrawContext fontContext;
         fontContext.SetEffect(0);
         fontContext.SetSizeIn800x600(false);
-        fontContext.SetSize(vector2f(32.0f, 32.0f));
+        fontContext.SetSize(Vec2(32.0f, 32.0f));
         const float defaultAscent = fontFamily->normal->GetAscender(fontContext);
 
         // Plain string
@@ -635,7 +635,7 @@ namespace
             }
         }
 
-        // Anchor tag with multiple colors within link 
+        // Anchor tag with multiple colors within link
         {
             const LyShine::StringType markupTestString("<a action=\"action\" data=\"data\">this <font color=\"#ff0000\">is</font> a test!</a>");
 
@@ -2021,7 +2021,7 @@ namespace
         STextDrawContext fontContext;
         fontContext.SetEffect(0);
         fontContext.SetSizeIn800x600(false);
-        fontContext.SetSize(vector2f(32.0f, 32.0f));
+        fontContext.SetSize(Vec2(32.0f, 32.0f));
         const float defaultAscent = fontFamily->normal->GetAscender(fontContext);
 
         {
@@ -2082,7 +2082,7 @@ namespace
                 AZ_Assert(0 == fontFamilyRefs.size(), "Test failed");
                 AZ_Assert(2 == drawBatches.size(), "Test failed");
                 AssertTextNotEmpty(drawBatches);
-                
+
                 StringList stringList;
                 stringList.push_back("this");
                 stringList.push_back(" is a test!");
@@ -2149,7 +2149,7 @@ namespace
         STextDrawContext fontContext;
         fontContext.SetEffect(0);
         fontContext.SetSizeIn800x600(false);
-        fontContext.SetSize(vector2f(32.0f, 32.0f));
+        fontContext.SetSize(Vec2(32.0f, 32.0f));
 
         UiTextComponent::InlineImageContainer inlineImages;
         float defaultImageHeight = 32.0f;
@@ -2581,7 +2581,7 @@ namespace
                     }
                 }
 
-                // Next line 
+                // Next line
                 ++batchLineIter;
                 {
                     const auto& batchLine = *batchLineIter;
@@ -2667,7 +2667,7 @@ namespace
                     }
                 }
 
-                // Next line 
+                // Next line
                 ++batchLineIter;
                 {
                     const auto& batchLine = *batchLineIter;
@@ -2725,7 +2725,7 @@ namespace
         {
             expectedWidth = 0.0f;
         }
-        
+
         AZ_Assert(IsClose(newWidth, expectedWidth), "Test failed: Character Spacing, %s. Expected: %f, actual: %f", testName, expectedWidth, newWidth);
 
         lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2981,7 +2981,7 @@ namespace
                 AZ::EntityId testElemId = testElem->GetId();
 
                 // Verify that GetText and GetAsIs returns the unlocalized key "@ui_Hello" along
-                // with the original (escaped) markup characters 
+                // with the original (escaped) markup characters
                 {
                     AZStd::string testString("&<>% @ui_Hello");
                     UiTextInterface::SetTextFlags setTextFlags = static_cast<UiTextInterface::SetTextFlags>(UiTextInterface::SetEscapeMarkup | UiTextInterface::SetLocalized);
@@ -3011,7 +3011,7 @@ namespace
             // Tests: Setting localized text with abutting invalid localization key chars
             //
             // Purpose: localization tokens appear in strings surrounded by characters that
-            // shouldn't be part of the localization key. 
+            // shouldn't be part of the localization key.
             //
             // For example:
             // "@ui_Hello, @ui_Welcome!"
@@ -3110,12 +3110,12 @@ namespace
         // Test that markup is disabled by default.
         EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
         AZ_Assert(!enabled, "Test failed");
-        
+
         // Test that setting it to false when it is already false, does not set it to true.
         EBUS_EVENT_ID(testElemId, UiTextBus, SetIsMarkupEnabled, false);
         EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
         AZ_Assert(!enabled, "Test failed");
-        
+
         // Check that the flag is actually disabled by checking the size of the textbox
         EBUS_EVENT_ID_RESULT(NewSize, testElemId, UiTextBus, GetTextSize);
         AZ_Assert(NewSize == MarkUpDisabledSize, "Test failed");
@@ -3287,7 +3287,7 @@ void FontSharedPtrTests()
 
             // This is a negative test which is difficult to support currently.
             // Uncommenting this line should trigger an assert in CryFont because
-            // the font was de-allocated while still being referenced by a 
+            // the font was de-allocated while still being referenced by a
             // FontFamily
             //notoSans->normal->Release();
 
@@ -3418,7 +3418,7 @@ void FontSharedPtrTests()
             AZ_Assert(fontBoldItalic == notoSans->boldItalic, "Test failed");
         }
 
-        // Once FontFamilyPtr goes out of scope, all associated font family 
+        // Once FontFamilyPtr goes out of scope, all associated font family
         // fonts should get unloaded too.
         IFFont* fontRegular = GetISystem()->GetICryFont()->GetFont(notoSansRegular);
         AZ_Assert(!fontRegular, "Test failed");
@@ -3454,11 +3454,11 @@ void FontSharedPtrTests()
 
         const char* veraFontFamilyFile = "fonts/vera.fontfamily";
         FontFamilyPtr veraFontFamily = gEnv->pCryFont->LoadFontFamily(veraFontFamilyFile);
-        
+
         // BEGIN JAV_LY_FORK: The above "vera.font" is a pass-through font (not a font family)
         // and is now mapped by by its full filepath rather than just the filename.
         AZ_Assert(veraFontFamily.get(), "Test failed");
-        
+
         // The vera font family uses vera.font for its regular-weighted font,
         // so the ref count for vera.font increases by one, from 4 to 5.
         AZ_Assert(6 == veraFont->normal->AddRef(), "Test failed");
@@ -3483,12 +3483,12 @@ void UiTextComponent::UnitTest(CLyShine* lyshine, IConsoleCmdArgs* cmdArgs)
     else
     {
         // These tests assume the unit-tests run at startup in order for ref count
-        // values to make sense. 
+        // values to make sense.
         AZ_Warning("LyShine", false,
             "Unit-tests: skipping FontSharedPtrTests due to tests running "
             "ad-hoc. Run unit tests at startup for full coverage. See ui_RunUnitTestsOnStartup.");
     }
-    
+
     VerifyShippingFonts();
 
     // These fonts are required for subsequent unit-tests to work.

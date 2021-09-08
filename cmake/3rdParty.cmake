@@ -123,10 +123,8 @@ function(ly_add_external_target)
 
         else()
             # only install external 3rdParty that are within the source tree
-            cmake_path(RELATIVE_PATH ly_add_external_target_3RDPARTY_ROOT_DIRECTORY 
-                BASE_DIRECTORY ${LY_ROOT_FOLDER}
-                OUTPUT_VARIABLE relative_path)
-            if(relative_path AND NOT relative_path MATCHES "^../")
+            cmake_path(IS_PREFIX LY_ROOT_FOLDER ${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY} NORMALIZE is_in_source_tree)
+            if(is_in_source_tree)
                 ly_install_external_target(${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY})
             endif()
             set(BASE_PATH "${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY}")
