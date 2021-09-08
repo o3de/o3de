@@ -63,7 +63,7 @@ namespace ImageProcessingAtom
         StepAll
     };
 
-    const char ProcessStepNames[StepAll][64] =
+    [[maybe_unused]] const char ProcessStepNames[StepAll][64] =
     {
         "ValidateInput",
         "GenerateColorChart",

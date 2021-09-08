@@ -60,8 +60,8 @@ void initSharedResources()
 
 namespace
 {
-    const char* LUAEditorDebugName = "LUA Debug";
-    const char* LUAEditorInfoName = "LUA Editor";
+    [[maybe_unused]] const char* LUAEditorDebugName = "LUA Debug";
+    [[maybe_unused]] const char* LUAEditorInfoName = "LUA Editor";
 }
 
 
