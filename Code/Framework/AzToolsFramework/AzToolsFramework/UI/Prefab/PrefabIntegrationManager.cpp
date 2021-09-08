@@ -1191,7 +1191,7 @@ namespace AzToolsFramework
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
             QLabel* prefabSavedSuccessfullyLabel = new QLabel(
-                QString("Prefab %1 has been saved. Do you want to save the below dependent prefabs too?").arg(prefabTemplatePath.c_str()),
+                QString("Prefab '<b>%1</b>' has been saved. Do you want to save the below dependent prefabs too?").arg(prefabTemplatePath.c_str()),
                 savePrefabDialog.get());
             prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyIconContainer);
             prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyLabel);

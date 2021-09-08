@@ -26,7 +26,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/SaveAllPrefabs";
+        static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/Prefabs/SaveAllPrefabs";
 
         void PrefabLoader::Reflect(AZ::ReflectContext* context)
         {
