@@ -55,9 +55,6 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
         PUBLIC
             ${RENDERDOC_DEPENDENCY}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            ${RENDERDOC_DEFINE}
 )
 
 ly_add_target(

@@ -34,7 +34,7 @@ public:
     void Release() override;
     void ForceSet(const char* s) override;
     void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) override;
-    virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) override;
+    uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) override;
     ConsoleVarFunc GetOnChangeCallback() const override;
 
     bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
@@ -77,7 +77,7 @@ protected: // ------------------------------------------------------------------
     char*            m_pDataProbeString;            // value client is required to have for data probes
     int                             m_nFlags;                                           // e.g. VF_CHEAT, ...
 
-    typedef std::vector<std::pair<int, AZStd::function<void ()>> > ChangeFunctorContainer;
+    using ChangeFunctorContainer = std::vector<std::pair<int, AZStd::function<void ()>> >;
     ChangeFunctorContainer m_changeFunctors;
     ConsoleVarFunc    m_pChangeFunc;                // Callback function that is called when this variable changes.
     CXConsole*             m_pConsole;                                      // used for the callback OnBeforeVarChange()
@@ -169,15 +169,15 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return (int)m_fValue; }
-    virtual int64 GetI64Val() const { return (int64)m_fValue; }
-    virtual float GetFVal() const { return m_fValue; }
-    virtual const char* GetString() const;
-    virtual void ResetImpl() { Set(m_fDefault); }
-    virtual void Set(const char* s);
-    virtual void Set(float f);
-    virtual void Set(int i);
-    virtual int GetType() { return CVAR_FLOAT; }
+    int GetIVal() const override { return (int)m_fValue; }
+    int64 GetI64Val() const override { return (int64)m_fValue; }
+    float GetFVal() const override { return m_fValue; }
+    const char* GetString() const override;
+    void ResetImpl() override { Set(m_fDefault); }
+    void Set(const char* s) override;
+    void Set(float f) override;
+    void Set(int i) override;
+    int GetType() override { return CVAR_FLOAT; }
 
 protected:
 
@@ -212,15 +212,15 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return m_iValue; }
-    virtual int64 GetI64Val() const { return m_iValue; }
-    virtual float GetFVal() const { return (float)m_iValue; }
-    virtual const char* GetString() const;
-    virtual void ResetImpl() { Set(m_iDefault); }
-    virtual void Set(const char* s);
-    virtual void Set(float f);
-    virtual void Set(int i);
-    virtual int GetType() { return CVAR_INT; }
+    int GetIVal() const override { return m_iValue; }
+    int64 GetI64Val() const override { return m_iValue; }
+    float GetFVal() const override { return (float)m_iValue; }
+    const char* GetString() const override;
+    void ResetImpl() override { Set(m_iDefault); }
+    void Set(const char* s) override;
+    void Set(float f) override;
+    void Set(int i) override;
+    int GetType() override { return CVAR_INT; }
 
 private: // --------------------------------------------------------------------------------------------
 
@@ -246,26 +246,26 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return atoi(m_sValue.c_str()); }
-    virtual int64 GetI64Val() const { return _atoi64(m_sValue.c_str()); }
-    virtual float GetFVal() const { return (float)atof(m_sValue.c_str()); }
-    virtual const char* GetString() const
+    int GetIVal() const override { return atoi(m_sValue.c_str()); }
+    int64 GetI64Val() const override { return _atoi64(m_sValue.c_str()); }
+    float GetFVal() const override { return (float)atof(m_sValue.c_str()); }
+    const char* GetString() const override
     {
         return m_sValue.c_str();
     }
-    virtual void ResetImpl() { Set(m_sDefault.c_str()); }
-    virtual void Set(const char* s);
-    virtual void Set(float f)
+    void ResetImpl() override { Set(m_sDefault.c_str()); }
+    void Set(const char* s) override;
+    void Set(float f) override
     {
         stack_string s = stack_string::format("%g", f);
         Set(s.c_str());
     }
-    virtual void Set(int i)
+    void Set(int i) override
     {
         stack_string s = stack_string::format("%d", i);
         Set(s.c_str());
     }
-    virtual int GetType() { return CVAR_STRING; }
+    int GetType() override { return CVAR_STRING; }
 
 private: // --------------------------------------------------------------------------------------------
 
@@ -290,19 +290,19 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return (int)m_fValue; }
-    virtual int64 GetI64Val() const { return (int64)m_fValue; }
-    virtual float GetFVal() const { return m_fValue; }
-    virtual const char* GetString() const;
-    virtual void ResetImpl() { Set(m_fDefault); }
-    virtual void Set(const char* s);
-    virtual void Set(float f);
-    virtual void Set(int i);
-    virtual int GetType() { return CVAR_FLOAT; }
+    int GetIVal() const override { return (int)m_fValue; }
+    int64 GetI64Val() const override { return (int64)m_fValue; }
+    float GetFVal() const override { return m_fValue; }
+    const char* GetString() const override;
+    void ResetImpl() override { Set(m_fDefault); }
+    void Set(const char* s) override;
+    void Set(float f) override;
+    void Set(int i) override;
+    int GetType() override { return CVAR_FLOAT; }
 
 protected:
 
-    virtual const char *GetOwnDataProbeString() const
+    const char *GetOwnDataProbeString() const override
     {
         static char szReturnString[8];
 
