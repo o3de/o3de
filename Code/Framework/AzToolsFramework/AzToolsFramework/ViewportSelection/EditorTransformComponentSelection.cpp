@@ -47,41 +47,46 @@ namespace AzToolsFramework
 
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLineWidth,
+        ed_viewportGizmoAxisLineWidth,
         4.0f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The width of the line for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLineLength,
+        ed_viewportGizmoAxisLineLength,
         0.7f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The length of the line for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLabelOffset,
+        ed_viewportGizmoAxisLabelOffset,
         1.15f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The offset of the label for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLabelSize,
+        ed_viewportGizmoAxisLabelSize,
         1.0f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The size of each label for the viewport axis gizmo");
     AZ_CVAR(
         AZ::Vector2,
-        cl_viewportGizmoAxisScreenPosition,
+        ed_viewportGizmoAxisScreenPosition,
         AZ::Vector2(0.045f, 0.9f),
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
-
-    AZ_CVAR(bool, ed_viewportStickySelect, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Does a single click change selection or not");
+    AZ_CVAR(
+        bool,
+        ed_viewportStickySelect,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Sticky select implies a single click will not change selection with an entity already selected");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const s_togglePivotTitleRightClick = "Toggle pivot";
@@ -1835,26 +1840,15 @@ namespace AzToolsFramework
             return true;
         }
 
-        if (ed_viewportStickySelect)
+        // double click to deselect all
+        if (Input::DeselectAll(mouseInteraction))
         {
-            // double click to deselect all
-            if (Input::DeselectAll(mouseInteraction))
-            {
-                // note: even if m_selectedEntityIds is technically empty, we
-                // may still have an entity selected that was clicked in the
-                // entity outliner - we still want to make sure the deselect all
-                // action clears the selection
-                DeselectEntities();
-                return false;
-            }
-        }
-
-        if (!ed_viewportStickySelect)
-        {
-            if (Input::IndividualSelect(clickOutcome))
-            {
-                ChangeSelectedEntity(entityIdUnderCursor);
-            }
+            // note: even if m_selectedEntityIds is technically empty, we
+            // may still have an entity selected that was clicked in the
+            // entity outliner - we still want to make sure the deselect all
+            // action clears the selection
+            DeselectEntities();
+            return false;
         }
 
         if (!m_selectedEntityIds.empty())
@@ -3514,7 +3508,7 @@ namespace AzToolsFramework
         const auto cameraProjection = AzFramework::CameraProjection(gizmoCameraState);
 
         // screen space offset to move the 2d gizmo around
-        const AZ::Vector2 screenOffset = AZ::Vector2(cl_viewportGizmoAxisScreenPosition) - AZ::Vector2(0.5f, 0.5f);
+        const AZ::Vector2 screenOffset = AZ::Vector2(ed_viewportGizmoAxisScreenPosition) - AZ::Vector2(0.5f, 0.5f);
 
         // map from a position in world space (relative to the the gizmo camera near the origin) to a position in
         // screen space
@@ -3526,7 +3520,7 @@ namespace AzToolsFramework
         };
 
         // get all important axis positions in screen space
-        const float lineLength = cl_viewportGizmoAxisLineLength;
+        const float lineLength = ed_viewportGizmoAxisLineLength;
         const auto gizmoStart = calculateGizmoAxis(AZ::Vector3::CreateZero());
         const auto gizmoEndAxisX = calculateGizmoAxis(-AZ::Vector3::CreateAxisX() * lineLength);
         const auto gizmoEndAxisY = calculateGizmoAxis(-AZ::Vector3::CreateAxisY() * lineLength);
@@ -3537,7 +3531,7 @@ namespace AzToolsFramework
         const AZ::Vector2 gizmoAxisZ = gizmoEndAxisZ - gizmoStart;
 
         // draw the axes of the gizmo
-        debugDisplay.SetLineWidth(cl_viewportGizmoAxisLineWidth);
+        debugDisplay.SetLineWidth(ed_viewportGizmoAxisLineWidth);
         debugDisplay.SetColor(AZ::Colors::Red);
         debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisX, 1.0f);
         debugDisplay.SetColor(AZ::Colors::Lime);
@@ -3546,14 +3540,14 @@ namespace AzToolsFramework
         debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisZ, 1.0f);
         debugDisplay.SetLineWidth(1.0f);
 
-        const float labelOffset = cl_viewportGizmoAxisLabelOffset;
+        const float labelOffset = ed_viewportGizmoAxisLabelOffset;
         const float screenScale = GetScreenDisplayScaling(viewportId);
         const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
         const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
         const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
 
         // draw the label of of each axis for the gizmo
-        const float labelSize = cl_viewportGizmoAxisLabelSize;
+        const float labelSize = ed_viewportGizmoAxisLabelSize;
         debugDisplay.SetColor(AZ::Colors::White);
         debugDisplay.Draw2dTextLabel(labelXScreenPosition.GetX(), labelXScreenPosition.GetY(), labelSize, "X", true);
         debugDisplay.Draw2dTextLabel(labelYScreenPosition.GetX(), labelYScreenPosition.GetY(), labelSize, "Y", true);
