@@ -254,9 +254,9 @@ namespace AzToolsFramework
         void QueueInvalidationIfSharedData(InternalReflectedPropertyEditorEvents* sender, PropertyModificationRefreshLevel level, const AZStd::set<void*>& sourceInstanceSet) override;
 
         // PropertyEditorGUIMessages::Bus::Handler
-        virtual void RequestWrite(QWidget* editorGUI) override;
-        virtual void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
-        virtual void RequestRefresh(PropertyModificationRefreshLevel) override;
+        void RequestWrite(QWidget* editorGUI) override;
+        void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
+        void RequestRefresh(PropertyModificationRefreshLevel) override;
         void RequestPropertyNotify(QWidget* editorGUI) override;
         void OnEditingFinished(QWidget* editorGUI) override;
     };
@@ -890,7 +890,7 @@ namespace AzToolsFramework
         {
             instance.Build(m_impl->m_context, AZ::SerializeContext::ENUM_ACCESS_FOR_READ, m_impl->m_dynamicEditDataProvider, m_impl->m_editorParent);
             m_impl->FilterNode(instance.GetRootNode(), filter);
-            m_impl->AddProperty(instance.GetRootNode(), NULL, 0);
+            m_impl->AddProperty(instance.GetRootNode(), nullptr, 0);
         }
 
         m_impl->UpdateExpansionState();
@@ -1077,7 +1077,7 @@ namespace AzToolsFramework
 
     PropertyRowWidget* ReflectedPropertyEditor::Impl::CreateOrPullFromPool()
     {
-        PropertyRowWidget* newWidget = NULL;
+        PropertyRowWidget* newWidget = nullptr;
         if (m_widgetPool.empty())
         {
             newWidget = aznew PropertyRowWidget(m_containerWidget);
@@ -1184,7 +1184,7 @@ namespace AzToolsFramework
     {
         // re-create the tab order, based on vertical position in the list.
 
-        QWidget* pLastWidget = NULL;
+        QWidget* pLastWidget = nullptr;
 
         for (AZStd::size_t pos = 0; pos < m_impl->m_widgetsInDisplayOrder.size(); ++pos)
         {

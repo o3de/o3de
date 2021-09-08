@@ -73,7 +73,7 @@ inline Gestures::RecognizerClickOrTap::~RecognizerClickOrTap()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (pointerIndex != m_config.pointerIndex)
+    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -120,7 +120,7 @@ inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& sc
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerClickOrTap::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (pointerIndex != m_config.pointerIndex)
+    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -159,7 +159,7 @@ inline bool Gestures::RecognizerClickOrTap::OnDownEvent(const AZ::Vector2& scree
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerClickOrTap::OnReleasedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (pointerIndex != m_config.pointerIndex)
+    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
     {
         return false;
     }

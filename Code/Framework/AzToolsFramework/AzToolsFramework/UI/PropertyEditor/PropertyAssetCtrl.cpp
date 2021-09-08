@@ -349,7 +349,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = 0;
+            (*pAssetType) = nullptr;
         }
 
         if (!pData)
@@ -529,7 +529,7 @@ namespace AzToolsFramework
         if (m_errorButton)
         {
             // If the button is already active, disconnect its pressed handler so we don't get multiple popups
-            disconnect(m_errorButton, &QPushButton::pressed, this, 0);
+            disconnect(m_errorButton, &QPushButton::pressed, this, nullptr);
         }
         else
         {

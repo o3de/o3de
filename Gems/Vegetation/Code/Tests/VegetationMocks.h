@@ -32,13 +32,6 @@
 #include <IIndexedMesh.h>
 #include <IStatObj.h>
 
-// used for the mock for IStatObj
-#ifndef CRYINCLUDE_CRY3DENGINE_STATOBJ_H
-struct SPhysGeomArray
-{
-};
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 // mock event bus classes for testing vegetation
 namespace UnitTest
