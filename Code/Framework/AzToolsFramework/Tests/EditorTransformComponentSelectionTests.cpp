@@ -54,6 +54,14 @@ namespace AZ
 
 namespace UnitTest
 {
+    AzToolsFramework::EntityIdList SelectedEntities()
+    {
+        AzToolsFramework::EntityIdList selectedEntitiesBefore;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesBefore, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        return selectedEntitiesBefore;
+    }
+
     class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture
     {
     public:
@@ -580,13 +588,19 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
 
+        using ::testing::Eq;
+        auto selectedEntitiesBefore = SelectedEntities();
+        EXPECT_TRUE(selectedEntitiesBefore.empty());
+
         // calculate the position in screen space of the initial position of the entity
         const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
 
+        // click the entity in the viewport
         m_actionDispatcher->CameraState(m_cameraState)->MousePosition(initialPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
 
-        int i;
-        i = 0;
+        auto selectedEntitiesAfter = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesAfter.size(), Eq(1));
+        EXPECT_THAT(selectedEntitiesAfter.front(), Eq(m_entityId1));
     }
 
     TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, CanMoveEntityUsingManipulatorMouseMovement)
