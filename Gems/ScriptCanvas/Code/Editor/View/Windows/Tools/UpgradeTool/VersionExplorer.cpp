@@ -295,9 +295,9 @@ namespace ScriptCanvasEditor
 
     AZStd::string VersionExplorer::BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        bool makeBackup = m_ui->makeBackupCheckbox->isChecked();
-        if (!makeBackup)
+        if (!m_ui->makeBackupCheckbox->isChecked())
         {
+            // considered a success
             return "";
         }
 
@@ -363,19 +363,20 @@ namespace ScriptCanvasEditor
             relativePath = relativePath.substr(1, relativePath.size() - 1);
         }
 
-        AZStd::string targetFilePath;
-        AzFramework::StringFunc::Path::Join(backupPath.c_str(), relativePath.c_str(), targetFilePath);
+        AzFramework::StringFunc::Path::Normalize(relativePath);
+        AzFramework::StringFunc::Path::Normalize(backupPath);
 
-        if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Error)
-        {
-            Log("VersionExplorer::BackupGraph: Backed up: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
-            return "";
-        }
-        else
+        AZStd::string targetFilePath = backupPath;
+        targetFilePath += relativePath;
+
+        if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Success)
         {
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Error creating backup: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
             return "Failed to copy source file to backup location";
         }
+
+        Log("VersionExplorer::BackupGraph: Backed up: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
+        return "";
     }
 
     void VersionExplorer::UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
