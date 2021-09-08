@@ -89,8 +89,6 @@ public:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
     // ~ISystemEventManager
 
-    int GetMemoryUsage(ICrySizer* pSizer);
-
     void GetLoadedTags(TLocalizationTagVec& tagVec);
     void FreeLocalizationData();
 
@@ -113,17 +111,6 @@ private:
         AZStd::string  sOriginalCharacterName;     // english character name speaking via XML asset
 
         unsigned int nRow;                              // Number of row in XML file
-
-        void GetMemoryUsage(ICrySizer* pSizer) const
-        {
-            pSizer->AddObject(this, sizeof(*this));
-
-            pSizer->AddObject(sKey);
-            pSizer->AddObject(sOriginalActorLine);
-            pSizer->AddObject(sUtf8TranslatedActorLine);
-            pSizer->AddObject(sOriginalText);
-            pSizer->AddObject(sOriginalCharacterName);
-        }
     };
 
     struct SLanguage;
@@ -194,28 +181,6 @@ private:
         };
 
         AZStd::string GetTranslatedText(const SLanguage* pLanguage) const;
-
-        void GetMemoryUsage(ICrySizer* pSizer) const
-        {
-            pSizer->AddObject(this, sizeof(*this));
-
-            pSizer->AddObject(sCharacterName);
-
-            if ((flags & IS_COMPRESSED) == 0 && TranslatedText.psUtf8Uncompressed != nullptr)   //Number of bytes stored for compressed text is unknown, which throws this GetMemoryUsage off
-            {
-                pSizer->AddObject(*TranslatedText.psUtf8Uncompressed);
-            }
-
-            pSizer->AddObject(sPrototypeSoundEvent);
-
-            pSizer->AddObject(SoundMoods);
-            pSizer->AddObject(EventParameters);
-
-            if (pEditorExtension != nullptr)
-            {
-                pEditorExtension->GetMemoryUsage(pSizer);
-            }
-        }
     };
 
     //Keys as CRC32. Strings previously, but these proved too large
@@ -230,15 +195,6 @@ private:
         StringsKeyMap m_keysMap;
         TLocalizedStringEntries m_vLocalizedStrings;
         THuffmanCoders m_vEncoders;
-
-        void GetMemoryUsage(ICrySizer* pSizer) const
-        {
-            pSizer->AddObject(this, sizeof(*this));
-            pSizer->AddObject(sLanguage);
-            pSizer->AddObject(m_vLocalizedStrings);
-            pSizer->AddObject(m_keysMap);
-            pSizer->AddObject(m_vEncoders);
-        }
     };
 
     struct SFileInfo

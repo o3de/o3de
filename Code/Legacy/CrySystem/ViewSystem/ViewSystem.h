@@ -105,8 +105,6 @@ public:
         return stl::find_and_erase(m_listeners, pListener);
     }
 
-    void GetMemoryUsage(ICrySizer* s) const;
-
     void ClearAllViews();
 
 private:

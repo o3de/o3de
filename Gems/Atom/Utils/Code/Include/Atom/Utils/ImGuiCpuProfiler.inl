@@ -288,11 +288,11 @@ namespace AZ
                         continue;
                     }
 
-                    ImGui::Text(statistics->m_groupName.c_str());
+                    ImGui::Text("%s", statistics->m_groupName.c_str());
                     const ImVec2 topLeftBound = ImGui::GetItemRectMin();
                     ImGui::TableNextColumn();
 
-                    ImGui::Text(statistics->m_regionName.c_str());
+                    ImGui::Text("%s", statistics->m_regionName.c_str());
                     ImGui::TableNextColumn();
 
                     ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_runningAverageTicks));
@@ -313,7 +313,7 @@ namespace AZ
                     if (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(topLeftBound, botRightBound, false))
                     {
                         ImGui::BeginTooltip();
-                        ImGui::Text(statistics->GetExecutingThreadsLabel().c_str());
+                        ImGui::Text("%s", statistics->GetExecutingThreadsLabel().c_str());
                         ImGui::EndTooltip();
                     }
                 }
@@ -363,7 +363,7 @@ namespace AZ
 
             const auto ShowRow = [&ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
             {
-                ImGui::Text(regionLabel);
+                ImGui::Text("%s", regionLabel);
                 ImGui::NextColumn();
 
                 ShowTimeInMs(duration);

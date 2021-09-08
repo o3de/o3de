@@ -43,10 +43,6 @@ struct SLocalizedAdvancesSoundEntry
 {
     AZStd::string sName;
     float       fValue;
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(sName);
-    }
 };
 
 // Localization Sound Info structure, containing sound related parameters.

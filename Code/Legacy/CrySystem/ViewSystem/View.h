@@ -81,8 +81,6 @@ public:
 
             ID = shakeID;
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { /*nothing*/}
     };
 
 
@@ -110,8 +108,6 @@ public:
     void PostSerialize() override;
     CCamera& GetCamera() override { return m_camera; }
     const CCamera& GetCamera() const override { return m_camera; }
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
 protected:
 

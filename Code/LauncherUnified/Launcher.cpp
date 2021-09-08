@@ -305,10 +305,20 @@ namespace O3DELauncher
             m_commandLine[m_commandLineLen++] = ' ';
         }
 
-        azsnprintf(m_commandLine + m_commandLineLen,
-            AZ_COMMAND_LINE_LEN - m_commandLineLen,
-            needsQuote ? "\"%s\"" : "%s",
-            arg);
+        if (needsQuote) // Branching instead of using a ternary on the format string to avoid warning 4774 (format literal expected)
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "\"%s\"",
+                arg);
+        }
+        else
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "%s",
+                arg);
+        }
 
         // Inject the argument in the argument buffer to preserve/replicate argC and argV
         azstrncpy(&m_commandLineArgBuffer[m_nextCommandLineArgInsertPoint],

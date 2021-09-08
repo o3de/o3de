@@ -13,8 +13,8 @@
 #pragma once
 
 #include <IConsole.h>
-#include <CryCrc32.h>
 #include "Timer.h"
+#include <CryCommon/StlUtils.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
@@ -22,10 +22,12 @@
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 
+#include <list>
+#include <map>
 //forward declaration
 struct INetwork;
 class CSystem;
-
+struct IFFont;
 
 #define MAX_HISTORY_ENTRIES 50
 #define LINE_BORDER 10
@@ -53,12 +55,6 @@ struct CConsoleCommand
         : m_func(nullptr)
         , m_nFlags(0) {}
     size_t sizeofThis () const {return sizeof(*this) + m_sName.capacity() + 1 + m_sCommand.capacity() + 1; }
-    void GetMemoryUsage (class ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_sName);
-        pSizer->AddObject(m_sCommand);
-        pSizer->AddObject(m_sHelp);
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,14 +135,12 @@ public:
     void Release() override;
 
     void Init(ISystem* pSystem) override;
-    ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
-    ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
-    ICVar* RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
-    ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
-    ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
-    ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
-    ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
-    ICVar* Register(ICVar* pVar) override { RegisterVar(pVar); return pVar; }
+    ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
+    ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
+    ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
 
     void UnregisterVariable(const char* sVarName, bool bDelete = false) override;
     void SetScrollMax(int value) override;
@@ -171,8 +165,8 @@ public:
     void Clear() override;
     void Update() override;
     void Draw() override;
-    bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = nullptr) override;
-    bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = nullptr) override;
+    bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL) override;
+    bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL) override;
     void RemoveCommand(const char* sName) override;
     void ExecuteString(const char* command, bool bSilentMode, bool bDeferExecution = false) override;
     void ExecuteConsoleCommand(const char* command) override;
@@ -181,15 +175,14 @@ public:
     bool IsOpened() override;
     int GetNumVars() override;
     int GetNumVisibleVars() override;
-    size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = nullptr) override;
-    virtual void FindVar(const char* substr);
+    size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0) override;
+    void FindVar(const char* substr);
     const char* AutoComplete(const char* substr) override;
     const char* AutoCompletePrev(const char* substr) override;
     const char* ProcessCompletion(const char* szInputBuffer) override;
     void RegisterAutoComplete(const char* sVarOrCommand, IConsoleArgumentAutoComplete* pArgAutoComplete) override;
     void UnRegisterAutoComplete(const char* sVarOrCommand) override;
     void ResetAutoCompletion() override;
-    void GetMemoryUsage (ICrySizer* pSizer) const override;
     void ResetProgressBar(int nProgressRange) override;
     void TickProgressBar() override;
     void SetLoadingImage(const char* szFilename) override;
@@ -221,10 +214,6 @@ public:
     void ExecuteRegisteredCommand(IConsoleCmdArgs* pArg);
 
     //////////////////////////////////////////////////////////////////////////
-
-    // Returns
-    //   0 if the operation failed
-    ICVar* RegisterCVarGroup(const char* sName, const char* szFileName);
 
     void SetProcessingGroup(bool isGroup) { m_bIsProcessingGroup = isGroup; }
     bool GetIsProcessingGroup() const { return m_bIsProcessingGroup; }
@@ -290,7 +279,6 @@ private: // ----------------------------------------------------------
 
     void AddCheckedCVar(ConsoleVariablesVector& vector, const ConsoleVariablesVector::value_type& value);
     void RemoveCheckedCVar(ConsoleVariablesVector& vector, const ConsoleVariablesVector::value_type& value);
-    static void AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, ConsoleVariablesVector::const_iterator end, CCrc32& runningNameCrc32, CCrc32& runningNameValueCrc32);
     static bool CVarNameLess(const std::pair<const char*, ICVar*>& lhs, const std::pair<const char*, ICVar*>& rhs);
 
     void PostLine(const char* lineOfText, size_t len);

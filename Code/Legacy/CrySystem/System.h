@@ -18,12 +18,13 @@
 #include "CmdLine.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
-#include "RenderBus.h"
-
 #include <LoadScreenBus.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Math/Crc.h>
+
+#include <list>
+#include <map>
 
 namespace AzFramework
 {
@@ -31,6 +32,8 @@ namespace AzFramework
 }
 
 struct IConsoleCmdArgs;
+struct ICVar;
+struct IFFont;
 class CWatchdogThread;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -48,47 +51,10 @@ class CWatchdogThread;
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_ALLOW_CREATE_BACKUP_LOG_FILE 1
 #endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_DEFINE_DETECT_PROCESSOR 1
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(APPLE) || defined(LINUX)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_DO_PREASSERT 1
-#endif
-#if defined(MAC) || (defined(LINUX) && !defined(ANDROID))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_ASM_VOLATILE_CPUID 1
-#endif
-#if (defined(WIN32) && !defined(WIN64)) || (defined(LINUX) && !defined(ANDROID) && !defined(LINUX64))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HAS64BITEXT 1
-#endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HTSUPPORTED 1
-#endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HASCPUID 1
-#endif
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HASAFFINITYMASK 1
-#endif
-
-#if defined(LINUX) || defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_CRYPAK_POSIX 1
-#endif
-
-#if defined(WIN64)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_BIT64 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_PACKED_PEHEADER 1
-#endif
-#if defined(WIN32) || defined(LINUX)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_RENDERMEMORY_INFO 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_HANDLER_SYNC_AFFINITY 1
 #endif
 
 #if defined(LINUX) || defined(APPLE)
@@ -105,18 +71,6 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME 1
 #endif
 
-#if !(defined(ANDROID) || defined(IOS) || defined(LINUX))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_IMAGEHANDLER_TIFFIO 1
-#endif
-
-#if 1
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_JOBMANAGER_SIXWORKERTHREADS 0
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_MEMADDRESSRANGE_WINDOWS_STYLE 1
-#endif
-
 #if 1
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_EXCLUDEUPDATE_ON_CONSOLE 0
 #endif
@@ -127,31 +81,8 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK 1
 #endif
 
-#if !defined(LINUX) && !defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_SYSTEMCFG_MODULENAME 1
-#endif
-
-#if defined(WIN32) || defined(WIN64)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_THREADINFO_WINDOWS_STYLE 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_THREADTASK_EXCEPTIONS 1
-#endif
 //////////////////////////////////////////////////////////////////////////
 
-#if defined(APPLE) || defined(LINUX)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_FACTORY_REGISTRY_USE_PRINTF_FOR_FATAL 1
-#endif
-
-#if defined(LINUX) || defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_FTELL_NOT_FTELLI64 1
-#endif
-
-#endif
-
-#if defined(USE_UNIXCONSOLE) || defined(USE_ANDROIDCONSOLE) || defined(USE_WINDOWSCONSOLE) || defined(USE_IOSCONSOLE) || defined(USE_NULLCONSOLE)
-#define USE_DEDICATED_SERVER_CONSOLE
 #endif
 
 #if defined(LINUX)
@@ -269,7 +200,6 @@ class CSystem
     , public ILoadConfigurationEntrySink
     , public ISystemEventListener
     , public IWindowMessageHandler
-    , public AZ::RenderNotificationsBus::Handler
     , public CrySystemRequestBus::Handler
 {
 public:
