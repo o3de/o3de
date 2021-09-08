@@ -87,6 +87,7 @@ namespace AtomToolsFramework
 
     AtomToolsApplication ::~AtomToolsApplication()
     {
+        m_styleManager.reset();
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
@@ -206,6 +207,7 @@ namespace AtomToolsFramework
     {
         // before modules are unloaded, destroy UI to free up any assets it cached
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+        m_styleManager.reset();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
@@ -461,6 +463,7 @@ namespace AtomToolsFramework
     void AtomToolsApplication::Stop()
     {
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+        m_styleManager.reset();
 
         UnloadSettings();
         Base::Stop();
