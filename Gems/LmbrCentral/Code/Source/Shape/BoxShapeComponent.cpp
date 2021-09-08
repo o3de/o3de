@@ -101,12 +101,6 @@ namespace LmbrCentral
         }
     }
 
-    namespace ClassConverters
-    {
-        static bool DeprecateBoxColliderConfiguration(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-        static bool DeprecateBoxColliderComponent(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-    }
-
     void BoxShapeConfig::Reflect(AZ::ReflectContext* context)
     {
         // Don't reflect again if we're already reflected to the passed in context
