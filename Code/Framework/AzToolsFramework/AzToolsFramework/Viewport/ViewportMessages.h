@@ -156,22 +156,12 @@ namespace AzToolsFramework
         class ViewportInteractionRequests
         {
         public:
-            //! Return the current camera state for this viewport.
+            //! Returns the current camera state for this viewport.
             virtual AzFramework::CameraState GetCameraState() = 0;
-            //! Return if grid snapping is enabled.
-            virtual bool GridSnappingEnabled() = 0;
-            //! Return the grid snapping size.
-            virtual float GridSize() = 0;
-            //! Does the grid currently want to be displayed.
-            virtual bool ShowGrid() = 0;
-            //! Return if angle snapping is enabled.
-            virtual bool AngleSnappingEnabled() = 0;
-            //! Return the angle snapping/step size.
-            virtual float AngleStep() = 0;
-            //! Transform a point in world space to screen space coordinates in Qt Widget space.
+            //! Transforms a point in world space to screen space coordinates in Qt Widget space.
             //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            //! Transform a point from Qt widget screen space to world space based on the given clip space depth.
+            //! Transforms a point from Qt widget screen space to world space based on the given clip space depth.
             //! Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             //! Returns the world space position if successful.
             virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
@@ -185,12 +175,13 @@ namespace AzToolsFramework
             ~ViewportInteractionRequests() = default;
         };
 
+        //! Type to inherit to implement ViewportInteractionRequests.
+        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+
         //! Interface to return only viewport specific settings (e.g. snapping).
-        class ViewportSettings
+        class ViewportSettingsRequests
         {
         public:
-            virtual ~ViewportSettings() = default;
-
             //! Return if grid snapping is enabled.
             virtual bool GridSnappingEnabled() const = 0;
             //! Return the grid snapping size.
@@ -201,20 +192,31 @@ namespace AzToolsFramework
             virtual bool AngleSnappingEnabled() const = 0;
             //! Return the angle snapping/step size.
             virtual float AngleStep() const = 0;
+            //! Returns the current line bound width for manipulators.
+            virtual float ManipulatorLineBoundWidth() const = 0;
+            //! Returns the current circle (torus) bound width for manipulators.
+            virtual float ManipulatorCircleBoundWidth() const = 0;
+
+        protected:
+            ~ViewportSettingsRequests() = default;
         };
 
-        //! Type to inherit to implement ViewportInteractionRequests.
-        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+        //! Type to inherit to implement ViewportSettingsRequests.
+        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportEBusTraits>;
 
         //! An interface to notify when changes to viewport settings have happened.
         class ViewportSettingNotifications
         {
         public:
-            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled) {}
-            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled) {}
+            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+            {
+            }
 
         protected:
-            ViewportSettingNotifications() = default;
+            ~ViewportSettingNotifications() = default;
         };
 
         using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
@@ -336,4 +338,12 @@ namespace AzToolsFramework
         }
         return AzFramework::ClickDetector::ClickEvent::Nil;
     }
+
+    //! Wrap EBus call to retrieve manipulator line bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
+    float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
+
+    //! Wrap EBus call to retrieve manipulator circle bound width.
+    //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
+    float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework

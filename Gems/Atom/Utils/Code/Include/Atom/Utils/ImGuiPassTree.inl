@@ -100,7 +100,7 @@ namespace AZ::Render
                 }
             }
 
-            ImGui::TextWrapped(m_attachmentReadbackInfo.c_str());
+            ImGui::TextWrapped("%s", m_attachmentReadbackInfo.c_str());
         }
 
         if (m_previewAttachment && m_selectedChanged)
@@ -211,7 +211,7 @@ namespace AZ::Render
             else
             {
                 // Only draw text (not selectable) if there is no attachment binded to the slot.
-                ImGui::Text(label.c_str());
+                ImGui::Text("%s", label.c_str());
             }
         }
 

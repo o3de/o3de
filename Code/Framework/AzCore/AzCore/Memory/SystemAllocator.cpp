@@ -153,7 +153,7 @@ SystemAllocator::Create(const Descriptor& desc)
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
             m_allocator = azcreate(HeapSchema, (heapDesc), SystemAllocator);
 #endif
-            if (m_allocator == NULL)
+            if (m_allocator == nullptr)
             {
                 isReady = false;
             }
@@ -237,7 +237,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
     byteSize = MemorySizeAdjustedUp(byteSize);
     SystemAllocator::pointer_type address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
 
-    if (address == 0)
+    if (address == nullptr)
     {
         // Free all memory we can and try again!
         AllocatorManager::Instance().GarbageCollect();
@@ -245,7 +245,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
         address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
     }
 
-    if (address == 0)
+    if (address == nullptr)
     {
         byteSize = MemorySizeAdjustedDown(byteSize);  // restore original size
 
@@ -258,7 +258,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
         }
     }
 
-    AZ_Assert(address != 0, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
+    AZ_Assert(address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
 
     AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
     AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
