@@ -1149,7 +1149,7 @@ namespace AZ
                 return BuildResult::CompilationFailed;
             }
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {
@@ -1170,7 +1170,7 @@ namespace AZ
             AZStd::string outputFile = m_inputFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {
