@@ -112,6 +112,6 @@ namespace AZ
         //! the file size is larger than the max file size provided.
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(
-            AZStd::string_view filePath, size_t maxFileSize);
+            AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
     }
 }
