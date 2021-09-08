@@ -171,8 +171,6 @@ namespace EMotionFX
             }
 
             // Find the frame index in the frame database that belongs to the currently used pose.
-            // TODO: See if we can speed up the frame index search and if it is actually needed to improve speed here as this
-            // is only used by debug rendering.
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
             const size_t currentFrame = m_data.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
             if (currentFrame != InvalidIndex)
@@ -186,8 +184,7 @@ namespace EMotionFX
             //draw.DrawLine(actorInstance->GetWorldSpaceTransform().mPosition,
             //              actorInstance->GetWorldSpaceTransform().mPosition + direction, AZ::Colors::LightCyan);
 
-            ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
-            //const Transform& transform = actorInstance->GetWorldSpaceTransform();
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
             const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_rootNodeIndex);
             m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, curFrameIndex, transform, AZ::Colors::LawnGreen);
             m_rootTrajectoryData->DebugDrawPastTrajectory(draw, curFrameIndex, transform, AZ::Colors::Red);
