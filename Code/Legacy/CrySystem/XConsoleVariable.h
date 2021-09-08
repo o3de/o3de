@@ -16,7 +16,7 @@
 #include "SFunctor.h"
 
 class CXConsole;
-typedef AZStd::fixed_string<512> stack_string;
+using stack_string = AZStd::fixed_string<512>;
 
 inline int64 TextToInt64(const char* s, int64 nCurrent, bool bBitfield)
 {
@@ -99,19 +99,19 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual void ClearFlags(int flags);
-    virtual int GetFlags() const;
-    virtual int SetFlags(int flags);
-    virtual const char* GetName() const;
-    virtual const char* GetHelp();
-    virtual void Release();
-    virtual void ForceSet(const char* s);
-    virtual void SetOnChangeCallback(ConsoleVarFunc pChangeFunc);
-    virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) override;
-    virtual ConsoleVarFunc GetOnChangeCallback() const;
+    void ClearFlags(int flags) override;
+    int GetFlags() const override;
+    int SetFlags(int flags) override;
+    const char* GetName() const override;
+    const char* GetHelp() override;
+    void Release() override;
+    void ForceSet(const char* s) override;
+    void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) override;
+    uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) override;
+    ConsoleVarFunc GetOnChangeCallback() const override;
 
-    virtual bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
-    virtual void Reset() override
+    bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
+    void Reset() override
     {
         if (ShouldReset())
         {
@@ -121,19 +121,19 @@ public:
 
     virtual void ResetImpl() = 0;
 
-    virtual void SetLimits(float min, float max) override;
-    virtual void GetLimits(float& min, float& max) override;
-    virtual bool HasCustomLimits() override;
+    void SetLimits(float min, float max) override;
+    void GetLimits(float& min, float& max) override;
+    bool HasCustomLimits() override;
 
-    virtual int GetRealIVal() const { return GetIVal(); }
-    virtual bool IsConstCVar() const {return (m_nFlags & VF_CONST_CVAR) != 0; }
-    virtual void SetDataProbeString(const char* pDataProbeString)
+    int GetRealIVal() const override { return GetIVal(); }
+    bool IsConstCVar() const override {return (m_nFlags & VF_CONST_CVAR) != 0; }
+    void SetDataProbeString(const char* pDataProbeString) override
     {
         CRY_ASSERT(m_pDataProbeString == NULL);
         m_pDataProbeString = new char[ strlen(pDataProbeString) + 1 ];
         azstrcpy(m_pDataProbeString, strlen(pDataProbeString) + 1, pDataProbeString);
     }
-    virtual const char* GetDataProbeString() const
+    const char* GetDataProbeString() const override
     {
         if (gEnv->IsDedicated() && m_pDataProbeString)
         {
@@ -157,7 +157,7 @@ protected: // ------------------------------------------------------------------
     char*            m_pDataProbeString;            // value client is required to have for data probes
     int                             m_nFlags;                                           // e.g. VF_CHEAT, ...
 
-    typedef std::vector<std::pair<int, SFunctor> > ChangeFunctorContainer;
+    using ChangeFunctorContainer = std::vector<std::pair<int, SFunctor> >;
     ChangeFunctorContainer m_changeFunctors;
     ConsoleVarFunc    m_pChangeFunc;                // Callback function that is called when this variable changes.
     CXConsole*             m_pConsole;                                      // used for the callback OnBeforeVarChange()
@@ -185,15 +185,15 @@ public:
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return atoi(m_sValue.c_str()); }
-    virtual int64 GetI64Val() const { return _atoi64(m_sValue.c_str()); }
-    virtual float GetFVal() const { return (float)atof(m_sValue.c_str()); }
-    virtual const char* GetString() const { return m_sValue.c_str(); }
-    virtual void ResetImpl()
+    int GetIVal() const override { return atoi(m_sValue.c_str()); }
+    int64 GetI64Val() const override { return _atoi64(m_sValue.c_str()); }
+    float GetFVal() const override { return (float)atof(m_sValue.c_str()); }
+    const char* GetString() const override { return m_sValue.c_str(); }
+    void ResetImpl() override
     {
         Set(m_sDefault.c_str());
     }
-    virtual void Set(const char* s)
+    void Set(const char* s) override
     {
         if (!s)
         {
@@ -218,7 +218,7 @@ public:
         }
     }
 
-    virtual void Set(float f)
+    void Set(float f) override
     {
         stack_string s = stack_string::format("%g", f);
 
@@ -231,7 +231,7 @@ public:
         Set(s.c_str());
     }
 
-    virtual void Set(int i)
+    void Set(int i) override
     {
         stack_string s = stack_string::format("%d", i);
 
@@ -243,9 +243,9 @@ public:
         m_nFlags |= VF_MODIFIED;
         Set(s.c_str());
     }
-    virtual int GetType() { return CVAR_STRING; }
+    int GetType() override { return CVAR_STRING; }
 
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
+    void GetMemoryUsage(class ICrySizer* pSizer) const override { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
     AZStd::string m_sValue;
     AZStd::string m_sDefault;                                                                              //!<
@@ -277,7 +277,7 @@ public:
         sprintf_s(szReturnString, "%d", GetIVal());
         return szReturnString;
     }
-    virtual void ResetImpl() { Set(m_iDefault); }
+    void ResetImpl() override { Set(m_iDefault); }
     virtual void Set(const char* s)
     {
         int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
@@ -340,7 +340,7 @@ public:
         sprintf_s(szReturnString, "%lld", GetI64Val());
         return szReturnString;
     }
-    virtual void ResetImpl() { Set(m_iDefault); }
+    void ResetImpl() override { Set(m_iDefault); }
     virtual void Set(const char* s)
     {
         int64 nValue = TextToInt64(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
@@ -408,7 +408,7 @@ public:
         sprintf_s(szReturnString, "%g", m_fValue);        // %g -> "2.01",   %f -> "2.01000"
         return szReturnString;
     }
-    virtual void ResetImpl() { Set(m_fDefault); }
+    void ResetImpl() override { Set(m_fDefault); }
     virtual void Set(const char* s)
     {
         float fValue = 0;
@@ -475,7 +475,7 @@ public:
 
 protected:
 
-    virtual const char* GetOwnDataProbeString() const
+    const char* GetOwnDataProbeString() const override
     {
         static char szReturnString[8];
 
@@ -516,7 +516,7 @@ public:
         sprintf_s(szReturnString, "%d", m_iValue);
         return szReturnString;
     }
-    virtual void ResetImpl() { Set(m_iDefault); }
+    void ResetImpl() override { Set(m_iDefault); }
     virtual void Set(const char* s)
     {
         int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
@@ -609,7 +609,7 @@ public:
         sprintf_s(szReturnString, "%g", m_fValue);
         return szReturnString;
     }
-    virtual void ResetImpl() { Set(m_fDefault); }
+    void ResetImpl() override { Set(m_fDefault); }
     virtual void Set(const char* s)
     {
         float fValue = 0;
@@ -673,7 +673,7 @@ public:
 
 protected:
 
-    virtual const char* GetOwnDataProbeString() const
+    const char* GetOwnDataProbeString() const override
     {
         static char szReturnString[8];
 
@@ -714,7 +714,7 @@ public:
     {
         return m_sValue.c_str();
     }
-    virtual void ResetImpl() { Set(m_sDefault.c_str()); }
+    void ResetImpl() override { Set(m_sDefault.c_str()); }
     virtual void Set(const char* s)
     {
         if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
@@ -776,13 +776,13 @@ public:
 
     // interface ICVar -----------------------------------------------------------------------------------
 
-    virtual const char* GetHelp();
+    const char* GetHelp() override;
 
-    virtual int GetRealIVal() const;
+    int GetRealIVal() const override;
 
     virtual void DebugLog(const int iExpectedValue, const ICVar::EConsoleLogMode mode) const;
 
-    virtual void Set(int i);
+    void Set(int i) override;
 
     // ConsoleVarFunc ------------------------------------------------------------------------------------
 
@@ -790,10 +790,10 @@ public:
 
     // interface ILoadConfigurationEntrySink -------------------------------------------------------------
 
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup);
-    virtual void OnLoadConfigurationEntry_End();
+    void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup) override;
+    void OnLoadConfigurationEntry_End() override;
 
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const
+    void GetMemoryUsage(class ICrySizer* pSizer) const override
     {
         pSizer->AddObject(this, sizeof(*this));
         pSizer->AddObject(m_sDefaultValue);
@@ -815,17 +815,17 @@ private: // --------------------------------------------------------------------
     TCVarGroupStateMap                                              m_CVarGroupStates;
     AZStd::string                                                   m_sDefaultValue;                // used by OnLoadConfigurationEntry_End()
 
-    void ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude = 0);
+    void ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude = nullptr);
 
     // Arguments:
     //   sKey - must exist, at least in default
     //   pSpec - can be 0
-    AZStd::string GetValueSpec(const AZStd::string& sKey, const int* pSpec = 0) const;
+    AZStd::string GetValueSpec(const AZStd::string& sKey, const int* pSpec = nullptr) const;
 
     // should only be used by TestCVars()
     // Returns:
     //   true=all console variables match the state (excluding default state), false otherwise
-    bool TestCVars(const SCVarGroup& rGroup, const ICVar::EConsoleLogMode mode, const SCVarGroup* pExclude = 0) const;
+    bool TestCVars(const SCVarGroup& rGroup, const ICVar::EConsoleLogMode mode, const SCVarGroup* pExclude = nullptr) const;
 
     // Arguments:
     //   pGroup - can be 0 to test if the default state is set
