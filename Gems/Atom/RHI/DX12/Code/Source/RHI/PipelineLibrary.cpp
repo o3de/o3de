@@ -262,7 +262,11 @@ namespace AZ
 
         bool PipelineLibrary::IsMergeRequired() const
         {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             return !m_pipelineStates.empty();
+#else
+            return false;
+#endif
         }
     }
 }

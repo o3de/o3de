@@ -325,5 +325,10 @@ namespace AZ
 
             return formatsList;
         }
+
+        void Device::BeginFrameInternal()
+        {
+            m_commandQueueContext.Begin();
+        }
     }
 }
