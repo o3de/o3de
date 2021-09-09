@@ -689,9 +689,6 @@ namespace AZ::IO
             return AZ::IO::InvalidHandle;
         }
 
-        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
-            aznumeric_cast<int>(pName.size()), pName.data(), this);
-
         SAutoCollectFileAccessTime accessTime(this);
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
