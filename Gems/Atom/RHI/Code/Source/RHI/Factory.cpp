@@ -99,6 +99,7 @@ namespace AZ
             bool enablePixGPU = RHI::QueryCommandLineOption("enablePixGPU");
             if (enablePixGPU && AZ_TRAIT_PIX_MODULE && !s_pixModule)
             {
+                //Get the path to the latest pix install directory
                 AZStd::wstring pixGpuDllPath = Platform::GetLatestWinPixGpuCapturerPath();
                 AZStd::string dllPath;
                 AZStd::to_string(dllPath, pixGpuDllPath);
@@ -112,7 +113,8 @@ namespace AZ
                 }
             }
 
-           s_isPixGpuCaptureDllLoaded = Platform::IsPixDllInjected(AZ_TRAIT_PIX_MODULE);
+            //Pix dll can still be injected even if we do not pass in enablePixGPU. This can be done if we launch the app from Pix.
+            s_isPixGpuCaptureDllLoaded = Platform::IsPixDllInjected(AZ_TRAIT_PIX_MODULE);
 #endif
         }
 
