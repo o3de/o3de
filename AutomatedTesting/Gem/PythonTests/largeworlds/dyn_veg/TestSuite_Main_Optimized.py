@@ -82,3 +82,42 @@ class TestAutomation(EditorTestSuite):
 
     class test_MeshBlocker_InstancesBlockedByMesh(EditorParallelTest):
         from .EditorScripts import MeshBlocker_InstancesBlockedByMesh as test_module
+
+    class test_MeshBlocker_InstancesBlockedByMeshHeightTuning(EditorParallelTest):
+        from .EditorScripts import MeshBlocker_InstancesBlockedByMeshHeightTuning as test_module
+
+    class test_MeshSurfaceTagEmitter_DependentOnMeshComponent(EditorParallelTest):
+        from .EditorScripts import MeshSurfaceTagEmitter_DependentOnMeshComponent as test_module
+
+    class test_MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully(EditorParallelTest):
+        from .EditorScripts import MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully as test_module
+
+    class test_PhysXColliderSurfaceTagEmitter_E2E_Editor(EditorParallelTest):
+        from .EditorScripts import PhysXColliderSurfaceTagEmitter_E2E_Editor as test_module
+
+    class test_PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets(EditorParallelTest):
+        from .EditorScripts import PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets as test_module
+
+    class test_PositionModifier_AutoSnapToSurfaceWorks(EditorParallelTest):
+        from .EditorScripts import PositionModifier_AutoSnapToSurfaceWorks as test_module
+
+    class test_RotationModifier_InstancesRotateWithinRange(EditorParallelTest):
+        from .EditorScripts import RotationModifier_InstancesRotateWithinRange as test_module
+
+    class test_RotationModifierOverrides_InstancesRotateWithinRange(EditorParallelTest):
+        from .EditorScripts import RotationModifierOverrides_InstancesRotateWithinRange as test_module
+
+    class test_ScaleModifier_InstancesProperlyScale(EditorParallelTest):
+        from .EditorScripts import ScaleModifier_InstancesProperlyScale as test_module
+
+    class test_ScaleModifierOverrides_InstancesProperlyScale(EditorParallelTest):
+        from .EditorScripts import ScaleModifierOverrides_InstancesProperlyScale as test_module
+
+    class test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(EditorParallelTest):
+        from .EditorScripts import ShapeIntersectionFilter_InstancesPlantInAssignedShape as test_module
+
+    class test_SlopeAlignmentModifier_InstanceSurfaceAlignment(EditorParallelTest):
+        from .EditorScripts import SlopeAlignmentModifier_InstanceSurfaceAlignment as test_module
+
+    class test_SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment(EditorParallelTest):
+        from .EditorScripts import SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment as test_module
