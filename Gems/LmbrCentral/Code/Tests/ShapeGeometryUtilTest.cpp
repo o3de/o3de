@@ -123,8 +123,8 @@ namespace UnitTest
             }
         );
 
-        // expect the algorithm completes and produces triangles
-        EXPECT_TRUE(triangles.size() > 0);
+        // expect the algorithm completes and produces triangles (num verts - 2) * 3
+        EXPECT_TRUE(triangles.size() == 48);
     }
 
     // test double to record if DrawTrianglesIndexed or DrawLines are called
