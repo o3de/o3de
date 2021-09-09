@@ -40,7 +40,7 @@ namespace AzToolsFramework
         AZ::TypeId typeId;
         if (typeName[0] == '{')
         {
-            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), sizeof("{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}") - 1, false);
+            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, false);
 
             if (typeId.IsNull())
             {
@@ -110,32 +110,11 @@ namespace AzToolsFramework
 
     AzFramework::BehaviorComponentId EntityUtilityComponent::GetOrAddComponentByTypeName(AZ::EntityId entityId, const AZStd::string& typeName)
     {
-        AZ::TypeId typeId;
-        if (typeName[0] == '{')
+        AZ::TypeId typeId = GetComponentTypeIdFromName(typeName);
+
+        if (typeId.IsNull())
         {
-            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, false);
-
-            if (typeId.IsNull())
-            {
-                AZ_Error("EntityUtilityComponent", false, "Invalid type id %s", typeName.c_str());
-                return AZ::InvalidComponentId;
-            }
-        }
-        else
-        {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            auto typeNameCrc = AZ::Crc32(typeName.data());
-            auto typeUuidList = serializeContext->FindClassId(typeNameCrc);
-
-            if (typeUuidList.empty())
-            {
-                AZ_Error("EntityUtilityComponent", false, "Failed to find ClassId for component type name %s", typeName.c_str());
-                return AZ::InvalidComponentId;
-            }
-
-            typeId = typeUuidList[0];
+            return AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
         }
 
         AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId, true);
