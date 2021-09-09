@@ -1409,11 +1409,6 @@ namespace AZ
                 if (timeUntilNextTick.count() > 0)
                 {
                     AZStd::this_thread::sleep_for(timeUntilNextTick);
-                    m_currentTime = AZStd::chrono::system_clock::now();
-                }
-                else
-                {
-                    m_currentTime = now;
                 }
             }
         }
