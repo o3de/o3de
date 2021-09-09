@@ -58,8 +58,8 @@ namespace PhysX
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(PhysX::EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysX::EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorProxyShapeConfig() = default;
@@ -84,12 +84,9 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
-    private:
         bool ShowingSubdivisionLevel() const;
-        AZ::u32 OnShapeTypeChanged();
-        AZ::u32 OnConfigurationChanged();
 
-        Physics::ShapeType m_lastShapeType = Physics::ShapeType::PhysicsAsset;
+        AZ::u32 OnConfigurationChanged();
     };
 
     class EditorColliderComponentDescriptor;
@@ -132,6 +129,8 @@ namespace PhysX
         virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        void ValidateRigidBodyMeshGeometryType(); 
 
     private:
         AZ_DISABLE_COPY_MOVE(EditorColliderComponent)
@@ -222,8 +221,6 @@ namespace PhysX
         void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
-
-        void ValidateRigidBodyMeshGeometryType();
 
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 
