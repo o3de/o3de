@@ -69,14 +69,14 @@ namespace ScriptCanvas
     {
     public:
         /// Called right before we start reading from the instance pointed by classPtr.
-        void OnReadBegin(void* objectPtr)
+        void OnReadBegin(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadBegin();
         }
 
         /// Called after we are done reading from the instance pointed by classPtr.
-        void OnReadEnd(void* objectPtr)
+        void OnReadEnd(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadEnd();
@@ -224,7 +224,7 @@ namespace ScriptCanvas
             m_dataType = dataReference;
         }
 
-        virtual Data::Type GetDataType() override
+        Data::Type GetDataType() override
         {
             return Data::FromAZType(azrtti_typeid<DataType>());
         }
@@ -310,7 +310,7 @@ namespace ScriptCanvas
         }
 
         // ComboBoxPropertyInterface
-        int GetSelectedIndex() const
+        int GetSelectedIndex() const override
         {
             int counter = -1;
 
@@ -328,7 +328,7 @@ namespace ScriptCanvas
             return counter;
         }
 
-        void SetSelectedIndex(int index)
+        void SetSelectedIndex(int index) override
         {
             if (index >= 0 || index < m_displaySet.size())
             {
@@ -513,13 +513,13 @@ namespace ScriptCanvas
 
 
         //! Node internal initialization, for custom init, use OnInit
-        void Init() override final;
+        void Init() final;
 
         //! Node internal activation and housekeeping, for custom activation configuration use OnActivate
-        void Activate() override final;
+        void Activate() final;
 
         //! Node internal deactivation and housekeeping, for custom deactivation configuration use OnDeactivate
-        void Deactivate() override final;
+        void Deactivate() final;
 
         void PostActivate();
 
@@ -591,7 +591,7 @@ namespace ScriptCanvas
         NodeDisabledFlag GetNodeDisabledFlag() const;
         void SetNodeDisabledFlag(NodeDisabledFlag disabledFlag);
 
-        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds);
+        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) override;
         ////
 
         Slot* GetSlotByName(AZStd::string_view slotName) const;
