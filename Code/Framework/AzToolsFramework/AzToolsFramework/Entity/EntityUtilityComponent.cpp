@@ -166,6 +166,7 @@ namespace AzToolsFramework
 
         if (typeId.IsNull())
         {
+            // GetComponentTypeIdFromName already does error handling
             return "";
         }
 

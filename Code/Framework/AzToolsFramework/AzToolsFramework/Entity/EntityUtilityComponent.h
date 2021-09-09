@@ -37,7 +37,7 @@ namespace AzToolsFramework
         // Gets a JSON string containing describing the default serialization state of the specified component
         virtual AZStd::string GetComponentJson(const AZStd::string& typeName) = 0;
 
-        // Returns a list of matching component type names
+        // Returns a list of matching component type names.  Supports wildcard search terms
         virtual AZStd::vector<AZStd::string> SearchComponents(const AZStd::string& searchTerm) = 0;
     };
 
