@@ -193,32 +193,3 @@ struct DynUiPrimitive : public AZStd::intrusive_slist_node<DynUiPrimitive>
     int m_numIndices = 0;
 };
 using DynUiPrimitiveList = AZStd::intrusive_slist<DynUiPrimitive, AZStd::slist_base_hook<DynUiPrimitive>>;
-
-class CLodValue
-{
-public:
-    CLodValue() = default;
-
-    CLodValue(int nLodA)
-    {
-        m_nLodA = aznumeric_caster(nLodA);
-    }
-
-    CLodValue(int nLodA, uint8 nDissolveRef, int nLodB)
-    {
-        m_nLodA = aznumeric_caster(nLodA);
-        m_nLodB = aznumeric_caster(nLodB);
-        m_nDissolveRef = nDissolveRef;
-    }
-
-    int LodA() const { return m_nLodA; }
-    int LodB() const { return m_nLodB; }
-
-    uint8 DissolveRefA() const { return m_nDissolveRef; }
-    uint8 DissolveRefB() const { return 255 - m_nDissolveRef; }
-
-private:
-    int16 m_nLodA = -1;
-    int16 m_nLodB = -1;
-    uint8 m_nDissolveRef = 0;
-};

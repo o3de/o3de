@@ -22,22 +22,6 @@
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-struct SGizmoSettings
-{
-    float axisGizmoSize;
-    bool axisGizmoText;
-    int axisGizmoMaxCount;
-
-    float helpersScale;
-    float tagpointScaleMulti;
-
-    // Scale size and transparency for debug spheres when using Ruler tool
-    float rulerSphereScale;
-    float rulerSphereTrans;
-
-    SGizmoSettings();
-};
-
 //////////////////////////////////////////////////////////////////////////
 // Settings for snapping in the viewports.
 //////////////////////////////////////////////////////////////////////////
@@ -380,8 +364,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     //! Keeps the editor active even if no focus is set
     int keepEditorActive;
-
-    SGizmoSettings gizmo;
 
     // Settings of the snapping.
     SSnapSettings snap;

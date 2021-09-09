@@ -45,7 +45,7 @@ namespace AzToolsFramework
             m_prefabPublicInterface = nullptr;
         }
 
-        PrefabOperationResult PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
+        CreatePrefabResult PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
         {
             return m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
         }

@@ -21,7 +21,7 @@ AWS_CLIENT_AUTH_FEATURE_NAME = 'AWSClientAuth'
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('asset_processor')
 @pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('aws_utils')
