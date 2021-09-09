@@ -78,6 +78,8 @@ namespace ScriptCanvas
                         variableIds.insert(scopedVariableId->m_identifier);
                     }
                 }
+                
+                Node::CollectVariableReferences(variableIds);
             }
 
             bool EBusEventHandler::ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
@@ -90,11 +92,14 @@ namespace ScriptCanvas
 
                     if (scopedVariableId)
                     {
-                        return variableIds.find(scopedVariableId->m_identifier) != variableIds.end();
+                        if(variableIds.find(scopedVariableId->m_identifier) != variableIds.end())
+                        {
+                            return true;
+                        }
                     }
                 }
 
-                return false;
+                return Node::ContainsReferencesToVariables(variableIds);
             }
 
             size_t EBusEventHandler::GenerateFingerprint() const
