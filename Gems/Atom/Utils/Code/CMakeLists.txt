@@ -44,6 +44,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFramework
                 Gem::Atom_Utils.Static
     )
     ly_add_googletest(
