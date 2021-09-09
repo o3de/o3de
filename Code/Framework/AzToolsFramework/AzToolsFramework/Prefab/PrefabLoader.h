@@ -34,7 +34,7 @@ namespace AzToolsFramework
         */
         class PrefabLoader final
             : public PrefabLoaderInterface
-            , public PrefabLoaderRequestBus::Handler
+            , private PrefabLoaderRequestBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
@@ -108,10 +108,13 @@ namespace AzToolsFramework
 
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
-
-            AZ::Outcome<AZStd::string, void> SaveTemplateToString(TemplateId templateId) override;
-
+            
         private:
+
+            //////////////////////////////////////////////////////////////////////////
+            // PrefabLoaderRequestBus implementation
+            AZ::Outcome<AZStd::string, void> SaveTemplateToString(TemplateId templateId) override;
+            //////////////////////////////////////////////////////////////////////////
             /**
              * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
              * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
