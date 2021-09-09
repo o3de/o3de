@@ -81,5 +81,6 @@ namespace AzToolsFramework
         ViewportInteraction::KeyboardModifiers m_previousModifiers; //!< Modifier keys active on the previous frame.
         AzFramework::ClickDetector m_clickDetector; //!< Utility type to detect if a mouse click or move has occurred.
         AzFramework::CursorState m_cursorState; //!< Utility type to track the current cursor position (and movement/delta).
+        AzFramework::ScreenPoint m_cursorPositionAtDownEvent; //!< The position of the cursor when first potentially starting a box select.
     };
 } // namespace AzToolsFramework
