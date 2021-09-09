@@ -17,6 +17,7 @@ namespace AzFramework
 {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
+    [[maybe_unused]] const char LinuxXcbErrorWindow[] = "NativeWindow_Linux_xcb";
     static constexpr uint8_t s_XcbFormatDataSize = 32;              // Format indicator for xcb for client messages
     static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4;    // The default border with in pixels if a border was specified
     static constexpr uint8_t s_XcbResponseTypeMask = 0x7f;          // Mask to extract the specific event type from an xcb event
@@ -30,7 +31,7 @@ namespace AzFramework
         {
             m_xcbConnection = xcbConnectionManager->GetXcbConnection();
         }
-        AZ_Error("NativeWindow_Linux_xcb", m_xcbConnection!=nullptr, "Unable to get XCB Connection");
+        AZ_Error(LinuxXcbErrorWindow, m_xcbConnection != nullptr, "Unable to get XCB Connection");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,9 +65,9 @@ namespace AzFramework
         uint32_t valueList[] = { xcbRootScreen->black_pixel, 
                                  XCB_EVENT_MASK_STRUCTURE_NOTIFY };
 
-        xcb_void_cookie_t xcb_check_result;
+        xcb_void_cookie_t xcbCheckResult;
 
-        xcb_check_result = xcb_create_window_checked(m_xcbConnection,
+        xcbCheckResult = xcb_create_window_checked(m_xcbConnection,
                                                      XCB_COPY_FROM_PARENT,
                                                      m_xcbWindow,
                                                      xcbParentWindow,
@@ -80,25 +81,25 @@ namespace AzFramework
                                                      eventMask,
                                                      valueList);
 
-        AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to create xcb window.");
+        AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to create xcb window.");
 
         SetWindowTitle(title);
 
         // Setup the window close event 
         const static char* wmProtocolString = "WM_PROTOCOLS";
         
-        xcb_intern_atom_cookie_t cookie_protocol = xcb_intern_atom(m_xcbConnection, 1, strlen(wmProtocolString), wmProtocolString);
-        xcb_intern_atom_reply_t* reply_protocol = xcb_intern_atom_reply(m_xcbConnection, cookie_protocol, nullptr);
-        AZ_Error("AtomVulkan_RHI", reply_protocol!=NULL, "Unable to query xcb '%s' atom", wmProtocolString);
-        m_xcbAtomProtocols = reply_protocol->atom;
+        xcb_intern_atom_cookie_t cookieProtocol = xcb_intern_atom(m_xcbConnection, 1, strlen(wmProtocolString), wmProtocolString);
+        xcb_intern_atom_reply_t* replyProtocol = xcb_intern_atom_reply(m_xcbConnection, cookieProtocol, nullptr);
+        AZ_Error(LinuxXcbErrorWindow, replyProtocol != nullptr, "Unable to query xcb '%s' atom", wmProtocolString);
+        m_xcbAtomProtocols = replyProtocol->atom;
 
         const static char* wmDeleteWindowString = "WM_DELETE_WINDOW";
-        xcb_intern_atom_cookie_t cookie_delete_window = xcb_intern_atom(m_xcbConnection, 0, strlen(wmDeleteWindowString), wmDeleteWindowString);
-        xcb_intern_atom_reply_t* reply_delete_window = xcb_intern_atom_reply(m_xcbConnection, cookie_delete_window, nullptr);
-        AZ_Error("AtomVulkan_RHI", reply_delete_window!=NULL, "Unable to query xcb '%s' atom", wmDeleteWindowString);
-        m_xcbAtomDeleteWindow = reply_delete_window->atom;
+        xcb_intern_atom_cookie_t cookieDeleteWindow = xcb_intern_atom(m_xcbConnection, 0, strlen(wmDeleteWindowString), wmDeleteWindowString);
+        xcb_intern_atom_reply_t* replyDeleteWindow = xcb_intern_atom_reply(m_xcbConnection, cookieDeleteWindow, nullptr);
+        AZ_Error(LinuxXcbErrorWindow, replyDeleteWindow != nullptr, "Unable to query xcb '%s' atom", wmDeleteWindowString);
+        m_xcbAtomDeleteWindow = replyDeleteWindow->atom;
 
-        xcb_check_result = xcb_change_property_checked(m_xcbConnection, 
+        xcbCheckResult = xcb_change_property_checked(m_xcbConnection, 
                                                        XCB_PROP_MODE_REPLACE, 
                                                        m_xcbWindow, 
                                                        m_xcbAtomProtocols, 
@@ -107,7 +108,7 @@ namespace AzFramework
                                                        1,
                                                        &m_xcbAtomDeleteWindow);
                                                     
-        AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to change the xcb atom property for WM_CLOSE event");
+        AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to change the xcb atom property for WM_CLOSE event");
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
@@ -151,8 +152,8 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void NativeWindowImpl_Linux_xcb::SetWindowTitle(const AZStd::string& title)
     {
-        xcb_void_cookie_t xcb_check_result;
-        xcb_check_result = xcb_change_property(m_xcbConnection,
+        xcb_void_cookie_t xcbCheckResult;
+        xcbCheckResult = xcb_change_property(m_xcbConnection,
                                                XCB_PROP_MODE_REPLACE,
                                                m_xcbWindow,
                                                XCB_ATOM_WM_NAME,
@@ -160,7 +161,7 @@ namespace AzFramework
                                                8,
                                                static_cast<uint32_t>(title.size()),
                                                title.c_str());
-        AZ_Assert(ValidateXcbResult(xcb_check_result), "Failed to set window title.");
+        AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set window title.");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +169,7 @@ namespace AzFramework
     {
         const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
 
-        xcb_configure_window (m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
+        xcb_configure_window(m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
         
         m_width = clientAreaSize.m_width;
         m_height = clientAreaSize.m_height;
@@ -200,7 +201,7 @@ namespace AzFramework
         {
             case XCB_CONFIGURE_NOTIFY:
             {
-                xcb_configure_notify_event_t *cne = reinterpret_cast<xcb_configure_notify_event_t *>(event);
+                xcb_configure_notify_event_t* cne = reinterpret_cast<xcb_configure_notify_event_t*>(event);
                 WindowSizeChanged(aznumeric_cast<uint32_t>(cne->width), 
                                   aznumeric_cast<uint32_t>(cne->height));
 
@@ -208,7 +209,7 @@ namespace AzFramework
             }
             case XCB_CLIENT_MESSAGE:
             {
-                xcb_client_message_event_t *cme = reinterpret_cast<xcb_client_message_event_t *>(event);
+                xcb_client_message_event_t* cme = reinterpret_cast<xcb_client_message_event_t*>(event);
                 if ((cme->type == m_xcbAtomProtocols) && 
                     (cme->format == s_XcbFormatDataSize) &&
                     (cme->data.data32[0] == m_xcbAtomDeleteWindow))
