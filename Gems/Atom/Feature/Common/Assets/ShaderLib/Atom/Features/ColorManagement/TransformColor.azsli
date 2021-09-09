@@ -13,6 +13,10 @@
 #include "GeneratedTransforms/LinearSrgb_To_Srgb.azsli"
 #include "GeneratedTransforms/Srgb_To_LinearSrgb.azsli"
 #include "GeneratedTransforms/Aces_To_AcesCg.azsli"
+#include "GeneratedTransforms/LinearColor_To_Hsv.azsli"
+#include "GeneratedTransforms/Hsv_To_LinearColor.azsli"
+#include "GeneratedTransforms/AcesCc_To_AcesCg.azsli"
+#include "GeneratedTransforms/AcesCg_To_AcesCc.azsli"
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
@@ -20,9 +24,11 @@ enum class ColorSpaceId
 {
     SRGB = 0,
     LinearSRGB,
+    ACEScc,
     ACEScg,
     ACES2065,
     XYZ,
+    HSV,
     Invalid
 };
 
@@ -51,9 +57,29 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
         color = AcesCg_To_LinearSrgb(color);
         color = LinearSrgb_To_Srgb(color);
     }
+    else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::LinearSRGB)
+    {
+        color = AcesCg_To_LinearSrgb(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::HSV)
+    {
+        color = LinearColor_To_Hsv(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::ACEScc)
+    {
+        color = AcesCg_To_AcesCc(color);
+    }
     else if (fromColorSpace == ColorSpaceId::ACES2065 && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = Aces_To_AcesCg(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::HSV && toColorSpace == ColorSpaceId::ACEScg)
+    {
+        color = Hsv_To_LinearColor(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::ACEScc && toColorSpace == ColorSpaceId::ACEScg)
+    {
+        color = AcesCc_To_AcesCg(color);
     }
     else
     {
@@ -75,11 +101,22 @@ float CalculateLuminance(in float3 color, ColorSpaceId colorSpace)
             luminance = CalculateLuminance_AcesCg(color);
             break;
         case ColorSpaceId::SRGB:
+        case ColorSpaceId::ACEScc:
         case ColorSpaceId::ACES2065:
         case ColorSpaceId::XYZ:
+        case ColorSpaceId::HSV:
         case ColorSpaceId::Invalid:
             break;
     }
     
     return luminance;
+}
+
+float RotateHue(float hue, float low, float hi) 
+{
+    return (hue < low)
+            ? hue + hi
+            : (hue > hi)
+                ? hue - hi
+                : hue;
 }
