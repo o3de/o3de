@@ -63,13 +63,13 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target enumerations.
         //! @ returns The sequence result and the enumerations for the target that were enumerated.
-        AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
-            const AZStd::vector<const TestTarget*>& testTargets,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::TestFailure testFailurePolicy,
-            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
+        //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
+        //    const AZStd::vector<const TestTarget*>& testTargets,
+        //    Policy::ExecutionFailure executionFailurePolicy,
+        //    Policy::TestFailure testFailurePolicy,
+        //    AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        //    AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        //    AZStd::optional<TestEngineJobCompleteCallback> callback) const;
 
         //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -83,7 +83,6 @@ namespace TestImpact
         //! @ returns The sequence result and the test run results for the test targets that were run.
         [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*>& testTargets,
-            Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
@@ -93,7 +92,6 @@ namespace TestImpact
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
-        //! @param testShardingPolicy Test sharding policy to use for test targets in this run.
         //! @param executionFailurePolicy Policy for how test execution failures should be handled.
         //! @param integrityFailurePolicy Policy for how integrty failures of the test impact data and source tree model should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
@@ -104,7 +102,6 @@ namespace TestImpact
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
         [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*>& testTargets,
-            Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::IntegrityFailure integrityFailurePolicy,
             Policy::TestFailure testFailurePolicy,

@@ -338,43 +338,43 @@ namespace TestImpact
 
     Runtime::~Runtime() = default;
 
-    void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
-    {
-        AZStd::vector<const TestTarget*> testTargets;
-        const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
-        {
-            for (const auto& sourceDependency : sourceDependencies)
-            {
-                for (const auto& parentTarget : sourceDependency.GetParentTargets())
-                {
-                    AZStd::visit([&testTargets]([[maybe_unused]] auto&& target)
-                    {
-                        if constexpr (IsTestTarget<decltype(target)>)
-                        {
-                            testTargets.push_back(target);
-                        }
-                    }, parentTarget.GetTarget());
-                }
-            }
-        };
-
-        // Gather all of the test targets that have had any of their sources modified
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetCreateSourceDependencies());
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetUpdateSourceDependencies());
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
-
-        // Enumerate the mutated test targets to ensure their enumeration caches are up to date
-        if (!testTargets.empty())
-        {
-            m_testEngine->UpdateEnumerationCache(
-                testTargets,
-                Policy::ExecutionFailure::Ignore,
-                Policy::TestFailure::Continue,
-                AZStd::nullopt,
-                AZStd::nullopt,
-                AZStd::nullopt);
-        }
-    }
+    //void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
+    //{
+    //    AZStd::vector<const TestTarget*> testTargets;
+    //    const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
+    //    {
+    //        for (const auto& sourceDependency : sourceDependencies)
+    //        {
+    //            for (const auto& parentTarget : sourceDependency.GetParentTargets())
+    //            {
+    //                AZStd::visit([&testTargets]([[maybe_unused]] auto&& target)
+    //                {
+    //                    if constexpr (IsTestTarget<decltype(target)>)
+    //                    {
+    //                        testTargets.push_back(target);
+    //                    }
+    //                }, parentTarget.GetTarget());
+    //            }
+    //        }
+    //    };
+    //
+    //    // Gather all of the test targets that have had any of their sources modified
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetCreateSourceDependencies());
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetUpdateSourceDependencies());
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
+    //
+    //    // Enumerate the mutated test targets to ensure their enumeration caches are up to date
+    //    if (!testTargets.empty())
+    //    {
+    //        m_testEngine->UpdateEnumerationCache(
+    //            testTargets,
+    //            Policy::ExecutionFailure::Ignore,
+    //            Policy::TestFailure::Continue,
+    //            AZStd::nullopt,
+    //            AZStd::nullopt,
+    //            AZStd::nullopt);
+    //    }
+    //}
 
     AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargets(
         const ChangeList& changeList,
@@ -574,7 +574,6 @@ namespace TestImpact
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->RegularRun(
             includedTestTargets,
-            m_testShardingPolicy,
             m_executionFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
@@ -653,7 +652,6 @@ namespace TestImpact
         {
             return m_testEngine->InstrumentedRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_integrationFailurePolicy,
                 m_testFailurePolicy,
@@ -672,7 +670,6 @@ namespace TestImpact
         {
             return m_testEngine->RegularRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
@@ -778,7 +775,6 @@ namespace TestImpact
         {
             return m_testEngine->InstrumentedRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_integrationFailurePolicy,
                 m_testFailurePolicy,
@@ -794,7 +790,6 @@ namespace TestImpact
         {
             return m_testEngine->RegularRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
@@ -920,7 +915,6 @@ namespace TestImpact
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
-            m_testShardingPolicy,
             m_executionFailurePolicy,
             m_integrationFailurePolicy,
             m_testFailurePolicy,

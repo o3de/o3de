@@ -182,7 +182,7 @@ namespace TestImpact
     private:
         //! Updates the test enumeration cache for test targets that had sources modified by a given change list.
         //! @param changeDependencyList The resolved change dependency list generated for the change list.
-        void EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList);
+        //void EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList);
 
         //! Selects the test targets covering a given change list and updates the enumeration cache of the test targets with sources
         //! modified in that change list.
