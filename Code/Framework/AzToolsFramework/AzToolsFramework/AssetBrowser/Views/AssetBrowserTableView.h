@@ -69,8 +69,8 @@ namespace AzToolsFramework
 
         private:
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
+            QPointer<AssetBrowserTableModel> m_tableModel;
+            QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
             int m_hoveredRow = -1;
             int m_hoveredColumn = -1;
