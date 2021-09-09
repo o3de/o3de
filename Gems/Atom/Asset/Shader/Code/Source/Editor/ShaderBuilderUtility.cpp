@@ -25,6 +25,7 @@
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
@@ -45,13 +46,13 @@ namespace AZ
     {
         namespace ShaderBuilderUtility
         {
-            static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
+            [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
                 RPI::ShaderSourceData shaderSourceData;
 
-                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile);
+                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
 
                 if (!document.IsSuccess())
                 {
@@ -127,7 +128,7 @@ namespace AZ
                 AZStd::unordered_map<int, Outcome<rapidjson::Document, AZStd::string>> outcomes;
                 for (int i : indicesOfInterest)
                 {
-                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i]);
+                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i], AZ::RPI::JsonUtils::AtomMaxFileSize);
                     if (!outcomes[i].IsSuccess())
                     {
                         AZ_Error(builderName, false, "%s", outcomes[i].GetError().c_str());
@@ -622,7 +623,7 @@ namespace AZ
                 StructData inputStruct;
                 inputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson, AZ::RPI::JsonUtils::AtomMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
@@ -715,7 +716,7 @@ namespace AZ
                 StructData outputStruct;
                 outputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson, AZ::RPI::JsonUtils::AtomMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
