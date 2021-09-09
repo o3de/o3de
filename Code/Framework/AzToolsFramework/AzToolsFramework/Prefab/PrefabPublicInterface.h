@@ -24,8 +24,9 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        typedef AZ::Outcome<void, AZStd::string> PrefabOperationResult;
+        typedef AZ::Outcome<AZ::EntityId, AZStd::string> CreatePrefabResult;
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> InstantiatePrefabResult;
+        typedef AZ::Outcome<void, AZStd::string> PrefabOperationResult;
         typedef AZ::Outcome<bool, AZStd::string> PrefabRequestResult;
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> PrefabEntityResult;
 
@@ -44,20 +45,22 @@ namespace AzToolsFramework
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefabInDisk(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+             * @return An outcome object with an entityId of the new prefab's container entity;
+             *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefabInMemory(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.

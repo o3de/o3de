@@ -332,7 +332,7 @@ namespace ScriptCanvasEditor
 
         if (isScriptCanvasAsset)
         {
-            auto scriptCanvasEditorCallback = [this]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+            auto scriptCanvasEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
             {
                 AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
                 const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);

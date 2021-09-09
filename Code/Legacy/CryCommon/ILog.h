@@ -6,13 +6,6 @@
  *
  */
 
-
-// In Mac, including ILog without including platform.h first fails because platform.h 
-// includes CryThread.h which includes CryThread_pthreads.h which uses ILog. 
-// So plaform.h needs the contents of ILog.h.
-// By including platform.h outside of the guard, we give platform.h the right include order
-#include <platform.h>
-
 #ifndef CRYINCLUDE_CRYCOMMON_ILOG_H
 #define CRYINCLUDE_CRYCOMMON_ILOG_H
 #pragma once
@@ -22,9 +15,6 @@
 // enable this define to support log scopes to provide more context information for log lines
 // this code is disable by default due it's runtime cost
 //#define SUPPORT_LOG_IDENTER
-
-// forward declarations
-class ICrySizer;
 
 // Summary:
 //   Callback interface to the ILog.
@@ -127,10 +117,6 @@ struct ILog
     virtual void Update() = 0;
 
     virtual const char* GetModuleFilter() = 0;
-
-    // Notes:
-    //   Collect memory statistics in CrySizer
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 
     // Asset scope strings help to figure out asset dependencies in case of asset loading errors.
     // Should not be used directly, only by using define CRY_DEFINE_ASSET_SCOPE

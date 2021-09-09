@@ -74,47 +74,14 @@ namespace AWSGameLift
 
     void AWSGameLiftServerSystemComponent::Activate()
     {
-        if (m_gameLiftServerManager->InitializeGameLiftServerSDK())
-        {
-            GameLiftServerProcessDesc serverProcessDesc;
-            UpdateGameLiftServerProcessDesc(serverProcessDesc);
-            m_gameLiftServerManager->NotifyGameLiftProcessReady(serverProcessDesc);
-        }
+        m_gameLiftServerManager->InitializeGameLiftServerSDK();
+        m_gameLiftServerManager->ActivateManager();
     }
 
     void AWSGameLiftServerSystemComponent::Deactivate()
     {
+        m_gameLiftServerManager->DeactivateManager();
         m_gameLiftServerManager->HandleDestroySession();
-    }
-
-    void AWSGameLiftServerSystemComponent::UpdateGameLiftServerProcessDesc(GameLiftServerProcessDesc& serverProcessDesc)
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (fileIO)
-        {
-            const char pathToLogFolder[] = "@log@/";
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            if (fileIO->ResolvePath(pathToLogFolder, resolvedPath, AZ_ARRAY_SIZE(resolvedPath)))
-            {
-                serverProcessDesc.m_logPaths.push_back(resolvedPath);
-            }
-            else
-            {
-                AZ_Error("AWSGameLift", false, "Failed to resolve the path to the log folder.");
-            }
-        }
-        else
-        {
-            AZ_Error("AWSGameLift", false, "Failed to get File IO.");
-        }
-
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
-            AZ_Error(
-                "AWSGameLift", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sv_port' console variable failed with error %s",
-                AZ::GetEnumString(getCvarResult));
-        }
     }
 
     void AWSGameLiftServerSystemComponent::SetGameLiftServerManager(AZStd::unique_ptr<AWSGameLiftServerManager> gameLiftServerManager)

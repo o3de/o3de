@@ -135,7 +135,6 @@
   #define PRINTF_EMPTY_FORMAT ""
 #endif
 
-
 //default stack size for threads, currently only used on pthread platforms
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_8
@@ -143,14 +142,6 @@
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
     #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(LINUX) || defined(APPLE)
-    #if !defined(_DEBUG)
-        #define SIMPLE_THREAD_STACK_SIZE_KB (256)
-    #else
-        #define SIMPLE_THREAD_STACK_SIZE_KB (256 * 4)
-    #endif
-#else
-    #define SIMPLE_THREAD_STACK_SIZE_KB (32)
 #endif
 
 #include <AzCore/PlatformDef.h>
@@ -199,7 +190,7 @@
     #elif defined(ANDROID)
         #include "AndroidSpecific.h"
     #elif defined(IOS)
-    #include "iOSSpecific.h"
+        #include "iOSSpecific.h"
     #endif
 #endif
 
@@ -362,12 +353,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-// Include support for meta-type data.
-#include "TypeInfo_decl.h"
-
-// Include array.
-#include <CryArray.h>
-
 bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
 
@@ -379,16 +364,6 @@ threadID CryGetCurrentThreadId();
     #define NO_INLINE _declspec(noinline)
     #define NO_INLINE_WEAK _declspec(noinline) inline
     #define __PACKED
-#endif
-
-// Fallback for Alignment macro of GCC/CLANG (must be after the class definition)
-#if !defined(_ALIGN)
-    #define _ALIGN(num) AZ_POP_DISABLE_WARNING
-#endif
-
-// Fallback for Alignment macro of MSVC (must be before the class definition)
-#if !defined(_MS_ALIGN)
-        #define _MS_ALIGN(num) AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option")
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)

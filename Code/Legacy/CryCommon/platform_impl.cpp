@@ -13,11 +13,11 @@
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
+
 
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -37,10 +37,6 @@ struct SSystemGlobalEnvironment* gEnv = nullptr;
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_TRAITS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-// If not in static library.
-#include <CryThreadImpl.h>
 
 #if defined(WIN32) || defined(WIN64)
 void CryPureCallHandler()
@@ -98,7 +94,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::Environment::Attach(gEnv->pSharedEnvironment);
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
-        AZ::Debug::ProfileModuleInit();
     } // if pSystem
 }
 
@@ -207,7 +202,7 @@ void __stl_debug_message(const char* format_str, ...)
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
-    AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+    AZ_PROFILE_FUNCTION(System);
     Sleep(dwMilliseconds);
 }
 
@@ -279,111 +274,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
 }
 
 //////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedIncrement(int volatile* lpAddend)
-{
-    return InterlockedIncrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedDecrement(int volatile* lpAddend)
-{
-    return InterlockedDecrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedExchangeAdd(LONG volatile* lpAddend, LONG Value)
-{
-    return InterlockedExchangeAdd(lpAddend, Value);
-}
-
-LONG  CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return InterlockedOr(Destination, Value);
-}
-
-LONG  CryInterlockedCompareExchange(LONG volatile* dst, LONG exchange, LONG comperand)
-{
-    return InterlockedCompareExchange(dst, exchange, comperand);
-}
-
-void* CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return InterlockedCompareExchangePointer(dst, exchange, comperand);
-}
-
-void* CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    return InterlockedExchangePointer(dst, exchange);
-}
-
-void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
-{
-#if defined (PLATFORM_64BIT)
-#if !defined(NDEBUG)
-    size_t v = (size_t)
-#endif
-        InterlockedAdd64((volatile int64*)pVal, iAdd);
-#else
-    size_t v = (size_t)CryInterlockedExchangeAdd((volatile long*)pVal, (long)iAdd);
-    v += iAdd;
-#endif
-    assert((iAdd == 0) || (iAdd < 0 && v < v - (size_t)iAdd) || (iAdd > 0 && v > v - (size_t)iAdd));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void* CryCreateCriticalSection()
-{
-    CRITICAL_SECTION* pCS = new CRITICAL_SECTION;
-    InitializeCriticalSection(pCS);
-    return pCS;
-}
-
-void  CryCreateCriticalSectionInplace(void* pCS)
-{
-    InitializeCriticalSection((CRITICAL_SECTION*)pCS);
-}
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSection(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-    delete pCS;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSectionInplace(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryEnterCriticalSection(void* cs)
-{
-    EnterCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool  CryTryCriticalSection(void* cs)
-{
-    return TryEnterCriticalSection((CRITICAL_SECTION*)cs) != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryLeaveCriticalSection(void* cs)
-{
-    LeaveCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
 {
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -449,73 +339,6 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      #endif
      */
 }
-
-_MS_ALIGN(64) uint32  BoxSides[0x40 * 8] = {
-    0, 0, 0, 0, 0, 0, 0, 0, //00
-    0, 4, 6, 2, 0, 0, 0, 4, //01
-    7, 5, 1, 3, 0, 0, 0, 4, //02
-    0, 0, 0, 0, 0, 0, 0, 0, //03
-    0, 1, 5, 4, 0, 0, 0, 4, //04
-    0, 1, 5, 4, 6, 2, 0, 6, //05
-    7, 5, 4, 0, 1, 3, 0, 6, //06
-    0, 0, 0, 0, 0, 0, 0, 0, //07
-    7, 3, 2, 6, 0, 0, 0, 4, //08
-    0, 4, 6, 7, 3, 2, 0, 6, //09
-    7, 5, 1, 3, 2, 6, 0, 6, //0a
-    0, 0, 0, 0, 0, 0, 0, 0, //0b
-    0, 0, 0, 0, 0, 0, 0, 0, //0c
-    0, 0, 0, 0, 0, 0, 0, 0, //0d
-    0, 0, 0, 0, 0, 0, 0, 0, //0e
-    0, 0, 0, 0, 0, 0, 0, 0, //0f
-    0, 2, 3, 1, 0, 0, 0, 4, //10
-    0, 4, 6, 2, 3, 1, 0, 6, //11
-    7, 5, 1, 0, 2, 3, 0, 6, //12
-    0, 0, 0, 0, 0, 0, 0, 0, //13
-    0, 2, 3, 1, 5, 4, 0, 6, //14
-    1, 5, 4, 6, 2, 3, 0, 6, //15
-    7, 5, 4, 0, 2, 3, 0, 6, //16
-    0, 0, 0, 0, 0, 0, 0, 0, //17
-    0, 2, 6, 7, 3, 1, 0, 6, //18
-    0, 4, 6, 7, 3, 1, 0, 6, //19
-    7, 5, 1, 0, 2, 6, 0, 6, //1a
-    0, 0, 0, 0, 0, 0, 0, 0, //1b
-    0, 0, 0, 0, 0, 0, 0, 0, //1c
-    0, 0, 0, 0, 0, 0, 0, 0, //1d
-    0, 0, 0, 0, 0, 0, 0, 0, //1e
-    0, 0, 0, 0, 0, 0, 0, 0, //1f
-    7, 6, 4, 5, 0, 0, 0, 4, //20
-    0, 4, 5, 7, 6, 2, 0, 6, //21
-    7, 6, 4, 5, 1, 3, 0, 6, //22
-    0, 0, 0, 0, 0, 0, 0, 0, //23
-    7, 6, 4, 0, 1, 5, 0, 6, //24
-    0, 1, 5, 7, 6, 2, 0, 6, //25
-    7, 6, 4, 0, 1, 3, 0, 6, //26
-    0, 0, 0, 0, 0, 0, 0, 0, //27
-    7, 3, 2, 6, 4, 5, 0, 6, //28
-    0, 4, 5, 7, 3, 2, 0, 6, //29
-    6, 4, 5, 1, 3, 2, 0, 6, //2a
-    0, 0, 0, 0, 0, 0, 0, 0, //2b
-    0, 0, 0, 0, 0, 0, 0, 0, //2c
-    0, 0, 0, 0, 0, 0, 0, 0, //2d
-    0, 0, 0, 0, 0, 0, 0, 0, //2e
-    0, 0, 0, 0, 0, 0, 0, 0, //2f
-    0, 0, 0, 0, 0, 0, 0, 0, //30
-    0, 0, 0, 0, 0, 0, 0, 0, //31
-    0, 0, 0, 0, 0, 0, 0, 0, //32
-    0, 0, 0, 0, 0, 0, 0, 0, //33
-    0, 0, 0, 0, 0, 0, 0, 0, //34
-    0, 0, 0, 0, 0, 0, 0, 0, //35
-    0, 0, 0, 0, 0, 0, 0, 0, //36
-    0, 0, 0, 0, 0, 0, 0, 0, //37
-    0, 0, 0, 0, 0, 0, 0, 0, //38
-    0, 0, 0, 0, 0, 0, 0, 0, //39
-    0, 0, 0, 0, 0, 0, 0, 0, //3a
-    0, 0, 0, 0, 0, 0, 0, 0, //3b
-    0, 0, 0, 0, 0, 0, 0, 0, //3c
-    0, 0, 0, 0, 0, 0, 0, 0, //3d
-    0, 0, 0, 0, 0, 0, 0, 0, //3e
-    0, 0, 0, 0, 0, 0, 0, 0, //3f
-};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(AZ_RESTRICTED_PLATFORM)

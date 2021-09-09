@@ -289,9 +289,7 @@ set(FILES
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/IRenderListener.h
-    Include/IResourceSelectorHost.h
     Include/ISourceControl.h
-    Include/ISubObjectSelectionReferenceFrameCalculator.h
     Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
@@ -360,8 +358,6 @@ set(FILES
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.h
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.cpp
@@ -372,8 +368,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.cpp
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.h
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
@@ -465,8 +459,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
-    EditMode/SubObjectSelectionReferenceFrameCalculator.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -508,6 +500,7 @@ set(FILES
     LogFileImpl.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
+    Objects/DisplayContextShared.inl
     Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
@@ -561,10 +554,10 @@ set(FILES
     EditorPreferencesPageFiles.cpp
     EditorPreferencesPageViewportGeneral.h
     EditorPreferencesPageViewportGeneral.cpp
-    EditorPreferencesPageViewportGizmo.h
-    EditorPreferencesPageViewportGizmo.cpp
-    EditorPreferencesPageViewportMovement.h
-    EditorPreferencesPageViewportMovement.cpp
+    EditorPreferencesPageViewportManipulator.h
+    EditorPreferencesPageViewportManipulator.cpp
+    EditorPreferencesPageViewportCamera.h
+    EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
@@ -590,8 +583,6 @@ set(FILES
     FBXExporterDialog.ui
     FileTypeUtils.cpp
     LightmapCompiler/SimpleTriangleRasterizer.cpp
-    ResourceSelectorHost.cpp
-    ResourceSelectorHost.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -668,7 +659,6 @@ set(FILES
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
-    TrackView/CharacterKeyUIControls.cpp
     TrackView/ConsoleKeyUIControls.cpp
     TrackView/EventKeyUIControls.cpp
     TrackView/GotoKeyUIControls.cpp
@@ -797,6 +787,9 @@ set(FILES
     EditorViewportSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
+    EditorModularViewportCameraComposer.cpp
+    EditorModularViewportCameraComposer.h
+    EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     TopRendererWnd.cpp

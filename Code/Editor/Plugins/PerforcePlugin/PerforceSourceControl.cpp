@@ -9,7 +9,6 @@
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"
-#include <CryCommon/CryThread.h>
 
 #include <QSettings>
 #include <QDir>
@@ -23,7 +22,7 @@
 
 namespace
 {
-    CryCriticalSection g_cPerforceValues;
+    AZStd::mutex g_cPerforceValues;
 }
 
 ////////////////////////////////////////////////////////////
@@ -31,9 +30,9 @@ ULONG STDMETHODCALLTYPE CPerforceSourceControl::Release()
 {
     if ((--m_ref) == 0)
     {
-        g_cPerforceValues.Lock();
+        g_cPerforceValues.lock();
         delete this;
-        g_cPerforceValues.Unlock();
+        g_cPerforceValues.unlock();
         return 0;
     }
     else
@@ -57,7 +56,7 @@ void CPerforceSourceControl::ShowSettings()
 
 void CPerforceSourceControl::SetSourceControlState(SourceControlState state)
 {
-    CryAutoLock<CryCriticalSection> lock(g_cPerforceValues);
+    AZStd::scoped_lock lock(g_cPerforceValues);
 
     switch (state)
     {

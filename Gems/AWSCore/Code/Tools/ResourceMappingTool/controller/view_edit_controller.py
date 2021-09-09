@@ -68,12 +68,17 @@ class ViewEditController(QObject):
         # convert model resources into json dict
         json_dict: Dict[str, any] = \
             json_utils.convert_resources_to_json_dict(self._proxy_model.get_resources(), self._config_file_json_source)
+
+        configuration: Configuration = self._configuration_manager.configuration
+        if json_dict.get(json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME) == \
+                json_utils.RESOURCE_MAPPING_ACCOUNTID_TEMPLATE_VALUE:
+            json_dict[json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = configuration.account_id
+
         if json_dict == self._config_file_json_source:
             # skip because no difference found against existing json file
             return True
 
         # try to write in memory json content into json file
-        configuration: Configuration = self._configuration_manager.configuration
         try:
             config_file_full_path: str = file_utils.join_path(configuration.config_directory, config_file_name)
             json_utils.write_into_json_file(config_file_full_path, json_dict)
@@ -102,31 +107,6 @@ class ViewEditController(QObject):
         resource: ResourceMappingAttributes
         for resource in resources:
             self._proxy_model.load_resource(resource)
-
-    def _create_new_config_file(self) -> None:
-        configuration: Configuration = self._configuration_manager.configuration
-        self._set_default_region(configuration)
-
-        try:
-            new_config_file_path: str = file_utils.join_path(
-                configuration.config_directory, constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_NAME)
-            json_utils.create_empty_resource_mapping_file(
-                new_config_file_path, configuration.account_id, configuration.region)
-        except IOError as e:
-            logger.exception(e)
-            self.set_notification_frame_text_sender.emit(str(e))
-            return
-
-        self._rescan_config_directory()
-
-    def _set_default_region(self, configuration: Configuration):
-        default_region = configuration.region
-        if not default_region or default_region == 'aws-global':
-            self.set_notification_frame_text_sender.emit(
-                notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
-            logger.warning(notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
-
-            configuration.region = constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_REGION
 
     def _delete_table_row(self) -> None:
         indices: List[QModelIndex] = self._table_view.selectedIndexes()
@@ -246,14 +226,13 @@ class ViewEditController(QObject):
         self._view_edit_page.save_changes_button.clicked.connect(self._save_changes)
         self._view_edit_page.search_filter_input.returnPressed.connect(self._filter_based_on_search_text)
         self._view_edit_page.cancel_button.clicked.connect(self._cancel)
-        self._view_edit_page.create_new_button.clicked.connect(self._create_new_config_file)
         self._view_edit_page.rescan_button.clicked.connect(self._rescan_config_directory)
 
     def _setup_page_start_state(self) -> None:
         configuration: Configuration = self._configuration_manager.configuration
         self._view_edit_page.set_current_main_view_index(ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
-        self._view_edit_page.set_config_files(configuration.config_files)
         self._view_edit_page.set_config_location(configuration.config_directory)
+        self._view_edit_page.set_config_files(configuration.config_files)
 
     def _switch_to_import_resources_page(self) -> None:
         if self._view_edit_page.import_resources_combobox.currentIndex() == -1:
@@ -297,5 +276,5 @@ class ViewEditController(QObject):
 
     def setup(self) -> None:
         """Setting view edit page starting state and bind interactions with its corresponding behavior"""
-        self._setup_page_start_state()
         self._setup_page_interactions_behavior()
+        self._setup_page_start_state()

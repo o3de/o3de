@@ -39,7 +39,7 @@ namespace AZ
         void Reset()
         {
             m_slotUsage = 0;
-            m_currentCharacter = ~0;
+            m_currentCharacter = std::numeric_limits<uint32_t>::max();
             m_horizontalAdvance = 0;
             m_characterWidth = 0;
             m_characterHeight = 0;
@@ -51,8 +51,6 @@ namespace AZ
         {
             m_slotUsage = 0xffff;
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
     };
 
     //! Stores the glyphs of a font within a single cpu texture.
@@ -130,8 +128,6 @@ namespace AZ
         void CreateGradientSlot();
 
         int WriteToFile(const AZStd::string& fileName);
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return m_glyphCache.GetMonospaced(); }
 

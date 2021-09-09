@@ -21,10 +21,10 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -163,8 +163,7 @@ namespace AZ
                     return false;
                 }
 
-                AZ::IO::Path fileIoPath(absoluteFilePath);
-                auto saveToFileOutcome = AzFramework::FileFunc::WriteJsonFile(saveToJsonOutcome.GetValue(), fileIoPath);
+                auto saveToFileOutcome = AZ::JsonSerializationUtils::WriteJsonFile(saveToJsonOutcome.GetValue(), absoluteFilePath);
                 if (!saveToFileOutcome.IsSuccess())
                 {
                     AZ_Error(ErrorWindowName, false, "%s%s", errorMsg.c_str(), saveToFileOutcome.GetError().c_str());
@@ -309,7 +308,7 @@ namespace AZ
                 else
                 {
                     // Attempt to read the stream as JSON
-                    auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFromString(fileContents);
+                    auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(fileContents);
                     AZStd::string errorMsg;
                     if (!readJsonOutcome.IsSuccess())
                     {

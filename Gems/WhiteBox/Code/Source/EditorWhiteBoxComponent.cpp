@@ -24,6 +24,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
@@ -31,7 +32,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
 #include <WhiteBox/WhiteBoxBus.h>
@@ -61,7 +61,7 @@ namespace WhiteBox
     // to be used to generate concrete render mesh
     static WhiteBoxRenderData CreateWhiteBoxRenderData(const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxRenderData renderData;
         WhiteBoxFaces& faceData = renderData.m_faces;
@@ -407,7 +407,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildRenderMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // reset caches when the mesh changes
         m_worldAabb.reset();
@@ -474,7 +474,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_worldAabb.reset();
         m_localAabb.reset();
@@ -490,7 +490,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildPhysicsMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EditorWhiteBoxColliderRequestBus::Event(
             GetEntityId(), &EditorWhiteBoxColliderRequests::CreatePhysics, *GetWhiteBoxMesh());
@@ -513,7 +513,7 @@ namespace WhiteBox
             WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
 
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
-        const QString absoluteSaveFilePath = QFileDialog::getSaveFileName(
+        const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
@@ -577,7 +577,7 @@ namespace WhiteBox
         {
             const QString fileFilter =
                 AZStd::string::format("*.%s", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath = QFileDialog::getSaveFileName(
+            const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
                 nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
             return AZStd::string(absolutePath.toUtf8());
@@ -673,7 +673,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_worldAabb.has_value())
         {
@@ -686,7 +686,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_localAabb.has_value())
         {
@@ -708,7 +708,7 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir,
         float& distance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_faces.has_value())
         {
@@ -905,7 +905,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (DebugDrawingEnabled())
         {

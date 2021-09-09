@@ -121,6 +121,7 @@ namespace UnitTest
 
                 bufferPool->ForEach<RHI::Buffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::Buffer& buffer)
                 {
+                    AZ_UNUSED(buffers); // Prevent unused warning in release builds
                     AZ_Assert(buffers[bufferIndex] == &buffer, "buffers don't match");
                     bufferIndex++;
                 });

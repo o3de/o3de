@@ -236,7 +236,7 @@ namespace AzToolsFramework
     {
         AZStd::string commandLineArgs = Platform::GetListFilesInArchiveCommand(archivePath);
         
-        auto parseOutput = [respCallback, taskHandle, &fileEntries](bool exitCode, AZStd::string consoleOutput)
+        auto parseOutput = [respCallback, &fileEntries](bool exitCode, AZStd::string consoleOutput)
         {
             Platform::ParseConsoleOutputFromListFilesInArchive(consoleOutput, fileEntries);
             AZ::TickBus::QueueFunction(respCallback, exitCode, AZStd::move(consoleOutput));

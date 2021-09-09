@@ -136,7 +136,7 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             m_settings.SetHiQuality();
         }
 
-        CryAutoLock<CryMutex> autoLock(CGameEngine::GetPakModifyMutex());
+        AZStd::scoped_lock autoLock(CGameEngine::GetPakModifyMutex());
 
         // Close this pak file.
         if (!CloseLevelPack(m_levelPak, true))
@@ -252,11 +252,11 @@ void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
     {
         CMemoryBlock Temp;
         const size_t Size   =   FileIn.size();
-        Temp.Allocate(Size);
+        Temp.Allocate(static_cast<int>(Size));
         FileIn.read(reinterpret_cast<char*>(Temp.GetBuffer()), Size);
         FileIn.close();
         CCryMemFile FileOut;
-        FileOut.Write(Temp.GetBuffer(), Size);
+        FileOut.Write(Temp.GetBuffer(), static_cast<int>(Size));
         m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), FileOut);
     }
 }
@@ -281,13 +281,13 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     QString levelDataFile = path + "LevelData.xml";
     XmlString xmlData = root->getXML();
     CCryMemFile file;
-    file.Write(xmlData.c_str(), xmlData.length());
+    file.Write(xmlData.c_str(), static_cast<unsigned int>(xmlData.length()));
     m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), file);
 
     QString levelDataActionFile = path + "LevelDataAction.xml";
     XmlString xmlDataAction = rootAction->getXML();
     CCryMemFile fileAction;
-    fileAction.Write(xmlDataAction.c_str(), xmlDataAction.length());
+    fileAction.Write(xmlDataAction.c_str(), static_cast<unsigned int>(xmlDataAction.length()));
     m_levelPak.m_pakFile.UpdateFile(levelDataActionFile.toUtf8().data(), fileAction);
 
     AZStd::vector<char> entitySaveBuffer;
@@ -298,7 +298,7 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     {
         QString entitiesFile;
         entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "Mission0");
-        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), entitySaveBuffer.size());
+        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
     }
 }
 
@@ -329,7 +329,7 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     XmlString xmlData = root->getXML();
 
     CCryMemFile file;
-    file.Write(xmlData.c_str(), xmlData.length());
+    file.Write(xmlData.c_str(), static_cast<unsigned int>(xmlData.length()));
     m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), file);
 }
 
@@ -342,7 +342,7 @@ void CGameExporter::ExportLevelResourceList(const QString& path)
     CCryMemFile memFile;
     for (const char* filename = pResList->GetFirst(); filename; filename = pResList->GetNext())
     {
-        memFile.Write(filename, strlen(filename));
+        memFile.Write(filename, static_cast<unsigned int>(strlen(filename)));
         memFile.Write("\n", 1);
     }
 

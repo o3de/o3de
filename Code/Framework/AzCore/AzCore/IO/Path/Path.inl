@@ -10,6 +10,8 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/AzCore_Traits_Platform.h>
 
 // extern instantiations of Path templates to prevent implicit instantiations
 namespace AZ::IO
@@ -91,11 +93,23 @@ namespace AZ::IO::Internal
     constexpr auto ConsumeRootName(InputIt entryBeginIter, InputIt entryEndIter, const char preferredSeparator)
         -> AZStd::enable_if_t<AZStd::Internal::is_forward_iterator_v<InputIt>, InputIt>
     {
-        if (preferredSeparator == '/')
+        if (preferredSeparator == PosixPathSeparator)
         {
             // If the preferred separator is forward slash the parser is in posix path
-            // parsing mode, which doesn't have a root name
+            // parsing mode, which doesn't have a root name,
+            // unless we're on a posix platform that uses a custom path root separator
+        #if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+            const AZStd::string_view path{ entryBeginIter, entryEndIter };
+            const auto positionOfPathSeparator = path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR);
+            if (positionOfPathSeparator == AZStd::string_view::npos)
+            {
+                return entryBeginIter;
+            }
+            const AZStd::string_view rootName{ path.substr(0, positionOfPathSeparator + 1) };
+            return AZStd::next(entryBeginIter, rootName.size());
+        #else
             return entryBeginIter;
+        #endif
         }
         else
         {
@@ -184,13 +198,18 @@ namespace AZ::IO::Internal
     template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
     static constexpr bool IsAbsolute(InputIt first, EndIt last, const char preferredSeparator)
     {
-        size_t pathSize = AZStd::distance(first, last);
-
         // If the preferred separator is a forward slash
-        // than an absolute path is simply one that starts with a forward slash
-        if (preferredSeparator == '/')
+        // than an absolute path is simply one that starts with a forward slash,
+        // unless we're on a posix platform that uses a custom path root separator
+        if (preferredSeparator == PosixPathSeparator)
         {
+        #if defined(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR)
+            const AZStd::string_view path{ first, last };
+            return path.find(AZ_TRAIT_CUSTOM_PATH_ROOT_SEPARATOR) != AZStd::string_view::npos;
+        #else
+            const size_t pathSize = AZStd::distance(first, last);
             return pathSize > 0 && IsSeparator(*first);
+        #endif
         }
         else
         {
@@ -198,6 +217,7 @@ namespace AZ::IO::Internal
             {
                 // If a windows path ends starts with C:foo it is a root relative path
                 // A path is absolute root absolute on windows if it starts with <drive_letter><colon><path_separator>
+                const size_t pathSize = AZStd::distance(first, last);
                 return pathSize > 2 && Internal::IsSeparator(*AZStd::next(first, 2));
             }
 
@@ -221,7 +241,7 @@ namespace AZ::IO::Internal
             ? strncmp(left.data(), right.data(), maxCharsToCompare)
             : azstrnicmp(left.data(), right.data(), maxCharsToCompare);
         return charCompareResult == 0
-            ? aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size())
+            ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
             : charCompareResult;
     }
 }

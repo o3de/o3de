@@ -13,7 +13,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 // Included so we can deduce the asset type from asset paths.
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -24,7 +24,7 @@ namespace AZ
 {
     namespace AtomBridge
     {
-        static constexpr char AssetCollectionAsyncLoaderTestComponentName[] = " AssetCollectionAsyncLoaderTestComponent";
+        [[maybe_unused]] static constexpr char AssetCollectionAsyncLoaderTestComponentName[] = " AssetCollectionAsyncLoaderTestComponent";
 
         void AssetCollectionAsyncLoaderTestComponent::Reflect(AZ::ReflectContext* context)
         {

@@ -1,0 +1,6 @@
+<download name="ForceRegion_MultipleComponentsCombineForces" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9912" md5="adc8d67f82c5100f2258ab4d1022a994"/>
+ </files>
+</download>

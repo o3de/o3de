@@ -225,6 +225,7 @@ namespace UnitTest
                 defaultTD,
                 [td = AZStd::move(td)]
                 {
+                    AZ_UNUSED(td);
                 });
             task.Invoke();
             // Destructor should not have run yet (except on moved-from instances)

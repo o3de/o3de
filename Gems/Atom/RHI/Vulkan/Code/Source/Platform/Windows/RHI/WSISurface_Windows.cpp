@@ -8,6 +8,7 @@
 #include <RHI/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
+#include <vulkan/vulkan.h>
 
 namespace AZ
 {

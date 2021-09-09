@@ -98,7 +98,7 @@ namespace EMotionFX
         void TestInput(const AZStd::string& paramName, std::vector<inputType> xInputs)
         {
             BlendTreeConnection* connection = m_floatMath1Node->AddConnection(m_paramNode,
-                m_paramNode->FindOutputPortByName(paramName)->m_portId, BlendTreeFloatMath1Node::PORTID_INPUT_X);
+                static_cast<uint16>(m_paramNode->FindOutputPortByName(paramName)->m_portId), BlendTreeFloatMath1Node::PORTID_INPUT_X);
 
             for (inputType i : xInputs)
             {

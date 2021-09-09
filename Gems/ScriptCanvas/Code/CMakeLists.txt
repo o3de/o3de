@@ -47,8 +47,7 @@ ly_add_target(
 )
 
 # the script canvas debugger is an optional gem module
-# To Enable it: ly_enable_gems( ... TARGETS xxxyyzzz GEMS ScriptCanvasDebugger ...)
-# in any particular target.
+# To Enable it, associate it with a project
 ly_create_alias(NAME ScriptCanvasDebugger.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)

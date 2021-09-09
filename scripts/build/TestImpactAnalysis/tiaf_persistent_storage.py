@@ -52,7 +52,10 @@ class PersistentStorage(ABC):
             self._active_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
             self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
             unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
+<<<<<<< HEAD
             previous_test_run_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+=======
+>>>>>>> development
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
@@ -92,6 +95,7 @@ class PersistentStorage(ABC):
             else:
                 logger.info(f"No prior sequence data found for any commits.")
 
+<<<<<<< HEAD
             # Test runs for the previous sequence associated with the last commit hash
             if self.PREVIOUS_TEST_RUNS_KEY in self._historic_data:
                 logger.info(f"Previous test run data for a sequence of '{len(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])}' test targets found.")
@@ -99,6 +103,8 @@ class PersistentStorage(ABC):
                 self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = {}
                 logger.info("No previous test run data found.")
 
+=======
+>>>>>>> development
             # Create the active workspace directory for the unpacked historic data files so they are accessible by the runtime
             self._active_workspace.mkdir(exist_ok=True)
 
@@ -143,9 +149,12 @@ class PersistentStorage(ABC):
                 if not self.HISTORIC_SEQUENCES_KEY in self._historic_data:
                     self._historic_data[self.HISTORIC_SEQUENCES_KEY] = {}
                 self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash] = self._last_commit_hash
+<<<<<<< HEAD
 
                 # Test runs for this completed sequence
                 self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = test_runs
+=======
+>>>>>>> development
 
                 # Coverage data for this branch
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:

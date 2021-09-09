@@ -16,7 +16,6 @@ import editor_python_test_tools.hydra_test_utils as hydra
 from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 120
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -32,7 +31,7 @@ class TestAtomEditorComponentsMain(object):
         Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
         1. Display Mapper
         2. Light
-        3. Radius Weight Modifier
+        3. PostFX Radius Weight Modifier
         4. PostFX Layer
         5. Physical Sky
         6. Global Skylight (IBL)
@@ -126,18 +125,18 @@ class TestAtomEditorComponentsMain(object):
             "PostFX Layer_test: Entity deleted: True",
             "PostFX Layer_test: UNDO entity deletion works: True",
             "PostFX Layer_test: REDO entity deletion works: True",
-            # Radius Weight Modifier Component
-            "Radius Weight Modifier Entity successfully created",
-            "Radius Weight Modifier_test: Component added to the entity: True",
-            "Radius Weight Modifier_test: Component removed after UNDO: True",
-            "Radius Weight Modifier_test: Component added after REDO: True",
-            "Radius Weight Modifier_test: Entered game mode: True",
-            "Radius Weight Modifier_test: Exit game mode: True",
-            "Radius Weight Modifier_test: Entity is hidden: True",
-            "Radius Weight Modifier_test: Entity is shown: True",
-            "Radius Weight Modifier_test: Entity deleted: True",
-            "Radius Weight Modifier_test: UNDO entity deletion works: True",
-            "Radius Weight Modifier_test: REDO entity deletion works: True",
+            # PostFX Radius Weight Modifier Component
+            "PostFX Radius Weight Modifier Entity successfully created",
+            "PostFX Radius Weight Modifier_test: Component added to the entity: True",
+            "PostFX Radius Weight Modifier_test: Component removed after UNDO: True",
+            "PostFX Radius Weight Modifier_test: Component added after REDO: True",
+            "PostFX Radius Weight Modifier_test: Entered game mode: True",
+            "PostFX Radius Weight Modifier_test: Exit game mode: True",
+            "PostFX Radius Weight Modifier_test: Entity is hidden: True",
+            "PostFX Radius Weight Modifier_test: Entity is shown: True",
+            "PostFX Radius Weight Modifier_test: Entity deleted: True",
+            "PostFX Radius Weight Modifier_test: UNDO entity deletion works: True",
+            "PostFX Radius Weight Modifier_test: REDO entity deletion works: True",
             # Light Component
             "Light Entity successfully created",
             "Light_test: Component added to the entity: True",
@@ -175,7 +174,7 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_AddedToEntity.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -236,7 +235,7 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_LightComponent.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -299,9 +298,10 @@ class TestMaterialEditorBasicTests(object):
             generic_launcher,
             "hydra_AtomMaterialEditor_BasicTests.py",
             run_python="--runpython",
-            timeout=80,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
+            null_renderer=True,
             log_file_name="MaterialEditor.log",
         )

@@ -44,7 +44,7 @@ namespace AzToolsFramework
     const char AssetBundleSettingsFileExtension[] = "bundlesettings";
     const char BundleFileExtension[] = "pak";
     const char ComparisonRulesFileExtension[] = "rules";
-    const char ErrorWindowName[] = "AssetBundler";
+    [[maybe_unused]] const char ErrorWindowName[] = "AssetBundler";
     const char* AssetFileInfoListComparison::ComparisonTypeNames[] = { "delta", "union", "intersection", "complement", "filepattern", "intersectioncount" };
     const char* AssetFileInfoListComparison::FilePatternTypeNames[] = { "wildcard", "regex" };
     const char DefaultTypeName[] = "default";

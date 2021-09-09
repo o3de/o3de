@@ -20,6 +20,8 @@
 #include <foundation/PxVec4.h>
 #include <foundation/PxQuat.h>
 
+AZ_DEFINE_BUDGET(Cloth);
+
 namespace NvCloth
 {
     namespace Internal
@@ -165,7 +167,7 @@ namespace NvCloth
 
     void Cloth::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         ResolveStaticParticles();
 

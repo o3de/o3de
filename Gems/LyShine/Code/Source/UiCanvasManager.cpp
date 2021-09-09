@@ -13,6 +13,7 @@
 #include "UiGameEntityContext.h"
 
 #include <IRenderer.h>
+#include <CryCommon/StlUtils.h>
 #include <LyShine/UiSerializeHelpers.h>
 
 #include <AzCore/Debug/AssetTracking.h>
@@ -808,7 +809,7 @@ UiCanvasComponent* UiCanvasManager::FindEditorCanvasComponentByPathname(const AZ
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AZ::Vector2& viewportPos)
+bool UiCanvasManager::HandleInputEventForInWorldCanvases([[maybe_unused]] const AzFramework::InputChannel::Snapshot& inputSnapshot, [[maybe_unused]] const AZ::Vector2& viewportPos)
 {
     // First we need to construct a ray from the either the center of the screen or the mouse position.
     // This requires knowledge of the camera
@@ -816,86 +817,86 @@ bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::Inpu
 
     // ToDo: Re-implement by getting the camera from Atom. LYN-3680
     return false;
-    const CCamera cam;
-
-    // construct a ray from the camera position in the view direction of the camera
-    const float rayLength = 5000.0f;
-    Vec3 rayOrigin(cam.GetPosition());
-    Vec3 rayDirection = cam.GetViewdir() * rayLength;
-
-    // If the mouse cursor is visible we will assume that the ray should be in the direction of the
-    // mouse pointer. This is a temporary solution. A better solution is to be able to configure the
-    // LyShine system to say how ray input should be handled.
-    bool isCursorVisible = false;
-    UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
-    if (isCursorVisible)
-    {
-        // for some reason Unproject seems to work when given the viewport pos with (0,0) at the
-        // bottom left as opposed to the top left - even though that function specifically sets top left
-        // to (0,0).
-        const float viewportYInverted = cam.GetViewSurfaceZ() - viewportPos.GetY();
-
-        // Unproject to get the screen position in world space, use arbitrary Z that is within the depth range
-        Vec3 flippedViewportRayOrigin(viewportPos.GetX(), viewportYInverted, 0.f);
-        Vec3 flippedViewportRayForward(viewportPos.GetX(), viewportYInverted, 1.f);
-
-        cam.Unproject(flippedViewportRayOrigin, rayOrigin);
-
-        Vec3 unprojectedPosForward;
-        cam.Unproject(flippedViewportRayForward, unprojectedPosForward);
-
-        // We want a vector relative to the camera origin
-        Vec3 rayVec = unprojectedPosForward - rayOrigin;
-
-        // we want to ensure that the ray is a certain length so normalize it and scale it
-        rayVec.NormalizeSafe();
-        rayDirection = rayVec * rayLength;
-    }
-
-
-    AzFramework::EntityContextId gameContextId;
-    AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
-        &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-
-    AzFramework::RenderGeometry::RayRequest request;
-    request.m_startWorldPosition = LYVec3ToAZVec3(rayOrigin);
-    request.m_endWorldPosition = LYVec3ToAZVec3(rayOrigin + rayDirection);
-
-    AzFramework::RenderGeometry::RayResult rayResult;
-    AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
-        &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
-
-    if (rayResult)
-    {
-        AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
-        if (hitEntity.IsValid())
-        {
-            AZ::EntityId canvasEntityId;
-            UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
-            if (canvasEntityId.IsValid())
-            {
-                // Checkif the UI canvas referenced by the hit entity supports automatic input
-                bool doesCanvasSupportInput = false;
-                UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
-
-                if (doesCanvasSupportInput)
-                {
-                    // set the hit details to the hit entity, it will convert into canvas coords and send to canvas
-                    bool handled = false;
-                    UiCanvasOnMeshBus::EventResult(handled, hitEntity,
-                        &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, rayResult);
-
-                    if (handled)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-
-
-    return false;
+    //const CCamera cam;
+    //
+    //// construct a ray from the camera position in the view direction of the camera
+    //const float rayLength = 5000.0f;
+    //Vec3 rayOrigin(cam.GetPosition());
+    //Vec3 rayDirection = cam.GetViewdir() * rayLength;
+    //
+    //// If the mouse cursor is visible we will assume that the ray should be in the direction of the
+    //// mouse pointer. This is a temporary solution. A better solution is to be able to configure the
+    //// LyShine system to say how ray input should be handled.
+    //bool isCursorVisible = false;
+    //UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
+    //if (isCursorVisible)
+    //{
+    //    // for some reason Unproject seems to work when given the viewport pos with (0,0) at the
+    //    // bottom left as opposed to the top left - even though that function specifically sets top left
+    //    // to (0,0).
+    //    const float viewportYInverted = cam.GetViewSurfaceZ() - viewportPos.GetY();
+    //
+    //    // Unproject to get the screen position in world space, use arbitrary Z that is within the depth range
+    //    Vec3 flippedViewportRayOrigin(viewportPos.GetX(), viewportYInverted, 0.f);
+    //    Vec3 flippedViewportRayForward(viewportPos.GetX(), viewportYInverted, 1.f);
+    //
+    //    cam.Unproject(flippedViewportRayOrigin, rayOrigin);
+    //
+    //    Vec3 unprojectedPosForward;
+    //    cam.Unproject(flippedViewportRayForward, unprojectedPosForward);
+    //
+    //    // We want a vector relative to the camera origin
+    //    Vec3 rayVec = unprojectedPosForward - rayOrigin;
+    //
+    //    // we want to ensure that the ray is a certain length so normalize it and scale it
+    //    rayVec.NormalizeSafe();
+    //    rayDirection = rayVec * rayLength;
+    //}
+    //
+    //
+    //AzFramework::EntityContextId gameContextId;
+    //AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
+    //    &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
+    //
+    //AzFramework::RenderGeometry::RayRequest request;
+    //request.m_startWorldPosition = LYVec3ToAZVec3(rayOrigin);
+    //request.m_endWorldPosition = LYVec3ToAZVec3(rayOrigin + rayDirection);
+    //
+    //AzFramework::RenderGeometry::RayResult rayResult;
+    //AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
+    //    &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
+    //
+    //if (rayResult)
+    //{
+    //    AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
+    //    if (hitEntity.IsValid())
+    //    {
+    //        AZ::EntityId canvasEntityId;
+    //        UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
+    //        if (canvasEntityId.IsValid())
+    //        {
+    //            // Checkif the UI canvas referenced by the hit entity supports automatic input
+    //            bool doesCanvasSupportInput = false;
+    //            UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
+    //
+    //            if (doesCanvasSupportInput)
+    //            {
+    //                // set the hit details to the hit entity, it will convert into canvas coords and send to canvas
+    //                bool handled = false;
+    //                UiCanvasOnMeshBus::EventResult(handled, hitEntity,
+    //                    &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, rayResult);
+    //
+    //                if (handled)
+    //                {
+    //                    return true;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
+    //
+    //
+    //return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1030,7 +1031,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
@@ -1181,7 +1182,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);

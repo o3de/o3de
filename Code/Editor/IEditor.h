@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_IEDITOR_H
-#define CRYINCLUDE_EDITOR_IEDITOR_H
 #pragma once
 
 #ifdef PLUGIN_EXPORTS
@@ -25,6 +22,7 @@
 #include <WinWidgetId.h>
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 
 class QMenu;
 
@@ -68,7 +66,6 @@ class CDisplaySettings;
 struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
-struct IResourceSelectorHost;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
@@ -704,7 +701,6 @@ struct IEditor
 
     virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
     virtual void AddUIEnums() = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
@@ -714,7 +710,6 @@ struct IEditor
     virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
-    virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
@@ -740,4 +735,5 @@ struct IInitializeUIInfo
     virtual void SetInfoText(const char* text) = 0;
 };
 
-#endif // CRYINCLUDE_EDITOR_IEDITOR_H
+AZ_DECLARE_BUDGET(Editor);
+

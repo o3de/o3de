@@ -22,7 +22,7 @@ namespace AZ
 
         ResultCode CommandQueue::Init(Device& device, const CommandQueueDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
 
 #if defined (AZ_RHI_ENABLE_VALIDATION)
             if (IsInitialized())
@@ -116,7 +116,7 @@ namespace AZ
 
                 //run a command
                 {
-                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "RHI::CommandQueue - Execute Command");
+                    AZ_PROFILE_SCOPE(RHI, "CommandQueue - Execute Command");
                     command(GetNativeQueue());
                 }
             }

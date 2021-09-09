@@ -87,7 +87,7 @@ namespace AZ
         {
             Internal::NameData* nameData = keyValue.second;
             const int useCount = keyValue.second->m_useCount;
-            const bool hadCollision = keyValue.second->m_hashCollision;
+            [[maybe_unused]] const bool hadCollision = keyValue.second->m_hashCollision;
 
             if (useCount == 0)
             {
@@ -166,7 +166,7 @@ namespace AZ
         }
     }
 
-    void NameDictionary::TryReleaseName(Internal::NameData* nameData)
+    void NameDictionary::TryReleaseName(Name::Hash hash)
     {
         // Note that we don't remove NameData from the dictionary if it has been involved in a collision.
         // This avoids specific edge cases where a Name object could get an incorrect hash value. Consider
@@ -179,15 +179,24 @@ namespace AZ
         //      the dictionary *again*, this time with hash value 1000. Name objects pointing to the original
         //      entry and Name objects pointing to the new entry will fail comparison operations.
 
-        // Early exit to avoid locking the mutex unnecessarily.
-        if (nameData->m_hashCollision)
-        {
-            return;
-        }
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_sharedMutex);
 
-        // Check m_hashCollision again inside the m_sharedMutex because a new collision could have happened
+        auto dictIt = m_dictionary.find(hash);
+        if (dictIt == m_dictionary.end())
+        {
+            // This check is to safeguard around the following scenario
+            // T1, gets into TryReleaseName
+            // T2 gets into MakeName, acquires the lock, returns a new Name that increments the counter
+            // T2 deletes the Name decrements the counter, gets into TryReleaseName
+            // T1 gets the lock, goes to the compare_exchange if and has a counter of 0, deletes
+            // Then T2 continues, gets the lock and crashes because nameData was deleted
+            return;
+        }
+
+        Internal::NameData* nameData = dictIt->second;
+
+        // Check m_hashCollision inside the m_sharedMutex because a new collision could have happened
         // on another thread before taking the lock.
         if (nameData->m_hashCollision)
         {

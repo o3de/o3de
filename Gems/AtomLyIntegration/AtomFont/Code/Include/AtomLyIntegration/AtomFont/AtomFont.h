@@ -82,7 +82,6 @@ namespace AZ
         FontFamilyPtr LoadFontFamily(const char* fontFamilyName) override;
         FontFamilyPtr GetFontFamily(const char* fontFamilyName) override;
         void AddCharsToFontTextures(FontFamilyPtr fontFamily, const char* chars, int glyphSizeX = ICryFont::defaultGlyphSizeX, int glyphSizeY = ICryFont::defaultGlyphSizeY) override;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {}
         AZStd::string GetLoadedFontNames() const;
         void OnLanguageChanged() override;
         void ReloadAllFonts() override;
@@ -97,7 +96,7 @@ namespace AZ
         void UnregisterFont(const char* fontName);
 
     private:
-        using FontMap = std::unordered_map<AzFramework::FontId, FFont*>;
+        using FontMap = AZStd::unordered_map<AzFramework::FontId, FFont*>;
         using FontMapItor = FontMap::iterator;
         using FontMapConstItor = FontMap::const_iterator;
 
@@ -136,7 +135,6 @@ namespace AZ
         FontMap m_fonts;
         FontFamilyMap m_fontFamilies; //!< Map font family names to weak ptrs so we can construct shared_ptrs but not keep a ref ourselves.
         FontFamilyReverseLookupMap m_fontFamilyReverseLookup; //<! FontFamily pointer reverse-lookup for quick removal
-        ISystem* m_system;
 
         AzFramework::FontDrawInterface* m_defaultFontDrawInterface = nullptr;
 

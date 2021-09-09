@@ -43,7 +43,7 @@ namespace AZ
 
             if (!overwriteExisting)
             {
-                auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
+                [[maybe_unused]] auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
                 AZ_Assert(
                     emplaceResult.second,
                     "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",

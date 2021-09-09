@@ -13,9 +13,6 @@
 
 #include <ScriptCanvas/Core/NodeFunctionGeneric.h>
 
-#pragma warning( push )
-#pragma warning( disable : 5046) //'function' : Symbol involving type with internal linkage not defined
-
 using namespace ScriptCanvasTests;
 
 namespace 
@@ -110,7 +107,7 @@ namespace ScriptCanvas
     AZ_INLINE AZ::Vector3 NormalizeWithDefault(const AZ::Vector3& source, const Data::NumberType tolerance, [[maybe_unused]] const Data::BooleanType fakeValueForTestingDefault)
     {
         AZ_TracePrintf("SC", "The fake value for testing default is %s\n", fakeValueForTestingDefault ? "True" : "False");
-        return source.GetNormalizedSafe(tolerance);
+        return source.GetNormalizedSafe(static_cast<float>(tolerance));
     }
 
     void NormalizeWithDefaultInputOverrides(Node& node) { SetDefaultValuesByIndex< 1, 2 >::_(node, 3.3, true); }
@@ -163,6 +160,3 @@ TEST_F(ScriptCanvasTestFixture, NodeGenerics)
 
     delete graph->GetEntity();
 }
-
-
-#pragma warning( pop )
