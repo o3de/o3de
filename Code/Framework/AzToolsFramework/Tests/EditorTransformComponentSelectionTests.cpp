@@ -768,7 +768,7 @@ namespace UnitTest
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
     }
 
-    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, DISABLED_BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
