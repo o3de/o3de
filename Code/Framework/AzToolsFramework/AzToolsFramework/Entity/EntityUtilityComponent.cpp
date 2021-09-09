@@ -41,7 +41,7 @@ namespace AzToolsFramework
 
         if (!entity)
         {
-            AZ_Error("EntityUtilityComponent", false, "Invalid entityId");
+            AZ_Error("EntityUtilityComponent", false, "Invalid entityId %s", entityId.ToString().c_str());
             return nullptr;
         }
 
@@ -63,9 +63,10 @@ namespace AzToolsFramework
         if (!component)
         {
             AZ_Error(
-                "EntityUtilityComponent", false, "Failed to find component (%s) on entity (%s)",
+                "EntityUtilityComponent", false, "Failed to find component (%s) on entity %s (%s)",
                 componentId != AZ::InvalidComponentId ? AZStd::to_string(componentId).c_str()
                                                       : typeId.ToString<AZStd::string>().c_str(),
+                entityId.ToString().c_str(),
                 entity->GetName().c_str());
             return nullptr;
         }
@@ -78,7 +79,7 @@ namespace AzToolsFramework
         AZ::TypeId typeId;
         if (typeName[0] == '{')
         {
-            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), sizeof("{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}") - 1, false);
+            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, false);
 
             if (typeId.IsNull())
             {
@@ -155,8 +156,11 @@ namespace AzToolsFramework
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->Constant("InvalidComponentId", BehaviorConstant(AZ::InvalidComponentId));
+
             behaviorContext->EBus<EntityUtilityBus>("EntityUtilityBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Category, "Entity")
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity)

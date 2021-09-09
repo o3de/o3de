@@ -26,7 +26,13 @@ namespace UnitTest
     {
         void InitProperties()
         {
-            auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+            AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+
+            ASSERT_NE(componentApplicationRequests, nullptr);
+
+            auto behaviorContext = componentApplicationRequests->GetBehaviorContext();
+
+            ASSERT_NE(behaviorContext, nullptr);
 
             behaviorContext->Property("g_globalEntityId", BehaviorValueProperty(&g_globalEntityId));
             behaviorContext->Property("g_globalEntityName", BehaviorValueProperty(&g_globalEntityName));
@@ -144,7 +150,7 @@ namespace UnitTest
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-        
+
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
