@@ -45,7 +45,7 @@ namespace AZ
     {
         namespace ShaderBuilderUtility
         {
-            static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
+            [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
@@ -460,6 +460,10 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
+                }
                 else if (platformIdentifier == "mac")
                 {
                     platformId = AzFramework::PlatformId::MAC_ID;
@@ -517,7 +521,7 @@ namespace AZ
                     {
                         // Search the function name into the list of valid entry points into the shader.
                         auto findId =
-                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item) {
+                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName](const auto& item) {
                                 return item.first == functionName;
                             });
 

@@ -908,9 +908,9 @@ namespace AZ
                 AZ_Assert(optionEntry.IsObject(), "Expected option entry to be an object!");
 
                 Name defaultValueId = optionEntry.HasMember("defaultValue") ? Name(optionEntry["defaultValue"].GetString()) : Name();
-                const AZStd::string optionName   = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
-                const bool valuesAreRange        = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
-                const bool isPredefinedType      = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
+                const AZStd::string optionName             = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
+                [[maybe_unused]] const bool valuesAreRange = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
+                const bool isPredefinedType                = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
 
                 auto optionType = RPI::ShaderOptionType::Unknown;
                 if (isPredefinedType && optionEntry.HasMember("type"))

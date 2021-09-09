@@ -15,7 +15,7 @@ namespace AzToolsFramework
 {
     namespace Platform
     {
-        static const char ErrorChannel[] = "ArchiveComponent_Linux";
+        [[maybe_unused]] static const char ErrorChannel[] = "ArchiveComponent_Linux";
 
         static const char ZipExePath[] = R"(/usr/bin/zip)";
         static const char UnzipExePath[] = R"(/usr/bin/unzip)";

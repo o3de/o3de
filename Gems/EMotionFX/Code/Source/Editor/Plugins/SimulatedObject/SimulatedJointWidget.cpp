@@ -389,7 +389,7 @@ namespace EMotionFX
         {
             QLabel* noColliders = new QLabel(
                 "To adjust the properties of the Simulated Object Colliders, "
-                "enable the PhysX gem via the Project Configurator");
+                "enable the PhysX gem via the Project Manager");
 
             colliderWidgetLayout->addWidget(noColliders);
         }
@@ -441,8 +441,8 @@ namespace EMotionFX
 
     void SimulatedJointWidget::UpdateDetailsView(const QItemSelection& selected, const QItemSelection& deselected)
     {
-        AZ_UNUSED(selected)
-        AZ_UNUSED(deselected)
+        AZ_UNUSED(selected);
+        AZ_UNUSED(deselected);
 
         const SimulatedObjectModel* model = m_plugin->GetSimulatedObjectModel();
         const QItemSelectionModel* selectionModel = model->GetSelectionModel();

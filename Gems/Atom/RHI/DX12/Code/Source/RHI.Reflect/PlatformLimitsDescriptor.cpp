@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 namespace AZ
 {
@@ -38,6 +39,28 @@ namespace AZ
                     ->Field("CommandListsPerScopeMax", &FrameGraphExecuterData::m_commandListsPerScopeMax)
                     ;
             }
+        }
+
+        void PlatformLimitsDescriptor::LoadPlatformLimitsDescriptor(const char* rhiName)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            AZStd::string platformLimitsRegPath = AZStd::string::format("/O3DE/Atom/RHI/PlatformLimits/%s", rhiName);
+            if (!(settingsRegistry && settingsRegistry->GetObject(this, azrtti_typeid(this), platformLimitsRegPath.c_str())))
+            {
+                AZ_Warning(
+                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
+                    AZ_TRAIT_OS_PLATFORM_NAME, rhiName);
+
+                // Map default value must be initialized after attempting to serialize (and result in failure).
+                // Otherwise, serialization won't overwrite the default values.
+                m_descriptorHeapLimits = AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>>({
+                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV"), { 1000000, 1000000 } },
+                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_SAMPLER"), { 2048, 2048 } },
+                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_RTV"), { 2048, 0 } },
+                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_DSV"), { 2048, 0 } }
+                    });
+            }
+
         }
     }
 }

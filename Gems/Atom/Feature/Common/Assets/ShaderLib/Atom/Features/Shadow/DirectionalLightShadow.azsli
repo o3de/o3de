@@ -14,6 +14,7 @@
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"
 #include "BicubicPcfFilters.azsli"
+#include "ReceiverPlaneDepthBias.azsli"
 
 // Before including this azsli file, a PassSrg must be defined with the following members:
 // Texture2DArray<float> m_directionalLightShadowmap;
@@ -23,6 +24,7 @@
 // This matchs ShadowFilterMethod in ShadowConstants.h
 enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
 option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
+option bool o_directional_shadow_receiver_plane_bias_enable = true;
 
 // DirectionalLightShadow calculates lit ratio for a directional light.
 class DirectionalLightShadow
@@ -107,6 +109,8 @@ class DirectionalLightShadow
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     float3 m_normalVector;
     DebugInfo m_debugInfo;
+    float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
+    float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
 };
 
 // This outputs the coordinate in shadowmap Texture space of the given point.
@@ -438,6 +442,7 @@ float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfC
 {
     const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
@@ -448,7 +453,8 @@ float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfC
     param.invShadowMapSize = rcp(size); 
     param.comparisonValue = shadowCoord.z;
     param.samplerState = SceneSrg::m_hwPcfSampler;
-
+    param.receiverPlaneDepthBias = o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+    
     if (filteringSampleCount <= 4)       
     {
         return SampleShadowMapBicubic_4Tap(param);
@@ -475,6 +481,16 @@ float DirectionalLightShadow::GetVisibility(
     shadow.m_normalVector = normalVector;
     shadow.m_debugInfo.m_cascadeIndex = 0;
     shadow.m_debugInfo.m_usePcfFallback = false;
+
+    if (o_directional_shadow_receiver_plane_bias_enable)
+    {
+        [unroll]
+        for(int i = 0 ; i < ViewSrg::MaxCascadeCount ; ++i)
+        {
+            shadow.m_shadowPosDX[i] = ddx_fine(shadowCoords[i]);
+            shadow.m_shadowPosDY[i] = ddy_fine(shadowCoords[i]);        
+        }    
+    }
 
     // Calculate slope bias
     const float3 lightDirection = 

@@ -87,7 +87,7 @@ namespace AZ
         {
             Internal::NameData* nameData = keyValue.second;
             const int useCount = keyValue.second->m_useCount;
-            const bool hadCollision = keyValue.second->m_hashCollision;
+            [[maybe_unused]] const bool hadCollision = keyValue.second->m_hashCollision;
 
             if (useCount == 0)
             {

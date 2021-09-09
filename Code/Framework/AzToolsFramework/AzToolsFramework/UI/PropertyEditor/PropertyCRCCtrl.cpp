@@ -137,7 +137,7 @@ namespace AzToolsFramework
         Q_UNUSED(debugName)
     }
 
-    AZ::u32 U32CRCHandler::GetHandlerName(void) const
+    AZ::u32 U32CRCHandler::GetHandlerName() const
     {
         return AZ::Edit::UIHandlers::Crc;
     }
@@ -173,16 +173,16 @@ namespace AzToolsFramework
 
     void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, AZ::u32& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::u32 val = GUI->value();
         instance = static_cast<property_t>(val);
     }
 
     bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const AZ::u32& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         GUI->setValue(instance);
         return false;
     }

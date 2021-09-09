@@ -66,8 +66,6 @@ class SpawnableLevelSystem
 
         void LogLoadingTime();
 
-        ISystem* m_pSystem{nullptr};
-
         AZStd::string m_lastLevelName;
         float m_fLastLevelLoadTime{0.0f};
         float m_fLastTime{0.0f};

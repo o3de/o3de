@@ -8,6 +8,8 @@
 
 #include "FrameCaptureSystemComponent.h"
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -240,8 +242,18 @@ namespace AZ
             return AZStd::string(resolvedPath);
         }
 
+        bool FrameCaptureSystemComponent::CanCapture() const
+        {
+            return !AZ::RHI::IsNullRenderer();
+        }
+
         bool FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -287,6 +299,11 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -336,6 +353,11 @@ namespace AZ
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
             const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -382,6 +404,11 @@ namespace AZ
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
             , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back

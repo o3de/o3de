@@ -133,7 +133,7 @@ def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixtur
         aws_metrics_utils.stop_kinesis_data_analytics_application(
             resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('aws_credentials')
 @pytest.mark.usefixtures('resource_mappings')

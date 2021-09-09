@@ -361,7 +361,7 @@ public:
         else
         {
             // remove from start up folder
-            DeleteFile(fullLinkName);
+            DeleteFileW(fullLinkName);
         }
 #endif
 #if AZ_TRAIT_OS_PLATFORM_APPLE

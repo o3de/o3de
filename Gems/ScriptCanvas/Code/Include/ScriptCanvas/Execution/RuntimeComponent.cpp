@@ -19,9 +19,11 @@
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
 
-#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if !defined(_RELEASE)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
 #endif
+
+AZ_DECLARE_BUDGET(ScriptCanvas);
 
 namespace RuntimeComponentCpp
 {

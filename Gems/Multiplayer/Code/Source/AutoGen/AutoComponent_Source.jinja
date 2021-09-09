@@ -636,7 +636,6 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
 {% if networkPropertyCount.value > 0 %}
     [[maybe_unused]] Multiplayer::MultiplayerStats& stats = Multiplayer::GetMultiplayer()->GetStats();
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
-    [[maybe_unused]] bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if Property.attrib['Container'] != 'None' and Property.attrib['Container'] != 'Object' %}
     { // Serialization for Vector and Array Network Properties
@@ -651,17 +650,24 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         if (deltaRecord.AnySet())
         {
 {%       if Property.attrib['Container'] == 'Vector' %}
-            serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            Multiplayer::SerializeNetworkPropertyHelperVector
 {%       elif Property.attrib['Container'] == 'Array' %}
-            serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            Multiplayer::SerializeNetworkPropertyHelperArray
 {%       endif %}
+            (
+                serializer, 
+                deltaRecord, 
+                m_{{ LowerFirst(Property.attrib['Name']) }}, 
+                GetNetComponentId(), 
+                static_cast<Multiplayer::PropertyIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties::{{ UpperFirst(Property.attrib['Name']) }}), 
+                stats
+            );
         }
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper
     (
         serializer, 
-        modifyRecord, 
         replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, 
         static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), 
         m_{{ LowerFirst(Property.attrib['Name']) }}, 
@@ -1470,6 +1476,11 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Required') %}
         required.push_back(AZ_CRC_CE("{{ ComponentService }}"));
 {% endcall %}
+{% if NetworkInputCount > 0 %}
+
+        // This component uses NetworkInputs so it requires a MultiplayerInputDriver service which is responsible for calling CreateInput and ProcessInput
+        required.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
+{% endif %}
     }
 
     void {{ ComponentBaseName }}::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

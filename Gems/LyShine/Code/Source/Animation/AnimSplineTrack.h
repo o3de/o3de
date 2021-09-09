@@ -47,7 +47,7 @@ public:
 
     virtual int GetSubTrackCount() const { return 0; };
     virtual IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const { return 0; };
-    virtual const char* GetSubTrackName([[maybe_unused]] int nIndex) const { return NULL; };
+    AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
     virtual void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) { assert(0); }
 
     virtual const CUiAnimParamType& GetParameterType() const { return m_nParamType; };

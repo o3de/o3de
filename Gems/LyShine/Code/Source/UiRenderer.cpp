@@ -313,8 +313,6 @@ AZ::Vector2 UiRenderer::GetViewportSize()
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
-    const float viewX = viewport.m_minX;
-    const float viewY = viewport.m_minY;
     const float viewWidth = viewport.m_maxX - viewport.m_minX;
     const float viewHeight = viewport.m_maxY - viewport.m_minY;
     return AZ::Vector2(viewWidth, viewHeight);
@@ -491,7 +489,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         // local function to write a line of text (with a background rect) and increment Y offset
         AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
         {
-            IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+            CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
             AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);

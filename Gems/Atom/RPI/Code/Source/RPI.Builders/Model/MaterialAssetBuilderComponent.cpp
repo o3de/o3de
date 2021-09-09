@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {
@@ -78,7 +78,10 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            if (conversionEnabled && !materialTypePath.empty())
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
+            // TODO: Use includeMaterialPropertyNames to break materialtype dependency on fbx files. Materialasset's dependency on materialtypeasset will need to be decoupled first
+            if (conversionEnabled && !materialTypePath.empty() /*&& !includeMaterialPropertyNames*/)
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
@@ -100,6 +103,10 @@ namespace AZ
             bool conversionEnabled = false;
             RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
             fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
+
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
+            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter includeMaterialPropertyNames=%d]", includeMaterialPropertyNames));
 
             if (!conversionEnabled)
             {
@@ -219,6 +226,8 @@ namespace AZ
                 }
             }
 
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
             // Build material assets. 
             for (auto& itr : materialSourceDataByUid)
             {
@@ -226,7 +235,7 @@ namespace AZ
                 Data::AssetId assetId(sourceSceneUuid, GetMaterialAssetSubId(materialUid));
 
                 auto materialSourceData = itr.second;
-                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false);
+                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false, includeMaterialPropertyNames);
                 if (result.IsSuccess())
                 {
                     context.m_outputMaterialsByUid[materialUid] = { result.GetValue(), materialSourceData.m_name };
@@ -253,7 +262,6 @@ namespace AZ
             }
 
             const auto& scene = context.m_scene;
-            const Uuid sourceSceneUuid = scene.GetSourceGuid();
             const auto& sceneGraph = scene.GetGraph();
 
             auto names = sceneGraph.GetNameStorage();

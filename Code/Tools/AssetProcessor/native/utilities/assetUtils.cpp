@@ -57,9 +57,6 @@
 
 #include <sstream>
 
-// windows headers bring in a macro which conflicts GetCommandLine
-#undef GetCommandLine
-
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
@@ -1399,7 +1396,6 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
-        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 

@@ -92,8 +92,6 @@ namespace ScriptCanvasDeveloperEditor
             int m_heightOffset = 0;
             
             int m_maxRowHeight = 0;
-
-            int creationCounter = 100;
         };
         
         void NodePaletteFullCreationAction()

@@ -30,7 +30,7 @@ namespace AZ
 
         JsonSerializationResult::Result Load
             ( void* outputValue
-            , const Uuid& outputValueTypeId
+            , [[maybe_unused]] const Uuid& outputValueTypeId
             , const rapidjson::Value& inputValue
             , JsonDeserializerContext& context) override
         {
@@ -89,7 +89,8 @@ namespace AZ
             ( rapidjson::Value& outputValue
             , const void* inputValue
             , const void* defaultValue
-            , const Uuid& valueTypeId, JsonSerializerContext& context) override
+            , [[maybe_unused]] const Uuid& valueTypeId
+            , JsonSerializerContext& context) override
         {
             namespace JSR = JsonSerializationResult;
 
