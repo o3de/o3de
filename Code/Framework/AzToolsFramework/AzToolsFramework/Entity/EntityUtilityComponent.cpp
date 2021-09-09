@@ -176,6 +176,7 @@ namespace AzToolsFramework
 
         if (!classData)
         {
+            AZ_Error("EntityUtilityComponent", false, "Failed to find ClassData for typeId %s (%s)", typeId.ToString<AZStd::string>().c_str(), typeName.c_str());
             return "";
         }
 
@@ -188,11 +189,19 @@ namespace AzToolsFramework
 
         if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
         {
+            AZ_Error("EntityUtilityComponent", false, "Failed to serialize component to json",
+                typeName.c_str(), resultCode.ToString(typeName).c_str())
             return "";
         }
 
         AZStd::string jsonString;
-        AzFramework::FileFunc::WriteJsonToString(document, jsonString);
+        AZ::Outcome<void, AZStd::string> outcome = AzFramework::FileFunc::WriteJsonToString(document, jsonString);
+
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error("EntityUtilityComponent", false, "Failed to write component json to string: %s", outcome.GetError().c_str());
+            return "";
+        }
 
         return jsonString;
     }
