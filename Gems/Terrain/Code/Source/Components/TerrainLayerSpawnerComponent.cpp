@@ -78,7 +78,7 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("AxisAlignedBoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)
