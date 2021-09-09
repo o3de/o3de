@@ -303,6 +303,55 @@ namespace AZ
             return AZ::Success();
         }
 
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& classId, AZStd::string_view stream,
+            const JsonDeserializerSettings* settings)
+        {
+            JsonDeserializerSettings loadSettings;
+            AZStd::string deserializeErrors;
+            auto prepare = PrepareDeserializerSettings(settings, loadSettings, deserializeErrors);
+            if (!prepare.IsSuccess())
+            {
+                return AZ::Failure(prepare.GetError());
+            }
+
+            auto parseResult = ReadJsonString(stream);
+            if (!parseResult.IsSuccess())
+            {
+                return AZ::Failure(parseResult.GetError());
+            }
+
+            const rapidjson::Document& jsonDocument = parseResult.GetValue();
+
+            auto validateResult = ValidateJsonClassHeader(jsonDocument);
+            if (!validateResult.IsSuccess())
+            {
+                return AZ::Failure(validateResult.GetError());
+            }
+
+            const char* className = jsonDocument.FindMember(ClassNameTag)->value.GetString();
+
+            // validate class name 
+            auto classData = loadSettings.m_serializeContext->FindClassData(classId);
+            if (!classData)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class from Id %s", classId.ToString<AZStd::string>().c_str()));
+            }
+
+            if (azstricmp(classData->m_name, className) != 0)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class %s from class %s data", classData->m_name, className));
+            }
+
+            JsonSerializationResult::ResultCode result = JsonSerialization::Load(objectToLoad, classId, jsonDocument.FindMember(ClassDataTag)->value, loadSettings);
+
+            if (!WasLoadSuccess(result.GetOutcome()) || !deserializeErrors.empty())
+            {
+                return AZ::Failure(deserializeErrors);
+            }
+
+            return AZ::Success();
+        }
+
         AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& classId, IO::GenericStream& stream,
             const JsonDeserializerSettings* settings)
         {
