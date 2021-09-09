@@ -526,12 +526,10 @@ namespace AzToolsFramework
 
             Template& targetTemplate = targetTemplateReference->get();
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
-#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -770,10 +768,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
-#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
 
@@ -783,10 +779,9 @@ namespace AzToolsFramework
 
             PrefabDomValue& instance = instanceIterator->value;
             AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
-            [[maybe_unused]] PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
+            PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
             AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
-            AZ_Assert(
-                sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
+            AZ_Assert(sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
                 "The name of the source template in the nested instance DOM does not match the name of the source template already loaded");
 
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::PatchesName);

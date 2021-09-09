@@ -693,7 +693,7 @@ namespace AZ
             }
             else
             {
-                AZ_Assert(m_isPooledString == false && m_isPooledStringCrc32 == false, "This stream requires using of a string pool as the string is send only once and afterwards only the Crc32 is used!")
+                AZ_Assert(m_isPooledString == false && m_isPooledStringCrc32 == false, "This stream requires using of a string pool as the string is send only once and afterwards only the Crc32 is used!");
             }
             return srcData;
         }
