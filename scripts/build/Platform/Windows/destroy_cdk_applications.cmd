@@ -49,17 +49,13 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
 )
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
 
-CALL :DestroyCDKApplication AWSCore
-IF ERRORLEVEL 1 (
-    exit /b 1
-)
-CALL :DestroyCDKApplication AWSClientAuth
-IF ERRORLEVEL 1 (
-    exit /b 1
-)
-CALL :DestroyCDKApplication AWSMetrics
-IF ERRORLEVEL 1 (
-    exit /b 1
+SET ERROR_EXISTS=0
+CALL :DestroyCDKApplication AWSCore,ERROR_EXISTS
+CALL :DestroyCDKApplication AWSClientAuth,ERROR_EXISTS
+CALL :DestroyCDKApplication AWSMetrics,ERROR_EXISTS
+
+IF %ERROR_EXISTS% EQU 1 (
+    EXIT /b 1
 )
 
 EXIT /b 0
@@ -67,7 +63,6 @@ EXIT /b 0
 :DestroyCDKApplication
 REM Destroy the CDK application for a specific AWS gem
 SET GEM_NAME=%~1
-SET ADDITIONAL_ARGUMENTS=%~2
 ECHO [cdk_destruction] Destroy the CDK application for the %GEM_NAME% gem
 PUSHD %GEM_DIRECTORY%\%GEM_NAME%\cdk
 
@@ -76,7 +71,7 @@ CALL git checkout %COMMIT_ID% -- .
 IF ERRORLEVEL 1 (
     ECHO [git_checkout] Failed to checkout the CDK application for the %GEM_NAME% gem using commit ID %COMMIT_ID%
     POPD
-    exit /b 1
+    SET %~2=1
 )
 
 REM Install required packages for the CDK application
@@ -84,7 +79,7 @@ CALL python -m pip install -r requirements.txt
 IF ERRORLEVEL 1 (
     ECHO [cdk_destruction] Failed to install required packages for the %GEM_NAME% gem
     POPD
-    exit /b 1
+    SET %~2=1
 )
 
 REM Destroy the CDK application
@@ -92,6 +87,6 @@ CALL cdk destroy --all -f
 IF ERRORLEVEL 1 (
     ECHO [cdk_destruction] Failed to destroy the CDK application for the %GEM_NAME% gem
     POPD
-    exit /b 1
+    SET %~2=1
 )
 POPD
