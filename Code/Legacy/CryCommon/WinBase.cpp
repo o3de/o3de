@@ -6,9 +6,10 @@
  *
  */
 
+#include <AzCore/AzCore_Traits_Platform.h>
 
 // Description : Linux/Mac port support for Win32API calls
-#if !defined(WIN32)
+#if AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS
 
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
@@ -1406,4 +1407,4 @@ __finddata64_t::~__finddata64_t()
 }
 #endif //defined(APPLE) || defined(LINUX)
 
-#endif // !defined(WIN32)
+#endif // AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS

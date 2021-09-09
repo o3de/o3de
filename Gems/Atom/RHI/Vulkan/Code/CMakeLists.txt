@@ -19,9 +19,12 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_vulkan_stub_module.cmake
+            atom_rhi_vulkan_reflect_common_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                Include
                 Source
+                ${pal_include_dir}
                 Include/Atom/RHI.Loader/Glad
         BUILD_DEPENDENCIES
             PRIVATE

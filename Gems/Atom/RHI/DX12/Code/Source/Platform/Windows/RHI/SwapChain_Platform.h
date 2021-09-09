@@ -7,4 +7,4 @@
  */
 #pragma once
 
-#include <RHI/SwapChain_Platform.h>
+#include <RHI/SwapChain_Windows.h>
