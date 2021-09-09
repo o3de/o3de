@@ -142,9 +142,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget"/>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="verticalLayoutWidget">
@@ -199,11 +196,6 @@
    <extends>QFrame</extends>
    <header>AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
-   <extends>QTableView</extends>
-   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

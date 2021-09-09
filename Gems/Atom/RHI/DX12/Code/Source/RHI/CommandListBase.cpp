@@ -33,7 +33,7 @@ namespace AZ
 
         void CommandListBase::Reset(ID3D12CommandAllocator* commandAllocator)
         {
-            AZ_PROFILE_FUNCTION(RHI);  
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);  
             AZ_Assert(m_queuedBarriers.empty(), "Unflushed barriers in command list.");
 
             m_commandList->Reset(commandAllocator, nullptr);
@@ -95,7 +95,7 @@ namespace AZ
         {
             if (m_queuedBarriers.size())
             {
-                AZ_PROFILE_FUNCTION(RHI);
+                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRenderDetailed);
 
                 m_commandList->ResourceBarrier((UINT)m_queuedBarriers.size(), m_queuedBarriers.data());
                 m_queuedBarriers.clear();

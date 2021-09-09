@@ -343,7 +343,7 @@ namespace GridMate
                     break;
                 }
             }
-            while (false);
+            while (0);
 
             // did everything successfully create and/or allocate?
             if (m_ssl && m_bioIn && m_bioOut && m_scratch)

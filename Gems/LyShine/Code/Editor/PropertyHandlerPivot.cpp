@@ -143,8 +143,10 @@ void PropertyHandlerPivot::WriteGUIValuesIntoProperty(size_t index, PropertyPivo
     }
 }
 
-bool PropertyHandlerPivot::ReadValuesIntoGUI([[maybe_unused]] size_t index, PropertyPivotCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerPivot::ReadValuesIntoGUI(size_t index, PropertyPivotCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
+    (int)index;
+
     AzQtComponents::VectorInput* ctrl = GUI->GetPropertyVectorCtrl();
 
     ctrl->blockSignals(true);

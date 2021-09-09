@@ -9,6 +9,7 @@
 #include "FileManager.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/FileSystem.h>
+#include <QFileDialog>
 #include <QString>
 #include <QTranslator>
 #include <QMessageBox>
@@ -34,8 +35,6 @@
 #include <Source/Integration/Assets/MotionAsset.h>
 #include <Source/Integration/Assets/MotionSetAsset.h>
 #include <Source/Integration/Assets/AnimGraphAsset.h>
-
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -413,12 +412,14 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        const AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                 // parent
+        const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                 // parent
                                                                     "Save",                                 // caption
                                                                     GetLastUsedFolder(m_lastActorFolder),    // directory
                                                                     "EMotion FX Actor Files (*.actor)",
-                                                                    &selectedFilter).toUtf8().data();
+                                                                    &selectedFilter,
+                                                                    options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -470,12 +471,14 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                       // parent
+        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
                                                               GetLastUsedFolder(m_lastWorkspaceFolder),      // directory
                                                               "EMotionFX Editor Workspace Files (*.emfxworkspace)",
-                                                              &selectedFilter).toUtf8().data();
+                                                              &selectedFilter,
+                                                              options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -550,12 +553,14 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                       // parent
+        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
                                                               GetLastUsedFolder(m_lastMotionSetFolder),      // directory
                                                               "EMotion FX Motion Set Files (*.motionset)",
-                                                              &selectedFilter).toUtf8().data();
+                                                              &selectedFilter,
+                                                              options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -627,12 +632,14 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                                   // parent
+        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                                   // parent
                                                               "Save",                                                   // caption
                                                               GetLastUsedFolder(m_lastAnimGraphFolder),                 // directory
                                                               "EMotion FX Anim Graph Files (*.animgraph);;All Files (*)",
-                                                              &selectedFilter).toUtf8().data();
+                                                              &selectedFilter,
+                                                              options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -668,12 +675,14 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        const AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                         // parent
+        const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                         // parent
                                                                     "Save",                                         // caption
                                                                     GetLastUsedFolder(m_lastNodeMapFolder),          // directory
                                                                     "Node Map Files (*.nodeMap);;All Files (*)",
-                                                                    &selectedFilter).toUtf8().data();
+                                                                    &selectedFilter,
+                                                                    options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -728,12 +737,14 @@ namespace EMStudio
 
         GetManager()->SetAvoidRendering(true);
 
+        QFileDialog::Options options;
         QString selectedFilter;
-        QString filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                                 // parent
+        QString filename = QFileDialog::getSaveFileName(parent,                                                 // parent
                                                         "Save",                                                 // caption
                                                         dir.c_str(),                                           // directory
                                                         "EMotion FX Blend Config Files (*.cfg);;All Files (*)",
-                                                        &selectedFilter);
+                                                        &selectedFilter,
+                                                        options);
 
         GetManager()->SetAvoidRendering(false);
 

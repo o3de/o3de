@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzNetworking/PacketLayer/IPacket.h>
-#include <AzNetworking/PacketLayer/IPacketHeader.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzNetworking/ConnectionLayer/SequenceGenerator.h>
 #include <AzNetworking/DataStructures/RingBufferBitset.h>
@@ -45,8 +44,8 @@ namespace AzNetworking
         //! @param connectionListener the connection listener for delivery of completed packets
         //! @param header             the chunk packet header
         //! @param serializer         the serializer containing the chunk body
-        //! @return PacketDispatchResult result of processing the chunk
-        PacketDispatchResult ProcessReceivedChunk(UdpConnection* connection, IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer);
+        //! @return boolean true if the chunk was processed, false if an error was encountered
+        bool ProcessReceivedChunk(UdpConnection* connection, IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer);
 
     private:
 

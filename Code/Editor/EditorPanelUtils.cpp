@@ -47,6 +47,7 @@ struct ToolTip
 class CEditorPanelUtils_Impl
     : public IEditorPanelUtils
 {
+    #pragma region Drag & Drop
 public:
     void SetViewportDragOperation(void(* dropCallback)(CViewport* viewport, int dragPointX, int dragPointY, void* custom), void* custom) override
     {
@@ -55,7 +56,8 @@ public:
             GetIEditor()->GetViewManager()->GetView(i)->SetGlobalDropCallback(dropCallback, custom);
         }
     }
-
+    #pragma endregion
+    #pragma region Preview Window
 public:
 
     int PreviewWindow_GetDisplaySettingsDebugFlags(CDisplaySettings* settings) override
@@ -70,6 +72,8 @@ public:
         settings->SetDebugFlags(flags);
     }
 
+    #pragma endregion
+    #pragma region Shortcuts
 protected:
     QVector<HotKey> hotkeys;
     bool m_hotkeysAreEnabled;
@@ -404,6 +408,8 @@ public:
         return m_hotkeysAreEnabled;
     }
 
+    #pragma  endregion
+    #pragma region ToolTip
 protected:
     QMap<QString, ToolTip> m_tooltips;
 
@@ -533,6 +539,7 @@ public:
         }
         return GetToolTip(path).disabledContent;
     }
+    #pragma endregion ToolTip
 };
 
 IEditorPanelUtils* CreateEditorPanelUtils()

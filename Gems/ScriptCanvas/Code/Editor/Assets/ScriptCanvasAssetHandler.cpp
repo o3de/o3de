@@ -6,47 +6,29 @@
  *
  */
 
+
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
+#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
+
+#include <GraphCanvas/GraphCanvasBus.h>
+
+#include <AzCore/IO/GenericStreams.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/GenericStreams.h>
-#include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string_view.h>
+
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <Core/ScriptCanvasBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
-#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
-#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
-#include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Core/SerializationListener.h>
-
-namespace ScriptCanvasAssetHandlerCpp
-{
-    using namespace ScriptCanvas;
-
-    void CollectNodes(const GraphData::NodeContainer& container, SerializationListeners& listeners)
-    {
-        for (auto& nodeEntity : container)
-        {
-            if (nodeEntity)
-            {
-                if (auto listener = azrtti_cast<SerializationListener*>(AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity)))
-                {
-                    listeners.push_back(listener);
-                }
-            }
-        }
-    }
-}
 
 namespace ScriptCanvasEditor
 {
@@ -93,83 +75,25 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData
-        ( const AZ::Data::Asset<AZ::Data::AssetData>& assetTarget
-        , AZStd::shared_ptr<AZ::Data::AssetDataStream> streamSource
-        , [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+
+    AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData(
+        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+        AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+        const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        namespace JSRU = AZ::JsonSerializationUtils;
-        using namespace ScriptCanvas;
-
-        auto* scriptCanvasAssetTarget = assetTarget.GetAs<ScriptCanvasAsset>();
-        AZ_Assert(scriptCanvasAssetTarget, "This should be a ScriptCanvasAsset, as this is the only type we process!");
-
-        if (m_serializeContext
-        && streamSource
-        && scriptCanvasAssetTarget)
+        auto* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
+        AZ_Assert(scriptCanvasAsset, "This should be an scene slice asset, as this is the only type we process!");
+        if (scriptCanvasAsset && m_serializeContext)
         {
-            streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            auto& scriptCanvasDataTarget = scriptCanvasAssetTarget->GetScriptCanvasData();
-            AZStd::vector<AZ::u8> byteBuffer;
-            byteBuffer.resize_no_construct(streamSource->GetLength());
-            AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStreamSource(&byteBuffer);
-            const size_t bytesRead = streamSource->Read(byteBuffer.size(), byteBuffer.data());
-            scriptCanvasDataTarget.m_scriptCanvasEntity.reset(nullptr);
-
-            if (bytesRead == streamSource->GetLength())
-            {
-                byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-                AZ::JsonDeserializerSettings settings;
-                settings.m_serializeContext = m_serializeContext;
-                settings.m_metadata.Create<SerializationListeners>();
-                // attempt JSON deserialization...
-                if (JSRU::LoadObjectFromStreamByType
-                        ( &scriptCanvasDataTarget
-                        , azrtti_typeid<ScriptCanvasData>()
-                        , byteStreamSource
-                        , &settings).IsSuccess())
-                {
-                    if (auto graphData = scriptCanvasAssetTarget->GetScriptCanvasGraph()
-                        ? scriptCanvasAssetTarget->GetScriptCanvasGraph()->GetGraphData()
-                        : nullptr)
-                    {
-                        auto listeners = settings.m_metadata.Find<SerializationListeners>();
-                        AZ_Assert(listeners, "Failed to create SerializationListeners");
-
-                        ScriptCanvasAssetHandlerCpp::CollectNodes(graphData->m_nodes, *listeners);
-
-                        for (auto listener : *listeners)
-                        {
-                            listener->OnDeserialize();
-                        }
-
-                        return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-                    }
-                    else
-                    {
-                        AZ_Warning("ScriptCanvas", false, "ScriptCanvasAssetHandler::LoadAssetData failed to load graph data from JOSON");
-                    }
-                }
-#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
-                else
-                {// ...if there is a failure, check if it is saved in the old format
-                    byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-                    // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
-                    if (AZ::Utils::LoadObjectFromStreamInPlace
-                    (byteStreamSource
-                        , scriptCanvasDataTarget
-                        , m_serializeContext
-                        , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
-                    {
-                        return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-                    }
-                }
-#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
-            }
+            stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+            // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
+            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, scriptCanvasAsset->GetScriptCanvasData(), m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+            return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
         }
-
         return AZ::Data::AssetHandler::LoadResult::Error;
+
     }
+
 
     bool ScriptCanvasAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
     {
@@ -181,42 +105,20 @@ namespace ScriptCanvasEditor
         return SaveAssetData(assetData, stream, AZ::DataStream::ST_XML);
     }
 
-    bool ScriptCanvasAssetHandler::SaveAssetData
-        ( const ScriptCanvasAsset* assetData
-        , AZ::IO::GenericStream* stream
-        , [[maybe_unused]] AZ::DataStream::StreamType streamType)
+    bool ScriptCanvasAssetHandler::SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, AZ::DataStream::StreamType streamType)
     {
-        namespace JSRU = AZ::JsonSerializationUtils;
-        using namespace ScriptCanvas;
-
-        if (m_serializeContext
-        && stream
-        && assetData
-        && assetData->GetScriptCanvasGraph()
-        && assetData->GetScriptCanvasGraph()->GetGraphData())
+        if (assetData && m_serializeContext)
         {
-            auto graphData = assetData->GetScriptCanvasGraph()->GetGraphData();
-            AZ::JsonSerializerSettings settings;
-            settings.m_metadata.Create<SerializationListeners>();
-            auto listeners = settings.m_metadata.Find<SerializationListeners>();
-            AZ_Assert(listeners, "Failed to create SerializationListeners");
-            ScriptCanvasAssetHandlerCpp::CollectNodes(graphData->m_nodes, *listeners);
-            settings.m_keepDefaults = false;
-            settings.m_serializeContext = m_serializeContext;
-
-            for (auto listener : *listeners)
-            {
-                listener->OnSerialize();
-            }
-
-            return JSRU::SaveObjectToStream<ScriptCanvasData>(&assetData->GetScriptCanvasData(), *stream, nullptr, &settings).IsSuccess();
+            AZStd::vector<char> byteBuffer;
+            AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
+            AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, streamType);
+            bool scriptCanvasAssetSaved = objStream->WriteClass(&assetData->GetScriptCanvasData());
+            objStream->Finalize();
+            scriptCanvasAssetSaved = stream->Write(byteBuffer.size(), byteBuffer.data()) == byteBuffer.size() && scriptCanvasAssetSaved;
+            return scriptCanvasAssetSaved;
         }
-        else
-        {
-            AZ_Error("ScriptCanvas", false, "Saving ScriptCavas assets in the handler requires a valid IO stream, "
-                "asset pointer, and serialize context");
-            return false;
-        }
+
+        return false;
     }
 
     void ScriptCanvasAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
@@ -224,11 +126,17 @@ namespace ScriptCanvasEditor
         delete ptr;
     }
 
+    //=========================================================================
+    // GetSerializeContext
+    //=========================================================================.
     AZ::SerializeContext* ScriptCanvasAssetHandler::GetSerializeContext() const
     {
         return m_serializeContext;
     }
 
+    //=========================================================================
+    // SetSerializeContext
+    //=========================================================================.
     void ScriptCanvasAssetHandler::SetSerializeContext(AZ::SerializeContext* context)
     {
         m_serializeContext = context;
@@ -239,17 +147,22 @@ namespace ScriptCanvasEditor
             EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
             if (!m_serializeContext)
             {
-                AZ_Error("Script Canvas", false, "ScriptCanvasAssetHandler: No serialize context provided! "
-                    "We will not be able to process Graph Asset type");
+                AZ_Error("Script Canvas", false, "ScriptCanvasAssetHandler: No serialize context provided! We will not be able to process Graph Asset type");
             }
         }
     }
 
+    //=========================================================================
+    // GetHandledAssetTypes
+    //=========================================================================.
     void ScriptCanvasAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
         assetTypes.push_back(GetAssetType());
     }
 
+    //=========================================================================
+    // GetAssetType
+    //=========================================================================.
     AZ::Data::AssetType ScriptCanvasAssetHandler::GetAssetType() const
     {
         return ScriptCanvasAssetHandler::GetAssetTypeStatic();
@@ -265,24 +178,38 @@ namespace ScriptCanvasEditor
         return azrtti_typeid<ScriptCanvasAsset>();
     }
 
+    //=========================================================================
+    // GetAssetTypeExtensions
+    //=========================================================================.
     void ScriptCanvasAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         ScriptCanvasAsset::Description description;
         extensions.push_back(description.GetExtensionImpl());
     }
 
+    //=========================================================================
+    // GetComponentTypeId
+    //=========================================================================.
     AZ::Uuid ScriptCanvasAssetHandler::GetComponentTypeId() const
     {
         return azrtti_typeid<EditorScriptCanvasComponent>();
     }
 
+    //=========================================================================
+    // GetGroup
+    //=========================================================================.
     const char* ScriptCanvasAssetHandler::GetGroup() const
     {
         return ScriptCanvas::AssetDescription::GetGroup<ScriptCanvasEditor::ScriptCanvasAsset>();
     }
 
+    //=========================================================================
+    // GetBrowserIcon
+    //=========================================================================.
     const char* ScriptCanvasAssetHandler::GetBrowserIcon() const
     {
         return ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasEditor::ScriptCanvasAsset>();
     }
+
+
 }

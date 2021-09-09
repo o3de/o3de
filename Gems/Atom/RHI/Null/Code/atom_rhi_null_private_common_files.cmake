@@ -21,8 +21,6 @@ set(FILES
     Source/RHI/CommandQueue.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
-    Source/RHI/Fence.cpp
-    Source/RHI/Fence.h
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuter.cpp

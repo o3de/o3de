@@ -86,7 +86,7 @@ namespace AzToolsFramework
 
     void PreemptiveUndoCache::UpdateCache(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         // capture it
 
@@ -103,7 +103,7 @@ namespace AzToolsFramework
         newData.clear();
         AZ::IO::ByteContainerStream<CacheLineType> ms(&newData);
 
-        AZ::SerializeContext* sc = nullptr;
+        AZ::SerializeContext* sc = NULL;
         EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(sc, "Serialization context not found!");
 

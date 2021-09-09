@@ -76,6 +76,7 @@ namespace UnitTest
             return true;
         }
 
+        AZ::Debug::DrillerManager* m_drillerManager = nullptr;
         bool m_leakDetected = false;
         bool m_leakExpected = false;
     };

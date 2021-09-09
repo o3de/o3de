@@ -41,12 +41,12 @@ namespace UnitTest
             AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
 
             AZStd::allocator::pointer_type data = myalloc.allocate(100, 1);
-            AZ_TEST_ASSERT(data != nullptr);
+            AZ_TEST_ASSERT(data != 0);
 
             myalloc.deallocate(data, 100, 1);
 
             data = myalloc.allocate(50, 128);
-            AZ_TEST_ASSERT(data != nullptr);
+            AZ_TEST_ASSERT(data != 0);
 
             myalloc.deallocate(data, 50, 128);
 
@@ -153,7 +153,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         buffer_alloc_type::pointer_type data = myalloc.allocate(100, 1);
-        AZ_TEST_ASSERT(data != nullptr);
+        AZ_TEST_ASSERT(data != 0);
         AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 100);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
 
@@ -172,7 +172,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         data = myalloc.allocate(50, 64);
-        AZ_TEST_ASSERT(data != nullptr);
+        AZ_TEST_ASSERT(data != 0);
         AZ_TEST_ASSERT(((AZStd::size_t)data & 63) == 0);
         AZ_TEST_ASSERT(myalloc.get_max_size() <= bufferSize - 50);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() >= 50);
@@ -198,7 +198,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         int* data = reinterpret_cast<int*>(myalloc.allocate(sizeof(int), 1));
-        AZ_TEST_ASSERT(data != nullptr);
+        AZ_TEST_ASSERT(data != 0);
         AZ_TEST_ASSERT(myalloc.get_max_size() == (numNodes - 1) * sizeof(int));
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == sizeof(int));
 
@@ -209,7 +209,7 @@ namespace UnitTest
         for (int i = 0; i < numNodes; ++i)
         {
             data = reinterpret_cast<int*>(myalloc.allocate(sizeof(int), 1));
-            AZ_TEST_ASSERT(data != nullptr);
+            AZ_TEST_ASSERT(data != 0);
             AZ_TEST_ASSERT(myalloc.get_max_size() == (numNodes - (i + 1)) * sizeof(int));
             AZ_TEST_ASSERT(myalloc.get_allocated_size() == (i + 1) * sizeof(int));
         }
@@ -231,7 +231,7 @@ namespace UnitTest
         aligned_int_node_pool_type myaligned_pool;
         aligned_int_type* aligned_data = reinterpret_cast<aligned_int_type*>(myaligned_pool.allocate(sizeof(aligned_int_type), dataAlignment));
 
-        AZ_TEST_ASSERT(aligned_data != nullptr);
+        AZ_TEST_ASSERT(aligned_data != 0);
         AZ_TEST_ASSERT(((AZStd::size_t)aligned_data & (dataAlignment - 1)) == 0);
         AZ_TEST_ASSERT(myaligned_pool.get_max_size() == (numNodes - 1) * sizeof(aligned_int_type));
         AZ_TEST_ASSERT(myaligned_pool.get_allocated_size() == sizeof(aligned_int_type));
@@ -267,14 +267,14 @@ namespace UnitTest
         AZ_TEST_ASSERT(ref_allocator2.get_allocator() == ref_allocator1.get_allocator());
 
         ref_allocator_type::pointer_type data1 = ref_allocator1.allocate(10, 1);
-        AZ_TEST_ASSERT(data1 != nullptr);
+        AZ_TEST_ASSERT(data1 != 0);
         AZ_TEST_ASSERT(ref_allocator1.get_max_size() == bufferSize - 10);
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() == 10);
         AZ_TEST_ASSERT(shared_allocator.get_max_size() == bufferSize - 10);
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() == 10);
 
         ref_allocator_type::pointer_type data2 = ref_allocator2.allocate(10, 1);
-        AZ_TEST_ASSERT(data2 != nullptr);
+        AZ_TEST_ASSERT(data2 != 0);
         AZ_TEST_ASSERT(ref_allocator2.get_max_size() <= bufferSize - 20);
         AZ_TEST_ASSERT(ref_allocator2.get_allocated_size() >= 20);
         AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 20);
@@ -283,14 +283,14 @@ namespace UnitTest
         shared_allocator.reset();
 
         data1 = ref_allocator1.allocate(10, 32);
-        AZ_TEST_ASSERT(data1 != nullptr);
+        AZ_TEST_ASSERT(data1 != 0);
         AZ_TEST_ASSERT(ref_allocator1.get_max_size() <= bufferSize - 10);
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() >= 10);
         AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 10);
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() >= 10);
 
         data2 = ref_allocator2.allocate(10, 32);
-        AZ_TEST_ASSERT(data2 != nullptr);
+        AZ_TEST_ASSERT(data2 != 0);
         AZ_TEST_ASSERT(ref_allocator1.get_max_size() <= bufferSize - 20);
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() >= 20);
         AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 20);
@@ -316,7 +316,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         stack_allocator::pointer_type data = myalloc.allocate(100, 1);
-        AZ_TEST_ASSERT(data != nullptr);
+        AZ_TEST_ASSERT(data != 0);
         AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 100);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
 
@@ -329,7 +329,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         data = myalloc.allocate(50, 64);
-        AZ_TEST_ASSERT(data != nullptr);
+        AZ_TEST_ASSERT(data != 0);
         AZ_TEST_ASSERT(((AZStd::size_t)data & 63) == 0);
         AZ_TEST_ASSERT(myalloc.get_max_size() <= bufferSize - 50);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() >= 50);

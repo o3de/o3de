@@ -87,7 +87,7 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
     CCryFile file;
 
     {
-        [[maybe_unused]] const char* szLog = "Executing console batch file (try game,config,root):";
+        const char* szLog = "Executing console batch file (try game,config,root):";
         AZStd::string filenameLog;
         AZStd::string sfn = PathUtil::GetFile(filename);
 

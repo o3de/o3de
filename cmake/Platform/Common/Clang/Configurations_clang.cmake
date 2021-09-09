@@ -18,12 +18,28 @@ ly_append_configurations_options(
 
         # Disabled warnings (please do not disable any others without first consulting ly-warnings)
         -Wrange-loop-analysis
-        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
+        -Wno-unknown-warning-option       
+        "-Wno-#pragma-messages"
+        -Wno-absolute-value
+        -Wno-dynamic-class-memaccess
+        -Wno-format-security
         -Wno-inconsistent-missing-override
+        -Wno-invalid-offsetof
+        -Wno-multichar
         -Wno-parentheses
         -Wno-reorder
+        -Wno-self-assign
         -Wno-switch
+        -Wno-tautological-compare
         -Wno-undefined-var-template
+        -Wno-unknown-pragmas
+        -Wno-unused-function
+        -Wno-unused-private-field
+        -Wno-unused-value
+        -Wno-unused-variable
+        -Wno-unused-lambda-capture
+        # Workaround for compiler seeing file case differently from what OS show in console.
+        -Wno-nonportable-include-path
 
     COMPILATION_DEBUG
         -O0 # No optimization

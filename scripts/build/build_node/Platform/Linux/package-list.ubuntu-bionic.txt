@@ -4,7 +4,6 @@
 cmake/3.20.1-0kitware1ubuntu18.04.1     # For cmake
 clang-6.0                               # For Ninja Build System
 ninja-build                             # For the compiler and its dependencies
-java-11-amazon-corretto-jdk             # For Jenkins and Android
 
 # Build Libraries
 libglu1-mesa-dev                        # For Qt (GL dependency)

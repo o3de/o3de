@@ -28,7 +28,7 @@ namespace UnitTest
     public:
         ViewportUiDisplayTestFixture() = default;
 
-        void SetUp() override
+        void SetUp()
         {
             m_buttonGroup = AZStd::make_shared<ButtonGroup>();
             m_buttonGroup->AddButton("");
@@ -36,7 +36,7 @@ namespace UnitTest
             m_mockRenderOverlay = new QWidget();
         }
 
-        void TearDown() override
+        void TearDown()
         {
             m_buttonGroup.reset();
             delete m_parentWidget;

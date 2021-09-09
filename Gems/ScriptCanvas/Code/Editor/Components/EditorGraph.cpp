@@ -1034,9 +1034,16 @@ namespace ScriptCanvasEditor
 
         if (connection)
         {
+            ScriptCanvas::Endpoint scSourceEndpoint = connection->GetSourceEndpoint();
+            GraphCanvas::Endpoint sourceEndpoint = ConvertToGraphCanvasEndpoint(scSourceEndpoint);
+
+            ScriptCanvas::Endpoint scTargetEndpoint = connection->GetTargetEndpoint();
+            GraphCanvas::Endpoint targetEndpoint = ConvertToGraphCanvasEndpoint(scTargetEndpoint);
+
             ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnDisonnectionComplete, connectionId);
 
             DisconnectById(scConnectionId);
+
         }
     }
 
@@ -2658,6 +2665,8 @@ namespace ScriptCanvasEditor
 
         AZStd::vector< GraphCanvas::SlotId > slotIds;
         GraphCanvas::NodeRequestBus::EventResult(slotIds, nodeId, &GraphCanvas::NodeRequests::GetSlotIds);
+
+        GraphCanvas::GraphId graphCanvasGraphId = GetGraphCanvasGraphId();
 
         for (const GraphCanvas::SlotId& slotId : slotIds)
         {

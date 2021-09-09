@@ -88,7 +88,7 @@ namespace EMotionFX
         void SimulateTest(float simulationTime, float expectedFps, float fpsVariance)
         {
             Simulate(simulationTime, expectedFps, fpsVariance,
-                /*preCallback*/[](AnimGraphInstance*)
+                /*preCallback*/[this](AnimGraphInstance*)
                 {
                 },
                 /*postCallback*/[this](AnimGraphInstance*)
@@ -102,8 +102,8 @@ namespace EMotionFX
                     EXPECT_EQ(this->m_eventHandler->m_numTransitionsStarted, numStates);
                     EXPECT_EQ(this->m_eventHandler->m_numTransitionsEnded, numStates);
                 },
-                /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
-                /*postUpdateCallback*/[](AnimGraphInstance*, float, float, int) {});
+                /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
+                /*postUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {});
 
             const int numStates = GetParam().m_numStates;
             if (numStates > 1)

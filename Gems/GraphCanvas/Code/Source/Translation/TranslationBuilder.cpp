@@ -11,6 +11,8 @@
 
 namespace GraphCanvas
 {
+    constexpr const char* s_graphCanvasTranslationBuilderName = "GraphCanvasTranslationBuilder";
+
     AZ::Uuid TranslationAssetWorker::GetUUID()
     {
         return AZ::Uuid::CreateString("{459EF910-CAAF-465A-BA19-C91979DA5729}");

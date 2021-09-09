@@ -641,7 +641,7 @@ QPoint AbstractSplineWidget::TimeToPoint(float time, ISplineInterpolator* pSplin
 //////////////////////////////////////////////////////////////////////////
 float AbstractSplineWidget::TimeToXOfs(float x)
 {
-    return static_cast<float>(WorldToClient(Vec2(float(x), 0.0f)).x());
+    return WorldToClient(Vec2(float(x), 0.0f)).x();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -819,6 +819,8 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 {
     const QPen pOldPen = painter->pen();
 
+    const QRect rcClip = painter->clipBoundingRect().intersected(m_rcSpline).toRect();
+
     //////////////////////////////////////////////////////////////////////////
     ISplineInterpolator* pSpline = splineInfo.pSpline;
     ISplineInterpolator* pDetailSpline = splineInfo.pDetailSpline;
@@ -830,8 +832,8 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
     int nTotalNumberOfDimensions(0);
     int nCurrentDimension(0);
 
-    int left = static_cast<int>(TimeToXOfs(startTime));//rcClip.left;
-    int right = static_cast<int>(TimeToXOfs(endTime));//rcClip.right;
+    int left = TimeToXOfs(startTime);//rcClip.left;
+    int right = TimeToXOfs(endTime);//rcClip.right;
     QPoint p0 = TimeToPoint(pSpline->GetKeyTime(0), pSpline);
     QPoint p1 = TimeToPoint(pSpline->GetKeyTime(pSpline->GetKeyCount() - 1), pSpline);
 
@@ -896,7 +898,7 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 
             if ((x == right && pointsInLine >= 0) || (pointsInLine > 0 && fabs(lineStart.y() + gradient * (pt.x() - lineStart.x()) - pt.y()) > 1.0f))
             {
-                lineStart = QPoint(pt.x() - 1, static_cast<int>(lineStart.y() + gradient * (pt.x() - 1 - lineStart.x())));
+                lineStart = QPoint(pt.x() - 1, lineStart.y() + gradient * (pt.x() - 1 - lineStart.x()));
                 path.lineTo(lineStart);
                 gradient = float(pt.y() - lineStart.y()) / (pt.x() - lineStart.x());
                 pointsInLine = 1;
@@ -1061,7 +1063,7 @@ void SplineWidget::DrawTimeMarker(QPainter* painter)
     float x = TimeToXOfs(m_fTimeMarker);
     if (x >= m_rcSpline.left() && x <= m_rcSpline.right() + 1)
     {
-        painter->drawLine(static_cast<int>(x), m_rcSpline.top(), static_cast<int>(x), m_rcSpline.bottom() + 1);
+        painter->drawLine(x, m_rcSpline.top(), x, m_rcSpline.bottom() + 1);
     }
     painter->setPen(pOldPen);
 }
@@ -1581,7 +1583,7 @@ bool AbstractSplineWidget::IsKeySelected(ISplineInterpolator* pSpline, int nKey,
 int AbstractSplineWidget::GetNumSelected()
 {
     int nSelected = 0;
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         if (ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline)
         {
@@ -1816,7 +1818,7 @@ AbstractSplineWidget::EHitCode AbstractSplineWidget::HitTest(const QPoint& point
     }
 
     // For each Spline...
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
         ISplineInterpolator* pDetailSpline = m_splines[splineIndex].pDetailSpline;
@@ -1854,7 +1856,7 @@ AbstractSplineWidget::EHitCode AbstractSplineWidget::HitTest(const QPoint& point
                 // Check tangent handles first.
                 {
                     QPoint incomingHandlePt, outgoingHandlePt, pt;
-                    if (GetTangentHandlePts(incomingHandlePt, pt, outgoingHandlePt, static_cast<int>(splineIndex), static_cast<int>(i), nCurrentDimension))
+                    if (GetTangentHandlePts(incomingHandlePt, pt, outgoingHandlePt, splineIndex, i, nCurrentDimension))
                     {
                         // For the incoming handle
                         if (abs(incomingHandlePt.x() - point.x()) < 4 && abs(incomingHandlePt.y() - point.y()) < 4)
@@ -1971,7 +1973,7 @@ void AbstractSplineWidget::ScaleAmplitudeKeys(float time, float startValue, floa
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
 
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2075,7 +2077,7 @@ void AbstractSplineWidget::TimeScaleKeys(float time, float startTime, float endT
 
     float affectedRangeMin = FLT_MAX;
     float affectedRangeMax = -FLT_MAX;
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2143,8 +2145,8 @@ void AbstractSplineWidget::TimeScaleKeys(float time, float startTime, float endT
         }
     }
 
-    int rangeMin = static_cast<int>(TimeToXOfs(affectedRangeMin));
-    int rangeMax = static_cast<int>(TimeToXOfs(affectedRangeMax));
+    int rangeMin = TimeToXOfs(affectedRangeMin);
+    int rangeMax = TimeToXOfs(affectedRangeMax);
 
     if (m_timeRange.start == affectedRangeMin)
     {
@@ -2182,7 +2184,7 @@ void AbstractSplineWidget::ValueScaleKeys(float startValue, float endValue)
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
 
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2221,7 +2223,7 @@ void AbstractSplineWidget::MoveSelectedKeys(Vec2 offset, bool copyKeys)
     }
 
     // For each spline...
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2296,7 +2298,7 @@ void AbstractSplineWidget::RemoveSelectedKeys()
     m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
 
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2336,7 +2338,7 @@ void AbstractSplineWidget::RemoveSelectedKeyTimesImpl()
         StoreUndo();
         SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-        for (size_t splineIndex = 0, end = m_splines.size(); splineIndex < end; ++splineIndex)
+        for (int splineIndex = 0, end = m_splines.size(); splineIndex < end; ++splineIndex)
         {
             std::vector<KeyTime>::iterator itTime = m_keyTimes.begin(), endTime = m_keyTimes.end();
             for (int keyIndex = 0, endIndex = m_splines[splineIndex].pSpline->GetKeyCount(); keyIndex < endIndex; )
@@ -2374,9 +2376,9 @@ void AbstractSplineWidget::RedrawWindowAroundMarker()
 {
     UpdateKeyTimes();
     std::vector<KeyTime>::iterator itKeyTime = std::lower_bound(m_keyTimes.begin(), m_keyTimes.end(), KeyTime(m_fTimeMarker, 0));
-    size_t keyTimeIndex = (itKeyTime != m_keyTimes.end() ? itKeyTime - m_keyTimes.begin() : m_keyTimes.size());
-    int redrawRangeStart = (keyTimeIndex >= 2 ? static_cast<int>(TimeToXOfs(m_keyTimes[keyTimeIndex - 2].time)) : m_rcSpline.left());
-    int redrawRangeEnd = (keyTimeIndex < m_keyTimes.size() - 2 ? static_cast<int>(TimeToXOfs(m_keyTimes[keyTimeIndex + 2].time)) : m_rcSpline.right() + 1);
+    int keyTimeIndex = (itKeyTime != m_keyTimes.end() ? itKeyTime - m_keyTimes.begin() : m_keyTimes.size());
+    int redrawRangeStart = (keyTimeIndex >= 2 ? TimeToXOfs(m_keyTimes[keyTimeIndex - 2].time) : m_rcSpline.left());
+    int redrawRangeEnd = (keyTimeIndex < int(m_keyTimes.size()) - 2 ? TimeToXOfs(m_keyTimes[keyTimeIndex + 2].time) : m_rcSpline.right() + 1);
 
     QRect rc(QPoint(redrawRangeStart, m_rcSpline.top()), QPoint(redrawRangeEnd, m_rcSpline.bottom() + 1) - QPoint(1, 1));
     rc = rc.normalized().intersected(m_rcSpline);
@@ -2476,7 +2478,7 @@ void AbstractSplineWidget::ClearSelection()
 {
     ConditionalStoreUndo();
 
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2519,7 +2521,7 @@ void AbstractSplineWidget::StoreUndo()
     if (CUndo::IsRecording() && !m_pCurrentUndo)
     {
         std::vector<ISplineInterpolator*> splines(m_splines.size());
-        for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+        for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
         {
             splines[splineIndex] = m_splines[splineIndex].pSpline;
         }
@@ -2562,7 +2564,7 @@ void AbstractSplineWidget::DuplicateSelectedKeys()
 
     using KeysToAddContainer = std::vector<CKeyCopyInfo>;
     KeysToAddContainer keysToInsert;
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2662,7 +2664,7 @@ void AbstractSplineWidget::KeyAll()
 //////////////////////////////////////////////////////////////////////////
 void AbstractSplineWidget::SelectAll()
 {
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -2813,7 +2815,7 @@ void AbstractSplineWidget::SelectRectangle(const QRect& rc, bool bSelect)
     {
         std::swap(t0, t1);
     }
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
         ISplineInterpolator* pDetailSpline = m_splines[splineIndex].pDetailSpline;
@@ -3029,7 +3031,7 @@ void AbstractSplineWidget::ModifySelectedKeysFlags(int nRemoveFlags, int nAddFla
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -3186,7 +3188,7 @@ void AbstractSplineWidget::GotoNextKey(bool previousKey)
     {
         bool boFoundTheSelectedKey(false);
 
-        for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+        for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
         {
             ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
             for (int i = 0; i < pSpline->GetKeyCount(); i++)
@@ -3228,7 +3230,7 @@ void AbstractSplineWidget::GotoNextKey(bool previousKey)
     }
     else
     {
-        for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+        for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
         {
             ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
@@ -3279,7 +3281,7 @@ void AbstractSplineWidget::RemoveAllKeysButThis()
 {
     std::vector<int> keys;
 
-    for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+    for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 

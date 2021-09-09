@@ -220,7 +220,7 @@ public:
         b.resize((compsize + 1) << 3);
         out = (char*)b.m_bits;
         in = (char*)m_bits;
-        *out++ = static_cast<char>(bsize);
+        *out++ = bsize;
         for (i = 0; i < bsize; i++)
         {
             *out++ = in[i];
@@ -239,7 +239,7 @@ public:
                     }
                 }
                 i--;
-                *out++ = static_cast<char>(countz);
+                *out++ = countz;
             }
         }
     }

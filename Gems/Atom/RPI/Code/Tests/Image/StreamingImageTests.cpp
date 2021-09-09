@@ -490,6 +490,7 @@ namespace UnitTest
 
         const uint16_t mipLevels = 1;
         const uint16_t arraySize = 1;
+        const uint16_t pixelSize = 4;
 
         Data::Asset<RPI::ImageMipChainAsset> mipChain;
 

@@ -129,6 +129,8 @@ public: // Create from serialization only
     void RegisterListener(IDocListener* listener);
     void UnregisterListener(IDocListener* listener);
 
+    void GetMemoryUsage(ICrySizer* pSizer) const;
+
     static bool IsBackupOrTempLevelSubdirectory(const QString& folderName);
 protected:
 

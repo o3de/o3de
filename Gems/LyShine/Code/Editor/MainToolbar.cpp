@@ -32,7 +32,7 @@ MainToolbar::MainToolbar(EditorWindow* parent)
 
     QObject::connect(m_zoomFactorSpinBox,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
-        [parent](double value)
+        [this, parent](double value)
         {
             parent->GetViewport()->GetViewportInteraction()->SetCanvasZoomPercent(static_cast<float>(value));
         });

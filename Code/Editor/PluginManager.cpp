@@ -262,7 +262,7 @@ void CPluginManager::RegisterPlugin(QLibrary* dllHandle, IPlugin* pPlugin)
     entry.hLibrary = dllHandle;
     entry.pPlugin = pPlugin;
     m_plugins.push_back(entry);
-    m_uuidPluginMap[static_cast<unsigned char>(m_currentUUID)] = pPlugin;
+    m_uuidPluginMap[m_currentUUID] = pPlugin;
     ++m_currentUUID;
 }
 

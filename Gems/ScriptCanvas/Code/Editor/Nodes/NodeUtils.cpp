@@ -14,6 +14,27 @@
 
 #include <ScriptCanvas/Core/NodeBus.h>
 
+namespace
+{
+    ScriptCanvas::ConnectionType ToScriptCanvasConnectionType(GraphCanvas::ConnectionType connectionType)
+    {
+        ScriptCanvas::ConnectionType scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Unknown;
+        switch (connectionType)
+        {
+        case GraphCanvas::CT_Input:
+            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Input;
+            break;
+        case GraphCanvas::CT_Output:
+            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Output;
+            break;
+        default:
+            break;
+        }
+
+        return scriptCanvasConnectionType;
+    }
+}
+
 namespace ScriptCanvasEditor::Nodes
 {
     void CopyTranslationKeyedNameToDatumLabel(const AZ::EntityId& graphCanvasNodeId,

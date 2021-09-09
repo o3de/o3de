@@ -64,9 +64,6 @@ namespace AZ
 
             //! Find a child pass with a matching name and returns it. Return nullptr if none found.
             Ptr<Pass> FindChildPass(const Name& passName) const;
-            
-            template<typename PassType>
-            Ptr<PassType> FindChildPass() const;
 
             //! Searches the tree for the first pass that has same pass name (Depth-first search). Return nullptr if none found.
             Ptr<Pass> FindPassByNameRecursive(const Name& passName) const;
@@ -135,20 +132,5 @@ namespace AZ
             // Generates child passes from source PassTemplate
             void CreatePassesFromTemplate();
         };
-
-        template<typename PassType>
-        inline Ptr<PassType> ParentPass::FindChildPass() const
-        {
-            for (const Ptr<Pass>& child : m_children)
-            {
-                PassType* pass = azrtti_cast<PassType*>(child.get());
-                if (pass)
-                {
-                    return pass;
-                }
-            }
-            return {};
-        }
-
     }   // namespace RPI
 }   // namespace AZ

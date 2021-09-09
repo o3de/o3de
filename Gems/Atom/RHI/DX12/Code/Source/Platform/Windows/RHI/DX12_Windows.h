@@ -20,8 +20,8 @@
 
 #include <d3dx12.h>
 
-// This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
-// Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures
+// This define is enabled if winpixeventruntime SDK is downloaded and it's path is hooked up to Environment var ATOM_PIX_PATH.
+// Enabling this define will allow the runtime code to add PIX markers which will hel pwith pix and renderdoc gpu captures
 #ifdef USE_PIX
     #include <WinPixEventRuntime/pix3.h>
 #else

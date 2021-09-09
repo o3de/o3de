@@ -21,6 +21,8 @@ public:
     static const int64      TIMEVALUE_PRECISION = 100000;         // one second
 
 public:
+    void GetMemoryUsage(class ICrySizer*) const { /*nothing*/}
+
     // Default constructor.
     ILINE CTimeValue()
     {
@@ -161,6 +163,10 @@ public:
     ILINE bool operator<=(const CTimeValue& inRhs) const { return m_lValue <= inRhs.m_lValue; };
     ILINE bool operator==(const CTimeValue& inRhs) const { return m_lValue == inRhs.m_lValue; };
     ILINE bool operator!=(const CTimeValue& inRhs) const { return m_lValue != inRhs.m_lValue; };
+
+    AUTO_STRUCT_INFO
+
+    void GetMemoryStatistics(class ICrySizer*) const { /*nothing*/}
 
 private: // ----------------------------------------------------------
 

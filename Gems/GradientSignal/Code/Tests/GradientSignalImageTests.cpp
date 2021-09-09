@@ -145,7 +145,7 @@ namespace UnitTest
             {
                 for (AZ::u32 x = 0; x < width; ++x)
                 {
-                    if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                    if ((x == pixelX) && (y == pixelY))
                     {
                         m_imageData->m_imageData.push_back(pixelValue);
                     }

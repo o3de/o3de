@@ -11,7 +11,7 @@
         Utility class to handle Animation of Character Tracks (aka 'Animation' Tracks in the TrackView UI)
     */
 
-#include <Cry_Math.h>
+#include <CrySizer.h>
 
 struct SAnimContext;
 struct ICharacterKey;
@@ -35,6 +35,11 @@ public:
         bool m_bTimeJumped[3];
         float m_jumpTime[3];
     };
+
+    void GetMemoryUsage(ICrySizer* pSizer) const
+    {
+        pSizer->AddObject(this, sizeof(*this));
+    }
 
     void OnReset(IAnimNode* animNode);
 

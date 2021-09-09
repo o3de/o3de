@@ -139,7 +139,7 @@ namespace AZ
             if (m_handle)
             {
                 result = dlclose(m_handle) == 0 ? true : false;
-                m_handle = nullptr;
+                m_handle = 0;
             }
             return result;
         }

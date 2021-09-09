@@ -8,6 +8,7 @@
 
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
+#include "Cry_GeoOverlap.h"
 
 
 namespace LmbrCentral
@@ -146,7 +147,7 @@ namespace LmbrCentral
     {
         m_currentlyActiveChildren++;
         ShapeComponentNotificationsBus::MultiHandler::BusConnect(id);
-
+        
         if (ShapeComponentRequestsBus::Handler::BusIsConnected() && CompoundShapeComponentRequestsBus::Handler::BusIsConnected())
         {
             EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);

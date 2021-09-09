@@ -130,7 +130,7 @@ namespace PhysX
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         if (m_state != State::Initialized)
         {
@@ -251,7 +251,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -312,7 +312,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
+                    m_freeSceneSlots.push(index);
                 }
             }
         }

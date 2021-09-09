@@ -966,7 +966,7 @@ namespace AZ
     {
     public:
         StringPathFuncTest() = default;
-        ~StringPathFuncTest() override = default;
+        virtual ~StringPathFuncTest() = default;
     };
 
 

@@ -17,7 +17,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <IRenderer.h>
-#include <ITimer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
@@ -27,7 +26,6 @@
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
-
 
 #include "UiNavigationHelpers.h"
 #include "UiSerialize.h"
@@ -65,7 +63,7 @@ namespace
     //! \brief Given a UTF8 string and index, return the raw string buffer index that maps to the UTF8 index.
     int GetCharArrayIndexFromUtf8CharIndex(const AZStd::string& utf8String, const uint utf8Index)
     {
-        uint utfIndexIter = 0;
+        int utfIndexIter = 0;
         int rawIndex = 0;
 
         const AZStd::string::size_type stringLength = utf8String.length();

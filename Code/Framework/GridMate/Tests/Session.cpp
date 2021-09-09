@@ -71,7 +71,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(GridMate::LANSessionServiceBus::FindFirstHandler(m_clientGridMate) != nullptr);
             //////////////////////////////////////////////////////////////////////////
         }
-        ~Integ_LANSessionMatchmakingParamsTest() override
+        virtual ~Integ_LANSessionMatchmakingParamsTest()
         {
             SessionEventBus::MultiHandler::BusDisconnect(m_gridMate);
             SessionEventBus::MultiHandler::BusDisconnect(m_clientGridMate);
@@ -290,7 +290,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(LANSessionServiceBus::FindFirstHandler(m_peers[i].m_gridMate) != nullptr);
             }
         }
-        ~Integ_LANSessionTest() override
+        virtual ~Integ_LANSessionTest()
         {
             StopGridMateService<LANSessionService>(m_peers[0].m_gridMate);
 
@@ -645,7 +645,7 @@ namespace UnitTest
             }
         }
 
-        ~Integ_LANMultipleSessionTest() override
+        virtual ~Integ_LANMultipleSessionTest()
         {
             GridMate::StopGridMateService<GridMate::LANSessionService>(m_gridMates[0]);
 
@@ -884,7 +884,7 @@ namespace UnitTest
             }
         }
 
-        ~Integ_LANLatencySessionTest() override
+        virtual ~Integ_LANLatencySessionTest()
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -1283,7 +1283,7 @@ namespace UnitTest
             //StartDrilling("lanmigration");
         }
 
-        ~Integ_LANSessionMigarationTestTest() override
+        virtual ~Integ_LANSessionMigarationTestTest()
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -1597,7 +1597,7 @@ namespace UnitTest
 
             //StartDrilling("lanmigration2");
         }
-        ~Integ_LANSessionMigarationTestTest2() override
+        virtual ~Integ_LANSessionMigarationTestTest2()
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 

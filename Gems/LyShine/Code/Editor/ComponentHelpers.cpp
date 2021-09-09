@@ -764,7 +764,7 @@ namespace ComponentHelpers
                 QObject::connect(action,
                     &QAction::triggered,
                     hierarchy,
-                    [hierarchy, componentClass, items]([[maybe_unused]] bool checked)
+                    [serializeContext, hierarchy, componentClass, items]([[maybe_unused]] bool checked)
                 {
                     EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
 

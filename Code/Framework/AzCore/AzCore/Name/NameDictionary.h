@@ -83,7 +83,7 @@ namespace AZ
 
         // Attempts to release the name from the dictionary, but checks to make sure
         // a reference wasn't taken by another thread.
-        void TryReleaseName(Name::Hash hash);
+        void TryReleaseName(Internal::NameData* data);
         
         //////////////////////////////////////////////////////////////////////////
 

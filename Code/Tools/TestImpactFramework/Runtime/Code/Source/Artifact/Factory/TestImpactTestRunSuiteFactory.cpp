@@ -64,11 +64,10 @@ namespace TestImpact
                         return !name.starts_with("DISABLED_") && name.find("/DISABLED_") == AZStd::string::npos;
                     };
 
-                    const auto getDuration = [Keys](const AZ::rapidxml::xml_node<>* node)
+                    const auto getDuration = [&Keys](const AZ::rapidxml::xml_node<>* node)
                     {
-                        AZ_UNUSED(Keys);
                         const AZStd::string duration = node->first_attribute(Keys[DurationKey])->value();
-                        return AZStd::chrono::milliseconds(static_cast<AZStd::sys_time_t>(AZStd::stof(duration) * 1000.f));
+                        return AZStd::chrono::milliseconds(AZStd::stof(duration) * 1000.f);
                     };
 
                     TestRunSuite testSuite;
@@ -79,9 +78,8 @@ namespace TestImpact
                     for (auto testcase_node = testsuite_node->first_node(Keys[TestCaseKey]); testcase_node;
                          testcase_node = testcase_node->next_sibling())
                     {
-                        const auto getStatus = [Keys](const AZ::rapidxml::xml_node<>* node)
+                        const auto getStatus = [&Keys](const AZ::rapidxml::xml_node<>* node)
                         {
-                            AZ_UNUSED(Keys);
                             const AZStd::string status = node->first_attribute(Keys[StatusKey])->value();
                             if (status == Keys[RunKey])
                             {
@@ -97,7 +95,7 @@ namespace TestImpact
 
                         const auto getResult = [](const AZ::rapidxml::xml_node<>* node)
                         {
-                            if (auto child_node = node->first_node("failure"))
+                            for (auto child_node = node->first_node("failure"); child_node; child_node = child_node->next_sibling())
                             {
                                 return TestRunResult::Failed;
                             }

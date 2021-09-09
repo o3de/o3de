@@ -66,7 +66,7 @@ namespace AzToolsFramework
         {
         }
 
-        ~EntitySearch_TestComponent1() override
+        virtual ~EntitySearch_TestComponent1() override
         {}
 
     private:
@@ -123,7 +123,7 @@ namespace AzToolsFramework
         {
         }
 
-        ~EntitySearch_TestComponent2() override
+        virtual ~EntitySearch_TestComponent2() override
         {}
 
     private:

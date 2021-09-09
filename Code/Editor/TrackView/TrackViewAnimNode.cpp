@@ -423,7 +423,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
                 AZStd::string::format(
                     "Failed to add '%s' to sequence '%s', could not find associated entity. "
                     "Please try adding the entity associated with '%s'.",
-                    originalNameStr.constData(), director->GetName().c_str(), originalNameStr.constData()));
+                    originalNameStr.constData(), director->GetName(), originalNameStr.constData()));
 
             return nullptr;
         }
@@ -452,7 +452,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
         {
             // Check for a duplicates
             CTrackViewAnimNodeBundle azEntityNodesFound = director2->GetAnimNodesByType(AnimNodeType::AzEntity);
-            for (unsigned int x = 0; x < azEntityNodesFound.GetCount(); x++)
+            for (int x = 0; x < azEntityNodesFound.GetCount(); x++)
             {
                 if (azEntityNodesFound.GetNode(x)->GetAzEntityId() == owner)
                 {
@@ -472,7 +472,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
         {
             GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(
                 AZStd::string::format("'%s' already exists in sequence '%s', skipping...",
-                    originalNameStr.constData(), director2->GetName().c_str()));
+                    originalNameStr.constData(), director2->GetName()));
 
             return nullptr;
         }
@@ -488,7 +488,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     if (!newAnimNode)
     {
         GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(
-            AZStd::string::format("Failed to add '%s' to sequence '%s'.", nameStr.constData(), director->GetName().c_str()));
+            AZStd::string::format("Failed to add '%s' to sequence '%s'.", nameStr.constData(), director->GetName()));
         return nullptr;
     }
 
@@ -1195,7 +1195,7 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::GetAnimNodesByName(const char* pNam
 {
     CTrackViewAnimNodeBundle bundle;
 
-    QString nodeName = QString::fromUtf8(GetName().c_str());
+    QString nodeName = GetName();
     if (GetNodeType() == eTVNT_AnimNode && QString::compare(pName, nodeName, Qt::CaseInsensitive) == 0)
     {
         bundle.AppendAnimNode(this);
@@ -1215,9 +1215,10 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::GetAnimNodesByName(const char* pNam
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CTrackViewAnimNode::GetParamName(const CAnimParamType& paramType) const
+const char* CTrackViewAnimNode::GetParamName(const CAnimParamType& paramType) const
 {
-    return m_animNode->GetParamName(paramType);
+    const char* pName = m_animNode->GetParamName(paramType);
+    return pName ? pName : "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1273,7 +1274,7 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
             if (existingNode->GetDirector() == GetDirector())
             {
                 GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(AZStd::string::format(
-                    "'%s' was already added to '%s', skipping...", entity->GetName().c_str(), GetDirector()->GetName().c_str()));
+                    "'%s' was already added to '%s', skipping...", entity->GetName().c_str(), GetDirector()->GetName()));
 
                 continue;
             }
@@ -1376,7 +1377,7 @@ void CTrackViewAnimNode::UpdateDynamicParams()
 void CTrackViewAnimNode::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     XmlNodeRef childNode = xmlNode->createNode("Node");
-    childNode->setAttr("name", GetName().c_str());
+    childNode->setAttr("name", GetName());
     childNode->setAttr("type", static_cast<int>(GetType()));
 
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
@@ -1476,7 +1477,7 @@ bool CTrackViewAnimNode::PasteNodesFromClipboard(QWidget* context)
 
     AZStd::map<int, IAnimNode*> copiedIdToNodeMap;
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (unsigned int i = 0; i < numNodes; ++i)
+    for (int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 
@@ -1682,7 +1683,7 @@ bool CTrackViewAnimNode::IsValidReparentingTo(CTrackViewAnimNode* pNewParent)
     }
 
     // Check if the new parent already contains a node with this name
-    CTrackViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName().c_str());
+    CTrackViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName());
     if (foundNodes.GetCount() > 1 || (foundNodes.GetCount() == 1 && foundNodes.GetNode(0) != this))
     {
         return false;
@@ -1819,6 +1820,7 @@ bool CTrackViewAnimNode::IsDisabled() const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewAnimNode::SetPos(const Vec3& position)
 {
+    const float time = GetSequence()->GetTime();
     CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
 
     if (track)
@@ -1942,7 +1944,7 @@ void CTrackViewAnimNode::OnSelectionChanged(const bool selected)
 {
     if (m_animNode)
     {
-        [[maybe_unused]] const AnimNodeType animNodeType = GetType();
+        const AnimNodeType animNodeType = GetType();
         AZ_Assert(animNodeType == AnimNodeType::AzEntity, "Expected AzEntity for selection changed");
 
         const EAnimNodeFlags flags = (EAnimNodeFlags)m_animNode->GetFlags();
@@ -2121,7 +2123,7 @@ bool CTrackViewAnimNode::ContainsComponentWithId(AZ::ComponentId componentId) co
     if (GetType() == AnimNodeType::AzEntity)
     {
         // search for a matching componentId on all children
-        for (unsigned int i = 0; i < GetChildCount(); i++)
+        for (int i = 0; i < GetChildCount(); i++)
         {
             CTrackViewNode* childNode = GetChild(i);
             if (childNode->GetNodeType() == eTVNT_AnimNode)

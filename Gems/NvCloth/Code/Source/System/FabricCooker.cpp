@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
@@ -305,7 +304,7 @@ namespace NvCloth
         const AZ::Vector3& fabricGravity,
         bool useGeodesicTether)
     {
-        AZ_PROFILE_FUNCTION(Cloth);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
         return Internal::Cook(particles, indices, fabricGravity, useGeodesicTether);
     }
@@ -318,7 +317,7 @@ namespace NvCloth
         AZStd::vector<int>& remappedVertices,
         bool removeStaticTriangles)
     {
-        AZ_PROFILE_FUNCTION(Cloth);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
         // Weld vertices together
         AZStd::vector<SimParticleFormat> weldedParticles;

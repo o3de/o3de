@@ -9,6 +9,7 @@
 
 class QEvent;
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityBus.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEntityIdCtrl.hxx>
@@ -16,6 +17,7 @@ class QEvent;
 #include <GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h>
 #include <GraphCanvas/Components/NodePropertyDisplay/EntityIdDataInterface.h>
 #include <GraphCanvas/Components/MimeDataHandlerBus.h>
+#endif
 
 namespace GraphCanvas
 {

@@ -90,7 +90,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());
-        m_tableModel->setDynamicSortFilter(true);
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
 
         connect(

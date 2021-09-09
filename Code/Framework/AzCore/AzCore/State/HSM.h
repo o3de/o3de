@@ -103,10 +103,13 @@ namespace AZ
 
         struct State
         {
+            State()
+                : superId(InvalidStateId)
+                , name(NULL) {}
             StateHandler handler;
-            StateId      superId = InvalidStateId;   ///< State id of the super state, InvalidStateId if this is a top state InvalidStateId.
-            StateId      subId = InvalidStateId;     ///< If != InvalidStateId it will enter the sub ID after the state Enter event is called.
-            const char*  name = nullptr;
+            StateId      superId;   ///< State id of the super state, InvalidStateId if this is a top state InvalidStateId.
+            StateId      subId;     ///< If != InvalidStateId it will enter the sub ID after the state Enter event is called.
+            const char*  name;
         };
         AZStd::array<State, MaxNumberOfStates>   m_states;
     };

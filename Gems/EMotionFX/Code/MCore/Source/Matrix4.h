@@ -69,7 +69,8 @@ namespace MCore
      * [Tx Ty Tz 1] // translation <br>
      *
      */
-    class MCORE_API alignas(16) Matrix
+    MCORE_ALIGN_PRE(16)
+    class MCORE_API Matrix
     {
     public:
         /**
@@ -909,7 +910,7 @@ namespace MCore
             float   m_m16[16];        // 16 floats as 1D array
             float   m44[4][4];      // as 2D array
         };
-    };
+    } MCORE_ALIGN_POST(16);
 
 
     // include inline code

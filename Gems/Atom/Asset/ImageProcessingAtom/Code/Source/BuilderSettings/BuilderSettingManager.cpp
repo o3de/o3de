@@ -37,7 +37,7 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AtomCore/Serialization/Json/JsonUtils.h>
 
 namespace ImageProcessingAtom
 {

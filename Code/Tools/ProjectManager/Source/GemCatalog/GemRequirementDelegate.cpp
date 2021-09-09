@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
-        standardFont.setPixelSize(static_cast<int>(s_fontSize));
+        standardFont.setPixelSize(s_fontSize);
         QFontMetrics standardFontMetrics(standardFont);
 
         painter->save();
@@ -51,14 +51,14 @@ namespace O3DE::ProjectManager
         painter->fillRect(itemRect, itemBackgroundColor);
 
         // Gem name
-        QString gemName = GemModel::GetDisplayName(modelIndex);
+        QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
-        gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
+        gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left(), contentRect.center().y() - static_cast<int>(s_gemNameFontSize));
+        gemNameRect.moveTo(contentRect.left(), contentRect.center().y() - s_gemNameFontSize);
 
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);

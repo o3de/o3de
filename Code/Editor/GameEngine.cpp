@@ -176,6 +176,11 @@ struct SSystemUserCallback
         return CryMessageBox(text, caption, uType);
     }
 
+    void GetMemoryUsage(ICrySizer* pSizer) override
+    {
+        GetIEditor()->GetMemoryUsage(pSizer);
+    }
+
     void OnSplashScreenDone()
     {
         m_pLogo = nullptr;
@@ -492,7 +497,8 @@ bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
     bool bReleaseResources)
 {
-     m_bLevelLoaded = false;
+    LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
+    m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current

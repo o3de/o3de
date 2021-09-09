@@ -290,7 +290,7 @@ namespace AWSMetrics
 
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
-            producers.emplace_back(AZStd::thread([index]()
+            producers.emplace_back(AZStd::thread([this, index]()
             {
                 AZStd::vector<MetricsAttribute> metricsAttributes;
                 metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));

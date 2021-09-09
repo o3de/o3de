@@ -27,7 +27,7 @@ namespace AZ
 
             ModelLodIndex SelectLod(const View* view, const Vector3& position, const Model& model, ModelLodIndex lodOverride)
             {
-                AZ_PROFILE_FUNCTION(RPI);
+                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
                 ModelLodIndex lodIndex;
                 if (model.GetLodCount() == 1)
                 {

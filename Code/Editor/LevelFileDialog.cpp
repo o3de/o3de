@@ -32,6 +32,22 @@ static const char lastLoadPathFilename[] = "lastLoadPath.preset";
 // Folder in which levels are stored
 static const char kLevelsFolder[] = "Levels";
 
+// List of folder names that are used to detect a level folder
+static const char* kLevelFolderNames[] =
+{
+    "Layers",
+    "Minimap",
+    "LevelData"
+};
+
+// List of files that are used to detect a level folder
+static const char* kLevelFileNames[] =
+{
+    "level.pak",
+    "filelist.xml",
+    "levelshadercache.pak",
+};
+
 CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     : QDialog(parent)
     , m_bOpenDialog(openDialog)
@@ -461,7 +477,7 @@ bool CLevelFileDialog::ValidateLevelPath(const QString& levelPath) const
         QString currentPath = (Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str();
         for (size_t i = 0; i < splittedPath.size() - 1; ++i)
         {
-            currentPath += "/" + splittedPath[static_cast<int>(i)];
+            currentPath += "/" + splittedPath[i];
 
             if (CFileUtil::FileExists(currentPath) || CheckLevelFolder(currentPath))
             {

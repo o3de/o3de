@@ -639,7 +639,7 @@ namespace AZ::IO
         path.InitFromAbsolutePath(m_dummyFilepath);
 
         request->CreateRead(nullptr, buffer, unalignedSize + 4, path, unalignedOffset, unalignedSize);
-        auto callback = [unalignedOffset, unalignedSize, this](const FileRequest& request)
+        auto callback = [&fileSize, unalignedOffset, unalignedSize, this](const FileRequest& request)
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
             auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());

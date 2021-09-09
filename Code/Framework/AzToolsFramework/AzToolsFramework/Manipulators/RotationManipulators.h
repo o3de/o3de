@@ -42,9 +42,6 @@ namespace AzToolsFramework
 
         bool PerformingActionViewAxis() const;
 
-        //! Sets the bound width to use for the circle (torus) of an angular manipulator.
-        void SetCircleBoundWidth(float circleBoundWidth);
-
     private:
         AZ_DISABLE_COPY_MOVE(RotationManipulators)
 
@@ -52,6 +49,5 @@ namespace AzToolsFramework
 
         AZStd::array<AZStd::shared_ptr<AngularManipulator>, 3> m_localAngularManipulators;
         AZStd::shared_ptr<AngularManipulator> m_viewAngularManipulator;
-        float m_circleBoundWidth = 0.1f;  //!< The default circle bound width for the angular manipulator torus.
     };
 } // namespace AzToolsFramework

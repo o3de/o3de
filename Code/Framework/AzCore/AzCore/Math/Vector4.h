@@ -283,6 +283,11 @@ namespace AZ
         Simd::Vec4::FloatType GetSimdValue() const;
 
     protected:
+
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(push)
+#   pragma warning(disable:4201) // anonymous union
+#endif
         union
         {
             Simd::Vec4::FloatType m_value;
@@ -296,6 +301,9 @@ namespace AZ
                 float m_w;
             };
         };
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(pop)
+#endif
     };
 }
 

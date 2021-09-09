@@ -129,7 +129,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = static_cast<uint16_t>(imageDescriptor.m_mipLevels - residentMipLevel);
+            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetDevice().GetImageAllocationInfo(residentImageDescriptor, allocationInfo);
@@ -144,7 +144,7 @@ namespace AZ
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
-                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "StreamImagePool::CreateHeap");
 
                 CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
 

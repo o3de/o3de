@@ -550,7 +550,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
 
-            // Set the log directory with the provided path or using project/user/log as default
+            // Set the user directory with the provided path or using project/user as default
             auto projectLogPathKey = FixedValueString::format("%s/project_log_path", BootstrapSettingsRootKey);
             AZ::IO::FixedMaxPath projectLogPath;
             if (!registry.Get(projectLogPath.Native(), projectLogPathKey))
@@ -640,7 +640,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
 
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // Setup the cache, user, and log paths to platform specific locations when running on non-host platforms
+        // Setup the cache and user paths when to platform specific locations when running on non-host platforms
         path = engineRoot;
         if (AZStd::optional<AZ::IO::FixedMaxPathString> nonHostCacheRoot = Utils::GetDefaultAppRootPath();
             nonHostCacheRoot)
@@ -656,16 +656,13 @@ namespace AZ::SettingsRegistryMergeUtils
         if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
             devWriteStorage)
         {
-            const AZ::IO::FixedMaxPath devWriteStoragePath(*devWriteStorage);
-            registry.Set(FilePathKey_DevWriteStorage, devWriteStoragePath.LexicallyNormal().Native());
-            registry.Set(FilePathKey_ProjectUserPath, (devWriteStoragePath / "user").LexicallyNormal().Native());
-            registry.Set(FilePathKey_ProjectLogPath, (devWriteStoragePath / "user/log").LexicallyNormal().Native());
+            registry.Set(FilePathKey_DevWriteStorage, *devWriteStorage);
+            registry.Set(FilePathKey_ProjectUserPath, *devWriteStorage);
         }
         else
         {
             registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
             registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
-            registry.Set(FilePathKey_ProjectLogPath, (path / "user/log").LexicallyNormal().Native());
         }
 #endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
@@ -1004,7 +1001,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
             AZ::SettingsRegistryInterface::VisitResponse Traverse(
                 AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::VisitAction action,
-                AZ::SettingsRegistryInterface::Type type) override
+                AZ::SettingsRegistryInterface::Type type)
             {
                 // Pass the pointer path to the inclusion filter if available
                 if (m_dumperSettings.m_includeFilter && !m_dumperSettings.m_includeFilter(path))
@@ -1058,7 +1055,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     AZ::SettingsRegistryInterface::VisitResponse::Done;
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
             {
                 m_result = m_result && WriteName(valueName) && m_writer.Bool(value);
             }
@@ -1073,12 +1070,12 @@ namespace AZ::SettingsRegistryMergeUtils
                 m_result = m_result && WriteName(valueName) && m_writer.Uint64(value);
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value) override
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value)
             {
                 m_result = m_result && WriteName(valueName) && m_writer.Double(value);
             }
 
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
+            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
             {
                 m_result = m_result && WriteName(valueName) && m_writer.String(value.data(), aznumeric_caster(value.size()));
             }

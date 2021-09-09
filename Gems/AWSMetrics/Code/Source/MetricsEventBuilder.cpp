@@ -15,6 +15,9 @@
 
 #include <ctime>
 
+#pragma warning(disable : 4996)
+
+
 namespace AWSMetrics
 {
     MetricsEventBuilder::MetricsEventBuilder()
@@ -55,13 +58,7 @@ namespace AWSMetrics
         time_t now;
         time(&now);
         char buffer[50];
-        tm time;
-#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
-        gmtime_s(&time, &now);
-#else
-        time = *gmtime(&now);
-#endif
-        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
+        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&now));
 
         m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventTimestamp, AZStd::string(buffer)));
     }

@@ -65,7 +65,7 @@ public:
     {
     }
 
-    ~CarrierStreamCallbacksHandler() override
+    ~CarrierStreamCallbacksHandler()
     {
         if (m_active)
         {

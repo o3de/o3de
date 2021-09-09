@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ::Debug
 {

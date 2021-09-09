@@ -49,9 +49,9 @@ namespace UnitTest
         bool snapping = false;
 
         m_viewportInteraction->EnableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
 
         EXPECT_TRUE(snapping);
     }
@@ -61,9 +61,9 @@ namespace UnitTest
         bool snapping = true;
 
         m_viewportInteraction->DisableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
 
         EXPECT_FALSE(snapping);
     }
@@ -76,9 +76,9 @@ namespace UnitTest
         m_viewportInteraction->SetGridSize(expectedGridSize);
 
         m_viewportInteraction->DisableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             gridSize, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
 
         EXPECT_EQ(gridSize, expectedGridSize);
     }
@@ -88,9 +88,9 @@ namespace UnitTest
         bool snapping = false;
 
         m_viewportInteraction->EnableAngularSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
 
         EXPECT_TRUE(snapping);
     }
@@ -100,9 +100,9 @@ namespace UnitTest
         bool snapping = true;
 
         m_viewportInteraction->DisableAngularSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
 
         EXPECT_FALSE(snapping);
     }
@@ -114,9 +114,9 @@ namespace UnitTest
 
         m_viewportInteraction->SetAngularStep(expectedAngularStep);
 
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             angularStep, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleStep);
+            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleStep);
 
         EXPECT_EQ(angularStep, expectedAngularStep);
     }

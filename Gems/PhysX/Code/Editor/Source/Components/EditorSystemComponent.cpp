@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <IEditor.h>
+#include <ISurfaceType.h>
 
 #include <Editor/ConfigStringLineEditCtrl.h>
 #include <Editor/EditorJointConfiguration.h>

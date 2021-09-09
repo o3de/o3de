@@ -2295,6 +2295,8 @@ namespace GraphCanvas
         {
             QScopedValueRollback<bool> allowMovement(m_allowMovement, false);
 
+            QRectF rect = boundingRect();
+
             qreal originalHeight = boundingRect().height();
             qreal newHeight = boundingRect().height() + (newSize.height() - oldSize.height());
 
@@ -2491,18 +2493,18 @@ namespace GraphCanvas
             {
                 if (growOnly)
                 {
-                    int left = static_cast<int>(blockBoundingRect.left());
+                    int left = blockBoundingRect.left();
 
                     if (left >= calculatedBounds.left())
                     {
-                        left = static_cast<int>(calculatedBounds.left() - gridStep.GetX());
+                        left = calculatedBounds.left() - gridStep.GetX();
                     }
 
-                    int right = static_cast<int>(blockBoundingRect.right());
+                    int right = blockBoundingRect.right();
 
                     if (right <= calculatedBounds.right())
                     {
-                        right = static_cast<int>(calculatedBounds.right() + gridStep.GetX());
+                        right = calculatedBounds.right() + gridStep.GetX();
                     }
                     
                     blockBoundingRect.setX(left);
@@ -2519,18 +2521,18 @@ namespace GraphCanvas
             {
                 if (growOnly)
                 {
-                    int top = static_cast<int>(blockBoundingRect.top());
+                    int top = blockBoundingRect.top();
 
                     if (top >= calculatedBounds.top())
                     {
-                        top = static_cast<int>(calculatedBounds.top() - gridStep.GetY());
+                        top = calculatedBounds.top() - gridStep.GetY();
                     }
 
-                    int bottom = static_cast<int>(blockBoundingRect.bottom());
+                    int bottom = blockBoundingRect.bottom();
 
                     if (bottom <= calculatedBounds.bottom())
                     {
-                        bottom = static_cast<int>(calculatedBounds.bottom() + gridStep.GetY());
+                        bottom = calculatedBounds.bottom() + gridStep.GetY();
                     }
 
                     blockBoundingRect.setY(top);

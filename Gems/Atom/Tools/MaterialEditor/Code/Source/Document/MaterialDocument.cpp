@@ -6,37 +6,51 @@
  *
  */
 
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/Instance.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <Document/MaterialDocument.h>
+#include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <Document/MaterialDocument.h>
 
 namespace MaterialEditor
 {
     MaterialDocument::MaterialDocument()
-        : AtomToolsFramework::AtomToolsDocument()
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentCreated, m_id);
     }
 
     MaterialDocument::~MaterialDocument()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         MaterialDocumentRequestBus::Handler::BusDisconnect();
         Clear();
+    }
+
+    const AZ::Uuid& MaterialDocument::GetId() const
+    {
+        return m_id;
+    }
+
+    AZStd::string_view MaterialDocument::GetAbsolutePath() const
+    {
+        return m_absolutePath;
+    }
+
+    AZStd::string_view MaterialDocument::GetRelativePath() const
+    {
+        return m_relativePath;
     }
 
     AZ::Data::Asset<AZ::RPI::MaterialAsset> MaterialDocument::GetAsset() const
@@ -156,17 +170,17 @@ namespace MaterialEditor
                 EditorMaterialFunctorResult result = RunEditorMaterialFunctors(dirtyFlags);
                 for (const Name& changedPropertyGroupName : result.m_updatedPropertyGroups)
                 {
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyGroupVisibilityChanged, m_id, changedPropertyGroupName, IsPropertyGroupVisible(changedPropertyGroupName));
+                    MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyGroupVisibilityChanged, m_id, changedPropertyGroupName, IsPropertyGroupVisible(changedPropertyGroupName));
                 }
                 for (const Name& changedPropertyName : result.m_updatedProperties)
                 {
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyConfigModified, m_id, GetProperty(changedPropertyName));
+                    MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyConfigModified, m_id, GetProperty(changedPropertyName));
                 }
             }
         }
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyValueModified, m_id, property);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyValueModified, m_id, property);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
     bool MaterialDocument::Open(AZStd::string_view loadPath)
@@ -178,11 +192,11 @@ namespace MaterialEditor
             return false;
         }
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
     }
 
-    bool MaterialDocument::Reopen()
+    bool MaterialDocument::Rebuild()
     {
         // Store history and property changes that should be reapplied after reload
         auto undoHistoryToRestore = m_undoHistory;
@@ -208,7 +222,7 @@ namespace MaterialEditor
         RestorePropertyValues(propertyValuesToRestore);
         AZStd::swap(undoHistoryToRestore, m_undoHistory);
         AZStd::swap(undoHistoryIndexToRestore, m_undoHistoryIndex);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
     }
 
@@ -271,7 +285,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", m_absolutePath.data());
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         m_saveTriggeredInternally = true;
         return true;
@@ -334,7 +348,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", normalizedSavePath.c_str());
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         // If the document is saved to a new file we need to reopen the new document to update assets, paths, property deltas.
         if (!Open(normalizedSavePath))
@@ -410,7 +424,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", normalizedSavePath.c_str());
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         // If the document is saved to a new file we need to reopen the new document to update assets, paths, property deltas.
         if (!Open(normalizedSavePath))
@@ -436,7 +450,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document closed: '%s'.\n", m_absolutePath.c_str());
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
+        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentClosed, m_id);
 
         // Clearing after notification so paths are still available
         Clear();
@@ -482,7 +496,7 @@ namespace MaterialEditor
             // The history index is one beyond the last executed command. Decrement the index then execute undo.
             m_undoHistory[--m_undoHistoryIndex].first();
             AZ_TracePrintf("MaterialDocument", "Material document undo: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -495,7 +509,7 @@ namespace MaterialEditor
             // Execute the current redo command then move the history index to the next position.
             m_undoHistory[m_undoHistoryIndex++].second();
             AZ_TracePrintf("MaterialDocument", "Material document redo: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -543,7 +557,7 @@ namespace MaterialEditor
 
             // Assign the index to the end of history
             m_undoHistoryIndex = aznumeric_cast<int>(m_undoHistory.size());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
         }
 
         m_propertyValuesBeforeEdit.clear();
@@ -570,7 +584,7 @@ namespace MaterialEditor
             if (!m_saveTriggeredInternally)
             {
                 AZ_TracePrintf("MaterialDocument", "Material document changed externally: '%s'.\n", m_absolutePath.c_str());
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
+                MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
             }
             m_saveTriggeredInternally = false;
         }
@@ -581,7 +595,7 @@ namespace MaterialEditor
         if (m_dependentAssetIds.find(asset->GetId()) != m_dependentAssetIds.end())
         {
             AZ_TracePrintf("MaterialDocument", "Material document dependency changed: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
+            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
         }
     }
 

@@ -683,6 +683,7 @@ namespace EMotionFX
             const size_t lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
             const size_t numNodes = actor->GetNumNodes();
+            const size_t numLods = actor->GetNumLODLevels();
             for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
                 Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);

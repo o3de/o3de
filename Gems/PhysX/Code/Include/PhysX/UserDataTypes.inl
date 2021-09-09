@@ -9,7 +9,9 @@
 
 namespace PhysX
 {
-    inline ActorData::ActorData(physx::PxActor* actor)
+    // BaseActorData START ****************************************************
+    inline BaseActorData::BaseActorData(BaseActorType type, physx::PxActor* actor) :
+        m_sanity(s_sanityValue), m_actorType(type)
     {
         auto nullUserData = [](physx::PxActor* actorToSet)
         {
@@ -21,26 +23,36 @@ namespace PhysX
         actor->userData = this;
     }
 
-    inline ActorData::ActorData(ActorData&& other)
-        : m_sanity(other.m_sanity)
-        , m_actor(AZStd::move(other.m_actor))
-        , m_payload(AZStd::move(other.m_payload))
+    inline BaseActorData::BaseActorData(BaseActorData&& other) :
+        m_sanity(s_sanityValue), m_actorType(other.m_actorType), m_actor(AZStd::move(other.m_actor))
     {
         m_actor->userData = this;
     }
 
-    inline ActorData& ActorData::operator=(ActorData&& other)
+    inline BaseActorData& BaseActorData::operator=(BaseActorData&& other)
     {
-        m_sanity = other.m_sanity;
+        m_sanity = s_sanityValue;
+        m_actorType = other.m_actorType;
         m_actor = AZStd::move(other.m_actor);
         m_actor->userData = this;
-        m_payload = AZStd::move(other.m_payload);
         return *this;
     }
 
-    inline bool ActorData::IsValid() const
+    inline bool BaseActorData::IsValid() const
     {
-        return m_sanity == SanityValue;
+        return m_sanity == s_sanityValue;
+    }
+
+    inline BaseActorType BaseActorData::GetType() const
+    {
+        return m_actorType;
+    }
+    // BaseActorData END ******************************************************
+
+
+    // ActorData START ********************************************************
+    inline ActorData::ActorData(physx::PxActor* actor) : BaseActorData(BaseActorType::PHYSX_DEFAULT, actor)
+    {
     }
 
     inline void ActorData::Invalidate()
@@ -137,4 +149,5 @@ namespace PhysX
             return nullptr;
         }
     }
+    // ActorData END ********************************************************
 } //namespace PhysX

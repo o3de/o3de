@@ -63,40 +63,40 @@ namespace GridMate
             typedef unordered_set<AZStd::string> AddressSetType;
 
             GridSessionHandshake(unsigned int handshakeTimeoutMS, const VersionType& version);
-            ~GridSessionHandshake() override {}
+            virtual ~GridSessionHandshake() {}
 
             //////////////////////////////////////////////////////////////////////////
             // Handshake
 
             /// Called from the system to write initial handshake data.
-            void            OnInitiate(ConnectionID id, WriteBuffer& wb) override;
+            virtual void            OnInitiate(ConnectionID id, WriteBuffer& wb);
             /**
             * Called when a system receives a handshake initiation from another system.
             * You can write a reply in the WriteBuffer.
             * return true if you accept this connection and false if you reject it.
             */
-            HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb) override;
+            virtual HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb);
             /**
             * If we already have a valid connection and we receive another connection request, the system will
             * call this function to verify the state of the connection.
             */
-            bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb) override;
+            virtual bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb);
             /**
             * Called when we receive Ack from the other system on our initial data \ref OnInitiate.
             * return true to accept the ack or false to reject the handshake.
             */
-            bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; }  // we don't do any further filtering
+            virtual bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; }  // we don't do any further filtering
             /**
             * Called when we receive Ack from the other system while we were connected. This callback is called
             * so we can just confirm that our connection is valid!
             */
-            bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; } // we don't do any further filtering
+            virtual bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; } // we don't do any further filtering
             /// Return true if you want to reject early reject a connection.
-            bool            OnNewConnection(const AZStd::string& address) override;
+            virtual bool            OnNewConnection(const AZStd::string& address);
             /// Called when we close a connection.
-            void            OnDisconnect(ConnectionID id) override;
+            virtual void            OnDisconnect(ConnectionID id);
             /// Return timeout in milliseconds of the handshake procedure.
-            unsigned int    GetHandshakeTimeOutMS() const override                   { return m_handshakeTimeOutMS; }
+            virtual unsigned int    GetHandshakeTimeOutMS() const                   { return m_handshakeTimeOutMS; }
             //////////////////////////////////////////////////////////////////////////
 
             void                    BanAddress(AZStd::string address);

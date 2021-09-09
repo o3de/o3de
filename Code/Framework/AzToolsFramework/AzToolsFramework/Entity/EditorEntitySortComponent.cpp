@@ -130,7 +130,7 @@ namespace AzToolsFramework
 
         bool EditorEntitySortComponent::SetChildEntityOrderArray(const EntityOrderArray& entityOrderArray)
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             if (m_childEntityOrderArray != entityOrderArray)
             {
                 m_childEntityOrderArray = entityOrderArray;
@@ -143,7 +143,7 @@ namespace AzToolsFramework
 
         bool EditorEntitySortComponent::AddChildEntityInternal(const AZ::EntityId& entityId, bool addToBack, EntityOrderArray::iterator insertPosition)
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             auto entityItr = m_childEntityOrderCache.find(entityId);
             if (entityItr == m_childEntityOrderCache.end())
             {
@@ -197,7 +197,7 @@ namespace AzToolsFramework
 
         bool EditorEntitySortComponent::RemoveChildEntity(const AZ::EntityId& entityId)
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             auto entityItr = m_childEntityOrderCache.find(entityId);
             if (entityItr != m_childEntityOrderCache.end())
             {
@@ -222,7 +222,7 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::OnEntityStreamLoadSuccess()
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
             m_childEntityOrderCache.clear();
             if (!m_childEntityOrderArray.empty())
@@ -320,7 +320,7 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::RebuildEntityOrderCache()
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             m_childEntityOrderCache.clear();
             for (auto entityId : m_childEntityOrderArray)
             {

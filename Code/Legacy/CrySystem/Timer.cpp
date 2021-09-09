@@ -550,7 +550,7 @@ void CTimer::Serialize(TSerialize ser)
 
         if (m_TimeDebug)
         {
-            [[maybe_unused]] const int64 now = CryGetTicks();
+            const int64 now = CryGetTicks();
             CryLogAlways("[CTimer]: Serialize: Last=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", (long long)m_lLastTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
         }
     }
@@ -700,8 +700,8 @@ void CTimer::EnableFixedTimeMode([[maybe_unused]] bool enable, [[maybe_unused]] 
 
 void CTimer::SetOffsetToMatchGameTime(int64 ticks)
 {
-    [[maybe_unused]] const int64 previousOffset = m_lOffsetTime;
-    [[maybe_unused]] const float previousGameTime = GetCurrTime(ETIMER_GAME);
+    const int64 previousOffset = m_lOffsetTime;
+    const float previousGameTime = GetCurrTime(ETIMER_GAME);
 
     m_lOffsetTime = ticks - m_lLastTime;
     RefreshGameTime(m_lLastTime);

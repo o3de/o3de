@@ -213,13 +213,9 @@ namespace AZ
         void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context, ContinuationFlags flags)
     {
         bool loadAsNewInstance = (flags & ContinuationFlags::LoadAsNewInstance) == ContinuationFlags::LoadAsNewInstance;
-        JsonDeserializer::UseTypeDeserializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
-            ? JsonDeserializer::UseTypeDeserializer::No
-            : JsonDeserializer::UseTypeDeserializer::Yes;
-
         return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer
-            ? JsonDeserializer::LoadToPointer(object, typeId, value, useCustom, context)
-            : JsonDeserializer::Load(object, typeId, value, loadAsNewInstance, useCustom, context);
+            ? JsonDeserializer::LoadToPointer(object, typeId, value, context)
+            : JsonDeserializer::Load(object, typeId, value, loadAsNewInstance, context);
     }
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoring(
@@ -228,15 +224,11 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
-        JsonSerializer::UseTypeSerializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
-            ? JsonSerializer::UseTypeSerializer::No
-            : JsonSerializer::UseTypeSerializer::Yes;
-
         if ((flags & ContinuationFlags::ReplaceDefault) == ContinuationFlags::ReplaceDefault && !context.ShouldKeepDefaults())
         {
             if ((flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer)
             {
-                return JsonSerializer::StoreFromPointer(output, object, nullptr, typeId, useCustom, context);
+                return JsonSerializer::StoreFromPointer(output, object, nullptr, typeId, context);
             }
             else
             {
@@ -249,19 +241,19 @@ namespace AZ
                     {
                         return result;
                     }
-                    return result.Combine(JsonSerializer::Store(output, object, nullptr, typeId, useCustom, context));
+                    return result.Combine(JsonSerializer::Store(output, object, nullptr, typeId, context));
                 }
                 else
                 {
                     void* defaultObjectPtr = AZStd::any_cast<void>(&newDefaultObject);
-                    return JsonSerializer::Store(output, object, defaultObjectPtr, typeId, useCustom, context);
+                    return JsonSerializer::Store(output, object, defaultObjectPtr, typeId, context);
                 }
             }
         }
         
         return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer ?
-            JsonSerializer::StoreFromPointer(output, object, defaultObject, typeId, useCustom, context) :
-            JsonSerializer::Store(output, object, defaultObject, typeId, useCustom, context);
+            JsonSerializer::StoreFromPointer(output, object, defaultObject, typeId, context) :
+            JsonSerializer::Store(output, object, defaultObject, typeId, context);
     }
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::LoadTypeId(Uuid& typeId, const rapidjson::Value& input,

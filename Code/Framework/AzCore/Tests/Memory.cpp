@@ -90,7 +90,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {nullptr};
+            void* addresses[numAllocations] = {0};
 
             IAllocatorAllocate& sysAlloc = AllocatorInstance<SystemAllocator>::Get();
 
@@ -242,7 +242,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // realloc test
-            address[0] = nullptr;
+            address[0] = NULL;
             static const unsigned int checkValue = 0x0badbabe;
             // create tree (non pool) allocation (we usually pool < 256 bytes)
             address[0] = sysAlloc.Allocate(2048, 16);
@@ -372,7 +372,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (i = 0; address[i] != nullptr; ++i)
+            for (i = 0; address[i] != 0; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -544,7 +544,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {nullptr};
+            void* addresses[numAllocations] = {0};
 
             IAllocatorAllocate& poolAlloc = AllocatorInstance<ThreadPoolAllocator>::Get();
 
@@ -665,7 +665,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (int i = 0; address[i] != nullptr; ++i)
+            for (int i = 0; address[i] != 0; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -820,7 +820,7 @@ namespace UnitTest
         AllocatorInstance<SystemAllocator>::Create(sysDesc);
 
         BestFitExternalMapAllocator::Descriptor desc;
-        desc.m_mapAllocator = nullptr; // use the system allocator
+        desc.m_mapAllocator = NULL; // use the system allocator
         desc.m_memoryBlockByteSize = 4 * 1024 * 1024;
         desc.m_memoryBlock = azmalloc(desc.m_memoryBlockByteSize, desc.m_memoryBlockAlignment);
 
@@ -982,7 +982,7 @@ namespace UnitTest
                 : m_data(data) {}
             ~MyClass() {}
 
-            alignas(32) int m_data;
+            AZ_ALIGN(int m_data, 32);
         };
         // Explicitly doesn't have AZ_CLASS_ALLOCATOR
         class MyDerivedClass

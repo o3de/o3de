@@ -214,12 +214,6 @@ class EditorEntity:
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "GetParent", self.id)
 
-    def get_children_ids(self) -> List[azlmbr.entity.EntityId]:
-        """
-        :return: Entity ids of children. Type: [entity.EntityId()]
-        """
-        return editor.EditorEntityInfoRequestBus(bus.Event, "GetChildren", self.id)
-
     def add_component(self, component_name: str) -> EditorComponent:
         """
         Used to add new component to Entity.

@@ -40,6 +40,7 @@ namespace Multiplayer
         AzNetworking::StringifySerializer::ValueMap differences = clientMap;
         for (auto iter = server.GetValueMap().begin(); iter != server.GetValueMap().end(); ++iter)
         {
+            auto serverValueIter = clientMap.find(iter->first);
             if (iter->second == differences[iter->first])
             {
                 differences.erase(iter->first);
@@ -79,12 +80,6 @@ namespace Multiplayer
                 ->Version(1);
         }
         LocalPredictionPlayerInputComponentBase::Reflect(context);
-    }
-
-    void LocalPredictionPlayerInputComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        LocalPredictionPlayerInputComponentBase::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
     }
 
     void LocalPredictionPlayerInputComponent::OnInit()
@@ -282,7 +277,7 @@ namespace Multiplayer
             input.SetClientInputId(GetLastInputId());
 
             ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
-            GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
+            GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG(NET_Prediction, "Migrated InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
 
@@ -350,7 +345,7 @@ namespace Multiplayer
             // Reprocess the input for this frame
             NetworkInput& input = m_inputHistory[replayIndex];
             ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
-            GetNetBindComponent()->ReprocessInput(input, static_cast<float>(clientInputRateSec));
+            GetNetBindComponent()->ReprocessInput(input, clientInputRateSec);
 
             AZLOG(NET_Prediction, "Replayed InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
@@ -443,10 +438,10 @@ namespace Multiplayer
             input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
-            GetNetBindComponent()->CreateInput(input, static_cast<float>(clientInputRateSec));
+            GetNetBindComponent()->CreateInput(input, clientInputRateSec);
 
             // Process the input for this frame
-            GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
+            GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG(NET_Prediction, "Processed InputId=%d", aznumeric_cast<int32_t>(m_clientInputId));
 
@@ -469,7 +464,7 @@ namespace Multiplayer
             {
                 // Clamp to oldest element if history is too small
                 const int64_t historyIndex = AZStd::max<int64_t>(inputHistorySize - 1 - i, 0);
-                inputArray[static_cast<uint32_t>(i)] = m_inputHistory[historyIndex];
+                inputArray[i] = m_inputHistory[historyIndex];
             }
 
 #ifndef AZ_RELEASE_BUILD
@@ -497,6 +492,7 @@ namespace Multiplayer
     {
         const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
         const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double maxRewindHistory = static_cast<double>(static_cast<AZ::TimeMs>(cl_MaxRewindHistoryMs)) / 1000.0;
 
         // Update banked time accumulator
         m_clientBankedTime -= deltaTime;
@@ -510,7 +506,7 @@ namespace Multiplayer
             NetworkInput& input = m_lastInputReceived[0];
             {
                 ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
-                GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
+                GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
             }
 
             AZLOG(NET_Prediction, "Forced InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));

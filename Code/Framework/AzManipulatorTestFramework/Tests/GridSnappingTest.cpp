@@ -71,7 +71,7 @@ namespace UnitTest
 
         // callback to update the manipulator's current position
         linearManipulator->InstallMouseMoveCallback(
-            [linearManipulator](const AzToolsFramework::LinearManipulator::Action& action)
+            [this, linearManipulator](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 linearManipulator->SetLocalPosition(action.LocalPosition());
             });

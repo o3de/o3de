@@ -5,9 +5,8 @@ __pycache__
 AssetProcessorTemp/**
 [Bb]uild/**
 [Oo]ut/**
-CMakeUserPresets.json
 [Cc]ache/
-/[Ii]nstall/
+/install/
 Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
 **/*egg-info/**

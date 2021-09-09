@@ -60,6 +60,8 @@ public:
         IViewSystem * ());
     MOCK_METHOD0(GetILevelSystem,
         ILevelSystem * ());
+    MOCK_METHOD0(GetINameTable,
+        INameTable * ());
     MOCK_METHOD0(GetICmdLine,
         ICmdLine * ());
     MOCK_METHOD0(GetILog,

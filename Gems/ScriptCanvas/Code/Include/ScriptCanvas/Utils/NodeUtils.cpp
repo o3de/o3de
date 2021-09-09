@@ -77,6 +77,8 @@ namespace ScriptCanvas
         {
             return ConstructCustomNodeIdentifier(scriptCanvasNode->RTTI_GetType());
         }
+
+        return NodeTypeIdentifier(0);
     }
 
     NodeTypeIdentifier NodeUtils::ConstructEBusIdentifier(ScriptCanvas::EBusBusId ebusIdentifier)

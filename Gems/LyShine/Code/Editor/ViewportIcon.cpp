@@ -27,7 +27,7 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        AZ::Vector2 scaledSize(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
+        AZ::Vector2 scaledSize(size.m_width, size.m_height);
         if (m_applyDpiScaleFactorToSize)
         {
             scaledSize *= m_dpiScaleFactor;
@@ -48,11 +48,12 @@ void ViewportIcon::DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, fl
         opacity);
 }
 
-void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, CDraw2d::VertexPosColUV* verts)
+void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts, [[maybe_unused]] float opacity)
 {
     // Use default blending and rounding modes
+    int blendMode = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
     IDraw2d::Rounding rounding = IDraw2d::Rounding::Nearest;
-    draw2d.DrawQuad(m_image, verts, rounding);
+    draw2d.DrawQuad(m_image, verts, blendMode, rounding);
 }
 
 void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 bound0, AZ::Vector2 bound1)
@@ -63,7 +64,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
     float endTexCoordU = fabsf((bound1.GetX() - bound0.GetX()) * pixelLengthForDottedLineTexture);
     float endTexCoordV = fabsf((bound1.GetY() - bound0.GetY()) * pixelLengthForDottedLineTexture);
 
-    CDraw2d::VertexPosColUV verts[2];
+    IDraw2d::VertexPosColUV verts[2];
     {
         verts[0].color = dottedColor;
         verts[1].color = dottedColor;
@@ -158,7 +159,7 @@ void ViewportIcon::Draw(Draw2dHelper& draw2d, AZ::Vector2 anchorPos, const AZ::M
     AZ::Matrix4x4 moveFromPivotSpaceMat = AZ::Matrix4x4::CreateTranslation(pivot3);
     AZ::Matrix4x4 newTransform = transform * moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
 
-    CDraw2d::VertexPosColUV verts[4];
+    IDraw2d::VertexPosColUV verts[4];
     // points are a clockwise quad
     static const AZ::Vector2 uvs[4] = {
         AZ::Vector2(0.0f, 0.0f), AZ::Vector2(1.0f, 0.0f), AZ::Vector2(1.0f, 1.0f), AZ::Vector2(0.0f, 1.0f)
@@ -251,7 +252,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
     const float pixelLengthForDottedLineTexture = 8.0f;
     float endTexCoordU = length / pixelLengthForDottedLineTexture;
 
-    CDraw2d::VertexPosColUV verts[2];
+    IDraw2d::VertexPosColUV verts[2];
 
     verts[0].position = start;
     verts[0].color = dottedColor;

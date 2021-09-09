@@ -27,6 +27,9 @@ namespace AZ
     {
         namespace
         {
+            // the max size of a vertex buffer
+            static const size_t MaxUploadBufferSize = MaxDynamicVertexCount * sizeof(AuxGeomDynamicVertex);
+
             static const RHI::PrimitiveTopology PrimitiveTypeToTopology[PrimitiveType_Count] =
             {
                 RHI::PrimitiveTopology::PointList,

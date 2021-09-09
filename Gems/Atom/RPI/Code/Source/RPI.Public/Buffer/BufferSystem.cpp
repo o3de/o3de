@@ -136,7 +136,6 @@ namespace AZ
                 return false;
             }
 
-            bufferPool->SetName(Name(AZStd::string::format("RPI::CommonBufferPool_%i", static_cast<uint32_t>(poolType))));
             RHI::ResultCode resultCode = bufferPool->Init(*device, bufferPoolDesc);
             if (resultCode != RHI::ResultCode::Success)
             {

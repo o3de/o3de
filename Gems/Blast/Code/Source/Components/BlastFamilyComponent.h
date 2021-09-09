@@ -107,7 +107,7 @@ namespace Blast
         BlastMeshData* m_meshDataComponent = nullptr;
 
         // Configurations
-        AZ::Data::Asset<BlastAsset> m_blastAsset;
+        const AZ::Data::Asset<BlastAsset> m_blastAsset;
         const BlastMaterialId m_materialId{};
         Physics::MaterialId m_physicsMaterialId;
         const BlastActorConfiguration m_actorConfiguration{};

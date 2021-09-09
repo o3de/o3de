@@ -58,7 +58,7 @@ namespace UnitTest
             FrameGraphExecuteGroup* group = AddGroup<FrameGraphExecuteGroup>();
             group->Init(scope->GetId());
 
-            [[maybe_unused]] const bool wasInserted = m_scopeIds.emplace(scope->GetId()).second;
+            const bool wasInserted = m_scopeIds.emplace(scope->GetId()).second;
             AZ_Assert(wasInserted, "scope was inserted already");
         }
     }

@@ -45,8 +45,7 @@ class KinesisAnalyticsApplicationUpdatedWaiter(CustomWaiter):
 class GlueCrawlerReadyWaiter(CustomWaiter):
     """
     Subclass of the base custom waiter class.
-    Wait for the Glue crawler to finish its processing. Return when the crawler is in the "Stopping" status
-    to avoid wasting too much time in the automation tests on its shutdown process.
+    Wait for the Glue crawler to finish its processing.
     """
     def __init__(self, client: botocore.client):
         """
@@ -58,7 +57,7 @@ class GlueCrawlerReadyWaiter(CustomWaiter):
             'GlueCrawlerReady',
             'GetCrawler',
             'Crawler.State',
-            {'STOPPING': WaitState.SUCCESS},
+            {'READY': WaitState.SUCCESS},
             client)
 
     def wait(self, crawler_name):

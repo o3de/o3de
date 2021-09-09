@@ -45,7 +45,7 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                 }
                 if (ind > 0)
                 {
-                    *x = er.mid(0, ind).toFloat();
+                    *x = er.mid(0, ind).toDouble();
                     er = er.mid(ind);
                     er.remove(QRegExp("^[ ,]*"));
 
@@ -57,12 +57,12 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                     }
                     if (ind > 0)
                     {
-                        *y = er.mid(0, ind).toFloat();
+                        *y = er.mid(0, ind).toDouble();
                         er = er.mid(ind);
                         er.remove(QRegExp("^[ ,]*"));
                         if (er.length())
                         {
-                            *z = er.toFloat();
+                            *z = er.toDouble();
                             return true;
                         }
                     }
@@ -119,7 +119,7 @@ void CErrorReportTableModel::setErrorReport(CErrorReport* report)
 
 int CErrorReportTableModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : static_cast<int>(m_errorRecords.size());
+    return parent.isValid() ? 0 : m_errorRecords.size();
 }
 
 int CErrorReportTableModel::columnCount(const QModelIndex& parent) const

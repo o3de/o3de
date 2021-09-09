@@ -132,7 +132,7 @@ namespace AZ::Prefab
         AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
         
         // Load the JSON Dom
-        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonFile(fullPath);
+        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AzFramework::FileFunc::ReadJsonFile(AZ::IO::Path(fullPath));
         if (!readPrefabFileResult.IsSuccess())
         {
             AZ_Error(

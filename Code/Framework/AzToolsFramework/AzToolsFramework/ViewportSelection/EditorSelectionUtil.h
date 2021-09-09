@@ -46,10 +46,6 @@ namespace AzToolsFramework
     //! in screen space intersected an aabb in world space.
     bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb);
 
-    //! Wrapper to perform an intersection between a ray and an aabb.
-    //! Note: direction should be normalized (it is scaled internally by the editor pick distance).
-    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance);
-
     //! Return if a mouse interaction (pick ray) did intersect the tested EntityId.
     bool PickEntity(
         AZ::EntityId entityId, const ViewportInteraction::MouseInteraction& mouseInteraction, float& closestDistance, int viewportId);

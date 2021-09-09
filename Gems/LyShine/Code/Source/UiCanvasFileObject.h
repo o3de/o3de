@@ -24,8 +24,7 @@ public:
     AZ_CLASS_ALLOCATOR(UiCanvasFileObject, AZ::SystemAllocator, 0);
     AZ_RTTI(UiCanvasFileObject, "{1F02632F-F113-49B1-85AD-8CD0FA78B8AA}");
 
-    // Load canvas from stream with an optional asset filter. No asset references are ignored by default
-    static UiCanvasFileObject* LoadCanvasFromStream(AZ::IO::GenericStream& stream, const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
+    static UiCanvasFileObject* LoadCanvasFromStream(AZ::IO::GenericStream& stream, const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor(AZ::ObjectStream::AssetFilterAssetTypesOnly<AZ::SliceAsset, AZ::ScriptAsset>));
     static void SaveCanvasToStream(AZ::IO::GenericStream& stream, UiCanvasFileObject* canvasFileObject);
 
     static AZ::Entity* LoadCanvasEntitiesFromStream(AZ::IO::GenericStream& stream, AZ::Entity*& rootSliceEntity);

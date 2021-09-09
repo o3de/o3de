@@ -20,7 +20,7 @@ public:
         AzQtComponents::registerMetaTypes();
     }
 
-    ~AzQtComponentsTestEnvironment() override {}
+    virtual ~AzQtComponentsTestEnvironment() {}
 
 protected:
 

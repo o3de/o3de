@@ -496,8 +496,8 @@ int AZ::FontTexture::UpdateSlot(int slotIndex, uint16_t slotUsage, uint32_t char
         return 0;
     }
 
-    slot->m_characterWidth = static_cast<uint8_t>(width);
-    slot->m_characterHeight = static_cast<uint8_t>(height);
+    slot->m_characterWidth = width;
+    slot->m_characterHeight = height;
 
     // Add a pixel along width and height to avoid artifacts being rendered
     // from a previous glyph in this slot due to bilinear filtering. The source
@@ -519,8 +519,8 @@ void AZ::FontTexture::CreateGradientSlot()
     assert(slot->m_currentCharacter == (uint32_t)~0);      // 0 needs to be unused spot
 
     slot->Reset();
-    slot->m_characterWidth = static_cast<uint8_t>(m_cellWidth - 2);
-    slot->m_characterHeight = static_cast<uint8_t>(m_cellHeight - 2);
+    slot->m_characterWidth = m_cellWidth - 2;
+    slot->m_characterHeight = m_cellHeight - 2;
     slot->SetNotReusable();
 
     int x = slot->m_textureSlot % m_widthCellCount;
@@ -533,7 +533,7 @@ void AZ::FontTexture::CreateGradientSlot()
     {
         for (uint32_t dwX = 0; dwX < slot->m_characterWidth; ++dwX)
         {
-            buffer[dwX + dwY * m_width] = static_cast<uint8_t>(dwY * 255 / (slot->m_characterHeight - 1));
+            buffer[dwX + dwY * m_width] = dwY * 255 / (slot->m_characterHeight - 1);
         }
     }
 }

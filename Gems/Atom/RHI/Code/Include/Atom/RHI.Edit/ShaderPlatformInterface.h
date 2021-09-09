@@ -81,7 +81,7 @@ namespace AZ
             struct ByProducts
             {
                 AZStd::set<AZStd::string> m_intermediatePaths;  //!< intermediate file paths (like dxil text form)
-                static constexpr uint32_t UnknownDynamicBranchCount = std::numeric_limits<uint32_t>::max();
+                static constexpr uint32_t UnknownDynamicBranchCount = -1;
                 uint32_t m_dynamicBranchCount = UnknownDynamicBranchCount;
             };
 

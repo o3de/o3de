@@ -38,6 +38,7 @@ namespace DependencyBuilder
     private:
 
         AZStd::string m_jobKey;
+        bool m_critical = false;
         bool m_isShuttingDown = false;
     };
 }

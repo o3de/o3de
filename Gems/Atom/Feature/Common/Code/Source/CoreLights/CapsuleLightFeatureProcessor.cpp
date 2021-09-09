@@ -107,7 +107,8 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_capsuleLightData.GetDataVector());
+                [[maybe_unused]] bool success = m_lightBufferHandler.UpdateBuffer(m_capsuleLightData.GetDataVector());
+                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
                 m_deviceBufferNeedsUpdate = false;
             }
         }

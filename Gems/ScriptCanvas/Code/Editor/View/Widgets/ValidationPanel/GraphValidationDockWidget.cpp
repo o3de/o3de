@@ -734,7 +734,7 @@ namespace ScriptCanvasEditor
     {
         ui->statusTableView->clearSelection();
 
-        if (auto model = GetActiveData().second ? GetActiveData().second->GetModel() : nullptr)
+        if (auto model = GetActiveData().second->GetModel())
         {
             model->Clear();
             model->RunValidation(m_activeGraphIds.scriptCanvasId);
@@ -810,6 +810,7 @@ namespace ScriptCanvasEditor
             const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
         
             AZ::EntityId graphCanvasMemberId;
+            QRectF focusArea;
 
             if (const ScriptCanvas::FocusOnEntityEffect* focusOnEntityEffect = azrtti_cast<const ScriptCanvas::FocusOnEntityEffect*>(validationEvent))
             {

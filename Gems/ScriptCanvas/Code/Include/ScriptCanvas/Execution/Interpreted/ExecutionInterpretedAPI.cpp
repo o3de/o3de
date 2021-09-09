@@ -34,6 +34,8 @@ namespace ExecutionInterpretedAPICpp
 
     constexpr size_t k_StringFastSize = 32;
 
+    constexpr size_t k_MaxNodeableOuts = 64;
+
     constexpr size_t k_UuidSize = 16;
 
     constexpr unsigned char k_Bad = 77;
@@ -465,7 +467,12 @@ namespace ScriptCanvas
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
-#if defined(_RELEASE)
+#if defined(PERFORMANCE_BUILD)
+            lua_pushboolean(lua, true);
+            lua_setglobal(lua, k_InterpretedConfigurationPerformance);
+            lua_pushboolean(lua, false);
+            lua_setglobal(lua, k_InterpretedConfigurationRelease);
+#elif defined(_RELEASE)
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, true);
@@ -476,7 +483,7 @@ namespace ScriptCanvas
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#endif
+#endif//defined(PERFORMANCE_BUILD) 
 
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
@@ -544,7 +551,7 @@ namespace ScriptCanvas
         {
             using namespace ExecutionInterpretedAPICpp;
             // Lua: usernodeable, keyCount
-            [[maybe_unused]] const int argsCount = lua_gettop(lua);
+            const int argsCount = lua_gettop(lua);
             AZ_Assert(argsCount == 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "InitializeNodeableOutKeys: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);

@@ -18,7 +18,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_SingeEntityInstances)(::benchmark::State& state)
     {
-        const unsigned int numInstances = static_cast<unsigned int>(state.range());
+        const unsigned int numInstances = state.range();
 
         CreateFakePaths(2);
         const auto& nestedTemplatePath = m_paths.front();
@@ -80,7 +80,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_SingleLinearNestingOfInstances)(::benchmark::State& state)
     {
-        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
+        const unsigned int maxDepth = state.range();
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances = maxDepth;
@@ -131,8 +131,8 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_MultipleLinearNestingOfInstances)(::benchmark::State& state)
     {
-        const unsigned int numRootInstances = static_cast<unsigned int>(state.range());
-        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
+        const unsigned int numRootInstances = state.range();
+        const unsigned int maxDepth = state.range();
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances = numRootInstances * maxDepth;
@@ -192,7 +192,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_BinaryTreeNestedInstanceHierarchy)(::benchmark::State& state)
     {
-        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
+        const unsigned int maxDepth = state.range();
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances =  (1 << maxDepth) - 1;

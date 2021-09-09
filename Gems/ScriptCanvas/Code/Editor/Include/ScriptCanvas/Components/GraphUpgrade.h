@@ -88,13 +88,13 @@ namespace ScriptCanvasEditor
 
         void Enter() override
         {
-            Log("ENTER >> %s", GetName());
+            //Log("ENTER >> %s", GetName());
             OnEnter();
         }
 
         ExitStatus Exit() override
         {
-            Log("EXIT  << %s", GetName());
+            //Log("EXIT  << %s", GetName());
             return OnExit();
         }
 

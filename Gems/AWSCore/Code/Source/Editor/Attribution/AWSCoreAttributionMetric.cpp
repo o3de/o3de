@@ -12,6 +12,8 @@
 #include <sstream>
 #include <time.h>
 
+#pragma warning(disable : 4996)
+
 namespace AWSCore
 {
     constexpr char AWSAttributionMetricDefaultO3DEVersion[] = "1.1";
@@ -95,13 +97,7 @@ namespace AWSCore
         time_t now;
         time(&now);
         char buffer[50];
-        tm time;
-#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
-        gmtime_s(&time, &now);
-#else
-        time = *gmtime(&now);
-#endif
-        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
+        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&now));
 
         return buffer;
     }

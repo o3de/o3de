@@ -1070,6 +1070,8 @@ namespace GraphCanvas
     // SceneComponent
     ///////////////////
 
+    static const char* k_copyPasteKey = "GraphCanvasScene";
+
     void SceneComponent::Reflect(AZ::ReflectContext* context)
     {
         GraphSerialization::Reflect(context);
@@ -3260,6 +3262,8 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
+                QRectF boundingArea;
+
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 
@@ -3288,6 +3292,8 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
+                QRectF boundingArea;
+
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 

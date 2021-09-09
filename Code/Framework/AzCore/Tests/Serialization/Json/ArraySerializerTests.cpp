@@ -58,7 +58,7 @@ namespace JsonSerializationTests
             return array;
         }
 
-        AZStd::shared_ptr<Array> CreatePartialDefaultInstance() override
+        AZStd::shared_ptr<Array> CreatePartialDefaultInstance()
         {
             auto array = AZStd::make_shared<Array>();
             (*array)[0] = 10;
@@ -128,7 +128,7 @@ namespace JsonSerializationTests
             return array;
         }
 
-        AZStd::shared_ptr<Array> CreatePartialDefaultInstance() override
+        AZStd::shared_ptr<Array> CreatePartialDefaultInstance()
         {
             auto partialInstance = aznew MultipleInheritence();
             partialInstance->m_var1 = 142;

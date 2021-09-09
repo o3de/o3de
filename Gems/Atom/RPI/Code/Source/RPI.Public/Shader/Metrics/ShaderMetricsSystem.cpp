@@ -15,7 +15,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils//Utils.h>
 
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -113,7 +113,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
 

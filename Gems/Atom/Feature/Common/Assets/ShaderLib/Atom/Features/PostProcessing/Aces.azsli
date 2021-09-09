@@ -75,8 +75,6 @@ UNDISCLOSED.
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
 
-#pragma once
-
 #include <Atom/RPI/Math.azsli>
 
 static const float HALF_MAX = 65504.0f;
@@ -92,8 +90,7 @@ static const float DIM_SURROUND_GAMMA = 0.9811;
 enum class ShaperType
 {
     ShaperLinear,
-    ShaperLog2,
-    PqSmpteSt2084,
+    ShaperLog2
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -61,7 +61,7 @@ namespace AzToolsFramework
             , m_impl(new BaseLogPanel::Impl)
         {
             m_impl->storageID = 0;
-            this->setLayout(aznew LogPanelLayout(nullptr));
+            this->setLayout(aznew LogPanelLayout(NULL));
 
             m_impl->pTabWidget = new AzQtComponents::TabWidget(this);
             m_impl->pTabWidget->setObjectName(QString::fromUtf8("tabWidget"));
@@ -601,7 +601,7 @@ namespace AzToolsFramework
         {
             if (index >= (int)m_children.size())
             {
-                return nullptr;
+                return NULL;
             }
 
             return m_children[index];
@@ -609,11 +609,11 @@ namespace AzToolsFramework
 
         QLayoutItem* LogPanelLayout::takeAt(int index)
         {
-            QLayoutItem* pItem = nullptr;
+            QLayoutItem* pItem = NULL;
 
             if (index >= (int)m_children.size())
             {
-                return nullptr;
+                return NULL;
             }
 
             pItem = m_children[index];
@@ -657,6 +657,7 @@ namespace AzToolsFramework
                 // if we have any elements, the last element is top right aligned:
                 QLayoutItem* pItem = m_children[m_children.size() - 1];
                 QSize lastItemSize = pItem->minimumSize();
+                QPoint topRight = effectiveRect.topRight();
                 QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width(), 0), lastItemSize);
                 pItem->setGeometry(topRightCorner);
             }
@@ -860,7 +861,7 @@ namespace AzToolsFramework
                 return richLabel;
             }
 
-            return nullptr;
+            return NULL;
         }
 
         bool LogPanelItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

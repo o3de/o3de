@@ -19,10 +19,10 @@
 #include <smartptr.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
 struct ISystem;
+class ICrySizer;
 
 struct ICryFont;
 struct IFFont;
@@ -93,6 +93,9 @@ struct ICryFont
     //! \param glyphSizeY   Height (in pixels) of the characters to be rendered at in the font texture.
     virtual void AddCharsToFontTextures(FontFamilyPtr pFontFamily, const char* pChars, int glyphSizeX = defaultGlyphSizeX, int glyphSizeY = defaultGlyphSizeY) = 0;
 
+    // Summary:
+    //   Puts the objects used in this module into the sizer interface
+    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
     // Summary:
     //   All font names separated by ,
     // Example:
@@ -261,6 +264,10 @@ struct IFFont
     // Description:
     //   Wraps text based on specified maximum line width (UTF-8)
     virtual void WrapText(AZStd::string& result, float maxWidth, const char* pStr, const STextDrawContext& ctx) = 0;
+
+    // Description:
+    //   Puts the memory used by this font into the given sizer.
+    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 
     // Description:
     //   useful for special feature rendering interleaved with fonts (e.g. box behind the text)

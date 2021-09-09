@@ -5,12 +5,12 @@
 #}
 {%- macro ParseRpcParams(property, outNames, outTypes, outDefines, use_default_value=False) -%}
 {%-     for Param in property.iter('Param') -%}
-{%-         do outNames.append(LowerFirst(Param.attrib['Name'])) -%}
+{%-         do outNames.append(Param.attrib['Name']) -%}
 {%-         do outTypes.append(Param.attrib['Type']) -%}
 {%-         if use_default_value and Param.attrib['DefaultValue'] -%}
-{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' + LowerFirst(Param.attrib['Name']) + ' = ' + Param.attrib['DefaultValue']) -%}
+{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' + Param.attrib['Name'] + ' = ' + Param.attrib['DefaultValue']) -%}
 {%-         else -%}
-{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' ~ LowerFirst(Param.attrib['Name'])) -%}
+{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' ~ Param.attrib['Name']) -%}
 {%-         endif -%}
 {%-     endfor -%}
 {%- endmacro -%}

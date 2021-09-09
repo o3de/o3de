@@ -24,9 +24,6 @@ namespace O3DE::ProjectManager
         explicit FormBrowseEditWidget(const QString& labelText = "", QWidget* parent = nullptr);
         ~FormBrowseEditWidget() = default;
 
-    protected:
-        void keyPressEvent(QKeyEvent* event) override;
-
     protected slots:
         virtual void HandleBrowseButton() = 0;
     };

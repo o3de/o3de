@@ -20,8 +20,7 @@ namespace AZ
         public:
             AZ_RTTI(AssImpNodeWrapper, "{1043260B-9076-49B7-AD38-EF62E85F7C1D}", SDKNode::NodeWrapper);
             AssImpNodeWrapper(aiNode* sourceNode);
-            ~AssImpNodeWrapper() override = default;
-            aiNode* GetAssImpNode() const;
+            ~AssImpNodeWrapper() override;
             const char* GetName() const override;
             AZ::u64 GetUniqueId() const override;
             int GetChildCount() const override;
@@ -29,9 +28,6 @@ namespace AZ
             const bool ContainsMesh();
             bool ContainsBones(const aiScene& scene) const;
             int GetMaterialCount() const override;
-
-        protected:
-            aiNode* m_assImpNode = nullptr;
         };
     } // namespace AssImpSDKWrapper
 }// namespace AZ

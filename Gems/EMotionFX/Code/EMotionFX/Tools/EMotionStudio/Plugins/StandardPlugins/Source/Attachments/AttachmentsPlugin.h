@@ -85,6 +85,7 @@ namespace EMStudio
         CommandAdjustActorCallback*                 m_adjustActorCallback;
         CommandRemoveActorInstanceCallback*         m_removeActorInstanceCallback;
 
+        QWidget*                                    m_noSelectionWidget;
         MysticQt::DialogStack*                      m_dialogStack;
         AttachmentsWindow*                          m_attachmentsWindow;
         AttachmentsHierarchyWindow*                 m_attachmentsHierarchyWindow;

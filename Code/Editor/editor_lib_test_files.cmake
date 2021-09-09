@@ -20,8 +20,6 @@ set(FILES
     Lib/Tests/test_ViewPanePythonBindings.cpp
     Lib/Tests/test_ViewportTitleDlgPythonBindings.cpp
     Lib/Tests/test_DisplaySettingsPythonBindings.cpp
-    Lib/Tests/test_ViewportManipulatorController.cpp
-    Lib/Tests/test_ModularViewportCameraController.cpp
     DisplaySettingsPythonFuncs.cpp
     DisplaySettingsPythonFuncs.h
 )

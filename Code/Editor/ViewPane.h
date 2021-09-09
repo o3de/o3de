@@ -118,6 +118,7 @@ private:
 
     int m_id;
     int m_nBorder;
+    int m_titleHeight;
 
     QWidget* m_viewport;
     QScrollArea* m_viewportScrollArea = nullptr;

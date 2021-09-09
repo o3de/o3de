@@ -209,35 +209,39 @@ namespace AZ
         //! performance sensitive code.
         AZ_INLINE bool CompareAnyValue(const AZStd::any& lhs, const AZStd::any& rhs)
         {
-            if (lhs.type() == rhs.type())
+            bool isEqual = false;
+
+            if (lhs.type() != rhs.type())
             {
-                AZ::SerializeContext* serializeContext = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                return false;
+            }
 
-                const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(lhs.type());
-                if (classData)
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(lhs.type());
+            if (classData)
+            {
+                if (classData->m_serializer)
                 {
-                    if (classData->m_serializer)
-                    {
-                        return classData->m_serializer->CompareValueData(AZStd::any_cast<void>(&lhs), AZStd::any_cast<void>(&rhs));
-                    }
-                    else
-                    {
-                        AZStd::vector<AZ::u8> myData;
-                        AZ::IO::ByteContainerStream<decltype(myData)> myDataStream(&myData);
+                    isEqual = classData->m_serializer->CompareValueData(AZStd::any_cast<void>(&lhs), AZStd::any_cast<void>(&rhs));
+                }
+                else
+                {
+                    AZStd::vector<AZ::u8> myData;
+                    AZ::IO::ByteContainerStream<decltype(myData)> myDataStream(&myData);
 
-                        AZ::Utils::SaveObjectToStream(myDataStream, AZ::ObjectStream::ST_BINARY, AZStd::any_cast<void>(&lhs), lhs.type());
+                    AZ::Utils::SaveObjectToStream(myDataStream, AZ::ObjectStream::ST_BINARY, AZStd::any_cast<void>(&lhs), lhs.type());
 
-                        AZStd::vector<AZ::u8> otherData;
-                        AZ::IO::ByteContainerStream<decltype(otherData)> otherDataStream(&otherData);
+                    AZStd::vector<AZ::u8> otherData;
+                    AZ::IO::ByteContainerStream<decltype(otherData)> otherDataStream(&otherData);
 
-                        AZ::Utils::SaveObjectToStream(otherDataStream, AZ::ObjectStream::ST_BINARY, AZStd::any_cast<void>(&rhs), rhs.type());
-                        return (myData.size() == otherData.size()) && (memcmp(myData.data(), otherData.data(), myData.size()) == 0);
-                    }
+                    AZ::Utils::SaveObjectToStream(otherDataStream, AZ::ObjectStream::ST_BINARY, AZStd::any_cast<void>(&rhs), rhs.type());
+                    isEqual = (myData.size() == otherData.size()) && (memcmp(myData.data(), otherData.data(), myData.size()) == 0);
                 }
             }
 
-            return false;
+            return isEqual;
         }
     }
 }

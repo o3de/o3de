@@ -54,6 +54,7 @@
 #include <UiRadioButtonGroupComponent.h>
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
+#include <Mocks/IRendererMock.h>
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
@@ -79,6 +80,7 @@ protected:
 
         m_data = AZStd::make_unique<DataMembers>();
         memset(&m_data->m_stubEnv, 0, sizeof(SSystemGlobalEnvironment));
+        m_data->m_stubEnv.pRenderer = &m_data->m_renderer;
         m_data->m_stubEnv.pSystem = &m_data->m_mockSystem;
         gEnv = &m_data->m_stubEnv;
 
@@ -210,6 +212,7 @@ protected:
     struct DataMembers
     {
         SSystemGlobalEnvironment m_stubEnv;
+        NiceMock<IRendererMock> m_renderer;
         NiceMock<SystemMock> m_mockSystem;
     };
 

@@ -184,7 +184,7 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
         const int numTopLevel = topLevelWidgets.size();
         for (size_t i = 0; i < numTopLevel; ++i)
         {
-            QWidget* widget = topLevelWidgets[static_cast<int>(i)];
+            QWidget* widget = topLevelWidgets[i];
             if (widget->isModal() && widget->isVisible())
             {
                 widget->activateWindow();
@@ -240,13 +240,14 @@ static bool SkipTitleBarOverdraw(QtViewPane* pane)
     return !pane->m_options.isDockable;
 }
 
-DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, [[maybe_unused]] QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
+DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
     : AzQtComponents::StyledDockWidget(pane->m_name, SkipTitleBarOverdraw(pane),
 #if AZ_TRAIT_OS_PLATFORM_APPLE
           pane->m_options.detachedWindow ? nullptr : parent)
 #else
           parent)
 #endif
+    , m_settings(settings)
     , m_mainWindow(parent)
     , m_pane(pane)
     , m_advancedDockManager(advancedDockManager)
@@ -1101,7 +1102,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             entityInspectorViewPane->m_dockWidget->setFloating(false);
 
             static const float tabWidgetWidthPercentage = 0.2f;
-            int newWidth = static_cast<int>((float)screenWidth * tabWidgetWidthPercentage);
+            int newWidth = (float)screenWidth * tabWidgetWidthPercentage;
 
             if (levelInspectorPane)
             {
@@ -1138,7 +1139,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             // so that they get an appropriate default width since the minimum sizes have
             // been removed from these widgets
             static const float entityOutlinerWidthPercentage = 0.15f;
-            int newWidth = static_cast<int>((float)screenWidth * entityOutlinerWidthPercentage);
+            int newWidth = (float)screenWidth * entityOutlinerWidthPercentage;
             m_mainWindow->resizeDocks({ entityOutlinerViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
         }
 

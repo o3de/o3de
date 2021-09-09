@@ -43,6 +43,10 @@ struct SLocalizedAdvancesSoundEntry
 {
     AZStd::string sName;
     float       fValue;
+    void GetMemoryUsage(ICrySizer* pSizer) const
+    {
+        pSizer->AddObject(sName);
+    }
 };
 
 // Localization Sound Info structure, containing sound related parameters.
@@ -69,11 +73,11 @@ struct SLocalizedSoundInfoGame
     bool    bIsIntercepted;
 
     // SoundMoods.
-    size_t         nNumSoundMoods;
+    int         nNumSoundMoods;
     SLocalizedAdvancesSoundEntry* pSoundMoods;
 
     // EventParameters.
-    size_t         nNumEventParameters;
+    int         nNumEventParameters;
     SLocalizedAdvancesSoundEntry* pEventParameters;
 };
 

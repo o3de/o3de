@@ -39,7 +39,7 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common.Public
             Gem::ImGui.imguilib
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
+            3rdParty::lux_core
 )
 
 ly_add_target(
@@ -87,7 +87,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Feature_Common.Public
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
+            3rdParty::lux_core
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

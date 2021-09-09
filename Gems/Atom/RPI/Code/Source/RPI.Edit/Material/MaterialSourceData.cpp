@@ -12,7 +12,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -23,7 +22,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -73,7 +72,7 @@ namespace AZ
             }
         }
 
-        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
+        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings) const
         {
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
@@ -86,7 +85,7 @@ namespace AZ
                     return Failure();
                 }
 
-                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
+                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get());
             }
             else
             {
@@ -116,7 +115,7 @@ namespace AZ
                     }
                 }
 
-                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get(), includeMaterialPropertyNames);
+                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get());
             }
 
             for (auto& group : m_properties)

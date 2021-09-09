@@ -167,7 +167,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesAdded(const EntityList& entities)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
 
         for (AZ::Entity* entity : entities)
         {
@@ -184,7 +184,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesRemoved(const EntityIdList& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
 
         for (AZ::EntityId id : entityIds)
         {

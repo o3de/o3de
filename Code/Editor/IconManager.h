@@ -15,6 +15,9 @@
 
 #pragma once
 
+struct IStatObj;
+struct IMaterial;
+
 #include "Include/IIconManager.h"   // for IIconManager
 #include "IEditor.h"                // for IDocListener
 

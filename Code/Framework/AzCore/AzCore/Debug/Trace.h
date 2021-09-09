@@ -19,7 +19,7 @@ namespace AZ
         {
             void OutputToDebugger(const char* window, const char* message);
         }
-
+    
         /// Global instance to the tracer.
         extern class Trace      g_tracer;
 
@@ -41,7 +41,7 @@ namespace AZ
             static void Destroy();
             static int GetAssertVerbosityLevel();
             static void SetAssertVerbosityLevel(int level);
-
+            
             /**
             * Returns the default string used for a system window.
             * It can be useful for Trace message handlers to easily validate if the window they received is the fallback window used by this class,
@@ -49,8 +49,6 @@ namespace AZ
             */
             static const char* GetDefaultSystemWindow();
             static bool IsDebuggerPresent();
-            static bool AttachDebugger();
-            static bool WaitForDebugger(float timeoutSeconds = -1.f);
 
             /// True or false if we want to handle system exceptions.
             static void HandleExceptions(bool isEnabled);
@@ -109,7 +107,7 @@ namespace AZ
  * Correct usage:
  *     AZ_Assert(false, "Fail always");
  */
-
+    
     namespace AZ
     {
         namespace TraceInternal
@@ -121,7 +119,7 @@ namespace AZ
                 static constexpr ExpressionValidResult value = ExpressionValidResult::Valid;
             };
             template<>
-            struct ExpressionIsValid<const char*&>
+            struct ExpressionIsValid<const char*&> 
             {
                 static constexpr ExpressionValidResult value = ExpressionValidResult::Valid;
             };
@@ -228,7 +226,7 @@ namespace AZ
     {                                                                                                              \
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
     }
-
+    
 
     //! The AZ_TrancePrintfOnce macro output the result of the format string only once for each use of the macro
     //! It does not take into account the result of the format string to determine whether to output the string or not
@@ -278,7 +276,7 @@ namespace AZ
 
 #define AZ_Printf(window, ...)       AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);
 
-#if !defined(RELEASE)
+#if !defined(RELEASE) || defined(PERFORMANCE_BUILD)
 // Unconditional critical error log, enabled up to Performance config
 #define AZ_Fatal(window, format, ...)       AZ::Debug::Trace::Instance().Printf(window, "[FATAL] " format "\n", ##__VA_ARGS__);
 #define AZ_Crash()                          AZ::Debug::Trace::Instance().Crash();

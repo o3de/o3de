@@ -15,7 +15,6 @@
 #include "IMovieSystem.h"
 #include "AnimTrack.h"
 #include "AnimKey.h"
-#include "StlUtils.h"
 
 class CAnimStringTable
     : public IAnimStringTable

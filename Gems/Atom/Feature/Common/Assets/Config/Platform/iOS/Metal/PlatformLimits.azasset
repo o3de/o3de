@@ -1,0 +1,12 @@
+{
+  "Type": "JsonSerialization",
+  "Version": 0,
+  "ClassName": "PlatformLimits",
+    "ClassData": {
+    "m_platformLimitsDescriptor": 
+    {
+      "$type": "Metal::PlatformLimitsDescriptor"
+    }
+  }
+}
+

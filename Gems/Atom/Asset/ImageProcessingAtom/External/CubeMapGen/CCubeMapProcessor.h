@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <AzCore/PlatformIncl.h>
 
 #include "VectorMacros.h"
 #include "CBBoxInt32.h"
@@ -23,9 +22,11 @@
 //has routines for saving .rgbe files
 #define CG_RGBE_SUPPORT
 
-#ifndef WCHAR // For non-windows platforms, for Windows-based platforms it will be defined through PlatformIncl.h
+
+#ifndef WCHAR 
 #define WCHAR wchar_t
-#endif // WCHAR
+#endif //WCHAR 
+
 
 //used to index cube faces
 #define CP_FACE_X_POS 0

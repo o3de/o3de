@@ -39,7 +39,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        AZStd::string name;               // parameter name.
+        const char* name;               // parameter name.
         CUiAnimParamType paramType;     // parameter id.
         EUiAnimValue valueType;         // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags;     // combination of flags from ESupportedParamFlags.
@@ -58,7 +58,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     void SetName(const char* name) override { m_name = name; };
-    AZStd::string GetName() override { return m_name; };
+    const char* GetName() { return m_name.c_str(); };
 
     void SetSequence(IUiAnimSequence* pSequence) override { m_pSequence = pSequence; }
     // Return Animation Sequence that owns this node.
@@ -81,7 +81,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     bool IsParamValid(const CUiAnimParamType& paramType) const;
-    AZStd::string GetParamName(const CUiAnimParamType& param) const override;
+    virtual const char* GetParamName(const CUiAnimParamType& param) const;
     virtual EUiAnimValue GetParamValueType(const CUiAnimParamType& paramType) const;
     virtual IUiAnimNode::ESupportedParamFlags GetParamFlags(const CUiAnimParamType& paramType) const;
     virtual unsigned int GetParamCount() const { return 0; };

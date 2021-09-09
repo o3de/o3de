@@ -77,7 +77,7 @@ namespace AzToolsFramework
     AzFramework::SliceInstantiationTicket SliceEditorEntityOwnershipService::InstantiateEditorSlice(
         const AZ::Data::Asset<AZ::Data::AssetData>& sliceAsset, const AZ::Transform& worldTransform)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (sliceAsset.GetId().IsValid())
         {
@@ -97,7 +97,8 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::OnSlicePreInstantiate(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
 
         // Start an undo that will wrap the entire slice instantiation event (unable to do this at a higher level since this is queued up by AzFramework and there's no undo concept at that level)
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Slice Instantiation");
@@ -133,7 +134,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
 
@@ -148,7 +149,7 @@ namespace AzToolsFramework
         // Close out the next ticket corresponding to this asset.
         for (auto instantiatingIter = m_instantiatingSlices.begin(); instantiatingIter != m_instantiatingSlices.end(); ++instantiatingIter)
         {
-            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::OnSliceInstantiated:CloseTicket");
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::OnSliceInstantiated:CloseTicket");
             if (instantiatingIter->first.GetId() == sliceAssetId)
             {
                 const AZ::SliceComponent::EntityList& entities = sliceAddressCopy.GetInstance()->GetInstantiated()->m_entities;
@@ -164,7 +165,7 @@ namespace AzToolsFramework
 
                 // Create a slice instantiation undo command.
                 {
-                    AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::OnSliceInstantiated:CloseTicket:CreateInstantiateUndo");
+                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::OnSliceInstantiated:CloseTicket:CreateInstantiateUndo");
                     ScopedUndoBatch undoBatch("Instantiate Slice");
                     for (AZ::Entity* entity : entities)
                     {
@@ -191,7 +192,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
 
@@ -213,7 +214,7 @@ namespace AzToolsFramework
     AZ::SliceComponent::SliceInstanceAddress SliceEditorEntityOwnershipService::CloneEditorSliceInstance(
         AZ::SliceComponent::SliceInstanceAddress sourceInstance, AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (sourceInstance.IsValid())
         {
@@ -329,7 +330,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::DetachSliceInstances(const AZ::SliceComponent::SliceInstanceAddressSet& instances)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const char* undoMsg = instances.size() == 1 ? "Detach Instance from Slice" : "Detach Instances from Slice";
 
@@ -358,7 +359,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (subsliceRootList.empty())
         {
@@ -378,7 +379,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::DetachFromSlice(const AzToolsFramework::EntityIdList& entities, const char* undoMessage)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (entities.empty())
         {
@@ -423,7 +424,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
@@ -510,7 +511,7 @@ namespace AzToolsFramework
     //=========================================================================
     void SliceEditorEntityOwnershipService::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         EntityIdList selectedEntities;
         ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
@@ -523,7 +524,7 @@ namespace AzToolsFramework
 
     void SliceEditorEntityOwnershipService::ResetEntitiesToSliceDefaults(EntityIdList entities)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
         ScopedUndoBatch undoBatch("Resetting entities to slice defaults.");
 
         PreemptiveUndoCache* preemptiveUndoCache = nullptr;
@@ -645,7 +646,7 @@ namespace AzToolsFramework
     bool SliceEditorEntityOwnershipService::SaveToStreamForEditor(AZ::IO::GenericStream& stream, const EntityList& entitiesInLayers,
         AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AZ_Assert(stream.IsOpen(), "Invalid target stream.");
         AzFramework::RootSliceAsset rootSliceAsset = GetRootAsset();
@@ -684,7 +685,7 @@ namespace AzToolsFramework
 
     bool SliceEditorEntityOwnershipService::SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AZ::SliceComponent::EntityList sourceEntities;
         GetRootSlice()->GetEntities(sourceEntities);
@@ -928,7 +929,7 @@ namespace AzToolsFramework
 
     bool SliceEditorEntityOwnershipService::LoadFromStreamWithLayers(AZ::IO::GenericStream& stream, QString levelPakFile)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AZ::ObjectStream::FilterDescriptor filterDesc = AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterSourceSlicesOnly);
 

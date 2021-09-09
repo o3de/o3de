@@ -9,4 +9,6 @@
 set(FILES
     ImageProcessing_Traits_Platform.h
     ImageProcessing_Traits_Windows.h
+    ../../Compressors/ISPCTextureCompressor.cpp
+    ../../Compressors/ISPCTextureCompressor.h
 )

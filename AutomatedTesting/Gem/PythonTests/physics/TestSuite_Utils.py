@@ -29,14 +29,14 @@ class TestUtils(TestAutomationBase):
         :param request: Built in pytest object, and is needed to call the pytest "addfinalizer" teardown command.
         :editor: Fixture containing editor details
         """
-        from .utils import UtilTest_Physmaterial_Editor as physmaterial_editor_test_module
+        from . import UtilTest_Physmaterial_Editor as physmaterial_editor_test_module
 
         expected_lines = []
         unexpected_lines = ["Assert"]
         self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
     
     def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, editor):
-        from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
+        from . import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
         self._run_test(request, workspace, editor, testcase_module, [], [])
 
     def test_FileManagement_FindingFiles(self, workspace):
@@ -262,7 +262,7 @@ class TestUtils(TestAutomationBase):
     )
     @fm.file_override("default.physxconfiguration", "UtilTest_PhysxConfig_Override.physxconfiguration")
     def test_UtilTest_Managed_Files(self, request, workspace, editor):
-        from .utils import UtilTest_Managed_Files as test_module
+        from . import UtilTest_Managed_Files as test_module
 
         expected_lines = []
         unexpected_lines = ["Assert"]

@@ -26,6 +26,9 @@
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 
+// CryCommon
+#include <CryCommon/SFunctor.h>
+
 // Editor
 #include "QtViewPaneManager.h"
 #include "Core/QtEditorApplication.h"
@@ -217,7 +220,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
             }
 
             // If a history command was reused directly via up arrow enter, do not reset history index
-            if (m_history.size() > 0 && m_historyIndex < static_cast<unsigned int>(m_history.size()) && m_history[m_historyIndex] == str)
+            if (m_history.size() > 0 && m_historyIndex < m_history.size() && m_history[m_historyIndex] == str)
             {
                 m_bReusedHistory = true;
             }
@@ -295,6 +298,7 @@ Lines CConsoleSCB::s_pendingLines;
 CConsoleSCB::CConsoleSCB(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::Console())
+    , m_richEditTextLength(0)
     , m_backgroundTheme(gSettings.consoleBackgroundColorTheme)
 {
     m_lines = s_pendingLines;
@@ -389,7 +393,7 @@ void CConsoleSCB::RegisterViewClass()
     opts.showInMenu = true;
     opts.builtInActionId = ID_VIEW_CONSOLEWINDOW;
     opts.shortcut = QKeySequence(Qt::Key_QuoteLeft);
-
+    
     AzToolsFramework::RegisterViewPane<CConsoleSCB>(LyViewPane::Console, LyViewPane::CategoryTools, opts);
 }
 
@@ -418,6 +422,9 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
+    m_colorTable[0] = textColor;
+    m_colorTable[1] = textColor;
+
     const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
 
     QColor bgColor;
@@ -429,13 +436,8 @@ void CConsoleSCB::RefreshStyle()
     else
     {
         bgColor = Qt::white;
-        textColor = Qt::black;
         AzQtComponents::ScrollBar::applyDarkStyle(ui->textEdit);
     }
-
-    m_colorTable[0] = textColor;
-    m_colorTable[1] = textColor;
-
     ui->textEdit->setBackgroundVisible(!uiAndDark);
     ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
 
@@ -572,10 +574,6 @@ static CVarBlock* VarBlockFromConsoleVars()
     IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
-        if (!cmds[i].data())
-        {
-            continue;
-        }
         ICVar* pCVar = console->GetCVar(cmds[i].data());
         if (!pCVar)
         {
@@ -603,7 +601,8 @@ static CVarBlock* VarBlockFromConsoleVars()
 
         // Add our on change handler so we can update the CVariable created for
         // the matching ICVar that has been modified
-        AZStd::function<void()> onChange = [row=i,pCVar=pCVar]() { OnVariableUpdated(row,pCVar); };
+        SFunctor onChange;
+        onChange.Set(OnVariableUpdated, i, pCVar);
         pCVar->AddOnChangeFunctor(onChange);
 
         pVariable->SetDescription(pCVar->GetHelp());
@@ -834,15 +833,15 @@ static void SetEditorRange(EditorType* editor, IVariable* var)
     // If this variable has custom limits set, then use that as the min/max
     // Otherwise, the min/max for the input box will be bounded by the type
     // limit, but the slider will be constricted to a smaller default range
-    static const float defaultMin = -100.0f;
-    static const float defaultMax = 100.0f;
+    static const double defaultMin = -100.0f;
+    static const double defaultMax = 100.0f;
     if (var->HasCustomLimits())
     {
-        editor->setRange(static_cast<typename EditorType::value_type>(min), static_cast<typename EditorType::value_type>(max));
+        editor->setRange(min, max);
     }
     else
     {
-        editor->setSoftRange(static_cast<typename EditorType::value_type>(defaultMin), static_cast<typename EditorType::value_type>(defaultMax));
+        editor->setSoftRange(defaultMin, defaultMax);
     }
 
     // Set the step size. The default variable step is 0, so if it's
@@ -851,7 +850,7 @@ static void SetEditorRange(EditorType* editor, IVariable* var)
     // use that for the int values
     if (step > 0)
     {
-        editor->spinbox()->setSingleStep(static_cast<int>(step));
+        editor->spinbox()->setSingleStep(step);
     }
     else if (auto doubleSpinBox = qobject_cast<AzQtComponents::DoubleSpinBox*>(editor->spinbox()))
     {
@@ -925,7 +924,7 @@ QWidget* ConsoleVariableItemDelegate::createEditor(QWidget* parent, const QStyle
             return editor;
         }
     }
-
+    
     // If we get here, value being edited is a string, so use our styled line
     // edit widget
     AzQtComponents::StyledLineEdit* lineEdit = new AzQtComponents::StyledLineEdit(parent);

@@ -489,26 +489,24 @@ namespace AZStd
                 {
                     return;
                 }
-                else
+
+                float loadFactor = (float)m_numElements.load(memory_order_acquire) / (float)m_storage.get_num_buckets();
+                if (loadFactor > max_load_factor())
                 {
-                    float loadFactor = (float)m_numElements.load(memory_order_acquire) / (float)m_storage.get_num_buckets();
-                    if (loadFactor > max_load_factor())
+                    acquire_all();
+
+                    //check the load factor again, as another thread may have beaten us to the rehash
+                    size_type numElements = m_numElements.load(memory_order_acquire);
+                    float maxLoadFactor = max_load_factor();
+                    size_type numBuckets = m_storage.get_num_buckets();
+                    loadFactor = (float)numElements / (float)numBuckets;
+                    if (loadFactor > maxLoadFactor)
                     {
-                        acquire_all();
-
-                        // check the load factor again, as another thread may have beaten us to the rehash
-                        size_type numElements = m_numElements.load(memory_order_acquire);
-                        float maxLoadFactor = max_load_factor();
-                        size_type numBuckets = m_storage.get_num_buckets();
-                        loadFactor = (float)numElements / (float)numBuckets;
-                        if (loadFactor > maxLoadFactor)
-                        {
-                            size_type minNumBuckets = (size_type)((float)numElements / maxLoadFactor);
-                            m_storage.rehash(this, minNumBuckets);
-                        }
-
-                        release_all();
+                        size_type minNumBuckets = (size_type)((float)numElements / maxLoadFactor);
+                        m_storage.rehash(this, minNumBuckets);
                     }
+
+                    release_all();
                 }
             }
 

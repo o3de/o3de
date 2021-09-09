@@ -15,7 +15,6 @@
 // A user is expected to derive from PropertyHandler<PropertyType, WidgetType>
 // and implement that interface, then register it with the property manager.
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -24,8 +23,6 @@ class QWidget;
 class QColor;
 class QString;
 class QPoint;
-
-AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace AzToolsFramework
 {
@@ -260,7 +257,7 @@ namespace AzToolsFramework
 
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
             WidgetType* wid = static_cast<WidgetType*>(widget);
 

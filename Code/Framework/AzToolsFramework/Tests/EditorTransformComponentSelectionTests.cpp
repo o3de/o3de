@@ -583,7 +583,7 @@ namespace UnitTest
             AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
                 m_mouseInteractionResult, AzToolsFramework::GetEntityContextId(),
                 &AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleAllMouseInteractions,
-                vi::MouseInteractionEvent(mouseInteraction, static_cast<float>(ev->angleDelta().y())));
+                vi::MouseInteractionEvent(mouseInteraction, ev->angleDelta().y()));
         }
 
         MouseInteractionResult m_mouseInteractionResult;
@@ -1579,7 +1579,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::Entity* entity = nullptr;
-        CreateDefaultEditorEntity("Entity", &entity);
+        const AZ::EntityId entityId = CreateDefaultEditorEntity("Entity", &entity);
 
         entity->Deactivate();
         const auto* entityInfoComponent = entity->CreateComponent<EditorEntityInfoRequestActivateTestComponent>();

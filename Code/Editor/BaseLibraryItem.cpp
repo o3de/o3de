@@ -43,7 +43,7 @@ public:
         //evaluate size
         XmlString xmlStr = m_undoCtx.node->getXML();
         m_size = sizeof(CUndoBaseLibraryItem);
-        m_size += static_cast<int>(xmlStr.GetAllocatedMemory());
+        m_size += xmlStr.GetAllocatedMemory();
         m_size += m_itemPath.length();
         m_size += m_description.length();
     }
@@ -87,7 +87,7 @@ protected:
             libItem->Serialize(m_redoCtx);
 
             XmlString xmlStr = m_redoCtx.node->getXML();
-            m_size += static_cast<int>(xmlStr.GetAllocatedMemory());
+            m_size += xmlStr.GetAllocatedMemory();
         }
 
         //load previous saved data

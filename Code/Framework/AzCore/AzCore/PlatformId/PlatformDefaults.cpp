@@ -15,7 +15,7 @@ namespace AZ
 {
     inline namespace PlatformDefaults
     {
-        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformLinux, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
         const char* PlatformIdToPalFolder(AZ::PlatformId platform)
         {
@@ -27,8 +27,6 @@ namespace AZ
             {
             case AZ::PC:
                 return "PC";
-            case AZ::LINUX_ID:
-                return "Linux";
             case AZ::ANDROID_ID:
                 return "Android";
             case AZ::IOS:
@@ -58,13 +56,9 @@ namespace AZ
 
         const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform)
         {
-            if (osPlatform == PlatformCodeNameWindows)
+            if (osPlatform == PlatformCodeNameWindows || osPlatform == PlatformCodeNameLinux)
             {
                 return PlatformPC;
-            }
-            if (osPlatform == PlatformCodeNameLinux)
-            {
-                return PlatformLinux;
             }
             else if (osPlatform == PlatformCodeNameMac)
             {
@@ -207,8 +201,6 @@ namespace AZ
             {
             case PlatformId::PC:
                 platformCodes.emplace_back(PlatformCodeNameWindows);
-                break;
-            case PlatformId::LINUX_ID:
                 platformCodes.emplace_back(PlatformCodeNameLinux);
                 break;
             case PlatformId::ANDROID_ID:

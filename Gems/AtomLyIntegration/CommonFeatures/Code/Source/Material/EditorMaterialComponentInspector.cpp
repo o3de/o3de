@@ -214,7 +214,7 @@ namespace AZ
                     groupNameId.c_str()));
                 auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                     &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-                    [](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                    [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                         AZ_UNUSED(source);
                         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
                         return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
@@ -267,7 +267,7 @@ namespace AZ
                         groupNameId.c_str()));
                     auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                         &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-                        [](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
+                        [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                             AZ_UNUSED(source);
                             const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
                             return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);

@@ -157,7 +157,7 @@ namespace GradientSignal
 
     float ShapeAreaFalloffGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         float distance = 0.0f;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);

@@ -28,7 +28,7 @@ namespace AZ
 
         static constexpr uint32_t SubProductTypeBitPosition = 0;
         static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
-        [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
+        static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
         static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
 
@@ -172,7 +172,7 @@ namespace AZ
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(
             const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             auto variantFinder = AZ::Interface<IShaderVariantFinder>::Get();
             AZ_Assert(variantFinder, "The IShaderVariantFinder doesn't exist");
@@ -189,7 +189,7 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderAsset::FindVariantStableId(const ShaderVariantId& shaderVariantId)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             uint32_t dynamicOptionCount = aznumeric_cast<uint32_t>(GetShaderOptionGroupLayout()->GetShaderOptions().size());
             ShaderVariantSearchResult variantSearchResult{RootShaderVariantStableId,  dynamicOptionCount };
@@ -587,8 +587,6 @@ namespace AZ
         {
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId, "Was expecting to update the root variant");
-            SupervariantIndex supervariantIndex = GetSupervariantIndexFromAssetId(asset.GetId());
-            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = asset;
             ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
         }
 
@@ -609,7 +607,17 @@ namespace AZ
             //    so it continues using the old ShaderVariantAsset instead of the new one.
             // The OnAssetReady bus function is called automatically whenever a connection to AssetBus is made, so listening to this gives
             // us the opportunity to assign the appropriate ShaderVariantAsset.
-            
+
+            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
+
+            Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId,
+                "Was expecting to update the root variant");
+            SupervariantIndex supervariantIndex = GetSupervariantIndexFromAssetId(asset.GetId());
+            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = asset;
+
+            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
+
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReady %s", this, asset.GetHint().c_str());
             ReinitializeRootShaderVariant(asset);
         }

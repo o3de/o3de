@@ -26,6 +26,7 @@ namespace AZ
             const u32 Timestamp = AZ_CRC("Timestamp", 0xa5d6e63e);
             const u32 Duration = AZ_CRC("Duration", 0x865f80c0);
             const u32 Instant = AZ_CRC("Instant", 0x0e9047ad);
+            const u32 InstantScope = AZ_CRC("InstantScope", 0xed4bfb0e);
         }
 
         EventTraceDriller::EventTraceDriller()

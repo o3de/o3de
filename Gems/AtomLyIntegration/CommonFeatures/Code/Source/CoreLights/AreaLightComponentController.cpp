@@ -535,7 +535,7 @@ namespace AZ::Render
 
     void AreaLightComponentController::SetPredictionSampleCount(uint32_t count)
     {
-        m_configuration.m_predictionSampleCount = static_cast<uint16_t>(count);
+        m_configuration.m_predictionSampleCount = count;
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetPredictionSampleCount(count);
@@ -549,7 +549,7 @@ namespace AZ::Render
 
     void AreaLightComponentController::SetFilteringSampleCount(uint32_t count)
     {
-        m_configuration.m_filteringSampleCount = static_cast<uint16_t>(count);
+        m_configuration.m_filteringSampleCount = count;
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetFilteringSampleCount(count);

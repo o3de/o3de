@@ -24,9 +24,6 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
-                "Platform linux": {
-                    "tags": "tools,renderer,vulkan,null"
-                },
                 "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },
@@ -171,9 +168,6 @@
                 },
                 "Exclude Build": {
                     "pattern": ".*/[Bb]uild/.*"
-                },
-                "Exclude Install": {
-                    "pattern": ".*/[Ii]nstall/.*"
                 },
                 "Exclude UserSettings": {
                     "pattern": ".*/UserSettings.xml"

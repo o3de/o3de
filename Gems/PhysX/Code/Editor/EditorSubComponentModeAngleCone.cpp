@@ -334,18 +334,21 @@ namespace PhysX
     }
 
     void EditorSubComponentModeAngleCone::ConfigureLinearView(
-        float axisLength, [[maybe_unused]] const AZ::Color& axis1Color, const AZ::Color& axis2Color,
+        float axisLength, const AZ::Color& axis1Color, const AZ::Color& axis2Color,
         const AZ::Color& axis3Color)
     {
         const float coneLength = 0.28f;
         const float coneRadius = 0.07f;
+        const float lineWidth = 0.05f;
 
-        const auto configureLinearView = [coneLength, axisLength, coneRadius](
+        const AZ::Color axesColor[] = { axis1Color, axis2Color, axis3Color };
+
+        const auto configureLinearView = [lineWidth, coneLength, axisLength, coneRadius](
             AzToolsFramework::LinearManipulator* linearManipulator, const AZ::Color& color)
         {
             AzToolsFramework::ManipulatorViews views;
             views.emplace_back(CreateManipulatorViewLine(
-                *linearManipulator, color, axisLength, AzToolsFramework::ManipulatorLineBoundWidth()));
+                *linearManipulator, color, axisLength, lineWidth));
             views.emplace_back(CreateManipulatorViewCone(
                 *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength),
                 coneLength, coneRadius));

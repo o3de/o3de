@@ -86,7 +86,7 @@ namespace Multiplayer
         Activate
     };
 
-    //! Structure for identifying a specific entity within a spawnable.
+    // Structure for identifying a specific entity within a spawnable
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
@@ -97,10 +97,29 @@ namespace Multiplayer
         uint32_t m_entityOffset = AllIndices;
 
         PrefabEntityId() = default;
-        explicit PrefabEntityId(AZ::Name name, uint32_t entityOffset = AllIndices);
-        bool operator==(const PrefabEntityId& rhs) const;
-        bool operator!=(const PrefabEntityId& rhs) const;
-        bool Serialize(AzNetworking::ISerializer& serializer);
+        
+        explicit PrefabEntityId(AZ::Name name, uint32_t entityOffset = AllIndices)
+            : m_prefabName(name)
+            , m_entityOffset(entityOffset)
+        {
+        }
+
+        bool operator==(const PrefabEntityId& rhs) const
+        {
+            return m_prefabName == rhs.m_prefabName && m_entityOffset == rhs.m_entityOffset;
+        }
+
+        bool operator!=(const PrefabEntityId& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        bool Serialize(AzNetworking::ISerializer& serializer)
+        {
+            serializer.Serialize(m_prefabName, "prefabName");
+            serializer.Serialize(m_entityOffset, "entityOffset");
+            return serializer.IsValid();
+        }
     };
 
     struct EntityMigrationMessage
@@ -109,30 +128,6 @@ namespace Multiplayer
         PrefabEntityId m_prefabEntityId;
         AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
     };
-
-    inline PrefabEntityId::PrefabEntityId(AZ::Name name, uint32_t entityOffset)
-        : m_prefabName(name)
-        , m_entityOffset(entityOffset)
-    {
-        ;
-    }
-
-    inline bool PrefabEntityId::operator==(const PrefabEntityId& rhs) const
-    {
-        return m_prefabName == rhs.m_prefabName && m_entityOffset == rhs.m_entityOffset;
-    }
-
-    inline bool PrefabEntityId::operator!=(const PrefabEntityId& rhs) const
-    {
-        return !(*this == rhs);
-    }
-
-    inline bool PrefabEntityId::Serialize(AzNetworking::ISerializer& serializer)
-    {
-        serializer.Serialize(m_prefabName, "prefabName");
-        serializer.Serialize(m_entityOffset, "entityOffset");
-        return serializer.IsValid();
-    }
 }
 
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostId);

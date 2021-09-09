@@ -312,7 +312,8 @@ namespace AzToolsFramework
 #elif defined(AZ_PLATFORM_WINDOWS)
             return "pc";
 #elif defined(AZ_PLATFORM_LINUX)
-            return "linux";
+            // set this to pc because that's what bootstrap.cfg currently defines the platform to "pc", even on Linux
+            return "pc";
 #else
             #error Unimplemented Host Asset Platform
 #endif

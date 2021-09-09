@@ -15,6 +15,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
+#include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <IRenderAuxGeom.h>
 #include <IViewSystem.h>

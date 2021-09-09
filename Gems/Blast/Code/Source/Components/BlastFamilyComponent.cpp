@@ -48,7 +48,6 @@ namespace Blast
         BlastFamilyComponentNotificationBusHandler::Reflect(context);
         BlastActorConfiguration::Reflect(context);
         BlastActorData::Reflect(context);
-        BlastAsset::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -188,7 +187,7 @@ namespace Blast
 
     void BlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
 
         AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
 
@@ -200,7 +199,7 @@ namespace Blast
 
     void BlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
 
         // cleanup collision handlers
         for (auto& itr : m_collisionHandlers)
@@ -217,7 +216,7 @@ namespace Blast
 
     void BlastFamilyComponent::Spawn()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         if (!m_blastAsset.IsReady())
         {
@@ -298,7 +297,7 @@ namespace Blast
 
     void BlastFamilyComponent::Despawn()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         m_isSpawned = false;
 
@@ -415,7 +414,7 @@ namespace Blast
 
     void BlastFamilyComponent::OnCollisionBegin(const AzPhysics::CollisionEvent& collisionEvent)
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         for (const auto* body : {collisionEvent.m_body1, collisionEvent.m_body2})
         {
@@ -494,7 +493,7 @@ namespace Blast
 
     void BlastFamilyComponent::ApplyStressDamage()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         if (m_solver)
         {
@@ -590,7 +589,7 @@ namespace Blast
     // Update positions of entities with render meshes corresponding to their right dynamic bodies.
     void BlastFamilyComponent::SyncMeshes()
     {
-        AZ_PROFILE_FUNCTION(Physics);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         if (m_actorRenderManager)
         {

@@ -34,7 +34,7 @@ namespace AzToolsFramework
 
     void SelectionCommand::Post()
     {
-        UndoSystem::UndoStack* undoStack = nullptr;
+        UndoSystem::UndoStack* undoStack = NULL;
         EBUS_EVENT_RESULT(undoStack, AzToolsFramework::ToolsApplicationRequests::Bus, GetUndoStack);
 
         if (undoStack)

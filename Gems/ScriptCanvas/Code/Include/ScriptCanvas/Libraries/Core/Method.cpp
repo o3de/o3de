@@ -313,7 +313,6 @@ namespace ScriptCanvas
                 }
 
                 PopulateNodeType();
-                m_warnOnMissingFunction = true;
             }
 
             bool Method::InitializeOverloaded([[maybe_unused]] const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
@@ -740,11 +739,10 @@ namespace ScriptCanvas
                 return TupleType{ nullptr, MethodType::Count, EventType::Count, nullptr };
             }
 
-            void Method::OnDeserialize()
+            void Method::OnWriteEnd()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
-                m_warnOnMissingFunction = true;
                 const AZ::BehaviorClass* bcClass{};
                 const AZ::BehaviorMethod* method{};
                 EventType eventType;
@@ -760,22 +758,14 @@ namespace ScriptCanvas
                     {
                         AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
                     }
+
                 }
 
                 if (m_resultSlotIDs.empty())
                 {
                     m_resultSlotIDs.emplace_back(SlotId{});
                 }
-
-                Node::OnDeserialize();
             }
-
-#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
-            void Method::OnWriteEnd()
-            {
-                OnDeserialize();
-            }
-#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             bool Method::BranchesOnResult() const
             {
@@ -839,9 +829,7 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<Method, Node>()
                         ->Version(MethodCPP::eVersion::Current, &MethodCPP::MethodVersionConverter)
-#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                         ->EventHandler<SerializeContextOnWriteEndHandler<Method>>()
-#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                         ->Field("methodType", &Method::m_methodType)
                         ->Field("methodName", &Method::m_lookupName)
                         ->Field("className", &Method::m_className)

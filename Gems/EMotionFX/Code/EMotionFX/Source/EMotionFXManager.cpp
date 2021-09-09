@@ -190,7 +190,7 @@ namespace EMotionFX
     // update
     void EMotionFXManager::Update(float timePassedInSeconds)
     {
-        AZ_PROFILE_SCOPE(Animation, "EMotionFXManager::Update");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "EMotionFXManager::Update");
 
         m_debugDraw->Clear();
         m_recorder->UpdatePlayMode(timePassedInSeconds);

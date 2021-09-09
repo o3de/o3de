@@ -25,10 +25,15 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpSceneWrapper::AssImpSceneWrapper()
+            : SDKScene::SceneWrapperBase()
         {
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
-            : m_assImpScene(aiScene)
+            : SDKScene::SceneWrapperBase(aiScene)
+        {
+        }
+
+        AssImpSceneWrapper::~AssImpSceneWrapper()
         {
         }
 
@@ -107,11 +112,6 @@ namespace AZ
         void AssImpSceneWrapper::Clear()
         {
             m_importer.FreeScene();
-        }
-
-        const aiScene* AssImpSceneWrapper::GetAssImpScene() const
-        {
-            return m_assImpScene;
         }
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const

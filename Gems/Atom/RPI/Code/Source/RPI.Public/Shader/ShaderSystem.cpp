@@ -25,6 +25,8 @@ namespace AZ
 {
     namespace RPI
     {
+        static constexpr char ShaderSystemLog[] = "ShaderSystem";
+
         void ShaderSystem::Reflect(ReflectContext* context)
         {
             ShaderOptionDescriptor::Reflect(context);

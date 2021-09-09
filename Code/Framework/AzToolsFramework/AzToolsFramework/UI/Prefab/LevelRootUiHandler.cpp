@@ -99,6 +99,5 @@ namespace AzToolsFramework
         
         // Draw border at the bottom
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
-        painter->restore();
     }
 }

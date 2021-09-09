@@ -9,15 +9,15 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QByteArray>
 #include <QWidget>
+#include <QByteArray>
 AZ_POP_DISABLE_WARNING
 
 #endif
@@ -45,7 +45,7 @@ namespace MaterialEditor
     class MaterialBrowserWidget
         : public QWidget
         , protected AZ::TickBus::Handler
-        , protected AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+        , protected MaterialDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -56,7 +56,7 @@ namespace MaterialEditor
         AzToolsFramework::AssetBrowser::FilterConstType CreateFilter() const;
         void OpenSelectedEntries();
 
-        // AtomToolsDocumentNotificationBus::Handler implementation
+        // MaterialDocumentNotificationBus::Handler implementation
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AZ::TickBus::Handler

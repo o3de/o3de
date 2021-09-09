@@ -13,7 +13,6 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <CryCommon/Cry_GeoDistance.h>
 #include <MathConversion.h>
 
 namespace LmbrCentral

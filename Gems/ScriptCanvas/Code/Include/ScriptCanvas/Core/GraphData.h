@@ -37,7 +37,6 @@ namespace ScriptCanvas
         void BuildEndpointMap();
         void Clear(bool deleteData = false);
         void LoadDependentAssets();
-        void OnDeserialized();
 
         using NodeContainer = AZStd::unordered_set<AZ::Entity*>;
         using ConnectionContainer = AZStd::vector<AZ::Entity*>;

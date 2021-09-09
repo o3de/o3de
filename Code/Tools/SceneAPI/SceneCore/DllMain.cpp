@@ -137,7 +137,7 @@ namespace AZ
 
                 // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
                 //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-                //      Gems with system components need to do the same in the Project Manager.
+                //      Gems with system components need to do the same in the Project Configurator.
                 if (context && (context->IsRemovingReflection() || !context->FindClassData(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid())))
                 {
                     AZ::SceneAPI::DataTypes::IManifestObject::Reflect(context);

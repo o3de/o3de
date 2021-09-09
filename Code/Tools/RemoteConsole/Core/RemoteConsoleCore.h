@@ -60,7 +60,6 @@ enum EConsoleEventType
 
     eCET_Strobo_FrameInfoStart,
     eCET_Strobo_FrameInfoAdd,
-    eCET_ConnectMessage,
 };
 
 struct SRemoteEventFactory;

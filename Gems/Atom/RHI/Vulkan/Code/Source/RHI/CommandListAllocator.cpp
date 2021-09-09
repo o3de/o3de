@@ -100,7 +100,7 @@ namespace AZ
                 commandPoolAllocatorDescriptor.m_collectLatency = descriptor.m_frameCountMax;
                 commadPoolAllocator.Init(commandPoolAllocatorDescriptor);
 
-                m_commandListSubAllocators[queueFamilyIndex].SetInitFunction([&commadPoolAllocator]
+                m_commandListSubAllocators[queueFamilyIndex].SetInitFunction([this, &commadPoolAllocator]
                 (Internal::CommandListSubAllocator& subAllocator)
                 {
                     subAllocator.Init(commadPoolAllocator);

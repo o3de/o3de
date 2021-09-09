@@ -6,19 +6,20 @@
  *
  */
 
+
+#include <AzCore/Serialization/SerializeContext.h>
 #include "MaterialNode.h"
 #include "AnimTrack.h"
-#include <AzCore/Serialization/SerializeContext.h>
 
+#include <ISystem.h>
 #include <IRenderer.h>
 #include <IShader.h>
-#include <ISystem.h>
 
 #include "AnimSplineTrack.h"
 #include "CompoundSplineTrack.h"
 #include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Types/AnimParamType.h"
 #include "Maestro/Types/AnimValueType.h"
+#include "Maestro/Types/AnimParamType.h"
 
 // Don't remove or the console builds will break!
 #define s_nodeParamsInitialized s_nodeParamsInitializedMat
@@ -38,11 +39,11 @@ namespace
         param.valueType = valueType;
         s_nodeParams.push_back(param);
     }
-} // namespace
+}
 
 enum EMaterialNodeParam
 {
-    MTL_PARAM_SHADER_PARAM1 = static_cast<int>(AnimParamType::User) + 100,
+    MTL_PARAM_SHADER_PARAM1  = static_cast<int>(AnimParamType::User) + 100,
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +105,7 @@ void CAnimMaterialNode::UpdateDynamicParamsInternal()
     m_nameToDynamicShaderParam.clear();
 
     const char* pName = GetName();
-    IMaterial* pMtl = GetMaterialByName(pName);
+    _smart_ptr<IMaterial> pMtl = GetMaterialByName(pName);
 
     if (!pMtl)
     {
@@ -122,7 +123,7 @@ void CAnimMaterialNode::UpdateDynamicParamsInternal()
     for (int i = 0; i < shaderParams.size(); ++i)
     {
         SShaderParam& shaderParam = shaderParams[i];
-        m_nameToDynamicShaderParam[shaderParams[i].m_Name.c_str()] = i;
+        m_nameToDynamicShaderParam[ shaderParams[i].m_Name.c_str() ] = i;
 
         CAnimNode::SParamInfo paramInfo;
 
@@ -179,13 +180,12 @@ unsigned int CAnimMaterialNode::GetParamCount() const
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimMaterialNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex < s_nodeParams.size())
+    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
-    else if (
-        nIndex >= (unsigned int)s_nodeParams.size() &&
-        nIndex < ((unsigned int)s_nodeParams.size() + (unsigned int)m_dynamicShaderParamInfos.size()))
+    else if (nIndex >= (unsigned int)s_nodeParams.size() &&
+             nIndex < ((unsigned int)s_nodeParams.size() + (unsigned int)m_dynamicShaderParamInfos.size()))
     {
         return m_dynamicShaderParamInfos[nIndex - (int)s_nodeParams.size()].paramType;
     }
@@ -217,7 +217,7 @@ bool CAnimMaterialNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
+const char* CAnimMaterialNode::GetParamName(const CAnimParamType& param) const
 {
     if (param.GetType() == AnimParamType::ByString)
     {
@@ -264,7 +264,7 @@ void CAnimMaterialNode::Animate(SAnimContext& ec)
 
     // Find material.
     const char* pName = GetName();
-    IMaterial* pMtl = GetMaterialByName(pName);
+    _smart_ptr<IMaterial> pMtl = GetMaterialByName(pName);
 
     if (!pMtl)
     {
@@ -348,8 +348,7 @@ void CAnimMaterialNode::Animate(SAnimContext& ec)
     }
 }
 
-void CAnimMaterialNode::AnimateNamedParameter(
-    SAnimContext& ec, IRenderShaderResources* pShaderResources, const char* name, IAnimTrack* pTrack)
+void CAnimMaterialNode::AnimateNamedParameter(SAnimContext& ec, IRenderShaderResources* pShaderResources, const char* name, IAnimTrack* pTrack)
 {
     TDynamicShaderParamsMap::iterator findIter = m_nameToDynamicShaderParam.find(name);
     if (findIter != m_nameToDynamicShaderParam.end())
@@ -388,7 +387,7 @@ void CAnimMaterialNode::AnimateNamedParameter(
     }
 }
 
-IMaterial* CAnimMaterialNode::GetMaterialByName(const char*)
+_smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char*)
 {
     return nullptr;
 }
@@ -405,7 +404,8 @@ void CAnimMaterialNode::Reflect(AZ::ReflectContext* context)
 {
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<CAnimMaterialNode, CAnimNode>()->Version(1);
+        serializeContext->Class<CAnimMaterialNode, CAnimNode>()
+            ->Version(1);
     }
 }
 

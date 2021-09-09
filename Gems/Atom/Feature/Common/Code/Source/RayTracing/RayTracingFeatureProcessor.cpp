@@ -458,7 +458,9 @@ namespace AZ
         void RayTracingFeatureProcessor::UpdateRayTracingMaterialSrg()
         {
             const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTracingMaterialSrg->GetLayout();
+            RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
+            RHI::ShaderInputConstantIndex constantIndex;
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
             m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoBuffer->GetBufferView());

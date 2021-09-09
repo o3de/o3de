@@ -7,7 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridrelocation.azshader",
         "PlatformIdentifiers": 
         [
-            "pc", "linux"
+            "pc"
         ],
         "RootShaderVariantAssets":
         [

@@ -14,8 +14,8 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 
 #include <sstream>
 
@@ -191,7 +191,15 @@ namespace AWSMetrics
 
     bool MetricsQueue::ReadFromJson(const AZStd::string& filePath)
     {
-        auto result = AZ::JsonSerializationUtils::ReadJsonFile(filePath);
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
+        if (!fileIO)
+        {
+            AZ_Error("AWSMetrics", false, "Failed to get file IO instance");
+            return false;
+        }
+
+        AZ::IO::Path fileIoPath(filePath);
+        auto result = AzFramework::FileFunc::ReadJsonFile(fileIoPath, fileIO);
         if (!result.IsSuccess() ||!ReadFromJsonDocument(result.GetValue()))
         {
             AZ_Error("AWSMetrics", false, "Failed to read metrics file %s", filePath.c_str());

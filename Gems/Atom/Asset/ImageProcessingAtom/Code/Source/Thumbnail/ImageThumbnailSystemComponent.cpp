@@ -180,7 +180,7 @@ namespace ImageProcessingAtom
                 // Dispatch event on main thread
                 AZ::SystemTickBus::QueueFunction(
                 [
-                    thumbnailKey,
+                    thumbnailKey, thumbnailSize,
                     pixmap = QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))
                 ]() mutable
                 {

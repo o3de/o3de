@@ -55,7 +55,7 @@ namespace ScriptCanvas
 
         AZ_INLINE TransformType FromScale(NumberType scale)
         {
-            return TransformType::CreateUniformScale(static_cast<float>(scale));
+            return TransformType::CreateUniformScale(scale);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a transform which applies the specified uniform Scale, but no rotation or translation", "Scale");
 
@@ -143,7 +143,7 @@ namespace ScriptCanvas
 
         AZ_INLINE TransformType MultiplyByUniformScale(TransformType source, NumberType scale)
         {
-            source.MultiplyByUniformScale(static_cast<float>(scale));
+            source.MultiplyByUniformScale(scale);
             return source;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyByUniformScale, k_categoryName, "{90472D62-65A8-40C1-AB08-FA66D793F689}", "returns Source multiplied uniformly by Scale", "Source", "Scale");

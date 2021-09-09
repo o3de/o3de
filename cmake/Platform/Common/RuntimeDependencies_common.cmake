@@ -113,7 +113,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             unset(target_locations)
             get_target_property(target_locations ${ly_TARGET} ${imported_property})
             if(target_locations)
-                list(APPEND all_runtime_dependencies "${target_locations}")
+                list(APPEND all_runtime_dependencies ${target_locations})
             else()
                 # Check if the property exists for configurations
                 unset(target_locations)
@@ -156,7 +156,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
 
 endfunction()
 
-function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND ly_TARGET)
+function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_TARGET)
 
     # To optimize this, we are going to cache the commands for the targets we requested. A lot of targets end up being
     # dependencies of other targets. 
@@ -166,8 +166,6 @@ function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND 
         # We already walked through this target
         get_property(cached_command GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_COMMAND_${ly_TARGET})
         set(${ly_RUNTIME_COMMAND} ${cached_command} PARENT_SCOPE)
-        get_property(cached_depend GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_DEPEND_${ly_TARGET})
-        set(${ly_RUNTIME_DEPEND} "${cached_depend}" PARENT_SCOPE)
         return()
 
     endif()
@@ -225,8 +223,6 @@ function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND 
 
     set_property(GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_COMMAND_${ly_TARGET} "${runtime_command}")
     set(${ly_RUNTIME_COMMAND} ${runtime_command} PARENT_SCOPE)
-    set_property(GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_DEPEND_${ly_TARGET} "${source_file}")
-    set(${ly_RUNTIME_DEPEND} "${source_file}" PARENT_SCOPE)
 
 endfunction()
 
@@ -249,19 +245,15 @@ function(ly_delayed_generate_runtime_dependencies)
 
         unset(runtime_dependencies)
         unset(LY_COPY_COMMANDS)
-        unset(runtime_depends)
 
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
-            unset(runtime_depend)
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+            ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
             string(APPEND LY_COPY_COMMANDS ${runtime_command})
-            list(APPEND runtime_depends ${runtime_depend})
         endforeach()
 
-        # Generate the output file, note the STAMP_OUTPUT_FILE need to match with the one defined in LYWrappers.cmake
-        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}_$<CONFIG>.stamp)
+        # Generate the output file
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
         set(target_file "$<TARGET_FILE:${target}>")
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
@@ -271,9 +263,6 @@ function(ly_delayed_generate_runtime_dependencies)
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
             CONTENT "${configured_template_file}"
         )
-        
-        # set the property that is consumed from the custom command generated in LyWrappers.cmake
-        set_target_properties(${target} PROPERTIES RUNTIME_DEPENDENCIES_DEPENDS "${runtime_depends}")
 
     endforeach()
 

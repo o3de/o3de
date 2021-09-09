@@ -121,12 +121,13 @@ namespace LmbrCentral
         m_heightManipulator->SetAxis(AZ::Vector3::CreateAxisZ());
 
         const float lineLength = 0.5f;
+        const float lineWidth = 0.05f;
         const float coneLength = 0.28f;
         const float coneRadius = 0.07f;
         ManipulatorViews views;
         views.emplace_back(CreateManipulatorViewLine(
             *m_heightManipulator, AZ::Color(0.0f, 0.0f, 1.0f, 1.0f),
-            lineLength, AzToolsFramework::ManipulatorLineBoundWidth()));
+            lineLength, lineWidth));
         views.emplace_back(CreateManipulatorViewCone(*m_heightManipulator,
             AZ::Color(0.0f, 0.0f, 1.0f, 1.0f), m_heightManipulator->GetAxis() *
             (lineLength - coneLength), coneLength, coneRadius));

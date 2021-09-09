@@ -511,7 +511,7 @@ CVarGlobalEnumList::CVarGlobalEnumList(const QString& enumName)
 //! Get the name of specified value in enumeration.
 QString CVarGlobalEnumList::GetItemName(uint index)
 {
-    if (!m_pEnum || index >= static_cast<uint>(m_pEnum->strings.size()))
+    if (!m_pEnum || index >= m_pEnum->strings.size())
     {
         return QString();
     }

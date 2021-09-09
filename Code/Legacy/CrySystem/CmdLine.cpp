@@ -192,6 +192,7 @@ AZStd::string CCmdLine::Next(char*& src)
 
             return AZStd::string(org, src);
         }
+        ch = *src++;
     }
 
     return AZStd::string();

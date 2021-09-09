@@ -6,20 +6,25 @@
  *
  */
 
-#include <AssetDatabase/AssetDatabaseConnection.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
-#include <Atom/RPI.Public/Material/Material.h>
+
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Public/Material/Material.h>
+
+#include <AssetDatabase/AssetDatabaseConnection.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <Window/ShaderManagementConsoleWindow.h>
-#include <Window/ShaderManagementConsoleWindowComponent.h>
+
+#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+#include <Source/Window/ShaderManagementConsoleWindowComponent.h>
+#include <Source/Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFile>

@@ -53,7 +53,7 @@ void CTextEditorCtrl::LoadFile(const QString& sFileName)
         size_t length = file.GetLength();
 
         QByteArray text;
-        text.resize(static_cast<int>(length));
+        text.resize(length);
         file.ReadRaw(text.data(), length);
 
         setPlainText(text);

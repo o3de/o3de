@@ -267,47 +267,47 @@ namespace UnitTest
             creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyUInt" }, -1);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyImage" }, true);
         });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
+        expectCreatorError([this](MaterialAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyEnum" }, -1);
         });

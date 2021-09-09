@@ -115,6 +115,7 @@ namespace EMotionFX
         {
             AddRagdollNodeConfig(ragdollNodes, jointName.c_str());
         }
+        const size_t numRagdollNodes = ragdollNodes.size();
 
         // Create the ragdoll instance and check if the ragdoll root node is set correctly.
         TestRagdoll testRagdoll;

@@ -144,7 +144,7 @@ unsigned int CLayerNode::GetParamCount() const
 //-----------------------------------------------------------------------------
 CAnimParamType CLayerNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex < (int)s_nodeParams.size())
+    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }

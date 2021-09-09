@@ -34,7 +34,7 @@ namespace AzManipulatorTestFramework
             ViewportInteractionInterface* viewportInteraction, AZStd::shared_ptr<CustomManipulatorManager> manipulatorManager);
 
         // ManipulatorManagerInterface ...
-        void ConsumeMouseInteractionEvent(const MouseInteractionEvent& event) override;
+        void ConsumeMouseInteractionEvent(const MouseInteractionEvent& event);
         AzToolsFramework::ManipulatorManagerId GetId() const override;
         bool ManipulatorBeingInteracted() const override;
 

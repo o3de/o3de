@@ -297,7 +297,7 @@ TEST_F(AssetDataStreamTest, IsFullyLoaded_FileDoesNotReadAllData_DataIsNotFullyL
     using ::testing::_;
 
     ON_CALL(m_mockStreamer, GetReadRequestResult(_, _, _, _))
-        .WillByDefault([this](
+        .WillByDefault([this, incompleteAssetSize](
             [[maybe_unused]] FileRequestHandle request,
             void*& buffer,
             AZ::u64& numBytesRead,

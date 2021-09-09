@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/ReadSplitter.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
@@ -219,7 +218,7 @@ namespace AZ
                 subRequest->CreateRead(pending.m_request, pending.m_output, bufferSize, data->m_path, pending.m_offset, readSize, data->m_sharedRead);
                 subRequest->SetCompletionCallback([this](FileRequest&)
                     {
-                        AZ_PROFILE_FUNCTION(AzCore);
+                        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
                         QueuePendingRequest();
                     });
                 m_next->QueueRequest(subRequest);
@@ -303,7 +302,7 @@ namespace AZ
                         offset, readSize, data->m_sharedRead);
                     subRequest->SetCompletionCallback([this, bufferSlot]([[maybe_unused]] FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AzCore);
+                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
                             BufferCopyInformation& copyInfo = m_bufferCopyInformation[bufferSlot];
                             memcpy(copyInfo.m_target, GetBufferSlot(bufferSlot) + copyInfo.m_bufferOffset, copyInfo.m_size);

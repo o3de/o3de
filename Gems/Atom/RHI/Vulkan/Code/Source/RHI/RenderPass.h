@@ -38,6 +38,8 @@ namespace AZ
             ~RenderPass() = default;
             static RHI::Ptr<RenderPass> Create();
 
+            AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
+
             enum class AttachmentType : uint32_t
             {
                 Color,              // Color render target attachment
@@ -95,6 +97,8 @@ namespace AZ
                 AZStd::array<uint32_t, RHI::Limits::Pipeline::AttachmentColorCountMax> m_preserveAttachments;
                 SubpassAttachment m_depthStencilAttachment;
             };
+
+            AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
             struct Descriptor
             {

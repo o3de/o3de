@@ -258,7 +258,7 @@ namespace ScriptCanvasEditor
 
         QObject::connect(pasteAction,
             &QAction::triggered,
-            [dockWidget](bool)
+            [dockWidget, varId](bool)
         {
             GraphVariablesTableView::HandleVariablePaste(dockWidget->GetActiveScriptCanvasId());
         });

@@ -62,7 +62,7 @@ public:
 
         // Reroute the mock stream to our output MemoryStream for writing.
         ON_CALL(m_mockGenericStream, Write(_, _))
-            .WillByDefault([&outputStream](AZ::IO::SizeType bytes, const void* buffer)
+            .WillByDefault([this, &outputStream](AZ::IO::SizeType bytes, const void* buffer)
                 {
                     return outputStream.Write(bytes, buffer);
                 });

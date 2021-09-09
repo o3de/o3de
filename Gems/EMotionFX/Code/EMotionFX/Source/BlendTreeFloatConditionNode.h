@@ -26,7 +26,7 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
         //
-        enum : uint16
+        enum
         {
             INPUTPORT_X         = 0,
             INPUTPORT_Y         = 1,
@@ -34,7 +34,7 @@ namespace EMotionFX
             OUTPUTPORT_BOOL     = 1
         };
 
-        enum : uint16
+        enum
         {
             PORTID_INPUT_X      = 0,
             PORTID_INPUT_Y      = 1,

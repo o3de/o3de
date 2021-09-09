@@ -216,9 +216,9 @@ namespace AZ
     class OverrunDetectionSchemaImpl
     {
     public:
-        using pointer_type = void *;
-        using size_type = size_t;
-        using difference_type = ptrdiff_t;
+        typedef void*       pointer_type;
+        typedef size_t      size_type;
+        typedef ptrdiff_t   difference_type;
 
         OverrunDetectionSchemaImpl(const OverrunDetectionSchema::Descriptor& desc);
         ~OverrunDetectionSchemaImpl();
@@ -241,8 +241,8 @@ namespace AZ
         Internal::AllocationRecord* CreateAllocationRecord(void* p, size_t size) const;
 
     private:
-        using mutex_type = AZStd::mutex;
-        using lock_type = AZStd::lock_guard<mutex_type>;
+        typedef AZStd::mutex mutex_type;
+        typedef AZStd::lock_guard<mutex_type> lock_type;
 
         AZStd::unique_ptr<OverrunDetectionSchema::PlatformAllocator> m_platformAllocator;
         mutex_type m_mutex;
@@ -511,7 +511,7 @@ AZ::OverrunDetectionSchemaImpl::OverrunDetectionSchemaImpl(const OverrunDetectio
 {
     m_platformAllocator.reset(new Internal::PlatformOverrunDetectionSchema);
 
-    [[maybe_unused]] auto info = m_platformAllocator->GetSystemInformation();
+    auto info = m_platformAllocator->GetSystemInformation();
     AZ_Assert(info.m_pageSize == Internal::ODS_PAGE_SIZE, "System page size %d does not equal expected page size %d", info.m_pageSize, Internal::ODS_PAGE_SIZE);
     AZ_Assert(info.m_minimumAllocationSize == Internal::ODS_ALLOCATION_SIZE, "System minimum allocation size %d does not equal expected size %d", info.m_minimumAllocationSize, Internal::ODS_ALLOCATION_SIZE);
 

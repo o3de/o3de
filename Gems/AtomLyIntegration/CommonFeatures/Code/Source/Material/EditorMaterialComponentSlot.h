@@ -19,7 +19,7 @@ namespace AZ
 {
     namespace Render
     {
-        static const size_t DefaultMaterialSlotIndex = std::numeric_limits<size_t>::max();
+        static const size_t DefaultMaterialSlotIndex = -1;
 
         //! Details for a single editable material assignment
         struct EditorMaterialComponentSlot final

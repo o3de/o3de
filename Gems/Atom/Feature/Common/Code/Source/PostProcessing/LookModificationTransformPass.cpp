@@ -47,32 +47,29 @@ namespace AZ
                 swapChainFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
 
-            // Update the children passes
-            RPI::Ptr<BlendColorGradingLutsPass> blendPass = FindChildPass<BlendColorGradingLutsPass>();
-            if (blendPass)
+            if (m_displayBufferFormat != swapChainFormat)
             {
-                auto commonShaperParams = blendPass->GetCommonShaperParams();
-                if (commonShaperParams)
-                {
-                    m_shaperParams = *commonShaperParams;
-                }
-                else
-                {
-                    // Mix of shapers used, so shape them based on the output transform type.
-                    m_displayBufferFormat = swapChainFormat;
-                    m_outputDeviceTransformType = AcesDisplayMapperFeatureProcessor::GetOutputDeviceTransformType(m_displayBufferFormat);
-                    m_shaperParams = GetAcesShaperParameters(m_outputDeviceTransformType);
-                }
+                m_displayBufferFormat = swapChainFormat;
+                m_outputDeviceTransformType = AcesDisplayMapperFeatureProcessor::GetOutputDeviceTransformType(m_displayBufferFormat);
+                m_shaperParams = GetAcesShaperParameters(m_outputDeviceTransformType);
 
-                blendPass->SetShaperParameters(m_shaperParams);
-                    
-                RPI::Ptr<LookModificationCompositePass> compositePass = FindChildPass<LookModificationCompositePass>();
-                if (compositePass)
+                // Update the children passes
+                for (const AZ::RPI::Ptr<Pass>& child : m_children)
                 {
-                    compositePass->SetShaperParameters(m_shaperParams);
+                    BlendColorGradingLutsPass* blendPass = azrtti_cast<BlendColorGradingLutsPass*>(child.get());
+                    if (blendPass)
+                    {
+                        blendPass->SetShaperParameters(m_shaperParams);
+                        continue;
+                    }
+                    LookModificationCompositePass* compositePass = azrtti_cast<LookModificationCompositePass*>(child.get());
+                    if (compositePass)
+                    {
+                        compositePass->SetShaperParameters(m_shaperParams);
+                        continue;
+                    }
                 }
             }
-
             ParentPass::FrameBeginInternal(params);
         }
     }   // namespace Render

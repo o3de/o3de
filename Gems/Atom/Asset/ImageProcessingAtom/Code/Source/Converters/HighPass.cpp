@@ -58,6 +58,9 @@ namespace ImageProcessingAtom
             // linear interpolation
             FilterImage(MipGenType::triangle, MipGenEvalType::sum, 0.0f, 0.0f, m_img, dwMipDown, newImage, dstMip, NULL, NULL);
 
+            const AZ::u32 pixelCountIn = m_img->GetWidth(dstMip) * m_img->GetHeight(dstMip);
+            const AZ::u32 pixelCountOut = newImage->GetWidth(dstMip) * newImage->GetHeight(dstMip);
+
             //substraction
             AZ::u8* srcPixelBuf;
             AZ::u32 srcPitch;

@@ -786,7 +786,7 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
+                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ObjectStreamImpl::LoadClass Load");
 
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
@@ -1520,7 +1520,6 @@ namespace AZ
             {
                 if (m_writeElementResultStack.empty())
                 {
-                    AZ_UNUSED(classData); // Prevent unused warning in release builds
                     AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                     return true;
                 }
@@ -1582,7 +1581,6 @@ namespace AZ
                     {
                         if (m_writeElementResultStack.empty())
                         {
-                            AZ_UNUSED(classData); // Prevent unused warning in release builds
                             AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                             return true;
                         }
@@ -1646,7 +1644,6 @@ namespace AZ
                 {
                     if (m_writeElementResultStack.empty())
                     {
-                        AZ_UNUSED(classData); // Prevent unused warning in release builds
                         AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                         return true;
                     }
@@ -1932,7 +1929,7 @@ namespace AZ
         //=========================================================================
         bool ObjectStreamImpl::Start()
         {
-            AZ_PROFILE_FUNCTION(AzCore);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
             ++m_pending;
 

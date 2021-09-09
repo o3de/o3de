@@ -174,7 +174,7 @@ namespace AZ
         }
 
         // or _m128i and VMX ???
-        alignas(16) unsigned char data[16];
+        AZ_ALIGN(unsigned char data[16], 16);
     };
 } // namespace AZ
 

@@ -521,7 +521,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::SetComponentOverridden(const bool overridden)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const auto entityId = m_components[0]->GetEntityId();
         AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;

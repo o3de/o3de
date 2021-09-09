@@ -10,6 +10,8 @@
 
 #include <ctime>
 
+#pragma warning(disable : 4996)
+
 namespace AWSGameLift
 {
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::AcceptPlayerSession(const std::string& playerSessionId)
@@ -54,13 +56,7 @@ namespace AWSGameLift
         }
 
         char buffer[50];
-        tm time;
-#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
-        gmtime_s(&time, &terminationTime);
-#else
-        time = *gmtime(&terminationTime);
-#endif
-        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
+        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&terminationTime));
 
         return AZStd::string(buffer);
     }

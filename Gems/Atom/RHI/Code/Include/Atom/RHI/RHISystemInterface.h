@@ -8,14 +8,11 @@
 
 #pragma once
 
-#include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-
-AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {

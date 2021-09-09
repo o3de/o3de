@@ -15,9 +15,7 @@ namespace MaterialEditor
         : AtomToolsFramework::InspectorWidget(parent)
     {
         m_documentSettings =
-            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ_CRC_CE("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
-        m_documentSystemSettings = AZ::UserSettings::CreateFind<AtomToolsFramework::AtomToolsDocumentSystemSettings>(
-            AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
+            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
     }
 
     SettingsWidget::~SettingsWidget()
@@ -28,35 +26,21 @@ namespace MaterialEditor
     void SettingsWidget::Populate()
     {
         AddGroupsBegin();
-        AddDocumentSystemSettingsGroup();
-        AddDocumentSettingsGroup();
+        AddDocumentGroup();
         AddGroupsEnd();
     }
 
-    void SettingsWidget::AddDocumentSettingsGroup()
+    void SettingsWidget::AddDocumentGroup()
     {
         const AZStd::string groupNameId = "documentSettings";
         const AZStd::string groupDisplayName = "Document Settings";
         const AZStd::string groupDescription = "Document Settings";
 
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSettingsGroup"));
+        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentGroup"));
         AddGroup(
             groupNameId, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_documentSettings.get(), nullptr, m_documentSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
-    }
-
-    void SettingsWidget::AddDocumentSystemSettingsGroup()
-    {
-        const AZStd::string groupNameId = "documentSystemSettings";
-        const AZStd::string groupDisplayName = "Document System Settings";
-        const AZStd::string groupDescription = "Document System Settings";
-
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));
-        AddGroup(
-            groupNameId, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
     }
 
     void SettingsWidget::Reset()

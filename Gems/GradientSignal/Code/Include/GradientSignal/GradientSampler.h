@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -88,7 +87,7 @@ namespace GradientSignal
 
     inline float GradientSampler::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
         {

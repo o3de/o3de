@@ -175,6 +175,7 @@ namespace PhysX::Benchmarks
         const int numRigidBodies = static_cast<int>(state.range(0));
 
         //common settings for each rigid body
+        const float boxSize = 5.0f;
         const float boxSizeWithSpacing = RigidBodyConstants::RigidBodys::BoxSize + 2.0f;
         const int boxesPerCol = static_cast<const int>(RigidBodyConstants::TerrainSize / boxSizeWithSpacing) - 1;
         int spawnColIdx = 0;
@@ -398,7 +399,7 @@ namespace PhysX::Benchmarks
             return rand.GetRandomFloat() * 25.0f + 5.0f;
         };
         
-        Utils::GenerateEntityIdFuncPtr entityIdGenerator = [](int idx) -> AZ::EntityId {
+        Utils::GenerateEntityIdFuncPtr entityIdGenerator = [&rand](int idx) -> AZ::EntityId {
             return AZ::EntityId(static_cast<AZ::u64>(idx) + RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart);
         };
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));

@@ -136,7 +136,7 @@ IClassDesc* CClassFactory::FindClass(const char* pClassName) const
         return nullptr;
     }
 
-    QString name = QString(pClassName).left(static_cast<int>(pSubClassName - pClassName));
+    QString name = QString(pClassName).left(pSubClassName - pClassName);
 
     return stl::find_in_map(m_nameToClass, name, (IClassDesc*)nullptr);
 }

@@ -108,7 +108,7 @@ namespace GradientSignal
 
         if(settingsExist)
         {
-            menu->addAction("Edit Gradient Image Settings...", [settingsPath]()
+            menu->addAction("Edit Gradient Image Settings...", [this, source, settingsPath]()
             {
                 bool result = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -123,7 +123,7 @@ namespace GradientSignal
         }
         else
         {
-            menu->addAction("Enable Gradient Image Settings", [settingsPath]()
+            menu->addAction("Enable Gradient Image Settings", [this, source, settingsPath]()
             {
                 GradientSignal::ImageSettings imageSettings;
                 AZ::Utils::SaveObjectToFile(settingsPath, AZ::DataStream::ST_XML, &imageSettings);

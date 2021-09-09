@@ -22,12 +22,16 @@
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {
+    assert(m_bIsValid);
+
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 float CTrackViewKeyConstHandle::GetTime() const
 {
+    assert(m_bIsValid);
+
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 
@@ -82,7 +86,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
     if (!m_pTrack->IsSortMarkerKey(m_keyIndex))
     {
         CTrackViewKeyBundle allKeys = m_pTrack->GetAllKeys();
-        for (unsigned int x = 0; x < allKeys.GetKeyCount(); x++)
+        for (int x = 0; x < allKeys.GetKeyCount(); x++)
         {
             unsigned int curIndex = allKeys.GetKey(x).GetIndex();
             if (m_pTrack->IsSortMarkerKey(curIndex))
@@ -622,7 +626,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTypeOrder == otherTypeOrder)
         {
             // Same node type, sort by name
-            return thisAnimNode.GetName() < otherAnimNode.GetName();
+            return azstricmp(thisAnimNode.GetName(), otherAnimNode.GetName()) < 0;
         }
 
         return thisTypeOrder < otherTypeOrder;
@@ -634,7 +638,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTrack.GetParameterType() == otherTrack.GetParameterType())
         {
             // Same parameter type, sort by name
-            return thisTrack.GetName() < otherTrack.GetName();
+            return azstricmp(thisTrack.GetName(), otherTrack.GetName()) < 0;
         }
 
         return thisTrack.GetParameterType() < otherTrack.GetParameterType();

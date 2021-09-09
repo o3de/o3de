@@ -9,10 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <Atom/Document/ShaderManagementConsoleDocumentNotificationBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWidget>
@@ -43,7 +44,7 @@ namespace ShaderManagementConsole
     class ShaderManagementConsoleBrowserWidget
         : public QWidget
         , public AzToolsFramework::AssetBrowser::AssetBrowserModelNotificationBus::Handler
-        , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+        , public ShaderManagementConsoleDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -63,7 +64,7 @@ namespace ShaderManagementConsole
         // AssetBrowserModelNotificationBus::Handler implementation
         void EntryAdded(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler implementation
+        // ShaderManagementConsoleDocumentNotificationBus::Handler implementation
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
     };
 } // namespace ShaderManagementConsole

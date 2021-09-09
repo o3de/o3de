@@ -566,7 +566,7 @@ namespace UnitTest
         // We use local functions to easily start a new MaterialAssetCreator for each test case because
         // the AssetCreator would just skip subsequent operations after the first failure is detected.
 
-        auto expectError = [](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 2)
+        auto expectError = [this](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 2)
         {
             MaterialSourceData sourceData;
 
@@ -583,7 +583,7 @@ namespace UnitTest
             EXPECT_FALSE(materialAssetOutcome.IsSuccess());
         };
 
-        auto expectWarning = [](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 1)
+        auto expectWarning = [this](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 1)
         {
             MaterialSourceData sourceData;
 

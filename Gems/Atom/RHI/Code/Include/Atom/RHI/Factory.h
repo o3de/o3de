@@ -9,14 +9,11 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/PhysicalDevice.h>
-#include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
 
 #if defined(USE_RENDERDOC)
 #include <renderdoc_app.h>
 #endif
-
-AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {

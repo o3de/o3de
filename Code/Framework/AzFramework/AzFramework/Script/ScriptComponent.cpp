@@ -33,8 +33,6 @@ extern "C" {
 #   include <Lua/lauxlib.h>
 }
 
-AZ_DEFINE_BUDGET(Script);
-
 namespace ScriptComponentCpp
 {
     template<typename T>
@@ -292,7 +290,7 @@ namespace AzFramework
     namespace Internal
     {
         
-        AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
+        static AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
         {
             constexpr int MaxDepth = 4;
             if (depth > MaxDepth)
@@ -359,23 +357,26 @@ namespace AzFramework
             }
         }
 
+        #pragma warning( push )
+        #pragma warning( disable : 4505 )  // StackDump is useful to debug the lua stack. Disable warning about this method being unused. 
         //=========================================================================
         // DebugPrintStack
         // Prints the Lua stack starting from the bottom.
         //=========================================================================
-        // DO NOT DELETE StackDump is useful to debug the lua stack.
-        //static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
-        //{
-        //    AZStd::string dump = prefix;
-        //    const int stackSize = lua_gettop(lua);
-        //    for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
-        //    {
-        //        dump += PrintLuaValue(lua, stackIdx);
-        //        dump += " "; // add separator
-        //    }
-        //
-        //    AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
-        //}
+        static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
+        {
+            AZStd::string dump = prefix;
+            const int stackSize = lua_gettop(lua);
+            for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
+            {
+                dump += PrintLuaValue(lua, stackIdx);
+                dump += " "; // add separator
+            }
+
+            AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
+        }
+        #pragma warning( pop )
+
 
         //=========================================================================
         // Properties__IndexFindSubtable
@@ -618,7 +619,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::LoadScript()
     {
-        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Load: %s", m_script.GetHint().c_str());
 
         // Load the script, find the base table, create the entity table
         // find the Activate/Deactivate functions in the script and call them
@@ -633,7 +634,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::UnloadScript()
     {
-        AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Unload: %s", m_script.GetHint().c_str());
 
         DestroyEntityTable();
     }
@@ -821,7 +822,7 @@ namespace AzFramework
         lua_rawget(lua, baseStackIndex); // ScriptTable[OnActivate]
         if (lua_isfunction(lua, -1))
         {
-            AZ_PROFILE_SCOPE(Script, "OnActivate");
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnActivate");
             lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table); // push the entity table as the only argument
             AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnActivate
         }
@@ -855,7 +856,7 @@ namespace AzFramework
             lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
             if (lua_isfunction(lua, -1))
             {
-                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnDeactivate");
 
                 lua_pushvalue(lua, -3); // push the entity table as the only argument
                 AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate

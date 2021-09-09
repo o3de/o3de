@@ -149,6 +149,8 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
 
     bool valueChanged = false;
 
+    const float time = GetSequence()->GetTime();
+
     if (m_nodeEntityId.IsValid() && !m_azEntityDataCache.empty())
     {
         AZ::Entity* pNodeEntity = nullptr;
@@ -178,8 +180,8 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
                     AZ::Component* oldComponent = oldComponents[componentIndex];
                     AZ::Component* newComponent = newComponents[componentIndex];
 
-                    [[maybe_unused]] AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
-                    [[maybe_unused]] AZ::Uuid newComponentType = newComponent->RTTI_GetType();
+                    AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
+                    AZ::Uuid newComponentType = newComponent->RTTI_GetType();
 
                     AZ_Assert(oldComponentType == newComponentType, "Components have different types");
 
@@ -534,6 +536,9 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
     }
 
     CUiAnimViewSequenceNotificationContext context(GetSequence());
+
+    CUiAnimViewAnimNode* pDirector = GetDirector();
+    const bool bBelongsToActiveDirector = pDirector ? pDirector->IsActiveDirector() : true;
 
     // if this node represents an AZ entity then register for updates
     if (m_nodeEntityId.IsValid())
@@ -1241,7 +1246,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 {
     CUiAnimViewAnimNodeBundle bundle;
 
-    QString nodeName = QString::fromUtf8(GetName().c_str());
+    QString nodeName = GetName();
     if (GetNodeType() == eUiAVNT_AnimNode && QString::compare(pName, nodeName, Qt::CaseInsensitive) == 0)
     {
         bundle.AppendAnimNode(this);
@@ -1261,15 +1266,17 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+const char* CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
-    return m_pAnimNode->GetParamName(paramType);
+    const char* pName = m_pAnimNode->GetParamName(paramType);
+    return pName ? pName : "";
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
+const char* CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
 {
-    return m_pAnimNode->GetParamNameForTrack(paramType, track);
+    const char* pName = m_pAnimNode->GetParamNameForTrack(paramType, track);
+    return pName ? pName : "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1406,7 +1413,7 @@ void CUiAnimViewAnimNode::UpdateDynamicParams()
 void CUiAnimViewAnimNode::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     XmlNodeRef childNode = xmlNode->createNode("Node");
-    childNode->setAttr("name", GetName().c_str());
+    childNode->setAttr("name", GetName());
     childNode->setAttr("type", GetType());
 
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
@@ -1550,7 +1557,7 @@ bool CUiAnimViewAnimNode::IsValidReparentingTo(CUiAnimViewAnimNode* pNewParent)
     }
 
     // Check if the new parent already contains a node with this name
-    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName().c_str());
+    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName());
     if (foundNodes.GetCount() > 1 || (foundNodes.GetCount() == 1 && foundNodes.GetNode(0) != this))
     {
         return false;
@@ -1625,7 +1632,7 @@ void CUiAnimViewAnimNode::OnSelectionChanged(const bool bSelected)
 {
     if (m_pAnimNode)
     {
-        [[maybe_unused]] const EUiAnimNodeType animNodeType = GetType();
+        const EUiAnimNodeType animNodeType = GetType();
         assert(animNodeType == eUiAnimNodeType_Camera || animNodeType == eUiAnimNodeType_Entity || animNodeType == eUiAnimNodeType_GeomCache);
 
         const EUiAnimNodeFlags flags = (EUiAnimNodeFlags)m_pAnimNode->GetFlags();

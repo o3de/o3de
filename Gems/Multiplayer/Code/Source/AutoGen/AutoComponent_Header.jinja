@@ -130,9 +130,9 @@ void {{ PropertyName }}({{ ', '.join(paramDefines) }});
 {#
 
 #}
-{% macro DeclareRpcInvocations(Component, Section, HandleOn, IsProtected) %}
+{% macro DeclareRpcInvocations(Component, Section, HandleOn, ProctectedSection) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, Section, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
+{%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
 {{ DeclareRpcInvocation(Property, HandleOn) -}}
 {%    endif %}
 {% endcall %}
@@ -386,6 +386,8 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
+        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
+        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Client', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Client', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
@@ -443,8 +445,8 @@ namespace {{ Component.attrib['Namespace'] }}
 
         static AZStd::unique_ptr<Multiplayer::IMultiplayerComponentInput> AllocateComponentInput();
 
-        {{ ComponentBaseName }}();
-        ~{{ ComponentBaseName }}() override;
+        {{ ComponentBaseName }}() = default;
+        ~{{ ComponentBaseName }}() override = default;
 
         void Init() override;
         void Activate() override;

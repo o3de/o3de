@@ -81,7 +81,6 @@ ly_add_target(
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.
 if(TARGET AssetProcessor)
-    ly_set_gem_variant_to_load(TARGETS AssetProcessor VARIANTS Builders)
     set_source_files_properties(
         native/AssetProcessorBuildTarget.cpp
         PROPERTIES
@@ -131,7 +130,6 @@ endif()
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.
 if(TARGET AssetProcessorBatch)
-    ly_set_gem_variant_to_load(TARGETS AssetProcessorBatch VARIANTS Builders)
     set_source_files_properties(
         native/AssetProcessorBatchBuildTarget.cpp
         PROPERTIES

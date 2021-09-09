@@ -131,7 +131,7 @@ namespace GradientSignal
 
     float ReferenceGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         float output = 0.0f;
 

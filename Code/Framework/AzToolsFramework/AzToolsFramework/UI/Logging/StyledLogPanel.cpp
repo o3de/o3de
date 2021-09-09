@@ -322,7 +322,7 @@ namespace AzToolsFramework
                 actionList.removeAll(m_actionSelectAll);
             }
 
-            QMenu::exec(actionList, QCursor::pos(), nullptr, this);
+            QMenu::exec(actionList, QCursor::pos(), 0, this);
         }
 
         void StyledLogTab::CopySelected()

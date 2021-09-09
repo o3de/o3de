@@ -75,7 +75,7 @@ namespace AZ::IO::ZipDir
                 for (i = 0; i < AZ_ARRAY_SIZE(szBuf) - 1; ++i)
                 {
                     int r = distrib(gen);
-                    szBuf[i] = static_cast<char>(r > 9 ? (r - 10) + 'a' : '0' + r);
+                    szBuf[i] = r > 9 ? (r - 10) + 'a' : '0' + r;
                 }
                 szBuf[i] = '\0';
                 return szBuf;
@@ -887,6 +887,7 @@ namespace AZ::IO::ZipDir
     {
         FileRecordList arrFiles(GetRoot());
         arrFiles.SortByFileOffset();
+        FileRecordList::ZipStats Stats = arrFiles.GetStats();
 
         // we back up our file entries, because we'll need to restore them
         // in case the operation fails

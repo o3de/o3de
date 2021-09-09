@@ -37,7 +37,7 @@ public:
 
     virtual int GetSubTrackCount() const { return m_nDimensions; };
     virtual IUiAnimTrack* GetSubTrack(int nIndex) const;
-    AZStd::string GetSubTrackName(int nIndex) const override;
+    virtual const char* GetSubTrackName(int nIndex) const;
     virtual void SetSubTrackName(int nIndex, const char* name);
 
     virtual EUiAnimCurveType GetCurveType() { return eUiAnimCurveType_BezierFloat; };

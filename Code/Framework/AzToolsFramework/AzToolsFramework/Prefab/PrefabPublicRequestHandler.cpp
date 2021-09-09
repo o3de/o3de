@@ -25,7 +25,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Event("CreatePrefabInMemory", &PrefabPublicRequests::CreatePrefabInMemory)
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
-                    ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
                     ;
             }
         }
@@ -45,20 +44,36 @@ namespace AzToolsFramework
             m_prefabPublicInterface = nullptr;
         }
 
-        CreatePrefabResult PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
+        bool PrefabPublicRequestHandler::CreatePrefabInMemory(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath)
         {
-            return m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
+            auto createPrefabOutcome = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
+            if (!createPrefabOutcome.IsSuccess())
+            {
+                AZ_Error("CreatePrefabInMemory", false,
+                    "Failed to create Prefab on file path '%.*s'. Error message: %s.",
+                    AZ_STRING_ARG(filePath),
+                    createPrefabOutcome.GetError().c_str());
+
+                return false;
+            }
+
+            return true;
         }
 
-        InstantiatePrefabResult PrefabPublicRequestHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
+        AZ::EntityId PrefabPublicRequestHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
         {
-            return m_prefabPublicInterface->InstantiatePrefab(filePath, parent, position);
-        }
+            auto instantiatePrefabOutcome = m_prefabPublicInterface->InstantiatePrefab(filePath, parent, position);
+            if (!instantiatePrefabOutcome.IsSuccess())
+            {
+                AZ_Error("InstantiatePrefab", false,
+                    "Failed to instantiate Prefab on file path '%.*s'. Error message: %s.",
+                    AZ_STRING_ARG(filePath),
+                    instantiatePrefabOutcome.GetError().c_str());
 
-        PrefabOperationResult PrefabPublicRequestHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
-        {
-            return m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
-        }
+                return AZ::EntityId();
+            }
 
+            return instantiatePrefabOutcome.GetValue();
+        }
     } // namespace Prefab
 } // namespace AzToolsFramework

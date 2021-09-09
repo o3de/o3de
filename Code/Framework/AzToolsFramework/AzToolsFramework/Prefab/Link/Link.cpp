@@ -181,10 +181,10 @@ namespace AzToolsFramework
                     PrefabDomUtils::ApplyPatches(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
                 linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
 
-                [[maybe_unused]] PrefabDomValueReference sourceTemplateName =
+                PrefabDomValueReference sourceTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(sourceTemplateDomCopy, PrefabDomUtils::SourceName);
                 AZ_Assert(sourceTemplateName && sourceTemplateName->get().IsString(), "A valid source template name couldn't be found");
-                [[maybe_unused]] PrefabDomValueReference targetTemplateName =
+                PrefabDomValueReference targetTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::SourceName);
                 AZ_Assert(targetTemplateName && targetTemplateName->get().IsString(), "A valid target template name couldn't be found");
 

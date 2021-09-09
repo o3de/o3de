@@ -46,7 +46,7 @@ namespace ScriptCanvas
 
             void BaseTimer::OnTick(float delta, AZ::ScriptTimePoint)
             {
-                AZ_PROFILE_FUNCTION(ScriptCanvas);
+                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
                 SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
 
                 switch (m_timeUnits)

@@ -159,7 +159,7 @@ namespace AZ
 
         void LightCullingPass::ResetInternal()
         {
-            m_tileDataIndex = std::numeric_limits<uint32_t>::max();
+            m_tileDataIndex = -1;
             m_constantDataIndex.Reset();
 
             for (auto& elem : m_lightdata)
@@ -234,7 +234,7 @@ namespace AZ
                     return i;
                 }
             }
-            return std::numeric_limits<uint32_t>::max();
+            return -1;
         }
 
         AZ::RHI::Size LightCullingPass::GetTileDataBufferResolution()

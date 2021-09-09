@@ -5,10 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
+
+#ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
+#define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
 
 #include <AzCore/base.h>
-#include <AzCore/Debug/Budget.h>
+
+#pragma once
+
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
@@ -1085,5 +1089,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
-
+#endif // AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H

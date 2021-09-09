@@ -195,7 +195,7 @@ namespace UnitTest
 
         void test_thread_id_for_running_thread_is_not_default_constructed_id()
         {
-            const thread_desc* desc = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc = m_numThreadDesc ? &m_desc[0] : 0;
             AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc);
             AZ_TEST_ASSERT(t.get_id() != AZStd::thread::id());
             t.join();
@@ -203,8 +203,8 @@ namespace UnitTest
 
         void test_different_threads_have_different_ids()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
             AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc1);
             AZStd::thread t2(AZStd::bind(&Parallel_Thread::do_nothing, this), desc2);
             AZ_TEST_ASSERT(t.get_id() != t2.get_id());
@@ -214,9 +214,9 @@ namespace UnitTest
 
         void test_thread_ids_have_a_total_order()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : nullptr;
-            const thread_desc* desc3 = m_numThreadDesc ? &m_desc[2] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
+            const thread_desc* desc3 = m_numThreadDesc ? &m_desc[2] : 0;
 
             AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc1);
             AZStd::thread t2(AZStd::bind(&Parallel_Thread::do_nothing, this), desc2);
@@ -313,7 +313,7 @@ namespace UnitTest
 
         void test_thread_id_of_running_thread_returned_by_this_thread_get_id()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
 
             AZStd::thread::id id;
             AZStd::thread t(AZStd::bind(&Parallel_Thread::get_thread_id, this, &id), desc1);
@@ -366,7 +366,7 @@ namespace UnitTest
 
         void test_move_on_construction()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
             AZStd::thread::id the_id;
             AZStd::thread x;
             x = AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id), desc1);
@@ -377,7 +377,7 @@ namespace UnitTest
 
         AZStd::thread make_thread(AZStd::thread::id* the_id)
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
             return AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id), desc1);
         }
 
@@ -430,7 +430,7 @@ namespace UnitTest
 
         void do_test_creation()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
             m_data = 0;
             AZStd::thread t(AZStd::bind(&Parallel_Thread::simple_thread, this), desc1);
             t.join();
@@ -445,7 +445,7 @@ namespace UnitTest
 
         void do_test_id_comparison()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
             AZStd::thread::id self = this_thread::get_id();
             AZStd::thread thrd(AZStd::bind(&Parallel_Thread::comparison_thread, this, self), desc1);
             thrd.join();
@@ -476,7 +476,7 @@ namespace UnitTest
 
         void do_test_creation_through_reference_wrapper()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
             non_copyable_functor f;
 
             AZStd::thread thrd(AZStd::ref(f), desc1);
@@ -491,8 +491,8 @@ namespace UnitTest
 
         void test_swap()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
             AZStd::thread t(AZStd::bind(&Parallel_Thread::simple_thread, this), desc1);
             AZStd::thread t2(AZStd::bind(&Parallel_Thread::simple_thread, this), desc2);
             AZStd::thread::id id1 = t.get_id();
@@ -512,7 +512,7 @@ namespace UnitTest
 
         void run()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
 
             // We need to have at least one processor
             AZ_TEST_ASSERT(AZStd::thread::hardware_concurrency() >= 1);

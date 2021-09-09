@@ -88,11 +88,6 @@ namespace AzToolsFramework
                     settings.m_keepDefaults = true;
                 }
 
-                if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
-                {
-                    settings.m_metadata.Create<LinkIdMetadata>();
-                }
-
                 AZStd::string scratchBuffer;
                 auto issueReportingCallback = [&scratchBuffer]
                 (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
@@ -253,15 +248,6 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(&entityIdMapper);
                 settings.m_metadata.Create<InstanceEntityScrubber>(newlyAddedEntities);
 
-                AZStd::string scratchBuffer;
-                auto issueReportingCallback = [&scratchBuffer](
-                                                  AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
-                                                  AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
-                {
-                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
-                };
-                settings.m_reporting = AZStd::move(issueReportingCallback);
-                
                 AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
                 AZ::Data::AssetManager::Instance().ResumeAssetRelease();

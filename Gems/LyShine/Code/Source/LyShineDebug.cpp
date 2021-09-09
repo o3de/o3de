@@ -7,6 +7,7 @@
  */
 #include "LyShineDebug.h"
 #include "IConsole.h"
+#include "IRenderer.h"
 #include <LyShine/Draw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -38,7 +39,7 @@ AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dLine);
 AllocateConstIntCVar(LyShineDebug, CV_r_DebugUIDraw2dDefer);
 
 static const int g_numColors = 8;
-[[maybe_unused]] static const char* g_colorNames[g_numColors] =
+static const char* g_colorNames[g_numColors] =
 {
     "white",
     "red",
@@ -50,7 +51,7 @@ static const int g_numColors = 8;
     "black"
 };
 
-[[maybe_unused]] static AZ::Vector3 g_colorVec3[g_numColors] =
+static AZ::Vector3 g_colorVec3[g_numColors] =
 {
     AZ::Vector3(1.0f, 1.0f, 1.0f),
     AZ::Vector3(1.0f, 0.0f, 0.0f),
@@ -63,37 +64,37 @@ static const int g_numColors = 8;
 };
 
 static const int g_numSrcBlendModes = 11;
-[[maybe_unused]] static AZ::RHI::BlendFactor g_srcBlendModes[g_numSrcBlendModes] =
+static int g_srcBlendModes[g_numSrcBlendModes] =
 {
-    AZ::RHI::BlendFactor::Zero,
-    AZ::RHI::BlendFactor::One,
-    AZ::RHI::BlendFactor::ColorDest,
-    AZ::RHI::BlendFactor::ColorDestInverse,
-    AZ::RHI::BlendFactor::AlphaSource,
-    AZ::RHI::BlendFactor::AlphaSourceInverse,
-    AZ::RHI::BlendFactor::AlphaDest,
-    AZ::RHI::BlendFactor::AlphaDestInverse,
-    AZ::RHI::BlendFactor::AlphaSourceSaturate,
-    AZ::RHI::BlendFactor::Factor,
-    AZ::RHI::BlendFactor::AlphaSource1
+    GS_BLSRC_ZERO,
+    GS_BLSRC_ONE,
+    GS_BLSRC_DSTCOL,
+    GS_BLSRC_ONEMINUSDSTCOL,
+    GS_BLSRC_SRCALPHA,
+    GS_BLSRC_ONEMINUSSRCALPHA,
+    GS_BLSRC_DSTALPHA,
+    GS_BLSRC_ONEMINUSDSTALPHA,
+    GS_BLSRC_ALPHASATURATE,
+    GS_BLSRC_SRCALPHA_A_ZERO, // separate alpha blend state
+    GS_BLSRC_SRC1ALPHA, // dual source blending
 };
 
 static const int g_numDstBlendModes = 10;
-[[maybe_unused]] static AZ::RHI::BlendFactor g_dstBlendModes[g_numDstBlendModes] =
+static int g_dstBlendModes[g_numDstBlendModes] =
 {
-    AZ::RHI::BlendFactor::Zero,
-    AZ::RHI::BlendFactor::One,
-    AZ::RHI::BlendFactor::ColorSource,
-    AZ::RHI::BlendFactor::ColorSourceInverse,
-    AZ::RHI::BlendFactor::AlphaSource,
-    AZ::RHI::BlendFactor::AlphaSourceInverse,
-    AZ::RHI::BlendFactor::AlphaDest,
-    AZ::RHI::BlendFactor::AlphaDestInverse,
-    AZ::RHI::BlendFactor::FactorInverse,
-    AZ::RHI::BlendFactor::AlphaSource1Inverse
+    GS_BLDST_ZERO,
+    GS_BLDST_ONE,
+    GS_BLDST_SRCCOL,
+    GS_BLDST_ONEMINUSSRCCOL,
+    GS_BLDST_SRCALPHA,
+    GS_BLDST_ONEMINUSSRCALPHA,
+    GS_BLDST_DSTALPHA,
+    GS_BLDST_ONEMINUSDSTALPHA,
+    GS_BLDST_ONE_A_ZERO, // separate alpha blend state
+    GS_BLDST_ONEMINUSSRC1ALPHA, // dual source blending
 };
 
-[[maybe_unused]] static bool g_deferDrawsToEndOfFrame = false;
+static bool g_deferDrawsToEndOfFrame = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS
@@ -114,7 +115,7 @@ static int Create2DTexture(int width, int height, byte* data, ETEX_Format format
 static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 {
     AZ::RHI::Size size = image->GetDescriptor().m_size;
-    return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
+    return AZ::Vector2(size.m_width, size.m_height);
 }
 #endif
 
@@ -377,7 +378,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
     draw2d->DrawImageAligned(whiteTexture, pos, size, horizontalAlignment, verticalAlignment,
@@ -392,7 +393,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
     {
         textOptions.fontName = font;
@@ -618,7 +619,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
     float pointSize = 32.0f;
     const float spacing = 6.0f;
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     textOptions.effectIndex = 1;    // no drop shadow baked in
     textOptions.color = color;
 
@@ -742,7 +743,7 @@ static void DebugDraw2dImageColor()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
@@ -780,7 +781,7 @@ static void DebugDraw2dImageBlendMode()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
@@ -801,7 +802,7 @@ static void DebugDraw2dImageBlendMode()
             AZ::Vector2 pos(xStart + xSpacing * srcIndex, yStart + ySpacing * dstIndex);
 
             // first draw a background with varying color and alpha
-            CDraw2d::VertexPosColUV verts[4] =
+            IDraw2d::VertexPosColUV verts[4] =
             {
                 { // top left
                     AZ::Vector2(pos.GetX(), pos.GetY()),
@@ -828,9 +829,7 @@ static void DebugDraw2dImageBlendMode()
 
             // Draw the image with this color
 
-            CDraw2d::RenderState renderState;
-            renderState.m_blendState.m_blendSource = g_srcBlendModes[srcIndex];
-            renderState.m_blendState.m_blendDest = g_dstBlendModes[dstIndex];
+            imageOptions.blendMode = g_srcBlendModes[srcIndex] | g_dstBlendModes[dstIndex];
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
         }
     }
@@ -845,7 +844,7 @@ static void DebugDraw2dImageUVs()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
@@ -894,7 +893,7 @@ static void DebugDraw2dImagePixelRounding()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
@@ -933,7 +932,7 @@ static void DebugDraw2dLineBasic()
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 

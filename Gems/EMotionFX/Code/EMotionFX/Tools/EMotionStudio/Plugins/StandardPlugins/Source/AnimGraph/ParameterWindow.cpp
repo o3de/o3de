@@ -651,6 +651,7 @@ namespace EMStudio
     // enable/disable recording/playback mode
     void ParameterWindow::OnRecorderStateChanged()
     {
+        const bool readOnly = (EMotionFX::GetRecorder().GetIsInPlayMode()); // disable when in playback mode, enable otherwise
         if (m_animGraph)
         {
             // update parameter values

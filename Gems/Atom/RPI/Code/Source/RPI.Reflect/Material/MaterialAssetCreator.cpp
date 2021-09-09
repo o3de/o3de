@@ -16,7 +16,7 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial)
         {
             BeginCommon(assetId);
             
@@ -36,10 +36,6 @@ namespace AZ
                     ReportError("MaterialPropertiesLayout is null");
                     return;
                 }
-                if (includeMaterialPropertyNames)
-                {
-                    PopulatePropertyNameList();
-                }
 
                 // Note we don't have to check the validity of these property values because the parent material's AssetCreator already did that.
                 m_asset->m_propertyValues.assign(parentMaterial.GetPropertyValues().begin(), parentMaterial.GetPropertyValues().end());
@@ -56,14 +52,14 @@ namespace AZ
             }
         }
 
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType)
         {
             BeginCommon(assetId);
 
             if (ValidateIsReady())
             {
                 m_asset->m_materialTypeAsset = { &materialType, AZ::Data::AssetLoadBehavior::PreLoad };
-
+                
                 if (!m_asset->m_materialTypeAsset)
                 {
                     ReportError("MaterialTypeAsset is null");
@@ -71,11 +67,6 @@ namespace AZ
                 }
 
                 m_materialPropertiesLayout = m_asset->GetMaterialPropertiesLayout();
-                if (includeMaterialPropertyNames)
-                {
-                    PopulatePropertyNameList();
-                }
-
                 if (!m_materialPropertiesLayout)
                 {
                     ReportError("MaterialPropertiesLayout is null");
@@ -110,16 +101,5 @@ namespace AZ
             m_asset->SetReady();
             return EndCommon(result);
         }
-
-        void MaterialAssetCreator::PopulatePropertyNameList()
-        {
-            for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
-            {
-                MaterialPropertyIndex propertyIndex{ i };
-                auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
-                m_asset->m_propertyNames.emplace_back(propertyName);
-            }
-        }
-
     } // namespace RPI
 } // namespace AZ

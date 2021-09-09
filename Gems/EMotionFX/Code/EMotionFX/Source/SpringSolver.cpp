@@ -310,6 +310,7 @@ namespace EMotionFX
         SetParentParticle(parentParticleIndex);
 
         // Register the joint, which creates a particle internally.
+        const bool isPinned = (parentParticleIndex != InvalidIndex) ? joint->IsPinned() : true;
         SpringSolver::Particle* particle = AddJoint(joint);
         if (!particle)
         {

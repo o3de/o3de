@@ -254,7 +254,7 @@ namespace AZ
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
                 poolAssetCreator.SetPoolName(systemStreamingPoolDescriptor.m_name);
-                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
+                const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build streaming image pool");
 
                 m_systemStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
@@ -272,7 +272,7 @@ namespace AZ
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
                 poolAssetCreator.SetPoolName(assetStreamingPoolDescriptor.m_name);
-                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
+                const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build streaming image pool for assets");
 
                 m_assetStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
@@ -292,7 +292,7 @@ namespace AZ
                 poolAssetCreator.Begin(systemAttachmentPoolDescriptor.m_assetId);
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetPoolName(systemAttachmentPoolDescriptor.m_name);
-                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
+                const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build attachment image pool");
 
                 m_systemAttachmentPool = AttachmentImagePool::FindOrCreate(poolAsset);

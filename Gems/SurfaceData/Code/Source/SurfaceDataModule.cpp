@@ -10,6 +10,7 @@
 #include <SurfaceDataSystemComponent.h>
 #include <Components/SurfaceDataColliderComponent.h>
 #include <Components/SurfaceDataShapeComponent.h>
+#include <TerrainSurfaceDataSystemComponent.h>
 
 namespace SurfaceData
 {
@@ -19,6 +20,7 @@ namespace SurfaceData
             SurfaceDataSystemComponent::CreateDescriptor(),
             SurfaceDataColliderComponent::CreateDescriptor(),
             SurfaceDataShapeComponent::CreateDescriptor(),
+            TerrainSurfaceDataSystemComponent::CreateDescriptor(),
         });
     }
 
@@ -26,6 +28,7 @@ namespace SurfaceData
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<SurfaceDataSystemComponent>(),
+            azrtti_typeid<TerrainSurfaceDataSystemComponent>(),
         };
     }
 }

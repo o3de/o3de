@@ -15,7 +15,7 @@
 
 #include <ScriptCanvas/Core/Core.h>
 
-#if !defined(_RELEASE)
+#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
 // the markers are defined in test, but the system that listens for calls won't always be enabled
 #define SCRIPT_CANVAS_PERFORMANCE_TRACKING_ENABLED
 #endif

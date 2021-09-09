@@ -94,4 +94,3 @@ namespace ImageProcessingAtom
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
     };
 }// namespace ImageProcessingAtom
-

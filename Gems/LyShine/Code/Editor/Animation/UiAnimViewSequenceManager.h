@@ -15,7 +15,6 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
 #include "UiAnimUndoManager.h"
-#include "CryCommon/StlUtils.h"
 
 #include <IEditor.h>
 

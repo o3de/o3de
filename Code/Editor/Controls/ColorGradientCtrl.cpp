@@ -72,7 +72,7 @@ void CColorGradientCtrl::resizeEvent(QResizeEvent* event)
     m_grid.rect = m_rcGradient;
     if (m_bNoZoom)
     {
-        m_grid.zoom.x = static_cast<f32>(m_grid.rect.width());
+        m_grid.zoom.x = m_grid.rect.width();
     }
 
     m_rcKeys = rc;
@@ -106,6 +106,11 @@ QPoint CColorGradientCtrl::KeyToPoint(int nKey)
 QPoint CColorGradientCtrl::TimeToPoint(float time)
 {
     return QPoint(m_grid.WorldToClient(Vec2(time, 0)).x(), m_rcGradient.height() / 2);
+
+    QPoint point;
+    point.rx() = (time - m_fMinTime) * (m_rcGradient.width() / (m_fMaxTime - m_fMinTime)) + m_rcGradient.left();
+    point.ry() = m_rcGradient.height() / 2;
+    return point;
 }
 
 //////////////////////////////////////////////////////////////////////////

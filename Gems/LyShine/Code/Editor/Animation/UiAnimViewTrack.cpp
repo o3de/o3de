@@ -16,7 +16,6 @@
 #include "UiEditorAnimationBus.h"
 
 #include <Util/EditorUtils.h>
-#include <CryCommon/StlUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)
@@ -405,7 +404,7 @@ void CUiAnimViewTrack::RestoreFromMemento(const CUiAnimViewTrackMemento& memento
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CUiAnimViewTrack::GetName() const
+const char* CUiAnimViewTrack::GetName() const
 {
     CUiAnimViewNode* pParentNode = GetParentNode();
 
@@ -630,7 +629,7 @@ void CUiAnimViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnly
     EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
 
     XmlNodeRef childNode = xmlNode->newChild("Track");
-    childNode->setAttr("name", GetName().c_str());
+    childNode->setAttr("name", GetName());
     GetParameterType().Serialize(animationSystem, childNode, false);
     childNode->setAttr("valueType", GetValueType());
 

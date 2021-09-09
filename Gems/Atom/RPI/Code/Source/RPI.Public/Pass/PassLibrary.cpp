@@ -247,6 +247,8 @@ namespace AZ
 
         void PassLibrary::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
+            Data::AssetId assetId = asset->GetId();
+
             // Handle pass asset reload
             Data::Asset<PassAsset> passAsset = { asset.GetAs<PassAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             if (passAsset && passAsset->GetPassTemplate())

@@ -8,23 +8,17 @@
 
 #pragma once
 
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
-#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
-    AZ_CVAR_EXTERNED(bool, ed_cameraSystemUseCursor);
-
-    struct WindowSize;
-
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -85,12 +79,6 @@ namespace AzFramework
     using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
     using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
 
-    struct CursorEvent
-    {
-        ScreenPoint m_position;
-        bool m_captured = false;
-    };
-
     struct ScrollEvent
     {
         float m_delta;
@@ -105,8 +93,7 @@ namespace AzFramework
     };
 
     //! Represents a type-safe union of input events that are handled by the camera system.
-    using InputEvent =
-        AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, CursorEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
 
     //! Base class for all camera behaviors.
     //! The core interface consists of:
@@ -232,14 +219,10 @@ namespace AzFramework
     //! Properties to use to configure behavior across all types of camera.
     struct CameraProps
     {
-        //! Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
-        AZStd::function<float()> m_rotateSmoothnessFn;
-        //! Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
-        AZStd::function<float()> m_translateSmoothnessFn;
-        //! Enable/disable rotation smoothing.
-        AZStd::function<bool()> m_rotateSmoothingEnabledFn;
-        //! Enable/disable translation smoothing.
-        AZStd::function<bool()> m_translateSmoothingEnabledFn;
+        AZStd::function<float()>
+            m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()>
+            m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
     };
 
     //! An interpolation function to smoothly interpolate all camera properties from currentCamera to targetCamera.
@@ -279,16 +262,12 @@ namespace AzFramework
     public:
         bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
-        bool HandlingEvents() const
-        {
-            return m_handlingEvents;
-        }
+        bool HandlingEvents() const { return m_handlingEvents; }
 
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
-        CursorState m_cursorState; //!< The current and previous position of the cursor (used to calculate movement delta).
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
         bool m_handlingEvents = false; //!< Is the camera system currently handling events (events are consumed and not propagated).
     };
@@ -302,8 +281,6 @@ namespace AzFramework
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
-
-        void SetRotateInputChannelId(const InputChannelId& rotateChannelId);
 
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
@@ -357,8 +334,6 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
-        void SetPanInputChannelId(const InputChannelId& panChannelId);
-
         AZStd::function<float()> m_panSpeedFn;
         AZStd::function<bool()> m_invertPanXFn;
         AZStd::function<bool()> m_invertPanYFn;
@@ -402,7 +377,7 @@ namespace AzFramework
     }
 
     //! Groups all camera translation inputs.
-    struct TranslateCameraInputChannelIds
+    struct TranslateCameraInputChannels
     {
         InputChannelId m_forwardChannelId;
         InputChannelId m_backwardChannelId;
@@ -418,14 +393,12 @@ namespace AzFramework
     {
     public:
         explicit TranslateCameraInput(
-            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
+            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
-
-        void SetTranslateCameraInputChannelIds(const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         AZStd::function<float()> m_translateSpeedFn;
         AZStd::function<float()> m_boostMultiplierFn;
@@ -488,11 +461,11 @@ namespace AzFramework
 
         //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
         TranslationType TranslationFromKey(
-            const InputChannelId& channelId, const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
+            const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
         TranslationAxesFn m_translationAxesFn; //!< Builder for translation axes.
-        TranslateCameraInputChannelIds m_translateCameraInputChannelIds; //!< Input channel ids that map to internal translation types.
+        TranslateCameraInputChannels m_translateCameraInputChannels; //!< Input channel ids that map to internal translation types.
         bool m_boost = false; //!< Is the translation speed currently being multiplied/scaled upwards.
     };
 
@@ -518,8 +491,6 @@ namespace AzFramework
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
-
-        void SetDollyInputChannelId(const InputChannelId& dollyChannelId);
 
         AZStd::function<float()> m_cursorSpeedFn;
 
@@ -556,8 +527,6 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
-        void SetOrbitInputChannelId(const InputChannelId& orbitChanneId);
-
         Cameras m_orbitCameras; //!< The camera inputs to run when this camera input is active (only these will run as it is exclusive).
 
         //! Override the default behavior for how a look-at point is calculated.
@@ -579,5 +548,5 @@ namespace AzFramework
     }
 
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel);
 } // namespace AzFramework

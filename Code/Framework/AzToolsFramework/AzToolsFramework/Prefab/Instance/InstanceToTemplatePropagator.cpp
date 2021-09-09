@@ -262,6 +262,8 @@ namespace AzToolsFramework
         void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
         {
             PrefabDom& linkDom = link.GetLinkDom();
+            PrefabDomValueReference linkPatchesReference =
+                PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             /*
             If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the

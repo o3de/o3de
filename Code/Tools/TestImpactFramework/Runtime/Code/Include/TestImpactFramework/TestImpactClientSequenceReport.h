@@ -368,7 +368,7 @@ namespace TestImpact
                 const AZStd::vector<AZStd::string>& draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport)
-                : SequenceReportBase<PolicyStateType> (
+                : SequenceReportBase(
                     type,
                     maxConcurrency,
                     testTargetTimeout,
@@ -397,57 +397,57 @@ namespace TestImpact
             // SequenceReport overrides ...
             AZStd::chrono::milliseconds GetDuration() const override
             {
-                return GetDuration() + m_draftedTestRunReport.GetDuration();
+                return SequenceReportBase::GetDuration() + m_draftedTestRunReport.GetDuration();
             }
 
             TestSequenceResult GetResult() const override
             {
-                return CalculateMultiTestSequenceResult({ GetResult(), m_draftedTestRunReport.GetResult() });
+                return CalculateMultiTestSequenceResult({ SequenceReportBase::GetResult(), m_draftedTestRunReport.GetResult() });
             }
 
             size_t GetTotalNumTestRuns() const override
             {
-                return GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
+                return SequenceReportBase::GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
             }
 
             size_t GetTotalNumPassingTests() const override
             {
-                return GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
+                return SequenceReportBase::GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
             }
 
             size_t GetTotalNumFailingTests() const override
             {
-                return GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
+                return SequenceReportBase::GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
             }
 
             size_t GetTotalNumDisabledTests() const override
             {
-                return GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
+                return SequenceReportBase::GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
             }
 
             size_t GetTotalNumPassingTestRuns() const override
             {
-                return GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
+                return SequenceReportBase::GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
             }
 
             size_t GetTotalNumFailingTestRuns() const override
             {
-                return GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
+                return SequenceReportBase::GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
             }
 
             size_t GetTotalNumExecutionFailureTestRuns() const override
             {
-                return GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
+                return SequenceReportBase::GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
             }
 
             size_t GetTotalNumTimedOutTestRuns() const override
             {
-                return GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
+                return SequenceReportBase::GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
             }
 
             size_t GetTotalNumUnexecutedTestRuns() const override
             {
-                return GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
+                return SequenceReportBase::GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
             }
         private:
             AZStd::vector<AZStd::string> m_draftedTestRuns;

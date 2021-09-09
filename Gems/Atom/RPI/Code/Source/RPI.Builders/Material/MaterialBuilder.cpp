@@ -13,7 +13,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>

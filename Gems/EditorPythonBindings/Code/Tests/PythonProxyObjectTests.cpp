@@ -419,7 +419,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink.CleanUp();
+            m_testSink = PythonTraceMessageSink();
             PythonTestingFixture::TearDown();
         }
     };

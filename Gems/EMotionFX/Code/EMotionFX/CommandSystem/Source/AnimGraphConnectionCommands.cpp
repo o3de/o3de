@@ -497,13 +497,13 @@ namespace CommandSystem
             }
 
             // verify port ranges
-            if (m_sourcePort >= static_cast<int32>(sourceNode->GetOutputPorts().size()))
+            if (m_sourcePort >= static_cast<int32>(sourceNode->GetOutputPorts().size()) || m_sourcePort < 0)
             {
                 outResult = AZStd::string::format("The output port number is not valid for the given node. Node '%s' only has %zu output ports.", sourceNode->GetName(), sourceNode->GetOutputPorts().size());
                 return false;
             }
 
-            if (m_targetPort >= static_cast<int32>(targetNode->GetInputPorts().size()))
+            if (m_targetPort >= static_cast<int32>(targetNode->GetInputPorts().size()) || m_targetPort < 0)
             {
                 outResult = AZStd::string::format("The input port number is not valid for the given node. Node '%s' only has %zu input ports.", targetNode->GetName(), targetNode->GetInputPorts().size());
                 return false;

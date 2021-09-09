@@ -337,7 +337,7 @@ bool AssetBuilderComponent::ConnectToAssetProcessor()
     AZStd::string overridePort;
     if (GetParameter(s_paramPort, overridePort, false))
     {
-        connectionSettings.m_assetProcessorPort = static_cast<AZ::u16>(AZStd::stoi(overridePort));
+        connectionSettings.m_assetProcessorPort = AZStd::stoi(overridePort);
     }
 
     //the asset builder may have been given an optional asset platform to use

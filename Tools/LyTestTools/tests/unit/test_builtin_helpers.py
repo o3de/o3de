@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Unit tests for ly_test_tools.builtin.helpers functions.
 """
 import unittest.mock as mock
-import os
 
 import pytest
 
@@ -42,8 +41,6 @@ class MockedWorkspaceManager(ly_test_tools._internal.managers.workspace.Abstract
         )
 
 
-@mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
-            mock.MagicMock(return_value=os.path.join("mocked", "path")))
 @mock.patch(
     'ly_test_tools._internal.managers.abstract_resource_locator.AbstractResourceLocator',
     mock.MagicMock(return_value=MockedAbstractResourceLocator)

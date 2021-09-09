@@ -60,7 +60,7 @@ libtiffDummyReadProc (thandle_t fd, tdata_t buf, tsize_t size)
 
     memcpy(buf, &memImage->buffer[memImage->offset], size);
 
-    memImage->offset += static_cast<uint32>(size);
+    memImage->offset += size;
 
     // Return the amount of data read
     return size;
@@ -79,19 +79,19 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
     switch (i)
     {
     case SEEK_SET:
-        memImage->offset = static_cast<uint32>(off);
+        memImage->offset = off;
         break;
 
     case SEEK_CUR:
-        memImage->offset += static_cast<uint32>(off);
+        memImage->offset += off;
         break;
 
     case SEEK_END:
-        memImage->offset = static_cast<uint32>(memImage->size - off);
+        memImage->offset = memImage->size - off;
         break;
 
     default:
-        memImage->offset = static_cast<uint32>(off);
+        memImage->offset = off;
         break;
     }
 
@@ -119,7 +119,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = static_cast<uint32>(file.GetLength());
+    memImage.size = file.GetLength();
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -210,7 +210,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = static_cast<int>(file.GetLength());
+    memImage.size = file.GetLength();
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -262,7 +262,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
             }
         }
 
-        uint32 linesize = static_cast<uint32>(TIFFScanlineSize(tif));
+        uint32 linesize = TIFFScanlineSize(tif);
         uint8* linebuf = static_cast<uint8*>(_TIFFmalloc(linesize));
 
         // We assume that a scanline has all of the samples in it.  Validate the assumption.
@@ -460,7 +460,7 @@ const char* CImageTIF::GetPreset(const QString& fileName)
 
     MemImage memImage;
 
-    memImage.size = static_cast<uint32>(file.GetLength());
+    memImage.size = file.GetLength();
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];

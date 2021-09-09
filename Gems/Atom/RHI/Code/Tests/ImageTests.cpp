@@ -108,7 +108,6 @@ namespace UnitTest
 
                 imagePool->ForEach<RHI::Image>([&imageIndex, &images]([[maybe_unused]] const RHI::Image& image)
                 {
-                    AZ_UNUSED(images); // Prevent unused warning in release builds
                     AZ_Assert(images[imageIndex] == &image, "images don't match");
                     imageIndex++;
                 });

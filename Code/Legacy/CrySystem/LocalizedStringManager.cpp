@@ -20,23 +20,18 @@
 #include "System.h" // to access InitLocalization()
 #include <CryPath.h>
 #include <IConsole.h>
-#include <IFont.h>
 #include <locale.h>
 #include <time.h>
 
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/Math/Crc.h>
 
 #define MAX_CELL_COUNT 32
 
 // CVAR names
-#if !defined(_RELEASE)
 const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
-#endif // !defined(_RELEASE)
-
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 
@@ -214,7 +209,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     AZStd::string sPath;
     const AZStd::string sLocalizationFolder(PathUtil::GetLocalizationFolder());
     ILocalizationManager::TLocalizationBitfield availableLanguages = 0;
-
+    
     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
     // test language name against supported languages
     for (int i = 0; i < ILocalizationManager::ePILID_MAX_OR_INVALID; i++)
@@ -478,7 +473,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
             const char* pFind = strstr(sCellContent.c_str(), sLocalizedColumnNames[i]);
             if (pFind != 0)
             {
-                nCellIndexToType[nCellIndex] = static_cast<char>(i);
+                nCellIndexToType[nCellIndex] = i;
 
                 // find SoundMood
                 if (i == ELOCALIZED_COLUMN_SOUNDMOOD)
@@ -802,6 +797,16 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
             m_pLanguage->m_vLocalizedStrings.clear();
             m_pLanguage->m_vLocalizedStrings = newVec;
         }
+
+        /*LARGE_INTEGER liEnd, liFreq;
+        QueryPerformanceCounter(&liEnd);
+        QueryPerformanceFrequency(&liFreq);
+
+        CTimeValue lockTime = CTimeValue((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart);
+        if (m_cvarLocalizationDebug >= 2)
+        {
+            CryLog("<Localization> ReleaseLocalizationDataByTag %s lock time %fMS", sTag, lockTime.GetMilliSeconds());
+        }*/
     }
 
     if (m_cvarLocalizationDebug >= 2)
@@ -867,6 +872,7 @@ inline YesNoType ToYesNoType(const char* szString)
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
+    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;
@@ -1313,7 +1319,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         }
 
         //Compute the CRC32 of the key
-        keyCRC = AZ::Crc32(szLowerCaseKey);
+        keyCRC = CCrc32::Compute(szLowerCaseKey);
         if (m_cvarLocalizationDebug >= 3)
         {
             CryLogAlways("<Localization dupe/clash detection> CRC32: 0x%8X, Key: %s", keyCRC, szLowerCaseKey);
@@ -1501,7 +1507,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     if (m_cvarLocalizationEncode == 1)
     {
         pEncoder->Finalize();
-
+        
         {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
             //uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
@@ -1641,7 +1647,7 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         }
         lowerKey = keyString;
         AZStd::to_lower(lowerKey.begin(), lowerKey.end());
-        keyCRC = AZ::Crc32(lowerKey);
+        keyCRC = CCrc32::Compute(lowerKey.c_str());
         if (m_cvarLocalizationDebug >= 3)
         {
             CryLogAlways("<Localization dupe/clash detection> CRC32: 0%8X, Key: %s", keyCRC, lowerKey.c_str());
@@ -1747,9 +1753,9 @@ void CLocalizedStringsManager::ReloadData()
 void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32)
 {
     pLanguage->m_vLocalizedStrings.push_back(pEntry);
-    [[maybe_unused]] int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
+    int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
     pLanguage->m_keysMap[keyCRC32] = pEntry;
-
+    
     if (m_cvarLocalizationDebug >= 2)
     {
         CryLog("<Localization> Add new string <%u> with ID %d to <%s>", keyCRC32, nId, pLanguage->sLanguage.c_str());
@@ -1855,7 +1861,7 @@ void CLocalizedStringsManager::LocalizeAndSubstituteInternal(AZStd::string& locS
             startIndex += substituteOut.length();
         }
         startIndex = locString.find_first_of('{', startIndex);
-        endIndex = locString.find_first_of('}', startIndex);
+        endIndex = locString.find_first_of('}', startIndex); 
     }
 }
 #if defined(LOG_DECOMP_TIMES)
@@ -1893,6 +1899,7 @@ static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nA
 
 AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const SLanguage* pLanguage) const
 {
+    FUNCTION_PROFILER_FAST(GetISystem(), PROFILE_SYSTEM, g_bProfilerEnabled);
     if ((flags & IS_COMPRESSED) != 0)
     {
 #if defined(LOG_DECOMP_TIMES)
@@ -1919,9 +1926,11 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
-            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
-            assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
+            size_t len =
 #endif
+                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+            assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
+
 
 #if defined(LOG_DECOMP_TIMES)
             nAllocTicks = CryGetTicks();
@@ -1994,7 +2003,7 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
     // Label sign.
     if (sLabel[0] == '@')
     {
-        uint32 labelCRC32 = AZ::Crc32(sLabel + 1);   // skip @ character.
+        uint32 labelCRC32 = CCrc32::ComputeLowercase(sLabel + 1);   // skip @ character.
         {
             AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
             SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, labelCRC32, NULL);
@@ -2043,10 +2052,10 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string&
     // Label sign.
     if (sKey[0] == '@')
     {
-        uint32 keyCRC32 = AZ::Crc32(sKey + 1);
+        uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey + 1);
         {
-            AutoLock lock(m_cs); // Lock here, to prevent strings etc being modified underneath this lookup
-            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL); // skip @ character.
+            AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
+            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);   // skip @ character.
             if (entry != NULL && entry->pEditorExtension != NULL)
             {
                 sLocalizedString = entry->pEditorExtension->sOriginalText;
@@ -2054,7 +2063,7 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string&
             }
             else
             {
-                keyCRC32 = AZ::Crc32(sKey);
+                keyCRC32 = CCrc32::ComputeLowercase(sKey);
                 entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
                 if (entry != NULL && entry->pEditorExtension != NULL)
                 {
@@ -2072,8 +2081,7 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string&
     }
     else
     {
-        // CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Not a valid localized string Label <%s>, must start with @ symbol", sKey
-        // );
+        // CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Not a valid localized string Label <%s>, must start with @ symbol", sKey );
     }
 
     sLocalizedString = sKey;
@@ -2086,7 +2094,7 @@ bool CLocalizedStringsManager::IsLocalizedInfoFound(const char* sKey)
     {
         return false;
     }
-    uint32 keyCRC32 = AZ::Crc32(sKey);
+    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2102,7 +2110,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
         return false;
     }
 
-    uint32 keyCRC32 = AZ::Crc32(sKey);
+    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2133,7 +2141,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
 
     bool bResult = false;
 
-    uint32 keyCRC32 = AZ::Crc32(sKey);
+    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2286,7 +2294,7 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, AZStd::strin
         ++sKeyOrLabel;
     }
 
-    uint32 keyCRC32 = AZ::Crc32(sKeyOrLabel);
+    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKeyOrLabel);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2408,6 +2416,16 @@ void CLocalizedStringsManager::FormatStringMessage(AZStd::string& outString, con
 }
 
 //////////////////////////////////////////////////////////////////////////
+int CLocalizedStringsManager::GetMemoryUsage(ICrySizer* pSizer)
+{
+    pSizer->AddObject(this, sizeof(*this));
+    pSizer->AddObject(m_languages);
+    pSizer->AddObject(m_prototypeEvents);
+    pSizer->AddObject(m_characterNameSet);
+    pSizer->AddObject(m_pLanguage);
+
+    return 0;
+}
 
 #if defined (WIN32) || defined(WIN64)
 namespace
@@ -2440,7 +2458,7 @@ namespace
         { "nl-NL", 0x0413 },  // Dutch (The Netherlands)
         { "fi-FI", 0x040b },  // Finnish
         { "sv-SE", 0x041d },  // Swedish
-        { "cs-CZ", 0x0405 },  // Czech
+        { "cs-CZ", 0x0405 },  // Czech 
         { "no-NO", 0x0414 },  // Norwegian (Norway)
         { "ar-SA", 0x0401 },  // Arabic (Saudi Arabia)
         { "da-DK", 0x0406 },  // Danish (Denmark)

@@ -101,6 +101,12 @@ int64 CryGetTicksPerSec();
 }
 #endif
 
+#define _MS_ALIGN(num) \
+    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
+    __declspec(align(num))
+
+#define DEFINE_ALIGNED_DATA(type, name, alignment) _declspec(align(alignment)) type name;
+
 #ifndef FILE_ATTRIBUTE_NORMAL
     #define FILE_ATTRIBUTE_NORMAL 0x00000080
 #endif

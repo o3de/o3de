@@ -225,7 +225,7 @@ namespace UnitTest
 
         tempAssetEntity = aznew AZ::Entity("TestEntity1");
         tempAssetEntity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
-        SaveAsSlice(tempAssetEntity);
+        AZ::Data::AssetId sliceAssetId1 = SaveAsSlice(tempAssetEntity);
         tempAssetEntity = nullptr;
 
         AZ::SliceComponent::EntityList slice1EntitiesA = InstantiateSlice(sliceAssetId0);
@@ -457,7 +457,7 @@ namespace UnitTest
             {
                 AZ::Debug::TraceMessageBus::Handler::BusConnect();
             }
-            ~SliceTestWarningInterceptor() override
+            ~SliceTestWarningInterceptor()
             {
                 AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
             }

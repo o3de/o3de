@@ -8,6 +8,7 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
+#include <Mocks/IRendererMock.h>
 #include <Mocks/ITextureMock.h>
 #include <Sprite.h>
 
@@ -41,13 +42,23 @@ namespace UnitTest
         {
             LyShineTest::SetupEnvironment();
 
+            m_data = AZStd::make_unique<DataMembers>();
+            m_env->m_stubEnv.pRenderer = &m_data->m_renderer;
         }
 
         void TearDown() override
         {
+            m_data.reset();
+
             LyShineTest::TearDown();
         }
 
+        struct DataMembers
+        {
+            testing::NiceMock<IRendererMock> m_renderer;
+        };
+
+        AZStd::unique_ptr<DataMembers> m_data;
     };
 
 #ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom

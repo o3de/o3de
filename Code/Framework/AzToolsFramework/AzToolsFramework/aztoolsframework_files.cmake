@@ -481,7 +481,6 @@ set(FILES
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
     Viewport/ViewportMessages.h
-    Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
     ViewportUi/Button.h

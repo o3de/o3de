@@ -187,6 +187,11 @@ namespace AZ
         //! @return a pointer to the name of the path that contains the application's executable.
         virtual const char* GetExecutableFolder() const = 0;
 
+        //! Returns a pointer to the driller manager, if driller is enabled.
+        //! The driller manager manages all active driller sessions and driller factories.
+        //! @return A pointer to the driller manager. If driller is not enabled, this function returns null.
+        virtual Debug::DrillerManager* GetDrillerManager() = 0;
+
         //! ResolveModulePath is called whenever LoadDynamicModule wants to resolve a module in order to actually load it.
         //! You can override this if you need to load modules from a different path or hijack module loading in some other way.
         //! If you do, ensure that you use platform-specific conventions to do so, as this is called by multiple platforms.

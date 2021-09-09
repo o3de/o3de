@@ -152,6 +152,8 @@ namespace ScriptCanvasEditor
 
         m_assetType = assetType;
 
+        const bool loadBlocking = false;
+
         auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
         AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
     }

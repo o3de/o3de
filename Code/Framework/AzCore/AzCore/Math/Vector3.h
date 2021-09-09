@@ -312,6 +312,10 @@ namespace AZ
 
     private:
 
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(push)
+#   pragma warning(disable:4201) // anonymous union
+#endif
         union
         {
             Simd::Vec3::FloatType m_value;
@@ -324,6 +328,9 @@ namespace AZ
                 float m_z;
             };
         };
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(pop)
+#endif
     };
 
     //! Non member functionality belonging to the AZ namespace.

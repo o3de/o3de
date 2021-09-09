@@ -291,7 +291,9 @@ namespace AZStd
         template <>
         struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 2* sizeof(int) >
         {
-            AZ_PUSH_DISABLE_WARNING(4121, "-Wunknown-warning-option") // alignment of a member was sensitive to packing
+#if defined(AZ_COMPILER_MSVC)
+# pragma warning(push)
+# pragma warning(disable: 4121) // alignment of a member was sensitive to packing
             // GenericClass* (X::*ProbeFunc) changes it's size. From Microsoft:
             //          Jason Shirk [MSFT]
             //          This is a known bug/issue. Unfortunately, we can't fix it in X86 product
@@ -300,6 +302,7 @@ namespace AZStd
             //              We have addressed the issue for all future platforms (including IA64) where
             //              binary compatibility isn't yet an issue.
             // We can fix this warning by adding forward decl class __single_inheritance CLASS; if the XFuncType is member function.
+#endif
             template <class X, class XFuncType, class GenericMemFuncType>
             inline static GenericClass* Convert(X* pthis, XFuncType function_to_bind, GenericMemFuncType& bound_func)
             {
@@ -327,7 +330,11 @@ namespace AZStd
                 u.s.codeptr = u2.s.codeptr;
                 return (pthis->*u.ProbeFunc)();
             }
-            AZ_POP_DISABLE_WARNING
+
+#if defined(AZ_COMPILER_MSVC)
+# pragma warning(default: 4121) // alignment of a member was sensitive to packing
+# pragma warning(pop)
+#endif
         };
 
         // Nasty hack for Microsoft and Intel (IA32 and Itanium)

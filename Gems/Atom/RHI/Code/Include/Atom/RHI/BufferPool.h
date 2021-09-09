@@ -223,9 +223,6 @@ namespace AZ
             /// Called when a buffer is being streamed asynchronously.
             virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);
 
-            //Called in order to do a simple mem copy allowing Null rhi to opt out
-            virtual void BufferCopy(void* destination, const void* source, size_t num);
-
             //////////////////////////////////////////////////////////////////////////
 
             BufferPoolDescriptor m_descriptor;

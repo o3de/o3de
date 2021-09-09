@@ -27,10 +27,15 @@ namespace AWSCore
 
     };
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable: 4250 )
     // warning C4250: 'AWSCore::HttpRequestJobConfig' : inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-    AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
+
+#endif
+
     //! Provides service job configuration using settings properties.
     class HttpRequestJobConfig
         : public AwsApiJobConfig
@@ -93,6 +98,9 @@ namespace AWSCore
         std::shared_ptr<Aws::Http::HttpClient> m_httpClient{ nullptr };
         Aws::String m_userAgent{};
     };
-    AZ_POP_DISABLE_WARNING
+
+#ifdef _MSC_VER 
+#pragma warning( pop ) // C4250
+#endif
 
 } // namespace AWSCore

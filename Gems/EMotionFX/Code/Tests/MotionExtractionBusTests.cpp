@@ -132,6 +132,8 @@ namespace EMotionFX
 
         EXPECT_TRUE(hasCustomMotionExtractionController) << "MotionExtractionBus is not found.";
 
+        const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
+
         AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(currentTransform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
 

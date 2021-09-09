@@ -32,10 +32,6 @@ def test_Sanity_Benchmark_Pass():
 def test_Sanity_Sandbox_Pass():
     pass
 
-@pytest.mark.SUITE_awsi
-def test_Sanity_AWSI_Pass():
-    pass
-
 @pytest.mark.REQUIRES_gpu
 def test_Sanity_RequireGpu_Pass():
     pass

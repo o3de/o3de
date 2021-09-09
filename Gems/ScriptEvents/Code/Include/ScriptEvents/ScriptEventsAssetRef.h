@@ -135,6 +135,7 @@ namespace ScriptEvents
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, m_asset.GetId());
                 if (assetInfo.m_assetId.IsValid())
                 {
+                    const AZ::Data::AssetType assetTypeId = azrtti_typeid<ScriptEventsAsset>();
                     auto& assetManager = AZ::Data::AssetManager::Instance();
                     m_asset = assetManager.GetAsset(m_asset.GetId(), azrtti_typeid<ScriptEventsAsset>(), m_asset.GetAutoLoadBehavior());
 

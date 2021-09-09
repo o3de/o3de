@@ -174,25 +174,25 @@ namespace AzFramework
         ScriptDebugAgent() = default;
         //////////////////////////////////////////////////////////////////////////
         // Component base
-        void Init() override;
-        void Activate() override;
-        void Deactivate() override;
+        virtual void Init();
+        virtual void Activate();
+        virtual void Deactivate();
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::SystemTickBus
-        void OnSystemTick() override;
+        virtual void OnSystemTick();
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // ScriptDebugAgentBus
-        void RegisterContext(AZ::ScriptContext* sc, const char* name) override;
-        void UnregisterContext(AZ::ScriptContext* sc) override;
+        virtual void RegisterContext(AZ::ScriptContext* sc, const char* name);
+        virtual void UnregisterContext(AZ::ScriptContext* sc);
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // TmMsgBus
-        void OnReceivedMsg(TmMsgPtr msg) override;
+        virtual void OnReceivedMsg(TmMsgPtr msg);
         //////////////////////////////////////////////////////////////////////////
 
     protected:
@@ -241,10 +241,10 @@ namespace AzFramework
     void ScriptDebugAgent::Activate()
     {
         m_executionState = SDA_STATE_DETACHED;
-        m_curContext = nullptr;
+        m_curContext = NULL;
 
         // register default app script context if there is one
-        AZ::ScriptContext* defaultScriptContext = nullptr;
+        AZ::ScriptContext* defaultScriptContext = NULL;
         EBUS_EVENT_RESULT(defaultScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
         if (defaultScriptContext)
         {
@@ -379,7 +379,7 @@ namespace AzFramework
 
         AZ_TracePrintf("LUA", "Remote debugger %s has detached from context 0x%p.\n", m_debugger.GetDisplayName(), m_curContext);
         m_debugger = TargetInfo();
-        m_curContext = nullptr;
+        m_curContext = NULL;
         m_executionState = SDA_STATE_DETACHED;
     }
     //-------------------------------------------------------------------------
@@ -435,7 +435,7 @@ namespace AzFramework
     void ScriptDebugAgent::Process()
     {
         // Process messages
-        AZ::ScriptContextDebug* dbgContext = m_curContext ? m_curContext->GetDebugContext() : nullptr;
+        AZ::ScriptContextDebug* dbgContext = m_curContext ? m_curContext->GetDebugContext() : NULL;
         while (!m_msgQueue.empty())
         {
             m_msgMutex.lock();

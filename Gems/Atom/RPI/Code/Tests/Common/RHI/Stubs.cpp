@@ -20,11 +20,6 @@ namespace UnitTest
             m_descriptor.m_description = "UnitTest Fake Device";
         }
 
-        Device::Device()
-        {
-            m_descriptor.m_platformLimitsDescriptor = aznew RHI::PlatformLimitsDescriptor;
-        }
-
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             return RHI::PhysicalDeviceList{ aznew PhysicalDevice };

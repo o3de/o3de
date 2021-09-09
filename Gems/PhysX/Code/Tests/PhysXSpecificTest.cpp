@@ -1126,7 +1126,7 @@ namespace PhysX
             return nullptr;
         };
 
-        auto RemoveRigidBody = [](AzPhysics::RigidBody*& rigidBody)
+        auto RemoveRigidBody = [this](AzPhysics::RigidBody*& rigidBody)
         {
             auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
             if (rigidBody && sceneInterface)

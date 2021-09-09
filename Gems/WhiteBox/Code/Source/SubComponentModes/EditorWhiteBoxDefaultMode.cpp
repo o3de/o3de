@@ -212,7 +212,7 @@ namespace WhiteBox
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Transform& worldFromLocal,
         const AzFramework::CameraState& cameraState, const IntersectionAndRenderData& renderData)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const float vertexIndicatorLength = cl_whiteBoxVertexIndicatorLength;
         const float vertexIndicatorWidth = cl_whiteBoxVertexIndicatorWidth;
@@ -252,7 +252,7 @@ namespace WhiteBox
         const IntersectionAndRenderData& renderData, [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         TryDestroyModifier(m_polygonTranslationModifier);
         TryDestroyModifier(m_edgeTranslationModifier);
@@ -276,7 +276,7 @@ namespace WhiteBox
 
     Api::EdgeHandles DefaultMode::FindInteractiveEdgeHandles(const WhiteBoxMesh& whiteBox)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         // get all edge handles for hovered polygon
         const Api::EdgeHandles polygonHoveredEdgeHandles = m_polygonTranslationModifier
@@ -322,7 +322,7 @@ namespace WhiteBox
         const WhiteBoxMesh& whiteBox, const PolygonScaleModifier* polygonScaleModifier,
         const EdgeScaleModifier* edgeScaleModifier, const Api::VertexHandle vertexHandle)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (Api::VertexIsHidden(whiteBox, vertexHandle))
         {
@@ -371,7 +371,7 @@ namespace WhiteBox
         const AZStd::optional<PolygonIntersection>& polygonIntersection,
         const AZStd::optional<VertexIntersection>& vertexIntersection)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(

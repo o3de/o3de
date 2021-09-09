@@ -11,9 +11,8 @@
 #define CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H
 #pragma once
 
-#include <CryCommon/IConsole.h>
-#include <CryCommon/CryListenerSet.h>
-#include <CryCommon/StaticInstance.h>
+#include <IConsole.h>
+#include <CryListenerSet.h>
 
 #if !defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)
     #define USE_REMOTE_CONSOLE

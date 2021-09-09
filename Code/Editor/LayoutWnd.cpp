@@ -183,6 +183,7 @@ void CLayoutWnd::MaximizeViewport(int paneId)
 
     QString viewClass = m_viewType[paneId];
 
+    const QRect rc = rect();
     if (!m_bMaximized)
     {
         CLayoutViewPane* pViewPane = GetViewPane(paneId);

@@ -41,6 +41,8 @@ public:
 
     CBinaryXmlData();
     ~CBinaryXmlData();
+
+    void GetMemoryUsage(ICrySizer* pSizer) const;
 };
 
 // forward declaration
@@ -56,6 +58,9 @@ class CBinaryXmlNode
     : public IXmlNode
 {
 public:
+
+    // collect allocated memory  informations
+    void GetMemoryUsage(ICrySizer* pSizer) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Custom new/delete with pool allocator.
@@ -158,9 +163,11 @@ public:
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] float value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] f64 value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Vec2& value) { assert(0); };
+    void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Vec2d& value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Ang3& value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Vec3& value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Vec4& value) { assert(0); };
+    void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Vec3d& value) { assert(0); };
     void setAttr([[maybe_unused]] const char* key, [[maybe_unused]] const Quat& value) { assert(0); };
     void delAttr([[maybe_unused]] const char* key) { assert(0); };
     void removeAllAttributes() { assert(0); };
@@ -175,9 +182,11 @@ public:
     bool getAttr(const char* key, bool& value) const;
     bool getAttr(const char* key, XmlString& value) const  {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
     bool getAttr(const char* key, Vec2& value) const;
+    bool getAttr(const char* key, Vec2d& value) const;
     bool getAttr(const char* key, Ang3& value) const;
     bool getAttr(const char* key, Vec3& value) const;
     bool getAttr(const char* key, Vec4& value) const;
+    bool getAttr(const char* key, Vec3d& value) const;
     bool getAttr(const char* key, Quat& value) const;
     bool getAttr(const char* key, ColorB& value) const;
 

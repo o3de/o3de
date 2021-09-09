@@ -59,19 +59,11 @@ class EditorTestBase(ABC):
     timeout = 180
     # Test file that this test will run
     test_module = None
-    # Attach debugger when running the test, useful for debugging crashes. This should never be True on production.
-    # It's also recommended to switch to EditorSingleTest for debugging in isolation
-    attach_debugger = False
-    # Wait until a debugger is attached at the startup of the test, this is another way of debugging.
-    wait_for_debugger = False
 
 # Test that will be run alone in one editor
 class EditorSingleTest(EditorTestBase):
-    #- Configurable params -#
     # Extra cmdline arguments to supply to the editor for the test
     extra_cmdline_args = []
-    # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
-    use_null_renderer = None
 
     # Custom setup function, will run before the test
     @staticmethod
@@ -122,9 +114,8 @@ class Result:
 
     class Pass(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, editor_log : str):
+        def create(cls, output : str, editor_log : str):
             r = cls()
-            r.test_spec = test_spec
             r.output = output
             r.editor_log = editor_log
             return r
@@ -141,9 +132,8 @@ class Result:
 
     class Fail(Base):       
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output, editor_log : str):
+        def create(cls, output, editor_log : str):
             r = cls()
-            r.test_spec = test_spec
             r.output = output
             r.editor_log = editor_log
             return r
@@ -164,10 +154,9 @@ class Result:
 
     class Crash(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, ret_code : int, stacktrace : str, editor_log : str):
+        def create(cls, output : str, ret_code : int, stacktrace : str, editor_log : str):
             r = cls()
             r.output = output
-            r.test_spec = test_spec
             r.ret_code = ret_code
             r.stacktrace = stacktrace
             r.editor_log = editor_log
@@ -195,10 +184,9 @@ class Result:
 
     class Timeout(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, time_secs : float, editor_log : str):
+        def create(cls, output : str, time_secs : float, editor_log : str):
             r = cls()
             r.output = output
-            r.test_spec = test_spec
             r.time_secs = time_secs
             r.editor_log = editor_log
             return r
@@ -219,10 +207,9 @@ class Result:
 
     class Unknown(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, extra_info : str, editor_log : str):
+        def create(cls, output : str, extra_info : str, editor_log : str):
             r = cls()
             r.output = output
-            r.test_spec = test_spec
             r.editor_log = editor_log
             r.extra_info = extra_info
             return r
@@ -259,24 +246,14 @@ class EditorTestSuite():
 
     ## Internal ##
     _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
-    _TEST_FAIL_RETCODE = 0xF # Return code for test failure
+    _TEST_FAIL_RETCODE = 0xF # Return code for test failure 
+    _asset_processor = None
+    _results = {}
 
     @pytest.fixture(scope="class")
-    def editor_test_data(self, request):
-        class TestData():
-            def __init__(self):
-                self.results = {} # Dict of str(test_spec.__name__) -> Result
-                self.asset_processor = None
-
-        test_data = TestData()
-        yield test_data
-        if test_data.asset_processor:
-            test_data.asset_processor.stop(1)
-            test_data.asset_processor.teardown()
-            test_data.asset_processor = None
-            editor_utils.kill_all_ly_processes(include_asset_processor=True)
-        else:
-            editor_utils.kill_all_ly_processes(include_asset_processor=False)
+    def editor_test_results(self, request):
+        results = {}
+        return results
 
     class Runner():
         def __init__(self, name, func, tests):
@@ -338,25 +315,26 @@ class EditorTestSuite():
                 name = test_spec.__name__
                 def make_test_func(name, test_spec):
                     @set_marks({"run_type" : "run_single"})
-                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                    def single_run(self, request, workspace, editor, editor_test_results, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(test_spec, EditorSingleTest)
                         if is_single_test:
                             # Setup step for wrap_run
-                            wrap = test_spec.wrap_run(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            wrap = test_spec.wrap_run(self, request, workspace, editor, editor_test_results, launcher_platform)
                             assert isinstance(wrap, types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step                        
-                            test_spec.setup(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            test_spec.setup(self, request, workspace, editor, editor_test_results, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, editor, editor_test_data, test_spec)
+                        self._run_single_test(request, workspace, editor, editor_test_results, test_spec)
                         if is_single_test:
                             # Teardown
-                            test_spec.teardown(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            test_spec.teardown(self, request, workspace, editor, editor_test_results, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
+                setattr(self.obj, name, make_test_func(name, test_spec))
                 f = make_test_func(name, test_spec)
                 if hasattr(test_spec, "pytestmark"):
                     f.pytestmark = test_spec.pytestmark
@@ -370,8 +348,8 @@ class EditorTestSuite():
                 runner = EditorTestSuite.Runner(name, function, tests)
                 def make_func():
                     @set_marks({"runner" : runner, "run_type" : "run_shared"})
-                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, editor, editor_test_data, runner.tests)
+                    def shared_run(self, request, workspace, editor, editor_test_results, launcher_platform):
+                        getattr(self, function.__name__)(request, workspace, editor, editor_test_results, runner.tests)
                     return shared_run
                 setattr(self.obj, name, make_func())
                 
@@ -379,11 +357,11 @@ class EditorTestSuite():
                 for test_spec in tests:
                     def make_func(test_spec):
                         @set_marks({"runner" : runner, "test_spec" : test_spec, "run_type" : "result"})
-                        def result(self, request, workspace, editor, editor_test_data, launcher_platform):
-                            # The runner must have filled the editor_test_data.results dict fixture for this test.
+                        def result(self, request, workspace, editor, editor_test_results, launcher_platform):
+                            # The runner must have filled the editor_test_results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            assert test_spec.__name__ in editor_test_data.results, f"No run data for test: {test_spec.__name__}."
-                            cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
+                            assert test_spec.__name__ in editor_test_results, f"No run data for test: {test_spec.__name__}."
+                            cls._report_result(test_spec.__name__, editor_test_results[test_spec.__name__])
                         return result
                     
                     result_func = make_func(test_spec)
@@ -503,29 +481,41 @@ class EditorTestSuite():
             )
         ]
 
+    def setup_class(cls):
+        cls._asset_processor = None
+    
+    def teardown_class(cls):
+        if cls._asset_processor:
+            cls._asset_processor.stop(1)
+            cls._asset_processor.teardown()
+            cls._asset_processor = None
+            editor_utils.kill_all_ly_processes(include_asset_processor=True)
+        else:
+            editor_utils.kill_all_ly_processes(include_asset_processor=False)
+
     ### Utils ###
 
     # Prepares the asset processor for the test
-    def _prepare_asset_processor(self, workspace, editor_test_data):
+    def _prepare_asset_processor(self, workspace):
         try:
             # Start-up an asset processor if we are not running one
             # If another AP process exist, don't kill it, as we don't own it
-            if editor_test_data.asset_processor is None:
+            if self._asset_processor is None:
                 if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
-                    editor_utils.kill_all_ly_processes(include_asset_processor=True)
-                    editor_test_data.asset_processor = AssetProcessor(workspace)
-                    editor_test_data.asset_processor.start()
+                    editor_utils.kill_all_ly_processes()
+                    self._asset_processor = AssetProcessor(workspace)
+                    self._asset_processor.start()
                 else:
                     editor_utils.kill_all_ly_processes(include_asset_processor=False)
             else:
                 # Make sure the asset processor from before wasn't closed by accident
-                editor_test_data.asset_processor.start()
+                self._asset_processor.start()
         except Exception as ex:
-            editor_test_data.asset_processor = None
+            self._asset_processor = None
             raise ex
 
-    def _setup_editor_test(self, editor, workspace, editor_test_data):
-        self._prepare_asset_processor(workspace, editor_test_data)
+    def _setup_editor_test(self, editor, workspace):
+        self._prepare_asset_processor(workspace)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         editor.configure_settings()
 
@@ -558,25 +548,22 @@ class EditorTestSuite():
         for test_spec in test_spec_list:
             name = editor_utils.get_module_filename(test_spec.test_module)
             if name not in found_jsons.keys():
-                results[test_spec.__name__] = Result.Unknown.create(test_spec, output, "Couldn't find any test run information on stdout", editor_log_content)
+                results[test_spec.__name__] = Result.Unknown.create(output, "Couldn't find any test run information on stdout", editor_log_content)
             else:
                 result = None
                 json_result = found_jsons[name]
                 json_output = json_result["output"]
 
                 # Cut the editor log so it only has the output for this run
-                if "log_match" in json_result:
-                    m = json_result["log_match"]
-                    end = m.end() if test_spec != test_spec_list[-1] else -1
-                else:
-                    end = -1
+                m = json_result["log_match"]
+                end = m.end() if test_spec != test_spec_list[-1] else -1
                 cur_log = editor_log_content[log_start : end]
                 log_start = end
 
                 if json_result["success"]:
-                    result = Result.Pass.create(test_spec, json_output, cur_log)
+                    result = Result.Pass.create(json_output, cur_log)
                 else:
-                    result = Result.Fail.create(test_spec, json_output, cur_log)
+                    result = Result.Fail.create(json_output, cur_log)
                 results[test_spec.__name__] = result
 
         return results
@@ -597,13 +584,8 @@ class EditorTestSuite():
                           test_spec : EditorTestBase, cmdline_args : List[str] = []):
 
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
-        if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
+        if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
-        if test_spec.attach_debugger:
-            test_cmdline_args += ["--attach-debugger"]
-        if test_spec.wait_for_debugger:
-            test_cmdline_args += ["--wait-for-debugger"]
             
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -625,18 +607,18 @@ class EditorTestSuite():
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
             if return_code == 0:
-                test_result = Result.Pass.create(test_spec, output, editor_log_content)
+                test_result = Result.Pass.create(output, editor_log_content)
             else:
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
+                    test_result = Result.Crash.create(output, return_code, editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
-                    test_result = Result.Fail.create(test_spec, output, editor_log_content)
+                    test_result = Result.Fail.create(output, editor_log_content)
         except WaitTimeoutError:
             editor.kill()            
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-            test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
+            test_result = Result.Timeout.create(output, test_spec.timeout, editor_log_content)
     
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
@@ -644,17 +626,13 @@ class EditorTestSuite():
         return results
 
     # Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that editor
-    # instance. In case of failure this function also parses the editor output to find out what specific tests failed
+    # instance. In case of failure this function also parses the editor output to find out what specific tests that failed
     def _exec_editor_multitest(self, request, workspace, editor, run_id : int, log_name : str,
                                test_spec_list : List[EditorTestBase], cmdline_args=[]):
 
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
-        if any([t.attach_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--attach-debugger"]
-        if any([t.wait_for_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--wait-for-debugger"]
             
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -680,91 +658,63 @@ class EditorTestSuite():
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
                 for test_spec in test_spec_list:
-                    results[test_spec.__name__] = Result.Pass.create(test_spec, output, editor_log_content)
+                    results[test_spec.__name__] = Result.Pass.create(output, editor_log_content)
             else:
-                # Scrap the output to attempt to find out which tests failed.
-                # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-                assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
-
-                # If the editor crashed, find out in which test it happened and update the results
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    crashed_result = None
-                    for test_spec_name, result in results.items():
+                    crashed_test = None
+                    for key, result in results.items():
                         if isinstance(result, Result.Unknown):
-                            if not crashed_result:
-                                # The first test with "Unknown" result (no data in output) is likely the one that crashed
+                            if not crashed_test:
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                                 editor_utils.cycle_crash_report(run_id, workspace)
-                                results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code, crash_error, result.editor_log)
-                                crashed_result = result
+                                results[key] = Result.Crash.create(output, return_code, crash_error, result.editor_log)
+                                crashed_test = results[key]
                             else:
-                                # If there are remaning "Unknown" results, these couldn't execute because of the crash, update with info about the offender 
-                                results[test_spec_name].extra_info = f"This test has unknown result, test '{crashed_result.test_spec.__name__}' crashed before this test could be executed"
+                                results[key] = Result.Unknown.create(output, f"This test has unknown result, test '{crashed_test.__name__}' crashed before this test could be executed", result.editor_log)
 
-                    # if all the tests ran, the one that has caused the crash is the last test
-                    if not crashed_result:
-                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
-                        editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code, crash_error, crashed_result.editor_log)
-
-
-        except WaitTimeoutError:            
-            editor.kill()
-
-            output = editor.get_output()
-            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-
-            # The editor timed out when running the tests, get the data from the output to find out which ones ran
+        except WaitTimeoutError:
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-            assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
-            
-            # Similar logic here as crashes, the first test that has no result is the one that timed out
-            timed_out_result = None
-            for test_spec_name, result in results.items():
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            editor.kill()
+            for key, result in results.items():
                 if isinstance(result, Result.Unknown):
-                    if not timed_out_result:
-                        results[test_spec_name] = Result.Timeout.create(result.test_spec, result.output, self.timeout_editor_shared_test, result.editor_log)
-                        timed_out_result = result
-                    else:
-                        # If there are remaning "Unknown" results, these couldn't execute because of the timeout, update with info about the offender 
-                        results[test_spec_name].extra_info = f"This test has unknown result, test '{timed_out_result.test_spec.__name__}' timed out before this test could be executed"
-
-            # if all the tests ran, the one that has caused the timeout is the last test, as it didn't close the editor
-            if not timed_out_result:
-                results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec, results[test_spec_name].output, self.timeout_editor_shared_test, result.editor_log)
+                    results[key] = Result.Timeout.create(result.output, total_timeout, result.editor_log)
 
         return results
     
-    # Runs a single test (one editor, one test) with the given specs
-    def _run_single_test(self, request, workspace, editor, editor_test_data, test_spec : EditorSingleTest):
-        self._setup_editor_test(editor, workspace, editor_test_data)
+    # Runs a single test with the given specs, used by the collector to register the test
+    def _run_single_test(self, request, workspace, editor, editor_test_results, test_spec : EditorTestBase):
+        self._setup_editor_test(editor, workspace)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
         results = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
-        editor_test_data.results.update(results)
+        if not hasattr(self.__class__, "_results"):
+            self.__class__._results = {}
+
+        editor_test_results.update(results)
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
 
-    # Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
-    def _run_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    # Runs a batch of tests in one single editor with the given spec list
+    def _run_batched_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace)
         results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list, extra_cmdline_args)
         assert results is not None
-        editor_test_data.results.update(results)
+        editor_test_results.update(results)
 
-    # Runs multiple editors with one test on each editor (multiple editor, one test each)
-    def _run_parallel_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    # Runs multiple editors with one test on each editor
+    def _run_parallel_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace)
         parallel_editors = self._get_number_parallel_editors(request)
         assert parallel_editors > 0, "Must have at least one editor"
         
@@ -794,14 +744,14 @@ class EditorTestSuite():
                 t.join()
 
             for result in results_per_thread:
-                editor_test_data.results.update(result)
+                editor_test_results.update(result)
 
-    # Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
-    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    # Runs multiple editors with a batch of tests for each editor
+    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace)
         total_threads = self._get_number_parallel_editors(request)
         assert total_threads > 0, "Must have at least one editor"
         threads = []
@@ -831,11 +781,11 @@ class EditorTestSuite():
             t.join()
 
         for result in results_per_thread:
-            editor_test_data.results.update(result)
+            editor_test_results.update(result)
 
     # Retrieves the number of parallel preference cmdline overrides
     def _get_number_parallel_editors(self, request):
-        parallel_editors_value = request.config.getoption("--editors-parallel", None)
+        parallel_editors_value = request.config.getoption("parallel_editors", None)
         if parallel_editors_value:
             return int(parallel_editors_value)
 

@@ -10,7 +10,6 @@
 
 #include <QPushButton>
 #include <QHBoxLayout>
-#include <QKeyEvent>
 
 namespace O3DE::ProjectManager
 {
@@ -28,14 +27,4 @@ namespace O3DE::ProjectManager
         : FormBrowseEditWidget(labelText, "", parent)
     {
     }
-
-    void FormBrowseEditWidget::keyPressEvent(QKeyEvent* event)
-    {
-        int key = event->key();
-        if (key == Qt::Key_Return || key == Qt::Key_Enter)
-        {
-            HandleBrowseButton();
-        }
-    }
-
 } // namespace O3DE::ProjectManager

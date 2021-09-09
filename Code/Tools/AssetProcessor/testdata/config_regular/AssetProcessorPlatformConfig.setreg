@@ -14,9 +14,6 @@
                 "Platform server": {
                     "tags": "server"
                 },
-                "Platform linux": {
-                    "tags": "tools,renderer"
-                },
                 "Platforms": {
                     "android": "enabled",
                     "server": "enabled"

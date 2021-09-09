@@ -84,7 +84,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
             mv_sequence->AddEnumItem(QObject::tr("<None>"), CTrackViewDialog::GetEntityIdAsString(AZ::EntityId(AZ::EntityId::InvalidEntityId)));
 
             const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-            for (unsigned int i = 0; i < pSequenceManager->GetCount(); ++i)
+            for (int i = 0; i < pSequenceManager->GetCount(); ++i)
             {
                 CTrackViewSequence* pCurrentSequence = pSequenceManager->GetSequenceByIndex(i);
                 bool bNotMe = pCurrentSequence != pSequence;

@@ -10,7 +10,6 @@
 #include "IGestureRecognizer.h"
 
 #include <CryCommon/ISystem.h>
-#include <CryCommon/ITimer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +63,7 @@ namespace Gestures
         AZ::Vector2 GetStartPosition() const { return m_startPosition; }
         AZ::Vector2 GetCurrentPosition() const { return m_currentPosition; }
 
-        float GetDuration() const { return (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_startTime) : 0.0f; }
+        float GetDuration() const { return gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_startTime); }
 
     private:
         enum class State

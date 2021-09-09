@@ -135,6 +135,7 @@ namespace AzToolsFramework
         QIcon m_warningIcon;
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
+        QVBoxLayout* m_mainLayout = nullptr;
 
         AZ::SerializeContext* m_serializeContext;
 

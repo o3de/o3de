@@ -121,7 +121,7 @@ namespace AzToolsFramework
             ComponentDataTable &componentDataTable,
             ComponentIconTable &componentIconTable)
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             serializeContext->EnumerateDerived<AZ::Component>(
                 [&](const AZ::SerializeContext::ClassData* componentClass, const AZ::Uuid& knownType) -> bool
                 {
@@ -179,7 +179,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
         )
         {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
             
             bool containsEditable = false;
 

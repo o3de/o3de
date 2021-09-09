@@ -157,6 +157,6 @@ private: // data
     ImageType m_imageType = ImageType::Fixed;       //!< Affects how the texture/sprite is mapped to the image rectangle
 
     // cached rendering data for performance optimization
-    DynUiPrimitive m_cachedPrimitive;
+    IRenderer::DynUiPrimitive m_cachedPrimitive;
     bool m_isRenderCacheDirty = true;
 };

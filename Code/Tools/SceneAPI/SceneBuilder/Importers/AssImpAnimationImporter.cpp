@@ -49,7 +49,7 @@ namespace AZ
                 double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames + 1;
                 if (!AZ::IsClose(totalFramesAtDefaultTimeStep, numKeys, 1))
                 {
-                    numKeys = static_cast<AZ::u32>(AZStd::ceilf(static_cast<float>(totalFramesAtDefaultTimeStep)));
+                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep);
                 }
                 return numKeys;
             }
@@ -122,7 +122,7 @@ namespace AZ
                     if (keys[lastIndex + 1].mTime != keys[lastIndex].mTime)
                     {
                         normalizedTimeBetweenFrames =
-                            static_cast<float>((time - keys[lastIndex].mTime) / (keys[lastIndex + 1].mTime - keys[lastIndex].mTime));
+                            (time - keys[lastIndex].mTime) / (keys[lastIndex + 1].mTime - keys[lastIndex].mTime);
                     }
                     else
                     {
@@ -620,7 +620,7 @@ namespace AZ
                     for (unsigned int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
                     {
                         int currentValue = key.mValues[valIdx];
-                        KeyData thisKey(static_cast<float>(key.mWeights[valIdx]), static_cast<float>(key.mTime));
+                        KeyData thisKey(key.mWeights[valIdx], key.mTime);
                         valueToKeyDataMap[currentValue].insert(
                         AZStd::upper_bound(valueToKeyDataMap[currentValue].begin(), valueToKeyDataMap[currentValue].end(),thisKey),
                             thisKey);
@@ -652,6 +652,7 @@ namespace AZ
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
+                    const AZ::u32 maxKeys = static_cast<AZ::u32>(keys.size());
                     AZ::u32 keyIdx = 0;
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {

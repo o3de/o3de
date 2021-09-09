@@ -294,6 +294,6 @@ private: // data
     bool m_isAlphaOverridden;
 
     // cached rendering data for performance optimization
-    DynUiPrimitive m_cachedPrimitive;
+    IRenderer::DynUiPrimitive m_cachedPrimitive;
     bool m_isRenderCacheDirty = true;
 };

@@ -43,7 +43,7 @@ namespace PhysX
             void DisconnectFromPvd() override;
 
         private:
-            [[maybe_unused]] physx::PxPvdTransport* m_pvdTransport = nullptr;
+            physx::PxPvdTransport* m_pvdTransport = nullptr;
             physx::PxPvd* m_pvd = nullptr;
 
             DebugConfiguration m_config;

@@ -37,7 +37,7 @@ namespace AzToolsFramework
     static void HandleAccents(
         const AZ::EntityId entityIdUnderCursor, AZ::EntityId& hoveredEntityId, const ViewportInteraction::MouseButtons mouseButtons)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const bool invalidMouseButtonHeld = mouseButtons.Middle() || mouseButtons.Right();
 

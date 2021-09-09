@@ -162,7 +162,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 1.f)
                             ->Attribute(Edit::Attributes::Suffix, " deg")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsSofteningBoundaryWidthDisabled)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
                             "Sample count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)

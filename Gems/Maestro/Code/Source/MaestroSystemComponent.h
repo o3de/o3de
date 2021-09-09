@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/AllocatorScope.h>
 #include <CrySystemBus.h>
-#include <CryCommon/LegacyAllocator.h>
 
 #include "Cinematics/Movie.h"
 #include "Maestro/MaestroBus.h"

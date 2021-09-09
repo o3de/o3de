@@ -13,7 +13,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
@@ -207,7 +206,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     size_t ArchiveInternal::CZipPseudoFile::FRead(void* pDest, size_t nSize, size_t nCount, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         if (!GetFile())
         {
@@ -236,7 +235,7 @@ namespace AZ::IO::ArchiveInternal
             return 0;
         }
 
-        if (static_cast<size_t>(nReadBytes) != nTotal)
+        if (nReadBytes != nTotal)
         {
             AZ_Warning("Archive", false, "FRead did not read expected number of byte from file, only %zu of %lld bytes read", nTotal, nReadBytes);
             nTotal = (size_t)nReadBytes;
@@ -272,7 +271,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     void* ArchiveInternal::CZipPseudoFile::GetFileData(size_t& nFileSize, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         if (!GetFile())
         {
@@ -348,12 +347,17 @@ namespace AZ::IO::ArchiveInternal
             return EOF;
         }
         int c = EOF;
-        if (m_nCurSeek == GetFileSize())
+        int i;
+        for (i = 0; i < 1; i++)
         {
-            return c;
+            if (i + m_nCurSeek == GetFileSize())
+            {
+                return c;
+            }
+            c = pData[i + m_nCurSeek];
+            break;
         }
-        c = pData[m_nCurSeek];
-        m_nCurSeek += 1;
+        m_nCurSeek += i + 1;
         return c;
     }
 }
@@ -374,8 +378,8 @@ namespace AZ::IO
     {
     public:
         AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
-        CResourceList() { m_iter = m_set.end(); }
-        ~CResourceList() override {}
+        CResourceList() { m_iter = m_set.end(); };
+        ~CResourceList() {};
 
         void Add(AZStd::string_view sResourceFile) override
         {
@@ -681,7 +685,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     AZ::IO::HandleType Archive::FOpen(AZStd::string_view pName, const char* szMode, uint32_t nInputFlags)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         const size_t pathLen = pName.size();
         if (pathLen == 0 || pathLen >= MaxPath)
@@ -689,7 +693,7 @@ namespace AZ::IO
             return AZ::IO::InvalidHandle;
         }
 
-        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %.*s Archive: %p",
             aznumeric_cast<int>(pName.size()), pName.data(), this);
 
         SAutoCollectFileAccessTime accessTime(this);
@@ -712,7 +716,7 @@ namespace AZ::IO
         }
 
         const bool fileWritable = (nOSFlags & (AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeUpdate)) != AZ::IO::OpenMode::Invalid;
-        AZ_PROFILE_SCOPE(Game, "File: %s Archive: %p", szFullPath->c_str(), this);
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %s Archive: %p", szFullPath->c_str(), this);
         if (fileWritable)
         {
             // we need to open the file for writing, but we failed to do so.
@@ -1090,8 +1094,8 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRaw(void* pData, size_t nSize, size_t nCount, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
-        AZ_PROFILE_SCOPE(Game, "Size: %d Archive: %p", nSize, this);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "Size: %d Archive: %p", nSize, this);
         SAutoCollectFileAccessTime accessTime(this);
 
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1108,7 +1112,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRawAll(void* pData, size_t nFileSize, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1126,7 +1130,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     void* Archive::FGetCachedFileData(AZ::IO::HandleType fileHandle, size_t& nFileSize)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1787,11 +1791,11 @@ namespace AZ::IO
         AZ_Assert(m_pZip, "ZipFile is nullptr");
         AZ_Assert(m_pFileEntry && m_pZip->IsOwnerOf(m_pFileEntry), "ZipFile is not owner of m_pFileEntry");
 
-        if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
+        if (nDataSize != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
         {
             return false;
         }
-        else if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
+        else if (nDataSize != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
         {
             return false;
         }
@@ -2330,6 +2334,7 @@ namespace AZ::IO
             // we only want to record ASSET access
             // assets are identified as things which start with no alias, or with the @assets@ alias
             auto assetPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(szFilename);
+            constexpr AZStd::string_view assetsAlias{ "@assets@" };
             if (assetPath && assetPath->Native().starts_with("@assets@"))
             {
                 IResourceList* pList = GetResourceList(m_eRecordFileOpenList);
@@ -2571,7 +2576,7 @@ namespace AZ::IO
         return aznumeric_cast<uint64_t>(pFileEntry->nFileDataOffset);
     }
 
-    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const
+    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const 
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szName);
         if (!szFullPath)

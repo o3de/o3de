@@ -197,11 +197,11 @@ namespace AssetProcessor
 
         m_jobsInFlight.insert(rcJob);
 
-        for(int jobIndex = static_cast<int>(m_jobs.size()) - 1; jobIndex >= 0; --jobIndex)
+        for(size_t jobIndex = m_jobs.size() - 1; jobIndex >= 0; --jobIndex)
         {
             if(m_jobs[jobIndex] == rcJob)
             {
-                Q_EMIT dataChanged(index(jobIndex, 0, QModelIndex()), index(jobIndex, 0, QModelIndex()));
+                Q_EMIT dataChanged(index(aznumeric_caster(jobIndex), 0, QModelIndex()), index(aznumeric_caster(jobIndex), 0, QModelIndex()));
                 return;
             }
         }
@@ -240,7 +240,7 @@ namespace AssetProcessor
             foundInQueue = m_jobsInQueueLookup.erase(foundInQueue);
         }
 
-        for (int jobIndex = static_cast<int>(m_jobs.size()) - 1; jobIndex >= 0; --jobIndex)
+        for (size_t jobIndex = m_jobs.size() - 1; jobIndex >= 0; --jobIndex)
         {
             if(m_jobs[jobIndex] == rcJob)
             {
@@ -251,7 +251,7 @@ namespace AssetProcessor
 #if defined(DEBUG_RCJOB_MODEL)
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace =>JobCompleted(%i %s,%s,%s)\n", rcJob, rcJob->GetJobEntry().m_databaseSourceName.toUtf8().constData(), rcJob->GetPlatformInfo().m_identifier.c_str(), rcJob->GetJobKey().toUtf8().constData());
 #endif
-                    beginRemoveRows(QModelIndex(), jobIndex, jobIndex);
+                    beginRemoveRows(QModelIndex(), aznumeric_caster(jobIndex), aznumeric_caster(jobIndex));
                     m_jobs.erase(m_jobs.begin() + jobIndex);
                     endRemoveRows();
 

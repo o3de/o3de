@@ -519,6 +519,7 @@ namespace MCommon
                 EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
                 const uint32 numVertices = subMesh->GetNumVertices();
                 const uint32 startVertex = subMesh->GetStartVertex();
+                const uint32 startIndex = subMesh->GetStartIndex();
 
                 for (uint32 j = 0; j < numVertices; ++j)
                 {
@@ -1331,6 +1332,7 @@ namespace MCommon
     // render mesh based axis
     void RenderUtil::RenderAxis(float size, const AZ::Vector3& position, const AZ::Vector3& right, const AZ::Vector3& up, const AZ::Vector3& forward)
     {
+        const float zeroSphereRadius = size * 0.075f;
         static const MCore::RGBAColor xAxisColor(1.0f, 0.0f, 0.0f);
         static const MCore::RGBAColor yAxisColor(0.0f, 1.0f, 0.0f);
         static const MCore::RGBAColor zAxisColor(0.0f, 0.0f, 1.0f);

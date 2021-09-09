@@ -52,7 +52,7 @@ namespace UnitTest
                 AssetLoadBus::Handler::BusConnect(m_assetId);
             }
         }
-        ~OnAssetReadyListener() override
+        ~OnAssetReadyListener()
         {
             m_assetId.SetInvalid();
             m_latest = {};
@@ -109,7 +109,7 @@ namespace UnitTest
         {
             BusConnect(assetId);
         }
-        ~ContainerReadyListener() override
+        ~ContainerReadyListener()
         {
             BusDisconnect();
         }
@@ -2658,7 +2658,7 @@ namespace UnitTest
             m_canceled = true;
         }
 
-        ~CancelListener() override
+        ~CancelListener()
         {
             BusDisconnect();
         }

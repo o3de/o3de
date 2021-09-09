@@ -86,7 +86,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     bool IsParamValid(const CAnimParamType& paramType) const;
-    AZStd::string GetParamName(const CAnimParamType& param) const override;
+    virtual const char* GetParamName(const CAnimParamType& param) const;
     virtual AnimValueType GetParamValueType(const CAnimParamType& paramType) const;
     virtual IAnimNode::ESupportedParamFlags GetParamFlags(const CAnimParamType& paramType) const;
     virtual unsigned int GetParamCount() const { return 0; };

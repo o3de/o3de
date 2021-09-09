@@ -243,14 +243,11 @@ namespace SerializeHelpers
                 insertBefore);
         }
 
-        // if a list of entities was passed then add all the entities that we added
+        // if a list of entities was passed then add all the entities that we added 
         // to the list
         if (cumulativeListOfCreatedEntities)
         {
-            cumulativeListOfCreatedEntities->insert(
-                        cumulativeListOfCreatedEntities->end(),
-                        validatedListOfNewlyCreatedTopLevelElements.begin(),
-                        validatedListOfNewlyCreatedTopLevelElements.end());
+            cumulativeListOfCreatedEntities->push_back(validatedListOfNewlyCreatedTopLevelElements);
         }
     }
 
@@ -366,7 +363,7 @@ namespace SerializeHelpers
         entityRestoreInfos.insert(entityRestoreInfos.end(),
             unserializedEntities->m_entityRestoreInfos.begin(), unserializedEntities->m_entityRestoreInfos.end());
         entityRestoreInfos.insert(entityRestoreInfos.end(),
-            unserializedEntities->m_childEntityRestoreInfos.begin(), unserializedEntities->m_childEntityRestoreInfos.end());
+            unserializedEntities->m_childEntityRestoreInfos.begin(), unserializedEntities->m_childEntityRestoreInfos.end()); 
     }
 
 }   // namespace EntityHelpers

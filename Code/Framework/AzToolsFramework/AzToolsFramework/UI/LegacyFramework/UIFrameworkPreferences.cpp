@@ -38,7 +38,7 @@ namespace AzToolsFramework
         else
         {
             delete m_View;
-            m_View = nullptr;
+            m_View = NULL;
         }
     }
     void Framework::PreferencesAccepted()
@@ -59,11 +59,11 @@ namespace AzToolsFramework
         if (m_View)
         {
             delete m_View;
-            m_View = nullptr;
+            m_View = NULL;
         }
         if (m_Model)
         {
-            m_Model = nullptr;
+            m_Model = NULL;
         }
     }
 

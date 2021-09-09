@@ -87,6 +87,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvastestingeditor_tests_files.cmake
+        PLATFORM_INCLUDE_FILES
+            Platform/Common/${PAL_TRAIT_COMPILER_ID}/scriptcanvastesting_editor_tests_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .

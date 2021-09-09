@@ -55,7 +55,7 @@ namespace UnitTest
             AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
         }
 
-        ~EditorRequestHandlerTest() override
+        ~EditorRequestHandlerTest()
         {
             AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
         }

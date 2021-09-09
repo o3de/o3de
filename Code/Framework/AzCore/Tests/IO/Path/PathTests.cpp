@@ -870,11 +870,11 @@ namespace Benchmark
         , public ::UnitTest::AllocatorsBase
     {
     public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void SetUp([[maybe_unused]] const ::benchmark::State& state)
         {
             ::UnitTest::AllocatorsBase::SetupAllocator();
         }
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void TearDown([[maybe_unused]] const ::benchmark::State& state)
         {
             ::UnitTest::AllocatorsBase::TeardownAllocator();
         }

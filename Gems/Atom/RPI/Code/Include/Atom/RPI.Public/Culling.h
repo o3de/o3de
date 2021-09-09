@@ -70,23 +70,8 @@ namespace AZ
             };
             CullData m_cullData;
 
-            enum LodType : uint8_t
-            {
-                Default = 0,
-                ScreenCoverage,
-                SpecificLod,
-            };
             using LodOverride = uint8_t;
-
-            struct LodConfiguration
-            {
-                LodType m_lodType = LodType::Default;
-                LodOverride m_lodOverride = 0;
-                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
-                float m_minimumScreenCoverage = 1.0f / 1080.0f; // For default, mesh should cover at least a screen pixel at 1080p to be drawn;
-                // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
-                float m_qualityDecayRate = 0.5f;
-            };
+            static constexpr uint8_t NoLodOverride = AZStd::numeric_limits<LodOverride>::max();
 
             struct LodData
             {
@@ -103,7 +88,7 @@ namespace AZ
                 //! Suggest setting to: 0.5f*localAabb.GetExtents().GetMaxElement()
                 float m_lodSelectionRadius = 1.0f;
 
-                LodConfiguration m_lodConfiguration;
+                LodOverride m_lodOverride = NoLodOverride;
             };
             LodData m_lodData;
 

@@ -33,7 +33,6 @@ namespace AzToolsFramework
     {
         class ProductAssetBrowserEntry;
         class AssetBrowserFilterModel;
-        class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetSelectionModel;
 
@@ -70,7 +69,6 @@ namespace AzToolsFramework
             QScopedPointer<Ui::AssetPickerDialogClass> m_ui;
             AssetBrowserModel* m_assetBrowserModel = nullptr;
             QScopedPointer<AssetBrowserFilterModel> m_filterModel;
-            QScopedPointer<AssetBrowserTableModel> m_tableModel;
             AssetSelectionModel& m_selection;
             bool m_hasFilter;
             AZStd::unique_ptr<TreeViewState> m_filterStateSaver;

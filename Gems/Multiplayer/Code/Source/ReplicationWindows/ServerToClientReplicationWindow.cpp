@@ -181,9 +181,9 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::DebugDraw() const
     {
-        //static const float   BoundaryStripeHeight = 1.0f;
-        //static const float   BoundaryStripeSpacing = 0.5f;
-        //static const int32_t BoundaryStripeCount = 10;
+        static const float   BoundaryStripeHeight = 1.0f;
+        static const float   BoundaryStripeSpacing = 0.5f;
+        static const int32_t BoundaryStripeCount = 10;
 
         //if (auto localEnt = m_ControlledEntity.lock())
         //{
@@ -289,6 +289,7 @@ namespace Multiplayer
         }
 
         const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication);  // See if have the maximum number of entities in our set
+        const bool isBetterChoice = !m_candidateQueue.empty() && (priority > m_candidateQueue.top().m_priority);  // Check if the new thing we are adding is better than the worst item in our set
         const bool isInReplicationSet = m_replicationSet.find(entityHandle) != m_replicationSet.end();
         if (!isInReplicationSet)
         {

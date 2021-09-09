@@ -22,6 +22,8 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include "SystemCFG.h"
+
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
 #define SYSTEMCFG_CPP_SECTION_1 1
@@ -188,7 +190,7 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways("%s", s);
+    CryLogAlways(s);
 
     CryLogAlways("Built on " __DATE__ " " __TIME__);
 
@@ -254,16 +256,117 @@ void CSystem::LogBuildInfo()
     CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+class CCVarSaveDump
+    : public ICVarDumpSink
+{
+public:
+
+    CCVarSaveDump(FILE* pFile)
+    {
+        m_pFile = pFile;
+    }
+
+    virtual void OnElementFound(ICVar* pCVar)
+    {
+        if (!pCVar)
+        {
+            return;
+        }
+        int nFlags = pCVar->GetFlags();
+        if (((nFlags & VF_DUMPTODISK) && (nFlags & VF_MODIFIED)) || (nFlags & VF_WASINCONFIG))
+        {
+            AZStd::string szValue = pCVar->GetString();
+            int pos;
+
+            pos = 1;
+            for (;; )
+            {
+                pos = static_cast<int>(szValue.find_first_of("\\", pos));
+
+                if (pos == AZStd::string::npos)
+                {
+                    break;
+                }
+
+                szValue.replace(pos, 1, "\\\\", 2);
+                pos += 2;
+            }
+
+            // replace " with \"
+            pos = 1;
+            for (;; )
+            {
+                pos = static_cast<int>(szValue.find_first_of("\"", pos));
+
+                if (pos == AZStd::string::npos)
+                {
+                    break;
+                }
+
+                szValue.replace(pos, 1, "\\\"", 2);
+                pos += 2;
+            }
+
+            AZStd::string szLine = pCVar->GetName();
+
+            if (pCVar->GetType() == CVAR_STRING)
+            {
+                szLine += " = \"" + szValue + "\"\r\n";
+            }
+            else
+            {
+                szLine += " = " + szValue + "\r\n";
+            }
+
+            if (pCVar->GetFlags() & VF_WARNING_NOTUSED)
+            {
+                fputs("-- REMARK: the following was not assigned to a console variable\r\n", m_pFile);
+            }
+
+            fputs(szLine.c_str(), m_pFile);
+        }
+    }
+
+private: // --------------------------------------------------------
+
+    FILE*              m_pFile;                     //
+};
+
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SaveConfiguration()
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
+// system cfg
+//////////////////////////////////////////////////////////////////////////
+CSystemConfiguration::CSystemConfiguration(const AZStd::string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
+    : m_strSysConfigFilePath(strSysConfigFilePath)
+    , m_bError(false)
+    , m_pSink(pSink)
+    , m_warnIfMissing(warnIfMissing)
 {
     assert(pSink);
-    AZStd::string filename = strSysConfigFilePath;
+
+    m_pSystem = pSystem;
+    m_bError = !ParseSystemConfig();
+}
+
+//////////////////////////////////////////////////////////////////////////
+CSystemConfiguration::~CSystemConfiguration()
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CSystemConfiguration::ParseSystemConfig()
+{
+    AZStd::string filename = m_strSysConfigFilePath;
     if (strlen(PathUtil::GetExt(filename.c_str())) == 0)
     {
         filename = PathUtil::ReplaceExtension(filename, "cfg");
@@ -281,7 +384,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             // if the file is missing and its already prefixed with an alias, there is no need to look any further.
             if (!(file.Open(filename.c_str(), "rb", flags)))
             {
-                if (warnIfMissing)
+                if (m_warnIfMissing)
                 {
                     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Config file %s not found!", filename.c_str());
                 }
@@ -300,7 +403,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
                 !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb", flags))
                 )
             {
-                if (warnIfMissing)
+                if (m_warnIfMissing)
                 {
                     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Config file %s not found!", filename.c_str());
                 }
@@ -415,7 +518,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
                     AZ::StringFunc::Replace(strValue, "\\\\", "\\");
                     AZ::StringFunc::Replace(strValue, "\\\"", "\"");
                     
-                    pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
+                    m_pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
                 }
             }
         }
@@ -429,7 +532,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
 
     CryLog("Loading Config file %s (%s)", filename.c_str(), filenameLog.c_str());
 
-    pSink->OnLoadConfigurationEntry_End();
+    m_pSink->OnLoadConfigurationEntry_End();
 
     return true;
 }
@@ -471,7 +574,7 @@ void CSystem::LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySi
             pSink = this;
         }
 
-        ParseSystemConfig(sFilename, pSink, warnIfMissing);
+        CSystemConfiguration tempConfig(sFilename, this, pSink, warnIfMissing);
     }
 }
 

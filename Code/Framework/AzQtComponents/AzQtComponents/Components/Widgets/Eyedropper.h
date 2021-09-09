@@ -72,7 +72,7 @@ namespace AzQtComponents
 
         void release(bool selected);
 
-        [[maybe_unused]] QToolButton* m_button;
+        QToolButton* m_button;
 
         int m_contextSize;
         int m_sampleSize;

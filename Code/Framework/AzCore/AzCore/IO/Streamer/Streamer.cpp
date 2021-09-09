@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -263,15 +262,15 @@ namespace AZ::IO
             switch (stat.GetType())
             {
             case Statistic::Type::FloatingPoint:
-                AZ_PROFILE_DATAPOINT(AzCore, stat.GetFloatValue(), "Streamer/%.*s/%.*s",
+                AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::AzCore, stat.GetFloatValue(), "Streamer/%.*s/%.*s",
                     aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
                 break;
             case Statistic::Type::Integer:
-                AZ_PROFILE_DATAPOINT(AzCore, stat.GetIntegerValue(), "Streamer/%.*s/%.*s",
+                AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::AzCore, stat.GetIntegerValue(), "Streamer/%.*s/%.*s",
                     aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
                 break;
             case Statistic::Type::Percentage:
-                AZ_PROFILE_DATAPOINT_PERCENT(AzCore, stat.GetPercentage(), "Streamer/%.*s/%.*s (percent)",
+                AZ_PROFILE_DATAPOINT_PERCENT(AZ::Debug::ProfileCategory::AzCore, stat.GetPercentage(), "Streamer/%.*s/%.*s (percent)",
                     aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
                 break;
             default:

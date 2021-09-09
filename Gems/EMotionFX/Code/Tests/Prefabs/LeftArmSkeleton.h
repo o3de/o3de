@@ -80,7 +80,7 @@ namespace EMotionFX
                 .WillRepeatedly(Return(nodeName));
 
             AZ::u32 i = 0;
-            [[maybe_unused]] std::initializer_list<int> dummy = {(([&]() {
+            std::initializer_list<int> {(([&]() {
                 EXPECT_CALL(*node, GetChildIndex(i))
                     .WillRepeatedly(Return(children));
                 ++i;

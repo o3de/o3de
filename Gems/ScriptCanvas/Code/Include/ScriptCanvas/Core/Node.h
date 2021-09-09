@@ -14,23 +14,25 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/tuple.h>
-#include <ScriptCanvas/CodeGen/NodeableCodegen.h>
+
 #include <ScriptCanvas/Core/Contracts/TypeContract.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/DatumBus.h>
 #include <ScriptCanvas/Core/Endpoint.h>
+#include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/SerializationListener.h>
 #include <ScriptCanvas/Core/Slot.h>
-#include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
-#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Execution/ErrorBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
-#include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
+
+#include <ScriptCanvas/CodeGen/NodeableCodegen.h>
+
 
 #define SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(lambdaInterior)\
     int dummy[]{ 0, ( lambdaInterior , 0)... };\
@@ -63,7 +65,6 @@ namespace ScriptCanvas
 
     struct BehaviorContextMethodHelper;
 
-#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     template<typename t_Class>
     class SerializeContextReadWriteHandler : public AZ::SerializeContext::IEventHandler
     {
@@ -127,7 +128,6 @@ namespace ScriptCanvas
             deserializedObject->OnWriteEnd();
         }
     };
-#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     // List of slots that will be create visual only slots on the nodes.
     // Useful for special configurations or editor only concepts.
@@ -401,7 +401,6 @@ namespace ScriptCanvas
         , public DatumNotificationBus::Handler
         , public NodeRequestBus::Handler
         , public EndpointNotificationBus::MultiHandler
-        , public SerializationListener
     {
         friend class Graph;
         friend class RuntimeComponent;
@@ -473,7 +472,7 @@ namespace ScriptCanvas
 
     public:
 
-        AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
+        AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}");
         static void Reflect(AZ::ReflectContext* reflection);
 
         Node();
@@ -822,7 +821,6 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
 
     protected:
-        void OnDeserialize() override;
 
         virtual void OnReconfigurationBegin() {}
         virtual void OnReconfigurationEnd() {}

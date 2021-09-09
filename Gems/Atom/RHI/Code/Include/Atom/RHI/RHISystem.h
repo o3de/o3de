@@ -14,6 +14,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/RHISystemDescriptor.h>
 
 namespace AZ
 {
@@ -32,7 +33,7 @@ namespace AZ
             void InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
-            void Init();
+            void Init(const RHISystemDescriptor& descriptor);
             void Shutdown();
 
             //! An external callback to build the frame graph.
@@ -67,6 +68,7 @@ namespace AZ
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
 
+            ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
             RHI::CpuProfilerImpl m_cpuProfiler;
         };
     } // namespace RPI

@@ -24,6 +24,19 @@
 
 namespace
 {
+    // Dimensions of the 2D grid into which we place the triangles for quick lookup
+    const uint32_t kGridCellCountX = 10;
+    const uint32_t kGridCellCountY = 10;
+
+    AZ_FORCE_INLINE void GetBoundsOfTriangle(const AZ::Vector2 triVerts[3],
+        float& minX, float& minY, float& maxX, float& maxY)
+    {
+        minX = AZStd::min(triVerts[0].GetX(), AZStd::min(triVerts[1].GetX(), triVerts[2].GetX()));
+        minY = AZStd::min(triVerts[0].GetY(), AZStd::min(triVerts[1].GetY(), triVerts[2].GetY()));
+        maxX = AZStd::max(triVerts[0].GetX(), AZStd::max(triVerts[1].GetX(), triVerts[2].GetX()));
+        maxY = AZStd::max(triVerts[0].GetY(), AZStd::max(triVerts[1].GetY(), triVerts[2].GetY()));
+    }
+
     AZ_FORCE_INLINE bool IsDegenerateTriangle(const AZ::Vector2& p0, const AZ::Vector2& p1, const AZ::Vector2& p2)
     {
         const AZ::Vector2 v01(p1 - p0);

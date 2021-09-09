@@ -17,6 +17,8 @@ namespace AZ
 {
     namespace Vulkan
     {
+        static constexpr size_t MinGPUMemSize = AZ_TRAIT_ATOM_VULKAN_MIN_GPU_MEM;
+
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             RHI::PhysicalDeviceList physicalDeviceList;

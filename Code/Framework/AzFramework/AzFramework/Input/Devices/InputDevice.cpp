@@ -39,7 +39,7 @@ namespace AzFramework
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        void OnInputDeviceDisconnectedEvent(const InputDevice& inputDevice) override
+        void OnInputDeviceDisconnectedEvent(const InputDevice& inputDevice)
         {
             Call(FN_OnInputDeviceDisconnectedEvent, &inputDevice);
         }

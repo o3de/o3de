@@ -11,12 +11,11 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -135,7 +134,7 @@ namespace AzToolsFramework
             }
 
             // Read Template's prefab file from disk and parse Prefab DOM from file.
-            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(fileContent);
+            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AzFramework::FileFunc::ReadJsonFromString(fileContent);
             if (!readPrefabFileResult.IsSuccess())
             {
                 AZ_Error(
@@ -301,7 +300,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreFlags::StoreLinkIds))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
             {
                 return false;
             }
@@ -347,7 +346,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, GetFullPath(domAndFilepath->second).Native());
+            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, GetFullPath(domAndFilepath->second));
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -388,7 +387,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, absolutePath.Native());
+            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, absolutePath);
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -411,7 +410,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AZ::JsonSerializationUtils::WriteJsonString(domAndFilepath->first, output);
+            auto outcome = AzFramework::FileFunc::WriteJsonToString(domAndFilepath->first, output);
             if (!outcome.IsSuccess())
             {
                 AZ_Error(

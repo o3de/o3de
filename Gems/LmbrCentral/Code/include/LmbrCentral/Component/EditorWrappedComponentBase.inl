@@ -212,11 +212,8 @@ namespace LmbrCentral
     template <typename TComponent, typename TConfiguration>
     void EditorWrappedComponentBase<TComponent, TConfiguration>::OnEntityVisibilityChanged(bool visibility)
     {
-        if (m_visible != visibility)
-        {
-            m_visible = visibility;
-            ConfigurationChanged();
-        }
+        m_visible = visibility;
+        ConfigurationChanged();
     }
 
     template <typename TComponent, typename TConfiguration>

@@ -9,5 +9,4 @@
 set(FILES
     LauncherProject.cpp
     StaticModules.in
-    launcher_generator.cmake
 )

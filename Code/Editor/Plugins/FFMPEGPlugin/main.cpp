@@ -24,7 +24,11 @@ PLUGIN_API IPlugin* CreatePluginInstance(PLUGIN_INIT_PARAM* pInitParam)
     // Make sure the ffmpeg command can be executed before registering the command
     if (!CFFMPEGPlugin::RuntimeTest())
     {
-        GetIEditor()->GetSystem()->GetILog()->Log("FFMPEG plugin: Failed to execute FFmpeg. Please install FFmpeg.");
+        AZStd::string msg =
+            "FFMPEG plugin: Failed to execute FFmepg. Please run Setup Assistant, "
+            "go to the 'Optional software' section of the 'Install software' tab, "
+            "and make sure the FFmpeg executable is correctly configured.";
+        GetIEditor()->GetSystem()->GetILog()->Log(msg.c_str());
     }
     else
     {

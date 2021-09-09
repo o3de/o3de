@@ -6,6 +6,9 @@
  *
  */
 
+
+#ifndef CRYINCLUDE_CRYCOMMON_BASETYPES_H
+#define CRYINCLUDE_CRYCOMMON_BASETYPES_H
 #pragma once
 
 static_assert(sizeof(char) == 1);
@@ -75,3 +78,5 @@ typedef float  f32;
 typedef double f64;
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
+
+#endif // CRYINCLUDE_CRYCOMMON_BASETYPES_H

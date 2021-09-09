@@ -184,7 +184,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(Vector3SumJob, ThreadPoolAllocator, 0)
 
-        Vector3SumJob(const Vector3* array, unsigned int size, Vector3* result, JobContext* context = nullptr)
+        Vector3SumJob(const Vector3* array, unsigned int size, Vector3* result, JobContext* context = NULL)
             : Job(true, context)
             , m_array(array)
             , m_size(size)
@@ -284,7 +284,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(FibonacciJobJoin, ThreadPoolAllocator, 0)
 
-        FibonacciJobJoin(int* result, JobContext* context = nullptr)
+        FibonacciJobJoin(int* result, JobContext* context = NULL)
             : Job(true, context)
             , m_result(result)
         {
@@ -304,7 +304,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(FibonacciJobFork, ThreadPoolAllocator, 0)
 
-        FibonacciJobFork(int n, int* result, JobContext* context = nullptr)
+        FibonacciJobFork(int n, int* result, JobContext* context = NULL)
             : Job(true, context)
             , m_n(n)
             , m_result(result)
@@ -374,7 +374,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(FibonacciJob2, ThreadPoolAllocator, 0)
 
-        FibonacciJob2(int n, int* result, JobContext* context = nullptr)
+        FibonacciJob2(int n, int* result, JobContext* context = NULL)
             : Job(true, context)
             , m_n(n)
             , m_result(result)
@@ -441,7 +441,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(MergeSortJobJoin, ThreadPoolAllocator, 0)
 
-        MergeSortJobJoin(int* array, int* tempArray, int size1, int size2, JobContext* context = nullptr)
+        MergeSortJobJoin(int* array, int* tempArray, int size1, int size2, JobContext* context = NULL)
             : Job(true, context)
             , m_array(array)
             , m_tempArray(tempArray)
@@ -496,7 +496,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(MergeSortJobFork, ThreadPoolAllocator, 0)
 
-        MergeSortJobFork(int* array, int* tempArray, int size, JobContext* context = nullptr)
+        MergeSortJobFork(int* array, int* tempArray, int size, JobContext* context = NULL)
             : Job(true, context)
             , m_array(array)
             , m_tempArray(tempArray)
@@ -585,7 +585,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(QuickSortJob, ThreadPoolAllocator, 0)
 
-        QuickSortJob(int* array, int left, int right, JobContext* context = nullptr)
+        QuickSortJob(int* array, int left, int right, JobContext* context = NULL)
             : Job(true, context)
             , m_array(array)
             , m_left(left)
@@ -1361,7 +1361,7 @@ namespace UnitTest
             AZ::JobCompletion completion;
 
             // Push a parent job that pushes the work as child jobs (requires the current job, so this is a real world test of "functor with current job as param")
-            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData](AZ::Job& thisJob)
+            AZ::Job* parentJob = AZ::CreateJobFunction([this, &jobData, JobCount](AZ::Job& thisJob)
                 {
                     EXPECT_EQ(m_jobManager->GetCurrentJob(), &thisJob);
 
@@ -1736,7 +1736,7 @@ namespace Benchmark
                                                                        std::numeric_limits<AZ::s8>::max());
             std::generate(m_randomPriorities.begin(), m_randomPriorities.end(), [&randomPriorityDistribution, &randomPriorityGenerator]()
             {
-                return static_cast<AZ::s8>(randomPriorityDistribution(randomPriorityGenerator));
+                return randomPriorityDistribution(randomPriorityGenerator);
             });
 
             // Generate some random depths

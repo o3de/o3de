@@ -28,7 +28,7 @@ namespace Physics
     class MaterialLibraryAssetEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
-        void OnReadBegin(void* classPtr) override
+        void OnReadBegin(void* classPtr)
         {
             auto matAsset = static_cast<MaterialLibraryAsset*>(classPtr);
             matAsset->GenerateMissingIds();
@@ -38,7 +38,7 @@ namespace Physics
     class MaterialSelectionEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
-        void OnReadEnd(void* classPtr) override
+        void OnReadEnd(void* classPtr)
         {
             auto materialSelection = static_cast<MaterialSelection*>(classPtr);
             if (materialSelection->GetMaterialIdsAssignedToSlots().empty())
@@ -362,8 +362,8 @@ namespace Physics
 
     MaterialId MaterialId::Create()
     {
-        MaterialId id;
-        id.m_id = AZ::Uuid::Create();
+        MaterialId id; 
+        id.m_id = AZ::Uuid::Create(); 
         return id;
     }
 
@@ -425,7 +425,7 @@ namespace Physics
         }
         else
         {
-            // If there is more than one material slot
+            // If there is more than one material slot 
             // the caller must use SetMaterialSlots function
             return "<error>";
         }

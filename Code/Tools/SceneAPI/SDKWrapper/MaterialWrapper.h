@@ -34,7 +34,10 @@ namespace AZ
                 BaseColor
             };
 
-            virtual ~MaterialWrapper() = default;
+            MaterialWrapper(aiMaterial* assImpmaterial);
+            virtual ~MaterialWrapper();
+
+            aiMaterial* GetAssImpMaterial();
 
             virtual AZStd::string GetName() const;
             virtual AZ::u64 GetUniqueId() const;
@@ -44,6 +47,9 @@ namespace AZ
             virtual AZ::Vector3 GetEmissiveColor() const;
             virtual float GetOpacity() const;
             virtual float GetShininess() const;
+
+        protected:
+            aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace SDKMaterial
 } // namespace AZ

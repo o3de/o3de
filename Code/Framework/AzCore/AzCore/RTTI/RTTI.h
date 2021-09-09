@@ -493,7 +493,7 @@ namespace AZ
                 const void* result = GetTypeId() == asType ? instance : nullptr;
 
                 using dummy = bool[];
-                [[maybe_unused]] dummy d { true, (CastInternal<TArgs>(result, instance, asType), true)... };
+                dummy{ true, (CastInternal<TArgs>(result, instance, asType), true)... };
                 return result;
             }
 
@@ -517,7 +517,7 @@ namespace AZ
                 bool result = GetTypeId() == id;
 
                 using dummy = bool[];
-                [[maybe_unused]] dummy d = { true, (IsTypeOfInternal<TArgs>(result, id), true)... };
+                dummy{ true, (IsTypeOfInternal<TArgs>(result, id), true)... };
 
                 return result;
             }
@@ -534,7 +534,7 @@ namespace AZ
                 callback(GetActualUuid(instance), instance);
 
                 using dummy = bool[];
-                [[maybe_unused]] dummy d = { true, (RttiHelper<TArgs>{}.EnumHierarchy(callback, instance), true)... };
+                dummy{ true, (RttiHelper<TArgs>{}.EnumHierarchy(callback, instance), true)... };
             }
             TypeTraits GetTypeTraits() const override
             {

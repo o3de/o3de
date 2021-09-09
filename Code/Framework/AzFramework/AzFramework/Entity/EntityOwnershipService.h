@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Debug/Budget.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzFramework/Entity/EntityOwnershipServiceBus.h>
 
@@ -18,8 +17,6 @@ namespace AZ
 {
     class Entity;
 }
-
-AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {

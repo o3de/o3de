@@ -21,10 +21,9 @@
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
 
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -176,11 +175,6 @@ namespace AZ
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
         {
-            if (AZ::RHI::IsNullRenderer())
-            {
-                return false;
-            }
-
             if (!IsReady())
             {
                 AZ_Assert(false, "AttachmentReadback is not ready to readback an attachment");

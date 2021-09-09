@@ -458,7 +458,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::OnValuesUpdated()
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         if (m_sourceNode)
         {
@@ -1867,7 +1867,7 @@ namespace AzToolsFramework
         }
 
         const auto dpr = devicePixelRatioF();
-        QPixmap dragImage(static_cast<int>(width * dpr), static_cast<int>(height * dpr));
+        QPixmap dragImage(width * dpr, height * dpr);
         dragImage.setDevicePixelRatio(dpr);
         dragImage.fill(Qt::transparent);
 

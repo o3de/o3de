@@ -13,7 +13,6 @@
 #include <AudioAllocators.h>
 #include <AudioInternalInterfaces.h>
 
-#include <AzCore/Debug/Budget.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -22,8 +21,6 @@
 #include <AzCore/std/parallel/thread.h>
 
 #define PROVIDE_GETNAME_SUPPORT
-
-AZ_DECLARE_BUDGET(Audio);
 
 namespace Audio
 {

@@ -110,6 +110,7 @@ namespace AssetBundler
     const char RestrictedDirectoryName[] = "restricted";
     const char PlatformsDirectoryName[] = "Platforms";
     const char GemsDirectoryName[] = "Gems";
+    const char GemsAssetsDirectoryName[] = "Assets";
     const char GemsSeedFileName[] = "seedList";
     const char EngineSeedFileName[] = "SeedAssetList";
 

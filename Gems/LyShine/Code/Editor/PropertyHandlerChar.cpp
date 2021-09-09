@@ -27,16 +27,19 @@ void PropertyHandlerChar::ConsumeAttribute(AzToolsFramework::PropertyStringLineE
 {
 }
 
-void PropertyHandlerChar::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+void PropertyHandlerChar::WriteGUIValuesIntoProperty(size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
+    (int)index;
     AZStd::string str = GUI->value();
     wchar_t character = '\0';
     AZStd::to_wstring(&character, 1, str.c_str());
     instance = character;
 }
 
-bool PropertyHandlerChar::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerChar::ReadValuesIntoGUI(size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
+    (int)index;
+
     GUI->blockSignals(true);
     {
         // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to

@@ -10,9 +10,7 @@
 #include <AzCore/PlatformDef.h> // for AZ_COMMAND_LINE_LEN
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Memory/Memory.h>
 #include <CryCommon/platform.h>
-#include <CryCommon/LegacyAllocator.h>
 
 struct IOutputPrintSink;
 
@@ -36,7 +34,7 @@ namespace O3DELauncher
 
 #define COMMAND_LINE_ARG_COUNT_LIMIT (AZ_COMMAND_LINE_LEN+1) / 2        // Assume that the limit to how many arguments we can maintain is the max buffer size divided by 2
                                                                         // to account for an argument and a spec in between each argument (with the worse case scenario being
-
+                                                                    
     struct PlatformMainInfo
     {
         typedef bool (*ResourceLimitUpdater)();
@@ -71,7 +69,7 @@ namespace O3DELauncher
 
         void* m_window = nullptr; //!< maps to \ref SSystemInitParams::hWnd
         void* m_instance = nullptr; //!< maps to \ref SSystemInitParams::hInstance
-        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync
+        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync 
     };
 
     enum class ReturnCode : unsigned char

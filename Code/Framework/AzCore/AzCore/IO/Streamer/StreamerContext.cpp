@@ -17,11 +17,10 @@ namespace AZ
     namespace IO
     {
         static constexpr char ContextName[] = "Context";
-#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
         static constexpr char LatePredictionName[] = "Early completions";
         static constexpr char MissedDeadlinesName[] = "Missed deadlines";
-#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
+
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
@@ -154,7 +153,7 @@ namespace AZ
 
         bool StreamerContext::FinalizeCompletedRequests()
         {
-            AZ_PROFILE_FUNCTION(AzCore);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
             auto now = AZStd::chrono::system_clock::now();
@@ -219,10 +218,10 @@ namespace AZ
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
 
                     {
-                        AZ_PROFILE_SCOPE(AzCore,
+                        AZ_PROFILE_SCOPE_STALL(AZ::Debug::ProfileCategory::AzCore,
                             isInternal ? "Completion callback internal" : "Completion callback external");
                         top->m_onCompletion(*top);
-                        AZ_PROFILE_INTERVAL_END(AzCore, top);
+                        AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, top);
                     }
                     
                     if (parent)

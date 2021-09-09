@@ -706,7 +706,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     if (includeChildren)
     {
-        children.insert(children.end(),includeChildren->begin(),includeChildren->end());
+        children.push_back(*includeChildren);
     }
 
     // First, check if base name is unique
@@ -1862,7 +1862,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 
     // Notify LyShine render pass that it needs to rebuild
     QueueRttPassRebuild();
-
+    
     return attachmentImage->GetAttachmentId();
 }
 
@@ -3637,13 +3637,9 @@ void UiCanvasComponent::DestroyRenderTarget()
     if (m_renderTargetHandle > 0)
     {
         ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-#endif
         m_renderTargetDepthSurface = nullptr;
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
-#endif
         m_renderTargetHandle = -1;
     }
 }
@@ -4101,7 +4097,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
 
         canvasComponent->m_editorToGameEntityIdMap = *previousRemapTable;
         ReuseOrGenerateNewIdsAndFixRefs(&entityContainer, canvasComponent->m_editorToGameEntityIdMap, context);
-
+        
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
             canvasComponent->m_entityContext->GetContextId(),
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity, false, nullptr);

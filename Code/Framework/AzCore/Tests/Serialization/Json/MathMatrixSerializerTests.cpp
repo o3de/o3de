@@ -225,6 +225,7 @@ namespace JsonSerializationTests
                 static_assert((RowCount >= 3 && RowCount <= 4) && (ColumnCount >= 3 && ColumnCount <= 4),
                     "Only matrix 3x3, 3x4 or 4x4 are supported by this test.");
             }
+            return "{}";
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
@@ -469,7 +470,6 @@ namespace JsonSerializationTests
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
 
-        ASSERT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
         EXPECT_TRUE(defaultValue == output);
     }
 
@@ -504,6 +504,7 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
         using Descriptor = typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
 
+        const auto defaultValue = Descriptor::MatrixType::CreateIdentity();
         rapidjson::Value& objectValue = this->m_jsonDocument->SetObject();
         auto input = Descriptor::MatrixType::CreateIdentity();
         DataHelper::AddData(objectValue, input, this->m_jsonDocument->GetAllocator());

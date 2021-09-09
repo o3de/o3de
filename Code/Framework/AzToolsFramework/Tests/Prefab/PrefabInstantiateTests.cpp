@@ -33,8 +33,7 @@ namespace UnitTest
         CompareInstances(*firstInstance, *secondInstance, true, false);
     }
 
-    // TODO: Issue #3398 will re-enable
-    TEST_F(PrefabInstantiateTest, DISABLED_PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
+    TEST_F(PrefabInstantiateTest, PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(

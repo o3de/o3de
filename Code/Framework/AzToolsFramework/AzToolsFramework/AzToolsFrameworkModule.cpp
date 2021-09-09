@@ -52,8 +52,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 
-AZ_DEFINE_BUDGET(AzToolsFramework);
-
 namespace AzToolsFramework
 {
     AzToolsFrameworkModule::AzToolsFrameworkModule()

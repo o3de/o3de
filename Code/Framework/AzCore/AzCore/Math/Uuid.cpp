@@ -56,7 +56,7 @@ namespace AZ
 
     Uuid Uuid::CreateStringSkipWarnings(const char* string, size_t stringLength, [[maybe_unused]] bool skipWarnings)
     {
-        if (string == nullptr)
+        if (string == NULL)
         {
             return Uuid::CreateNull();
         }
@@ -71,7 +71,7 @@ namespace AZ
 
         if (len < 32 || len > 38)
         {
-            AZ_Warning("Math", skipWarnings, "Invalid UUID format %s (must be) {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} (or without dashes and braces)", string != nullptr ? string : "null");
+            AZ_Warning("Math", skipWarnings, "Invalid UUID format %s (must be) {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} (or without dashes and braces)", string != NULL ? string : "null");
             return Uuid::CreateNull();
         }
 

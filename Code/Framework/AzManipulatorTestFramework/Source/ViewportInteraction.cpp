@@ -25,14 +25,10 @@ namespace AzManipulatorTestFramework
         : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
-        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
     }
 
     ViewportInteraction::~ViewportInteraction()
     {
-        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
 
@@ -41,49 +37,29 @@ namespace AzManipulatorTestFramework
         return m_cameraState;
     }
 
-    bool ViewportInteraction::GridSnappingEnabled() const
+    bool ViewportInteraction::GridSnappingEnabled()
     {
         return m_gridSnapping;
     }
 
-    float ViewportInteraction::GridSize() const
+    float ViewportInteraction::GridSize()
     {
         return m_gridSize;
     }
 
-    bool ViewportInteraction::ShowGrid() const
+    bool ViewportInteraction::ShowGrid()
     {
         return false;
     }
 
-    bool ViewportInteraction::AngleSnappingEnabled() const
+    bool ViewportInteraction::AngleSnappingEnabled()
     {
         return m_angularSnapping;
     }
 
-    float ViewportInteraction::AngleStep() const
+    float ViewportInteraction::AngleStep()
     {
         return m_angularStep;
-    }
-
-    float ViewportInteraction::ManipulatorLineBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    float ViewportInteraction::ManipulatorCircleBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
-    {
-        visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
-    }
-
-    void ViewportInteraction::UpdateVisibility()
-    {
-        m_entityVisibilityQuery.UpdateVisibility(m_cameraState);
     }
 
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)

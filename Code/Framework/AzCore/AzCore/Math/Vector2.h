@@ -281,6 +281,10 @@ namespace AZ
 
     private:
 
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(push)
+#   pragma warning(disable:4201) // anonymous union
+#endif
         union
         {
             Simd::Vec2::FloatType m_value;
@@ -292,6 +296,9 @@ namespace AZ
                 float m_y;
             };
         };
+#ifdef AZ_COMPILER_MSVC
+#   pragma warning(pop)
+#endif
     };
 
     //! Allows pre-multiplying by a float.

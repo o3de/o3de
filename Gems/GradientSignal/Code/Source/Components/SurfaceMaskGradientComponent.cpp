@@ -161,7 +161,7 @@ namespace GradientSignal
 
     float SurfaceMaskGradientComponent::GetValue(const GradientSampleParams& params) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         float result = 0.0f;
 

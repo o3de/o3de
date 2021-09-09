@@ -85,7 +85,7 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::DisplayViewport(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         // calculate which entities are in the view and can be interacted with
         // and cache that data to make iterating/looking it up much faster

@@ -293,7 +293,7 @@ namespace AZ
 #define AZ_DEFAULT_COPY_MOVE(_Class) AZ_DEFAULT_COPY(_Class) AZ_DEFAULT_MOVE(_Class)
 
 // Macro that can be used to avoid unreferenced variable warnings
-#define AZ_UNUSED(x) (void)x
+#define AZ_UNUSED(x) (void)x;
 
 #define AZ_DEFINE_ENUM_BITWISE_OPERATORS(EnumType) \
 inline constexpr EnumType operator | (EnumType a, EnumType b) \

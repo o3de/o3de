@@ -8,7 +8,7 @@
 
 
 #include "EditorDefs.h"
-#include "Editor/Resource.h"
+#include "Resource.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewDopeSheetBase.h"
 
@@ -139,7 +139,8 @@ CUiAnimViewDopeSheetBase::~CUiAnimViewDopeSheetBase()
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimViewDopeSheetBase::TimeToClient(float time) const
 {
-    return static_cast<int>(m_leftOffset - m_scrollOffset.x() + (time * m_timeScale));
+    int x = m_leftOffset - m_scrollOffset.x() + (time * m_timeScale);
+    return x;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,13 +186,14 @@ void CUiAnimViewDopeSheetBase::SetTimeRange(float start, float end)
 
     m_timeRange.Set(start, end);
 
-    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale - m_leftOffset));
+    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale - m_leftOffset);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 {
     const double fOldOffset = -fAnchorTime * m_timeScale;
+    const double fOldScale = m_timeScale;
 
     timeScale = std::max(timeScale, 0.001f);
     timeScale = std::min(timeScale, 100000.0f);
@@ -249,11 +251,11 @@ void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
     while (fPixelsPerTick >= 12.0 && steps < 100);
 
     float fCurrentOffset = -fAnchorTime * m_timeScale;
-    m_scrollOffset.rx() += static_cast<int>(fOldOffset - fCurrentOffset);
+    m_scrollOffset.rx() += fOldOffset - fCurrentOffset;
 
     update();
 
-    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale));
+    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale);
 
     ComputeFrameSteps(GetVisibleRange());
 }
@@ -344,15 +346,15 @@ float CUiAnimViewDopeSheetBase::TickSnap(float time) const
     double tickTime = GetTickTime();
     double t = floor(((double)time / tickTime) + 0.5);
     t *= tickTime;
-    return static_cast<float>(t);
+    return t;
 }
 
 //////////////////////////////////////////////////////////////////////////
 float CUiAnimViewDopeSheetBase::TimeFromPoint(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
-    float t = static_cast<float>(x) / m_timeScale;
-    return TickSnap(t);
+    double t = (double)x / m_timeScale;
+    return (float)TickSnap(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -360,7 +362,7 @@ float CUiAnimViewDopeSheetBase::TimeFromPointUnsnapped(const QPoint& point) cons
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
     double t = (double)x / m_timeScale;
-    return static_cast<float>(t);
+    return t;
 }
 
 void CUiAnimViewDopeSheetBase::mousePressEvent(QMouseEvent* event)
@@ -923,12 +925,12 @@ void CUiAnimViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, con
     CUiAnimViewTrackBundle tracks = pSequence->GetAllTracks();
 
     CUiAnimViewSequenceNotificationContext context(pSequence);
-    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
+    for (int i = 0; i < tracks.GetCount(); ++i)
     {
         CUiAnimViewTrack* pTrack = tracks.GetTrack(i);
 
         // Check which keys we intersect.
-        for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
+        for (int j = 0; j < pTrack->GetKeyCount(); j++)
         {
             CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(j);
             const float time = keyHandle.GetTime();
@@ -1307,7 +1309,9 @@ void CUiAnimViewDopeSheetBase::OnCaptureChanged()
 //////////////////////////////////////////////////////////////////////////
 bool CUiAnimViewDopeSheetBase::IsOkToAddKeyHere(const CUiAnimViewTrack* pTrack, float time) const
 {
-    for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
+    const float timeEpsilon = 0.05f;
+
+    for (int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = const_cast<CUiAnimViewTrack*>(pTrack)->GetKey(i);
 
@@ -1421,10 +1425,10 @@ void CUiAnimViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Q
         const TrackMemento& trackMemento = iter->second;
         pTrack->RestoreFromMemento(trackMemento.m_memento);
 
-        const size_t numKeys = trackMemento.m_keySelectionStates.size();
-        for (size_t i = 0; i < numKeys; ++i)
+        const unsigned int numKeys = trackMemento.m_keySelectionStates.size();
+        for (unsigned int i = 0; i < numKeys; ++i)
         {
-            pTrack->GetKey(static_cast<unsigned int>(i)).Select(trackMemento.m_keySelectionStates[i]);
+            pTrack->GetKey(i).Select(trackMemento.m_keySelectionStates[i]);
         }
     }
 
@@ -1628,7 +1632,7 @@ float CUiAnimViewDopeSheetBase::MagnetSnap(float newTime, const CUiAnimViewAnimN
         newTime = keys.GetKey(0).GetTime();
         // But if there is an in-range key in a sibling track, use it instead.
         // Here a 'sibling' means a track that belongs to a same node.
-        for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
+        for (int i = 0; i < keys.GetKeyCount(); ++i)
         {
             CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
             if (keyHandle.GetTrack()->GetAnimNode() == pNode)
@@ -1647,7 +1651,7 @@ float CUiAnimViewDopeSheetBase::FrameSnap(float time) const
 {
     double t = floor((double)time / m_snapFrameTime + 0.5);
     t = t * m_snapFrameTime;
-    return static_cast<float>(t);
+    return t;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1751,10 +1755,9 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
     Vec3 vColor(0, 0, 0);
     pTrack->GetValue(keyTime, vColor);
 
-    const AZ::Color defaultColor = AZ::Color::CreateFromRgba(
-        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.x)), AZ::u8(0), AZ::u8(255)),
-        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.y)), AZ::u8(0), AZ::u8(255)),
-        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.z)), AZ::u8(0), AZ::u8(255)), 255);
+    const AZ::Color defaultColor = AZ::Color::CreateFromRgba(clamp_tpl(FloatToIntRet(vColor.x), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.y), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.z), 0, 255), 255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, tr("Select Color"), this);
     dlg.setCurrentColor(defaultColor);
     dlg.setSelectedColor(defaultColor);
@@ -1767,7 +1770,7 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
         CUiAnimViewSequenceNotificationContext context(pTrack->GetSequence());
 
         const unsigned int numChildNodes = pTrack->GetChildCount();
-        for (unsigned int i = 0; i < numChildNodes; ++i)
+        for (int i = 0; i < numChildNodes; ++i)
         {
             CUiAnimViewTrack* subTrack = static_cast<CUiAnimViewTrack*>(pTrack->GetChild(i));
             if (IsOkToAddKeyHere(subTrack, keyTime))
@@ -1792,6 +1795,8 @@ void CUiAnimViewDopeSheetBase::AcceptUndo()
 {
     if (UiAnimUndo::IsRecording())
     {
+        const QPoint mousePos = mapFromGlobal(QCursor::pos());
+
         if (m_mouseMode == eUiAVMouseMode_Paste)
         {
             UiAnimUndoManager::Get()->Cancel();
@@ -1885,7 +1890,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                 }
                 else                                                                            // A compound track
                 {
-                    for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
+                    for (int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
                         CUiAnimViewTrack* pSubTrack = static_cast<CUiAnimViewTrack*>(pCurrTrack->GetChild(k));
                         if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -1916,7 +1921,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
             else
             {
                 RecordTrackUndo(pTrack);
-                for (unsigned int i = 0; i < pTrack->GetChildCount(); ++i)
+                for (int i = 0; i < pTrack->GetChildCount(); ++i)
                 {
                     CUiAnimViewTrack* pSubTrack = static_cast<CUiAnimViewTrack*>(pTrack->GetChild(i));
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -1992,12 +1997,12 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
         nNumberTicks = 8;
     }
 
-    float start = TickSnap(timeRange.start);
-    float step = 1.0f / static_cast<float>(m_ticksStep);
+    double start = TickSnap(timeRange.start);
+    double step = 1.0 / m_ticksStep;
 
-    for (float t = 0.0f; t <= timeRange.end + step; t += step)
+    for (double t = 0.0f; t <= timeRange.end + step; t += step)
     {
-        float st = TickSnap(t);
+        double st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2016,7 +2021,7 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
             continue;
         }
 
-        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
+        int k = RoundFloatToInt(st * m_ticksStep);
         if (k % nNumberTicks == 0)
         {
             if (st >= start)
@@ -2237,6 +2242,7 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
 {
     int x0 = TimeToClient(timeRange.start);
     float t0 = timeRange.start;
+    QRect trackRect;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
@@ -2613,7 +2619,7 @@ void CUiAnimViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSele
 
     CUiAnimViewTrackBundle tracks = pSequence->GetAllTracks();
 
-    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
+    for (int i = 0; i < tracks.GetCount(); ++i)
     {
         CUiAnimViewTrack* pTrack = tracks.GetTrack(i);
 
@@ -2627,7 +2633,7 @@ void CUiAnimViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSele
             (rc.bottom() >= trackRect.top() && rc.bottom() <= trackRect.bottom()))
         {
             // Check which keys we intersect.
-            for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
+            for (int j = 0; j < pTrack->GetKeyCount(); j++)
             {
                 CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(j);
 
@@ -2694,7 +2700,7 @@ void CUiAnimViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     painter->setPen(Qt::green);
 
     CUiAnimViewKeyBundle keys = pSequence->GetSelectedKeys();
-    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
+    for (int i = 0; i < keys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -2737,7 +2743,7 @@ void CUiAnimViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
     float nBIntermediateTicks = 5;
     m_fFrameLabelStep = fFact * afStepTable[nStepIdx];
 
-    if (TimeToClient(static_cast<float>(m_fFrameLabelStep)) - TimeToClient(0) > 1300)
+    if (TimeToClient(m_fFrameLabelStep) - TimeToClient(0) > 1300)
     {
         nBIntermediateTicks = 10;
     }
@@ -2749,7 +2755,7 @@ void CUiAnimViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
 void CUiAnimViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRect& rc, [[maybe_unused]] const QColor& lineCol, const QColor& textCol, [[maybe_unused]] double step)
 {
     float fFramesPerSec = 1.0f / m_snapFrameTime;
-    float fInvFrameLabelStep = 1.0f / static_cast<float>(m_fFrameLabelStep);
+    float fInvFrameLabelStep = 1.0f / m_fFrameLabelStep;
     Range VisRange = GetVisibleRange();
 
     const Range& timeRange = m_timeRange;
@@ -2757,9 +2763,9 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRe
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(m_fFrameTickStep); t += static_cast<float>(m_fFrameTickStep))
+    for (double t = TickSnap(timeRange.start); t <= timeRange.end + m_fFrameTickStep; t += m_fFrameTickStep)
     {
-        float st = t;
+        double st = t;
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2804,9 +2810,9 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(step); t += static_cast<float>(step))
+    for (double t = TickSnap(timeRange.start); t <= timeRange.end + step; t += step)
     {
-        float st = TickSnap(t);
+        double st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2825,7 +2831,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
         }
         int x = TimeToClient(st);
 
-        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
+        int k = RoundFloatToInt(st * m_ticksStep);
         if (k % nNumberTicks == 0)
         {
             painter->setPen(black);
@@ -2945,7 +2951,7 @@ void CUiAnimViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpd
 
     // Draw a short thick line at each place where there is a key in any tracks.
     CUiAnimViewKeyBundle keys = pSequence->GetAllKeys();
-    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
+    for (int i = 0; i < keys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -2974,7 +2980,7 @@ void CUiAnimViewDopeSheetBase::DrawNodeTrack(CUiAnimViewAnimNode* pAnimNode, QPa
 
     const QRect textRect = trackRect.adjusted(4, 0, -4, 0);
 
-    QString sAnimNodeName = QString::fromUtf8(pAnimNode->GetName().c_str());
+    QString sAnimNodeName = pAnimNode->GetName();
     const bool hasObsoleteTrack = pAnimNode->HasObsoleteTrack();
 
     if (hasObsoleteTrack)
@@ -3106,7 +3112,7 @@ void CUiAnimViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
     std::set<CUiAnimViewTrack*> tracks;
 
     const unsigned int numKeys = selectedKeys.GetKeyCount();
-    for (unsigned int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+    for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
         CUiAnimViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
         tracks.insert(keyHandle.GetTrack());

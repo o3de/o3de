@@ -62,9 +62,9 @@ namespace AZ
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
-            RHI::DrawItemSortKey GetSortKey() const;
-            void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
-            RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
+            RHI::DrawItemSortKey GetSortKey();
+            void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
+            RPI::Cullable::LodOverride GetLodOverride();
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
@@ -153,10 +153,10 @@ namespace AZ
             AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
-            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const override;
+            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
 
-            void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) override;
-            RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
+            void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) override;
+            RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;

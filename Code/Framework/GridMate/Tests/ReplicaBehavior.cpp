@@ -282,7 +282,7 @@ namespace ReplicaBehavior {
         GM_CLASS_ALLOCATOR(EntityLikeScriptReplicaChunk);
 
         EntityLikeScriptReplicaChunk();
-        ~EntityLikeScriptReplicaChunk() override = default;
+        ~EntityLikeScriptReplicaChunk() = default;
 
         //////////////////////////////////////////////////////////////////////
         //! GridMate::ReplicaChunk overrides.
@@ -296,7 +296,7 @@ namespace ReplicaBehavior {
 
         int GetMaxServerProperties() const { return k_maxScriptableDataSets; }
 
-        AZ::u32 CalculateDirtyDataSetMask(MarshalContext& marshalContext) override;
+        AZ::u32 CalculateDirtyDataSetMask(MarshalContext& marshalContext);
 
         EntityLikeScriptDataSet m_scriptDataSets[k_maxScriptableDataSets];
         AZ::u32 m_enabledDataSetMask;
@@ -815,7 +815,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_ReplicaDefaultDataSetDriller() override
+        ~Integ_ReplicaDefaultDataSetDriller()
         {
             m_driller.BusDisconnect();
         }
@@ -928,7 +928,7 @@ namespace ReplicaBehavior {
             m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica2);
         }
 
-        ~Integ_Replica_ComparePackingBoolsVsU8() override
+        ~Integ_Replica_ComparePackingBoolsVsU8()
         {
             m_driller.BusDisconnect();
         }
@@ -1057,7 +1057,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary() override
+        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary()
         {
             m_driller.BusDisconnect();
         }
@@ -1154,7 +1154,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty() override
+        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
         {
             m_driller.BusDisconnect();
         }
@@ -1248,7 +1248,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckReplicaIsntSentWithNoChanges() override
+        ~Integ_CheckReplicaIsntSentWithNoChanges()
         {
             m_driller.BusDisconnect();
         }
@@ -1359,7 +1359,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckEntityScriptReplicaIsntSentWithNoChanges() override
+        ~Integ_CheckEntityScriptReplicaIsntSentWithNoChanges()
         {
             m_driller.BusDisconnect();
         }

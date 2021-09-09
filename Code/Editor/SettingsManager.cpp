@@ -987,7 +987,7 @@ QString CSettingsManager::GenerateContentHash(XmlNodeRef& node, QString sourceNa
         return sourceName;
     }
 
-    uint32 hash = AZ::Crc32(node->getXML(0));
+    uint32 hash = CCrc32::ComputeLowercase(node->getXML(0));
     hashStr = QString::number(hash);
 
     return hashStr;

@@ -42,6 +42,8 @@
 #define s_nodeParams s_nodeParamsSene
 #define AddSupportedParam AddSupportedParamScene
 
+float const kDefaultCameraFOV = 60.0f;
+
 namespace {
     bool s_nodeParamsInitialized = false;
     StaticInstance<std::vector<CAnimNode::SParamInfo>> s_nodeParams;
@@ -258,7 +260,7 @@ unsigned int CAnimSceneNode::GetParamCount() const
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimSceneNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex < s_nodeParams.size())
+    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
@@ -695,6 +697,7 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
         return;
     }
 
+    static const float EPSILON_TIME = 0.01f;            // consider times within EPSILON_TIME of beginning of blend time to be at the beginning of blend time
     float interpolatedFoV;
 
     ISceneCamera* secondCamera = static_cast<ISceneCamera*>(new CComponentEntitySceneCamera(secondKey.cameraAzEntityId));

@@ -47,6 +47,7 @@ namespace UnitTest
         const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
+        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         AZ::SerializeContext* GetSerializeContext() override
         {

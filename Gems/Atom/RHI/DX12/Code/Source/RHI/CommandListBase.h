@@ -7,15 +7,11 @@
  */
 #pragma once
 
-// NOTE: We are careful to include platform headers *before* we include AzCore/Debug/Profiler.h to ensure that d3d12 symbols
-// are defined prior to the inclusion of the pix3 runtime.
-#include <RHI/DX12.h>
-
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

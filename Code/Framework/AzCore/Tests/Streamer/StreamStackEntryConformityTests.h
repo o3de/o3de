@@ -250,7 +250,7 @@ namespace AZ::IO
 
             constexpr s32 minValue = std::numeric_limits<s32>::min();
             EXPECT_CALL(*mock, UpdateStatus(_))
-                .WillOnce([](StreamStackEntry::Status& status)
+                .WillOnce([minValue](StreamStackEntry::Status& status)
                 {
                     status.m_numAvailableSlots = minValue;
                 });

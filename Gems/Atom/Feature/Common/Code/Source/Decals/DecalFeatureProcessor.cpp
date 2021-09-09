@@ -112,7 +112,8 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
+                [[maybe_unused]] bool success = m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
+                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
                 m_deviceBufferNeedsUpdate = false;
             }
         }

@@ -130,6 +130,7 @@ private:
 private:
     ISplineInterpolator* m_pSpline;
 
+    bool m_bAutoDelete;
     bool m_bNoZoom;
 
     QRect m_rcClipRect;

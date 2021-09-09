@@ -434,6 +434,8 @@ namespace O3DE::ProjectManager
         {
             return AZ::Success(AZStd::move(engineInfo));
         }
+
+        return AZ::Failure();
     }
 
     bool PythonBindings::SetEngineInfo(const EngineInfo& engineInfo)

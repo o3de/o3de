@@ -195,17 +195,17 @@ namespace AzToolsFramework
         , m_criteriaOperator(FilterOperatorType::Or)
         , m_suppressCriteriaChanged(false)
     {
-        m_mainLayout = new QVBoxLayout(nullptr);
+        m_mainLayout = new QVBoxLayout(NULL);
         m_mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
         m_mainLayout->setContentsMargins(0, 0, 0, 0);
-        QHBoxLayout* secondaryLayout = new QHBoxLayout(nullptr);
+        QHBoxLayout* secondaryLayout = new QHBoxLayout(NULL);
         secondaryLayout->setSizeConstraint(QLayout::SetMinimumSize);
         secondaryLayout->setContentsMargins(0, 0, 0, 0);
-        m_filterLayout = new QHBoxLayout(nullptr);
+        m_filterLayout = new QHBoxLayout(NULL);
         m_tagLayout = new FlowLayout(nullptr);
         m_tagLayout->setAlignment(Qt::AlignLeft);
 
-        QHBoxLayout* filterTextLayout = new QHBoxLayout(nullptr);
+        QHBoxLayout* filterTextLayout = new QHBoxLayout(NULL);
         filterTextLayout->setSizeConstraint(QLayout::SetMinimumSize);
         filterTextLayout->setContentsMargins(0, 0, 0, 0);
         filterTextLayout->setSpacing(0);

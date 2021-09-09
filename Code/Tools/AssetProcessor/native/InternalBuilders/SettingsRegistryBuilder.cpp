@@ -337,7 +337,7 @@ namespace AssetProcessor
                 // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
-                AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
+                AZ::ComponentApplicationBus::Broadcast([&registry, &commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });

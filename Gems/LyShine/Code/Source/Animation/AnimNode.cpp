@@ -41,6 +41,15 @@
 //////////////////////////////////////////////////////////////////////////
 static const EUiAnimCurveType DEFAULT_TRACK_TYPE = eUiAnimCurveType_BezierFloat;
 
+// Old serialization values that are no longer
+// defined in IUiAnimationSystem.h, but needed for conversion:
+static const int OLD_ACURVE_GOTO = 21;
+static const int OLD_APARAM_PARTICLE_COUNT_SCALE = 95;
+static const int OLD_APARAM_PARTICLE_PULSE_PERIOD = 96;
+static const int OLD_APARAM_PARTICLE_SCALE = 97;
+static const int OLD_APARAM_PARTICLE_SPEED_SCALE = 98;
+static const int OLD_APARAM_PARTICLE_STRENGTH = 99;
+
 //////////////////////////////////////////////////////////////////////////
 // CUiAnimNode.
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +65,7 @@ int CUiAnimNode::GetTrackCount() const
     return static_cast<int>(m_tracks.size());
 }
 
-AZStd::string CUiAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+const char* CUiAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(paramType, info))
@@ -627,7 +636,7 @@ void CUiAnimNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyT
         EUiAnimNodeType nodeType = GetType();
         static_cast<UiAnimationSystem*>(GetUiAnimationSystem())->SerializeNodeType(nodeType, xmlNode, bLoading, IUiAnimSequence::kSequenceVersion, m_flags);
 
-        xmlNode->setAttr("Name", GetName().c_str());
+        xmlNode->setAttr("Name", GetName());
 
         // Don't store expanded or selected flags
         int flags = GetFlags() & ~(eUiAnimNodeFlags_Expanded | eUiAnimNodeFlags_EntitySelected);

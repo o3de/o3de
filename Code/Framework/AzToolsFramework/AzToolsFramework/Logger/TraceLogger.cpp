@@ -5,9 +5,11 @@
  *
  */
 
+#include <AzToolsFramework/Logger/TraceLogger.h>
+
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/Logger/TraceLogger.h>
+
 
 namespace AzToolsFramework
 {
@@ -23,22 +25,6 @@ namespace AzToolsFramework
 
     bool TraceLogger::OnOutput(const char* window, const char* message)
     {
-        for (const auto& filter : m_windowFilters)
-        {
-            if (AZ::StringFunc::Contains(window, filter))
-            {
-                return true;
-            }
-        }
-
-        for (const auto& filter : m_messageFilters)
-        {
-            if (AZ::StringFunc::Contains(message, filter))
-            {
-                return true;
-            }
-        }
-
         if (m_logFile)
         {
             m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
@@ -50,10 +36,10 @@ namespace AzToolsFramework
         return false;
     }
 
-    void TraceLogger::PrepareLogFile(const AZStd::string& logFileName)
-    {
+    void TraceLogger::WriteStartupLog(const AZStd::string& logFileName)
+    {    
         using namespace AzFramework;
-
+        
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "FileIO should be running at this point");
 
@@ -84,35 +70,5 @@ namespace AzToolsFramework
             m_startupLogSink = {};
             m_logFile->FlushLog();
         }
-    }
-
-    void TraceLogger::AddWindowFilter(const AZStd::string& filter)
-    {
-        m_windowFilters.insert(filter);
-    }
-
-    void TraceLogger::RemoveWindowFilter(const AZStd::string& filter)
-    {
-        m_windowFilters.erase(filter);
-    }
-
-    void TraceLogger::ClearWindowFilter()
-    {
-        m_windowFilters.clear();
-    }
-
-    void TraceLogger::AddMessageFilter(const AZStd::string& filter)
-    {
-        m_messageFilters.insert(filter);
-    }
-
-    void TraceLogger::RemoveMessageFilter(const AZStd::string& filter)
-    {
-        m_messageFilters.erase(filter);
-    }
-
-    void TraceLogger::ClearMessageFilter()
-    {
-        m_messageFilters.clear();
     }
 } // namespace AzToolsFramework

@@ -10,7 +10,6 @@
 #define AZFRAMEWORK_TARGETMANAGEMENTAPI_H
 
 #include <AzCore/base.h>
-#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/deque.h>
@@ -21,8 +20,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/OSAllocator.h>
-
-AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AZ
 {

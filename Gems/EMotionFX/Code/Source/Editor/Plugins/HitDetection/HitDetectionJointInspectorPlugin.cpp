@@ -57,7 +57,7 @@ namespace EMotionFX
         }
         else
         {
-            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
+            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the project configurator."));
         }
 
         return true;

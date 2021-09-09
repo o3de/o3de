@@ -14,7 +14,6 @@
 #include <QPoint>
 #include <QRect>
 #include "Cry_Vector2.h"
-#include <AzCore/Casting/numeric_cast.h>
 
 //////////////////////////////////////////////////////////////////////////
 class CWndGridHelper
@@ -81,6 +80,8 @@ public:
         {
             newzoom.y = 0.01f;
         }
+
+        Vec2 prevz = zoom;
 
         // Zoom to mouse position.
         float ofsx = origin.x;

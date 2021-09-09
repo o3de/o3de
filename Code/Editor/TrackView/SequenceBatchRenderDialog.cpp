@@ -93,7 +93,7 @@ static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& 
     const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
     atomOutputFrameCapture.UpdateView(
         TrackView::TransformFromEntityId(activeCameraEntityId),
-        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, static_cast<float>(width), static_cast<float>(height)));
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, width, height));
 }
 
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
@@ -170,10 +170,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
 
-    const int bigEnoughNumber = 1000000;
-    m_ui->m_startFrame->setRange(0, bigEnoughNumber);
+    const float bigEnoughNumber = 1000000.0f;
+    m_ui->m_startFrame->setRange(0.0f, bigEnoughNumber);
 
-    m_ui->m_endFrame->setRange(0, bigEnoughNumber);
+    m_ui->m_endFrame->setRange(0.0f, bigEnoughNumber);
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
@@ -301,8 +301,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         }
     }
     // frame range
-    m_ui->m_startFrame->setValue(static_cast<int>(item.frameRange.start * m_fpsForTimeToFrameConversion));
-    m_ui->m_endFrame->setValue(static_cast<int>(item.frameRange.end * m_fpsForTimeToFrameConversion));
+    m_ui->m_startFrame->setValue(item.frameRange.start * m_fpsForTimeToFrameConversion);
+    m_ui->m_endFrame->setValue(item.frameRange.end * m_fpsForTimeToFrameConversion);
     // folder
     m_ui->m_destinationEdit->setText(item.folder);
     // fps
@@ -357,7 +357,7 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
     QString cvarsText;
     for (size_t i = 0; i < item.cvars.size(); ++i)
     {
-        cvarsText += item.cvars[static_cast<int>(i)];
+        cvarsText += item.cvars[i];
         cvarsText += "\r\n";
     }
     m_ui->m_cvarsEdit->setPlainText(cvarsText);    
@@ -580,12 +580,12 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
     // Adjust the frame range.
     float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
     float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
-    m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
-    m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
+    m_ui->m_startFrame->setRange(0.0f, eFrame);
+    m_ui->m_endFrame->setRange(0.0f, eFrame);
 
     // Set the default start/end frames properly.
-    m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
-    m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
+    m_ui->m_startFrame->setValue(sFrame);
+    m_ui->m_endFrame->setValue(eFrame);
 
     m_ui->m_shotCombo->clear();
     // Fill the shot combo box with the names of director nodes.
@@ -719,7 +719,8 @@ bool CSequenceBatchRenderDialog::GetResolutionFromCustomResText(const char* cust
     int     scannedWidth  = retCustomWidth;      // initialize with default fall-back values - they'll be overwritten in the case of a succesful sscanf below.
     int     scannedHeight = retCustomHeight;
 
-    scanSuccess = (azsscanf(customResText, "Custom(%d x %d)...", &scannedWidth, &scannedHeight) == 2);
+    QString strFormat = QString::fromLatin1(customResFormat).replace(QRegularExpression(QStringLiteral("%\\d")), QStringLiteral("%d"));
+    scanSuccess = (azsscanf(customResText, strFormat.toStdString().c_str(), &scannedWidth, &scannedHeight) == 2);
     if (scanSuccess)
     {
         retCustomWidth = scannedWidth;
@@ -893,7 +894,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     // Set up the custom config cvars for this item.
     for (size_t i = 0; i < renderItem.cvars.size(); ++i)
     {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString(renderItem.cvars[static_cast<int>(i)].toUtf8().data());
+        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString(renderItem.cvars[i].toUtf8().data());
     }
 
     // Set specific capture options for this item.
@@ -1518,7 +1519,7 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)
             {
-                itemNode->newChild("cvar")->setContent(item.cvars[static_cast<int>(k)].toUtf8().data());
+                itemNode->newChild("cvar")->setContent(item.cvars[k].toUtf8().data());
             }
         }
 

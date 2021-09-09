@@ -12,8 +12,9 @@
 
 namespace DependencyBuilder
 {
-    DependencyBuilderWorker::DependencyBuilderWorker(AZStd::string jobKey, [[maybe_unused]] bool critical)
+    DependencyBuilderWorker::DependencyBuilderWorker(AZStd::string jobKey, bool critical)
         : m_jobKey(jobKey)
+        , m_critical(critical)
     {
     }
 

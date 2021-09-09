@@ -188,7 +188,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        using AzToolsFramework::ViewportInteraction::MouseEvent;
+        using namespace AzToolsFramework::ViewportInteraction;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
         // store the current interaction for use in DrawManipulators
         m_currentInteraction = mouseInteraction;
@@ -196,19 +196,28 @@ namespace AzToolsFramework
         switch (mouseInteractionEvent.m_mouseEvent)
         {
         case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+            {
+                return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+            }
         case MouseEvent::DoubleClick:
-            return false;
+            {
+                return false;
+            }
         case MouseEvent::Move:
             {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                    AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::None;
+                mouseMoveResult = m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
                 return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
             }
         case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+            {
+                return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+            }
         case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+            {
+                return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+            }
         default:
             return false;
         }

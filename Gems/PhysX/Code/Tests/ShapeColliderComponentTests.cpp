@@ -299,6 +299,7 @@ namespace PhysXEditorTests
         
         // the bounding box of the rigid body should reflect the dimensions of the cylinder set above
         AZ::Aabb aabb = staticBody->GetAabb();
+        const float validDiameter = validRadius * 2.0f;
         
         // Check that the z positions of the bounding box match that of the cylinder
         EXPECT_NEAR(aabb.GetMin().GetZ(), -0.5f * validHeight, AZ::Constants::Tolerance);

@@ -339,9 +339,10 @@ namespace Metastream
             // Server already started
             return true;
         }
-#else
+#endif // AZ_TRAIT_METASTREAM_USE_CIVET
+
+        // Metastream only supported on PC
         return false;
-#endif
     }
 
     void Metastream::MetastreamGem::StopHTTPServer()

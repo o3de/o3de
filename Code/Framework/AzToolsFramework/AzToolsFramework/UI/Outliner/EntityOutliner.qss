@@ -43,6 +43,7 @@ AzToolsFramework--EntityOutlinerCheckBox
     padding: 0;
 	padding-right: 2px;
     line-height: 0px;
+    font-size: 0px;
     margin: 0px;
     max-height: 20px;
     max-width: 18px;
@@ -58,6 +59,7 @@ AzToolsFramework--EntityOutlinerCheckBox::indicator
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
+    font-size: 0px;
     margin: 3px 0 0 0;
     max-width: 18px;
     width: 18px;

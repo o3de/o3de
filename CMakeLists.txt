@@ -64,13 +64,14 @@ include(cmake/Projects.cmake)
 if(NOT INSTALLED_ENGINE)
     
     # Add the rest of the targets
-    add_subdirectory(Assets)
     add_subdirectory(Code)
-    add_subdirectory(python)
-    add_subdirectory(Registry)
     add_subdirectory(scripts)
-    add_subdirectory(Templates)
-    add_subdirectory(Tools)
+
+    # SPEC-1417 will investigate and fix this
+    if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+        add_subdirectory(Tools/LyTestTools/tests/)
+        add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+    endif()
 
     # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories
@@ -132,7 +133,7 @@ ly_delayed_generate_runtime_dependencies()
 ly_test_impact_post_step()
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(LY_INSTALL_ENABLED)
+if(NOT INSTALLED_ENGINE)
     # 8. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
     ly_setup_o3de_install()
     # 9. CPack information (to be included after install)

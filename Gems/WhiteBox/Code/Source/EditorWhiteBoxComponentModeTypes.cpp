@@ -8,10 +8,7 @@
 
 #include "EditorWhiteBoxComponentModeTypes.h"
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-
-AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace WhiteBox
 {
@@ -19,7 +16,7 @@ namespace WhiteBox
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color,
         const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle, const Api::EdgeHandles& excludedEdgeHandles)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         debugDisplay.SetColor(color);
         for (const EdgeBoundWithHandle& edge : edgeBoundsWithHandle)

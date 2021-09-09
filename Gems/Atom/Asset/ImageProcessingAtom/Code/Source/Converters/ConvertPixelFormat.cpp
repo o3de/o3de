@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/std/time.h>
 
 #include <Processing/ImageFlags.h>
 #include <Processing/ImageObjectImpl.h>
@@ -98,18 +97,9 @@ namespace ImageProcessingAtom
             else
             {
                 IImageObjectPtr dstImage = nullptr;
-                [[maybe_unused]] const PixelFormatInfo* compressedInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(compressedFmt);
                 if (isSrcUncompressed)
                 {
-                    AZ::u64 startTime = AZStd::GetTimeUTCMilliSecond();
                     dstImage = compressor->CompressImage(Get(), fmtDst, &m_compressOption);
-                    AZ::u64 endTime = AZStd::GetTimeUTCMilliSecond();
-                    [[maybe_unused]] double processTime = static_cast<double>(endTime - startTime) / 1000.0;
-                    if (dstImage)
-                    {
-                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed to [%s] format by [%s] in %.3f seconds\n",
-                            Get()->GetWidth(0), Get()->GetHeight(0), compressedInfo->szName, compressor->GetName(), processTime);
-                    }
                 }
                 else
                 {
@@ -117,13 +107,11 @@ namespace ImageProcessingAtom
                 }
 
                 Set(dstImage);
-                
-                if (dstImage == nullptr)
-                {
-                    AZ_Error("Image Processing", false, "Failed to use [%s] to %s [%s] format", compressor->GetName(),
-                        isSrcUncompressed ? "compress" : "decompress",
-                        compressedInfo->szName);
-                }
+            }
+
+            if (Get() == nullptr)
+            {
+                AZ_Error("Image Processing", false, "The selected compressor failed to compress this image");
             }
         }
     }

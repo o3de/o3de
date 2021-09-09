@@ -32,7 +32,7 @@ public:
 
     virtual int GetSubTrackCount() const { return 0; };
     virtual IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const { return 0; };
-    AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
+    virtual const char* GetSubTrackName([[maybe_unused]] int nIndex) const { return NULL; };
     virtual void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) { assert(0); }
 
     virtual const CUiAnimParamType&  GetParameterType() const { return m_nParamType; };
@@ -220,8 +220,6 @@ protected:
     unsigned int m_bModified : 1;
     float m_lastTime;
     int m_flags;
-
-    static constexpr unsigned int InvalidKey = 0x7FFFFFFF;
 
     UiAnimParamData m_componentParamData;
 
@@ -523,7 +521,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
     if (nkeys == 0)
     {
         m_lastTime = time;
-        m_currKey = InvalidKey;
+        m_currKey = -1;
         return m_currKey;
     }
 
@@ -556,7 +554,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
         }
         else
         {
-            m_currKey = InvalidKey;
+            m_currKey = -1;
         }
         return m_currKey;
     }
@@ -602,6 +600,6 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
             break;
         }
     }
-    m_currKey = InvalidKey;
+    m_currKey = -1;
     return m_currKey;
 }

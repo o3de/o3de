@@ -217,7 +217,7 @@ namespace AzQtComponents
     }
 
     ScreenGrabber::ScreenGrabber(const QSize size, Eyedropper* parent /* = nullptr */)
-        : QObject(parent)
+        : QObject(static_cast<QObject*>(parent))
         , m_size(size)
         , m_owner(parent)
     {

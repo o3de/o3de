@@ -23,6 +23,7 @@ namespace AZ
         class SwapChain;
         class Fence;
 
+        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         struct QueueId
         {
             uint32_t m_familyIndex = 0;
@@ -31,6 +32,7 @@ namespace AZ
             bool operator==(const QueueId& other) const { return ::memcmp(this, &other, sizeof(other)) == 0; }
             bool operator!=(const QueueId& other) const { return !(*this == other); }
         };
+        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         class Queue final
             : public RHI::DeviceObject

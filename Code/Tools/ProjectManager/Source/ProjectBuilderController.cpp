@@ -52,7 +52,6 @@ namespace O3DE::ProjectManager
 
         if (projectButton)
         {
-            projectButton->SetProjectBuilding();
             projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
 
             if (m_lastProgress != 0)
@@ -111,10 +110,6 @@ namespace O3DE::ProjectManager
 
             emit Done(false);
             return;
-        }
-        else
-        {
-            m_projectInfo.m_buildFailed = false;
         }
 
         emit Done(true);

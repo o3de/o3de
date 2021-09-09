@@ -987,7 +987,7 @@ namespace AzFramework
     void AssetCatalog::AddCatalogEntry(AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog)
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_deltaCatalogMutex);
-#if !defined(_RELEASE)
+#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
         for (const auto& thisElement : m_deltaCatalogList)
         {
             if (thisElement == deltaCatalog)
@@ -1010,7 +1010,7 @@ namespace AzFramework
             AZ_Warning("AssetCatalog", false, "Catalog name %p can't be inserted at slot %u", deltaCatalog.get(), catalogIndex);
             return;
         }
-#if !defined(_RELEASE)
+#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
         for (const auto& thisElement : m_deltaCatalogList)
         {
             if (thisElement == deltaCatalog)

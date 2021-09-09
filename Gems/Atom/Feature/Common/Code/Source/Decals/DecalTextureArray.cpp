@@ -147,7 +147,7 @@ namespace AZ
             RPI::ImageMipChainAssetCreator assetCreator;
             const uint32_t mipLevels = GetNumMipLevels();
 
-            assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), static_cast<uint16_t>(mipLevels), aznumeric_cast<uint16_t>(numTexturesToCreate));
+            assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, aznumeric_cast<uint16_t>(numTexturesToCreate));
 
             for (uint32_t mipLevel = 0; mipLevel < mipLevels; ++mipLevel)
             {

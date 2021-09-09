@@ -266,8 +266,7 @@ namespace TestImpact
             {
                 { SuiteTypeAsString(SuiteType::Main), SuiteType::Main },
                 { SuiteTypeAsString(SuiteType::Periodic), SuiteType::Periodic },
-                { SuiteTypeAsString(SuiteType::Sandbox), SuiteType::Sandbox },
-                { SuiteTypeAsString(SuiteType::AWSI), SuiteType::AWSI }
+                { SuiteTypeAsString(SuiteType::Sandbox), SuiteType::Sandbox }
             };
 
             return ParseMultiStateOption(OptionKeys[SuiteFilterKey], states, cmd).value_or(SuiteType::Main);
@@ -473,7 +472,7 @@ namespace TestImpact
             "                                                                available, no prioritization will occur).\n"
             "    -maxconcurrency=<number>                                    The maximum number of concurrent test targets/shards to be in flight at \n"
             "                                                                any given moment.\n"
-            "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
+            "    -suite=<main, periodic, sandbox>                            The test suite to select from for this test sequence.";
 
         return help;
     }

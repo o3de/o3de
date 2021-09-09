@@ -32,20 +32,12 @@ namespace AzPhysics
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(AzPhysics::StaticRigidBody, "{13A677BB-7085-4EDB-BCC8-306548238692}", AzPhysics::SimulatedBody);
+        AZ_RTTI(StaticRigidBody, "{13A677BB-7085-4EDB-BCC8-306548238692}", SimulatedBody);
         static void Reflect(AZ::ReflectContext* context);
 
-        //! Add a shape to the static rigid body.
-        //! @param shape A shared pointer of the shape to add.
+        //Legacy API - may change with LYN-438
         virtual void AddShape(const AZStd::shared_ptr<Physics::Shape>& shape) = 0;
-
-        //! Returns the number of shapes that make up this static rigid body.
-        //! @return Returns the number of shapes as a AZ::u32.
         virtual AZ::u32 GetShapeCount() { return 0; }
-
-        //! Returns a shared pointer to the requested shape index.
-        //! @param index The index of the shapes to return. Expected to be between 0 and GetShapeCount().
-        //! @return Returns a shared pointer of the shape requested or nullptr if index is out of bounds.
         virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]]AZ::u32 index) { return nullptr; }
     };
 }

@@ -72,7 +72,7 @@ namespace UnitTest
                     });
 
             ON_CALL(m_mockStreamer, GetRequestStatus(_))
-                .WillByDefault([]([[maybe_unused]] FileRequestHandle request)
+                .WillByDefault([this]([[maybe_unused]] FileRequestHandle request)
                     {
                         // Return whatever request status has been set in this class
                         return IO::IStreamerTypes::RequestStatus::Completed;
@@ -420,7 +420,7 @@ namespace UnitTest
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }

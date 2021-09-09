@@ -413,7 +413,7 @@ namespace UnitTest
             EXPECT_EQ(1, creator.GetErrorCount());
         };
 
-        auto expectCreatorWarning = [](AZStd::function<void(MaterialTypeAssetCreator& creator)> passBadInput)
+        auto expectCreatorWarning = [this](AZStd::function<void(MaterialTypeAssetCreator& creator)> passBadInput)
         {
             MaterialTypeAssetCreator creator;
             creator.Begin(Uuid::CreateRandom());
@@ -442,47 +442,47 @@ namespace UnitTest
             creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyUInt" }, -1);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyImage" }, true);
         });
 
-        expectCreatorError([](MaterialTypeAssetCreator& creator)
+        expectCreatorError([this](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyEnum" }, -1);
         });

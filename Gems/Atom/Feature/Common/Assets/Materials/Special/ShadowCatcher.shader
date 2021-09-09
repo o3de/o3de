@@ -18,20 +18,5 @@
         "BlendOp": "Add"
     },
 
-    "ProgramSettings" : 
-    {
-        "EntryPoints":
-        [
-            {
-                "name": "ShadowCatcherVS",
-                "type" : "Vertex"
-            },
-            {
-                "name": "ShadowCatcherPS",
-                "type" : "Fragment"
-            }
-        ] 
-    },
-
     "DrawList": "transparent"
 }

@@ -25,7 +25,7 @@
 
 #if defined(OPENSSL_THREADS)
 //  thread support enabled
-#elif AZ_TRAIT_USE_OPENSSL
+#else
 #   error OpenSSL threading support is not enabled
 #endif
 
@@ -473,7 +473,7 @@ namespace AzNetworking
         {
             const AZ::CVarFixedString contextPassword = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalContextPassword : net_SslInternalContextPassword;
 
-            SSL_CTX_set_default_passwd_cb(context, nullptr);
+            SSL_CTX_set_default_passwd_cb(context, NULL);
             SSL_CTX_set_default_passwd_cb_userdata(context, (void*)contextPassword.c_str());
 
             if (SSL_CTX_use_PrivateKey_file(context, privateKeyPath.c_str(), SSL_FILETYPE_PEM) != OpenSslResultSuccess)

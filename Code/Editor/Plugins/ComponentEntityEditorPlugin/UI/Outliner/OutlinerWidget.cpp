@@ -96,7 +96,7 @@ namespace
 
     void SortEntityChildren(AZ::EntityId entityId, const EntityIdCompareFunc& comparer, AzToolsFramework::EntityOrderArray* newEntityOrder = nullptr)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AzToolsFramework::EntityOrderArray entityOrderArray = AzToolsFramework::GetEntityChildOrder(entityId);
         AZStd::sort(entityOrderArray.begin(), entityOrderArray.end(), comparer);
@@ -110,7 +110,7 @@ namespace
 
     void SortEntityChildrenRecursively(AZ::EntityId entityId, const EntityIdCompareFunc& comparer)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         AzToolsFramework::EntityOrderArray entityOrderArray;
         SortEntityChildren(entityId, comparer, &entityOrderArray);
@@ -303,7 +303,7 @@ void OutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QI
         return;
     }
 
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
     AzToolsFramework::EntityIdList newlySelected;
     ExtractEntityIdsFromSelection(selected, newlySelected);
@@ -450,7 +450,7 @@ void OutlinerWidget::UpdateSelection()
 {
     if (m_selectionChangeQueued)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         m_selectionChangeInProgress = true;
 
@@ -458,7 +458,7 @@ void OutlinerWidget::UpdateSelection()
         {
             // Calling Deselect for a large number of items is very slow,
             // use a single ClearAndSelect call instead.
-            AZ_PROFILE_SCOPE(AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:ClearAndSelect");
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:ClearAndSelect");
 
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
@@ -469,12 +469,12 @@ void OutlinerWidget::UpdateSelection()
         else
         {
             {
-                AZ_PROFILE_SCOPE(AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:Deselect");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:Deselect");
                 m_gui->m_objectTree->selectionModel()->select(
                     BuildSelectionFromEntities(m_entitiesToDeselect), QItemSelectionModel::Deselect);
             }
             {
-                AZ_PROFILE_SCOPE(AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:Select");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "OutlinerWidget::ModelEntitySelectionChanged:Select");
                 m_gui->m_objectTree->selectionModel()->select(
                     BuildSelectionFromEntities(m_entitiesToSelect), QItemSelectionModel::Select);
             }
@@ -497,7 +497,7 @@ void OutlinerWidget::UpdateSelection()
 template <class EntityIdCollection>
 QItemSelection OutlinerWidget::BuildSelectionFromEntities(const EntityIdCollection& entityIds)
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     QItemSelection selection;
 
     for (const auto& entityId : entityIds)
@@ -517,7 +517,7 @@ QItemSelection OutlinerWidget::BuildSelectionFromEntities(const EntityIdCollecti
 
 void OutlinerWidget::contextMenuEvent(QContextMenuEvent* event)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     bool isDocumentOpen = false;
     EBUS_EVENT_RESULT(isDocumentOpen, AzToolsFramework::EditorRequests::Bus, IsLevelDocumentOpen);
@@ -1272,7 +1272,7 @@ void OutlinerWidget::ExtractEntityIdsFromSelection(const QItemSelection& selecti
 
 void OutlinerWidget::OnSearchTextChanged(const QString& activeTextFilter)
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     AZStd::string filterString = activeTextFilter.toUtf8().data();
 
     m_listModel->SearchStringChanged(filterString);
@@ -1388,7 +1388,7 @@ void OutlinerWidget::QueueContentUpdateSort(const AZ::EntityId& entityId)
 
 void OutlinerWidget::SortContent()
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
     m_sortContentQueued = false;
 
@@ -1424,7 +1424,7 @@ void OutlinerWidget::OnSortModeChanged(EntityOutliner::DisplaySortMode sortMode)
 
     if (sortMode != EntityOutliner::DisplaySortMode::Manually)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
         auto comparer = AZStd::bind(&CompareEntitiesForSorting, AZStd::placeholders::_1, AZStd::placeholders::_2, sortMode);
         SortEntityChildrenRecursively(AZ::EntityId(), comparer);
     }

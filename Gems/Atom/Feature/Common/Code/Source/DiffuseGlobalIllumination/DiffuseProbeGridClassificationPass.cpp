@@ -76,9 +76,9 @@ namespace AZ
                     return;
                 }
 
-                m_dispatchArgs.m_threadsPerGroupX = static_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
-                m_dispatchArgs.m_threadsPerGroupY = static_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
-                m_dispatchArgs.m_threadsPerGroupZ = static_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
+                m_dispatchArgs.m_threadsPerGroupX = AZStd::any_cast<int>(args[0]);
+                m_dispatchArgs.m_threadsPerGroupY = AZStd::any_cast<int>(args[1]);
+                m_dispatchArgs.m_threadsPerGroupZ = AZStd::any_cast<int>(args[2]);
             }
         }
 

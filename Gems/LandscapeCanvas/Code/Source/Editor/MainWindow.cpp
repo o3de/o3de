@@ -955,14 +955,14 @@ namespace LandscapeCanvasEditor
 
             auto redoAction = new QAction(QObject::tr("&Redo"), this);
             redoAction->setShortcut(AzQtComponents::RedoKeySequence);
-            QObject::connect(redoAction, &QAction::triggered, [] {
+            QObject::connect(redoAction, &QAction::triggered, [this] {
                 GetLegacyEditor()->Redo();
             });
             menu->insertAction(separatorAction, redoAction);
 
             auto undoAction = new QAction(QObject::tr("&Undo"), this);
             undoAction->setShortcut(QKeySequence::Undo);
-            QObject::connect(undoAction, &QAction::triggered, [] {
+            QObject::connect(undoAction, &QAction::triggered, [this] {
                 GetLegacyEditor()->Undo();
             });
             menu->insertAction(redoAction, undoAction);
@@ -2852,7 +2852,7 @@ namespace LandscapeCanvasEditor
         // For any node with an Entity Name slot, we need to replace the string property display with a read-only version
         // instead until we have support for listening for GraphModel slot value changes.  We need to delay this because
         // when the node is added, the slots haven't been added to the element map yet.
-        QTimer::singleShot(0, [node, graphId]() {
+        QTimer::singleShot(0, [this, node, graphId]() {
             GraphModel::SlotPtr slot = node->GetSlot(LandscapeCanvas::ENTITY_NAME_SLOT_ID);
             if (slot)
             {
@@ -2976,7 +2976,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EntityIdList vegetationAreaIds;
         m_serializeContext->EnumerateObject(component,
             // beginElemCB
-            [&previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
+            [this, &previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
         {
             if (classElement && (classElement->m_typeId == azrtti_typeid<AZ::EntityId>()))
             {

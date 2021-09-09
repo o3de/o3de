@@ -298,7 +298,7 @@ namespace AWSCore
     {
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [&gems](const AZ::ModuleData& moduleData)
+            [this, &gems](const AZ::ModuleData& moduleData)
             {
                 AZ::Entity* moduleEntity = moduleData.GetEntity();
                 auto moduleEntityName = moduleEntity->GetName();
@@ -338,7 +338,7 @@ namespace AWSCore
                 AZ_Printf("AWSAttributionManager", "AWSAttribution metric submit success");
 
             },
-            []([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
             {
                 AZ_Error("AWSAttributionManager", false, "Metrics send error: %s", failJob->error.message.c_str());
             },

@@ -25,8 +25,6 @@ namespace Blast
 
         BlastAsset(Nv::Blast::ExtPxAsset* pxAsset = nullptr, NvBlastExtDamageAccelerator* damageAccelerator = nullptr);
 
-        static void Reflect(AZ::ReflectContext* context);
-
         bool LoadFromBuffer(void* buffer, size_t bytesSize);
 
         const Nv::Blast::ExtPxAsset* GetPxAsset() const

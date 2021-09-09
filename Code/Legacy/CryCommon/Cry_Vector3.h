@@ -178,6 +178,21 @@ struct Vec3_tpl
         assert(IsValid());
     }
 
+    explicit ILINE Vec3_tpl<F>(const Vec4_tpl<F> &v) {
+        x = F(v.x);
+        y = F(v.y);
+        z = F(v.z);
+    }
+    template<class T>
+    explicit ILINE Vec3_tpl<F>(const Vec4_tpl<T> &v) {
+        x = F(v.x);
+        y = F(v.y);
+        z = F(v.z);
+    }
+
+
+
+
     /*!
     * overloaded arithmetic operator
     *
@@ -830,9 +845,9 @@ struct Vec3_tpl
     {
         return Vec3_tpl<F1>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
     }
-};
 
-using Vec3i = Vec3_tpl<int32>;
+    AUTO_STRUCT_INFO
+};
 
 // dot product (2 versions)
 template<class F1, class F2>
@@ -930,6 +945,15 @@ ILINE bool IsEquivalent(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1, f32 epsilo
 ///////////////////////////////////////////////////////////////////////////////
 typedef Vec3_tpl<f32>    Vec3;  // always 32 bit
 
+typedef Vec3_tpl<f64>    Vec3d; // always 64 bit
+typedef Vec3_tpl<int32>  Vec3i;
+typedef Vec3_tpl<uint32> Vec3ui;
+typedef Vec3_tpl<real>   Vec3r; // variable float precision. depending on the target system it can be 32, 64 or 80 bit
+
+template<>
+inline Vec3_tpl<f64>::Vec3_tpl(type_min) { x = y = z = -1.7E308; }
+template<>
+inline Vec3_tpl<f64>::Vec3_tpl(type_max) { x = y = z = 1.7E308; }
 template<>
 inline Vec3_tpl<f32>::Vec3_tpl(type_min) { x = y = z = -3.3E38f; }
 template<>
@@ -1151,9 +1175,13 @@ struct Ang3_tpl
         }
         return true;
     }
+
+    AUTO_STRUCT_INFO
 };
 
 typedef Ang3_tpl<f32>       Ang3;
+typedef Ang3_tpl<real>  Ang3r;
+typedef Ang3_tpl<f64>       Ang3_f64;
 
 //---------------------------------------
 
@@ -1227,6 +1255,7 @@ struct AngleAxis_tpl
 };
 
 typedef AngleAxis_tpl<f32> AngleAxis;
+typedef AngleAxis_tpl<f64> AngleAxis_f64;
 
 template<typename F>
 ILINE const Vec3_tpl<F> AngleAxis_tpl<F>::operator * (const Vec3_tpl<F>& v) const
@@ -1234,6 +1263,22 @@ ILINE const Vec3_tpl<F> AngleAxis_tpl<F>::operator * (const Vec3_tpl<F>& v) cons
     Vec3_tpl<F> origin  = axis * (axis | v);
     return origin +  (v - origin) * cos_tpl(angle)  +  (axis % v) * sin_tpl(angle);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////
 template<typename F>
@@ -1361,9 +1406,13 @@ struct Plane_tpl
     Vec3_tpl<F> MirrorPosition(const Vec3_tpl<F>& i) {  return i - n * (2 * ((n | i) + d)); }
 
     ILINE bool IsValid() const { return !n.IsZeroFast(); } //A plane with a zero normal isn't valid.
+
+    AUTO_STRUCT_INFO
 };
 
 typedef Plane_tpl<f32>  Plane; //always 32 bit
+typedef Plane_tpl<f64>  Planed;//always 64 bit
+typedef Plane_tpl<real> Planer;//variable float precision. depending on the target system it can be between 32, 64 or 80 bit
 
 
 // declare common constants.  Must be done after the class for compiler conformance

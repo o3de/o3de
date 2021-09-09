@@ -104,7 +104,7 @@ namespace AZ
             }
 
             AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
-                RequestingApplication requester, const Uuid& loadingComponentUuid)
+                RequestingApplication requester)
             {
                 AZStd::string sceneName;
                 AzFramework::StringFunc::Path::GetFileName(assetFilePath.c_str(), sceneName);
@@ -113,7 +113,7 @@ namespace AZ
 
                 // Unique pointer, will deactivate and clean up once going out of scope.
                 SceneCore::EntityConstructor::EntityPointer loaders = 
-                    SceneCore::EntityConstructor::BuildEntity("Scene Loading", loadingComponentUuid);
+                    SceneCore::EntityConstructor::BuildEntity("Scene Loading", SceneCore::LoadingComponent::TYPEINFO_Uuid());
 
                 ProcessingResultCombiner areAllPrepared;
                 AssetImportRequestBus::BroadcastResult(areAllPrepared, &AssetImportRequestBus::Events::PrepareForAssetLoading, *scene, requester);

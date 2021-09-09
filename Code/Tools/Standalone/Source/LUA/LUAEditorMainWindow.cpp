@@ -213,7 +213,7 @@ namespace LUAEditor
         auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
         m_gui->actionAutoReloadUnmodifiedFiles->setChecked(newState->m_bAutoReloadUnmodifiedFiles);
 
-        connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [](bool newValue)
+        connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [this](bool newValue)
         {
             auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
@@ -2394,6 +2394,7 @@ namespace LUAEditor
             // if we have any elements, the last element is top right aligned:
             QLayoutItem* pItem = children[children.size() - 1];
             QSize lastItemSize = pItem->minimumSize();
+            QPoint topRight = effectiveRect.topRight();
 
             const int magicalRightEdgeOffset = pItem->widget()->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
             QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width() + magicalRightEdgeOffset, 0) + QPoint(-2, 2), lastItemSize);

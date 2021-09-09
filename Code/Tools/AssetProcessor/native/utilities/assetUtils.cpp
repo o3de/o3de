@@ -57,6 +57,9 @@
 
 #include <sstream>
 
+// windows headers bring in a macro which conflicts GetCommandLine
+#undef GetCommandLine
+
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
@@ -69,6 +72,11 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
+        if (waitTimeInSeconds < 0)
+        {
+            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
+            waitTimeInSeconds = 0;
+        }
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
@@ -1396,6 +1404,7 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
+        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 

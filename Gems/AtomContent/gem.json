@@ -7,6 +7,7 @@
     "summary": "The Atom Content Gem provides assets for Atom Renderer and a modified version of the <a href='https://renderman.pixar.com/look-development-studio'>Pixar Look Development Studio</a>.",
     "canonical_tags": ["Gem"],
     "user_tags": ["Rendering", "Assets", "Tools"],
+    "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom-content/"
 }

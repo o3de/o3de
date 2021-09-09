@@ -9,7 +9,6 @@
 #include "PrefabBuilderTests.h"
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -57,7 +56,7 @@ namespace UnitTest
         // Save to a string so we can load it as a PrefabDom and so that the nested instance becomes a Source file reference
         ASSERT_TRUE(prefabLoaderInterface->SaveTemplateToString(parentInstance->GetTemplateId(), serializedInstance));
 
-        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(serializedInstance);
+        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AzFramework::FileFunc::ReadJsonFromString(serializedInstance);
 
         ASSERT_TRUE(readPrefabFileResult.IsSuccess());
 

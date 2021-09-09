@@ -176,7 +176,8 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Error("Buffer", false, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
+            // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
+            AZ_Error("Buffer", resultCode == AZ::RHI::ResultCode::Unimplemented, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
             return resultCode;
         }
         
@@ -239,6 +240,11 @@ namespace AZ
             if (result == RHI::ResultCode::Success)
             {
                 return response.m_data;
+            }
+            else if (result == RHI::ResultCode::Unimplemented)
+            {
+                // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
+                return nullptr;
             }
             else
             {

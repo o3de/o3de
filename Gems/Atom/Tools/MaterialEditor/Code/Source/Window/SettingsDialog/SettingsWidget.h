@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <Atom/Document/MaterialDocumentSettings.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
@@ -32,8 +31,7 @@ namespace MaterialEditor
         void Populate();
 
     private:
-        void AddDocumentSettingsGroup();
-        void AddDocumentSystemSettingsGroup();
+        void AddDocumentGroup();
 
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
@@ -48,6 +46,5 @@ namespace MaterialEditor
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
 
         AZStd::intrusive_ptr<MaterialDocumentSettings> m_documentSettings;
-        AZStd::intrusive_ptr<AtomToolsFramework::AtomToolsDocumentSystemSettings> m_documentSystemSettings;
     };
 } // namespace MaterialEditor

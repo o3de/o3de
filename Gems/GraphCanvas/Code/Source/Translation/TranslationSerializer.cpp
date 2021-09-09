@@ -20,6 +20,14 @@ namespace GraphCanvas
             static constexpr char variant[] = "variant";
             static constexpr char entries[] = "entries";
         }
+
+        static const AZStd::string_view RequiredFields[] =
+        {
+            Field::key,
+            Field::context,
+            Field::variant,
+            Field::entries
+        };
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);

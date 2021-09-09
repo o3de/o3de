@@ -109,7 +109,7 @@ bool CSelectionGroup::SameObjectType()
 //////////////////////////////////////////////////////////////////////////
 int CSelectionGroup::GetCount() const
 {
-    return static_cast<int>(m_objects.size());
+    return m_objects.size();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ Vec3    CSelectionGroup::GetCenter() const
     }
     if (GetCount() > 0)
     {
-        c /= static_cast<f32>(GetCount());
+        c /= GetCount();
     }
     return c;
 }
@@ -316,6 +316,8 @@ void CSelectionGroup::Rotate(const Ang3& angles, int referenceCoordSys)
     //  return;
 
     // Rotate selection about selection center.
+    Vec3 center = GetCenter();
+
     Matrix34 rotateTM = Matrix34::CreateRotationXYZ(DEG2RAD(angles));
     Rotate(rotateTM, referenceCoordSys);
 }
@@ -630,7 +632,7 @@ void CSelectionGroup::IndicateSnappingVertex(DisplayContext& dc) const
 void CSelectionGroup::FinishChanges()
 {
     Objects selectedObjects(m_objects);
-    int iObjectSize = static_cast<int>(selectedObjects.size());
+    int iObjectSize(selectedObjects.size());
     for (int i = 0; i < iObjectSize; ++i)
     {
         CBaseObject* pObject = selectedObjects[i];

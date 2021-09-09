@@ -80,7 +80,7 @@ public:
     CTrackViewAnimNode* GetAnimNode() const;
 
     // Name getter
-    AZStd::string GetName() const override;
+    virtual const char* GetName() const;
 
     // CTrackViewNode
     virtual ETrackViewNodeType GetNodeType() const override { return eTVNT_Track; }

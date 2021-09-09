@@ -61,7 +61,7 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN] = {0};
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZStd::string withoutSlash = RemoveTrailingSlash(resolvedPath);
+            AZ::OSString withoutSlash = RemoveTrailingSlash(resolvedPath);
             DIR* dir = opendir(withoutSlash.c_str());
 
             if (dir != nullptr)
@@ -80,7 +80,7 @@ namespace AZ
                     // Skip over the current and parent directory paths
                     if (filenameView != "." && filenameView != ".." && NameMatchesFilter(entry->d_name, filter))
                     {
-                        AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
+                        AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
                         foundFilePath += entry->d_name;
                         // if aliased, dealias!
                         azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
@@ -116,7 +116,7 @@ namespace AZ
             }
 
             // make directories from bottom to top.
-            AZStd::string buf;
+            AZ::OSString buf;
             size_t pathLength = strlen(resolvedPath);
             buf.reserve(pathLength);
             for (size_t pos = 0; pos < pathLength; ++pos)

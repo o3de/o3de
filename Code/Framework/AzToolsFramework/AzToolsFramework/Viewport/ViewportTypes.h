@@ -212,10 +212,9 @@ namespace AzToolsFramework
             static void Reflect(AZ::SerializeContext& context);
 
             //! Constructor to create a default MouseInteractionEvent
-            MouseInteractionEvent(MouseInteraction mouseInteraction, const MouseEvent mouseEvent, const bool captured)
+            MouseInteractionEvent(MouseInteraction mouseInteraction, const MouseEvent mouseEvent)
                 : m_mouseInteraction(std::move(mouseInteraction))
                 , m_mouseEvent(mouseEvent)
-                , m_captured(captured)
             {
             }
 
@@ -229,7 +228,6 @@ namespace AzToolsFramework
 
             MouseInteraction m_mouseInteraction; //!< Mouse state.
             MouseEvent m_mouseEvent; //!< Mouse event.
-            bool m_captured = false; //!< Is the mouse cursor being captured during the event.
 
             //! Special friend function to return the mouse wheel delta (scroll amount)
             //! if the event was of type MouseEvent::Wheel.

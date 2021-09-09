@@ -150,7 +150,7 @@ namespace ScriptedEntityTweener
 
         bool IsTimelineIdValid(int timelineId)
         {
-            return timelineId != static_cast<int>(AnimationProperties::InvalidTimelineId);
+            return timelineId != AnimationProperties::InvalidTimelineId;
         }
 
         bool InitializeSubtask(ScriptedEntityTweenerSubtask& subtask, const AZStd::pair<AnimationParameterAddressData, AZStd::any> initData, AnimationParameters params);

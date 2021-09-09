@@ -518,8 +518,8 @@ namespace AzToolsFramework
 
     void EntityIdPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyEntityIdCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        AZ_UNUSED(index);
-        AZ_UNUSED(node);
+        (int)index;
+        (void)node;
         instance = GUI->GetEntityId();
     }
 

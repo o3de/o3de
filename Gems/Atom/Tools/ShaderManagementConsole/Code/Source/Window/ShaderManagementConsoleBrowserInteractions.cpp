@@ -6,24 +6,28 @@
  *
  */
 
-#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Util/Util.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <QApplication>
+#include <QMenu>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QDesktopServices>
+
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+
+#include <AzFramework/StringFunc/StringFunc.h>
+
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <Window/ShaderManagementConsoleBrowserInteractions.h>
+#include <AtomToolsFramework/Util/Util.h>
 
-#include <QApplication>
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QInputDialog>
-#include <QMenu>
-#include <QMessageBox>
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+
+#include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
 
 namespace ShaderManagementConsole
 {
@@ -76,7 +80,7 @@ namespace ShaderManagementConsole
         {
             if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
+                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
             }
             else
             {
@@ -84,7 +88,7 @@ namespace ShaderManagementConsole
             }
         });
 
-        menu->addAction("Duplicate...", [entry]()
+        menu->addAction("Duplicate...", [entry, caller]()
         {
             const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
             if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -189,7 +193,7 @@ namespace ShaderManagementConsole
             });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
+            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path, this]()
             {
                 SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                     [](bool, const SourceControlFileInfo&) {});

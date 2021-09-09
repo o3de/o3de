@@ -239,11 +239,10 @@ namespace AzFramework
         }
         else if (rootSpawnableKeyType == AZ::SettingsRegistryInterface::Type::NoType)
         {
-            // [LYN-4146] - temporarily disabled
-            /*AZ_Warning(
+            AZ_Warning(
                 "Spawnables", false,
                 "No root spawnable assigned. The root spawnable can be assigned in the Settings Registry under the key '%s'.\n",
-                RootSpawnableRegistryKey);*/
+                RootSpawnableRegistryKey);
             ReleaseRootSpawnable();
         }
     }

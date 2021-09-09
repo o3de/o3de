@@ -6,28 +6,32 @@
  *
  */
 
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Util/Util.h>
-#include <AzCore/std/string/wildcard.h>
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
-#include <Window/MaterialEditorBrowserInteractions.h>
-
 #include <QApplication>
 #include <QClipboard>
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QInputDialog>
 #include <QMenu>
+#include <QInputDialog>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QDesktopServices>
+
+#include <AzCore/std/string/wildcard.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
+#include <AtomToolsFramework/Util/Util.h>
+
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+
+#include <Window/MaterialEditorBrowserInteractions.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
+
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
 namespace MaterialEditor
 {
@@ -62,11 +66,11 @@ namespace MaterialEditor
         if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
         {
             const auto source = azalias_cast<const SourceAssetBrowserEntry*>(entry);
-            if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension))
+            if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialExtension))
             {
                 AddContextMenuActionsForMaterialSource(caller, menu, source);
             }
-            else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
+            else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialTypeExtension))
             {
                 AddContextMenuActionsForMaterialTypeSource(caller, menu, source);
             }
@@ -111,7 +115,7 @@ namespace MaterialEditor
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                     entry->GetFullPath(), AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
             });
 
@@ -125,7 +129,7 @@ namespace MaterialEditor
                 QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
             });
 
-        menu->addAction("Duplicate...", [entry]()
+        menu->addAction("Duplicate...", [entry, caller]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -153,10 +157,10 @@ namespace MaterialEditor
     {
         menu->addAction("Open", [entry]()
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
             });
 
-        menu->addAction("Duplicate...", [entry]()
+        menu->addAction("Duplicate...", [entry, caller]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -187,7 +191,7 @@ namespace MaterialEditor
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                     entry->GetFullPath(), AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
             });
 
@@ -254,7 +258,7 @@ namespace MaterialEditor
                     !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
                     !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
                 {
-                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                         createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
                         createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
                 }
@@ -285,7 +289,7 @@ namespace MaterialEditor
                 });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
+            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path, this]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                         [](bool, const SourceControlFileInfo&) {});

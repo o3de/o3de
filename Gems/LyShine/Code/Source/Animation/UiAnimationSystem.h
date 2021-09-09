@@ -11,7 +11,6 @@
 
 #include <LyShine/Animation/IUiAnimation.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/containers/map.h>
 
 struct PlayingUIAnimSequence
 {
@@ -166,13 +165,13 @@ private:
 
     CTimeValue m_lastUpdateTime;
 
-    using Sequences = AZStd::vector<AZStd::intrusive_ptr<IUiAnimSequence> >;
+    typedef AZStd::vector<AZStd::intrusive_ptr<IUiAnimSequence> > Sequences;
     Sequences m_sequences;
 
     PlayingSequences m_playingSequences;
 
-    using TUiAnimationListenerVec = AZStd::vector<IUiAnimationListener*>;
-    using TUiAnimationListenerMap = AZStd::map<IUiAnimSequence*, TUiAnimationListenerVec> ;
+    typedef std::vector<IUiAnimationListener*> TUiAnimationListenerVec;
+    typedef std::map<IUiAnimSequence*, TUiAnimationListenerVec> TUiAnimationListenerMap;
 
     // a container which maps sequences to all interested listeners
     // listeners is a vector (could be a set in case we have a lot of listeners, stl::push_back_unique!)

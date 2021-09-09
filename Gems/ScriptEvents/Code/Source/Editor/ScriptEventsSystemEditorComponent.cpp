@@ -22,8 +22,6 @@
 
 #if defined(SCRIPTEVENTS_EDITOR)
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
-
 namespace ScriptEventsEditor
 {
     ////////////////////////////

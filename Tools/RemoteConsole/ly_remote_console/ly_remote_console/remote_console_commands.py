@@ -27,8 +27,7 @@ CONSOLE_MESSAGE_MAP = {
     'COMMAND': BASE_MSG_TYPE + 5,
     'AUTOCOMPLETELIST': BASE_MSG_TYPE + 6,
     'AUTOCOMPLETELISTDONE': BASE_MSG_TYPE + 7,
-    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22,
-    'CONNECTMESSAGE': BASE_MSG_TYPE + 25,
+    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22
 }
 
 
@@ -296,7 +295,14 @@ class RemoteConsole:
                     self.handlers[key].set()
                     continue
 
-        elif message_type == CONSOLE_MESSAGE_MAP['CONNECTMESSAGE']:
+        # The very first connection using the socket will return all of the auto complete items, turned off so no one
+        # wouldn't need to see them
+        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELIST']:
+            pass
+
+        # The after the autocompletelists finishes we will be ready to send console commands we determine that by
+        # looking at for an autocompletelistdone message
+        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELISTDONE']:
             self.ready.set()
 
         # cleanup expect_log_line handers if the matching string was found or timeout happened.

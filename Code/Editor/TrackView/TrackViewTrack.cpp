@@ -472,7 +472,7 @@ void CTrackViewTrack::RestoreFromMemento(const CTrackViewTrackMemento& memento)
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZStd::string CTrackViewTrack::GetName() const
+const char* CTrackViewTrack::GetName() const
 {
     CTrackViewNode* pParentNode = GetParentNode();
 
@@ -810,7 +810,7 @@ void CTrackViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlyS
     }
 
     XmlNodeRef childNode = xmlNode->newChild("Track");
-    childNode->setAttr("name", GetName().c_str());
+    childNode->setAttr("name", GetName());
     GetParameterType().SaveToXml(childNode);
     childNode->setAttr("valueType", static_cast<int>(GetValueType()));
 

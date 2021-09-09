@@ -119,7 +119,7 @@ namespace AZ
             LinearAllocator linearAllocator;
             linearAllocator.Init(linearAllocatorDesc);
 
-            [[maybe_unused]] const VirtualAddress drawPacketOffset = linearAllocator.Allocate(
+            const VirtualAddress drawPacketOffset = linearAllocator.Allocate(
                 sizeof(DrawPacket),
                 AZStd::alignment_of<DrawPacket>::value);
 

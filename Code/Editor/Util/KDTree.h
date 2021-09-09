@@ -37,7 +37,7 @@ public:
     struct SStatObj
     {
         Matrix34 tm;
-        IStatObj* pStatObj;
+        _smart_ptr<IStatObj> pStatObj;
     };
 
 private:

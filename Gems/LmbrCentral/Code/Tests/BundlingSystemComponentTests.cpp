@@ -138,6 +138,7 @@ namespace UnitTest
         // cache as test/bundle/staticdata.pak and should be loaded below
         // The Pak has a catalog describing the contents which should automatically update our central asset catalog
         const char testCSVAsset[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
+        const char testCSVAssetPak[] = "test/bundle/staticdata.pak";
 
         const char testMTLAsset[] = "materials/water_test.mtl";
         const char testMTLAssetPak[] = "test/TestMaterials.pak";
@@ -166,6 +167,7 @@ namespace UnitTest
         const char testCSVAssetPak[] = "test/bundle/staticdata.pak";
 
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/ping.pak 
+        const char testDDSAsset[] = "textures/test/ping.dds";
         const char testDDSAssetPak[] = "test/bundle/ping.pak";
 
         size_t bundleCount{ 0 };

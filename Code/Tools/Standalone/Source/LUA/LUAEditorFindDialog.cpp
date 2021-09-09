@@ -80,7 +80,7 @@ namespace LUAEditor
         auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
         m_gui->wrapCheckBox->setChecked((pState ? pState->m_findWrap : true));
 
-        connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [](int newState)
+        connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [this](int newState)
         {
             auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
             pState->m_findWrap = (newState == Qt::Checked);
@@ -350,6 +350,7 @@ namespace LUAEditor
 
     void LUAEditorFindDialog::FindInView(LUAViewWidget* pLUAViewWidget, QListWidget* pCurrentFindListView)
     {
+        pCurrentFindListView;
         if (!pLUAViewWidget)
         {
             return;
@@ -372,6 +373,8 @@ namespace LUAEditor
 
     void LUAEditorFindDialog::FindNextInView(LUAViewWidget::FindOperation* operation, LUAViewWidget* pLUAViewWidget, QListWidget* pCurrentFindListView)
     {
+        pLUAViewWidget;
+        pCurrentFindListView;
         int line = 0;
         int index = 0;
         pLUAViewWidget->GetCursorPosition(line, index);

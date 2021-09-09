@@ -8,8 +8,6 @@
 
 #include <System/TangentSpaceHelper.h>
 
-#include <AzCore/Debug/Profiler.h>
-
 namespace NvCloth
 {
     namespace
@@ -22,7 +20,7 @@ namespace NvCloth
         const AZStd::vector<SimIndexType>& indices,
         AZStd::vector<AZ::Vector3>& outNormals)
     {
-        AZ_PROFILE_FUNCTION(Cloth);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
         if ((indices.size() % 3) != 0)
         {
@@ -88,7 +86,7 @@ namespace NvCloth
         AZStd::vector<AZ::Vector3>& outTangents,
         AZStd::vector<AZ::Vector3>& outBitangents)
     {
-        AZ_PROFILE_FUNCTION(Cloth);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
         if ((indices.size() % 3) != 0)
         {
@@ -176,7 +174,7 @@ namespace NvCloth
         AZStd::vector<AZ::Vector3>& outBitangents,
         AZStd::vector<AZ::Vector3>& outNormals)
     {
-        AZ_PROFILE_FUNCTION(Cloth);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
         if ((indices.size() % 3) != 0)
         {

@@ -35,8 +35,10 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
+#include <AzFramework/Driller/RemoteDrillerInterface.h>
 
 #include <AzCore/Driller/Driller.h>
+#include <AzCore/Debug/ProfilerDriller.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
@@ -48,7 +50,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileInfo>
-AZ_POP_DISABLE_WARNING
+AZ_POP_DISABLE_OVERRIDE_WARNING
 #include <QSharedMemory>
 #include <QStandardPaths>
 #include <QtWidgets/QApplication>
@@ -237,7 +239,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = nullptr;
+            m_applicationEntity = NULL;
         }
 
         AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -249,7 +251,7 @@ namespace LegacyFramework
 #endif
 
         delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = nullptr;
+        m_ptrCommandLineParser = NULL;
 
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
@@ -269,7 +271,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = nullptr;
+            m_applicationEntity = NULL;
         }
     }
 
@@ -483,6 +485,8 @@ namespace LegacyFramework
     void Application::CreateApplicationComponents()
     {
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
+        EnsureComponentCreated(AzFramework::DrillerNetworkConsoleComponent::RTTI_Type());
+        EnsureComponentCreated(AzFramework::DrillerNetworkAgentComponent::RTTI_Type());
     }
 
     void Application::CreateSystemComponents()
@@ -503,6 +507,8 @@ namespace LegacyFramework
         ComponentApplication::RegisterCoreComponents();
 
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
+        RegisterComponentDescriptor(AzFramework::DrillerNetworkConsoleComponent::CreateDescriptor());
+        RegisterComponentDescriptor(AzFramework::DrillerNetworkAgentComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Framework::CreateDescriptor());
     }
 }

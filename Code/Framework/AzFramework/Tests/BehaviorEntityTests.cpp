@@ -29,7 +29,7 @@ public:
     void Activate() override {}
     void Deactivate() override {}
 
-    bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override
+    bool ReadInConfig(const AZ::ComponentConfig* baseConfig)
     {
         if (auto config = azrtti_cast<const HatConfig*>(baseConfig))
         {
@@ -39,7 +39,7 @@ public:
         return false;
     }
 
-    bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override
+    bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
     {
         if (auto outConfig = azrtti_cast<HatConfig*>(outBaseConfig))
         {

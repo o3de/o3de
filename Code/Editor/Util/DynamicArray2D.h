@@ -24,6 +24,8 @@ public:
     virtual ~CDynamicArray2D();
     //
     void ScaleImage(CDynamicArray2D* pDestination);
+    //
+    void GetMemoryUsage(ICrySizer* pSizer);
 
 
     float**                    m_Array;                     //

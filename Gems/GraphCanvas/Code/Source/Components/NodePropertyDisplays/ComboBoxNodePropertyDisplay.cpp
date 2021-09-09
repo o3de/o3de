@@ -403,4 +403,6 @@ namespace GraphCanvas
             m_menuDisplayDirty = true;
         }
     }
+
+#include <Source/Components/NodePropertyDisplays/moc_ComboBoxNodePropertyDisplay.cpp>
 }

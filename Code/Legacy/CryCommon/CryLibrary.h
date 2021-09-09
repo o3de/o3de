@@ -92,21 +92,23 @@ using DetachEnvironmentFunction = void(*)();
     #define HMODULE void*
 static const char* gEnvName("MODULE_PATH");
 
-inline const char* GetModulePath()
+static const char* GetModulePath()
 {
     return getenv(gEnvName);
 }
 
-inline void SetModulePath(const char* pModulePath)
+static void SetModulePath(const char* pModulePath)
 {
     setenv(gEnvName, pModulePath ? pModulePath : "", true);
 }
 
 // bInModulePath is only ever set to false in RC, because rc needs to load dlls from a $PATH that
 // it has modified to include ..
-inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
+static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
 {
     const char* libPath = nullptr;
+    char pathBuffer[MAX_PATH] = {0};
+    
     libPath = libName;
 
 #if !defined(AZ_PLATFORM_ANDROID)
@@ -133,7 +135,6 @@ inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInM
                 }
             #endif
         }
-        char pathBuffer[MAX_PATH] = {0};
         sprintf_s(pathBuffer, "%s/%s", modulePath, libName);
         libPath = pathBuffer;
     }
@@ -160,7 +161,7 @@ inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInM
     return module;
 }
 
-inline bool CryFreeLibrary(void* lib)
+static bool CryFreeLibrary(void* lib)
 {
     if (lib)
     {

@@ -15,12 +15,6 @@
 
 namespace AzNetworking
 {
-    AZ_ENUM_CLASS(PacketDispatchResult
-        , Failure
-        , Skipped
-        , Success
-    );
-
     AZ_ENUM_CLASS(PacketFlag
         , Compressed
         , MAX

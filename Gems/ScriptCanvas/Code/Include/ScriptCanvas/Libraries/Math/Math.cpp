@@ -10,6 +10,8 @@
 
 #include <ScriptCanvas/Internal/Nodes/ExpressionNodeBase.h>
 
+#pragma warning (disable:4503) // decorated name length exceeded, name was truncated
+
 namespace ScriptCanvas
 {
     namespace Nodes

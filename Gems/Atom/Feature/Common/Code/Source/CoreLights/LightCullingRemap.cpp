@@ -101,7 +101,7 @@ namespace AZ
                     return i;
                 }
             }
-            return std::numeric_limits<uint32_t>::max();
+            return -1;
         }
 
         void LightCullingRemap::BuildInternal()

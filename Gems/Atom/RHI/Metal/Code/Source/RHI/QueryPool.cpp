@@ -26,9 +26,10 @@ namespace AZ
         RHI::ResultCode QueryPool::InitInternal(RHI::Device& baseDevice, const RHI::QueryPoolDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(baseDevice);
-
-#if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
             id<MTLDevice> mtlDevice = device.GetMtlDevice();
+            NSError* error = nil;
+            
+#if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
             NSArray<id<MTLCounterSet>> * counterSets = [mtlDevice counterSets];
             CacheCounterIndices(counterSets);
 #endif
@@ -76,7 +77,6 @@ namespace AZ
                 }
                 case RHI::QueryType::PipelineStatistics:
                 {
-                    NSError* error = nil;
                     NSUInteger statisticCounterIndex = [counterSets indexOfObjectPassingTest:^BOOL(id<MTLCounterSet> mtlCounterSet, NSUInteger idx, BOOL *stop)
                     {
                         if ([mtlCounterSet.name isEqualToString:MTLCommonCounterSetStatistic])
@@ -127,6 +127,9 @@ namespace AZ
 
         RHI::ResultCode QueryPool::GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, RHI::QueryResultFlagBits flags)
         {
+            auto& device = static_cast<Device&>(GetDevice());
+            MTLCommandBufferStatus commandBufferStatus = MTLCommandBufferStatusError;
+
             switch(GetDescriptor().m_type)
             {
                 case RHI::QueryType::Occlusion:

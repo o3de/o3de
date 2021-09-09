@@ -73,7 +73,7 @@ public:
     CUiAnimViewAnimNode* GetAnimNode() const;
 
     // Name getter
-    AZStd::string GetName() const override;
+    virtual const char* GetName() const;
 
     // CUiAnimViewNode
     virtual EUiAnimViewNodeType GetNodeType() const override { return eUiAVNT_Track; }

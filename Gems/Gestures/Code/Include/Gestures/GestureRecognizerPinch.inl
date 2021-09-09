@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +105,7 @@ inline float AngleInDegreesBetweenVectors(const AZ::Vector2& vec0, const AZ::Vec
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerPinch::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex > s_maxPinchPointerIndex)
+    if (pointerIndex > s_maxPinchPointerIndex)
     {
         return false;
     }

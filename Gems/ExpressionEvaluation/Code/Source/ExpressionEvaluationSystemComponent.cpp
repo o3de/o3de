@@ -6,19 +6,15 @@
  *
  */
 
-#include <AzCore/Debug/Profiler.h>
+#include <ExpressionEvaluationSystemComponent.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Serialization/Json/RegistrationContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
 #include <ExpressionEngine/InternalTypes.h>
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
 #include <ExpressionEngine/Utils.h>
-#include <ExpressionEvaluationSystemComponent.h>
-#include <ExpressionPrimitivesSerializers.inl>
-#include <ElementInformationSerializer.inl>
-
-AZ_DEFINE_BUDGET(ExpressionEvaluation);
 
 namespace ExpressionEvaluation
 {
@@ -149,12 +145,6 @@ namespace ExpressionEvaluation
                     ;
             }
         }
-
-        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
-        {
-            jsonContext->Serializer<AZ::ExpressionTreeVariableDescriptorSerializer>()->HandlesType<ExpressionTree::VariableDescriptor>();
-            jsonContext->Serializer<AZ::ElementInformationSerializer>()->HandlesType<ElementInformation>();
-        }
     }
 
     void ExpressionEvaluationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -261,7 +251,7 @@ namespace ExpressionEvaluation
 
     AZ::Outcome<void, ParsingError> ExpressionEvaluationSystemComponent::ParseRestrictedExpressionInPlace(const AZStd::unordered_set<ExpressionParserId>& parsers, AZStd::string_view expressionString, ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
+        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
 
         expressionTree.ClearTree();
 
@@ -523,7 +513,7 @@ namespace ExpressionEvaluation
 
     ExpressionResult ExpressionEvaluationSystemComponent::Evaluate(const ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
+        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
 
         ExpressionResultStack resultStack;
 

@@ -22,7 +22,7 @@ namespace Benchmark
         : public benchmark::Fixture
     {
     public:
-        void SetUp([[maybe_unused]] const::benchmark::State& state) override
+        void SetUp([[maybe_unused]] const::benchmark::State& state)
         {
             m_testDataArray.resize(1000);
 

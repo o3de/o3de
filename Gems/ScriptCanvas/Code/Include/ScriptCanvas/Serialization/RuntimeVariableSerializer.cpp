@@ -50,7 +50,6 @@ namespace AZ
         }
 
         result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value), typeId, inputValue, "value", context));
-
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "RuntimeVariableSerializer Load finished loading RuntimeVariable"
             : "RuntimeVariableSerializer Load failed to load RuntimeVariable");

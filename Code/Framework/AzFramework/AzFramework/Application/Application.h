@@ -191,5 +191,3 @@ namespace AzFramework
     };
 } // namespace AzFramework
 
-AZ_DECLARE_BUDGET(AzFramework);
-

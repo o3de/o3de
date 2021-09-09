@@ -181,39 +181,3 @@ class TestPerformanceBenchmarkSuite(object):
 
         aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
         aggregator.upload_metrics(rhi)
-
-
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.parametrize("launcher_platform", ['windows_generic'])
-@pytest.mark.system
-class TestMaterialEditor(object):
-
-    @pytest.mark.parametrize("cfg_args", ["-rhi=dx12", "-rhi=Vulkan"])
-    @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
-    def test_MaterialEditorLaunch_AllRHIOptionsSucceed(
-            self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args):
-        """
-        Tests each valid RHI option (Null RHI excluded) can be launched with the MaterialEditor.
-        Checks for the "Finished loading viewport configurtions." success message post lounch.
-        """
-        expected_lines = ["Finished loading viewport configurtions."]
-        unexpected_lines = [
-            # "Trace::Assert",
-            # "Trace::Error",
-            "Traceback (most recent call last):",
-        ]
-
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            generic_launcher,
-            editor_script="",
-            run_python="--runpython",
-            timeout=30,
-            expected_lines=expected_lines,
-            unexpected_lines=unexpected_lines,
-            halt_on_unexpected=False,
-            null_renderer=False,
-            cfg_args=[cfg_args],
-            log_file_name="MaterialEditor.log"
-        )

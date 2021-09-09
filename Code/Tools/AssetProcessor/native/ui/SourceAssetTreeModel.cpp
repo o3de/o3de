@@ -87,6 +87,8 @@ namespace AssetProcessor
             return;
         }
 
+        QModelIndex newIndicesStart;
+
         AssetTreeItem* parentItem = m_root.get();
         // Use posix path separator for each child item
         AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);

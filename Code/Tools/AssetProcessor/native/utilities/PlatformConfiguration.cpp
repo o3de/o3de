@@ -197,7 +197,7 @@ namespace AssetProcessor
         }
         else if (valueName == "order")
         {
-            scanFolderEntry.m_scanOrder = static_cast<int>(value);
+            scanFolderEntry.m_scanOrder = value;
         }
     }
 
@@ -475,7 +475,7 @@ namespace AssetProcessor
         RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
-            assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
+            assetRecognizer.m_recognizer.m_priority = value;
         }
     }
 
@@ -681,6 +681,7 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
+    const char RestrictedPlatformDir[] = "restricted";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)

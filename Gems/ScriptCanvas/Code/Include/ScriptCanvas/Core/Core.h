@@ -24,8 +24,6 @@
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
-#define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
-
 namespace AZ
 {
     class Entity;
@@ -96,7 +94,7 @@ namespace ScriptCanvas
 
     struct VersionData
     {
-        AZ_TYPE_INFO(VersionData, "{52036892-DA63-4199-AC6A-9BAFE6B74EFC}");
+        AZ_TYPE_INFO(VersionData, "{14C629F6-467B-46FE-8B63-48FDFCA42175}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -279,8 +277,6 @@ namespace ScriptCanvas
         bool m_wasAdded = false;
         AZ::Entity* m_buildEntity = nullptr;
     };
-
-    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
 }
 
 namespace AZStd

@@ -25,7 +25,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ 
 {
@@ -34,7 +33,6 @@ namespace AZ
         namespace Platform
         {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool AttachDebugger();
             bool IsDebuggerPresent();
             void HandleExceptions(bool isEnabled);
             void DebugBreak();
@@ -68,6 +66,7 @@ namespace AZ
     static const int assertLevel_log = 1;
     static const int assertLevel_nativeUI = 2;
     static const int assertLevel_crash = 3;
+    static const int logLevel_errorWarning = 1;
     static const int logLevel_full = 2;
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;
@@ -143,42 +142,6 @@ namespace AZ
 #endif
     }
 
-    bool
-    Trace::AttachDebugger()
-    {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
-        return Platform::AttachDebugger();
-#else
-        return false;
-#endif
-    }
-
-    bool
-    Trace::WaitForDebugger([[maybe_unused]] float timeoutSeconds/*=-1.f*/)
-    {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
-        using AZStd::chrono::system_clock;
-        using AZStd::chrono::time_point;
-        using AZStd::chrono::milliseconds;
-
-        milliseconds timeoutMs = milliseconds(aznumeric_cast<long long>(timeoutSeconds * 1000));
-        system_clock clock;
-        time_point start = clock.now();
-        auto hasTimedOut = [&clock, start, timeoutMs]()
-        {
-            return timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs;
-        };
-
-        while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())
-        {
-            AZStd::this_thread::sleep_for(milliseconds(1));
-        }
-        return AZ::Debug::Trace::IsDebuggerPresent();
-#else
-        return false;
-#endif
-    }
-
     //=========================================================================
     // HandleExceptions
     // [8/3/2009]
@@ -218,7 +181,7 @@ namespace AZ
 
     void Debug::Trace::Crash()
     {
-        int* p = nullptr;
+        int* p = 0;
         *p = 1;
     }
 

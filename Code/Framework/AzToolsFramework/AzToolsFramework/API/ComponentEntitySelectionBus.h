@@ -96,7 +96,7 @@ namespace AzToolsFramework
     {
         AZ::EBusReduceResult<AZ::Aabb, AzFramework::AabbUnionAggregator> aabbResult(AZ::Aabb::CreateNull());
         EditorComponentSelectionRequestsBus::EventResult(
-            aabbResult, entityId, &EditorComponentSelectionRequestsBus::Events::GetEditorSelectionBoundsViewport, viewportInfo);
+            aabbResult, entityId, &EditorComponentSelectionRequests::GetEditorSelectionBoundsViewport, viewportInfo);
 
         return aabbResult.value;
     }

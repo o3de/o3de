@@ -197,7 +197,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::PrepareToClaim([[maybe_unused]] EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -217,7 +217,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -259,7 +259,7 @@ namespace Vegetation
         for (const auto& id : processedIds)
         {
             bool accepted = true;
-            FilterRequestBus::EnumerateHandlersId(id, [&instanceData, &accepted](FilterRequestBus::Events* handler) {
+            FilterRequestBus::EnumerateHandlersId(id, [this, &instanceData, &accepted](FilterRequestBus::Events* handler) {
                 accepted = handler->Evaluate(instanceData);
                 return accepted;
             });
@@ -283,7 +283,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -371,7 +371,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 

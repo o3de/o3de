@@ -245,7 +245,7 @@ namespace AZ
         {
             StackedString path(StackedString::Format::JsonPointer);
             JsonDeserializerContext context(settings);
-            result = JsonDeserializer::Load(object, objectType, root, false, JsonDeserializer::UseTypeDeserializer::Yes, context);
+            result = JsonDeserializer::Load(object, objectType, root, false, context);
         }
         return result;
     }
@@ -322,7 +322,7 @@ namespace AZ
 
             JsonSerializerContext context(settings, allocator);
             StackedString path(StackedString::Format::ContextPath);
-            result = JsonSerializer::Store(output, object, defaultObject, objectType, JsonSerializer::UseTypeSerializer::Yes, context);
+            result = JsonSerializer::Store(output, object, defaultObject, objectType, context);
         }
         return result;
     }

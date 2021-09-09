@@ -84,8 +84,6 @@ namespace AZ
             void SetFilteringSampleCount(uint32_t count) override;
             PcfMethod GetPcfMethod() const override;
             void SetPcfMethod(PcfMethod method) override;
-            bool GetShadowReceiverPlaneBiasEnabled() const override;
-            void SetShadowReceiverPlaneBiasEnabled(bool enable) override;
 
         private:
             friend class EditorDirectionalLightComponent;

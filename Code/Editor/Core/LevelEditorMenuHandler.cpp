@@ -41,6 +41,8 @@ using namespace AZ;
 using namespace AzToolsFramework;
 
 static const char* const s_LUAEditorName = "Lua Editor";
+static const char* const s_shortTimeInterval = "debug";
+static const char* const s_assetImporterMetricsIdentifier = "AssetImporter";
 
 // top level menu ids
 static const char* const s_fileMenuId = "FileMenu";
@@ -48,6 +50,7 @@ static const char* const s_editMenuId = "EditMenu";
 static const char* const s_gameMenuId = "GameMenu";
 static const char* const s_toolMenuId = "ToolMenu";
 static const char* const s_viewMenuId = "ViewMenu";
+static const char* const s_awsMenuId = "AwsMenu";
 static const char* const s_helpMenuId = "HelpMenu";
 
 static bool CompareLayoutNames(const QString& name1, const QString& name2)
@@ -154,11 +157,13 @@ namespace
     }
 }
 
-LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager)
+LevelEditorMenuHandler::LevelEditorMenuHandler(
+    MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, QSettings& settings)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
     , m_viewPaneManager(viewPaneManager)
     , m_actionManager(mainWindow->GetActionManager())
+    , m_settings(settings)
 {
 #if defined(AZ_PLATFORM_MAC)
     // Hide the non-native toolbar, then setNativeMenuBar to ensure it is always visible on macOS.

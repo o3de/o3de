@@ -36,10 +36,5 @@ namespace AZ
         {
             GetCompiledArgumentBuffer().CollectUntrackedResources(commandEncoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
         }
-    
-        bool ShaderResourceGroup::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
-        {
-            return GetCompiledArgumentBuffer().IsNullHeapNeededForVertexStage(srgResourcesVisInfo);
-        }
     }
 }

@@ -88,7 +88,7 @@ namespace AZ
                 {
                     if (StreamingImage* image = context->TryGetImage())
                     {
-                        [[maybe_unused]] const RHI::ResultCode resultCode = image->ExpandMipChain();
+                        const RHI::ResultCode resultCode = image->ExpandMipChain();
                         AZ_Warning("StreamingImageController", resultCode == RHI::ResultCode::Success, "Failed to expand mip chain for streaming image.");
                     }
                     context->m_queuedForMipExpand = false;

@@ -27,7 +27,7 @@
     #define AZ_RESTRICTED_SECTION PROJECTDEFINES_H_SECTION_STATS_AGENT
     #include AZ_RESTRICTED_FILE(ProjectDefines_h)
 #elif defined(WIN32) || defined(WIN64)
-    #if !defined(_RELEASE)
+    #if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
         #define ENABLE_STATS_AGENT
     #endif
 #endif
@@ -71,7 +71,7 @@
     #define REMOTE_ASSET_PROCESSOR
 #endif
 
-#if !defined(_RELEASE)
+#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD))
     #define USE_HTTP_WEBSOCKETS 0
 #endif
 
@@ -97,7 +97,7 @@
     #endif
 #endif
 
-#if !defined(_RELEASE)
+#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD))
     #ifndef ENABLE_PROFILING_CODE
         #define ENABLE_PROFILING_CODE
     #endif
@@ -173,6 +173,7 @@
 
 #if defined(ENABLE_PROFILING_CODE)
     #define USE_DISK_PROFILER
+    #define ENABLE_LOADING_PROFILER  // requires AZ_PROFILE_TELEMETRY to also be defined
 #endif
 
 // The maximum number of joints in an animation

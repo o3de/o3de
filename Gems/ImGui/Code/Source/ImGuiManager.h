@@ -67,7 +67,7 @@ namespace ImGui
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
         bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
-        int GetPriority() const override { return AzFramework::InputChannelEventListener::GetPriorityDebugUI(); }
+        int GetPriority() const override { return AzFramework::InputChannelEventListener::GetPriorityDebug(); }
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
 
         // AzFramework::WindowNotificationBus::Handler overrides...
@@ -81,6 +81,7 @@ namespace ImGui
 
     private:
         ImGuiContext* m_imguiContext = nullptr;
+        int m_fontTextureId = -1;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
 

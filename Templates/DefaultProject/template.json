@@ -175,12 +175,6 @@
             "isOptional": false
         },
         {
-            "file": "Config/default_aws_resource_mappings.json",
-            "origin": "Config/default_aws_resource_mappings.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
             "file": "EngineFinder.cmake",
             "origin": "EngineFinder.cmake",
             "isTemplated": false,
@@ -250,12 +244,6 @@
             "file": "Registry/assets_scan_folders.setreg",
             "origin": "Registry/assets_scan_folders.setreg",
             "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Registry/awscoreconfiguration.setreg",
-            "origin": "Registry/awscoreconfiguration.setreg",
-            "isTemplated": false,
             "isOptional": false
         },
         {

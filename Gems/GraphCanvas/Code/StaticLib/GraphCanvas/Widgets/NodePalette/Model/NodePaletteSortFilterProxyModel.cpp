@@ -202,6 +202,8 @@ namespace GraphCanvas
         AZStd::list<const GraphCanvas::GraphCanvasTreeItem*> exploreItems;
         exploreItems.push_back(treeItem);
 
+        const QModelIndex k_flagIndex;
+
         while (!exploreItems.empty())
         {
             const GraphCanvas::GraphCanvasTreeItem* currentItem = exploreItems.front();

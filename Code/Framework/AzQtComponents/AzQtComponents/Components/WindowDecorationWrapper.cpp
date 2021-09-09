@@ -65,6 +65,7 @@ namespace AzQtComponents
                 return false;
             }
 
+            const quint16 currentMajorVersion = 2;
             quint16 majorVersion = 0;
             quint16 minorVersion = 0;
 

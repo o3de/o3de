@@ -86,7 +86,7 @@ void GotoPositionDialog::OnChangeEdit()
     const QStringList parts = m_transform.split(QRegularExpression("[\\s,;\\t]"), Qt::SkipEmptyParts);
     for (int i = 0; i < argCount && i < parts.count(); ++i)
     {
-        transform[i] = parts[i].toFloat();
+        transform[i] = parts[i].toDouble();
     }
 
     m_ui->m_dymX->setValue(transform[0]);

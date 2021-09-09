@@ -20,7 +20,9 @@ namespace AZ
         public:
             AZ_RTTI(NodeWrapper, "{5EB0897B-9728-44B7-B056-BA34AAF14715}");
 
-            virtual ~NodeWrapper() = default;
+            NodeWrapper() = default;
+            NodeWrapper(aiNode* aiNode);
+            virtual ~NodeWrapper();
 
             enum CurveNodeComponent
             {
@@ -29,12 +31,16 @@ namespace AZ
                 Component_Z
             };
 
+            aiNode* GetAssImpNode();
+
             virtual const char* GetName() const;
             virtual AZ::u64 GetUniqueId() const;
             virtual int GetMaterialCount() const;
 
             virtual int GetChildCount()const;
             virtual const std::shared_ptr<NodeWrapper> GetChild(int childIndex) const;
+
+            aiNode* m_assImpNode = nullptr;
         };
     } //namespace Node
 } //namespace AZ

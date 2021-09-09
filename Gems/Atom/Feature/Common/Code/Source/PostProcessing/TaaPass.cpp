@@ -76,7 +76,7 @@ namespace AZ::Render
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
-        Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
+        Vector2 rcpInputSize = Vector2(1.0 / inputSize.m_width, 1.0 / inputSize.m_height);
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
         m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();

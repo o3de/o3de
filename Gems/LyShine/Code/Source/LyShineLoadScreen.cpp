@@ -61,11 +61,8 @@ namespace LyShine
         {
             return false;
         }
-        //TODO: gEnv->pRenderer is always null, fix the logic below
-        AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
-        return false;
-#if 0
-        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
+
+        if (!gEnv || !gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -90,7 +87,6 @@ namespace LyShine
         }
 
         return m_isPlaying;
-#endif
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
@@ -101,11 +97,7 @@ namespace LyShine
             return false;
         }
 
-        AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
-        return false;
-        //TODO: gEnv->pRenderer is always null, fix the logic below
-#if 0
-        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
+        if (!gEnv || !gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -131,7 +123,6 @@ namespace LyShine
         }
 
         return m_isPlaying;
-#endif
     }
 
     void LyShineLoadScreenComponent::NotifyLoadEnd()
@@ -139,13 +130,10 @@ namespace LyShine
         Reset();
     }
 
-    void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
+    void LyShineLoadScreenComponent::UpdateAndRender(float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
-        AZ_ErrorOnce(nullptr, m_isPlaying && gEnv && gEnv->pLyShine, "UpdateAndRender needs to be removed/ported to use Atom");
 
-        //TODO: gEnv->pRenderer is always null, fix the logic below
-#if 0
         if (m_isPlaying && gEnv && gEnv->pLyShine && gEnv->pRenderer)
         {
             AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
@@ -160,7 +148,6 @@ namespace LyShine
             gEnv->pLyShine->Render();
             gEnv->pRenderer->EndFrame();
         }
-#endif
     }
 
     void LyShineLoadScreenComponent::LoadThreadUpdate([[maybe_unused]] float deltaTimeInSeconds)

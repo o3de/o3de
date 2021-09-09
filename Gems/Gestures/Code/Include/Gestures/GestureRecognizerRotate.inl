@@ -9,7 +9,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <CryCommon/ISystem.h>
-#include <CryCommon/ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerRotate::Config::Reflect(AZ::ReflectContext* context)
@@ -95,7 +94,7 @@ inline bool Gestures::RecognizerRotate::OnPressedEvent(const AZ::Vector2& screen
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerRotate::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex > s_maxRotatePointerIndex)
+    if (pointerIndex > s_maxRotatePointerIndex)
     {
         return false;
     }

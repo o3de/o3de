@@ -318,11 +318,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
-{%     if InvokeFrom == 'Server' or InvokeFrom =='Client' %}
-    const Multiplayer::NetComponentId netComponentId = GetNetComponentId();
-{%     else %}
     const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
-{%     endif %}
     Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), netComponentId, rpcId, isReliable);
 {%     if paramNames|count > 0 %}
     {{ UpperFirst(Component.attrib['Name']) }}Internal::{{ UpperFirst(Property.attrib['Name']) }}RpcStruct rpcStruct({{ ', '.join(paramNames) }});
@@ -349,9 +345,9 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
 {#
 
 #}
-{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, IsProtected) %}
+{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, ProctectedSection) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
+{%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
 {{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) -}}
 {%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
 {{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) -}}
@@ -636,6 +632,7 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
 {% if networkPropertyCount.value > 0 %}
     [[maybe_unused]] Multiplayer::MultiplayerStats& stats = Multiplayer::GetMultiplayer()->GetStats();
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
+    [[maybe_unused]] bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if Property.attrib['Container'] != 'None' and Property.attrib['Container'] != 'Object' %}
     { // Serialization for Vector and Array Network Properties
@@ -650,24 +647,17 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         if (deltaRecord.AnySet())
         {
 {%       if Property.attrib['Container'] == 'Vector' %}
-            Multiplayer::SerializeNetworkPropertyHelperVector
+            serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       elif Property.attrib['Container'] == 'Array' %}
-            Multiplayer::SerializeNetworkPropertyHelperArray
+            serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       endif %}
-            (
-                serializer, 
-                deltaRecord, 
-                m_{{ LowerFirst(Property.attrib['Name']) }}, 
-                GetNetComponentId(), 
-                static_cast<Multiplayer::PropertyIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties::{{ UpperFirst(Property.attrib['Name']) }}), 
-                stats
-            );
         }
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper
     (
         serializer, 
+        modifyRecord, 
         replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, 
         static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), 
         m_{{ LowerFirst(Property.attrib['Name']) }}, 
@@ -1260,12 +1250,10 @@ namespace {{ Component.attrib['Namespace'] }}
     bool {{ RecordName }}::CanAttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
         bool canAttach{ true };
-    AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option") // expression is always true
         canAttach &= replicationRecord.ContainsAuthorityToClientBits() ? (replicationRecord.GetRemainingAuthorityToClientBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToServerBits() ? (replicationRecord.GetRemainingAuthorityToServerBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToAutonomousBits() ? (replicationRecord.GetRemainingAuthorityToAutonomousBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Autonomous') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAutonomousToAuthorityBits() ? (replicationRecord.GetRemainingAutonomousToAuthorityBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count)) : true;
-    AZ_POP_DISABLE_WARNING
         return canAttach;
     }
 
@@ -1476,11 +1464,6 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Required') %}
         required.push_back(AZ_CRC_CE("{{ ComponentService }}"));
 {% endcall %}
-{% if NetworkInputCount > 0 %}
-
-        // This component uses NetworkInputs so it requires a MultiplayerInputDriver service which is responsible for calling CreateInput and ProcessInput
-        required.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
-{% endif %}
     }
 
     void {{ ComponentBaseName }}::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -1506,10 +1489,6 @@ namespace {{ Component.attrib['Namespace'] }}
         return nullptr;
 {% endif %}
     }
-
-    {{ ComponentBaseName }}::{{ ComponentBaseName }}() = default;
-
-    {{ ComponentBaseName }}::~{{ ComponentBaseName }}() = default;
 
     void {{ ComponentBaseName }}::Init()
     {
@@ -1589,7 +1568,8 @@ namespace {{ Component.attrib['Namespace'] }}
         return s_netComponentId;
     }
 
-    AZ_PUSH_DISABLE_WARNING(4065, "-Wunknown-warning-option") // switch statement contains 'default' but no 'case' labels 
+#pragma warning(push)
+#pragma warning(disable: 4065) // switch statement contains 'default' but no 'case' labels 
     bool {{ ComponentBaseName }}::HandleRpcMessage
     (
         [[maybe_unused]] AzNetworking::IConnection* invokingConnection, 
@@ -1607,8 +1587,10 @@ namespace {{ Component.attrib['Namespace'] }}
         default:
             return false;
         }
+        AZ_Assert(0, "Got unhandled RpcType %d in {{ ComponentBaseName }}", static_cast<int32_t>(rpcType));
+        return false;
     }
-    AZ_POP_DISABLE_WARNING
+#pragma warning(pop)
 
     bool {{ ComponentBaseName }}::SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer)
     {

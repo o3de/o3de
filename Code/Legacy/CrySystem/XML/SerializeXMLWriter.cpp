@@ -49,6 +49,16 @@ bool CSerializeXMLWriterImpl::Value(const char* name, CTimeValue value)
     return true;
 }
 
+bool CSerializeXMLWriterImpl::Value(const char* name, XmlNodeRef& value)
+{
+    if (BeginOptionalGroup(name, value != NULL))
+    {
+        CurNode()->addChild(value);
+        EndGroup();
+    }
+    return true;
+}
+
 void CSerializeXMLWriterImpl::BeginGroup(const char* szName)
 {
     if (strchr(szName, ' ') != 0)
@@ -92,6 +102,13 @@ void CSerializeXMLWriterImpl::EndGroup()
     assert(!m_nodeStack.empty());
     m_nodeStack.pop_back();
     assert(!m_nodeStack.empty());
+}
+
+void CSerializeXMLWriterImpl::GetMemoryUsage(ICrySizer* pSizer) const
+{
+    pSizer->Add(*this);
+    pSizer->AddObject(m_nodeStack);
+    pSizer->AddContainer(m_luaSaveStack);
 }
 
 //////////////////////////////////////////////////////////////////////////

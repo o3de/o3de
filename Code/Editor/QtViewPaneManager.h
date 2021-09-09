@@ -67,6 +67,7 @@ private:
     void reparentToMainWindowFix();
     QRect ProperGeometry() const;
     QString settingsKey() const;
+    QSettings* const m_settings;
     QMainWindow* const m_mainWindow;
     QtViewPane* const m_pane;
     AzQtComponents::FancyDocking* m_advancedDockManager;

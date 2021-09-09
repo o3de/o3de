@@ -16,6 +16,8 @@ namespace AZ
 {
     namespace Render
     {
+        static const char* OcclusionCullingPlaneDrawListTag("occlusioncullingplanevisualization");
+
         OcclusionCullingPlane::~OcclusionCullingPlane()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();

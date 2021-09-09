@@ -63,6 +63,7 @@ namespace
         { eUiAnimParamType_User, "Muted", QColor(255, 224, 224) },
     };
 
+    const int kButtonsIdBase = 0x7fff;
     const int kMaxRows = 20;
     const int kColumnWidth = 300;
     const int kRowHeight = 24;
@@ -319,12 +320,12 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
                 {
                     return entry.paramType == paramType;
                 });
-        int entryIndex = static_cast<int>(pEntry - g_trackEntries);
+        int entryIndex = pEntry - g_trackEntries;
         if (entryIndex >= arraysize(g_trackEntries)) // If not found, skip this.
         {
             continue;
         }
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        COLORREF color = -1;
         childNode->getAttr("color", color);
         m_colorButtons[entryIndex]->SetColor(color);
     }
@@ -332,7 +333,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef othersNode = customTrackColorsNode->findChild("others");
     if (othersNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        COLORREF color = -1;
         othersNode->getAttr("color", color);
         m_colorButtons[kOthersEntryIndex]->SetColor(color);
     }
@@ -340,7 +341,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef disabledNode = customTrackColorsNode->findChild("disabled");
     if (disabledNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        COLORREF color = -1;
         disabledNode->getAttr("color", color);
         m_colorButtons[kDisabledEntryIndex]->SetColor(color);
     }
@@ -348,7 +349,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef mutedNode = customTrackColorsNode->findChild("muted");
     if (mutedNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        COLORREF color = -1;
         mutedNode->getAttr("color", color);
         m_colorButtons[kMutedEntryIndex]->SetColor(color);
     }

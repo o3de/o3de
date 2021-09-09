@@ -172,7 +172,7 @@ namespace GradientSignal
 
     float PerlinGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         if (m_perlinImprovedNoise)
         {

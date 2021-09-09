@@ -2837,7 +2837,7 @@ namespace UnitTest
             handlerList.emplace_back(i, maxSleep);
         }
 
-        auto work = []()
+        auto work = [maxSleep, threadCount]()
         {
             char sentinel[64] = { 0 };
             char* end = sentinel + AZ_ARRAY_SIZE(sentinel);
@@ -2923,7 +2923,7 @@ namespace UnitTest
 
         MyEventGroupImpl handler;
 
-        auto work = [&handler]()
+        auto work = [maxSleep, &handler]()
         {
             for (int i = 1; i < cycleCount; ++i)
             {

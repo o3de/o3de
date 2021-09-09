@@ -87,6 +87,16 @@ namespace
         return AZ::FindAttribute(attribute, method->m_attributes) != nullptr; // warning C4800: 'AZ::Attribute *': forcing value to bool 'true' or 'false' (performance warning)
     }
 
+    bool HasAttribute(const AZ::BehaviorClass* behaviorClass, AZ::Crc32 attributeCrc)
+    {
+        AZ::Attribute* attribute = AZ::FindAttribute(attributeCrc, behaviorClass->m_attributes);
+        if (attribute)
+        {
+            return true;
+        }
+        return false;
+    }
+
     // Checks for and returns the Category attribute from an AZ::AttributeArray
     AZStd::string GetCategoryPath(const AZ::AttributeArray& attributes, const AZ::BehaviorContext& behaviorContext)
     {
@@ -140,10 +150,21 @@ namespace
         // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
         {
+            AZ::SerializeContext* serializeContext{};
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             const AZ::BehaviorParameter* resultParameter = method.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-        }
+            AZ::SerializeContext::ClassData classData;
+            classData.m_name = resultParameter->m_name;
+            classData.m_typeId = resultParameter->m_typeId;
+            classData.m_azRtti = resultParameter->m_azRtti;
 
+            auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
+            {
+                return AZStd::make_any<AZStd::monostate>();
+            };
+            serializeContext->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
+
+        }
         nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, propertyStatus, isOverloaded);
     }
 
@@ -166,8 +187,19 @@ namespace
         // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(behaviorMethod))
         {
+            AZ::SerializeContext* serializeContext{};
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             const AZ::BehaviorParameter* resultParameter = behaviorMethod.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
+            AZ::SerializeContext::ClassData classData;
+            classData.m_name = resultParameter->m_name;
+            classData.m_typeId = resultParameter->m_typeId;
+            classData.m_azRtti = resultParameter->m_azRtti;
+
+            auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
+            {
+                return AZStd::make_any<AZStd::monostate>();
+            };
+            serializeContext->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
 
         }
         nodePaletteModel.RegisterMethodNode(behaviorContext, behaviorMethod);

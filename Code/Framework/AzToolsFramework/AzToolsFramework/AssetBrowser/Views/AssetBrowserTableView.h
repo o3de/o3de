@@ -53,6 +53,7 @@ namespace AzToolsFramework
             // AssetBrowserComponentNotificationBus
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();

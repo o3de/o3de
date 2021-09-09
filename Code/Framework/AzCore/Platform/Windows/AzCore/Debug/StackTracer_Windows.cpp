@@ -478,7 +478,7 @@ namespace AZ {
                 DWORD displacement;
                 if (g_SymGetLineFromAddr64(g_currentProcess, pc, &displacement, &line) && line.FileName[0] != 0)
                 {
-                    azsnprintf(textLine, textLineSize, "%s (%ld) : ", line.FileName, line.LineNumber);
+                    azsnprintf(textLine, textLineSize, "%s (%d) : ", line.FileName, line.LineNumber);
                 }
                 else
                 {
@@ -1073,7 +1073,7 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
+            AZ_ALIGN(CONTEXT context, 8); // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 

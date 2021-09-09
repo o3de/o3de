@@ -9,7 +9,6 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/TypeHash.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {

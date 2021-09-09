@@ -67,7 +67,7 @@ namespace ScriptCanvasEditor
         {
             AssetTrackerNotificationBus::Handler::BusConnect(m_scriptCanvasAsset.GetId());
 
-            Callbacks::OnAssetReadyCallback onAssetReady = [](ScriptCanvasMemoryAsset& asset)
+            Callbacks::OnAssetReadyCallback onAssetReady = [this](ScriptCanvasMemoryAsset& asset)
             {
                 AssetHelpers::DumpAssetInfo(asset.GetFileAssetId(), "ScriptCanvasAssetHolder::Init");
             };

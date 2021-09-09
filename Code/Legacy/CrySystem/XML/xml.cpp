@@ -9,6 +9,8 @@
 
 #include "CrySystem_precompiled.h"
 
+//#define _CRT_SECURE_NO_DEPRECATE 1
+//#define _CRT_NONSTDC_NO_DEPRECATE
 #include <stdlib.h>
 
 #define XML_STATIC // Alternative to defining this here would be setting it project-wide
@@ -17,7 +19,6 @@
 #include <algorithm>
 #include <stdio.h>
 #include <AzFramework/Archive/IArchive.h>
-#include <CryCommon/Cry_Color.h>
 #include "XMLBinaryReader.h"
 
 #define FLOAT_FMT   "%.8g"
@@ -76,6 +77,7 @@ static int __cdecl ascii_stricmp(const char* dst, const char* src)
 
 //////////////////////////////////////////////////////////////////////////
 XmlStrCmpFunc g_pXmlStrCmp = &ascii_stricmp;
+bool g_bEnableBinaryXmlLoading = true;
 
 //////////////////////////////////////////////////////////////////////////
 class CXmlStringData
@@ -111,6 +113,10 @@ public:
     void Clear() { m_stringPool.Clear(); }
     void SetBlockSize(unsigned int nBlockSize) { m_stringPool.SetBlockSize(nBlockSize); }
 
+    void GetMemoryUsage(ICrySizer* pSizer) const
+    {
+        pSizer->AddObject(m_stringPool);
+    }
 private:
     CSimpleStringPool m_stringPool;
 };
@@ -166,6 +172,23 @@ CXmlNode::CXmlNode(const char* tag, bool bReuseStrings, bool bIsProcessingInstru
     m_pStringPool = new CXmlStringPool(bReuseStrings);
     m_pStringPool->AddRef();
     m_tag = m_pStringPool->AddString(tag);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// collect allocated memory  informations
+void CXmlNode::GetMemoryUsage(ICrySizer* pSizer) const
+{
+    pSizer->AddObject(this, sizeof(*this));
+    pSizer->AddObject(m_pStringPool);
+
+    if (m_pChilds)
+    {
+        pSizer->AddObject(*m_pChilds);
+    }
+    if (m_pAttributes)
+    {
+        pSizer->AddContainer(*m_pAttributes);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -355,11 +378,25 @@ void CXmlNode::setAttr(const char* key, const Vec4& value)
     setAttr(key, str);
 }
 
+void CXmlNode::setAttr(const char* key, const Vec3d& value)
+{
+    char str[128];
+    SCOPED_LOCALE_RESETTER;
+    sprintf_s(str, DOUBLE_FMT "," DOUBLE_FMT "," DOUBLE_FMT, value.x, value.y, value.z);
+    setAttr(key, str);
+}
 void CXmlNode::setAttr(const char* key, const Vec2& value)
 {
     char str[128];
     SCOPED_LOCALE_RESETTER;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
+    setAttr(key, str);
+}
+void CXmlNode::setAttr(const char* key, const Vec2d& value)
+{
+    char str[128];
+    SCOPED_LOCALE_RESETTER;
+    sprintf_s(str, DOUBLE_FMT "," DOUBLE_FMT, value.x, value.y);
     setAttr(key, str);
 }
 
@@ -520,6 +557,22 @@ bool CXmlNode::getAttr(const char* key, Vec4& value) const
     return false;
 }
 
+bool CXmlNode::getAttr(const char* key, Vec3d& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        SCOPED_LOCALE_RESETTER;
+        double x, y, z;
+        if (azsscanf(svalue, "%lf,%lf,%lf", &x, &y, &z) == 3)
+        {
+            value = Vec3d(x, y, z);
+            return true;
+        }
+    }
+    return false;
+}
+
 //////////////////////////////////////////////////////////////////////////
 bool CXmlNode::getAttr(const char* key, Vec2& value) const
 {
@@ -531,6 +584,22 @@ bool CXmlNode::getAttr(const char* key, Vec2& value) const
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
             value = Vec2(x, y);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CXmlNode::getAttr(const char* key, Vec2d& value) const
+{
+    const char* svalue = GetValue(key);
+    if (svalue)
+    {
+        SCOPED_LOCALE_RESETTER;
+        double x, y;
+        if (azsscanf(svalue, "%lf,%lf", &x, &y) == 2)
+        {
+            value = Vec2d(x, y);
             return true;
         }
     }
@@ -572,7 +641,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
             // If we only found 3 values, a should be unchanged, and still be 255
             if (r < 256 && g < 256 && b < 256 && a < 256)
             {
-                value = ColorB(static_cast<uint8>(r), static_cast<uint8>(g), static_cast<uint8>(b), static_cast<uint8>(a));
+                value = ColorB(r, g, b, a);
                 return true;
             }
         }
@@ -1224,6 +1293,7 @@ XmlString CXmlNode::getXMLUnsafe(int level, char* tmpBuffer, uint32 sizeOfTmpBuf
 // TODO: those 2 saving functions are a bit messy. should probably make a separate one for the use of PlatformAPI
 bool CXmlNode::saveToFile(const char* fileName)
 {
+    const size_t chunkSizeBytes = (15 * 1024);
     if (!fileName)
     {
         return false;
@@ -1240,7 +1310,6 @@ bool CXmlNode::saveToFile(const char* fileName)
             gEnv->pCryPak->FClose(fileHandle);
             return true;
 #else
-            constexpr size_t chunkSizeBytes = (15 * 1024);
             bool ret = saveToFile(fileName, chunkSizeBytes, fileHandle);
             gEnv->pCryPak->FClose(fileHandle);
             return ret;
@@ -1300,6 +1369,14 @@ public:
 
     // Add new string to pool.
     const char* AddString(const char* str) { return m_stringPool.Append(str, (int)strlen(str)); }
+    //char* AddString( const char *str ) { return (char*)str; }
+
+    void GetMemoryUsage(ICrySizer* pSizer) const
+    {
+        pSizer->AddObject(this, sizeof(*this));
+        pSizer->AddObject(m_stringPool);
+        pSizer->AddObject(m_nodeStack);
+    }
 protected:
     void    onStartElement(const char* tagName, const char** atts);
     void    onEndElement(const char* tagName);
@@ -1333,6 +1410,12 @@ protected:
     {
         XmlNodeRef node;
         std::vector<IXmlNode*> childs; //TODO: is it worth lazily initializing this, like CXmlNode::m_pChilds?
+
+        void GetMemoryUsage(ICrySizer* pSizer) const
+        {
+            pSizer->AddObject(node);
+            pSizer->AddObject(childs);
+        }
     };
 
     // First node will become root node.
@@ -1592,6 +1675,8 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString, bool bCleanPools)
 {
+    LOADING_TIME_PROFILE_SECTION(GetISystem());
+
     if (!filename)
     {
         return 0;
@@ -1652,35 +1737,52 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         AZStd::replace(pakPath.begin(), pakPath.end(), '\\', '/');
     }
 
-    XMLBinary::XMLBinaryReader reader;
-    XMLBinary::XMLBinaryReader::EResult result;
-    root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
-    if (root)
+    if (g_bEnableBinaryXmlLoading)
     {
-        return root;
-    }
-    if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
-    {
-        delete [] pFileContents;
-        sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
-        errorString = str;
-        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-        return 0;
-    }
-    else
-    {
-        // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
-        // wish we could compile the text xml parser out, but too much work to get everything moved over
-        constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
-        // exclude files and PAKs from Mods folder
-        constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
-        if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
-            _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
-            _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
+        LOADING_TIME_PROFILE_SECTION_NAMED("XMLBinaryReader::Parse");
+
+        XMLBinary::XMLBinaryReader reader;
+        XMLBinary::XMLBinaryReader::EResult result;
+        root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
+        if (root)
         {
+            return root;
+        }
+        if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
+        {
+            delete [] pFileContents;
+            sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
+            errorString = str;
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
+            return 0;
+        }
+        else
+        {
+            // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
+            // wish we could compile the text xml parser out, but too much work to get everything moved over
+            static const char SCRIPTS_DIR[] = "Scripts/";
+            AZStd::fixed_string<32> strScripts("S");
+            strScripts += "c";
+            strScripts += "r";
+            strScripts += "i";
+            strScripts += "p";
+            strScripts += "t";
+            strScripts += "s";
+            strScripts += "/";
+            // exclude files and PAKs from Mods folder
+            AZStd::fixed_string<8> modsStr("M");
+            modsStr += "o";
+            modsStr += "d";
+            modsStr += "s";
+            modsStr += "/";
+            if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
+                _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
+                _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
+            {
 #ifdef _RELEASE
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Non binary XML found in scripts dir (%s)", filename);
 #endif
+            }
         }
     }
 
@@ -1718,6 +1820,12 @@ XmlParser::XmlParser(bool bReuseStrings)
 XmlParser::~XmlParser()
 {
     m_pImpl->Release();
+}
+
+void XmlParser::GetMemoryUsage(ICrySizer* pSizer) const
+{
+    pSizer->AddObject(this, sizeof(*this));
+    pSizer->AddObject(m_pImpl);
 }
 
 //////////////////////////////////////////////////////////////////////////

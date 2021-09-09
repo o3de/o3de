@@ -6,6 +6,9 @@
  *
  */
 
+
+#ifndef CRYINCLUDE_CRYCOMMON_SYNCHRONIZATION_H
+#define CRYINCLUDE_CRYCOMMON_SYNCHRONIZATION_H
 #pragma once
 
 
@@ -22,4 +25,46 @@
 
 namespace stl
 {
+    template<class Sync>
+    struct AutoLock
+    {
+        ILINE AutoLock(Sync& sync)
+            : _sync(sync)
+        {
+            sync.Lock();
+        }
+        ILINE ~AutoLock()
+        {
+            _sync.Unlock();
+        }
+
+    private:
+        Sync& _sync;
+    };
+
+
+    struct PSyncNone
+    {
+        void Lock() {}
+        void Unlock() {}
+    };
+
+    struct PSyncMultiThread
+    {
+        PSyncMultiThread() {}
+
+        void Lock()
+        {
+            m_lock.lock();
+        }
+        void Unlock()
+        {
+            m_lock.unlock();
+        }
+
+    private:
+        AZStd::spin_mutex m_lock;
+    };
 };
+
+#endif // CRYINCLUDE_CRYCOMMON_SYNCHRONIZATION_H

@@ -236,7 +236,10 @@ QString CEditorCommandManager::Execute(const AZStd::string& module, const AZStd:
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", fullName.c_str());
+        QString errMsg;
+
+        errMsg = QStringLiteral("Error: Trying to execute a unknown command, '%1'!").arg(fullName.c_str());
+        CryLogAlways(errMsg.toUtf8().data());
     }
 
     return "";
@@ -269,7 +272,10 @@ QString CEditorCommandManager::Execute(const AZStd::string& cmdLine)
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", cmdLine.c_str());
+        QString errMsg;
+
+        errMsg = QStringLiteral("Error: Trying to execute a unknown command, '%1'!").arg(cmdLine.c_str());
+        CryLogAlways(errMsg.toUtf8().data());
     }
 
     return "";
@@ -288,7 +294,10 @@ void CEditorCommandManager::Execute(int commandId)
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command of ID '%d'!", commandId);
+        QString errMsg;
+
+        errMsg = QStringLiteral("Error: Trying to execute a unknown command of ID '%1'!").arg(commandId);
+        CryLogAlways(errMsg.toUtf8().data());
     }
 }
 
@@ -520,8 +529,8 @@ QString CEditorCommandManager::ExecuteAndLogReturn(CCommand* pCommand, const CCo
 void CEditorCommandManager::GetArgsFromString(const AZStd::string& argsTxt, CCommand::CArgs& argList)
 {
     const char quoteSymbol = '\'';
-    size_t curPos = 0;
-    size_t prevPos = 0;
+    int curPos = 0;
+    int prevPos = 0;
     AZStd::vector<AZStd::string> tokens;
     AZ::StringFunc::Tokenize(argsTxt, tokens, ' ');
     for(AZStd::string& arg : tokens)

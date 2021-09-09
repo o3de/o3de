@@ -14,7 +14,6 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <cctype>
 
@@ -284,18 +283,11 @@ namespace AZ
         void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
 #if defined(AZ_ENABLE_TRACING)
-            const char* assetAliasPath = GetAlias("@assets@");
-            if (path && assetAliasPath)
+            const char* assetsAlias = GetAlias("@assets@");
+            if (path && assetsAlias && AZ::IO::PathView(path).IsRelativeTo(assetsAlias))
             {
-                AZStd::string assetsAlias(assetAliasPath);
-                AZStd::string pathString = path;
-                AZStd::to_lower(assetsAlias.begin(), assetsAlias.end());
-                AZStd::to_lower(pathString.begin(), pathString.end());
-                if (AZ::IO::PathView(pathString.c_str()).IsRelativeTo(assetsAlias.c_str()))
-                {
-                    AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
-                        "Attempted write location: %s", path);
-                }
+                AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
+                    "Attempted write location: %s", path);
             }
 #endif
         }
@@ -551,12 +543,28 @@ namespace AZ
             char fullPath[AZ_MAX_PATH_LEN];
             ConvertToAbsolutePath(path, fullPath, AZ_MAX_PATH_LEN);
 
-            m_aliases[key] = fullPath;
+            const auto it = AZStd::find_if(m_aliases.begin(), m_aliases.end(), [key](const AliasType& alias)
+            {
+                return alias.first.compare(key) == 0;
+            });
+
+            if (it != m_aliases.end())
+            {
+                it->second = fullPath;
+            }
+            else
+            {
+                m_aliases.emplace_back(key, fullPath);
+            }
         }
 
         const char* LocalFileIO::GetAlias(const char* key) const
         {
-            const auto it = m_aliases.find(key);
+            const auto it = AZStd::find_if(m_aliases.begin(), m_aliases.end(), [key](const AliasType& alias)
+                    {
+                        return alias.first.compare(key) == 0;
+                    });
+
             if (it != m_aliases.end())
             {
                 return it->second.c_str();
@@ -566,7 +574,10 @@ namespace AZ
 
         void LocalFileIO::ClearAlias(const char* key)
         {
-            m_aliases.erase(key);
+            m_aliases.erase(AZStd::remove_if(m_aliases.begin(), m_aliases.end(), [key](const AliasType& alias)
+                    {
+                        return alias.first.compare(key) == 0;
+                    }), m_aliases.end());
         }
 
         AZStd::optional<AZ::u64> LocalFileIO::ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const
@@ -671,70 +682,55 @@ namespace AZ
 
         bool LocalFileIO::ResolveAliases(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const
         {
+            AZ_Assert(path != resolvedPath && resolvedPathSize > strlen(path), "Resolved path is incorrect");
             AZ_Assert(path && path[0] != '%', "%% is deprecated, @ is the only valid alias token");
-            AZStd::string_view pathView(path);
 
-            const auto found = AZStd::find_if(m_aliases.begin(), m_aliases.end(),
-                [pathView](const auto& alias)
-                {
-                    return pathView.starts_with(alias.first);
-                });
-
-            using string_view_pair = AZStd::pair<AZStd::string_view, AZStd::string_view>;
-            auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? string_view_pair(*found)
-                                                                     : string_view_pair{};
-
-            size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
-            AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
             // is too small to copy the source into.
-            if (path == resolvedPath || (resolvedPathSize < requiredResolvedPathSize))
+            size_t pathLen = strlen(path) + 1; // account for null
+            if (path == resolvedPath || (resolvedPathSize < pathLen))
             {
                 return false;
             }
 
-            // Skip past the alias key in the pathView
-            // must ensure that we are replacing the entire folder name, not a partial (e.g. @GAME01@/ vs @GAME0@/)
-            if (AZStd::string_view postAliasView = pathView.substr(aliasKey.size());
-                !aliasKey.empty() && (postAliasView.empty() || postAliasView.starts_with('/') || postAliasView.starts_with('\\')))
+            azstrncpy(resolvedPath, resolvedPathSize, path, pathLen);
+            for (const auto& alias : m_aliases)
             {
-                // Copy over resolved alias path first
-                size_t resolvedPathLen = 0;
-                aliasValue.copy(resolvedPath, aliasValue.size());
-                resolvedPathLen += aliasValue.size();
-                // Append the post alias path next
-                postAliasView.copy(resolvedPath + resolvedPathLen, postAliasView.size());
-                resolvedPathLen += postAliasView.size();
-                // Null-Terminated the resolved path
-                resolvedPath[resolvedPathLen] = '\0';
-
-                // If the path started with one of the "asset cache" path aliases, lowercase the path
-                const char* assetAliasPath = GetAlias("@assets@");
-                const char* rootAliasPath = GetAlias("@root@");
-                const char* projectPlatformCacheAliasPath = GetAlias("@projectplatformcache@");
-                const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
-                    (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
-                    (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
-
-                if (lowercasePath)
+                const char* key = alias.first.c_str();
+                size_t keyLen = alias.first.length();
+                if (azstrnicmp(resolvedPath, key, keyLen) == 0) // we only support aliases at the front of the path
                 {
-                    // Lowercase only the relative part after the replaced alias.
-                    AZStd::to_lower(resolvedPath + aliasValue.size(), resolvedPath + resolvedPathLen);
-                }
+                    [[maybe_unused]] bool lowercasePath = LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@assets@")
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@root@")
+                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, "@projectplatformcache@");
 
-                // Replace any backslashes with posix slashes
-                AZStd::replace(resolvedPath, resolvedPath + resolvedPathLen, AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
-                return true;
+                    const char* dest = alias.second.c_str();
+                    size_t destLen = alias.second.length();
+                    char* afterKey = resolvedPath + keyLen;
+                    size_t afterKeyLen = pathLen - keyLen;
+                    // must ensure that we are replacing the entire folder name, not a partial (e.g. @GAME01@/ vs @GAME0@/)
+                    if (*afterKey == '/' || *afterKey == '\\' || *afterKey == 0)
+                    {
+                        if (afterKeyLen + destLen + 1 < resolvedPathSize)//if after replacing the alias the length is greater than the max path size than skip
+                        {
+                            // scoot the right hand side of the replacement over to make room
+                            memmove(resolvedPath + destLen, afterKey, afterKeyLen + 1); // make sure null is copied
+                            memcpy(resolvedPath, dest, destLen); // insert replacement
+                            pathLen -= keyLen;
+                            pathLen += destLen;
+
+                            AZStd::replace(resolvedPath, resolvedPath + resolvedPathSize, '\\', '/');
+                            return true;
+                        }
+                    }
+                }
             }
-            else
-            {
-                // The input path doesn't start with an available, copy it directly to the resolved path
-                pathView.copy(resolvedPath, pathView.size());
-                // Null-Terminated the resolved path
-                resolvedPath[pathView.size()] = '\0';
-            }
+
             // warn on failing to resolve an alias
-            AZ_Warning("LocalFileIO::ResolveAlias", path && path[0] != '@', "Failed to resolve an alias: %s", path ? path : "(null)");
+            AZ_Warning(
+                "LocalFileIO::ResolveAlias", path && path[0] != '@',
+                "Failed to resolve an alias: %s", path ? path : "(null)");
+
             return false;
         }
 
@@ -807,7 +803,7 @@ namespace AZ
             return false;
         }
 
-        AZStd::string LocalFileIO::RemoveTrailingSlash(const AZStd::string& pathStr)
+        AZ::OSString LocalFileIO::RemoveTrailingSlash(const AZ::OSString& pathStr)
         {
             if (pathStr.empty() || (pathStr[pathStr.length() - 1] != '/' && pathStr[pathStr.length() - 1] != '\\'))
             {
@@ -817,7 +813,7 @@ namespace AZ
             return pathStr.substr(0, pathStr.length() - 1);
         }
 
-        AZStd::string LocalFileIO::CheckForTrailingSlash(const AZStd::string& pathStr)
+        AZ::OSString LocalFileIO::CheckForTrailingSlash(const AZ::OSString& pathStr)
         {
             if (pathStr.empty() || pathStr[pathStr.length() - 1] == '/')
             {

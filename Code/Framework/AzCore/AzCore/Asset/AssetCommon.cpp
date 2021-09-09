@@ -456,7 +456,7 @@ namespace AZ
                 {
                     if (loadBehavior & (1 << thisFlag))
                     {
-                        returnFlags[thisFlag] = true;
+                        returnFlags[thisFlag] = 1;
                     }
                 }
                 return returnFlags;

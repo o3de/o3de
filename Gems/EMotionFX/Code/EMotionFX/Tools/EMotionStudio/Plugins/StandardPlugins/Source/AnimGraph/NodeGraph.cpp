@@ -2077,7 +2077,7 @@ namespace EMStudio
                                 if (visualStateConnection->GetModelIndex() == modelIndex)
                                 {
                                     // Transfer ownership from the previous visual node to where we relinked the transition to.
-                                    [[maybe_unused]] const bool connectionRemoveResult = visualNode->RemoveConnection(transition, false);
+                                    const bool connectionRemoveResult = visualNode->RemoveConnection(transition, false);
                                     AZ_Error("EMotionFX", connectionRemoveResult, "Removing connection failed.");
                                     targetGraphNode->AddConnection(visualStateConnection);
 

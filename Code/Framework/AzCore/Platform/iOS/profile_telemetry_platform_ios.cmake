@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+if(LY_RAD_TELEMETRY_ENABLED)
+    set(LY_COMPILE_DEFINITIONS PUBLIC AZ_PROFILE_TELEMETRY)
+endif()

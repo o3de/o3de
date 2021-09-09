@@ -40,6 +40,15 @@
 
 namespace
 {
+    void SetTexture(Export::TPath& outName, IRenderShaderResources* pRes, int nSlot)
+    {
+        SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
+        if (pTex)
+        {
+            azstrcat(outName, AZ_ARRAY_SIZE(outName), Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
+        }
+    }
+
     inline Export::Vector3D Vec3ToVector3D(const Vec3& vec)
     {
         Export::Vector3D ret;
@@ -293,7 +302,7 @@ void CExportManager::ProcessEntityAnimationTrack(
         return;
     }
 
-    for (unsigned int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
+    for (int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
     {
         CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pEntityTrack->GetChild(trackNumber));
 
@@ -356,9 +365,10 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
 
     for (int v = 0; v < meshDesc.m_nCoorCount; ++v)
     {
-        Vec2 uv = meshDesc.m_pTexCoord[v].GetUV();
-        uv.y = 1.0f - uv.y;
-        pObj->m_texCoords.push_back({uv.x,uv.y});
+        Export::UV tc;
+        meshDesc.m_pTexCoord[v].ExportTo(tc.u, tc.v);
+        tc.v = 1.0f - tc.v;
+        pObj->m_texCoords.push_back(tc);
     }
 
     if (pIndMesh->GetSubSetCount() && !(pIndMesh->GetSubSetCount() == 1 && pIndMesh->GetSubSet(0).nNumIndices == 0))
@@ -621,7 +631,7 @@ bool CExportManager::ShowFBXExportDialog()
 
     if (pivotObjectNode && !pivotObjectNode->IsGroupNode())
     {
-        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName().c_str()));
+        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName()));
 
         if (m_pivotEntityObject)
         {
@@ -806,7 +816,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
     if (numAllTracks > 0)
     {
-        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName().c_str()).toUtf8().data());
+        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName()).toUtf8().data());
         writeNode->setAttr("time", m_animTimeExportPrimarySequenceCurrentTime);
 
         for (unsigned int trackID = 0; trackID < numAllTracks; ++trackID)
@@ -817,7 +827,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
             if (trackType == AnimParamType::Animation || trackType == AnimParamType::Sound)
             {
-                QString childName = CleanXMLText(childTrack->GetName().c_str());
+                QString childName = CleanXMLText(childTrack->GetName());
 
                 if (childName.isEmpty())
                 {
@@ -954,7 +964,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
         }
 
         const uint numKeys = pSequenceTrack->GetKeyCount();
-        for (uint keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+        for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
         {
             const CTrackViewKeyHandle& keyHandle = pSequenceTrack->GetKey(keyIndex);
             ISequenceKey sequenceKey;
@@ -975,7 +985,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
                     else
                     {
                         // In case of exporting animation/sound times data
-                        const QString sequenceName = QString::fromUtf8(pSubSequence->GetName().c_str());
+                        const QString sequenceName = pSubSequence->GetName();
                         XmlNodeRef subSeqNode2 = seqNode->createNode(sequenceName.toUtf8().data());
 
                         if (sequenceName == m_animTimeExportPrimarySequenceName)
@@ -1033,7 +1043,7 @@ bool CExportManager::AddSelectedRegionObjects()
     std::vector<CBaseObject*> objects;
     GetIEditor()->GetObjectManager()->FindObjectsInAABB(box, objects);
 
-    const size_t numObjects = objects.size();
+    int numObjects = objects.size();
     if (numObjects > m_data.m_objects.size())
     {
         m_data.m_objects.reserve(numObjects + 1); // +1 for terrain
@@ -1154,7 +1164,7 @@ bool CExportManager::Export(const char* defaultName, const char* defaultExt, con
                     // Export the whole sequence with baked keys
                     if (ShowFBXExportDialog())
                     {
-                        m_numberOfExportFrames = static_cast<int>(pSequence->GetTimeRange().end * m_FBXBakedExportFPS);
+                        m_numberOfExportFrames = pSequence->GetTimeRange().end * m_FBXBakedExportFPS;
 
                         if (!m_bExportOnlyPrimaryCamera)
                         {
@@ -1252,14 +1262,14 @@ void CExportManager::SaveNodeKeysTimeToXML()
         m_soundKeyTimeExport = exportDialog.IsSoundExportChecked();
 
         QString filters = "All files (*.xml)";
-        QString defaultName = QString::fromUtf8(pSequence->GetName().c_str()) + ".xml";
+        QString defaultName = QString(pSequence->GetName()) + ".xml";
 
         QtUtil::QtMFCScopedHWNDCapture cap;
         CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptSave, QFileDialog::AnyFile, "xml", defaultName, filters, {}, {}, cap);
         if (dlg.exec())
         {
-            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName().c_str());
-            m_animTimeExportPrimarySequenceName = QString::fromUtf8(pSequence->GetName().c_str());
+            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName());
+            m_animTimeExportPrimarySequenceName = pSequence->GetName();
 
             m_data.Clear();
             m_animTimeExportPrimarySequenceCurrentTime = 0.0;

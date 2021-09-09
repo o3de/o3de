@@ -16,8 +16,6 @@ ly_add_target(
     FILES_CMAKE
         awsgamelift_server_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
         PRIVATE
             ../AWSGameLiftCommon/Source
             Source

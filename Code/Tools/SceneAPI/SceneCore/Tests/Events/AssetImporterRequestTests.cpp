@@ -11,7 +11,6 @@
 #include <AzCore/Math/Guid.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
-#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Mocks/Events/MockAssetImportRequest.h>
 
 namespace AZ
@@ -185,7 +184,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result = 
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -208,7 +207,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result = 
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -231,7 +230,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -254,7 +253,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -286,7 +285,7 @@ namespace AZ
                 EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -314,7 +313,7 @@ namespace AZ
                 EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic);
                 EXPECT_NE(nullptr, result);
             }
             

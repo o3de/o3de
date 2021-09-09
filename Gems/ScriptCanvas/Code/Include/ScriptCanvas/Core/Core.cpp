@@ -54,6 +54,8 @@ namespace ScriptCanvas
         auto lhsIter = lhs.begin();
         auto rhsIter = rhs.begin();
 
+        const bool isCaseSensitive = false;
+
         for (; lhsIter != lhs.end(); ++lhsIter, ++rhsIter)
         {
             if (!AZ::StringFunc::Equal(lhsIter->c_str(), rhsIter->c_str()))
@@ -153,22 +155,4 @@ namespace ScriptCanvas
         grammarVersion = GrammarVersion::Current;
         runtimeVersion = RuntimeVersion::Current;
     }
-
-    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper)
-    {
-        AZ::SerializeContext* serializeContext{};
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ::SerializeContext::ClassData classData;
-        classData.m_name = name.data();
-        classData.m_typeId = typeId;
-        classData.m_azRtti = rttiHelper;
-
-        auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
-        {
-            return AZStd::make_any<AZStd::monostate>();
-        };
-
-        serializeContext->RegisterType(typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
-    }
-
 }

@@ -654,6 +654,10 @@ namespace PhysX
             const AZ::Quaternion& colliderRelativeRotation,
             const AZ::Vector3& nonUniformScale)
         {
+            AZ::Transform transform = GetColliderWorldTransform(worldTransform,
+                colliderRelativePosition,
+                colliderRelativeRotation);
+
             for (AZ::Vector3& point : pointsInOut)
             {
                 point = worldTransform.TransformPoint(nonUniformScale *

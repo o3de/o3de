@@ -18,6 +18,3 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     endif()
 endif()
 
-ly_install_directory(DIRECTORIES .
-    EXCLUDE_PATTERNS tests
-)

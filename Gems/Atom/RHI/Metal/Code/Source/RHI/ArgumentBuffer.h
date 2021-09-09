@@ -104,8 +104,6 @@ namespace AZ
                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
             
             void ClearResourceTracking();
-            bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
-            bool IsNullDescHeapNeeded() const;
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
@@ -155,7 +153,6 @@ namespace AZ
             MemoryView m_argumentBuffer;
             MemoryView m_constantBuffer;
 #endif
-            bool m_useNullDescriptorHeap = false;
         };
     }
 }

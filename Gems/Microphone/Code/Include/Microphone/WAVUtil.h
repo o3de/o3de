@@ -89,7 +89,7 @@ namespace Audio
             AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary);
             if (fileStream.IsOpen())
             {
-                [[maybe_unused]] auto bytesWritten = fileStream.Write(m_bufferSize, m_buffer);
+                auto bytesWritten = fileStream.Write(m_bufferSize, m_buffer);
                 AZ_TracePrintf("WAVUtil", "Wrote WAV file: %s, %d bytes\n", filePath.c_str(), bytesWritten);
                 return true;
             }       

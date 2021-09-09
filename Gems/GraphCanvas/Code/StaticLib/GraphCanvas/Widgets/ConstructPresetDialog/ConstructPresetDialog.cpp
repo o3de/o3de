@@ -445,6 +445,7 @@ namespace GraphCanvas
 
         if (newIndex >= 0)
         {
+            QModelIndex index = m_presetsModel->index(newIndex, 0);
             m_ui->constructTypes->setCurrentIndex(newIndex);
         }
     }

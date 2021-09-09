@@ -53,6 +53,7 @@ public:
     virtual unsigned int GetViewId(IView* pView);
     virtual unsigned int GetActiveViewId();
 
+    virtual void Serialize(TSerialize ser);
     virtual void PostSerialize();
 
     virtual IView* GetViewByEntityId(const AZ::EntityId& id, bool forceCreate);
@@ -64,6 +65,8 @@ public:
     {
         return m_cutsceneCount > 0;
     }
+    virtual void UpdateSoundListeners();
+
     virtual void SetDeferredViewSystemUpdate(bool const bDeferred){ m_useDeferredViewSystemUpdate = bDeferred; }
     virtual bool UseDeferredViewSystemUpdate() const { return m_useDeferredViewSystemUpdate; }
     virtual void SetControlAudioListeners(bool const bActive);
@@ -104,6 +107,8 @@ public:
     {
         return stl::find_and_erase(m_listeners, pListener);
     }
+
+    void GetMemoryUsage(ICrySizer* s) const;
 
     void ClearAllViews();
 

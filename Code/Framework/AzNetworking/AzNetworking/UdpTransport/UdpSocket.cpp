@@ -160,6 +160,7 @@ namespace AzNetworking
             const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
                                       ? connectionQuality.m_varianceMs
                                       : AZ::TimeMs{ 1 });
+            const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
             const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);

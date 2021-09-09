@@ -6,26 +6,11 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Serialization/DatumSerializer.h>
 
 using namespace ScriptCanvas;
-
-namespace DatumSerializerCpp
-{
-    bool IsEventInput(const AZ::Uuid& inputType)
-    {
-        AZ::BehaviorContext* behaviorContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-        AZ_Assert(behaviorContext, "Can't serialize data properly without checking the type, for which we need behavior context!");
-        auto bcClassIter = behaviorContext->m_typeToClassMap.find(inputType);
-        return bcClassIter != behaviorContext->m_typeToClassMap.end()
-            && bcClassIter->second->m_azRtti
-            && bcClassIter->second->m_azRtti->GetGenericTypeId() == azrtti_typeid<AZ::Event>();
-    }
-}
 
 namespace AZ
 {
@@ -65,23 +50,10 @@ namespace AZ
             , "scriptCanvasType"
             , context));
 
-        // datum storage begin
-        auto isNullPointerMember = inputValue.FindMember("isNullPointer");
-        if (isNullPointerMember == inputValue.MemberEnd())
-        {
-            return context.Report
-                ( JSR::Tasks::ReadField
-                , JSR::Outcomes::Missing
-                , "DatumSerializer::Load failed to load the 'isNullPointer' member");
-        }
-
-        if (isNullPointerMember->value.GetBool())
-        {
-            *outputDatum = Datum(scType, Datum::eOriginality::Original);
-        }
-        else
-        {
+        AZStd::any storage;
+        { // datum storage begin
             AZ::Uuid typeId = AZ::Uuid::CreateNull();
+
             auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
             if (typeIdMember == inputValue.MemberEnd())
             {
@@ -99,7 +71,7 @@ namespace AZ
                     , "DatumSerializer::Load failed to load the AZ TypeId of the value");
             }
 
-            AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
+            storage = context.GetSerializeContext()->CreateAny(typeId);
             if (storage.empty() || storage.type() != typeId)
             {
                 return context.Report(result, "DatumSerializer::Load failed to load a value matched the reported AZ TypeId. "
@@ -107,25 +79,22 @@ namespace AZ
             }
 
             result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "value", context));
-            *outputDatum = Datum(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType());
         } // datum storage end
 
         AZStd::string label;
         AZ_Assert(azrtti_typeid<decltype(outputDatum->m_datumLabel)>() == azrtti_typeid<decltype(label)>()
             , "m_datumLabel type changed and won't load properly");
-        result.Combine(ContinueLoadingFromJsonObjectField
+            result.Combine(ContinueLoadingFromJsonObjectField
             ( &label
             , azrtti_typeid<decltype(outputDatum->m_datumLabel)>()
             , inputValue
             , "label"
             , context));
-        outputDatum->SetLabel(label);
 
-        if (auto listeners = context.GetMetadata().Find<SerializationListeners>())
-        {
-            listeners->push_back(outputDatum);
-        }
-        
+        Datum copy(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType());
+        copy.SetLabel(label);
+        *outputDatum = copy;
+
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "DatumSerializer Load finished loading Datum"
             : "DatumSerializer Load failed to load Datum");
@@ -154,7 +123,7 @@ namespace AZ
                     ( JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
             }
         }
-
+        
         JSR::ResultCode result(JSR::Tasks::WriteValue);
         outputValue.SetObject();
 
@@ -173,34 +142,26 @@ namespace AZ
             , defaultScriptDataPtr ? &defaultScriptDataPtr->GetType() : nullptr
             , azrtti_typeid<decltype(inputScriptDataPtr->GetType())>()
             , context));
-
-
-        // datum storage begin
-        auto inputObjectSource = inputScriptDataPtr->GetAsDanger();
-        const bool isNullPointer = inputObjectSource == nullptr || DatumSerializerCpp::IsEventInput(inputScriptDataPtr->GetType().GetAZType());
-        outputValue.AddMember("isNullPointer", rapidjson::Value(isNullPointer), context.GetJsonAllocator());
-
-        if (!isNullPointer)
-        {
-            rapidjson::Value typeValue;
-            result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->GetType().GetAZType(), context));
-            outputValue.AddMember
-                ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
-                , AZStd::move(typeValue)
-                , context.GetJsonAllocator());
-
-            auto defaultObjectSource = defaultScriptDataPtr ? defaultScriptDataPtr->GetAsDanger() : nullptr;
+                        
+        { // datum storage begin
+            {
+                rapidjson::Value typeValue;
+                result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->GetType().GetAZType(), context));
+                outputValue.AddMember
+                    ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                    , AZStd::move(typeValue)
+                    , context.GetJsonAllocator());
+            }
 
             result.Combine(ContinueStoringToJsonObjectField
                 ( outputValue
                 , "value"
-                , inputObjectSource
-                , defaultObjectSource
+                , inputScriptDataPtr->GetAsDanger()
+                , defaultScriptDataPtr ? defaultScriptDataPtr->GetAsDanger() : nullptr
                 , inputScriptDataPtr->GetType().GetAZType()
                 , context));
-        }
-        // datum storage end
-
+        } // datum storage end       
+        
         result.Combine(ContinueStoringToJsonObjectField
             ( outputValue
             , "label"
@@ -213,4 +174,5 @@ namespace AZ
             ? "DatumSerializer Store finished saving Datum"
             : "DatumSerializer Store failed to save Datum");
     }
+
 }

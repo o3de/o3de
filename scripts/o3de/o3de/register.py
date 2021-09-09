@@ -290,14 +290,14 @@ def register_o3de_object_path(json_data: dict,
             logger.error(f'Cannot load engine.json data at path {engine_path}')
             return 1
 
-        save_path = (engine_path / 'engine.json').resolve()
+        save_path = engine_path / 'engine.json'
     elif project_path:
         manifest_data = manifest.get_project_json_data(project_path=project_path)
         if not manifest_data:
             logger.error(f'Cannot load project.json data at path {project_path}')
             return 1
 
-        save_path = (project_path / 'project.json').resolve()
+        save_path = project_path / 'project.json'
     else:
         manifest_data = json_data
 
@@ -373,8 +373,7 @@ def register_external_subdirectory(json_data: dict,
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                     engine_path, project_path)
 
 
 def register_gem_path(json_data: dict,
@@ -388,9 +387,7 @@ def register_gem_path(json_data: dict,
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), gem_path)
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
-                                     validation.valid_o3de_gem_json, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                     validation.valid_o3de_gem_json, remove, engine_path, project_path)
 
 
 def register_project_path(json_data: dict,
@@ -403,8 +400,7 @@ def register_project_path(json_data: dict,
         engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), project_path)
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
-                                       validation.valid_o3de_project_json, remove,
-                                       pathlib.Path(engine_path).resolve() if engine_path else None)
+                                     validation.valid_o3de_project_json, remove, engine_path, None)
 
     if result != 0:
         return result
@@ -437,7 +433,6 @@ def register_project_path(json_data: dict,
 def register_template_path(json_data: dict,
                            template_path: pathlib.Path,
                            remove: bool = False,
-                           project_path: pathlib.Path = None,
                            engine_path: pathlib.Path = None) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path
     if not project_path and not engine_path:
@@ -445,15 +440,12 @@ def register_template_path(json_data: dict,
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), template_path)
     return register_o3de_object_path(json_data, template_path, 'templates', 'template.json',
-                                     validation.valid_o3de_template_json, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                       validation.valid_o3de_template_json, remove, engine_path, None)
 
 
 def register_restricted_path(json_data: dict,
                              restricted_path: pathlib.Path,
                              remove: bool = False,
-                             project_path: pathlib.Path = None,
                              engine_path: pathlib.Path = None) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path
     if not project_path and not engine_path:
@@ -461,9 +453,7 @@ def register_restricted_path(json_data: dict,
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), restricted_path)
     return register_o3de_object_path(json_data, restricted_path, 'restricted', 'restricted.json',
-                                     validation.valid_o3de_restricted_json, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                     validation.valid_o3de_restricted_json, remove, engine_path, None)
 
 
 def register_repo(json_data: dict,
@@ -632,13 +622,13 @@ def register(engine_path: pathlib.Path = None,
         if not template_path:
             logger.error(f'Template path cannot be empty.')
             return 1
-        result = result or register_template_path(json_data, template_path, remove, project_path, engine_path)
+        result = result or register_template_path(json_data, template_path, remove, engine_path)
 
     if isinstance(restricted_path, pathlib.PurePath):
         if not restricted_path:
             logger.error(f'Restricted path cannot be empty.')
             return 1
-        result = result or register_restricted_path(json_data, restricted_path, remove, project_path, engine_path)
+        result = result or register_restricted_path(json_data, restricted_path, remove, engine_path)
 
     if isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
         if not repo_uri:

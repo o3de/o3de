@@ -39,20 +39,20 @@ namespace {
             hardMin = desc.m_bHardMin;
             hardMax = desc.m_bHardMax;
         }
-        reflectedVar->m_softMinVal = static_cast<R>(min);
-        reflectedVar->m_softMaxVal = static_cast<R>(max);
+        reflectedVar->m_softMinVal = min;
+        reflectedVar->m_softMaxVal = max;
 
         if (hardMin)
         {
-            reflectedVar->m_minVal = static_cast<R>(min);
+            reflectedVar->m_minVal = min;
         }
         else
         {
-            reflectedVar->m_minVal = std::numeric_limits<R>::lowest();
+            reflectedVar->m_minVal = std::numeric_limits<int>::lowest();
         }
         if (hardMax)
         {
-            reflectedVar->m_maxVal = static_cast<R>(max);
+            reflectedVar->m_maxVal = max;
         }
         else
         {
@@ -64,9 +64,9 @@ namespace {
               ../Code/Editor/Controls/ReflectedPropertyControl/ReflectedVarWrapper.cpp:59:38: error: implicit conversion from 'int' to 'float' changes value from 2147483647 to 2147483648 [-Werror,-Wimplicit-int-float-conversion]
               reflectedVar->m_maxVal = std::numeric_limits<int>::max();
             */
-            reflectedVar->m_maxVal = static_cast<R>(std::numeric_limits<int>::max());
+            reflectedVar->m_maxVal = static_cast<float>(std::numeric_limits<int>::max());
         }
-        reflectedVar->m_stepSize = static_cast<R>(step);
+        reflectedVar->m_stepSize = step;
     }
 }
 
@@ -95,9 +95,9 @@ void ReflectedVarIntAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
     {
         int intValue;
         pVariable->Get(intValue);
-        value = static_cast<float>(intValue);
+        value = intValue;
     }
-    m_reflectedVar->m_value = static_cast<int>(std::round(value * m_valueMultiplier));
+    m_reflectedVar->m_value = std::round(value * m_valueMultiplier);
 }
 
 void ReflectedVarIntAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
@@ -362,14 +362,14 @@ void ReflectedVarColorAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
         Vec3 v(0, 0, 0);
         pVariable->Get(v);
         const QColor col = ColorLinearToGamma(ColorF(v.x, v.y, v.z));
-        m_reflectedVar->m_color.Set(static_cast<float>(col.redF()), static_cast<float>(col.greenF()), static_cast<float>(col.blueF()));
+        m_reflectedVar->m_color.Set(col.redF(), col.greenF(), col.blueF());
     }
     else
     {
         int col(0);
         pVariable->Get(col);
         const QColor qcolor = ColorToQColor((uint32)col);
-        m_reflectedVar->m_color.Set(static_cast<float>(qcolor.redF()), static_cast<float>(qcolor.greenF()), static_cast<float>(qcolor.blueF()));
+        m_reflectedVar->m_color.Set(qcolor.redF(), qcolor.greenF(), qcolor.blueF());
     }
 }
 
@@ -382,9 +382,9 @@ void ReflectedVarColorAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
     }
     else
     {
-        int ir = static_cast<int>(m_reflectedVar->m_color.GetX() * 255.0f);
-        int ig = static_cast<int>(m_reflectedVar->m_color.GetY() * 255.0f);
-        int ib = static_cast<int>(m_reflectedVar->m_color.GetZ() * 255.0f);
+        int ir = m_reflectedVar->m_color.GetX() * 255.0f;
+        int ig = m_reflectedVar->m_color.GetY() * 255.0f;
+        int ib = m_reflectedVar->m_color.GetZ() * 255.0f;
 
         pVariable->Set(static_cast<int>(RGB(ir, ig, ib)));
     }

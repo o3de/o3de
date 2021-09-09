@@ -72,10 +72,5 @@ namespace AZ
 
             return GetSerializedDataInternal();
         }
-
-        bool PipelineLibrary::IsMergeRequired() const
-        {
-            return true;
-        }
     }
 }

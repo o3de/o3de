@@ -240,7 +240,7 @@ namespace AZ
         //! @return                    The number of intersecting points.
         int IntersectRayCone(
             const Vector3& rayOrigin, const Vector3& rayDir,
-            const Vector3& coneApex, const Vector3& coneDir, float coneHeight, float coneBaseRadius,
+            const Vector3& coneApex, const Vector3& coneDir, float coneHeight, float coneBaseRaidus,
             float& t1, float& t2);
 
         //! Test intersection between a ray and a plane in 3D.

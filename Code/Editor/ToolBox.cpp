@@ -60,7 +60,7 @@ void CToolBoxCommand::Execute() const
             // Toggle the variable.
             float val = GetIEditor()->GetConsoleVar(m_text.toUtf8().data());
             bool bOn = val != 0;
-            GetIEditor()->SetConsoleVar(m_text.toUtf8().data(), (bOn) ? 0.0f : 1.0f);
+            GetIEditor()->SetConsoleVar(m_text.toUtf8().data(), (bOn) ? 0 : 1);
         }
         else
         {
@@ -186,6 +186,7 @@ const CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox) const
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -201,6 +202,7 @@ CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox)
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,7 +237,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
 {
     if (bToolbox)
     {
-        const int macroCount = static_cast<int>(m_macros.size());
+        const int macroCount = m_macros.size();
         if (macroCount > ID_TOOL_LAST - ID_TOOL_FIRST + 1)
         {
             return nullptr;
@@ -259,7 +261,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
     }
     else
     {
-        const int shelveMacroCount = static_cast<int>(m_shelveMacros.size());
+        const int shelveMacroCount = m_shelveMacros.size();
         if (shelveMacroCount > ID_TOOL_SHELVE_LAST - ID_TOOL_SHELVE_FIRST + 1)
         {
             return nullptr;
@@ -273,6 +275,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
         m_shelveMacros.push_back(pNewTool);
         return pNewTool;
     }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

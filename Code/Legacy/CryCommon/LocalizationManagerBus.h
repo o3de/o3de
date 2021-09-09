@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <CrySizer.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>

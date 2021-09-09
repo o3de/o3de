@@ -49,7 +49,7 @@ namespace EMotionFX
         AZ_RTTI(BlendTreeBlendNNode, "{CBFFDE41-008D-45A1-AC2A-E9A25C8CE62A}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum : uint16
+        enum
         {
             INPUTPORT_POSE_0    = 0,
             INPUTPORT_POSE_1    = 1,
@@ -65,7 +65,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum : uint16
+        enum
         {
             PORTID_INPUT_POSE_0 = 0,
             PORTID_INPUT_POSE_1 = 1,

@@ -18,7 +18,6 @@ namespace Multiplayer
         ++m_addChangeDirty;
         AZ_Assert(m_entityMap.end() == m_entityMap.find(netEntityId), "Attempting to add the same entity to the entity map multiple times");
         m_entityMap[netEntityId] = entity;
-        m_netEntityIdMap[entity->GetId()] = netEntityId;
     }
 
     NetworkEntityHandle NetworkEntityTracker::Get(NetEntityId netEntityId)
@@ -31,16 +30,6 @@ namespace Multiplayer
     {
         AZ::Entity* entity = GetRaw(netEntityId);
         return ConstNetworkEntityHandle(entity, netEntityId, this);
-    }
-
-    NetEntityId NetworkEntityTracker::Get(const AZ::EntityId& entityId) const
-    {
-        auto found = m_netEntityIdMap.find(entityId);
-        if (found != m_netEntityIdMap.end())
-        {
-            return found->second;
-        }
-        return Multiplayer::InvalidNetEntityId;
     }
 
     bool NetworkEntityTracker::Exists(NetEntityId netEntityId) const
@@ -61,22 +50,12 @@ namespace Multiplayer
     void NetworkEntityTracker::erase(NetEntityId netEntityId)
     {
         ++m_deleteChangeDirty;
-
-        auto found = m_entityMap.find(netEntityId);
-        if (found != m_entityMap.end())
-        {
-            m_netEntityIdMap.erase(found->second->GetId());            
-            m_entityMap.erase(found);
-        }
+        m_entityMap.erase(netEntityId);
     }
 
     NetworkEntityTracker::EntityMap::iterator NetworkEntityTracker::erase(EntityMap::iterator iter)
     {
         ++m_deleteChangeDirty;
-        if (iter != m_entityMap.end())
-        {
-            m_netEntityIdMap.erase(iter->second->GetId());
-        }
         return m_entityMap.erase(iter);
     }
 

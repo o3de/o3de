@@ -36,7 +36,7 @@ namespace AZ
         }
         countAndFlags |= (unsigned int)((priority << FLAG_PRIORITY_START_BIT) & FLAG_PRIORITY_MASK);
         SetDependentCountAndFlags(countAndFlags);
-        StoreDependent(nullptr);
+        StoreDependent(NULL);
 
     #ifdef AZ_DEBUG_JOB_STATE
         SetState(STATE_SETUP);
@@ -66,7 +66,7 @@ namespace AZ
         SetDependentCountAndFlags(countAndFlags);
         if (isClearDependent)
         {
-            StoreDependent(nullptr);
+            StoreDependent(NULL);
         }
         else
         {

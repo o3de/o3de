@@ -49,45 +49,6 @@ namespace AZ
                 }
             }
 
-            bool AttachDebugger()
-            {
-                if (IsDebuggerPresent())
-                {
-                    return true;
-                }
-
-                // Launch vsjitdebugger.exe, this app is always present in System32 folder
-                // with an installation of any version of visual studio.
-                // It will open a debugging dialog asking the user what debugger to use
-
-                STARTUPINFOW startupInfo = {0};
-                startupInfo.cb = sizeof(startupInfo);
-                PROCESS_INFORMATION processInfo = {0};
-
-                wchar_t cmdline[MAX_PATH];
-                swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
-                bool success = ::CreateProcessW(
-                    NULL,           // No module name (use command line)
-                    cmdline,        // Command line
-                    NULL,           // Process handle not inheritable
-                    NULL,           // Thread handle not inheritable
-                    FALSE,          // No handle inheritance
-                    0,              // No creation flags
-                    NULL,           // Use parent's environment block
-                    NULL,           // Use parent's starting directory 
-                    &startupInfo,   // Pointer to STARTUPINFO structure
-                    &processInfo);  // Pointer to PROCESS_INFORMATION structure
-
-                if (success)
-                {
-                    ::WaitForSingleObject(processInfo.hProcess, INFINITE);
-                    ::CloseHandle(processInfo.hProcess);
-                    ::CloseHandle(processInfo.hThread);
-                    return true;
-                }
-                return false;
-            }
-
             void DebugBreak()
             {
                 __debugbreak();
@@ -184,7 +145,7 @@ namespace AZ
 
         char message[g_maxMessageLength];
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
-        azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
+        azsnprintf(message, g_maxMessageLength, "Exception : 0x%X - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
         Debug::Trace::Instance().Output(nullptr, message);
 
         EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);

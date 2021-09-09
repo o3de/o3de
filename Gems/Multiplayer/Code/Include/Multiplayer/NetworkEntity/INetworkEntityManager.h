@@ -59,8 +59,7 @@ namespace Multiplayer
         (
             const PrefabEntityId& prefabEntryId,
             NetEntityRole netEntityRole,
-            const AZ::Transform& transform,
-            AutoActivate autoActivate = AutoActivate::Activate
+            const AZ::Transform& transform
         ) = 0;
 
         //! Creates new entities of the given archetype
@@ -89,11 +88,6 @@ namespace Multiplayer
         //! Returns the total number of entities tracked by this INetworkEntityManager instance.
         //! @return the total number of entities tracked by this INetworkEntityManager instance
         virtual uint32_t GetEntityCount() const = 0;
-
-        //! Returns the Net Entity ID for a given AZ Entity ID.
-        //! @param entityId the AZ Entity ID
-        //! @return the Net Entity ID
-        virtual NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const = 0;
 
         //! Adds the provided entity to the internal entity map identified by the provided netEntityId.
         //! @param netEntityId the identifier to use for the added entity

@@ -76,21 +76,6 @@ namespace ScriptCanvasEditor
 
     }
 
-    void VersionExplorer::Log(const char* format, ...)
-    {
-        if (m_ui->verbose->isChecked())
-        {
-            char sBuffer[1024];
-            va_list ArgList;
-            va_start(ArgList, format);
-            azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
-            sBuffer[sizeof(sBuffer) - 1] = '\0';
-            va_end(ArgList);
-
-            AZ_TracePrintf("Script Canvas", "%s\n", sBuffer);
-        }
-    }
-
     void VersionExplorer::OnClose()
     {
         reject();
@@ -111,27 +96,17 @@ namespace ScriptCanvasEditor
             {
                 m_inProgress = true;
                 AZ::Data::AssetInfo& assetToUpgrade = *m_inspectingAsset;
+
                 m_currentAsset = AZ::Data::AssetManager::Instance().GetAsset(assetToUpgrade.m_assetId, assetToUpgrade.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-                Log("SystemTick::ProcessState::Scan: %s pre-blocking load hint", m_currentAsset.GetHint().c_str());
                 m_currentAsset.BlockUntilLoadComplete();
                 if (m_currentAsset.IsReady())
                 {
                     // The asset is ready, grab its info
                     m_inProgress = true;
-                    InspectAsset(m_currentAsset, assetToUpgrade);
+                    InspectAsset(m_currentAsset);
                 }
-                else
-                {
-                    m_ui->tableWidget->insertRow(static_cast<int>(m_inspectedAssets));
-                    QTableWidgetItem* rowName = new QTableWidgetItem
-                        ( tr(AZStd::string::format("Error: %s", assetToUpgrade.m_relativePath.c_str()).c_str()));
 
-                    m_ui->tableWidget->setItem(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAsset), rowName);
-                    Log("SystemTick::ProcessState::Scan: %s post-blocking load, problem loading asset", assetToUpgrade.m_relativePath.c_str());
-                    ++m_currentAssetIndex;
-                    ++m_failedAssets;
-                    ScanComplete(m_currentAsset);
-                }
+                m_ui->spinner->SetText(QObject::tr("%1").arg(m_currentAsset.GetHint().c_str()));
             }
             break;
 
@@ -173,6 +148,7 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetManager::Instance().DispatchEvents();
         AZ::SystemTickBus::ExecuteQueuedEvents();
+
     }
 
     // Backup
@@ -321,7 +297,10 @@ namespace ScriptCanvasEditor
 
         if (graphComponent)
         {
-            graphComponent->UpgradeGraph(asset);
+            if (!graphComponent->UpgradeGraph(asset))
+            {
+                // The upgrade was skipped due to nothing to update (though if we're here, we identified that something was out of date)
+            }
         }
 
         return scriptCanvasEntity;
@@ -602,10 +581,13 @@ namespace ScriptCanvasEditor
     {
         m_assetsToUpgrade.clear();
         m_assetsToInspect.clear();
+
         m_ui->tableWidget->setRowCount(0);
         m_inspectedAssets = 0;
+
         IUpgradeRequests* upgradeRequests = AZ::Interface<IUpgradeRequests>::Get();
         m_assetsToInspect = upgradeRequests->GetAssetsToUpgrade();
+
         DoScan();
     }
 
@@ -614,14 +596,9 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Handler::BusConnect();
 
         m_state = ProcessState::Scan;
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
         if (!m_assetsToInspect.empty())
         {
-            m_discoveredAssets = m_assetsToInspect.size();
-            m_failedAssets = 0;
-            m_inspectedAssets = 0;
-
             m_ui->progressFrame->setVisible(true);
             m_ui->progressBar->setRange(0, aznumeric_cast<int>(m_assetsToInspect.size()));
             m_ui->progressBar->setValue(0);
@@ -645,17 +622,14 @@ namespace ScriptCanvasEditor
         DoScan();
     }
 
-    void VersionExplorer::InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo)
+    void VersionExplorer::InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        Log("InspectAsset: %s", asset.GetHint().c_str());
-
         AZ::Entity* scriptCanvasEntity = nullptr;
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
             ScriptCanvasAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
             if (!scriptCanvasAsset)
             {
-                Log("InspectAsset: %s, AsestData failed to return ScriptCanvasAsset", asset.GetHint().c_str());
                 return;
             }
 
@@ -666,14 +640,14 @@ namespace ScriptCanvasEditor
         auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
         AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
 
-        bool onlyShowOutdatedGraphs = m_ui->onlyShowOutdated->isChecked();
-        bool forceUpgrade = m_ui->forceUpgrade->isChecked();
 
-        if (!forceUpgrade && onlyShowOutdatedGraphs && graphComponent->GetVersion().IsLatest())
+        bool onlyShowOutdatedGraphs = m_ui->onlyShowOutdated->isChecked();
+
+        if (onlyShowOutdatedGraphs && graphComponent->GetVersion().IsLatest())
         {
             ++m_currentAssetIndex;
             ScanComplete(asset);
-            Log("InspectAsset: %s, is at latest", asset.GetHint().c_str());
+
             return;
         }
 
@@ -681,7 +655,7 @@ namespace ScriptCanvasEditor
         QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.GetHint().c_str()));
         m_ui->tableWidget->setItem(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAsset), rowName);
 
-        if (forceUpgrade || !graphComponent->GetVersion().IsLatest())
+        if (!graphComponent->GetVersion().IsLatest())
         {
             m_assetsToUpgrade.push_back(asset);
 
@@ -691,19 +665,18 @@ namespace ScriptCanvasEditor
             QPushButton* rowGoToButton = new QPushButton(this);
             rowGoToButton->setText("Upgrade");
             rowGoToButton->setEnabled(false);
+            connect(rowGoToButton, &QPushButton::clicked, [this, spinner, rowGoToButton, asset] {
 
-            connect(rowGoToButton, &QPushButton::clicked, [this, spinner, rowGoToButton, assetInfo] {
-
-                AZ::SystemTickBus::QueueFunction([this, rowGoToButton, spinner, assetInfo]() {
+                AZ::SystemTickBus::QueueFunction([this, rowGoToButton, spinner, asset]() {
                     // Queue the process state change because we can't connect to the SystemTick bus in a Qt lambda
-                    UpgradeSingle(rowGoToButton, spinner, assetInfo);
+                    UpgradeSingle(rowGoToButton, spinner, asset);
                     });
 
                 AZ::SystemTickBus::ExecuteQueuedEvents();
 
                 });
-
             m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAction), rowGoToButton);
+
             m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnStatus), spinner);
         }
 
@@ -740,47 +713,37 @@ namespace ScriptCanvasEditor
         ScanComplete(asset);
     }
 
-    void VersionExplorer::UpgradeSingle
-        ( QPushButton* rowGoToButton
-        , AzQtComponents::StyledBusyLabel* spinner
-        , AZ::Data::AssetInfo assetInfo)
+    void VersionExplorer::UpgradeSingle(QPushButton* rowGoToButton, AzQtComponents::StyledBusyLabel* spinner, const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset
-            ( assetInfo.m_assetId, assetInfo.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
+        AZ::Interface<IUpgradeRequests>::Get()->SetIsUpgrading(true);
 
-        if (asset)
-        {
-            asset.BlockUntilLoadComplete();
+        m_isUpgradingSingleGraph = true;
 
-            if (!asset.IsReady())
+        m_logs.clear();
+        m_ui->textEdit->clear();
+
+        spinner->SetIsBusy(true);
+        rowGoToButton->setEnabled(false);
+
+        m_inProgressAsset = AZStd::find_if(m_assetsToUpgrade.begin(), m_assetsToUpgrade.end(), [this, asset](const UpgradeAssets::value_type& assetToUpgrade)
             {
-                AZ::Interface<IUpgradeRequests>::Get()->SetIsUpgrading(true);
-                m_isUpgradingSingleGraph = true;
-                m_logs.clear();
-                m_ui->textEdit->clear();
-                spinner->SetIsBusy(true);
-                rowGoToButton->setEnabled(false);
+                return assetToUpgrade.GetId() == asset.GetId();
+            });
 
-                m_inProgressAsset = AZStd::find_if(m_assetsToUpgrade.begin(), m_assetsToUpgrade.end()
-                    , [asset](const UpgradeAssets::value_type& assetToUpgrade)
-                {
-                    return assetToUpgrade.GetId() == asset.GetId();
-                });
+        m_state = ProcessState::Upgrade;
 
-                m_state = ProcessState::Upgrade;
-                AZ::SystemTickBus::Handler::BusConnect();
-            }          
-        }
+        AZ::SystemTickBus::Handler::BusConnect();
+
     }
 
     void VersionExplorer::ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        Log("ScanComplete: %s", asset.GetHint().c_str());
         m_inProgress = false;
         m_ui->progressBar->setValue(aznumeric_cast<int>(m_currentAssetIndex));
         m_ui->scanButton->setEnabled(true);
-        
+
         m_inspectingAsset = m_assetsToInspect.erase(m_inspectingAsset);
+
         FlushLogs();
 
         if (m_inspectingAsset == m_assetsToInspect.end())
@@ -792,12 +755,12 @@ namespace ScriptCanvasEditor
                 m_ui->upgradeAllButton->setEnabled(true);
             }
         }
+
+        asset->Release();
     }
 
     void VersionExplorer::FinalizeScan()
     {
-        Log("FinalizeScan()");
-
         m_ui->spinner->SetIsBusy(false);
         m_ui->onlyShowOutdated->setEnabled(true);
 
@@ -811,18 +774,12 @@ namespace ScriptCanvasEditor
             }
         }
 
+
         QString spinnerText = QStringLiteral("Scan Complete");
         if (m_assetsToUpgrade.empty())
         {
             spinnerText.append(" - No graphs require upgrade!");
         }
-        else
-        {
-            spinnerText.append(QString::asprintf(" - Discovered: %zu, Inspected: %zu, Failed: %zu"
-                , m_discoveredAssets, m_inspectedAssets, m_failedAssets));
-        }
-
-
         m_ui->spinner->SetText(spinnerText);
         m_ui->progressBar->setVisible(false);
 
@@ -836,8 +793,10 @@ namespace ScriptCanvasEditor
         UpgradeNotifications::Bus::Handler::BusDisconnect();
 
         m_keepEditorAlive.reset();
-        m_state = ProcessState::Inactive;
+
     }
+
+    // 
 
     void VersionExplorer::FlushLogs()
     {
@@ -848,6 +807,7 @@ namespace ScriptCanvasEditor
 
         const QTextCursor oldCursor = m_ui->textEdit->textCursor();
         QScrollBar* scrollBar = m_ui->textEdit->verticalScrollBar();
+        const int oldScrollValue = scrollBar->value();
 
         m_ui->textEdit->moveCursor(QTextCursor::End);
         QTextCursor textCursor = m_ui->textEdit->textCursor();

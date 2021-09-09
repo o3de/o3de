@@ -160,6 +160,8 @@ namespace Audio
         CInstanceManager<CATLAudioObject, TAudioObjectID> m_cObjectPool;
         float m_fTimeSinceLastVelocityUpdateMS;
 
+        CAudioEventManager& m_refAudioEventManager;
+
         AudioRaycastManager m_raycastManager;
     };
 

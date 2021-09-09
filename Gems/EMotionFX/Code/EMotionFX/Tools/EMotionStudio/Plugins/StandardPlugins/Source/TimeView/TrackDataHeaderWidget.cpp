@@ -284,6 +284,8 @@ namespace EMStudio
     {
         m_plugin->SetRedrawFlag();
 
+        const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
+        const bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
         const bool altPressed = event->modifiers() & Qt::AltModifier;
 
         // store the last clicked position
@@ -367,6 +369,8 @@ namespace EMStudio
         {
             m_plugin->GetTimeInfoWidget()->SetIsOverwriteMode(false);
         }
+
+        const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
 
         if (event->button() == Qt::RightButton)
         {

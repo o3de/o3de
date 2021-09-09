@@ -12,12 +12,10 @@
 #include <Cry_Math.h>
 #include <Cry_Color.h>
 #include <ISystem.h>
-#include <CryCommon/LegacyAllocator.h>
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/containers/vector.h>
 
 // This is a workaround for AZCore including WinUser.h which defines DrawText to be DrawTextA
 #ifdef DrawText
@@ -46,7 +44,7 @@ namespace LyShine
     typedef AZStd::string StringType;    // not yet decided if we should use wchar_t or UTF8
 
     //! Used for passing lists of entities
-    typedef AZStd::vector<AZ::Entity*, AZ::StdLegacyAllocator> EntityArray;
+    typedef DynArray<AZ::Entity*> EntityArray;
 
     enum class BlendMode
     {

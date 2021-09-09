@@ -247,7 +247,7 @@ namespace AZ
         
         uint16_t StreamingImage::GetResidentMipLevel()
         {
-            return static_cast<uint16_t>(m_image->GetResidentMipLevel());
+            return m_image->GetResidentMipLevel();
         }
 
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)

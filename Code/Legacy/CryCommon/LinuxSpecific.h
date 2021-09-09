@@ -83,6 +83,10 @@ typedef float FLOAT;
 #define STDMETHODCALLTYPE
 #endif
 
+#define _ALIGN(num) \
+    __attribute__ ((aligned(num))) \
+    AZ_POP_DISABLE_WARNING
+
 #define _PACK __attribute__ ((packed))
 
 // Safe memory freeing

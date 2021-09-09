@@ -7,14 +7,18 @@
  */
 
 #pragma once
-
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
+
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <QLabel>
+#include <QMenuBar>
+#include <QToolBar>
 
 namespace AtomToolsFramework
 {
@@ -34,26 +38,25 @@ namespace AtomToolsFramework
         bool IsDockWidgetVisible(const AZStd::string& name) const override;
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
 
-        void SetStatusMessage(const QString& message);
-        void SetStatusWarning(const QString& message);
-        void SetStatusError(const QString& message);
+        virtual void CreateMenu();
+        virtual void CreateTabBar();
 
-        void AddCommonMenus();
+        virtual void AddTabForDocumentId(
+            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, AZStd::function<QWidget*()> widgetCreator);
+        virtual void RemoveTabForDocumentId(const AZ::Uuid& documentId);
+        virtual void UpdateTabForDocumentId(
+            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
+        virtual AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
-        virtual void OpenSettings();
-        virtual void OpenHelp();
-        virtual void OpenAbout();
+        virtual void OpenTabContextMenu();
+        virtual void SelectPreviousTab();
+        virtual void SelectNextTab();
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = {};
-
-        QLabel* m_statusMessage = {};
-
-        QMenu* m_menuFile = {};
-        QMenu* m_menuEdit = {};
-        QMenu* m_menuView = {};
-        QMenu* m_menuHelp = {};
+        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
+        QMenuBar* m_menuBar = nullptr;
+        AzQtComponents::TabWidget* m_tabWidget = nullptr;
+        QLabel* m_statusMessage = nullptr;
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
-        AZStd::unordered_map<AZStd::string, QAction*> m_dockActions;
     };
 } // namespace AtomToolsFramework

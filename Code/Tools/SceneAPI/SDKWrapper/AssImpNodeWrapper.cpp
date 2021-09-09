@@ -17,16 +17,14 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpNodeWrapper::AssImpNodeWrapper(aiNode* sourceNode)
-            : m_assImpNode(sourceNode)
+            :SDKNode::NodeWrapper(sourceNode)
         {
             AZ_Assert(m_assImpNode, "Asset Importer Node cannot be null");
         }
 
-        aiNode* AssImpNodeWrapper::GetAssImpNode() const
+        AssImpNodeWrapper::~AssImpNodeWrapper()
         {
-            return m_assImpNode;
         }
-
         const char* AssImpNodeWrapper::GetName() const
         {
             return m_assImpNode->mName.C_Str();

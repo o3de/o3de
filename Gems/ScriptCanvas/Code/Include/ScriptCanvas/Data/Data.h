@@ -26,8 +26,6 @@
 #include <AzCore/std/string/string.h>
 #include <ScriptCanvas/Core/Core.h>
 
-AZ_DECLARE_BUDGET(ScriptCanvas);
-
 namespace AZ
 {
     class ReflectContext;

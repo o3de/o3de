@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Reflect/GpuQuerySystemDescriptor.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
+#include <Atom/RHI.Reflect/RHISystemDescriptor.h>
 
 namespace AZ
 {
@@ -29,6 +30,8 @@ namespace AZ
         {
             AZ_TYPE_INFO(RPISystemDescriptor, "{96DAC3DA-40D4-4C03-8D6A-3181E843262A}");
             static void Reflect(AZ::ReflectContext* context);
+
+            RHI::RHISystemDescriptor m_rhiSystemDescriptor;
 
             //! The asset cache relative path of the only common shader asset for the RPI system that is used
             //! as means to load the layout for scene srg and view srg. This is used to create any RPI::Scene.

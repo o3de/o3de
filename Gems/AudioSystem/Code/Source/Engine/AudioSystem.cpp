@@ -17,6 +17,7 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;
@@ -114,7 +115,7 @@ namespace Audio
     void CAudioSystem::PushRequestBlocking(const SAudioRequest& audioRequestData)
     {
         // Main Thread!
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         CAudioRequestInternal request(audioRequestData);
 
@@ -200,7 +201,7 @@ namespace Audio
     void CAudioSystem::InternalUpdate()
     {
         // Audio Thread!
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
 
@@ -224,7 +225,7 @@ namespace Audio
     #if !defined(AUDIO_RELEASE)
         #if defined(PROVIDE_GETNAME_SUPPORT)
         {
-            AZ_PROFILE_SCOPE(Audio, "Sync Debug Name Changes");
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Audio, "Sync Debug Name Changes");
             AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
             m_debugNameStore.SyncChanges(m_oATL.GetDebugStore());
         }
@@ -237,7 +238,7 @@ namespace Audio
             auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {
-                AZ_PROFILE_SCOPE(Audio, "Wait Remaining Time in Update Period");
+                AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::Audio, "Wait Remaining Time in Update Period");
                 m_processingEvent.try_acquire_for(m_targetUpdatePeriod - elapsedUpdateTime);
             }
         }
@@ -292,7 +293,7 @@ namespace Audio
         PushRequestBlocking(request);
 
         m_audioSystemThread.Deactivate();
-        m_oATL.ShutDown();
+        const bool bSuccess = m_oATL.ShutDown();
         m_bSystemInitialized = false;
     }
 
@@ -595,7 +596,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::ProcessRequestBlocking(CAudioRequestInternal& request)
     {
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::Audio);
 
         if (m_oATL.CanProcessRequests())
         {
@@ -615,7 +616,7 @@ namespace Audio
     void CAudioSystem::ProcessRequestThreadSafe(CAudioRequestInternal request)
     {
         // Audio Thread!
-        AZ_PROFILE_SCOPE(Audio, "Process Thread-Safe Request");
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Audio, "Thread-Safe Request: %s", request.ToString().c_str());
 
         if (m_oATL.CanProcessRequests())
         {
@@ -640,7 +641,7 @@ namespace Audio
     {
         // Todo: This should handle request priority, use request priority as bus Address and process in priority order.
 
-        AZ_PROFILE_SCOPE(Audio, "Process Normal Request");
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Audio, "Normal Request: %s", request.ToString().c_str());
 
         AZ_Assert(g_mainThreadId != AZStd::this_thread::get_id(), "AudioSystem::ProcessRequestByPriority - called from Main thread!");
 
@@ -671,7 +672,7 @@ namespace Audio
         {
             if (!(request.nInternalInfoFlags & eARIF_WAITING_FOR_REMOVAL))
             {
-                AZ_PROFILE_SCOPE(Audio, "Process Blocking Request");
+                AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Audio, "Blocking Request: %s", request.ToString().c_str());
 
                 if (request.eStatus == eARS_NONE)
                 {

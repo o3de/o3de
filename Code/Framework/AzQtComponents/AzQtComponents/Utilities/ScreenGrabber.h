@@ -31,7 +31,7 @@ namespace AzQtComponents
 
     private:
         QSize m_size;
-        [[maybe_unused]] Eyedropper* m_owner;
+        Eyedropper* m_owner;
         QScopedPointer<Internal> m_internal;
     };
 

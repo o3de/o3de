@@ -7,17 +7,14 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ::IO
 {
-#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
     static constexpr char SchedulerName[] = "Scheduler";
     static constexpr char ImmediateReadsName[] = "Immediate reads";
-#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
     Scheduler::Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment, u64 sizeAlignment, u64 granularity)
     {
@@ -141,14 +138,14 @@ namespace AZ::IO
         while (m_isRunning)
         {
             {
-                AZ_PROFILE_SCOPE(AzCore, "Scheduler suspended.");
+                AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzCore, "Scheduler suspended.");
                 m_context.SuspendSchedulingThread();
             }
 
             // Only do processing if the thread hasn't been suspended.
             while (!m_isSuspended)
             {
-                AZ_PROFILE_SCOPE(AzCore, "Scheduler main loop.");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "Scheduler main loop.");
 
                 // Always schedule requests first as the main Streamer thread could have been asleep for a long time due to slow reading
                 // but also don't schedule after every change in the queue as scheduling is not cheap.
@@ -157,7 +154,7 @@ namespace AZ::IO
                 {
                     do
                     {
-                        AZ_PROFILE_SCOPE(AzCore, "Scheduler queue requests.");
+                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "Scheduler queue requests.");
                         // If there are pending requests and available slots, queue the next requests.
                         while(m_context.GetNumPreparedRequests() > 0)
                         {
@@ -211,7 +208,7 @@ namespace AZ::IO
 
     void Scheduler::Thread_QueueNextRequest()
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         FileRequest* next = m_context.PopPreparedRequest();
         next->SetStatus(IStreamerTypes::RequestStatus::Processing);
@@ -282,7 +279,7 @@ namespace AZ::IO
                     m_processingSize += info.m_uncompressedSize;
 #endif
                 }
-                AZ_PROFILE_INTERVAL_START_COLORED(AzCore, next, ProfilerColor,
+                AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, next, ProfilerColor,
                     "Streamer queued %zu: %s", next->GetCommand().index(), parentReadRequest->m_path.GetRelativePath());
                 m_threadData.m_streamStack->QueueRequest(next);
             }
@@ -296,7 +293,7 @@ namespace AZ::IO
             }
             else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData> || AZStd::is_same_v<Command, FileRequest::FlushAllData>)
             {
-                AZ_PROFILE_INTERVAL_START_COLORED(AzCore, next, ProfilerColor,
+                AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, next, ProfilerColor,
                     "Streamer queued %zu", next->GetCommand().index());
                 // Flushing becomes a lot less complicated if there are no jobs and/or asynchronous I/O running. This does mean overall
                 // longer processing time as bubbles are introduced into the pipeline, but flushing is an infrequent event that only
@@ -306,7 +303,7 @@ namespace AZ::IO
             }
             else
             {
-                AZ_PROFILE_INTERVAL_START_COLORED(AzCore, next, ProfilerColor,
+                AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, next, ProfilerColor,
                     "Streamer queued %zu", next->GetCommand().index());
                 m_threadData.m_streamStack->QueueRequest(next);
             }
@@ -315,13 +312,13 @@ namespace AZ::IO
 
     bool Scheduler::Thread_ExecuteRequests()
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
         return m_threadData.m_streamStack->ExecuteRequests();
     }
 
     bool Scheduler::Thread_PrepareRequests(AZStd::vector<FileRequestPtr>& outstandingRequests)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         {
             AZStd::scoped_lock lock(m_pendingRequestsLock);
@@ -339,7 +336,7 @@ namespace AZ::IO
         AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
         auto visitor = [this, now](auto&& args) -> void
 #else
-        auto visitor = [](auto&& args) -> void
+        auto visitor = [this](auto&& args) -> void
 #endif
         {
             using Command = AZStd::decay_t<decltype(args)>;
@@ -375,7 +372,7 @@ namespace AZ::IO
 
     void Scheduler::Thread_ProcessTillIdle()
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         while (true)
         {
@@ -393,7 +390,7 @@ namespace AZ::IO
 
     void Scheduler::Thread_ProcessCancelRequest(FileRequest* request, FileRequest::CancelData& data)
     {
-        AZ_PROFILE_INTERVAL_START_COLORED(AzCore, request, ProfilerColor, "Streamer queued cancel");
+        AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, request, ProfilerColor, "Streamer queued cancel");
         auto& pending = m_context.GetPreparedRequests();
         auto pendingIt = pending.begin();
         while (pendingIt != pending.end())
@@ -415,7 +412,7 @@ namespace AZ::IO
 
     void Scheduler::Thread_ProcessRescheduleRequest(FileRequest* request, FileRequest::RescheduleData& data)
     {
-        AZ_PROFILE_INTERVAL_START_COLORED(AzCore, request, ProfilerColor, "Streamer queued reschedule");
+        AZ_PROFILE_INTERVAL_START_COLORED(AZ::Debug::ProfileCategory::AzCore, request, ProfilerColor, "Streamer queued reschedule");
         auto& pendingRequests = m_context.GetPreparedRequests();
         for (FileRequest* pending : pendingRequests)
         {
@@ -546,7 +543,7 @@ namespace AZ::IO
 
     void Scheduler::Thread_ScheduleRequests()
     {
-        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
         AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
         auto& pendingQueue = m_context.GetPreparedRequests();
@@ -557,7 +554,7 @@ namespace AZ::IO
 
         if (m_context.GetNumPreparedRequests() > 1)
         {
-            AZ_PROFILE_SCOPE(AzCore,
+            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore,
                 "Scheduler::Thread_ScheduleRequests - Sorting %i requests", m_context.GetNumPreparedRequests());
             auto sorter = [this](const FileRequest* lhs, const FileRequest* rhs) -> bool
             {

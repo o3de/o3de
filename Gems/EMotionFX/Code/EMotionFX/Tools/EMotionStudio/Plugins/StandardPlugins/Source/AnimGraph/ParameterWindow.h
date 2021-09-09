@@ -205,6 +205,7 @@ namespace EMStudio
         ParameterWindowTreeWidget*      m_treeWidget;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         QVBoxLayout*                    m_verticalLayout;
+        QScrollArea*                    m_scrollArea;
         AZStd::string                   m_nameString;
         struct ParameterWidget
         {

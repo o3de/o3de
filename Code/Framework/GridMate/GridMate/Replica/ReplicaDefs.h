@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
+#ifndef GM_REPLICADEFS_H
+#define GM_REPLICADEFS_H
 
-#include <AzCore/Debug/Budget.h>
+/// \file ReplicaChunk.h
+
 #include <AzCore/Math/Crc.h>
 
 namespace GridMate
@@ -78,5 +80,4 @@ namespace GridMate
     static const ZoneMask ZoneMask_All = (ZoneMask) - 1;
 }   // namespace Gridmate
 
-AZ_DECLARE_BUDGET(GridMate);
-
+#endif // GM_REPLICADEFS_H

@@ -190,8 +190,8 @@ namespace AZ
                 RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(1);
                 uint32_t mipLevel = attachmentIndex + 1;
                 RHI::ImageViewDescriptor outputViewDesc;
-                outputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
-                outputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
+                outputViewDesc.m_mipSliceMin = mipLevel;
+                outputViewDesc.m_mipSliceMax = mipLevel;
                 outputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
                 outputAttachmentBinding.SetAttachment(reflectionImageAttachment);
 

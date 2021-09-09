@@ -61,8 +61,8 @@ void CUiAnimViewFindDlg::FillData()
         {
             IUiAnimNode* pNode = seq->GetNode(i);
             ObjName obj;
-            obj.m_objName = QString::fromUtf8(pNode->GetName().c_str());
-            obj.m_directorName = pNode->HasDirectorAsParent() ? QString::fromUtf8(pNode->HasDirectorAsParent()->GetName().c_str()) : "";
+            obj.m_objName = pNode->GetName();
+            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
             AZStd::string fullname = seq->GetName();
             obj.m_seqName = fullname.c_str();
             m_objs.push_back(obj);

@@ -75,7 +75,7 @@ namespace AZ
 
         private:
 
-            static constexpr uint32_t UnspecifiedIndex = std::numeric_limits<uint32_t>::max();
+            static constexpr uint32_t UnspecifiedIndex = -1;
 
             //! Returns the node associated with the provided index.
             const ShaderVariantTreeNode& GetNode(uint32_t index) const;

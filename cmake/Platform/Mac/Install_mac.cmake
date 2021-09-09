@@ -42,6 +42,8 @@ function(ly_install_target_override)
     set(multiValueArgs)
     cmake_parse_arguments(ly_platform_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    get_property(install_component TARGET ${ly_platform_install_target_TARGET} PROPERTY INSTALL_COMPONENT)
+
     # For bundles on Mac, we set the icons by passing in a path to the Images.xcassets directory.
     # However, the CMake install command expects paths to files for the the RESOURCE property.
     # More details can be found in the CMake issue: https://gitlab.kitware.com/cmake/cmake/-/issues/22409
@@ -55,19 +57,19 @@ function(ly_install_target_override)
         TARGETS ${ly_platform_install_target_TARGET}
         ARCHIVE
             DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+            COMPONENT ${install_component}
         LIBRARY
             DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+            COMPONENT ${install_component}
         RUNTIME
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+            COMPONENT ${install_component}
         BUNDLE
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+            COMPONENT ${install_component}
         RESOURCE
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}/
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+            COMPONENT ${install_component}
     )
 
     if (${is_bundle})
@@ -93,9 +95,7 @@ function(ly_install_code_function_override)
 
     endif()
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-endfunction()"
-    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+endfunction()")
 
 endfunction()
 

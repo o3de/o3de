@@ -237,6 +237,7 @@ namespace PhysX
         debugDisplay.PushMatrix(localTransform);
 
         const float xAxisArrowLength = 2.0f;
+        const float yzAxisArrowLength = 1.0f;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
         debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f));
 

@@ -28,7 +28,7 @@ namespace EMotionFX
         Q_OBJECT //AUTOMOC
 
     public:
-        enum : uint32
+        enum
         {
             CLASS_ID = 0x8efd2bee
         };

@@ -462,7 +462,7 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
+                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != 0;
                 AZ_Assert(result,
                     "Prefab - PrefabSystemComponent::RemoveTemplate - "
                     "Failed to remove Template with Id '%llu' on file path '%s' "
@@ -783,7 +783,7 @@ namespace AzToolsFramework
 
             PrefabDomValue& instance = instanceIterator->value;
             AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
-            [[maybe_unused]] PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
+            PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
             AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
             AZ_Assert(
                 sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),

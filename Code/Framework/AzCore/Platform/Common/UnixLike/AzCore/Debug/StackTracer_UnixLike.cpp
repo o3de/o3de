@@ -57,7 +57,7 @@ StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned 
     int skip = static_cast<int>((suppressCount == 0) ? 1 : suppressCount); // Skip at least this function
     while ((unw_step(&cursor) > 0) && (count < maxNumOfFrames))
     {
-        unw_word_t pc;
+        unw_word_t offset, pc;
         unw_get_reg(&cursor, UNW_REG_IP, &pc);
         if (pc == 0)
         {

@@ -12,8 +12,6 @@
 #pragma once
 
 #include "AnimNode.h"
-#include <CryCommon/IMaterial.h>
-#include <CryCommon/StlUtils.h>
 
 class CAnimMaterialNode
     : public CAnimNode
@@ -39,13 +37,13 @@ public:
     //////////////////////////////////////////////////////////////////////////
     virtual unsigned int GetParamCount() const;
     virtual CAnimParamType GetParamType(unsigned int nIndex) const;
-    AZStd::string GetParamName(const CAnimParamType& paramType) const override;
+    virtual const char* GetParamName(const CAnimParamType& paramType) const;
 
     virtual void GetKeyValueRange(float& fMin, float& fMax) const { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
     virtual void SetKeyValueRange(float fMin, float fMax){ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
 
     virtual void InitializeTrack(IAnimTrack* pTrack, const CAnimParamType& paramType);
-
+    
 
     static void Reflect(AZ::ReflectContext* context);
 protected:
@@ -54,7 +52,7 @@ protected:
     void UpdateDynamicParamsInternal() override;
 private:
     void AnimateNamedParameter(SAnimContext& ec, IRenderShaderResources* pShaderResources, const char* name, IAnimTrack* pTrack);
-    IMaterial * GetMaterialByName(const char* pName);
+    _smart_ptr<IMaterial> GetMaterialByName(const char* pName);
 
     float m_fMinKeyValue;
     float m_fMaxKeyValue;

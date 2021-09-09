@@ -124,9 +124,6 @@ namespace AZ
 
             //! Returns true if exponential shadow maps are disabled.
             bool IsEsmDisabled() const;
-
-            //! Returns true if the softening boundary width parameter is disabled. 
-            bool IsSofteningBoundaryWidthDisabled() const;
         };
     }
 }

@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -22,9 +23,8 @@
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Serialization/DatumSerializer.h>
-#include <ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h>
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
+#include <ScriptCanvas/Serialization/DatumSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
@@ -34,7 +34,7 @@
 
 namespace ScriptCanvasSystemComponentCpp
 {
-#if !defined(_RELEASE)
+#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
     const int k_infiniteLoopDetectionMaxIterations = 1000000;
     const int k_maxHandlerStackDepth = 25;
 #else
@@ -59,7 +59,6 @@ namespace ScriptCanvas
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        VersionData::Reflect(context);
         Nodeable::Reflect(context);
         ReflectLibraries(context);
 
@@ -89,9 +88,13 @@ namespace ScriptCanvas
 
         if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
         {
-            jsonContext->Serializer<AZ::DatumSerializer>()->HandlesType<Datum>();
-            jsonContext->Serializer<AZ::BehaviorContextObjectSerializer>()->HandlesType<BehaviorContextObject>();
-            jsonContext->Serializer<AZ::RuntimeVariableSerializer>()->HandlesType<RuntimeVariable>();
+            jsonContext->Serializer<AZ::RuntimeVariableSerializer>()
+                ->HandlesType<RuntimeVariable>()
+                ;
+
+            jsonContext->Serializer<AZ::DatumSerializer>()
+                ->HandlesType<Datum>()
+                ;
         }
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
@@ -260,7 +263,7 @@ namespace ScriptCanvas
         }
 
         LockType lock(m_ownedObjectsByAddressMutex);
-        [[maybe_unused]] auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
+        auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
 
         AZ_Assert(emplaceResult.second, "Adding second owned reference to memory");
     }

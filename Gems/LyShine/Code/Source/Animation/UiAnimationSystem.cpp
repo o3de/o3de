@@ -16,7 +16,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <StlUtils.h>
 
-#include <StaticInstance.h>
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
@@ -107,6 +106,7 @@ void UiAnimationSystem::DoNodeStaticInitialisation()
 bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
 {
     INDENT_LOG_DURING_SCOPE (true, "UI Animation system is loading the file '%s' (mission='%s')", pszFile, pszMission);
+    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     XmlNodeRef rootNode = m_pSystem->LoadXmlFromFile(pszFile);
     if (!rootNode)
@@ -731,11 +731,11 @@ void UiAnimationSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::ShowPlayedSequencesDebug()
 {
-    //f32 green[4] = {0, 1, 0, 1};
-    //f32 purple[4] = {1, 0, 1, 1};
-    //f32 white[4] = {1, 1, 1, 1};
+    f32 green[4] = {0, 1, 0, 1};
+    f32 purple[4] = {1, 0, 1, 1};
+    f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
-    AZStd::vector<AZStd::string> names;
+    std::vector<const char*> names;
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
@@ -746,9 +746,8 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
             continue;
         }
 
-        AZ_Assert(false,"gEnv->pRenderer is always null so it can't be used here");
-        //const char* fullname = playingSequence.sequence->GetName();
-        //gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
+        const char* fullname = playingSequence.sequence->GetName();
+        gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -756,18 +755,23 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
         {
             // Checks nodes which happen to be in several sequences.
             // Those can be a bug, since several sequences may try to control the same entity.
-            AZStd::string name = playingSequence.sequence->GetNode(i)->GetName();
+            const char* name = playingSequence.sequence->GetNode(i)->GetName();
             bool alreadyThere = false;
-            if (AZStd::find(names.begin(), names.end(), name) != names.end())
+            for (size_t k = 0; k < names.size(); ++k)
             {
-                alreadyThere = true;
+                if (strcmp(names[k], name) == 0)
+                {
+                    alreadyThere = true;
+                    break;
+                }
             }
-            else
+
+            if (alreadyThere == false)
             {
                 names.push_back(name);
             }
 
-            //gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name.c_str());
+            gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
         }
 
         y += 32.0f;

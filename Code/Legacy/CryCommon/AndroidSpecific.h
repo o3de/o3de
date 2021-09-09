@@ -109,6 +109,9 @@ typedef unsigned char               byte;
 
 #define INVALID_FILE_ATTRIBUTES (-1)
 
+#define DEFINE_ALIGNED_DATA(type, name, alignment) \
+    type __attribute__ ((aligned(alignment))) name;
+
 #include "LinuxSpecific.h"
 // these functions do not exist int the wchar.h header
 #undef wscasecomp

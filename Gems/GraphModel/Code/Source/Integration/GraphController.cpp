@@ -280,7 +280,6 @@ namespace GraphModelIntegration
                 }
                 else
                 {
-                    AZ_UNUSED(this); // Prevent unused warning in release builds
                     AZ_Error(m_graph->GetSystemName(), false, "Failed to load position information for node [%d]", nodeId);
                 }
 

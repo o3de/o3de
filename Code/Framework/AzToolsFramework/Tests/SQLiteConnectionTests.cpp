@@ -31,7 +31,7 @@ namespace UnitTest
         {
         }
 
-        ~SQLiteTest() override = default;
+        ~SQLiteTest() = default;
 
         void SetUp() override
         {

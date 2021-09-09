@@ -143,7 +143,7 @@ namespace AZ
                 resultCode = MapBufferInternal(mapRequest, mapResponse);
                 if (resultCode == ResultCode::Success)
                 {
-                    BufferCopy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
+                    memcpy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
                     UnmapBufferInternal(*initRequest.m_buffer);
                 }
             }
@@ -217,11 +217,6 @@ namespace AZ
         const BufferPoolDescriptor& BufferPool::GetDescriptor() const
         {
             return m_descriptor;
-        }
-
-        void BufferPool::BufferCopy(void* destination, const void* source, size_t num)
-        {
-            memcpy(destination, source, num);
         }
 
         ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)

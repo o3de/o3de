@@ -50,6 +50,7 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
+            auto& device = static_cast<Device&>(GetDevice());
 
             MemoryView memoryView = GetDevice().CreateImageCommitted(image.GetDescriptor());
             if (!memoryView.IsValid())

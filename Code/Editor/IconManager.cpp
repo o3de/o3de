@@ -27,6 +27,19 @@
 
 namespace
 {
+    // Object names in this array must correspond to EObject enumeration.
+    const char* g_ObjectNames[eStatObject_COUNT] =
+    {
+        "Objects/Arrow.cgf",
+        "Objects/Axis.cgf",
+        "Objects/Sphere.cgf",
+        "Objects/Anchor.cgf",
+        "Objects/entrypoint.cgf",
+        "Objects/hidepoint.cgf",
+        "Objects/hidepoint_sec.cgf",
+        "Objects/reinforcement_point.cgf",
+    };
+
     const char* g_IconNames[eIcon_COUNT] =
     {
         "Icons/ScaleWarning.png",
@@ -64,7 +77,10 @@ void CIconManager::Reset()
     int i;
     for (i = 0; i < sizeof(m_objects) / sizeof(m_objects[0]); i++)
     {
-        delete m_objects[i];
+        if (m_objects[i])
+        {
+            m_objects[i]->Release();
+        }
         m_objects[i] = nullptr;
     }
     for (i = 0; i < eIcon_COUNT; i++)

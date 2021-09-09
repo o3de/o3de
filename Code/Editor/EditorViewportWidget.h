@@ -19,7 +19,6 @@
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
 #include "EditorViewportSettings.h"
-#include "EditorModularViewportCameraComposer.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -55,29 +54,12 @@ namespace AZ::ViewportHelpers
 namespace AtomToolsFramework
 {
     class RenderViewportWidget;
-    class ModularViewportCameraController;
-} // namespace AtomToolsFramework
+}
 
 namespace AzToolsFramework
 {
     class ManipulatorManager;
 }
-
-//! Viewport settings for the EditorViewportWidget
-struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler
-{
-    void Connect(AzFramework::ViewportId viewportId);
-    void Disconnect();
-
-    // ViewportSettingsRequestBus overrides ...
-    bool GridSnappingEnabled() const override;
-    float GridSize() const override;
-    bool ShowGrid() const override;
-    bool AngleSnappingEnabled() const override;
-    float AngleStep() const override;
-    float ManipulatorLineBoundWidth() const override;
-    float ManipulatorCircleBoundWidth() const override;
-};
 
 // EditorViewportWidget window
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -91,7 +73,6 @@ class SANDBOX_API EditorViewportWidget final
     , private AzFramework::InputSystemCursorConstraintRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
-    , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
@@ -129,12 +110,10 @@ private:
         CameraComponent,
         ViewSourceTypesCount,
     };
-
     enum class PlayInEditorState
     {
         Editor, Starting, Started
     };
-
     enum class KeyPressedState
     {
         AllUp,
@@ -145,7 +124,7 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Method overrides ...
 
-    // QWidget overrides ...
+    // QWidget
     void focusOutEvent(QFocusEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     bool event(QEvent* event) override;
@@ -153,7 +132,7 @@ private:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
 
-    // QtViewport/IDisplayViewport/CViewport overrides ...
+    // QtViewport/IDisplayViewport/CViewport
     EViewportType GetType() const override { return ET_ViewportCamera; }
     void SetType([[maybe_unused]] EViewportType type) override { assert(type == ET_ViewportCamera); };
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
@@ -179,17 +158,16 @@ private:
     void Update() override;
     void UpdateContent(int flags) override;
 
-    // SceneNotificationBus overrides ...
+    // SceneNotificationBus
     void OnBeginPrepareRender() override;
 
-    // Camera::CameraNotificationBus overrides ...
+    // Camera::CameraNotificationBus
     void OnActiveViewChanged(const AZ::EntityId&) override;
 
-    // IEditorEventListener overrides ...
+    // IEditorEventListener
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
-    // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
-    // note: handler moved to cpp to resolve link issues in unity builds
+    // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     void OnStartPlayInEditor();
     void OnStopPlayInEditor();
     void OnStartPlayInEditorBegin();
@@ -198,10 +176,10 @@ private:
     void BeginUndoTransaction() override;
     void EndUndoTransaction() override;
 
-    // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
+    // AzFramework::InputSystemCursorConstraintRequestBus
     void* GetSystemCursorConstraintWindow() const override;
 
-    // AzToolsFramework::ViewportFreezeRequestBus overrides ...
+    // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
@@ -209,15 +187,13 @@ private:
     AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
+    void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
     void BeginWidgetContext() override;
     void EndWidgetContext() override;
 
-    // EditorEntityViewportInteractionRequestBus overrides ...
-    void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
-
-    // Camera::EditorCameraRequestBus overrides ...
+    // Camera::EditorCameraRequestBus
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
@@ -243,6 +219,7 @@ private:
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
 
+    bool AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, Vec3& outPos) const;
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
     bool AddCameraMenuItems(QMenu* menu);
@@ -333,7 +310,7 @@ private:
     // Determines also if the current camera for this viewport is default editor camera
     ViewSourceType m_viewSourceType = ViewSourceType::None;
 
-    // During play game in editor, holds the editor entity ID of the last
+    // During play game in editor, holds the editor entity ID of the last 
     AZ::EntityId m_viewEntityIdCachedForEditMode;
 
     // The editor camera TM before switching to game mode
@@ -360,7 +337,7 @@ private:
     // Note that any attempts to draw anything with this object will crash. Exists here for legacy "reasons"
     DisplayContext m_displayContext;
 
-    // Reentrancy guard for on paint events
+    // Re-entrency guard for on paint events
     bool m_isOnPaint = false;
 
     // Shapes of various safe frame helpers which can be displayed in the editor
@@ -392,8 +369,6 @@ private:
     // This widget holds a reference to the manipulator manage because its responsible for drawing manipulators
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 
-    AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
-
     // Helper for getting EditorEntityNotificationBus events
     AZStd::unique_ptr<AZ::ViewportHelpers::EditorEntityNotifications> m_editorEntityNotifications;
 
@@ -402,9 +377,6 @@ private:
 
     // Atom debug display
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
-
-    // Type to return current state of editor viewport settings
-    EditorViewportSettings m_editorViewportSettings;
 
     // The default view created for the viewport context, which is used as the "Editor Camera"
     AZ::RPI::ViewPtr m_defaultView;

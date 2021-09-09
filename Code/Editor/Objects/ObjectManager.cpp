@@ -37,6 +37,7 @@ AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
 
+
 /*!
  *  Class Description used for object templates.
  *  This description filled from Xml template files.
@@ -367,7 +368,7 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 //////////////////////////////////////////////////////////////////////////
 void    CObjectManager::DeleteObject(CBaseObject* obj)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     if (m_currEditObject == obj)
     {
         EndEditParams();
@@ -413,7 +414,7 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     if (pSelection == nullptr)
     {
         return;
@@ -477,7 +478,7 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteAllObjects()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     EndEditParams();
 
@@ -518,7 +519,7 @@ void CObjectManager::DeleteAllObjects()
 
 CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     assert(obj);
     //CRuntimeClass *cls = obj->GetRuntimeClass();
     //CBaseObject *clone = (CBaseObject*)cls->CreateObject();
@@ -709,7 +710,7 @@ void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& 
         );
 
         // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
+        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, sRenameWarning.toUtf8().data());
 
         if (bShowMsgBox)
         {
@@ -745,7 +746,7 @@ void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
-    return static_cast<int>(m_objects.size());
+    return m_objects.size();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -756,6 +757,17 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
     {
         objects.push_back(it->second);
+    }
+}
+
+void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
+{
+    CBaseObjectsArray objectArray;
+    GetObjects(objectArray);
+    objects.clear();
+    for (int i = 0, iCount(objectArray.size()); i < iCount; ++i)
+    {
+        objects.push_back(objectArray[i]);
     }
 }
 
@@ -1100,7 +1112,7 @@ void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::ClearSelection()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1153,7 +1165,7 @@ int CObjectManager::ClearSelection()
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::InvertSelection()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     int selCount = 0;
     // iterate all objects.
@@ -1177,7 +1189,7 @@ int CObjectManager::InvertSelection()
 
 void CObjectManager::SetSelection(const QString& name)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
     if (selection)
     {
@@ -1190,7 +1202,7 @@ void CObjectManager::SetSelection(const QString& name)
 
 void CObjectManager::RemoveSelection(const QString& name)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     QString selName = name;
     CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
@@ -1209,7 +1221,7 @@ void CObjectManager::RemoveSelection(const QString& name)
 
 void CObjectManager::SelectCurrent()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         CBaseObject* obj = m_currSelection->GetObject(i);
@@ -1224,7 +1236,7 @@ void CObjectManager::SelectCurrent()
 
 void CObjectManager::UnselectCurrent()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1248,7 +1260,7 @@ void CObjectManager::UnselectCurrent()
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::Display(DisplayContext& dc)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     int currentHideMask = GetIEditor()->GetDisplaySettings()->GetObjectHideMask();
     if (m_lastHideMask != currentHideMask)
@@ -1308,7 +1320,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
         return;
     }
 
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     auto start = std::chrono::steady_clock::now();
     CBaseObjectsCache* pDispayedViewObjects = dc.view->GetVisibleObjectsCache();
@@ -1324,11 +1336,11 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
     bbox.max.zero();
 
     pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
+    pDispayedViewObjects->Reserve(m_visibleObjects.size());
 
     if (dc.flags & DISPLAY_2D)
     {
-        int numVis = static_cast<int>(m_visibleObjects.size());
+        int numVis = m_visibleObjects.size();
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1362,7 +1374,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
             pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
         }
 
-        int numVis = static_cast<int>(m_visibleObjects.size());
+        int numVis = m_visibleObjects.size();
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1439,7 +1451,7 @@ void CObjectManager::EndEditParams([[maybe_unused]] int flags)
 //! Select objects within specified distance from given position.
 int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     int numSel = 0;
 
     AABB objBounds;
@@ -1539,13 +1551,16 @@ bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
 
+    GUID bID = GUID_NULL;
+
+    int i;
     CSelectionGroup objects;
-    for (int i = 0; i < m_currSelection->GetCount(); i++)
+    for (i = 0; i < m_currSelection->GetCount(); i++)
     {
         // Check condition(s) if object could be deleted
         if (!IsObjectDeletionAllowed(m_currSelection->GetObject(i)))
@@ -1566,7 +1581,7 @@ void CObjectManager::DeleteSelection()
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     if (obj->IsFrozen())
     {
@@ -1633,7 +1648,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::HitTest(HitContext& hitInfo)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     hitInfo.object = nullptr;
     hitInfo.dist = FLT_MAX;
@@ -1751,7 +1766,7 @@ bool CObjectManager::HitTest(HitContext& hitInfo)
 }
 void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     if (rect.width() < 1 || rect.height() < 1)
     {
@@ -1780,7 +1795,7 @@ void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
     // Ignore too small rectangles.
     if (rect.width() < 1 || rect.height() < 1)
@@ -2001,7 +2016,7 @@ void CObjectManager::GetClassCategories(QStringList& categories)
         }
     }
     categories.clear();
-    categories.reserve(static_cast<int>(cset.size()));
+    categories.reserve(cset.size());
     for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
     {
         categories.push_back(*cit);
@@ -2348,7 +2363,7 @@ bool CObjectManager::ConvertToType(CBaseObject* pObject, const QString& typeName
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     // Only select/unselect once.
     if ((pObject->IsSelected() && bSelect) || (!pObject->IsSelected() && !bSelect))
     {
@@ -2367,7 +2382,7 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
+        if (CAxisGizmo::GetGlobalAxisGizmoCount() < gSettings.gizmo.axisGizmoMaxCount)
         {
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));
@@ -2614,7 +2629,7 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
     for (size_t i = 0; i < gizmoCount; ++i)
     {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
+        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(i));
     }
 }
 
@@ -2882,6 +2897,17 @@ namespace
             throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
         }
         Vec3 position = pObject->GetPos();
+        return AZ::Vector3(position.x, position.y, position.z);
+    }
+
+    AZ::Vector3 PyGetWorldObjectPosition(const char* pName)
+    {
+        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
+        if (!pObject)
+        {
+            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
+        }
+        Vec3 position = pObject->GetWorldPos();
         return AZ::Vector3(position.x, position.y, position.z);
     }
 

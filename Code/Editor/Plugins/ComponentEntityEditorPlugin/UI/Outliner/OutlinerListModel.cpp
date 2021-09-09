@@ -1054,7 +1054,7 @@ bool OutlinerListModel::dropMimeDataEntities(const QMimeData* data, Qt::DropActi
 
 bool OutlinerListModel::CanReparentEntities(const AZ::EntityId& newParentId, const AzToolsFramework::EntityIdList &selectedEntityIds) const
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     if (selectedEntityIds.empty())
     {
         return false;
@@ -1143,7 +1143,7 @@ bool OutlinerListModel::CanReparentEntities(const AZ::EntityId& newParentId, con
 
 bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const AzToolsFramework::EntityIdList &selectedEntityIds, const AZ::EntityId& beforeEntityId)
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     if (!CanReparentEntities(newParentId, selectedEntityIds))
     {
         return false;
@@ -1233,7 +1233,9 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
 
 QMimeData* OutlinerListModel::mimeData(const QModelIndexList& indexes) const
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ::TypeId uuid1 = AZ::AzTypeInfo<AZ::Entity>::Uuid();
+    AZ::TypeId uuid2 = AZ::AzTypeInfo<AzToolsFramework::EditorEntityIdContainer>::Uuid();
 
     AzToolsFramework::EditorEntityIdContainer entityIdList;
     for (const QModelIndex& index : indexes)
@@ -1321,7 +1323,7 @@ public:
 
 void OutlinerListModel::ProcessEntityUpdates()
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     m_entityChangeQueued = false;
     if (m_layoutResetQueued)
     {
@@ -1329,7 +1331,7 @@ void OutlinerListModel::ProcessEntityUpdates()
     }
 
     {
-        AZ_PROFILE_SCOPE(Editor, "OutlinerListModel::ProcessEntityUpdates:ExpandQueue");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Editor, "OutlinerListModel::ProcessEntityUpdates:ExpandQueue");
         for (auto entityId : m_entityExpandQueue)
         {
             emit ExpandEntity(entityId, IsExpanded(entityId));
@@ -1338,7 +1340,7 @@ void OutlinerListModel::ProcessEntityUpdates()
     }
 
     {
-        AZ_PROFILE_SCOPE(Editor, "OutlinerListModel::ProcessEntityUpdates:SelectQueue");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Editor, "OutlinerListModel::ProcessEntityUpdates:SelectQueue");
         for (auto entityId : m_entitySelectQueue)
         {
             emit SelectEntity(entityId, AzToolsFramework::IsSelected(entityId));
@@ -1348,7 +1350,7 @@ void OutlinerListModel::ProcessEntityUpdates()
 
     if (!m_entityChangeQueue.empty())
     {
-        AZ_PROFILE_SCOPE(Editor, "OutlinerListModel::ProcessEntityUpdates:ChangeQueue");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Editor, "OutlinerListModel::ProcessEntityUpdates:ChangeQueue");
 
         // its faster to just do a bulk data change than to carefully pick out indices
         // so we'll just merge all ranges into a single range rather than try to make gaps
@@ -1381,7 +1383,7 @@ void OutlinerListModel::ProcessEntityUpdates()
     }
 
     {
-        AZ_PROFILE_SCOPE(Editor, "OutlinerListModel::ProcessEntityUpdates:LayoutChanged");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Editor, "OutlinerListModel::ProcessEntityUpdates:LayoutChanged");
         if (m_entityLayoutQueued)
         {
             emit layoutAboutToBeChanged();
@@ -1391,7 +1393,7 @@ void OutlinerListModel::ProcessEntityUpdates()
     }
 
     {
-        AZ_PROFILE_SCOPE(Editor, "OutlinerListModel::ProcessEntityUpdates:InvalidateFilter");
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Editor, "OutlinerListModel::ProcessEntityUpdates:InvalidateFilter");
         if (m_isFilterDirty)
         {
             InvalidateFilter();
@@ -1414,7 +1416,7 @@ void OutlinerListModel::OnEntityInfoResetEnd()
 
 void OutlinerListModel::ProcessEntityInfoResetEnd()
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     m_layoutResetQueued = false;
     m_entityChangeQueued = false;
     m_entityChangeQueue.clear();
@@ -1435,7 +1437,7 @@ void OutlinerListModel::OnEntityInfoUpdatedAddChildBegin(AZ::EntityId parentId, 
 void OutlinerListModel::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
 {
     (void)parentId;
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     endInsertRows();
 
     //expand ancestors if a new descendant is already selected
@@ -1460,18 +1462,20 @@ void OutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, 
     QueueEntityUpdate(entityId);
 }
 
-void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
+void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentId, AZ::EntityId childId)
 {
     //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
     //so disallow selection updates until change is complete
     emit EnableSelectionUpdates(false);
+    auto parentIndex = GetIndexFromEntity(parentId);
+    auto childIndex = GetIndexFromEntity(childId);
     beginResetModel();
 }
 
 void OutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
 {
     (void)childId;
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
     endResetModel();
 
@@ -1490,7 +1494,7 @@ void OutlinerListModel::OnEntityInfoUpdatedOrderBegin(AZ::EntityId parentId, AZ:
 
 void OutlinerListModel::OnEntityInfoUpdatedOrderEnd(AZ::EntityId parentId, AZ::EntityId childId, AZ::u64 index)
 {
-    AZ_PROFILE_FUNCTION(Editor);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
     (void)index;
     m_entityLayoutQueued = true;
     QueueEntityUpdate(parentId);
@@ -1561,7 +1565,7 @@ QString OutlinerListModel::GetSliceAssetName(const AZ::EntityId& entityId) const
 
 QModelIndex OutlinerListModel::GetIndexFromEntity(const AZ::EntityId& entityId, int column) const
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
     if (entityId.IsValid())
     {
@@ -1723,7 +1727,7 @@ void OutlinerListModel::OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, 
 
 void OutlinerListModel::ExpandAncestors(const AZ::EntityId& entityId)
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     //typically to reveal selected entities, expand all parent entities
     if (entityId.IsValid())
     {
@@ -1928,7 +1932,7 @@ bool OutlinerListModel::HasSelectedDescendant(const AZ::EntityId& entityId) cons
 
 bool OutlinerListModel::AreAllDescendantsSameLockState(const AZ::EntityId& entityId) const
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     //TODO result can be cached in mutable map and cleared when any descendant changes to avoid recursion in deep hierarchies
     bool isLocked = false;
     AzToolsFramework::EditorEntityInfoRequestBus::EventResult(isLocked, entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsJustThisEntityLocked);
@@ -1949,7 +1953,7 @@ bool OutlinerListModel::AreAllDescendantsSameLockState(const AZ::EntityId& entit
 
 bool OutlinerListModel::AreAllDescendantsSameVisibleState(const AZ::EntityId& entityId) const
 {
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
     //TODO result can be cached in mutable map and cleared when any descendant changes to avoid recursion in deep hierarchies
 
     bool isVisible = AzToolsFramework::IsEntitySetToBeVisible(entityId);
@@ -2472,10 +2476,10 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
     auto backgroundBoxRect = option.rect;
 
-    backgroundBoxRect.setX(static_cast<int>(backgroundBoxRect.x() + 0.5f));
-    backgroundBoxRect.setY(static_cast<int>(backgroundBoxRect.y() + 2.5f));
-    backgroundBoxRect.setWidth(static_cast<int>(backgroundBoxRect.width() - 1.0f));
-    backgroundBoxRect.setHeight(static_cast<int>(backgroundBoxRect.height() - 1.0f));
+    backgroundBoxRect.setX(backgroundBoxRect.x() + 0.5);
+    backgroundBoxRect.setY(backgroundBoxRect.y() + 2.5);
+    backgroundBoxRect.setWidth(backgroundBoxRect.width() - 1.0);
+    backgroundBoxRect.setHeight(backgroundBoxRect.height() - 1.0);
 
     const qreal sliceBorderHeight = 0.8f;
 
@@ -2509,7 +2513,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
             else
             {
                 auto newRect = option.rect;
-                newRect.setHeight(static_cast<int>(newRect.height() - 1.0f));
+                newRect.setHeight(newRect.height() - 1.0);
                 path.addRect(newRect);
             }
 
@@ -2593,7 +2597,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
                 QString htmlStripped = layerInfoString;
                 htmlStripped.remove(htmlMarkupRegex);
                 const float layerInfoPadding = 1.2f;
-                textWidthAvailable -= static_cast<int>(fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding);
+                textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding;
             }
 
             entityNameRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);

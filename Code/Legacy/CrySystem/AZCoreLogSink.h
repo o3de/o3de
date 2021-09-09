@@ -51,10 +51,10 @@ public:
 
     static bool IsCryLogReady()
     {
+        static bool hasSetCVar = false;
         bool ready = gEnv && gEnv->pSystem && gEnv->pLog;
 
 #ifdef _RELEASE
-        static bool hasSetCVar = false;
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well

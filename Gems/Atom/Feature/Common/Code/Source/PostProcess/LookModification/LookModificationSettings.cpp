@@ -26,8 +26,6 @@ namespace AZ
             seed = TypeHash64(m_overrideStrength, seed);
             seed = TypeHash64(m_assetId.GetId(), seed);
             seed = TypeHash64(m_shaperPreset, seed);
-            seed = TypeHash64(m_customMinExposure, seed);
-            seed = TypeHash64(m_customMaxExposure, seed);
             return seed;
         }
 
@@ -52,9 +50,6 @@ namespace AZ
                 lutBlend.m_intensity = GetColorGradingLutIntensity();
                 lutBlend.m_overrideStrength = GetColorGradingLutOverride() * alpha;
                 lutBlend.m_assetId = lutAssetId;
-                lutBlend.m_shaperPreset = GetShaperPresetType();
-                lutBlend.m_customMinExposure = GetCustomMinExposure();
-                lutBlend.m_customMaxExposure = GetCustomMaxExposure();
                 target->AddLutBlend(lutBlend);
             }
         }
@@ -92,9 +87,6 @@ namespace AZ
                     blendItem.m_intensity = GetColorGradingLutIntensity();
                     blendItem.m_overrideStrength = GetColorGradingLutOverride();
                     blendItem.m_assetId = GetColorGradingLut();
-                    blendItem.m_shaperPreset = GetShaperPresetType();
-                    blendItem.m_customMinExposure = GetCustomMinExposure();
-                    blendItem.m_customMaxExposure = GetCustomMaxExposure();
                     m_lutBlendStack.insert(m_lutBlendStack.begin(), blendItem);
                 }
             }

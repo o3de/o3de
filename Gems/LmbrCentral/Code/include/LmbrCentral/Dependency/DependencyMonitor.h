@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Debug/Profiler.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Asset/AssetCommon.h>

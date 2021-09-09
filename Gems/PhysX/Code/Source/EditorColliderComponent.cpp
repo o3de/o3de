@@ -88,7 +88,7 @@ namespace PhysX
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
                         ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
@@ -114,22 +114,6 @@ namespace PhysX
                     ;
             }
         }
-    }
-
-    AZ::u32 EditorProxyShapeConfig::OnShapeTypeChanged()
-    {
-        //reset the physics asset if the shape type was Physics Asset
-        if (m_shapeType != Physics::ShapeType::PhysicsAsset &&
-            m_lastShapeType == Physics::ShapeType::PhysicsAsset)
-        {
-            //clean up any reference to a physics assets, and re-initialize to an empty Pipeline::MeshAsset asset.
-            m_physicsAsset.m_pxAsset.Reset();
-            m_physicsAsset.m_pxAsset = AZ::Data::Asset<Pipeline::MeshAsset>(AZ::Data::AssetLoadBehavior::QueueLoad);
-
-            m_physicsAsset.m_configuration = Physics::PhysicsAssetShapeConfiguration();
-        }
-        m_lastShapeType = m_shapeType;
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()
@@ -815,7 +799,7 @@ namespace PhysX
                 m_componentWarnings.clear();
 
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const size_t lastSlash = assetPath.rfind('/');
+                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);

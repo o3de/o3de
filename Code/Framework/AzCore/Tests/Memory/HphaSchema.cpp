@@ -121,13 +121,13 @@ namespace Benchmark
         : public ::benchmark::Fixture
     {
     public:
-        void SetUp(const ::benchmark::State& state) override
+        void SetUp(const ::benchmark::State& state)
         {
             AZ_UNUSED(state);
             AZ::AllocatorInstance<HphaSchema_TestAllocator>::Create();
         }
 
-        void TearDown(const ::benchmark::State& state) override
+        void TearDown(const ::benchmark::State& state)
         {
             AZ_UNUSED(state);
             AZ::AllocatorInstance<HphaSchema_TestAllocator>::Destroy();

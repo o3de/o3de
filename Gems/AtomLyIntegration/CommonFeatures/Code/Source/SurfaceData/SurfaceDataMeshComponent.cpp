@@ -147,7 +147,7 @@ namespace SurfaceData
 
     bool SurfaceDataMeshComponent::DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -233,7 +233,7 @@ namespace SurfaceData
 
     void SurfaceDataMeshComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         bool meshValidBeforeUpdate = false;
         bool meshValidAfterUpdate = false;

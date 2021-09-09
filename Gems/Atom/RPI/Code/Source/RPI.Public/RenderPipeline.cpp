@@ -377,7 +377,7 @@ namespace AZ
 
         void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             m_lastRenderStartTime = tick.m_currentGameTime;
 

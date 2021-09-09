@@ -54,7 +54,7 @@ public:
 
     virtual int GetSubTrackCount() const { return 0; };
     virtual IAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const { return 0; };
-    AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const { return AZStd::string(); };
+    virtual const char* GetSubTrackName([[maybe_unused]] int nIndex) const { return NULL; };
     virtual void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) { assert(0); }
 
     void SetNode(IAnimNode* node) override { m_node = node; }

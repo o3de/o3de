@@ -61,7 +61,7 @@ namespace AZ
             };
 
             // Flag value for when the buffers have no empty spaces.
-            static const uint32_t NoAvailableTransformIndices = std::numeric_limits<uint32_t>::max();
+            static const uint32_t NoAvailableTransformIndices = -1;
 
             TransformServiceFeatureProcessor(const TransformServiceFeatureProcessor&) = delete;
 

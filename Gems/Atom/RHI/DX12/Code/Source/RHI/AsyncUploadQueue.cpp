@@ -152,21 +152,21 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
 
                 while (pendingByteCount > 0)
                 {
-                    AZ_PROFILE_SCOPE(RHI, "Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer Chunk");
 
                     FramePacket* framePacket = BeginFramePacket();
 
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
 
                     {
-                        AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
+                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
                     }
 
@@ -196,7 +196,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended");
 
             FramePacket* framePacket = &m_framePackets[m_frameIndex];
@@ -212,7 +212,7 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(ID3D12CommandQueue* commandQueue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
             AssertSuccess(m_commandList->Close());
@@ -229,7 +229,7 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
             uint64_t fenceValue = m_uploadFence.Increment();
 
@@ -243,7 +243,7 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(RHI, "Upload Image");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Image");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 FramePacket* framePacket = BeginFramePacket();
 
@@ -314,7 +314,7 @@ namespace AZ
 
                                 // Copy subresource data to staging memory.
                                 {
-                                    AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
+                                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
 
                                     uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
                                     const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
@@ -378,13 +378,14 @@ namespace AZ
                                     }
 
                                     const uint32_t endRow = AZStd::GetMin(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
+                                    const uint32_t numRowsToCopy = endRow - startRow;
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
                                     uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory
                                     {
-                                        AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
+                                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
                                         for (uint32_t row = startRow; row < endRow; row++)
                                         {
                                             uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
@@ -475,7 +476,7 @@ namespace AZ
 
         void AsyncUploadQueue::WaitForUpload(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
             if (!IsUploadFinished(fenceValue))
             {
@@ -489,7 +490,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallbacks(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {
@@ -503,7 +504,7 @@ namespace AZ
         {
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(RHI, "QueueTileMapping");
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "QueueTileMapping");
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;

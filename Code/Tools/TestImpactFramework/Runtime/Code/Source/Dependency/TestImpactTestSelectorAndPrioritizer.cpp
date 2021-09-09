@@ -87,7 +87,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit([&selectedTestTargetMap, &sourceDependency](auto&& target)
+                        AZStd::visit([&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                         {
                             if constexpr (IsProductionTarget<decltype(target)>)
                             {
@@ -129,7 +129,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit([&selectedTestTargetMap](auto&& target)
+                        AZStd::visit([&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                         {
                             if constexpr (IsTestTarget<decltype(target)>)
                             {

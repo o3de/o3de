@@ -91,12 +91,12 @@ namespace AzManipulatorTestFramework
     AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(
         const AzFramework::ScreenPoint& screenPoint, const AzFramework::CameraState& cameraState)
     {
-        const auto nearPlaneWorldPosition = AzFramework::ScreenToWorld(screenPoint, cameraState);
+        const auto screenToWorld = AzFramework::ScreenToWorld(screenPoint, cameraState);
 
         AzToolsFramework::ViewportInteraction::MousePick mousePick;
         mousePick.m_screenCoordinates = screenPoint;
-        mousePick.m_rayOrigin = cameraState.m_position;
-        mousePick.m_rayDirection = (nearPlaneWorldPosition - cameraState.m_position).GetNormalized();
+        mousePick.m_rayOrigin = screenToWorld;
+        mousePick.m_rayDirection = (screenToWorld - cameraState.m_position).GetNormalized();
 
         return mousePick;
     }
@@ -122,7 +122,7 @@ namespace AzManipulatorTestFramework
 
     MouseInteractionEvent CreateMouseInteractionEvent(const MouseInteraction& mouseInteraction, MouseEvent event)
     {
-        return MouseInteractionEvent(mouseInteraction, event, /*captured=*/false);
+        return MouseInteractionEvent(mouseInteraction, event);
     }
 
     void DispatchMouseInteractionEvent(const MouseInteractionEvent& event)

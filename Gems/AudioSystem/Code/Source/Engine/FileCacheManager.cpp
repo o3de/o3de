@@ -9,7 +9,6 @@
 
 #include <FileCacheManager.h>
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
@@ -62,7 +61,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::Update()
     {
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         AudioFileCacheManagerNotficationBus::ExecuteQueuedEvents();
         UpdatePreloadRequestsStatus();
@@ -446,13 +445,13 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, 
-                        "%s (%zu %s) [%zu]",
+                    AZStd::string displayString = AZStd::string::format("%s (%zu %s) [%zu]",
                         audioFileEntry->m_filePath.c_str(),
                         fileSize,
                         kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
 
+                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, displayString.c_str());
                     color[3] = originalAlpha;
                     positionY += entryStepSize;
                 }
@@ -539,7 +538,7 @@ namespace Audio
     bool CFileCacheManager::FinishCachingFileInternal(CATLAudioFileEntry* const audioFileEntry, [[maybe_unused]] AZ::IO::SizeType bytesRead,
         AZ::IO::IStreamerTypes::RequestStatus requestState)
     {
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         bool success = false;
         audioFileEntry->m_asyncStreamRequest.reset();
@@ -641,7 +640,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         // Must not have valid memory yet.
         AZ_Assert(!audioFileEntry->m_memoryBlock, "FileCacheManager AllocateMemoryBlockInternal - Memory appears to be set already!");
@@ -787,7 +786,7 @@ namespace Audio
         const bool overrideUseCount /* = false */,
         const size_t useCount /* = 0 */)
     {
-        AZ_PROFILE_FUNCTION(Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         bool success = false;
 
@@ -841,9 +840,9 @@ namespace Audio
 
                     streamer->SetRequestCompleteCallback(
                         audioFileEntry->m_asyncStreamRequest,
-                        [](AZ::IO::FileRequestHandle request)
+                        [this](AZ::IO::FileRequestHandle request)
                         {
-                            AZ_PROFILE_FUNCTION(Audio);
+                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
                             AudioFileCacheManagerNotficationBus::QueueBroadcast(
                                 &AudioFileCacheManagerNotficationBus::Events::FinishAsyncStreamRequest,
                                 request);

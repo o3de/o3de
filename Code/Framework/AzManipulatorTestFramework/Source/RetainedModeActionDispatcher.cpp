@@ -24,7 +24,7 @@ namespace AzManipulatorTestFramework
         {
             const char* error = "Couldn't add action to sequence, dispatcher is locked (you must call ResetSequence() \
                                  before adding actions to this dispatcher)";
-            Log("%s", error);
+            Log(error);
             AZ_Assert(false, "Error: %s", error);
         }
 
@@ -108,7 +108,7 @@ namespace AzManipulatorTestFramework
 
     RetainedModeActionDispatcher* RetainedModeActionDispatcher::ResetSequence()
     {
-        Log("%s", "Resetting the action sequence");
+        Log("Resetting the action sequence");
         m_actions.clear();
         m_dispatcher.ResetEvent();
         m_locked = false;

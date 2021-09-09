@@ -7,8 +7,10 @@
  */
 
 #include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <Document/ShaderManagementConsoleDocumentSystemComponent.h>
+
+#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <AzToolsFramework/Asset/AssetSystemComponent.h>
 
 namespace ShaderManagementConsole
 {

@@ -9,7 +9,6 @@
 #pragma once
 
 #include "../Include/SandboxAPI.h"
-#include <CryCommon/LegacyAllocator.h>
 #include <set>
 
 class QWidget;
@@ -104,7 +103,7 @@ struct IFileUtil
         }
     };
 
-    using FileArray = AZStd::vector<FileDesc, AZ::StdLegacyAllocator>;
+    typedef DynArray<FileDesc> FileArray;
 
     typedef bool (* ScanDirectoryUpdateCallBack)(const QString& msg);
 

@@ -38,7 +38,7 @@ namespace AZ
 
             AttributeDynamicScriptValue(const DynamicSerializableField& value)
                 : m_value(value) {}
-            ~AttributeDynamicScriptValue() override 
+            virtual ~AttributeDynamicScriptValue() 
             { 
                 m_value.DestroyData();
             }
@@ -1031,15 +1031,15 @@ namespace AzToolsFramework
                             ->Attribute("EditButton", "")
                             ->Attribute("EditDescription", "Open in Lua Editor")
                             ->Attribute("EditCallback", &ScriptEditorComponent::LaunchLuaEditor)
-                        ->DataElement(nullptr, &ScriptEditorComponent::m_scriptComponent, "Script properties", "The script template")
+                        ->DataElement(0, &ScriptEditorComponent::m_scriptComponent, "Script properties", "The script template")
                         ->SetDynamicEditDataProvider(&ScriptEditorComponent::GetScriptPropertyEditData)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     ec->Class<AzFramework::ScriptComponent>("Script Component", "Adding scripting functionality to the entity!")
-                        ->DataElement(nullptr, &AzFramework::ScriptComponent::m_properties, "Properties", "Lua script properties")
+                        ->DataElement(0, &AzFramework::ScriptComponent::m_properties, "Properties", "Lua script properties")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(nullptr, &AzFramework::ScriptComponent::m_script, "Asset", "")
+                        ->DataElement(0, &AzFramework::ScriptComponent::m_script, "Asset", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable) // Only the editor-component's script asset needs to be slice-pushable.
                         ;
@@ -1048,9 +1048,9 @@ namespace AzToolsFramework
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGroup's class attributes.")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AzFramework::ScriptPropertyGroup::m_name)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_properties, "m_properties", "Properties in this property group")->
+                        DataElement(0, &AzFramework::ScriptPropertyGroup::m_properties, "m_properties", "Properties in this property group")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_groups, "m_groups", "Subgroups in this property group")->
+                        DataElement(0, &AzFramework::ScriptPropertyGroup::m_groups, "m_groups", "Subgroups in this property group")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
                     ec->Class<AZ::ScriptProperty>("Script Property", "Base class for script properties")->
@@ -1060,50 +1060,50 @@ namespace AzToolsFramework
                     ec->Class<AZ::ScriptPropertyBoolean>("Script Property (bool)", "A script boolean property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGroup's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyBoolean::m_value, "m_value", "A boolean")->
+                        DataElement(0, &AZ::ScriptPropertyBoolean::m_value, "m_value", "A boolean")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyNumber>("Script Property (number)", "A script number property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGroup's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyNumber::m_value, "m_value", "A number")->
+                        DataElement(0, &AZ::ScriptPropertyNumber::m_value, "m_value", "A number")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyString>("Script Property (string)", "A script string property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGroup's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyString::m_value, "m_value", "A string")->
+                        DataElement(0, &AZ::ScriptPropertyString::m_value, "m_value", "A string")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyGenericClass>("Script Property (object)", "A script object property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGroup's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyGenericClass::m_value, "m_value", "An object")->
+                        DataElement(0, &AZ::ScriptPropertyGenericClass::m_value, "m_value", "An object")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
                     ec->Class<AZ::ScriptPropertyBooleanArray>("Script Property Array(bool)", "A script bool array property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyBooleanArray's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyBooleanArray::m_values, "m_value", "An object")->
+                        DataElement(0, &AZ::ScriptPropertyBooleanArray::m_values, "m_value", "An object")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyNumberArray>("Script Property Array(number)", "A script number array property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyNumberArray's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyNumberArray::m_values, "m_value", "An object")->
+                        DataElement(0, &AZ::ScriptPropertyNumberArray::m_values, "m_value", "An object")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyStringArray>("Script Property Array(string)", "A script string array property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyStringArray's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement(nullptr, &AZ::ScriptPropertyStringArray::m_values, "m_value", "An object")->
+                        DataElement(0, &AZ::ScriptPropertyStringArray::m_values, "m_value", "An object")->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
                     ec->Class<AZ::ScriptPropertyGenericClassArray>("Script Property Array(object)", "A script object array property")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyGenericClassArray's class attributes.")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                             Attribute(AZ::Edit::Attributes::DynamicElementType, &AZ::ScriptPropertyGenericClassArray::GetElementTypeUuid)->
-                        DataElement(nullptr, &AZ::ScriptPropertyGenericClassArray::m_values, "m_value", "An object")->
+                        DataElement(0, &AZ::ScriptPropertyGenericClassArray::m_values, "m_value", "An object")->
                             ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 

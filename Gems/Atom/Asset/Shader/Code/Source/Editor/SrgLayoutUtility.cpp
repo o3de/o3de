@@ -15,6 +15,8 @@ namespace AZ
     {
         namespace SrgLayoutUtility
         {
+            static constexpr char SrgLayoutUtilityName[] = "SrgLayoutUtility";
+
             RHI::ShaderInputImageType ToShaderInputImageType(TextureType textureType)
             {
                 switch (textureType)

@@ -33,10 +33,10 @@ namespace GraphCanvas
 
         m_database.clear();
 
-        AZStd::function<void()> reloadFn = []()
+        AZStd::function<void()> reloadFn = [this]()
         {
             // Collects all script assets for reloading
-            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
+            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
             {
                 // Check asset type
                 if (info.m_assetType == azrtti_typeid<TranslationAsset>())

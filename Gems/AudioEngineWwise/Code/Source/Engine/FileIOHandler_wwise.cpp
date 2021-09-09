@@ -12,7 +12,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
-#include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>
 #include <AkPlatformFuncs_Platform.h>
@@ -266,7 +265,7 @@ namespace Audio
 
         auto callback = [&transferInfo](AZ::IO::FileRequestHandle request)
         {
-            AZ_PROFILE_FUNCTION(Audio);
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
             AZ::IO::IStreamerTypes::RequestStatus status = AZ::Interface<AZ::IO::IStreamer>::Get()->GetRequestStatus(request);
             switch (status)
             {

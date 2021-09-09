@@ -88,8 +88,6 @@ namespace AZ
                     ->Event("SetFilteringSampleCount", &DirectionalLightRequestBus::Events::SetFilteringSampleCount)
                     ->Event("GetPcfMethod", &DirectionalLightRequestBus::Events::GetPcfMethod)
                     ->Event("SetPcfMethod", &DirectionalLightRequestBus::Events::SetPcfMethod)
-                    ->Event("GetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::GetShadowReceiverPlaneBiasEnabled)
-                    ->Event("SetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::SetShadowReceiverPlaneBiasEnabled)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -106,8 +104,7 @@ namespace AZ
                     ->VirtualProperty("SofteningBoundaryWidth", "GetSofteningBoundaryWidth", "SetSofteningBoundaryWidth")
                     ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                    ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod")
-                    ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled");
+                    ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod");
                 ;
             }
         }
@@ -262,8 +259,7 @@ namespace AZ
 
         void DirectionalLightComponentController::SetCascadeCount(uint32_t cascadeCount)
         {
-            const uint16_t cascadeCount16 = GetMin(static_cast<uint16_t>(Shadow::MaxNumberOfCascades), GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
-            cascadeCount = cascadeCount16;
+            const uint16_t cascadeCount16 = cascadeCount = GetMin(Shadow::MaxNumberOfCascades, GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
             m_configuration.m_cascadeCount = cascadeCount16;
             if (m_featureProcessor)
             {
@@ -542,7 +538,6 @@ namespace AZ
             SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetPcfMethod(m_configuration.m_pcfMethod);
-            SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -641,17 +636,6 @@ namespace AZ
             m_configuration.m_pcfMethod = method;
             m_featureProcessor->SetPcfMethod(m_lightHandle, method);
         }
-
-        bool DirectionalLightComponentController::GetShadowReceiverPlaneBiasEnabled() const
-        {
-            return m_configuration.m_receiverPlaneBiasEnabled;
-        }
-
-        void DirectionalLightComponentController::SetShadowReceiverPlaneBiasEnabled(bool enable)
-        {
-            m_configuration.m_receiverPlaneBiasEnabled = enable;
-            m_featureProcessor->SetShadowReceiverPlaneBiasEnabled(m_lightHandle, enable);
-        }
-
+  
     } // namespace Render
 } // namespace AZ

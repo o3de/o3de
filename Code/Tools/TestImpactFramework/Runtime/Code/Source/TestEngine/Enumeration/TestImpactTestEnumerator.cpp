@@ -151,7 +151,7 @@ namespace TestImpact
         }
         */
 
-        const auto payloadGenerator = [](const JobDataMap& jobDataMap)
+        const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
         {
             PayloadMap<Job> enumerations;
             for (const auto& [jobId, jobData] : jobDataMap)

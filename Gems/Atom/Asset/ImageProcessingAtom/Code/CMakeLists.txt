@@ -48,7 +48,7 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/imageprocessingatom_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
-        ${platform_tools_files}
+         ${platform_tools_files}
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -66,7 +66,6 @@ ly_add_target(
             3rdParty::PVRTexTool
             3rdParty::squish-ccr
             3rdParty::tiff
-            3rdParty::ISPCTexComp
             3rdParty::ilmbase
             Legacy::CryCommon
             AZ::AzFramework

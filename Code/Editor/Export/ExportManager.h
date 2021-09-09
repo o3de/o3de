@@ -36,7 +36,7 @@ namespace Export
     public:
         CMesh();
 
-        virtual int GetFaceCount() const { return static_cast<int>(m_faces.size()); }
+        virtual int GetFaceCount() const { return m_faces.size(); }
         virtual const Face* GetFaceBuffer() const { return m_faces.size() ? &m_faces[0] : 0; }
 
     private:
@@ -53,22 +53,22 @@ namespace Export
     public:
         CObject(const char* pName);
 
-        int GetVertexCount() const override { return static_cast<int>(m_vertices.size()); }
-        const Vector3D* GetVertexBuffer() const override { return m_vertices.size() ? &m_vertices[0] : nullptr; }
+        virtual int GetVertexCount() const { return m_vertices.size(); }
+        virtual const Vector3D* GetVertexBuffer() const{ return m_vertices.size() ? &m_vertices[0] : 0; }
 
-        int GetNormalCount() const override { return static_cast<int>(m_normals.size()); }
-        const Vector3D* GetNormalBuffer() const override { return m_normals.size() ? &m_normals[0] : nullptr; }
+        virtual int GetNormalCount() const { return m_normals.size(); }
+        virtual const Vector3D* GetNormalBuffer() const { return m_normals.size() ? &m_normals[0] : 0; }
 
-        int GetTexCoordCount() const override { return static_cast<int>(m_texCoords.size()); }
-        const UV* GetTexCoordBuffer() const override { return m_texCoords.size() ? &m_texCoords[0] : nullptr; }
+        virtual int GetTexCoordCount() const { return m_texCoords.size(); }
+        virtual const UV* GetTexCoordBuffer() const { return m_texCoords.size() ? &m_texCoords[0] : 0; }
 
-        int GetMeshCount() const override { return static_cast<int>(m_meshes.size()); }
-        Mesh* GetMesh(int index) const override { return m_meshes[index]; }
+        virtual int GetMeshCount() const { return m_meshes.size(); }
+        virtual Mesh* GetMesh(int index) const { return m_meshes[index]; }
 
-        size_t  MeshHash() const override{return m_MeshHash; }
+        virtual size_t  MeshHash() const{return m_MeshHash; }
 
         void SetMaterialName(const char* pName);
-        virtual int GetEntityAnimationDataCount() const {return static_cast<int>(m_entityAnimData.size()); }
+        virtual int GetEntityAnimationDataCount() const {return m_entityAnimData.size(); }
         virtual const EntityAnimData* GetEntityAnimationData(int index) const {return &m_entityAnimData[index]; }
         virtual void SetEntityAnimationData(EntityAnimData entityData){ m_entityAnimData.push_back(entityData); };
         void SetLastPtr(CBaseObject* pObject){m_pLastObject = pObject; };
@@ -92,7 +92,7 @@ namespace Export
         : public IData
     {
     public:
-        virtual int GetObjectCount() const { return static_cast<int>(m_objects.size()); }
+        virtual int GetObjectCount() const { return m_objects.size(); }
         virtual Object* GetObject(int index) const { return m_objects[index]; }
         virtual Object* AddObject(const char* objectName);
         void Clear();

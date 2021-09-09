@@ -30,7 +30,6 @@ namespace O3DE::ProjectManager
 
         // add a tab widget at the bottom of the stack
         m_tabWidget = new QTabWidget();
-        m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         m_screenStack->addWidget(m_tabWidget);
         connect(m_tabWidget, &QTabWidget::currentChanged, this, &ScreensCtrl::TabChanged);
     }

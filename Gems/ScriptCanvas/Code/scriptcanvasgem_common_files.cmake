@@ -74,7 +74,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.cpp
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.h
     Include/ScriptCanvas/Core/NodeFunctionGeneric.h
-    Include/ScriptCanvas/Core/SerializationListener.h
     Include/ScriptCanvas/Core/Slot.cpp
     Include/ScriptCanvas/Core/Slot.h
     Include/ScriptCanvas/Core/SlotConfigurationDefaults.h
@@ -540,8 +539,6 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
-    Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
-    Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h

@@ -360,16 +360,16 @@ TEST_F(ScriptCanvasTestFixture, ValueTypes)
     double numberDoubleValue = *numberDouble.GetAs<double>();
 
     Datum numberHex(Datum(0xff));
-    [[maybe_unused]] int numberHexValue = *numberHex.GetAs<int>();
+    /*int numberHexValue =*/ *numberHex.GetAs<int>();
 
     Datum numberPi(Datum(3.14f));
     float numberPiValue = *numberPi.GetAs<float>();
 
     Datum numberSigned(Datum(-100));
-    [[maybe_unused]] int numberSignedValue = *numberSigned.GetAs<int>();
+    /*int numberSignedValue =*/ *numberSigned.GetAs<int>();
 
     Datum numberUnsigned(Datum(100u));
-    [[maybe_unused]] unsigned int numberUnsignedValue = *numberUnsigned.GetAs<unsigned int>();
+    /*unsigned int numberUnsignedValue =*/ *numberUnsigned.GetAs<unsigned int>();
 
     Datum numberDoublePi(Datum(6.28));
     double numberDoublePiValue = *numberDoublePi.GetAs<double>();
@@ -471,6 +471,8 @@ TEST_F(ScriptCanvasTestFixture, Contracts)
     graph->GetEntity()->Deactivate();
     delete graph->GetEntity();
 }
+
+const int k_executionCount = 998;
 
 TEST_F(ScriptCanvasTestFixture, While)
 {

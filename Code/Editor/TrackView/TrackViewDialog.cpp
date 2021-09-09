@@ -34,7 +34,6 @@
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
@@ -77,6 +76,9 @@ inline namespace TrackViewInternal
 
     const int s_kMinimumFrameSnappingFPS = 1;
     const int s_kMaximumFrameSnappingFPS = 120;
+
+    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
+    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
 
     CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
@@ -780,7 +782,7 @@ void CTrackViewDialog::UpdateActions()
         }
 
         bool allSelectedTracksUseMute = true;
-        for (unsigned int i = 0; i < selectedTrackCount; i++)
+        for (int i = 0; i < selectedTrackCount; i++)
         {
             CTrackViewTrack* pTrack = selectedTracks.GetTrack(i);
             if (pTrack && !pTrack->UsesMute())
@@ -1119,11 +1121,11 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (unsigned int k = 0; k < numSequences; ++k)
+        for (int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
-            m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
+            m_sequencesComboBox->addItem(sequence->GetName(), entityIdString);
         }
     }
 
@@ -1557,7 +1559,7 @@ void CTrackViewDialog::OnAddSelectedNode()
             selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
         // check to make sure all nodes were added and notify user if they weren't
-        if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
+        if (addedNodes.GetCount() != selectedEntitiesCount)
         {
             IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 
@@ -1763,7 +1765,7 @@ void CTrackViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
+        m_wndCurveEditor->SetFPS(fps);
 
         SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
     }
@@ -1797,7 +1799,7 @@ void CTrackViewDialog::SaveMiscSettings() const
     settings.setValue(s_kFrameSnappingFPSEntry, fps);
     settings.setValue(s_kTickDisplayModeEntry, static_cast<int>(m_wndDopeSheet->GetTickDisplayMode()));
     settings.setValue(s_kDefaultTracksEntry, QByteArray(reinterpret_cast<const char*>(m_defaultTracksForEntityNode.data()),
-        static_cast<int>(m_defaultTracksForEntityNode.size() * sizeof(AnimParamType))));
+        m_defaultTracksForEntityNode.size() * sizeof(AnimParamType)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1826,7 +1828,7 @@ void CTrackViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
         if (fps >= s_kMinimumFrameSnappingFPS && fps <= s_kMaximumFrameSnappingFPS)
         {
             m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
@@ -1989,7 +1991,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                         &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                         animatableProperties, azEntityId, pAnimNode->GetComponentId());
 
-                    paramCount = static_cast<int>(animatableProperties.size());
+                    paramCount = animatableProperties.size();
                 }
             }
             else
@@ -2031,7 +2033,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                     continue;
                 }
 
-                name = QString::fromUtf8(pAnimNode->GetParamName(paramType).c_str());
+                name = pAnimNode->GetParamName(paramType);
 
                 QString sToolTipText("Add " + name + " Track");
                 QIcon hIcon = m_wndNodesCtrl->GetIconForTrack(pTrack);
@@ -2307,7 +2309,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         return;
     }
 
-    QString selectedSequenceFBXStr = QString::fromUtf8(sequence->GetName().c_str()) + ".fbx";
+    QString selectedSequenceFBXStr = QString(sequence->GetName()) + ".fbx";
     CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
     const char szFilters[] = "FBX Files (*.fbx)";
 
@@ -2315,7 +2317,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
 
     CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
 
-    for (unsigned int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
+    for (int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
     {
         CTrackViewTrack* pCurrentTrack = allTracks.GetTrack(trackID);
 
@@ -2325,7 +2327,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         }
     }
 
-    QString filename = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
+    QString filename = QFileDialog::getSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
     if (!filename.isEmpty())
     {
         pExportManager->SetBakedKeysSequenceExport(true);

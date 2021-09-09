@@ -156,7 +156,7 @@ namespace O3DE::ProjectManager
             if (!result.IsSuccess())
             {
                 QMessageBox::critical(nullptr, "Operation failed",
-                    QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
+                    QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
 
                 return false;
             }
@@ -169,7 +169,7 @@ namespace O3DE::ProjectManager
             if (!result.IsSuccess())
             {
                 QMessageBox::critical(nullptr, "Operation failed",
-                    QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
+                    QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
 
                 return false;
             }

@@ -202,7 +202,6 @@ namespace AZ
             {
                 uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
-                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });                
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
@@ -226,7 +225,7 @@ namespace AZ
                 }
                 if (segmentsNeedUpdate)
                 {
-                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, static_cast<uint16_t>(cascadeCount));
+                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, cascadeCount);
                     SetShadowmapImageSizeArraySize(m_shadowingLightHandle);
                 }
 
@@ -326,11 +325,11 @@ namespace AZ
         DirectionalLightFeatureProcessorInterface::LightHandle DirectionalLightFeatureProcessor::AcquireLight()
         {
             const uint16_t index = m_lightData.GetFreeSlotIndex();
-            [[maybe_unused]] const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
+            const uint16_t shadowPropIndex = m_shadowProperties.GetFreeSlotIndex();
             AZ_Assert(index == shadowPropIndex, "light index is illegal.");
             for (const auto& viewIt : m_cameraViewNames)
             {
-                [[maybe_unused]] const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
+                const uint16_t shadowIndex = m_shadowData.at(viewIt.first).GetFreeSlotIndex();
                 AZ_Assert(index == shadowIndex, "light index is illegal.");
             }
 
@@ -472,7 +471,7 @@ namespace AZ
             const RPI::RenderPipelineId& renderPipelineId)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-            auto update = [&property, &baseCameraConfiguration](const RPI::View* view)
+            auto update = [this, handle, &property, &baseCameraConfiguration](const RPI::View* view)
             {
                 CascadeShadowCameraConfiguration& cameraConfig = property.m_cameraConfigurations[view];
                 if (!cameraConfig.HasSameConfiguration(baseCameraConfiguration))
@@ -617,10 +616,6 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable)
-        {
-            m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
-        }
 
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
@@ -938,10 +933,9 @@ namespace AZ
 
         uint16_t DirectionalLightFeatureProcessor::GetCascadeCount(LightHandle handle) const
         {
-            const auto& segments = m_shadowProperties.GetData(handle.GetIndex()).m_segments;
-            if (!segments.empty())
+            for (const auto& segmentIt : m_shadowProperties.GetData(handle.GetIndex()).m_segments)
             {
-                return aznumeric_cast<uint16_t>(segments.begin()->second.size());
+                return aznumeric_cast<uint16_t>(segmentIt.second.size());
             }
             return 0;
         }
@@ -1222,7 +1216,7 @@ namespace AZ
             else
             {
                 // If ESM is not used, set filter offsets and filter counts zero in ESM data.
-                for (uint16_t index = 0; index < GetCascadeCount(handle); ++index)
+                for (uint32_t index = 0; index < GetCascadeCount(handle); ++index)
                 {
                     EsmShadowmapsPass::FilterParameter& filterParameter = m_esmParameterData.at(cameraView).GetData(index);
                     filterParameter.m_isEnabled = false;

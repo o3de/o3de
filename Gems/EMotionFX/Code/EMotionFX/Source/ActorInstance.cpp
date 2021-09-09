@@ -1115,7 +1115,7 @@ namespace EMotionFX
     void ActorInstance::EnableAllNodes()
     {
         m_enabledNodes.resize(m_actor->GetNumNodes());
-        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), uint16(0));
+        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), 0);
     }
 
     // disable all nodes

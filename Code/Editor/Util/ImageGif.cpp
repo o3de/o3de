@@ -76,6 +76,8 @@ static int  numused;
 const char* id87 = "GIF87a";
 const char* id89 = "GIF89a";
 
+static int   log2 (int);
+
 /* Fetch the next code from the raster data stream.  The codes can be
  * any length from 3 to 12 bits, packed into 8-bit bytes, so we have to
  * maintain our location in the Raster array as a BIT Offset.  We compute
@@ -183,7 +185,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
         CLogFile::FormatLine("File not found %s", fileName.toUtf8().data());
         return false;
     }
-    long filesize = static_cast<long>(file.GetLength());
+    long filesize = file.GetLength();
 
     data.resize(filesize);
     uint8* ptr = &data[0];
@@ -409,7 +411,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
             FreeCode = FirstFree;
             CurCode  = OldCode = Code = ReadCode();
             FinChar  = CurCode & BitMask;
-            AddToPixel(static_cast<uint8>(FinChar));
+            AddToPixel (FinChar);
         }
         else
         {
@@ -453,7 +455,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
 
             for (i = OutCount - 1; i >= 0; i--)
             {
-                AddToPixel(static_cast<uint8>(OutCode[i]));
+                AddToPixel (OutCode[i]);
             }
             OutCount = 0;
 

@@ -144,6 +144,11 @@ namespace JsonSerializationTests
             {
                 return false;
             }
+
+            auto compare = [](const int* lhs, const int* rhs) -> bool
+            {
+                return *lhs == *rhs;
+            };
             return AZStd::equal(lhs.begin(), lhs.end(), rhs.begin(), SimplePointerTestDescriptionCompare{});
         }
     };

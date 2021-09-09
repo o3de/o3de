@@ -31,8 +31,10 @@ namespace LUAEditor
     {
     }
 
-    void FoldingWidget::paintEvent([[maybe_unused]] QPaintEvent* paintEvent)
+    void FoldingWidget::paintEvent(QPaintEvent* paintEvent)
     {
+        paintEvent;
+
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
 
         auto cursor = m_textEdit->textCursor();

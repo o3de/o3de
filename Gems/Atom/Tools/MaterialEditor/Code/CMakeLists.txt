@@ -133,9 +133,6 @@ ly_add_target_dependencies(
     DEPENDENCIES_FILES
         tool_dependencies.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-    # The Material Editor needs the LyShine "Tools" gem variant for the custom LyShine pass
-    DEPENDENT_TARGETS
-        Gem::LyShine.Tools
 )
 
 # Inject the project path into the MaterialEditor VS debugger command arguments if the build system being invoked

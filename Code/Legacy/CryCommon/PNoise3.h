@@ -205,7 +205,7 @@ public:
 
         // Initialize the permutation table
         for(i = 0; i < NOISE_TABLE_SIZE; i++)
-            m_p[i] = static_cast<unsigned char>(i);
+            m_p[i] = i;
 
         for(i = 0; i < NOISE_TABLE_SIZE; i++)
         {        
@@ -213,7 +213,7 @@ public:
 
             nSwap = m_p[i];
             m_p[i]  = m_p[j];
-            m_p[j]  = static_cast<unsigned char>(nSwap);
+            m_p[j]  = nSwap;
         }
 
         // Generate the gradient lookup tables

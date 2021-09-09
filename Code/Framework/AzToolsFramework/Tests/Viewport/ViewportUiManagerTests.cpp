@@ -26,7 +26,7 @@ namespace UnitTest
     {
     public:
         ViewportUiManagerTestable() = default;
-        ~ViewportUiManagerTestable() override = default;
+        ~ViewportUiManagerTestable() = default;
 
         const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap()
         {
@@ -84,12 +84,12 @@ namespace UnitTest
 
         ViewportManagerWrapper m_viewportManagerWrapper;
 
-        void SetUp() override
+        void SetUp()
         {
             m_viewportManagerWrapper.Create();
         }
 
-        void TearDown() override
+        void TearDown()
         {
             m_viewportManagerWrapper.Destroy();
         }
@@ -168,7 +168,7 @@ namespace UnitTest
         m_viewportManagerWrapper.GetMockRenderOverlay()->setVisible(true);
 
         auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
         m_viewportManagerWrapper.GetViewportManager()->Update();
 
         m_viewportManagerWrapper.GetViewportManager()->SetClusterVisible(clusterId, false);

@@ -7,5 +7,6 @@
     "summary": "A standard test scene for Global Illumination (forked from crytek sponza scene)",
     "canonical_tags": ["Gem"],
     "user_tags": ["Assets"],
+    "icon_path": "preview.png",
     "requirements": ""
 }
