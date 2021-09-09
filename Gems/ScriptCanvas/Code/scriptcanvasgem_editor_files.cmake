@@ -21,6 +21,8 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
     Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
     Editor/Assets/ScriptCanvasAsset.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h

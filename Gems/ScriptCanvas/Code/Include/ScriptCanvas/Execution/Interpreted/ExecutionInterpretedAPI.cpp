@@ -45,7 +45,7 @@ namespace ExecutionInterpretedAPICpp
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
     };
 
-    constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
+    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)

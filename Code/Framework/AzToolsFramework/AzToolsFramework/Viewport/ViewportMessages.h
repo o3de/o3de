@@ -250,8 +250,6 @@ namespace AzToolsFramework
             virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             //! Return the terrain height given a world position in 2d (xy plane).
             virtual float TerrainHeight(const AZ::Vector2& position) = 0;
-            //! Given the current view frustum (viewport) return all visible entities.
-            virtual void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) = 0;
             //! Is the user holding a modifier key to move the manipulator space from local to world.
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
@@ -269,7 +267,20 @@ namespace AzToolsFramework
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
         using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportEBusTraits>;
 
-        //! Viewport requests for managing the viewport's cursor state.
+        //! Editor entity requests to be made about the viewport.
+        class EditorEntityViewportInteractionRequests
+        {
+        public:
+            //! Given the current view frustum (viewport) return all visible entities.
+            virtual void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) = 0;
+
+        protected:
+            ~EditorEntityViewportInteractionRequests() = default;
+        };
+
+        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
+
+        //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
         public:
@@ -321,23 +332,8 @@ namespace AzToolsFramework
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
-    inline AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
-        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
-    {
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-        {
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
-            {
-                return AzFramework::ClickDetector::ClickEvent::Down;
-            }
-
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-            {
-                return AzFramework::ClickDetector::ClickEvent::Up;
-            }
-        }
-        return AzFramework::ClickDetector::ClickEvent::Nil;
-    }
+    AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+        const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
     //! Wrap EBus call to retrieve manipulator line bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.

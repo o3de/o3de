@@ -38,18 +38,7 @@ namespace Ui
 
 namespace ScriptCanvasEditor
 {
-    //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
-    //! the upgrade tool to work even if the editor is not in the foreground
-    class EditorKeepAlive
-    {
-    public:
-        EditorKeepAlive();
-        ~EditorKeepAlive();
-
-    private:
-        int m_keepEditorActive;
-        ICVar* m_edKeepEditorActive;
-    };
+    class KeepEditorAlive;
 
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
     class UpgradeTool
@@ -140,7 +129,7 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<Ui::UpgradeTool> m_ui;
         AZStd::recursive_mutex m_mutex;
 
-        AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
+        // AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 
         AZStd::vector<AZStd::string> m_logs;
 

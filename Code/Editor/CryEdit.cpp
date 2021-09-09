@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
+#include <QDialogButtonBox>
 
 // Aws Native SDK
 #include <aws/sts/STSClient.h>
@@ -716,8 +717,24 @@ void CCryEditApp::OnFileSave()
     }
 
     const QScopedValueRollback<bool> rollback(m_savingLevel, true);
+    
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
-    GetIEditor()->GetDocument()->DoFileSave();
+    if (!usePrefabSystemForLevels)
+    {
+        GetIEditor()->GetDocument()->DoFileSave();
+    }
+    else
+    {
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
+        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+        prefabIntegrationInterface->ExecuteSavePrefabDialog(rootPrefabTemplateId, true);
+    }
 }
 
 
@@ -3128,29 +3145,69 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
     if (GetIEditor()->GetDocument()->IsDocumentReady() && bIsDocModified)
     {
-        QString str = QObject::tr("Level %1 has been changed. Save Level?").arg(GetIEditor()->GetGameEngine()->GetLevelName());
-        int result = QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Save Level"), str, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        if (QMessageBox::Yes == result)
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        if (!usePrefabSystemForLevels)
         {
-            if (!GetIEditor()->GetDocument()->DoFileSave())
+            QString str = QObject::tr("Level %1 has been changed. Save Level?").arg(GetIEditor()->GetGameEngine()->GetLevelName());
+            int result = QMessageBox::question(
+                AzToolsFramework::GetActiveWindow(), QObject::tr("Save Level"), str,
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (QMessageBox::Yes == result)
             {
-                // if the file save operation failed, assume that the user was informed of why
-                // already and treat it as a cancel
+                if (!GetIEditor()->GetDocument()->DoFileSave())
+                {
+                    // if the file save operation failed, assume that the user was informed of why
+                    // already and treat it as a cancel
+                    wasCreateLevelOperationCancelled = true;
+                    return false;
+                }
+
+                bIsDocModified = false;
+            }
+            else if (QMessageBox::No == result)
+            {
+                // Set Modified flag to false to prevent show Save unchanged dialog again
+                GetIEditor()->GetDocument()->SetModifiedFlag(false);
+            }
+            else if (QMessageBox::Cancel == result)
+            {
                 wasCreateLevelOperationCancelled = true;
                 return false;
             }
+        }
+        else
+        {
+            auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+            AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+            AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
 
-            bIsDocModified = false;
-        }
-        else if (QMessageBox::No == result)
-        {
-            // Set Modified flag to false to prevent show Save unchanged dialog again
-            GetIEditor()->GetDocument()->SetModifiedFlag(false);
-        }
-        else if (QMessageBox::Cancel == result)
-        {
-            wasCreateLevelOperationCancelled = true;
-            return false;
+            if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
+            {
+                return false;
+            }
+
+            AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+            int prefabSaveSelection = prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
+
+            // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
+            // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
+            // QDialogButtonBox::AcceptRole(0).
+            switch (1 - prefabSaveSelection)
+            {
+            case QDialogButtonBox::AcceptRole:
+                bIsDocModified = false;
+                break;
+            case QDialogButtonBox::RejectRole:
+                wasCreateLevelOperationCancelled = true;
+                return false;
+            case QDialogButtonBox::InvalidRole:
+                // Set Modified flag to false to prevent show Save unchanged dialog again
+                GetIEditor()->GetDocument()->SetModifiedFlag(false);
+                break;
+            }
         }
     }
 

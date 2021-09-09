@@ -42,6 +42,10 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("EnableSceneInspector", &GeneralSettings::m_enableSceneInspector)
         ->Field("RestoreViewportCamera", &GeneralSettings::m_restoreViewportCamera);
 
+    serialize.Class<LevelSaveSettings>()
+        ->Version(1)
+        ->Field("SaveAllPrefabsPreference", &LevelSaveSettings::m_saveAllPrefabsPreference);
+
     serialize.Class<Messaging>()
         ->Version(2)
         ->Field("ShowDashboard", &Messaging::m_showDashboard)
@@ -64,6 +68,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
     serialize.Class<CEditorPreferencesPage_General>()
         ->Version(1)
         ->Field("General Settings", &CEditorPreferencesPage_General::m_generalSettings)
+        ->Field("Level Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
         ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
         ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection)
@@ -92,6 +97,14 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_restoreViewportCamera, EditorPreferencesGeneralRestoreViewportCameraSettingName, "Keep the original editor viewport transform when exiting game mode.")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSceneInspector, "Enable Scene Inspector (EXPERIMENTAL)", "Enable the option to inspect the internal data loaded from scene files like .fbx. This is an experimental feature. Restart the Scene Settings if the option is not visible under the Help menu.");
 
+        editContext->Class<LevelSaveSettings>("Level Save Settings", "")
+            ->DataElement(
+                AZ::Edit::UIHandlers::ComboBox, &LevelSaveSettings::m_saveAllPrefabsPreference, "Save All Prefabs Preference",
+                    "This option controls whether prefabs should be saved along with the level")
+                ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime, "Ask every time")
+                ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveAll, "Save all")
+                ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveNone, "Save none");
+
         editContext->Class<Messaging>("Messaging", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showCircularDependencyError, "Show Error: Circular dependency", "Show an error message when adding a slice instance to the target slice would create a cyclic asset dependency. All other valid overrides will be saved even if this is turned off.");
@@ -115,6 +128,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Level Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection")
@@ -161,6 +175,9 @@ void CEditorPreferencesPage_General::OnApply()
         MainWindow::instance()->AdjustToolBarIconSize(m_generalSettings.m_toolbarIconSize);
     }
 
+    //prefabs
+    gSettings.levelSaveSettings.saveAllPrefabsPreference = m_levelSaveSettings.m_saveAllPrefabsPreference;
+
     //undo
     gSettings.undoLevels = m_undo.m_undoLevels;
 
@@ -189,6 +206,9 @@ void CEditorPreferencesPage_General::InitializeSettings()
     m_generalSettings.m_enableSceneInspector = gSettings.enableSceneInspector;
 
     m_generalSettings.m_toolbarIconSize = static_cast<AzQtComponents::ToolBar::ToolBarIconSize>(gSettings.gui.nToolbarIconSize);
+
+    //prefabs
+    m_levelSaveSettings.m_saveAllPrefabsPreference = gSettings.levelSaveSettings.saveAllPrefabsPreference;
 
     //Messaging
     m_messaging.m_showDashboard = gSettings.bShowDashboardAtStartup;

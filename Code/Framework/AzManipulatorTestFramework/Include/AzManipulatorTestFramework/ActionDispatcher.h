@@ -92,8 +92,7 @@ namespace AzManipulatorTestFramework
     {
         if (m_logging)
         {
-            AZStd::string message = AZStd::string::format(format, args...);
-            AZ_Printf("[ActionDispatcher] %s", message.c_str());
+            AZ_Printf("ActionDispatcher", format, args...);
         }
     }
 
@@ -150,7 +149,7 @@ namespace AzManipulatorTestFramework
     template <typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDown()
     {
-        Log("Mouse left button down");
+        Log("%s", "Mouse left button down");
         MouseLButtonDownImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -158,7 +157,7 @@ namespace AzManipulatorTestFramework
     template <typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonUp()
     {
-        Log("Mouse left button up");
+        Log("%s", "Mouse left button up");
         MouseLButtonUpImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }

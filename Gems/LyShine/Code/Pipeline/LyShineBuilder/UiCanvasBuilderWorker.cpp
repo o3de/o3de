@@ -31,7 +31,7 @@
 
 namespace LyShine
 {
-    static const char* const s_uiSliceBuilder = "UiSliceBuilder";
+    [[maybe_unused]] static const char* const s_uiSliceBuilder = "UiSliceBuilder";
 
     void UiCanvasBuilderWorker::ShutDown()
     {
