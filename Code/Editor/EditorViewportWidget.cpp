@@ -708,8 +708,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    PreWidgetRendering();
-
     RenderAll();
 
     // Draw 2D helpers.
@@ -735,8 +733,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     m_debugDisplay->SetState(prevState);
     m_debugDisplay->DepthTestOn();
-
-    PostWidgetRendering();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -937,8 +933,6 @@ AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& po
 
 AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
 {
-    PreWidgetRendering();
-
     AZ::EntityId entityId;
     HitContext hitInfo;
     hitInfo.view = this;
@@ -950,8 +944,6 @@ AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& po
             entityId = entityObject->GetAssociatedEntityId();
         }
     }
-
-    PostWidgetRendering();
 
     return entityId;
 }
