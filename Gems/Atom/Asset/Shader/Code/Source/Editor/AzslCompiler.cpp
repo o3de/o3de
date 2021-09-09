@@ -17,6 +17,7 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
 
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
