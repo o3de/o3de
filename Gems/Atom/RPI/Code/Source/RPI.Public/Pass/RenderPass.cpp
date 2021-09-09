@@ -201,6 +201,8 @@ namespace AZ
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
             CollectSrgs();
+
+            PassSystemInterface::Get()->IncrementFrameRenderPassCount();
         }
 
 
@@ -492,6 +494,7 @@ namespace AZ
             {
                 if (query->BeginQuery(context) == QueryResultCode::Fail)
                 {
+                    AZ_UNUSED(this); // Prevent unused warning in release builds
                     AZ_WarningOnce("RenderPass", false, "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
                         " for this pass: %s", this->RTTI_GetTypeName());
                 }

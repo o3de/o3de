@@ -53,8 +53,8 @@ class QRubberBand;
 class ISplineSet
 {
 public:
-    virtual ISplineInterpolator* GetSplineFromID(const string& id) = 0;
-    virtual string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
+    virtual ISplineInterpolator* GetSplineFromID(const AZStd::string& id) = 0;
+    virtual AZStd::string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
     virtual int GetSplineCount() const = 0;
     virtual int GetKeyCountAtTime(float time, float threshold) const = 0;
 };
@@ -98,7 +98,7 @@ public:
     void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, QColor anColorArray[4]);
     void RemoveSpline(ISplineInterpolator* pSpline);
     void RemoveAllSplines();
-    int  GetSplineCount() const { return m_splines.size(); }
+    int  GetSplineCount() const { return static_cast<int>(m_splines.size()); }
     ISplineInterpolator* GetSpline(int nIndex) const { return m_splines[nIndex].pSpline; }
 
     void SetTimeMarker(float fTime);

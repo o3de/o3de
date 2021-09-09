@@ -62,7 +62,7 @@ namespace GridMate
             /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
             virtual void OnSessionDelete(GridSession* session);
             /// Called when a session error occurs.
-            virtual void OnSessionError(GridSession* session, const string& errorMsg);
+            virtual void OnSessionError(GridSession* session, const AZStd::string& errorMsg);
             /// Called when the actual game(match) starts
             virtual void OnSessionStart(GridSession* session);
             /// Called when the actual game(match) ends

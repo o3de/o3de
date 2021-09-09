@@ -14,8 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 
-#include <IAudioSystem.h>
-
 #include <functional>
 #include <QSharedPointer>
 #include <QWidgetAction>
@@ -177,12 +175,6 @@ protected:
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
-
-    Audio::SAudioRequest m_oMuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
-    Audio::SAudioRequest m_oUnmuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
-
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

@@ -35,12 +35,14 @@ namespace AzToolsFramework
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
+            m_prefabPublicRequestHandler.Connect();
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
+            m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
@@ -54,6 +56,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabConversionPipeline::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
+            PrefabPublicRequestHandler::Reflect(context);
 
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)
@@ -62,7 +65,6 @@ namespace AzToolsFramework
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
-
             if (jsonRegistration)
             {
                 jsonRegistration->Serializer<JsonInstanceSerializer>()->HandlesType<Instance>();
@@ -460,7 +462,7 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != 0;
+                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
                 AZ_Assert(result,
                     "Prefab - PrefabSystemComponent::RemoveTemplate - "
                     "Failed to remove Template with Id '%llu' on file path '%s' "
@@ -524,12 +526,10 @@ namespace AzToolsFramework
 
             Template& targetTemplate = targetTemplateReference->get();
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
-#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -768,10 +768,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
-#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
 
@@ -783,8 +781,7 @@ namespace AzToolsFramework
             AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
             PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
             AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
-            AZ_Assert(
-                sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
+            AZ_Assert(sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
                 "The name of the source template in the nested instance DOM does not match the name of the source template already loaded");
 
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::PatchesName);

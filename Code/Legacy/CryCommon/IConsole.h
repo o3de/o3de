@@ -6,20 +6,17 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ICONSOLE_H
-#define CRYINCLUDE_CRYCOMMON_ICONSOLE_H
 #pragma once
 
 #include <CryCommon/platform.h>
-
-struct SFunctor;
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/function/function_template.h>
+#include <AzCore/std/string/string_view.h>
 
 struct ConsoleBind;
 
 struct ICVar;
 class ITexture;
-class ICrySizer;
 struct ISystem;
 
 #define     CVAR_INT              1
@@ -119,10 +116,6 @@ struct IConsoleVarSink
     // </interfuscator:shuffle>
 };
 
-#if defined(GetCommandLine)
-#undef GetCommandLine
-#endif
-
 // Interface to the arguments of the console command.
 struct IConsoleCmdArgs
 {
@@ -197,15 +190,6 @@ struct IConsole
     // Return:
     //   pointer to the interface ICVar
     virtual ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
-    // Create a new console variable that store the value in a int64
-    // Arguments:
-    //   sName - console variable name
-    //   iValue - default value
-    //   nFlags - user defined flag, this parameter is used by other subsystems and doesn't affect the console variable (basically of user data)
-    //   help - help text that is shown when you use <sName> ? in the console
-    // Return:
-    //   pointer to the interface ICVar
-    virtual ICVar* RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
     // Create a new console variable that store the value in a float
     // Arguments:
     //   sName - console variable name
@@ -247,14 +231,6 @@ struct IConsole
     // Return:
     //   pointer to the interface ICVar
     virtual ICVar* Register(const char* name, const char** src, const char* defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) = 0;
-
-    // Registers an existing console variable
-    // Should only be used with static duration objects, object is never freed
-    // Arguments:
-    //   pVar - the existing console variable
-    // Return:
-    //   pointer to the interface ICVar (that was passed in)
-    virtual ICVar* Register(ICVar* pVar) = 0;
 
     // ! Remove a variable from the console
     // @param sVarName console variable name
@@ -426,7 +402,7 @@ struct IConsole
     //   szPrefix - 0 or prefix e.g. "sys_spec_"
     // Return
     //   used size
-    virtual size_t GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix = 0) = 0;
+    virtual size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0) = 0;
     virtual const char* AutoComplete(const char* substr) = 0;
     virtual const char* AutoCompletePrev(const char* substr) = 0;
     virtual const char* ProcessCompletion(const char* szInputBuffer) = 0;
@@ -435,9 +411,6 @@ struct IConsole
     //
     virtual void ResetAutoCompletion() = 0;
     //////////////////////////////////////////////////////////////////////////
-
-    // Calculation of the memory used by the whole console system
-    virtual void GetMemoryUsage (ICrySizer* pSizer) const = 0;
 
     // Function related to progress bar
     virtual void ResetProgressBar(int nProgressRange) = 0;
@@ -453,24 +426,6 @@ struct IConsole
     // @param Callback callback-interface which needs to be called for each element
     virtual void DumpKeyBinds(IKeyBindDumpSink* pCallback) = 0;
     virtual const char* FindKeyBind(const char* sCmd) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hashing of cvars (for anti-cheat). Separates setting of range, calculation,
-    // and retrieval of result so calculation can be done at a known safe point
-    // (e.g end of frame) when we know cvars won't be modified or in temporary state
-
-    // Get Number of cvars that can be hashed
-    virtual int GetNumCheatVars() = 0;
-    // Set the range of cvars
-    virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar) = 0;
-    // Calculate the hash from current cvars
-    virtual void CalcCheatVarHash() = 0;
-    // Since hash is calculated async, check if it's completed
-    virtual bool IsHashCalculated() = 0;
-    // Get the hash calculated
-    virtual uint64 GetCheatVarHash() = 0;
-    virtual void PrintCheatVars(bool bUseLastHashRange) = 0;
-    virtual char* GetCheatVarAt(uint32 nOffset) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Console variable sink.
@@ -642,28 +597,11 @@ struct ICVar
     // Adds a new on change functor to the list.
     // It will add from index 1 on (0 is reserved).
     // Returns an ID to use when getting or removing the functor
-    virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Returns the number of registered on change functos.
-    virtual uint64 GetNumberOfOnChangeFunctors() const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Returns the functors with the specified id.
-    virtual const SFunctor& GetOnChangeFunctor(uint64 nFunctorId) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Removes an on change functor
-    // returns true if removal was successful.
-    virtual bool RemoveOnChangeFunctor(uint64 nFunctorId) = 0;
+    virtual uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.
     virtual ConsoleVarFunc GetOnChangeCallback() const = 0;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // only useful for CVarGroups, other types return GetIVal()
@@ -685,5 +623,3 @@ struct ICVar
     // Set the data probe string value of the variable
     virtual void SetDataProbeString(const char* pDataProbeString) = 0;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_ICONSOLE_H

@@ -18,9 +18,7 @@
 #include <IXml.h>
 #include "Util/FileUtil.h"
 #include <Cry_Color.h>
-
-//! Typedef for quaternion.
-//typedef CryQuat Quat;
+#include <CryCommon/ISystem.h>
 
 #include <QColor>
 #include <QDataStream>

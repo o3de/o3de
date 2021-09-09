@@ -481,6 +481,7 @@ set(FILES
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
     Viewport/ViewportMessages.h
+    Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
     ViewportUi/Button.h
@@ -657,6 +658,9 @@ set(FILES
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
     Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicRequestBus.h
+    Prefab/PrefabPublicRequestHandler.h
+    Prefab/PrefabPublicRequestHandler.cpp
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp

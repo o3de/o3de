@@ -129,8 +129,6 @@ public: // Create from serialization only
     void RegisterListener(IDocListener* listener);
     void UnregisterListener(IDocListener* listener);
 
-    void GetMemoryUsage(ICrySizer* pSizer) const;
-
     static bool IsBackupOrTempLevelSubdirectory(const QString& folderName);
 protected:
 
@@ -180,7 +178,7 @@ protected:
     void OnStartLevelResourceList();
     static void OnValidateSurfaceTypesChanged(ICVar*);
 
-    QString GetCryIndexPath(const LPCTSTR levelFilePath) const;
+    QString GetCryIndexPath(const char* levelFilePath) const;
 
     //////////////////////////////////////////////////////////////////////////
     // SliceEditorEntityOwnershipServiceNotificationBus::Handler

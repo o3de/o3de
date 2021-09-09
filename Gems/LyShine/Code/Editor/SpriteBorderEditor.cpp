@@ -227,7 +227,6 @@ void SpriteBorderEditor::DisplaySelectedCell(AZ::u32 cellIndex)
     // Determine how much we need to scale the view to fit the cell 
     // contents to the displayed properties image.
     const AZ::Vector2 cellSize = m_sprite->GetCellSize(cellIndex);
-    const AZ::Vector2 cellScale = AZ::Vector2(m_unscaledSpriteSheet.size().width() / cellSize.GetX(), m_unscaledSpriteSheet.size().height() / cellSize.GetY());
 
     // Scale-to-fit, while preserving aspect ratio.
     QRect croppedRect = m_unscaledSpriteSheet.rect();
@@ -310,7 +309,7 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
             int newNumCols = numColsLineEdit->text().toInt(&colConversionSuccess);
 
             const bool positiveInputs = newNumRows > 0 && newNumCols > 0;
-            const bool valueChanged = m_numRows != newNumRows || m_numCols != newNumCols;
+            const bool valueChanged = m_numRows != static_cast<uint>(newNumRows) || m_numCols != static_cast<uint>(newNumCols);
 
             // This number of cells is just nearly unusable in the sprite editor UI. Supporting
             // more would likely require reworking of UX/UI and even implementation.
@@ -921,7 +920,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
                 // The texture is guaranteed to exist so use that to get the full path.
                 QString fullTexturePath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
                 const char* const spriteExtension = "sprite";
-                string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
+                AZStd::string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
 
                 FileHelpers::SourceControlAddOrEdit(fullSpritePath.c_str(), QApplication::activeWindow());
 

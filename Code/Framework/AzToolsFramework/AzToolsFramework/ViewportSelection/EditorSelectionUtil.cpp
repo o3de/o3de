@@ -19,7 +19,7 @@
 namespace AzToolsFramework
 {
     // default ray length for picking in the viewport
-    static const float s_pickRayLength = 1000.0f;
+    static const float EditorPickRayLength = 1000.0f;
 
     AZ::Vector3 CalculateCenterOffset(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {
@@ -50,7 +50,7 @@ namespace AzToolsFramework
 
     AzFramework::ScreenPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         auto screenPosition = AzFramework::ScreenPoint(0, 0);
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
@@ -60,16 +60,27 @@ namespace AzToolsFramework
         return screenPosition;
     }
 
+    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance)
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        const AZ::Vector3 rayScaledDir = direction * EditorPickRayLength;
+
+        float t, end;
+        AZ::Vector3 startNormal;
+        if (AZ::Intersect::IntersectRayAABB(origin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0)
+        {
+            distance = t * EditorPickRayLength;
+            return true;
+        }
+
+        return false;
+    }
+
     bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-
-        const AZ::Vector3 rayScaledDir = mouseInteraction.m_mousePick.m_rayDirection * s_pickRayLength;
-
-        AZ::Vector3 startNormal;
-        float t, end;
-        return AZ::Intersect::IntersectRayAABB(
-                   mouseInteraction.m_mousePick.m_rayOrigin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0;
+        float unused;
+        return AabbIntersectRay(mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, aabb, unused);
     }
 
     bool PickEntity(
@@ -78,7 +89,7 @@ namespace AzToolsFramework
         float& closestDistance,
         const int viewportId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool entityPicked = false;
         EditorComponentSelectionRequestsBus::EnumerateHandlersId(
@@ -117,8 +128,7 @@ namespace AzToolsFramework
     {
         float scaling = 1.0f;
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            scaling, viewportId,
-            &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
+            scaling, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
 
         return scaling;
     }

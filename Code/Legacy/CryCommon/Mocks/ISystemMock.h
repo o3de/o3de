@@ -60,8 +60,6 @@ public:
         IViewSystem * ());
     MOCK_METHOD0(GetILevelSystem,
         ILevelSystem * ());
-    MOCK_METHOD0(GetINameTable,
-        INameTable * ());
     MOCK_METHOD0(GetICmdLine,
         ICmdLine * ());
     MOCK_METHOD0(GetILog,
@@ -118,7 +116,7 @@ public:
         const SFileVersion&());
 
     MOCK_METHOD1(AddCVarGroupDirectory,
-        void(const string&));
+        void(const AZStd::string&));
     MOCK_METHOD0(SaveConfiguration,
         void());
     MOCK_METHOD3(LoadConfiguration,

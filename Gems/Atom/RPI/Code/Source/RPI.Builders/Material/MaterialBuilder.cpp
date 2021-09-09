@@ -13,7 +13,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
@@ -36,7 +36,7 @@ namespace AZ
     {
         namespace
         {
-            static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
+            [[maybe_unused]] static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
         }
 
         const char* MaterialBuilder::JobKey = "Atom Material Builder";

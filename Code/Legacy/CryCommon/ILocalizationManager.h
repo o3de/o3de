@@ -34,19 +34,15 @@ struct SLocalizedInfoGame
     }
 
     const char* szCharacterName;
-    string sUtf8TranslatedText;
+    AZStd::string sUtf8TranslatedText;
 
     bool bUseSubtitle;
 };
 
 struct SLocalizedAdvancesSoundEntry
 {
-    string  sName;
+    AZStd::string sName;
     float       fValue;
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(sName);
-    }
 };
 
 // Localization Sound Info structure, containing sound related parameters.
@@ -73,11 +69,11 @@ struct SLocalizedSoundInfoGame
     bool    bIsIntercepted;
 
     // SoundMoods.
-    int         nNumSoundMoods;
+    size_t         nNumSoundMoods;
     SLocalizedAdvancesSoundEntry* pSoundMoods;
 
     // EventParameters.
-    int         nNumEventParameters;
+    size_t         nNumEventParameters;
     SLocalizedAdvancesSoundEntry* pEventParameters;
 };
 
@@ -178,12 +174,12 @@ struct ILocalizationManager
     //   bEnglish            - if true, translates the string into the always present English language.
     // Returns:
     //   true if localization was successful, false otherwise
-    virtual bool LocalizeString_ch([[maybe_unused]] const char* sString, [[maybe_unused]] string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    virtual bool LocalizeString_ch([[maybe_unused]] const char* sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
 
     // Summary:
-    //   Same as LocalizeString( const char* sString, string& outLocalizedString, bool bEnglish=false )
+    //   Same as LocalizeString( const char* sString, AZStd::string& outLocalizedString, bool bEnglish=false )
     //   but at the moment this is faster.
-    virtual bool LocalizeString_s([[maybe_unused]] const string& sString, [[maybe_unused]] string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    virtual bool LocalizeString_s([[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
 
     // Summary:
     virtual void LocalizeAndSubstituteInternal([[maybe_unused]] AZStd::string& locString, [[maybe_unused]] const AZStd::vector<AZStd::string>& keys, [[maybe_unused]] const AZStd::vector<AZStd::string>& values) override {}
@@ -196,7 +192,7 @@ struct ILocalizationManager
     //   bEnglish            - if true, returns the always present English version of the label.
     // Returns:
     //   True if localization was successful, false otherwise.
-    virtual bool LocalizeLabel([[maybe_unused]] const char* sLabel, [[maybe_unused]] string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    virtual bool LocalizeLabel([[maybe_unused]] const char* sLabel, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
     virtual bool IsLocalizedInfoFound([[maybe_unused]] const char* sKey) { return false; }
 
     // Summary:
@@ -251,7 +247,7 @@ struct ILocalizationManager
     //   sLocalizedString - Corresponding english language string.
     // Returns:
     //   True if successful, false otherwise (key not found).
-    virtual bool GetEnglishString([[maybe_unused]] const char* sKey, [[maybe_unused]] string& sLocalizedString) override { return false; }
+    virtual bool GetEnglishString([[maybe_unused]] const char* sKey, [[maybe_unused]] AZStd::string& sLocalizedString) override { return false; }
 
     // Summary:
     //   Get Subtitle for Key or Label .
@@ -261,21 +257,21 @@ struct ILocalizationManager
     //   bForceSubtitle - If true, get subtitle (sLocalized or sEnglish) even if not specified in Data file.
     // Returns:
     //   True if subtitle found (and outSubtitle filled in), false otherwise.
-    virtual bool GetSubtitle([[maybe_unused]] const char* sKeyOrLabel, [[maybe_unused]] string& outSubtitle, [[maybe_unused]] bool bForceSubtitle = false) override { return false; }
+    virtual bool GetSubtitle([[maybe_unused]] const char* sKeyOrLabel, [[maybe_unused]] AZStd::string& outSubtitle, [[maybe_unused]] bool bForceSubtitle = false) override { return false; }
 
     // Description:
     //      These methods format outString depending on sString with ordered arguments
     //      FormatStringMessage(outString, "This is %2 and this is %1", "second", "first");
     // Arguments:
     //      outString - This is first and this is second.
-    virtual void FormatStringMessage_List([[maybe_unused]] string& outString, [[maybe_unused]] const string& sString, [[maybe_unused]] const char** sParams, [[maybe_unused]] int nParams) override {}
-    virtual void FormatStringMessage([[maybe_unused]] string& outString, [[maybe_unused]] const string& sString, [[maybe_unused]] const char* param1, [[maybe_unused]] const char* param2 = 0, [[maybe_unused]] const char* param3 = 0, [[maybe_unused]] const char* param4 = 0) override {}
+    virtual void FormatStringMessage_List([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char** sParams, [[maybe_unused]] int nParams) override {}
+    virtual void FormatStringMessage([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char* param1, [[maybe_unused]] const char* param2 = 0, [[maybe_unused]] const char* param3 = 0, [[maybe_unused]] const char* param4 = 0) override {}
 
-    virtual void LocalizeTime([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShowSeconds, [[maybe_unused]] string& outTimeString) override {}
-    virtual void LocalizeDate([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShort, [[maybe_unused]] bool bIncludeWeekday, [[maybe_unused]] string& outDateString) override {}
-    virtual void LocalizeDuration([[maybe_unused]] int seconds, [[maybe_unused]] string& outDurationString) override {}
-    virtual void LocalizeNumber([[maybe_unused]] int number, [[maybe_unused]] string& outNumberString) override {}
-    virtual void LocalizeNumber_Decimal([[maybe_unused]] float number, [[maybe_unused]] int decimals, [[maybe_unused]] string& outNumberString) override {}
+    virtual void LocalizeTime([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShowSeconds, [[maybe_unused]] AZStd::string& outTimeString) override {}
+    virtual void LocalizeDate([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShort, [[maybe_unused]] bool bIncludeWeekday, [[maybe_unused]] AZStd::string& outDateString) override {}
+    virtual void LocalizeDuration([[maybe_unused]] int seconds, [[maybe_unused]] AZStd::string& outDurationString) override {}
+    virtual void LocalizeNumber([[maybe_unused]] int number, [[maybe_unused]] AZStd::string& outNumberString) override {}
+    virtual void LocalizeNumber_Decimal([[maybe_unused]] float number, [[maybe_unused]] int decimals, [[maybe_unused]] AZStd::string& outNumberString) override {}
 
     // Summary:
     //   Returns true if the project has localization configured for use, false otherwise.

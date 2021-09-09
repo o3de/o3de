@@ -6,93 +6,18 @@
  *
  */
 
-
 // Description : File wrapper.
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYFILE_H
-#define CRYINCLUDE_CRYCOMMON_CRYFILE_H
 #pragma once
 
 #include <CryPath.h>
 #include <ISystem.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <IConsole.h>
-#include "StringUtils.h"
 #include <AzCore/IO/FileIO.h>
 
 //////////////////////////////////////////////////////////////////////////
-// Defines for CryEngine filetypes extensions.
-//////////////////////////////////////////////////////////////////////////
-#define CRY_GEOMETRY_FILE_EXT                    "cgf"
-#define CRY_SKEL_FILE_EXT                        "chr" //will be a SKEL soon
-#define CRY_SKIN_FILE_EXT                        "skin"
-#define CRY_CHARACTER_ANIMATION_FILE_EXT         "caf"
-#define CRY_CHARACTER_DEFINITION_FILE_EXT        "cdf"
-#define CRY_CHARACTER_LIST_FILE_EXT              "cid"
-#define CRY_ANIM_GEOMETRY_FILE_EXT               "cga"
-#define CRY_ANIM_GEOMETRY_ANIMATION_FILE_EXT     "anm"
-#define CRY_COMPILED_FILE_EXT                    "(c)"
-#define CRY_BINARY_XML_FILE_EXT                  "binxml"
-#define CRY_XML_FILE_EXT                         "xml"
-#define CRY_CHARACTER_PARAM_FILE_EXT             "chrparams"
-#define CRY_GEOM_CACHE_FILE_EXT                  "cax"
-//////////////////////////////////////////////////////////////////////////
 #define CRYFILE_MAX_PATH                         260
 //////////////////////////////////////////////////////////////////////////
-
-inline const char* CryGetExt(const char* filepath)
-{
-    const char* str = filepath;
-    size_t len = strlen(filepath);
-    for (const char* p = str + len - 1; p >= str; --p)
-    {
-        switch (*p)
-        {
-        case ':':
-        case '/':
-        case '\\':
-            // we've reached a path separator - it means there's no extension in this name
-            return "";
-        case '.':
-            // there's an extension in this file name
-            return p + 1;
-        }
-    }
-    return "";
-}
-
-// Summary:
-//   Checks if specified file name is a character file.
-// Summary:
-//   Checks if specified file name is a character file.
-inline bool IsCharacterFile(const char* filename)
-{
-    const char* ext = CryGetExt(filename);
-    if (_stricmp(ext, CRY_SKEL_FILE_EXT) == 0 || _stricmp(ext, CRY_SKIN_FILE_EXT) == 0 || _stricmp(ext, CRY_CHARACTER_DEFINITION_FILE_EXT) == 0 || _stricmp(ext, CRY_ANIM_GEOMETRY_FILE_EXT) == 0)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// Description:
-//   Checks if specified file name is a static geometry file.
-inline bool IsStatObjFile(const char* filename)
-{
-    const char* ext = CryGetExt(filename);
-    if (_stricmp(ext, CRY_GEOMETRY_FILE_EXT) == 0)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
 
 // Summary:
 //   Wrapper on file system.
@@ -100,7 +25,6 @@ class CCryFile
 {
 public:
     CCryFile();
-    CCryFile(AZ::IO::IArchive* pIArchive);    // allow an alternative IArchiveinterface
     CCryFile(const char* filename, const char* mode);
     ~CCryFile();
 
@@ -113,13 +37,6 @@ public:
     // Summary:
     //   Reads data from a file at the current file position.
     size_t ReadRaw(void* lpBuf, size_t nSize);
-    // Summary:
-    //   Template version, for automatic size support.
-    template<class T>
-    inline size_t ReadTypeRaw(T* pDest, size_t nCount = 1)
-    {
-        return ReadRaw(pDest, sizeof(T) * nCount);
-    }
 
     // Summary:
     //   Automatic endian-swapping version.
@@ -138,27 +55,6 @@ public:
     // Summary:
     //   Moves the current file pointer to the specified position.
     size_t Seek(size_t seek, int mode);
-    // Summary:
-    //   Moves the current file pointer at the beginning of the file.
-    void SeekToBegin();
-    // Summary:
-    //   Moves the current file pointer at the end of the file.
-    size_t SeekToEnd();
-    // Summary:
-    //   Retrieves the current file pointer.
-    size_t GetPosition();
-
-    // Summary:
-    //   Tests for end-of-file on a selected file.
-    bool IsEof();
-
-    // Summary:
-    //   Flushes any data yet to be written.
-    void Flush();
-
-    // Summary:
-    //   Gets a handle to a pack object.
-    AZ::IO::HandleType GetHandle() const { return m_fileHandle; };
 
     // Description:
     //    Retrieves the filename of the selected file.
@@ -194,12 +90,6 @@ inline CCryFile::CCryFile()
     m_pIArchive = gEnv ? gEnv->pCryPak : NULL;
 }
 
-inline CCryFile::CCryFile(AZ::IO::IArchive* pIArchive)
-{
-    m_fileHandle = AZ::IO::InvalidHandle;
-    m_pIArchive = pIArchive;
-}
-
 //////////////////////////////////////////////////////////////////////////
 inline CCryFile::CCryFile(const char* filename, const char* mode)
 {
@@ -222,7 +112,7 @@ inline CCryFile::~CCryFile()
 inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlagsEx)
 {
     char tempfilename[CRYFILE_MAX_PATH] = "";
-    cry_strcpy(tempfilename, filename);
+    azstrcpy(tempfilename, CRYFILE_MAX_PATH, filename);
 
 #if !defined (_RELEASE)
     if (gEnv && gEnv->IsEditor() && gEnv->pConsole)
@@ -233,8 +123,8 @@ inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlag
             const int lowercasePaths = pCvar->GetIVal();
             if (lowercasePaths)
             {
-                const string lowerString = PathUtil::ToLower(tempfilename);
-                cry_strcpy(tempfilename, lowerString.c_str());
+                const AZStd::string lowerString = PathUtil::ToLower(tempfilename);
+                azstrcpy(tempfilename, CRYFILE_MAX_PATH, lowerString.c_str());
             }
         }
     }
@@ -243,7 +133,7 @@ inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlag
     {
         Close();
     }
-    cry_strcpy(m_filename, tempfilename);
+    azstrcpy(m_filename, CRYFILE_MAX_PATH, tempfilename);
 
     if (m_pIArchive)
     {
@@ -338,58 +228,6 @@ inline size_t CCryFile::Seek(size_t seek, int mode)
 }
 
 //////////////////////////////////////////////////////////////////////////
-inline void CCryFile::SeekToBegin()
-{
-    Seek(0, SEEK_SET);
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::SeekToEnd()
-{
-    return Seek(0, SEEK_END);
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::GetPosition()
-{
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FTell(m_fileHandle);
-    }
-
-    AZ::u64 tellOffset = 0;
-    AZ::IO::FileIOBase::GetInstance()->Tell(m_fileHandle, tellOffset);
-
-    return static_cast<size_t>(tellOffset);
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline bool CCryFile::IsEof()
-{
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FEof(m_fileHandle) != 0;
-    }
-    
-    return AZ::IO::FileIOBase::GetInstance()->Eof(m_fileHandle);
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CCryFile::Flush()
-{
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-
-    if (m_pIArchive)
-    {
-        m_pIArchive->FFlush(m_fileHandle);
-    }
-    
-    AZ::IO::FileIOBase::GetInstance()->Flush(m_fileHandle);
-}
-
-//////////////////////////////////////////////////////////////////////////
 inline bool CCryFile::IsInPak() const
 {
     if (m_fileHandle != AZ::IO::InvalidHandle && m_pIArchive)
@@ -430,9 +268,7 @@ inline const char* CCryFile::GetAdjustedFilename() const
     // Returns standard path otherwise.
     if (gameUrl != &szAdjustedFile[0])
     {
-        cry_strcpy(szAdjustedFile, gameUrl);
+        azstrcpy(szAdjustedFile, AZ::IO::IArchive::MaxPath, gameUrl);
     }
     return szAdjustedFile;
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYFILE_H

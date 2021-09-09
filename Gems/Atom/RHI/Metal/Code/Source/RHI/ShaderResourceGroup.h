@@ -47,7 +47,8 @@ namespace AZ
                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
                                             ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
                                             ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
-
+            bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+            
         private:
             ShaderResourceGroup() = default;
             

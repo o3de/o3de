@@ -280,7 +280,6 @@ public:
     void SetMatEditMode(bool bIsMatEditMode);
     CUIEnumsDatabase* GetUIEnumsDatabase() { return m_pUIEnumsDatabase; };
     void AddUIEnums();
-    void GetMemoryUsage(ICrySizer* pSizer);
     void ReduceMemory();
     // Get Export manager
     IExportManager* GetExportManager();
@@ -290,7 +289,6 @@ public:
     ESystemConfigPlatform GetEditorConfigPlatform() const;
     void ReloadTemplates();
     void AddErrorMessage(const QString& text, const QString& caption);
-    IResourceSelectorHost* GetResourceSelectorHost() { return m_pResourceSelectorHost.get(); }
     virtual void ShowStatusText(bool bEnable);
 
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
@@ -374,7 +372,6 @@ protected:
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
-    std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
@@ -401,7 +398,7 @@ protected:
     IImageUtil* m_pImageUtil;  // Vladimir@conffx
     ILogFile* m_pLogFile;  // Vladimir@conffx
 
-    CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
+    AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
 };
 

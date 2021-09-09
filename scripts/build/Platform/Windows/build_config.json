@@ -89,7 +89,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --suite=main --test-failure-policy=continue"
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --s3-top-level-dir=!REPOSITORY_NAME! --build-number=!BUILD_NUMBER! --suite=main --test-failure-policy=continue"
     }
   },
   "debug_vs2019": {
@@ -213,11 +213,38 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "periodic_test_profile_vs2019": {
+  "awsi_test_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
-      "weekly-build-metrics"
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "awsi_test_profile_vs2019"
+    ]
+  },
+  "awsi_test_profile_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_awsi",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
+        "nightly-incremental",
+        "nightly-clean",
+        "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
@@ -376,5 +403,13 @@
       "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }

@@ -280,7 +280,7 @@ namespace
         AZ::Data::Instance<AZ::RPI::Image> image;
         if (sprite)
         {
-            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
             if (cSprite)
             {
                 image = cSprite->GetImage();
@@ -484,7 +484,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -1536,7 +1536,6 @@ void UiImageComponent::RenderSingleQuad(const AZ::Vector2* positions, const AZ::
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);
@@ -1596,7 +1595,6 @@ void UiImageComponent::RenderLinearFilledQuad(const AZ::Vector2* positions, cons
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
 
     for (int i = 0; i < numVertices; ++i)
     {
@@ -1666,7 +1664,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     const int numIndices = 15;
     uint16 indices[numIndices];
-    for (int ix = 0; ix < 5; ++ix)
+    for (uint16 ix = 0; ix < 5; ++ix)
     {
         indices[ix * 3 + firstIndexOffset] = ix + 1;
         indices[ix * 3 + secondIndexOffset] = ix + 2;
@@ -2268,20 +2266,20 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
     int indicesAdded = 0;
     if (verticesAdded == 3)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 1;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 3;
     }
     else if (verticesAdded == 4)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 2;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 2);
 
-        renderIndices[renderIndexOffset + 3] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 4] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 5] = vertexOffset - 1;
+        renderIndices[renderIndexOffset + 3] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 4] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 5] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 6;
     }
 
@@ -2663,18 +2661,7 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SpritePath"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 1, "Unsupported UiImageComponent version: %d", classElement.GetVersion());
 
     // conversion from version 1 or 2 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

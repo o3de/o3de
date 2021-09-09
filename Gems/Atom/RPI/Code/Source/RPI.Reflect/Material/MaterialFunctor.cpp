@@ -419,9 +419,7 @@ namespace AZ
         {
             if (!materialPropertyDependencies.test(index.GetIndex()))
             {
-#if defined(AZ_ENABLE_TRACING)
                 const MaterialPropertyDescriptor* propertyDescriptor = materialPropertiesLayout.GetPropertyDescriptor(index);
-#endif
                 AZ_Error("MaterialFunctor", false, "Material functor accessing an unregistered material property '%s'.",
                     propertyDescriptor ? propertyDescriptor->GetName().GetCStr() : "<unknown>");
             }

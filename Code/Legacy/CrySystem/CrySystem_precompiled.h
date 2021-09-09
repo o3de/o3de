@@ -68,7 +68,7 @@
 #endif
 
 #ifdef WIN32
-#include <CryWindows.h>
+#include <AzCore/PlatformIncl.h>
 #include <tlhelp32.h>
 #undef GetCharWidth
 #undef GetUserName
@@ -81,7 +81,6 @@
 #include <Cry_Camera.h>
 #include <smartptr.h>
 #include <Range.h>
-#include <CrySizer.h>
 #include <StlUtils.h>
 
 
@@ -99,7 +98,6 @@ inline int RoundToClosestMB(size_t memSize)
 #include <CryFile.h>
 #include <ISystem.h>
 #include <ITimer.h>
-#include <IPhysics.h>
 #include <IXml.h>
 #include <ICmdLine.h>
 #include <IConsole.h>

@@ -33,7 +33,7 @@ namespace Config
 
     uint32 CConfigGroup::GetVarCount()
     {
-        return m_vars.size();
+        return static_cast<uint32>(m_vars.size());
     }
 
     IConfigVar* CConfigGroup::GetVar(const char* szName)
@@ -127,9 +127,9 @@ namespace Config
 
                     case IConfigVar::eType_STRING:
                     {
-                        string currentValue = nullptr;
+                        AZStd::string currentValue;
                         var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
+                        node->setAttr(szName, currentValue.c_str());
                         break;
                     }
                     }
@@ -186,7 +186,7 @@ namespace Config
 
                 case IConfigVar::eType_STRING:
                 {
-                    string currentValue = nullptr;
+                    AZStd::string currentValue;
                     var->GetDefault(&currentValue);
                     QString readValue(currentValue.c_str());
                     if (node->getAttr(szName, readValue))

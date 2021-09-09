@@ -26,7 +26,7 @@ namespace AZ
         int Create(int width, int height);
         int Release();
 
-        int SaveBitmap(const string& fileName);
+        int SaveBitmap(const AZStd::string& fileName);
         int Get32Bpp(unsigned int** buffer)
         {
             (*buffer) = new unsigned int[m_width * m_height];
@@ -51,8 +51,6 @@ namespace AZ
 
         void SetRenderData(void* renderData) { m_renderData = renderData; };
         void* GetRenderData() { return m_renderData; };
-
-        void GetMemoryUsage ([[maybe_unused]] class ICrySizer* sizer) {};
 
         unsigned char* GetData() { return m_data; }
 

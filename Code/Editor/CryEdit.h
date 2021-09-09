@@ -174,7 +174,7 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -448,9 +448,9 @@ public:
     ~CCrySingleDocTemplate() {};
     // avoid creating another CMainFrame
     // close other type docs before opening any things
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, bool bAddToMRU, bool bMakeVisible);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, bool bMakeVisible = true);
-    virtual Confidence MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, bool bMakeVisible);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
+    virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
 private:
     const QMetaObject* m_documentClass = nullptr;
@@ -467,7 +467,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToMRU);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };

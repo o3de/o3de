@@ -136,7 +136,7 @@ namespace AzFramework
             AZStd::array<char, MaxMessageSize> buffer;
             azsnprintf(buffer.data(), buffer.size(), "(%p/%#" PRIxPTR "): %s\n", this, numericThreadId, msg.data());
 
-            Platform::DebugOutput(buffer.data());
+            AZ::Debug::Platform::OutputToDebugger("AssetProcessorConnection", buffer.data());
 #else // ASSETPROCESORCONNECTION_VERBOSE_LOGGING is not defined
             (void)format;
 #endif
@@ -177,7 +177,7 @@ namespace AzFramework
         //trying to connect, if any error occurs start the disconnect thread
         void AssetProcessorConnection::ConnectThread()
         {
-            static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
+            [[maybe_unused]] static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
 
             //check for join before doing an op
             if (m_connectThread.m_join)

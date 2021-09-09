@@ -315,36 +315,6 @@ namespace AtomToolsFramework
         return cameraState;
     }
 
-    bool RenderViewportWidget::GridSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::GridSize()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
-    }
-
-    bool RenderViewportWidget::ShowGrid()
-    {
-        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
-    }
-
-    bool RenderViewportWidget::AngleSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::AngleStep()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
-    }
-
-    void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
-    {
-        m_viewportSettings = viewportSettings;
-    }
-
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
         if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
@@ -403,11 +373,6 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
-    {
-        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
         return m_mouseOver;
@@ -464,5 +429,15 @@ namespace AtomToolsFramework
     float RenderViewportWidget::GetDpiScaleFactor() const
     {
         return aznumeric_cast<float>(devicePixelRatioF());
+    }
+
+    uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
+    {
+        return 60;
+    }
+
+    uint32_t RenderViewportWidget::GetSyncInterval() const
+    {
+        return 1;
     }
 } //namespace AtomToolsFramework

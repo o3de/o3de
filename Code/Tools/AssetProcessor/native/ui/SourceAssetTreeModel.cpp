@@ -87,14 +87,12 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex newIndicesStart;
-
         AssetTreeItem* parentItem = m_root.get();
         // Use posix path separator for each child item
         AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);
         const AZ::IO::FixedMaxPath filename = fullPath.Filename();
         fullPath.RemoveFilename();
-        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        AZ::IO::FixedMaxPathString currentPath;
         for (auto pathIt = fullPath.begin(); pathIt != fullPath.end(); ++pathIt)
         {
             currentPath = pathIt->FixedMaxPathString();
@@ -125,7 +123,7 @@ namespace AssetProcessor
         }
 
         m_sourceToTreeItem[source.m_sourceName] =
-            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false));
+            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {

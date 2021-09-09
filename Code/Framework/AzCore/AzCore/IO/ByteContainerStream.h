@@ -12,6 +12,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/typetraits/is_const.h>
 #include <AzCore/std/typetraits/has_member_function.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {

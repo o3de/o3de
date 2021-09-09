@@ -8,6 +8,9 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <CryCommon/ISystem.h>
+#include <CryCommon/TimeValue.h>
+#include <CryCommon/ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* context)
@@ -75,7 +78,7 @@ inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& sc
         return false;
     }
 
-    const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+    const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
     switch (m_currentState)
     {
     case State::Idle:
@@ -126,7 +129,7 @@ inline bool Gestures::RecognizerClickOrTap::OnDownEvent(const AZ::Vector2& scree
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if ((currentTime.GetDifferenceInSeconds(m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
             (screenPosition.GetDistance(m_positionOfLastEvent) > m_config.maxPixelsMoved))
         {
@@ -165,7 +168,7 @@ inline bool Gestures::RecognizerClickOrTap::OnReleasedEvent(const AZ::Vector2& s
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if ((currentTime.GetDifferenceInSeconds(m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
             (screenPosition.GetDistance(m_positionOfLastEvent) > m_config.maxPixelsMoved))
         {

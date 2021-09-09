@@ -47,6 +47,12 @@ namespace SandboxEditor
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
 
+    SANDBOX_API float ManipulatorLineBoundWidth();
+    SANDBOX_API void SetManipulatorLineBoundWidth(float lineBoundWidth);
+
+    SANDBOX_API float ManipulatorCircleBoundWidth();
+    SANDBOX_API void SetManipulatorCircleBoundWidth(float circleBoundWidth);
+
     SANDBOX_API float CameraTranslateSpeed();
     SANDBOX_API void SetCameraTranslateSpeed(float speed);
 
@@ -80,6 +86,15 @@ namespace SandboxEditor
     SANDBOX_API float CameraTranslateSmoothness();
     SANDBOX_API void SetCameraTranslateSmoothness(float smoothness);
 
+    SANDBOX_API bool CameraRotateSmoothingEnabled();
+    SANDBOX_API void SetCameraRotateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraTranslateSmoothingEnabled();
+    SANDBOX_API void SetCameraTranslateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraCaptureCursorForLook();
+    SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -102,7 +117,7 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitChannelId();
-    SANDBOX_API void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId);
+    SANDBOX_API void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreeLookChannelId();
     SANDBOX_API void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId);
@@ -118,8 +133,4 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
     SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
-
-    //! Return if the new editor camera system is enabled or not.
-    //! @note This is implemented in EditorViewportWidget.cpp
-    SANDBOX_API bool UsingNewCameraSystem();
 } // namespace SandboxEditor

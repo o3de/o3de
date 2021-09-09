@@ -351,7 +351,7 @@ void CVarBlock::EnableUpdateCallbacks(bool boEnable)
 void CVarBlock::GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources)
 {
     int type = pVar->GetDataType();
-    if (type == IVariable::DT_FILE || type == IVariable::DT_OBJECT || type == IVariable::DT_TEXTURE)
+    if (type == IVariable::DT_TEXTURE)
     {
         // this is file.
         QString filename;
@@ -511,7 +511,7 @@ CVarGlobalEnumList::CVarGlobalEnumList(const QString& enumName)
 //! Get the name of specified value in enumeration.
 QString CVarGlobalEnumList::GetItemName(uint index)
 {
-    if (!m_pEnum || index >= m_pEnum->strings.size())
+    if (!m_pEnum || index >= static_cast<uint>(m_pEnum->strings.size()))
     {
         return QString();
     }

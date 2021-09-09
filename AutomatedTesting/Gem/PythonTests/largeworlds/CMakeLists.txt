@@ -124,14 +124,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         COMPONENT
             LargeWorlds
     )
+    
 ## LandscapeCanvas ##
 
     ly_add_pytest(
         NAME AutomatedTesting::LandscapeCanvasTests_Main
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -144,8 +144,20 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "SUITE_periodic"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Periodic.py
+        RUNTIME_DEPENDENCIES
+           AZ::AssetProcessor
+           Legacy::Editor
+           AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::LandscapeCanvasTests_Main_Optimized
+        TEST_SERIAL
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main_Optimized.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -155,11 +167,25 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
 ## GradientSignal ##
+
     ly_add_pytest(
         NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/TestSuite_Periodic.py
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            Legacy::Editor
+            AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::GradientSignalTests_Periodic_Optimized
+        TEST_SERIAL
+        TEST_SUITE periodic
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/TestSuite_Periodic_Optimized.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor

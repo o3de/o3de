@@ -52,7 +52,7 @@ namespace ImageProcessingAtom
 
                 Result = ((intValue + 0x0FFFU + ((intValue >> 13U) & 1U)) >> 13U) & 0x7FFFU;
             }
-            h = (Result | Sign);
+            h = static_cast<AZ::u16>(Result | Sign);
         }
 
         operator float() const
@@ -82,7 +82,7 @@ namespace ImageProcessingAtom
             }
             else                        // The value is zero
             {
-                Exponent = -112;
+                Exponent = static_cast<AZ::u32>(-112);
             }
 
             Result = ((h & 0x8000) << 16) | // Sign

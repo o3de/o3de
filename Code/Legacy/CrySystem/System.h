@@ -11,20 +11,20 @@
 
 #include <ISystem.h>
 #include <IRenderer.h>
-#include <IPhysics.h>
 #include <IWindowMessageHandler.h>
 
 #include "Timer.h"
 #include <CryVersion.h>
 #include "CmdLine.h"
-#include "CryName.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
-#include "RenderBus.h"
-
 #include <LoadScreenBus.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Math/Crc.h>
+
+#include <list>
+#include <map>
 
 namespace AzFramework
 {
@@ -32,6 +32,8 @@ namespace AzFramework
 }
 
 struct IConsoleCmdArgs;
+struct ICVar;
+struct IFFont;
 class CWatchdogThread;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -49,47 +51,10 @@ class CWatchdogThread;
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_ALLOW_CREATE_BACKUP_LOG_FILE 1
 #endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_DEFINE_DETECT_PROCESSOR 1
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(APPLE) || defined(LINUX)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_DO_PREASSERT 1
-#endif
-#if defined(MAC) || (defined(LINUX) && !defined(ANDROID))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_ASM_VOLATILE_CPUID 1
-#endif
-#if (defined(WIN32) && !defined(WIN64)) || (defined(LINUX) && !defined(ANDROID) && !defined(LINUX64))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HAS64BITEXT 1
-#endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HTSUPPORTED 1
-#endif
-#if defined(WIN32) || (defined(LINUX) && !defined(ANDROID)) || defined(MAC)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HASCPUID 1
-#endif
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_HASAFFINITYMASK 1
-#endif
-
-#if defined(LINUX) || defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_CRYPAK_POSIX 1
-#endif
-
-#if defined(WIN64)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_BIT64 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_PACKED_PEHEADER 1
-#endif
-#if defined(WIN32) || defined(LINUX)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_RENDERMEMORY_INFO 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_HANDLER_SYNC_AFFINITY 1
 #endif
 
 #if defined(LINUX) || defined(APPLE)
@@ -106,18 +71,6 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME 1
 #endif
 
-#if !(defined(ANDROID) || defined(IOS) || defined(LINUX))
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_IMAGEHANDLER_TIFFIO 1
-#endif
-
-#if 1
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_JOBMANAGER_SIXWORKERTHREADS 0
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_MEMADDRESSRANGE_WINDOWS_STYLE 1
-#endif
-
 #if 1
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_EXCLUDEUPDATE_ON_CONSOLE 0
 #endif
@@ -128,31 +81,8 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK 1
 #endif
 
-#if !defined(LINUX) && !defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_SYSTEMCFG_MODULENAME 1
-#endif
-
-#if defined(WIN32) || defined(WIN64)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_THREADINFO_WINDOWS_STYLE 1
-#endif
-
-#if defined(WIN32)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_THREADTASK_EXCEPTIONS 1
-#endif
 //////////////////////////////////////////////////////////////////////////
 
-#if defined(APPLE) || defined(LINUX)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_FACTORY_REGISTRY_USE_PRINTF_FOR_FATAL 1
-#endif
-
-#if defined(LINUX) || defined(APPLE)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_FTELL_NOT_FTELLI64 1
-#endif
-
-#endif
-
-#if defined(USE_UNIXCONSOLE) || defined(USE_ANDROIDCONSOLE) || defined(USE_WINDOWSCONSOLE) || defined(USE_IOSCONSOLE) || defined(USE_NULLCONSOLE)
-#define USE_DEDICATED_SERVER_CONSOLE
 #endif
 
 #if defined(LINUX)
@@ -270,7 +200,6 @@ class CSystem
     , public ILoadConfigurationEntrySink
     , public ISystemEventListener
     , public IWindowMessageHandler
-    , public AZ::RenderNotificationsBus::Handler
     , public CrySystemRequestBus::Handler
 {
 public:
@@ -330,7 +259,6 @@ public:
     ICryFont* GetICryFont(){ return m_env.pCryFont; }
     ILog* GetILog(){ return m_env.pLog; }
     ICmdLine* GetICmdLine(){ return m_pCmdLine; }
-    INameTable* GetINameTable() { return m_env.pNameTable; };
     IViewSystem* GetIViewSystem();
     ILevelSystem* GetILevelSystem();
     ISystemEventDispatcher* GetISystemEventDispatcher() { return m_pSystemEventDispatcher; }
@@ -450,7 +378,7 @@ private:
     bool ReLaunchMediaCenter();
     void UpdateAudioSystems();
 
-    void AddCVarGroupDirectory(const string& sPath);
+    void AddCVarGroupDirectory(const AZStd::string& sPath);
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDynamiclibrary(const char* dllName) const;
 
@@ -490,27 +418,27 @@ private: // ------------------------------------------------------
     // System environment.
     SSystemGlobalEnvironment m_env;
 
-    CTimer                              m_Time;                             //!<
-    bool                                    m_bInitializedSuccessfully;     //!< true if the system completed all initialization steps
-    bool                                    m_bRelaunch;                    //!< relaunching the app or not (true beforerelaunch)
-    int                                     m_iLoadingMode;             //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
-    bool                                    m_bTestMode;                    //!< If running in testing mode.
-    bool                                    m_bEditor;                      //!< If running in Editor.
-    bool                                    m_bNoCrashDialog;
-    bool                                    m_bNoErrorReportWindow;
+    CTimer                m_Time;                       //!<
+    bool                  m_bInitializedSuccessfully;   //!< true if the system completed all initialization steps
+    bool                  m_bRelaunch;                  //!< relaunching the app or not (true beforerelaunch)
+    int                   m_iLoadingMode;               //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
+    bool                  m_bTestMode;                    //!< If running in testing mode.
+    bool                  m_bEditor;                      //!< If running in Editor.
+    bool                  m_bNoCrashDialog;
+    bool                  m_bNoErrorReportWindow;
     bool                  m_bPreviewMode;       //!< If running in Preview mode.
-    bool                                    m_bDedicatedServer;     //!< If running as Dedicated server.
-    bool                                    m_bIgnoreUpdates;           //!< When set to true will ignore Update and Render calls,
-    bool                                    m_bForceNonDevMode;     //!< true when running on a cheat protected server or a client that is connected to it (not used in singlplayer)
-    bool                                    m_bWasInDevMode;            //!< Set to true if was in dev mode.
-    bool                                    m_bInDevMode;                   //!< Set to true if was in dev mode.
+    bool                  m_bDedicatedServer;     //!< If running as Dedicated server.
+    bool                  m_bIgnoreUpdates;           //!< When set to true will ignore Update and Render calls,
+    bool                  m_bForceNonDevMode;     //!< true when running on a cheat protected server or a client that is connected to it (not used in singlplayer)
+    bool                  m_bWasInDevMode;            //!< Set to true if was in dev mode.
+    bool                  m_bInDevMode;                   //!< Set to true if was in dev mode.
     bool                  m_bGameFolderWritable;//!< True when verified that current game folder have write access.
-    int                                     m_ttMemStatSS;              //!< Time to memstat screenshot
-    bool                                    m_bDrawConsole;              //!< Set to true if OK to draw the console.
-    bool                                    m_bDrawUI;                   //!< Set to true if OK to draw UI.
+    int                   m_ttMemStatSS;              //!< Time to memstat screenshot
+    bool                  m_bDrawConsole;              //!< Set to true if OK to draw the console.
+    bool                  m_bDrawUI;                   //!< Set to true if OK to draw UI.
 
 
-    std::map<CCryNameCRC, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
+    std::map<AZ::Crc32, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
 
     //! current active process
     IProcess* m_pProcess;
@@ -619,7 +547,7 @@ private: // ------------------------------------------------------
     //  ICVar *m_sys_filecache;
     ICVar* m_gpu_particle_physics;
 
-    string  m_sSavedRDriver;                                //!< to restore the driver when quitting the dedicated server
+    AZStd::string  m_sSavedRDriver;                                //!< to restore the driver when quitting the dedicated server
 
     //////////////////////////////////////////////////////////////////////////
     //! User define callback for system events.
@@ -631,9 +559,6 @@ private: // ------------------------------------------------------
     IDataProbe* m_pDataProbe;
 
     class CLocalizedStringsManager* m_pLocalizationManager;
-
-    // Name table.
-    CNameTable m_nameTable;
 
     ESystemConfigSpec m_nServerConfigSpec;
     ESystemConfigSpec m_nMaxConfigSpec;
@@ -668,8 +593,8 @@ public:
     void OpenBasicPaks();
     void OpenLanguagePak(const char* sLanguage);
     void OpenLanguageAudioPak(const char* sLanguage);
-    void GetLocalizedPath(const char* sLanguage, string& sLocalizedPath);
-    void GetLocalizedAudioPath(const char* sLanguage, string& sLocalizedPath);
+    void GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedPath);
+    void GetLocalizedAudioPath(const char* sLanguage, AZStd::string& sLocalizedPath);
     void CloseLanguagePak(const char* sLanguage);
     void CloseLanguageAudioPak(const char* sLanguage);
     void UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate);
@@ -714,14 +639,14 @@ protected: // -------------------------------------------------------------
 
     CCmdLine*                                      m_pCmdLine;
 
-    string  m_currentLanguageAudio;
-    string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_android.cfg or system_windows_pc.cfg
+    AZStd::string  m_currentLanguageAudio;
+    AZStd::string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_android.cfg or system_windows_pc.cfg
 
     std::vector< std::pair<CTimeValue, float> > m_updateTimes;
 
     struct SErrorMessage
     {
-        string m_Message;
+        AZStd::string m_Message;
         float m_fTimeToShow;
         float m_Color[4];
         bool m_HardFailure;

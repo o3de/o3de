@@ -34,18 +34,6 @@
 namespace
 {
     //////////////////////////////////////////////////////////////////////////
-    const char* PyGetCVar(const char* pName)
-    {
-        ICVar* pCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(pName);
-        if (!pCVar)
-        {
-            Warning("PyGetCVar: Attempt to access non-existent CVar '%s'", pName ? pName : "(null)");
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid cvar.").toUtf8().data());
-        }
-        return pCVar->GetString();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
     const char* PyGetCVarAsString(const char* pName)
     {
         ICVar* pCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(pName);
@@ -76,7 +64,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, std::stod(pValue));
+            PySetCVarFromFloat(pName, static_cast<float>(std::stod(pValue)));
         }
         else if (pCVar->GetType() != CVAR_STRING)
         {
@@ -152,11 +140,11 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, AZStd::any_cast<AZ::s64>(value));
+            PySetCVarFromInt(pName, static_cast<int>(AZStd::any_cast<AZ::s64>(value)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, AZStd::any_cast<double>(value));
+            PySetCVarFromFloat(pName, static_cast<float>(AZStd::any_cast<double>(value)));
         }
         else if (pCVar->GetType() == CVAR_STRING)
         {
@@ -210,52 +198,6 @@ namespace
     bool PyIsInSimulationMode()
     {
         return GetIEditor()->IsInSimulationMode();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    QString PyNewObject(const char* typeName, const char* fileName, const char* name, float x, float y, float z)
-    {
-        CBaseObject* object = GetIEditor()->NewObject(typeName, fileName, name, x, y, z);
-        if (object)
-        {
-            return object->GetName();
-        }
-        else
-        {
-            return "";
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    QString PyNewObjectAtCursor(const char* typeName, const char* fileName, const char* name)
-    {
-        CUndo undo("Create new object");
-
-        Vec3 pos(0, 0, 0);
-
-        QPoint p = QCursor::pos();
-        CViewport* viewport = GetIEditor()->GetViewManager()->GetViewportAtPoint(p);
-        if (viewport)
-        {
-            viewport->ScreenToClient(p);
-            if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-            {
-                pos = viewport->MapViewToCP(p);
-            }
-            else
-            {
-                // Snap to terrain.
-                bool hitTerrain;
-                pos = viewport->ViewToWorld(p, &hitTerrain);
-                if (hitTerrain)
-                {
-                    pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y) + 1.0f;
-                }
-                pos = viewport->SnapToGrid(pos);
-            }
-        }
-
-        return PyNewObject(typeName, fileName, name, pos.x, pos.y, pos.z);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -371,7 +313,7 @@ namespace
     {
         if (strcmp(pMessage, "") != 0)
         {
-            CryLogAlways(pMessage);
+            CryLogAlways("%s", pMessage);
         }
     }
 
@@ -548,13 +490,11 @@ namespace
         if (title.empty())
         {
             throw std::runtime_error("Incorrect title argument passed in. ");
-            return result;
         }
 
         if (values.size() == 0)
         {
             throw std::runtime_error("Empty value list passed in. ");
-            return result;
         }
 
         QStringList list;

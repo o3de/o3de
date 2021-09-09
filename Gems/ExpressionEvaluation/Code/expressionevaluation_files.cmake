@@ -13,6 +13,8 @@ set(FILES
     Include/ExpressionEvaluation/ExpressionEngine/ExpressionTypes.h
     Source/ExpressionEvaluationSystemComponent.cpp
     Source/ExpressionEvaluationSystemComponent.h
+    Source/ExpressionPrimitivesSerializers.inl
+    Source/ElementInformationSerializer.inl
     Source/ExpressionEngine/ExpressionElementParser.h
     Source/ExpressionEngine/ExpressionPrimitive.cpp
     Source/ExpressionEngine/ExpressionPrimitive.h

@@ -42,7 +42,7 @@ namespace AZ
             // load shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRelocation.azshader";
-            m_shader = RPI::LoadShader(shaderFilePath);
+            m_shader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_shader == nullptr)
             {
                 return;
@@ -76,9 +76,9 @@ namespace AZ
                     return;
                 }
 
-                m_dispatchArgs.m_threadsPerGroupX = AZStd::any_cast<int>(args[0]);
-                m_dispatchArgs.m_threadsPerGroupY = AZStd::any_cast<int>(args[1]);
-                m_dispatchArgs.m_threadsPerGroupZ = AZStd::any_cast<int>(args[2]);
+                m_dispatchArgs.m_threadsPerGroupX = static_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
+                m_dispatchArgs.m_threadsPerGroupY = static_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
+                m_dispatchArgs.m_threadsPerGroupZ = static_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
             }
         }
 

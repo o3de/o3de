@@ -14,6 +14,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+// https://developercommunity.visualstudio.com/t/windows-sdk-100177630-pragma-push-pop-mismatch-in/386142
+#define _NTDDSCM_H_
 #include <winioctl.h>
 
 namespace AZ::IO
@@ -290,7 +293,7 @@ namespace AZ::IO
     static bool CollectHardwareInfo(HardwareInformation& hardwareInfo, bool addAllDrives, bool reportHardware)
     {
         char drives[512];
-        if (::GetLogicalDriveStrings(sizeof(drives) - 1, drives))
+        if (::GetLogicalDriveStringsA(sizeof(drives) - 1, drives))
         {
             AZStd::unordered_map<DWORD, DriveInformation> driveMappings;
             char* driveIt = drives;
@@ -318,7 +321,7 @@ namespace AZ::IO
                     deviceName += driveIt;
                     deviceName.erase(deviceName.length() - 1); // Erase the slash.
 
-                    HANDLE deviceHandle = ::CreateFile(
+                    HANDLE deviceHandle = ::CreateFileA(
                         deviceName.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
                     if (deviceHandle != INVALID_HANDLE_VALUE)
                     {
