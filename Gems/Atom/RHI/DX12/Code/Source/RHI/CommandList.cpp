@@ -95,15 +95,21 @@ namespace AZ
             SetName(name);
 
             PIXBeginEvent(0xFF0000FF, name.GetCStr());
-            PIXBeginEvent(GetCommandList(), 0xFF0000FF, name.GetCStr());
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXBeginEvent(GetCommandList(), 0xFF0000FF, name.GetCStr());
+            }
         }
 
         void CommandList::Close()
         {
             FlushBarriers();
-
-            PIXEndEvent(GetCommandList());
             PIXEndEvent();
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXEndEvent(GetCommandList());
+            }
+            
 
             CommandListBase::Close();
         }
