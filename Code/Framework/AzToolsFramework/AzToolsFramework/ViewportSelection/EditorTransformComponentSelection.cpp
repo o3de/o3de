@@ -1164,15 +1164,13 @@ namespace AzToolsFramework
         m_boxSelect.InstallDisplayScene(
             [this, entityBoxSelectData](const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                const auto modifiers = ViewportInteraction::KeyboardModifiers(
-                    ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
-
-                if (m_boxSelect.PreviousModifiers() != modifiers)
+                if (const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+                    m_boxSelect.PreviousModifiers() != keyboardModifiers)
                 {
                     EntityBoxSelectUpdateGeneral(
                         m_boxSelect.BoxRegion(), *this, m_selectedEntityIds, entityBoxSelectData->m_selectedEntityIdsBeforeBoxSelect,
                         entityBoxSelectData->m_potentialSelectedEntityIds, entityBoxSelectData->m_potentialDeselectedEntityIds,
-                        *m_entityDataCache, viewportInfo.m_viewportId, modifiers, m_boxSelect.PreviousModifiers());
+                        *m_entityDataCache, viewportInfo.m_viewportId, keyboardModifiers, m_boxSelect.PreviousModifiers());
                 }
 
                 debugDisplay.DepthTestOff();
@@ -3326,16 +3324,15 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const auto modifiers =
-            ViewportInteraction::KeyboardModifiers(ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+        const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
         m_cursorState.Update();
 
         HandleAccents(
-            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, modifiers.Ctrl(), m_hoveredEntityId,
+            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, keyboardModifiers.Ctrl(), m_hoveredEntityId,
             ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
-        const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(modifiers));
+        const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(keyboardModifiers));
 
         UpdateSpaceCluster(referenceFrame);
 

@@ -823,8 +823,7 @@ namespace UnitTest
         const auto endingPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 16.5f, 9.5f), m_cameraState);
 
         // perform a box select in the viewport
-        m_actionDispatcher->LogActions(true)
-            ->CameraState(m_cameraState)
+        m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(beginningPositionWorldBoxSelect)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->MouseLButtonDown()

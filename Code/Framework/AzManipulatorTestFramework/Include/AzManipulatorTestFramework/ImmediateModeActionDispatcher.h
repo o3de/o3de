@@ -10,11 +10,14 @@
 
 #include <AzManipulatorTestFramework/ActionDispatcher.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzManipulatorTestFramework
 {
     //! Dispatches actions immediately to the manipulators.
-    class ImmediateModeActionDispatcher : public ActionDispatcher<ImmediateModeActionDispatcher>
+    class ImmediateModeActionDispatcher
+        : public ActionDispatcher<ImmediateModeActionDispatcher>
+        , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     {
         using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using KeyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers;
@@ -46,6 +49,9 @@ namespace AzManipulatorTestFramework
 
         //! Get the current state of the keyboard modifiers.
         KeyboardModifiers GetKeyboardModifiers() const;
+
+        // EditorModifierKeyRequestBus overrides ...
+        KeyboardModifiers QueryKeyboardModifiers() override;
 
     protected:
         // ActionDispatcher ...
@@ -101,5 +107,10 @@ namespace AzManipulatorTestFramework
     inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::GetKeyboardModifiers() const
     {
         return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
+    }
+
+    inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::QueryKeyboardModifiers()
+    {
+        return GetKeyboardModifiers();
     }
 } // namespace AzManipulatorTestFramework

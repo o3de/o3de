@@ -102,8 +102,7 @@ namespace AzToolsFramework
 
             debugDisplay.DepthTestOn();
 
-            m_previousModifiers = ViewportInteraction::KeyboardModifiers(
-                ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+            m_previousModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         }
     }
 

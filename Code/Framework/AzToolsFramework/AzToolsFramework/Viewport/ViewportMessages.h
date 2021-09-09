@@ -275,6 +275,29 @@ namespace AzToolsFramework
 
         using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! An interface to query editor modifier keys.
+        class EditorModifierKeyRequests : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            //! Returns the current state of the keyboard modifier keys.
+            virtual KeyboardModifiers QueryKeyboardModifiers() = 0;
+
+        protected:
+            ~EditorModifierKeyRequests() = default;
+        };
+
+        using EditorModifierKeyRequestBus = AZ::EBus<EditorModifierKeyRequests>;
+
+        inline KeyboardModifiers QueryKeyboardModifiers()
+        {
+            KeyboardModifiers keyboardModifiers;
+            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+            return keyboardModifiers;
+        }
+
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {

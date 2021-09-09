@@ -758,8 +758,7 @@ void EditorViewportWidget::RenderAll()
         m_manipulatorManager->DrawManipulators(
             *m_debugDisplay, GetCameraState(),
             BuildMouseInteractionInternal(
-                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
-                AztfVi::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), QueryKeyboardModifiers(),
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
     }
@@ -980,7 +979,12 @@ QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
 
 bool EditorViewportWidget::ShowingWorldSpace()
 {
-    return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
+    return QueryKeyboardModifiers().Shift();
+}
+
+AzToolsFramework::ViewportInteraction::KeyboardModifiers EditorViewportWidget::QueryKeyboardModifiers()
+{
+    return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
 }
 
 void EditorViewportWidget::SetViewportId(int id)
