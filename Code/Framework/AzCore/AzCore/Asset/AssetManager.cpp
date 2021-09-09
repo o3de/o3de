@@ -2132,7 +2132,7 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("AssetManager", false, "Couldn't find handler for asset %s (%s)", asset.GetId().ToString<AZStd::string>().c_str(), asset.GetHint().c_str())
+                AZ_Warning("AssetManager", false, "Couldn't find handler for asset %s (%s)", asset.GetId().ToString<AZStd::string>().c_str(), asset.GetHint().c_str());
             }
 
             // Notify any dependent jobs.

@@ -106,6 +106,10 @@ set(FILES
     Source/Shape/SphereShape.cpp
     Source/Shape/SphereShapeComponent.h
     Source/Shape/SphereShapeComponent.cpp
+    Source/Shape/AxisAlignedBoxShape.h
+    Source/Shape/AxisAlignedBoxShape.cpp
+    Source/Shape/AxisAlignedBoxShapeComponent.h
+    Source/Shape/AxisAlignedBoxShapeComponent.cpp
     Source/Shape/BoxShape.h
     Source/Shape/BoxShape.cpp
     Source/Shape/BoxShapeComponent.h

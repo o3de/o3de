@@ -244,3 +244,41 @@ QTableWidget#recentLevelTable::item {
     max-height: 16px;
     qproperty-iconSize: 16px 16px;
 }
+
+
+#ClosePrefabDialog, #SavePrefabDialog
+{
+    min-width : 640px;
+}
+
+#SaveDependentPrefabsCard
+{
+    margin: 0px 15px 10px 15px;
+}
+
+#PrefabSavedMessageFrame{
+    border: 1px solid green;
+    margin: 10px 15px 10px 15px;
+    border-radius: 2px;
+    padding: 5px 2px 5px 2px;
+}
+
+#ClosePrefabDialog #PrefabSaveWarningFrame
+{
+    border: 1px solid orange;
+    margin: 10px 15px 10px 15px;
+    border-radius: 2px;
+    padding: 5px 2px 5px 2px;
+    color : white;
+}
+
+#SavePrefabDialog #FooterSeparatorLine
+{
+    color: gray;
+}
+
+#SavePrefabDialog #PrefabSavePreferenceHint
+{
+    font: italic;
+    color: #999999;
+}

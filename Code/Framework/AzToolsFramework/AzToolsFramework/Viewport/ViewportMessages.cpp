@@ -10,6 +10,25 @@
 
 namespace AzToolsFramework
 {
+    AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Down;
+            }
+
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Up;
+            }
+        }
+
+        return AzFramework::ClickDetector::ClickEvent::Nil;
+    }
+
     float ManipulatorLineBoundWidth(const AzFramework::ViewportId viewportId /*= AzFramework::InvalidViewportId*/)
     {
         float lineBoundWidth = 0.0f;

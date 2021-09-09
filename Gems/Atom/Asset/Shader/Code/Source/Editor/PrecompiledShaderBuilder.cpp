@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace
     {
-        static const char* PrecompiledShaderBuilderName = "PrecompiledShaderBuilder";
+        [[maybe_unused]] static const char* PrecompiledShaderBuilderName = "PrecompiledShaderBuilder";
         static const char* PrecompiledShaderBuilderJobKey = "PrecompiledShader Asset Builder";
         static const char* ShaderAssetExtension = "azshader";
     }

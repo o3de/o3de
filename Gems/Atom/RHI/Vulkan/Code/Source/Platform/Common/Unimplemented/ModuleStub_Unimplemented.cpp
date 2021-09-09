@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <Atom/RHI.Reflect/Vulkan/ReflectSystemComponent.h>
 #include <AzCore/Module/Module.h>
 
 namespace AZ
@@ -17,7 +19,12 @@ namespace AZ
         public:
             AZ_RTTI(PlatformModule, "{958CB096-796C-42C7-9B29-17C6FE792C30}", Module);
 
-            PlatformModule() = default;
+            PlatformModule()
+            {
+                m_descriptors.insert(m_descriptors.end(), {
+                    ReflectSystemComponent::CreateDescriptor()
+                });
+            }
             ~PlatformModule() override = default;
 
             AZ::ComponentTypeList GetRequiredSystemComponents() const override

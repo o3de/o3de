@@ -110,12 +110,12 @@ namespace AZ::Internal
                     {
                         FixedValueString engineName;
                         settingsRegistry.Get(engineName, engineMonikerKey);
-                        AZ_Warning("SettingsRegistryMergeUtils",engineInfo.m_moniker == engineName,
+                        AZ_Warning("SettingsRegistryMergeUtils", engineInfo.m_moniker == engineName,
                             R"(The engine name key "%s" mapped to engine path "%s" within the global manifest of "%s")"
                             R"( does not match the "engine_name" field "%s" in the engine.json)" "\n"
                             "This engine should be re-registered.",
                             engineInfo.m_moniker.c_str(), engineInfo.m_path.c_str(), engineManifestPath.c_str(),
-                            engineName.c_str())
+                            engineName.c_str());
                         engineInfo.m_moniker = engineName;
                     }
                 }

@@ -59,7 +59,7 @@ inline Gestures::RecognizerHold::~RecognizerHold()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerHold::OnPressedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
+    if (pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -68,7 +68,7 @@ inline bool Gestures::RecognizerHold::OnPressedEvent(const AZ::Vector2& screenPo
     {
     case State::Idle:
     {
-        m_startTime = gEnv->pTimer->GetFrameStartTime().GetValue();
+        m_startTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
         m_startPosition = screenPosition;
         m_currentPosition = screenPosition;
         m_currentState = State::Pressed;
@@ -90,7 +90,7 @@ inline bool Gestures::RecognizerHold::OnPressedEvent(const AZ::Vector2& screenPo
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool Gestures::RecognizerHold::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
 {
-    if (!gEnv || !gEnv->pTimer || pointerIndex != m_config.pointerIndex)
+    if (pointerIndex != m_config.pointerIndex)
     {
         return false;
     }
@@ -101,7 +101,7 @@ inline bool Gestures::RecognizerHold::OnDownEvent(const AZ::Vector2& screenPosit
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = gEnv->pTimer->GetFrameStartTime();
+        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if (screenPosition.GetDistance(m_startPosition) > m_config.maxPixelsMoved)
         {
             // Hold recognition failed.
