@@ -25,7 +25,7 @@ namespace AZ
 {
     namespace AtomBridge
     {
-        static constexpr char AssetCollectionAsyncLoaderTestComponentName[] = " AssetCollectionAsyncLoaderTestComponent";
+        [[maybe_unused]] static constexpr char AssetCollectionAsyncLoaderTestComponentName[] = " AssetCollectionAsyncLoaderTestComponent";
 
         void AssetCollectionAsyncLoaderTestComponent::Reflect(AZ::ReflectContext* context)
         {

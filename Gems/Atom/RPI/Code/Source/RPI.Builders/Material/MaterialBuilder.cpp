@@ -37,7 +37,7 @@ namespace AZ
     {
         namespace
         {
-            static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
+            [[maybe_unused]] static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
         }
 
         const char* MaterialBuilder::JobKey = "Atom Material Builder";
