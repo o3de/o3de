@@ -240,11 +240,6 @@ namespace AZ
         {
             IO::SizeType length = stream.GetLength();
 
-            if (length > AZ::Utils::DefaultMaxFileSize)
-            {
-                return AZ::Failure(AZStd::string{ "Data is too large." });
-            }
-
             AZStd::vector<char> memoryBuffer;
             memoryBuffer.resize_no_construct(static_cast<AZStd::vector<char>::size_type>(static_cast<AZStd::vector<char>::size_type>(length) + 1));
 
@@ -259,12 +254,12 @@ namespace AZ
             return ReadJsonString(AZStd::string_view{memoryBuffer.data(), memoryBuffer.size()});
         }
 
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(AZStd::string_view filePath)
+        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(AZStd::string_view filePath, size_t maxFileSize)
         {
             // Read into memory first and then parse the json, rather than passing a file stream to rapidjson.
             // This should avoid creating a large number of micro-reads from the file.
 
-            auto readResult = AZ::Utils::ReadFile<AZStd::string>(filePath);
+            auto readResult = AZ::Utils::ReadFile<AZStd::string>(filePath, maxFileSize);
             if(!readResult.IsSuccess())
             {
                 return AZ::Failure(readResult.GetError());
