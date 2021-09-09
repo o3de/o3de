@@ -34,8 +34,8 @@ set(FILES
     Asset/AssetTypeInfoBus.h
     Asset/AssetInternal/WeakAsset.h
     Casting/lossy_cast.h
-    Casting/numeric_cast_internal.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
