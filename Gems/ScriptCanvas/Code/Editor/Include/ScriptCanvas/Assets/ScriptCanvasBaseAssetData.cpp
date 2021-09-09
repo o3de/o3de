@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
