@@ -399,16 +399,18 @@ namespace AzToolsFramework
             // modifier has changed - swapped from additive to subtractive box select (or vice versa)
             if (previousKeyboardModifiers != currentKeyboardModifiers)
             {
-                for (AZ::EntityId entityId : potentialDeselectedEntityIds)
+                for (const AZ::EntityId& entityId : potentialDeselectedEntityIds)
                 {
                     editorTransformComponentSelection.AddEntityToSelection(entityId);
                 }
+
                 potentialDeselectedEntityIds.clear();
 
-                for (AZ::EntityId entityId : potentialSelectedEntityIds)
+                for (const AZ::EntityId& entityId : potentialSelectedEntityIds)
                 {
                     editorTransformComponentSelection.RemoveEntityFromSelection(entityId);
                 }
+
                 potentialSelectedEntityIds.clear();
             }
 

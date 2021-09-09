@@ -19,6 +19,13 @@ namespace AzToolsFramework
     static const AZ::Color s_boxSelectColor = AZ::Color(1.0f, 1.0f, 1.0f, 0.4f);
     static const float s_boxSelectLineWidth = 2.0f;
 
+    EditorBoxSelect::EditorBoxSelect()
+    {
+        // discard double click interval as box select is only interested in 'move' detection
+        // note: this also simplifies integration tests that do not have delays between presses
+        m_clickDetector.SetDoubleClickInterval(0.0f);
+    }
+
     void EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
