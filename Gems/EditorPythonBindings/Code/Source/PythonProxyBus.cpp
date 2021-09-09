@@ -293,7 +293,7 @@ namespace EditorPythonBindings
                     handler->m_ebus->m_name.c_str(), eventName);
             }
 
-            void OnEventGenericHook(const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            void OnEventGenericHook([[maybe_unused]] const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
             {
                 // build the parameters to send to callback
                 Convert::StackVariableAllocator stackVariableAllocator;

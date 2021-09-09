@@ -19,7 +19,7 @@
 
 namespace MaterialBuilder
 {
-    const char s_materialBuilder[] = "MaterialBuilder";
+    [[maybe_unused]] const char s_materialBuilder[] = "MaterialBuilder";
 
     namespace Internal
     {
