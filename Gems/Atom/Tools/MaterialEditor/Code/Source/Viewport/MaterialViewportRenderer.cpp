@@ -247,12 +247,10 @@ namespace MaterialEditor
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
-        AzFramework::WindowSystemRequestBus::Handler::BusConnect();
     }
 
     MaterialViewportRenderer::~MaterialViewportRenderer()
     {
-        AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
@@ -301,11 +299,6 @@ namespace MaterialEditor
     AZStd::shared_ptr<MaterialEditorViewportInputController> MaterialViewportRenderer::GetController()
     {
         return m_viewportController;
-    }
-
-    AzFramework::NativeWindowHandle MaterialViewportRenderer::GetDefaultWindowHandle()
-    {
-        return (m_windowContext) ? m_windowContext->GetWindowHandle() : nullptr;
     }
 
     void MaterialViewportRenderer::OnDocumentOpened(const AZ::Uuid& documentId)

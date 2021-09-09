@@ -16,6 +16,7 @@
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzQtComponents/Application/AzQtApplication.h>
@@ -35,6 +36,7 @@ namespace AtomToolsFramework
         , public AzQtComponents::AzQtApplication
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzFramework::AssetSystemStatusBus::Handler
+        , protected AzFramework::AssetCatalogEventBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
         , protected AtomToolsMainWindowNotificationBus::Handler
@@ -65,6 +67,11 @@ namespace AtomToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // AtomsToolMainWindowNotificationBus::Handler overrides...
         void OnMainWindowClosing() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // AzFramework::AssetCatalogEventBus::Handler overrides ...
+        void OnCatalogLoaded(const char* catalogFile) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////

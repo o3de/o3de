@@ -13,17 +13,18 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
-#include <Source/Viewport/MaterialViewportRenderer.h>
-#include <Source/Viewport/MaterialViewportWidget.h>
+#include <Viewport/MaterialViewportRenderer.h>
+#include <Viewport/MaterialViewportWidget.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknow    n-warning-option") // disable warnings spawned by QT
 #include <QAbstractEventDispatcher>
 #include <QWindow>
-#include "Source/Viewport/ui_MaterialViewportWidget.h"
+#include "Viewport/ui_MaterialViewportWidget.h"
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
 namespace Platform
 {
@@ -44,6 +45,9 @@ namespace MaterialEditor
         {
             dispatcher->installNativeEventFilter(this);
         }
+
+        AzFramework::WindowSystemNotificationBus::Broadcast(
+            &AzFramework::WindowSystemNotificationBus::Events::OnWindowCreated, GetViewportContext()->GetWindowHandle());
 
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName

@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -91,6 +92,7 @@ namespace AtomToolsFramework
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -173,15 +175,10 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
+        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
 
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-
         LoadSettings();
-
-        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
-
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
 
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
@@ -192,9 +189,6 @@ namespace AtomToolsFramework
             editorPythonEventsInterface->StartPython();
         }
 
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
-
         m_timer.start();
     }
 
@@ -203,12 +197,26 @@ namespace AtomToolsFramework
         ExitMainLoop();
     }
 
+    void AtomToolsApplication::OnCatalogLoaded(const char* catalogFile)
+    {
+        AZ_UNUSED(catalogFile);
+
+        // Delay execution of commands and scripts post initialization
+        AZ::TickBus::QueueFunction([this]() {
+            AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
+            AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+            ProcessCommandLine(m_commandLine);
+        });
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+    }
+
     void AtomToolsApplication::Destroy()
     {
         // before modules are unloaded, destroy UI to free up any assets it cached
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
         m_styleManager.reset();
 
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
