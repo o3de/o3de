@@ -102,7 +102,6 @@ namespace AZ
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
-            uint32_t m_padding[4];
         };
 
         class DirectionalLightFeatureProcessor final
