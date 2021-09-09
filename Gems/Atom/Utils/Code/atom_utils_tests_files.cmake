@@ -8,5 +8,6 @@
 
 set(FILES
     Tests/ImageComparisonTests.cpp
+    Tests/PngFileTests.cpp
     Tests/StableDynamicArrayTests.cpp
 )

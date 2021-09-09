@@ -27,13 +27,18 @@ namespace AZ
             }
         }
 
-        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data)
+        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler)
         {
-            return Create(size, format, AZStd::vector<uint8_t>{data.begin(), data.end()});
+            return Create(size, format, AZStd::vector<uint8_t>{data.begin(), data.end()}, errorHandler);
         }
 
-        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data)
+        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data, ErrorHandler errorHandler)
         {
+            if (!errorHandler)
+            {
+                errorHandler = [](const char* message) { DefaultErrorHandler(message); };
+            }
+
             PngFile image;
 
             if (RHI::Format::R8G8B8A8_UNORM == format)
@@ -43,14 +48,17 @@ namespace AZ
                     image.m_width = size.m_width;
                     image.m_height = size.m_height;
                     image.m_bitDepth = 8;
-                    image.m_colorType = PNG_COLOR_TYPE_RGB_ALPHA;
                     image.m_bufferFormat = PngFile::Format::RGBA;
-                    image.m_buffer = data;
+                    image.m_buffer = AZStd::move(data);
                 }
                 else
                 {
-                    AZ_Assert(false, "Invalid arguments. Buffer size does not match the image dimensions.");
+                    errorHandler("Invalid arguments. Buffer size does not match the image dimensions.");
                 }
+            }
+            else
+            {
+                errorHandler(AZStd::string::format("Cannot create PngFile with unsupported format %s", AZ::RHI::ToString(format)).c_str());
             }
 
             return image;
@@ -68,7 +76,7 @@ namespace AZ
             FILE* fp = NULL;
             if (fopen_s(&fp, path, "rb") || !fp)
             {
-                loadSettings.m_errorHandler("Failed to open file.");
+                loadSettings.m_errorHandler("Cannot open file.");
                 return {};
             }
 
@@ -77,7 +85,7 @@ namespace AZ
             if (fread(header, 1, HeaderSize, fp) != HeaderSize)
             {
                 fclose(fp);
-                loadSettings.m_errorHandler("Invalid header.");
+                loadSettings.m_errorHandler("Invalid png header.");
                 return {};
             }
 
@@ -85,7 +93,7 @@ namespace AZ
             if (!isPng)
             {
                 fclose(fp);
-                loadSettings.m_errorHandler("Invalid header.");
+                loadSettings.m_errorHandler("Invalid png header.");
                 return {};
             }
 
@@ -154,11 +162,13 @@ namespace AZ
 
             PngFile pngFile;
 
-            png_get_IHDR(png_ptr, info_ptr, &pngFile.m_width, &pngFile.m_height, &pngFile.m_bitDepth, &pngFile.m_colorType, NULL, NULL, NULL);
+            int colorType = 0;
+
+            png_get_IHDR(png_ptr, info_ptr, &pngFile.m_width, &pngFile.m_height, &pngFile.m_bitDepth, &colorType, NULL, NULL, NULL);
 
             uint32_t bytesPerPixel = 0;
 
-            switch (pngFile.m_colorType)
+            switch (colorType)
             {
             case PNG_COLOR_TYPE_RGB:
                 pngFile.m_bufferFormat = PngFile::Format::RGB;
@@ -167,6 +177,12 @@ namespace AZ
             case PNG_COLOR_TYPE_RGBA:
                 pngFile.m_bufferFormat = PngFile::Format::RGBA;
                 bytesPerPixel = 4;
+                break;
+            case PNG_COLOR_TYPE_PALETTE:
+                // Handles cases where the image uses 1, 2, or 4 bit samples.
+                // Note bytesPerPixel is 3 because we use PNG_TRANSFORM_PACKING
+                pngFile.m_bufferFormat = PngFile::Format::RGB;
+                bytesPerPixel = 3;
                 break;
             default:
                 AZ_Assert(false, "The png transforms should have ensured a pixel format of RGB or RGBA, 8 bits per channel");
@@ -207,7 +223,7 @@ namespace AZ
             FILE* fp = NULL;
             if (fopen_s(&fp, path, "wb") || !fp)
             {
-                saveSettings.m_errorHandler("Failed to open file.");
+                saveSettings.m_errorHandler("Cannot open file.");
                 return false;
             }
 
@@ -245,7 +261,23 @@ namespace AZ
 
             png_init_io(png_ptr, fp);
 
-            png_set_IHDR(png_ptr, info_ptr, m_width, m_height, m_bitDepth, m_colorType, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+            int colorType = 0;
+            if (saveSettings.m_stripAlpha || m_bufferFormat == PngFile::Format::RGB)
+            {
+                colorType = PNG_COLOR_TYPE_RGB;
+            }
+            else
+            {
+                colorType = PNG_COLOR_TYPE_RGBA;
+            }
+            
+            int transforms = PNG_TRANSFORM_IDENTITY;
+            if (saveSettings.m_stripAlpha && m_bufferFormat == PngFile::Format::RGBA)
+            {
+                transforms |= PNG_TRANSFORM_STRIP_FILLER_AFTER;
+            }
+
+            png_set_IHDR(png_ptr, info_ptr, m_width, m_height, m_bitDepth, colorType, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
             png_set_compression_level(png_ptr, saveSettings.m_compressionLevel);
 
@@ -259,14 +291,8 @@ namespace AZ
             }
 
             png_set_rows(png_ptr, info_ptr, rows.begin());
-
-            int transforms = PNG_TRANSFORM_IDENTITY;
-            if (saveSettings.m_stripAlpha && m_bufferFormat == PngFile::Format::RGBA)
-            {
-                transforms |= PNG_TRANSFORM_STRIP_FILLER_AFTER;
-            }
-
-            png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+            
+            png_write_png(png_ptr, info_ptr, transforms, NULL);
 
             png_destroy_write_struct(&png_ptr, &info_ptr);
 

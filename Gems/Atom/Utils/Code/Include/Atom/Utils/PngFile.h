@@ -55,9 +55,10 @@ namespace AZ
             //! @param size the dimensions of the image (m_depth is not used, assumed to be 1)
             //! @param format indicates the pixel format represented by @data. Only a limited set of formats are supported, see implementation.
             //! @param data the buffer of image data. The size of the buffer must match the @size and @format parameters.
+            //! @param errorHandler optional callback function describing any errors that are encountered
             //! @return the created PngFile or an invalid PngFile if there was an error.
-            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data);
-            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data);
+            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler = {});
+            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data, ErrorHandler errorHandler = {});
 
             PngFile() = default;
             AZ_DEFAULT_MOVE(PngFile)
@@ -84,11 +85,9 @@ namespace AZ
 
             static void DefaultErrorHandler(const char* message);
 
-            // See png_get_IHDR in http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf...
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             int32_t m_bitDepth = 0;
-            int32_t m_colorType = 0;
 
             Format m_bufferFormat = Format::Unknown;
             AZStd::vector<uint8_t> m_buffer;
