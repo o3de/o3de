@@ -6,9 +6,7 @@
  *
  */
 
-
 // Description : implementation of the CXConsoleVariable class.
-
 
 #include "CrySystem_precompiled.h"
 #include "XConsole.h"
@@ -18,6 +16,87 @@
 #include <ISystem.h>
 
 #include <algorithm>
+
+namespace
+{
+    using stack_string = AZStd::fixed_string<512>;
+
+    uint64 AlphaBit64(char c)
+    {
+        return (c >= 'a' && c <= 'z' ? 1U << (c - 'z' + 31) : 0) |
+               (c >= 'A' && c <= 'Z' ? 1LL << (c - 'Z' + 63) : 0);
+    }
+
+    int64 TextToInt64(const char* s, int64 nCurrent, bool bBitfield)
+    {
+        int64 nValue = 0;
+        if (s)
+        {
+            char* e;
+            if (bBitfield)
+            {
+                // Bit manipulation.
+                if (*s == '^')
+                // Bit number
+#if defined(_MSC_VER)
+                {
+                    nValue = 1LL << _strtoi64(++s, &e, 10);
+                }
+#else
+                {
+                    nValue = 1LL << strtoll(++s, &e, 10);
+                }
+#endif
+                else
+                // Full number
+#if defined(_MSC_VER)
+                {
+                    nValue = _strtoi64(s, &e, 10);
+                }
+#else
+                {
+                    nValue = strtoll(s, &e, 10);
+                }
+#endif
+                // Check letter codes.
+                for (; (*e >= 'a' && *e <= 'z') || (*e >= 'A' && *e <= 'Z'); e++)
+                {
+                    nValue |= AlphaBit64(*e);
+                }
+
+                if (*e == '+')
+                {
+                    nValue = nCurrent | nValue;
+                }
+                else if (*e == '-')
+                {
+                    nValue = nCurrent & ~nValue;
+                }
+                else if (*e == '^')
+                {
+                    nValue = nCurrent ^ nValue;
+                }
+            }
+            else
+#if defined(_MSC_VER)
+            {
+                nValue = _strtoi64(s, &e, 10);
+            }
+#else
+            {
+                nValue = strtoll(s, &e, 10);
+            }
+#endif
+        }
+        return nValue;
+    }
+
+    int TextToInt(const char* s, int nCurrent, bool bBitfield)
+    {
+        return (int)TextToInt64(s, nCurrent, bBitfield);
+    }
+
+} // namespace
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -53,7 +132,6 @@ CXConsoleVariableBase::CXConsoleVariableBase(CXConsole* pConsole, const char* sN
     }
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 CXConsoleVariableBase::~CXConsoleVariableBase()
 {
@@ -78,10 +156,8 @@ void CXConsoleVariableBase::ForceSet(const char* s)
     m_nFlags |= oldFlags;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////
-void CXConsoleVariableBase::ClearFlags (int flags)
+void CXConsoleVariableBase::ClearFlags(int flags)
 {
     m_nFlags &= ~flags;
 }
@@ -121,7 +197,7 @@ void CXConsoleVariableBase::SetOnChangeCallback(ConsoleVarFunc pChangeFunc)
     m_pChangeFunc = pChangeFunc;
 }
 
-uint64 CXConsoleVariableBase::AddOnChangeFunctor(const SFunctor& pChangeFunctor)
+uint64 CXConsoleVariableBase::AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor)
 {
     static int uniqueIdGenerator = 0;
     int newId = uniqueIdGenerator++;
@@ -144,7 +220,7 @@ void CXConsoleVariableBase::CallOnChangeFunctions()
     const size_t nTotal(m_changeFunctors.size());
     for (size_t nCount = 0; nCount < nTotal; ++nCount)
     {
-        m_changeFunctors[nCount].second.Call();
+        m_changeFunctors[nCount].second();
     }
 }
 
@@ -168,535 +244,325 @@ bool CXConsoleVariableBase::HasCustomLimits()
     return m_hasCustomLimits;
 }
 
-void CXConsoleVariableCVarGroup::OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
+const char* CXConsoleVariableBase::GetDataProbeString() const
 {
-    assert(szGroup);
-    assert(szKey);
-    assert(szValue);
-
-    bool bCheckIfInDefault = false;
-
-    SCVarGroup* pGrp = 0;
-
-    if (azstricmp(szGroup, "default") == 0)              // needs to be before the other groups
+    if (gEnv->IsDedicated() && m_pDataProbeString)
     {
-        pGrp = &m_CVarGroupDefault;
-
-        //      if(azstricmp(GetName(),szKey)==0)
-        if (*szKey == 0)
-        {
-            m_sDefaultValue = szValue;
-            int iGrpValue = atoi(szValue);
-
-            // if default state is not part of the mentioned states generate this state, so GetIRealVal() can return this state as well
-            if (m_CVarGroupStates.find(iGrpValue) == m_CVarGroupStates.end())
-            {
-                m_CVarGroupStates[iGrpValue] = new SCVarGroup;
-            }
-
-            return;
-        }
+        return m_pDataProbeString;
     }
-    else
-    {
-        int iGrp;
-
-        if (azsscanf(szGroup, "%d", &iGrp) == 1)
-        {
-            if (m_CVarGroupStates.find(iGrp) == m_CVarGroupStates.end())
-            {
-                m_CVarGroupStates[iGrp] = new SCVarGroup;
-            }
-
-            pGrp = m_CVarGroupStates[iGrp];
-        }
-        else
-        {
-            gEnv->pLog->LogError("[CVARS]: [MISSING] [%s] is not a registered console variable group", szGroup);
-#if LOG_CVAR_INFRACTIONS_CALLSTACK
-            gEnv->pSystem->debug_LogCallStack();
-#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
-            return;
-        }
-
-        if (*szKey == 0)
-        {
-            assert(0);          // =%d only expected in default section
-            return;
-        }
-    }
-
-
-    if (pGrp)
-    {
-        if (pGrp->m_KeyValuePair.find(szKey) != pGrp->m_KeyValuePair.end())
-        {
-            gEnv->pLog->LogError("[CVARS]: [DUPLICATE] [%s] specified multiple times in console variable group [%s] = [%s]", szKey, GetName(), szGroup);
-            bCheckIfInDefault = true;
-        }
-
-        pGrp->m_KeyValuePair[szKey] = szValue;
-
-        if (bCheckIfInDefault)
-        {
-            if (m_CVarGroupDefault.m_KeyValuePair.find(szKey) == m_CVarGroupDefault.m_KeyValuePair.end())
-            {
-                gEnv->pLog->LogError("[CVARS]: [MISSING] [%s] specified in console variable group [%s] = [%s], but missing from default group", szKey, GetName(), szGroup);
-            }
-        }
-    }
+    return GetOwnDataProbeString();
 }
 
-
-void CXConsoleVariableCVarGroup::OnLoadConfigurationEntry_End()
+void CXConsoleVariableString::Set(const char* s)
 {
-    if (!m_sDefaultValue.empty())
-    {
-        gEnv->pConsole->LoadConfigVar(GetName(), m_sDefaultValue.c_str());
-        m_sDefaultValue.clear();
-    }
-}
-
-
-CXConsoleVariableCVarGroup::CXConsoleVariableCVarGroup(CXConsole* pConsole, const char* sName, const char* szFileName, int nFlags)
-    : CXConsoleVariableInt(pConsole, sName, 0, nFlags, 0)
-{
-    gEnv->pSystem->LoadConfiguration(szFileName, this);
-}
-
-
-AZStd::string CXConsoleVariableCVarGroup::GetDetailedInfo() const
-{
-    AZStd::string sRet = GetName();
-
-    sRet += " [";
-
-    {
-        TCVarGroupStateMap::const_iterator it, end = m_CVarGroupStates.end();
-
-        for (it = m_CVarGroupStates.begin(); it != end; ++it)
-        {
-            if (it != m_CVarGroupStates.begin())
-            {
-                sRet += "/";
-            }
-
-            char szNum[10];
-
-            azsprintf(szNum, "%d", it->first);
-
-            sRet += szNum;
-        }
-    }
-
-    sRet += "/default] [current]:\n";
-
-
-    std::map<AZStd::string, AZStd::string>::const_iterator it, end = m_CVarGroupDefault.m_KeyValuePair.end();
-
-    for (it = m_CVarGroupDefault.m_KeyValuePair.begin(); it != end; ++it)
-    {
-        const AZStd::string& rKey = it->first;
-
-        sRet += " ... ";
-        sRet += rKey;
-        sRet += " = ";
-
-        TCVarGroupStateMap::const_iterator it2, end2 = m_CVarGroupStates.end();
-
-        for (it2 = m_CVarGroupStates.begin(); it2 != end2; ++it2)
-        {
-            sRet += GetValueSpec(rKey, &(it2->first));
-            sRet += "/";
-        }
-        sRet += GetValueSpec(rKey);
-        ICVar* pCVar = gEnv->pConsole->GetCVar(rKey.c_str());
-        if (pCVar)
-        {
-            sRet += " [";
-            sRet += pCVar->GetString();
-            sRet += "]";
-        }
-
-        sRet += "\n";
-    }
-
-    return sRet;
-}
-
-
-
-const char* CXConsoleVariableCVarGroup::GetHelp()
-{
-    if (m_psHelp)
-    {
-        delete m_psHelp;
-        m_psHelp = NULL;
-    }
-
-    // create help on demand
-    AZStd::string sRet = "Console variable group to apply settings to multiple variables\n\n";
-
-    sRet += GetDetailedInfo();
-
-    m_psHelp = new char[sRet.size() + 1];
-    azstrcpy(m_psHelp, sRet.size() + 1, &sRet[0]);
-
-    return m_psHelp;
-}
-
-
-
-void CXConsoleVariableCVarGroup::DebugLog(const int iExpectedValue, const ICVar::EConsoleLogMode mode) const
-{
-    TCVarGroupStateMap::const_iterator it, end = m_CVarGroupStates.end();
-
-    SCVarGroup* pCurrentGrp = 0;
-    {
-        TCVarGroupStateMap::const_iterator itCurrentGrp = m_CVarGroupStates.find(iExpectedValue);
-
-        if (itCurrentGrp != end)
-        {
-            pCurrentGrp = itCurrentGrp->second;
-        }
-    }
-
-    // try the current state
-    if (TestCVars(pCurrentGrp, mode))
+    if (!s)
     {
         return;
     }
+
+    if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    if (m_pConsole->OnBeforeVarChange(this, s))
+    {
+        m_nFlags |= VF_MODIFIED;
+        {
+            m_sValue = s;
+        }
+
+        CallOnChangeFunctions();
+
+        m_pConsole->OnAfterVarChange(this);
+    }
 }
 
-
-int CXConsoleVariableCVarGroup::GetRealIVal() const
+void CXConsoleVariableString::Set(float f)
 {
-    TCVarGroupStateMap::const_iterator it, end = m_CVarGroupStates.end();
+    stack_string s = stack_string::format("%g", f);
 
-    int iValue = GetIVal();
-
-    SCVarGroup* pCurrentGrp = 0;
+    if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
-        TCVarGroupStateMap::const_iterator itCurrentGrp = m_CVarGroupStates.find(iValue);
-
-        if (itCurrentGrp != end)
-        {
-            pCurrentGrp = itCurrentGrp->second;
-        }
+        return;
     }
 
-    // first try the current state
-    if (TestCVars(pCurrentGrp))
-    {
-        return iValue;
-    }
-
-    // then all other
-    for (it = m_CVarGroupStates.begin(); it != end; ++it)
-    {
-        SCVarGroup* pLocalGrp = it->second;
-
-        if (pLocalGrp == pCurrentGrp)
-        {
-            continue;
-        }
-
-        int iLocalState = it->first;
-
-        if (TestCVars(pLocalGrp))
-        {
-            return iLocalState;
-        }
-    }
-
-    return -1;      // no state found that represent the current one
+    m_nFlags |= VF_MODIFIED;
+    Set(s.c_str());
 }
 
-void CXConsoleVariableCVarGroup::Set(const int i)
+void CXConsoleVariableString::Set(int i)
 {
-    if (i == m_iValue)
+    stack_string s = stack_string::format("%d", i);
+
+    if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
-        SCVarGroup* pCurrentGrp = 0;
-        TCVarGroupStateMap::const_iterator itCurrentGrp = m_CVarGroupStates.find(m_iValue);
-
-        if (itCurrentGrp != m_CVarGroupStates.end())
-        {
-            pCurrentGrp = itCurrentGrp->second;
-        }
-
-        if (TestCVars(pCurrentGrp))
-        {
-            // All cvars in this group match the current state - no further action is necessary
-            return;
-        }
+        return;
     }
 
-    char sTemp[128];
-    azsprintf(sTemp, "%d", i);
+    m_nFlags |= VF_MODIFIED;
+    Set(s.c_str());
+}
 
-    bool wasProcessingGroup = m_pConsole->GetIsProcessingGroup();
-    m_pConsole->SetProcessingGroup(true);
-    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+const char* CXConsoleVariableInt::GetString() const
+{
+    static char szReturnString[256];
+
+    sprintf_s(szReturnString, "%d", GetIVal());
+    return szReturnString;
+}
+
+void CXConsoleVariableInt::Set(const char* s)
+{
+    int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
+
+    Set(nValue);
+}
+
+void CXConsoleVariableInt::Set(float f)
+{
+    Set((int)f);
+}
+
+void CXConsoleVariableInt::Set(int i)
+{
+    if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    stack_string s = stack_string::format("%d", i);
+
+    if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
     {
         m_nFlags |= VF_MODIFIED;
         m_iValue = i;
 
         CallOnChangeFunctions();
+
         m_pConsole->OnAfterVarChange(this);
     }
-    m_pConsole->SetProcessingGroup(wasProcessingGroup);
-
-    // Useful for debugging cvar groups
-    //CryLogAlways("[CVARS]: CXConsoleVariableCVarGroup::Set() Group %s in state %d (wanted %d)", GetName(), m_iValue, i);
 }
 
-
-CXConsoleVariableCVarGroup::~CXConsoleVariableCVarGroup()
+const char* CXConsoleVariableIntRef::GetString() const
 {
-    TCVarGroupStateMap::iterator it, end = m_CVarGroupStates.end();
+    static char szReturnString[256];
 
-    for (it = m_CVarGroupStates.begin(); it != end; ++it)
-    {
-        SCVarGroup* pGrp = it->second;
-
-        delete pGrp;
-    }
-
-    delete m_psHelp;
+    sprintf_s(szReturnString, "%d", m_iValue);
+    return szReturnString;
 }
 
-
-void CXConsoleVariableCVarGroup::OnCVarChangeFunc(ICVar* pVar)
+void CXConsoleVariableIntRef::Set(const char* s)
 {
-    CXConsoleVariableCVarGroup* pThis = (CXConsoleVariableCVarGroup*)pVar;
-
-    int iValue = pThis->GetIVal();
-
-    TCVarGroupStateMap::const_iterator itGrp = pThis->m_CVarGroupStates.find(iValue);
-
-    SCVarGroup* pGrp = 0;
-
-    if (itGrp != pThis->m_CVarGroupStates.end())
+    int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
+    if (nValue == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
-        pGrp = itGrp->second;
+        return;
     }
 
-    if (pGrp)
+    if (m_pConsole->OnBeforeVarChange(this, s))
     {
-        pThis->ApplyCVars(*pGrp);
-    }
+        m_nFlags |= VF_MODIFIED;
+        m_iValue = nValue;
 
-    pThis->ApplyCVars(pThis->m_CVarGroupDefault, pGrp);
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
 }
 
-
-bool CXConsoleVariableCVarGroup::TestCVars(const SCVarGroup* pGroup, const ICVar::EConsoleLogMode mode) const
+void CXConsoleVariableIntRef::Set(float f)
 {
-    if (pGroup)
+    if ((int)f == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
-        if (!TestCVars(*pGroup, mode))
-        {
-            return false;
-        }
+        return;
     }
 
-    if (!TestCVars(m_CVarGroupDefault, mode, pGroup))
-    {
-        return false;
-    }
+    char sTemp[128];
+    sprintf_s(sTemp, "%g", f);
 
-    return true;
+    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_iValue = (int)f;
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
 }
 
-bool CXConsoleVariableCVarGroup::TestCVars(const SCVarGroup& rGroup, const ICVar::EConsoleLogMode mode, const SCVarGroup* pExclude) const
+void CXConsoleVariableIntRef::Set(int i)
 {
-    bool bRet = true;
-    std::map<AZStd::string, AZStd::string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
-
-    for (it = rGroup.m_KeyValuePair.begin(); it != end; ++it)
+    if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
-        const AZStd::string& rKey = it->first;
-        const AZStd::string& rValue = it->second;
-
-        if (pExclude)
-        {
-            if (pExclude->m_KeyValuePair.find(rKey) != pExclude->m_KeyValuePair.end())
-            {
-                continue;
-            }
-        }
-
-        ICVar* pVar = gEnv->pConsole->GetCVar(rKey.c_str());
-
-        if (pVar)
-        {
-            if (pVar->GetFlags() & VF_CVARGRP_IGNOREINREALVAL) // Ignore the cvars which change often and shouldn't be used to determine state
-            {
-                continue;
-            }
-
-            bool bOk = true;
-
-            // compare exact type,
-            // simple string comparison would fail on some comparisons e.g. 2.0 == 2
-            // and GetString() for int and float return pointer to shared array so this
-            // can cause problems
-            switch (pVar->GetType())
-            {
-            case CVAR_INT:
-            {
-                int iVal;
-                if (azsscanf(rValue.c_str(), "%d", &iVal) == 1)
-                {
-                    if (pVar->GetIVal() != atoi(rValue.c_str()))
-                    {
-                        bOk = false;
-                        break;
-                    }
-                }
-
-                if (pVar->GetIVal() != pVar->GetRealIVal())
-                {
-                    bOk = false;
-                    break;
-                }
-            }
-            break;
-            case CVAR_FLOAT:
-            {
-                float fVal;
-                if (azsscanf(rValue.c_str(), "%f", &fVal) == 1)
-                {
-                    if (pVar->GetFVal() != fVal)
-                    {
-                        bOk = false;
-                        break;
-                    }
-                }
-            }
-            break;
-            case CVAR_STRING:
-                if (rValue != pVar->GetString())
-                {
-                    bOk = false;
-                    break;
-                }
-                break;
-            default:
-                assert(0);
-            }
-
-            if (!bOk)
-            {
-                if (mode == ICVar::eCLM_Off)
-                {
-                    return false;       // exit as early as possible
-                }
-                bRet = false;             // exit with same return code but log all differences
-
-                if (strcmp(pVar->GetString(), rValue.c_str()) != 0)
-                {
-                    switch (mode)
-                    {
-                    case ICVar::eCLM_ConsoleAndFile:
-                        CryLog("[CVARS]: $3[FAIL] [%s] = $6[%s] $4(expected [%s] in group [%s] = [%s])", rKey.c_str(), pVar->GetString(), rValue.c_str(), GetName(), GetString());
-                        break;
-
-                    case ICVar::eCLM_FileOnly:
-                    case ICVar::eCLM_FullInfo:
-                        gEnv->pLog->LogToFile("[CVARS]: [FAIL] [%s] = [%s] (expected [%s] in group [%s] = [%s])", rKey.c_str(), pVar->GetString(), rValue.c_str(), GetName(), GetString());
-                        break;
-
-                    default:
-                        assert(0);
-                    }
-                }
-                else if (mode == ICVar::eCLM_FullInfo)
-                {
-                    gEnv->pLog->LogToFile("[CVARS]: [FAIL] [%s] = [%s] (expected [%s] in group [%s] = [%s])", rKey.c_str(), pVar->GetString(), rValue.c_str(), GetName(), GetString());
-                }
-
-                pVar->DebugLog(pVar->GetIVal(), mode);       // recursion
-            }
-
-            if (pVar->GetFlags() & (VF_CHEAT | VF_CHEAT_ALWAYS_CHECK | VF_CHEAT_NOCHECK))
-            {
-                // either VF_CHEAT should be removed or the var should be not part of the CVarGroup
-                gEnv->pLog->LogError("[CVARS]: [%s] is cheat protected; referenced in console variable group [%s] = [%s] ", rKey.c_str(), GetName(), GetString());
-            }
-        }
-        else
-        {
-            // Do not warn about D3D registered cvars, which carry the prefix "q_", as they are not actually registered with the cvar system.
-            if (strcmp(rKey.c_str(), "q") == -1)
-            {
-                gEnv->pLog->LogError("[CVARS]: [MISSING] [%s] is not a registered console variable; referenced when testing console variable group [%s] = [%s]", rKey.c_str(), GetName(), GetString());
-            }
-        }
+        return;
     }
 
-    return bRet;
+    char sTemp[128];
+    sprintf_s(sTemp, "%d", i);
+
+    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_iValue = i;
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
 }
 
-
-
-AZStd::string CXConsoleVariableCVarGroup::GetValueSpec(const AZStd::string& sKey, const int* pSpec) const
+const char* CXConsoleVariableFloat::GetString() const
 {
-    if (pSpec)
-    {
-        TCVarGroupStateMap::const_iterator itGrp = m_CVarGroupStates.find(*pSpec);
+    static char szReturnString[256];
 
-        if (itGrp != m_CVarGroupStates.end())
-        {
-            const SCVarGroup* pGrp = itGrp->second;
-
-            // check in spec
-            std::map<AZStd::string, AZStd::string>::const_iterator it = pGrp->m_KeyValuePair.find(sKey);
-
-            if (it != pGrp->m_KeyValuePair.end())
-            {
-                return it->second;
-            }
-        }
-    }
-
-    // check in default
-    std::map<AZStd::string, AZStd::string>::const_iterator it = m_CVarGroupDefault.m_KeyValuePair.find(sKey);
-
-    if (it != m_CVarGroupDefault.m_KeyValuePair.end())
-    {
-        return it->second;
-    }
-
-    assert(0);      // internal error
-    return "";
+    sprintf_s(szReturnString, "%g", m_fValue); // %g -> "2.01",   %f -> "2.01000"
+    return szReturnString;
 }
 
-void CXConsoleVariableCVarGroup::ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude)
+void CXConsoleVariableFloat::Set(const char* s)
 {
-    std::map<AZStd::string, AZStd::string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
-
-    bool wasProcessingGroup = m_pConsole->GetIsProcessingGroup();
-    m_pConsole->SetProcessingGroup(true);
-
-    for (it = rGroup.m_KeyValuePair.begin(); it != end; ++it)
+    float fValue = 0;
+    if (s)
     {
-        const AZStd::string& rKey = it->first;
+        fValue = (float)atof(s);
+    }
 
-        if (pExclude)
+    if (fValue == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    if (m_pConsole->OnBeforeVarChange(this, s))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = fValue;
+
+        CallOnChangeFunctions();
+
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+void CXConsoleVariableFloat::Set(float f)
+{
+    if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    stack_string s = stack_string::format("%g", f);
+
+    if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = f;
+
+        CallOnChangeFunctions();
+
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+void CXConsoleVariableFloat::Set(int i)
+{
+    if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    char sTemp[128];
+    sprintf_s(sTemp, "%d", i);
+
+    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = (float)i;
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+const char* CXConsoleVariableFloatRef::GetString() const
+{
+    static char szReturnString[256];
+
+    sprintf_s(szReturnString, "%g", m_fValue);
+    return szReturnString;
+}
+
+void CXConsoleVariableFloatRef::Set(const char *s)
+{
+    float fValue = 0;
+    if (s)
+    {
+        fValue = (float)atof(s);
+    }
+    if (fValue == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    if (m_pConsole->OnBeforeVarChange(this, s))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = fValue;
+
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+void CXConsoleVariableFloatRef::Set(float f)
+{
+    if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    char sTemp[128];
+    sprintf_s(sTemp, "%g", f);
+
+    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = f;
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+void CXConsoleVariableFloatRef::Set(int i)
+{
+    if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    char sTemp[128];
+    sprintf_s(sTemp, "%d", i);
+
+    if (m_pConsole->OnBeforeVarChange(this, sTemp))
+    {
+        m_nFlags |= VF_MODIFIED;
+        m_fValue = (float)i;
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
+    }
+}
+
+void CXConsoleVariableStringRef::Set(const char *s)
+{
+    if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
+    {
+        return;
+    }
+
+    if (m_pConsole->OnBeforeVarChange(this, s))
+    {
+        m_nFlags |= VF_MODIFIED;
         {
-            if (pExclude->m_KeyValuePair.find(rKey) != pExclude->m_KeyValuePair.end())
-            {
-                continue;
-            }
+            m_sValue = s;
+            m_userPtr = m_sValue.c_str();
         }
 
-        // Useful for debugging cvar groups
-        //CryLogAlways("[CVARS]: [APPLY] ([%s]) [%s] = [%s]", GetName(), rKey.c_str(), it->second.c_str());
-
-        m_pConsole->LoadConfigVar(rKey.c_str(), it->second.c_str());
+        CallOnChangeFunctions();
+        m_pConsole->OnAfterVarChange(this);
     }
-
-    m_pConsole->SetProcessingGroup(wasProcessingGroup);
 }
-

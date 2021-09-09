@@ -71,8 +71,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            typedef AssetId                 BusIdType;
-            typedef AZStd::recursive_mutex  MutexType;
+            using BusIdType = AssetId;
+            using MutexType = AZStd::recursive_mutex;
 
             template <class Bus>
             struct AssetJobConnectionPolicy
@@ -107,7 +107,7 @@ namespace AZ
             virtual void OnLoadCanceled(AssetId assetId) = 0;
         };
 
-        typedef EBus<BlockingAssetLoadEvents> BlockingAssetLoadBus;
+        using BlockingAssetLoadBus = EBus<BlockingAssetLoadEvents>;
 
         /*
          * This class processes async AssetDatabase load jobs

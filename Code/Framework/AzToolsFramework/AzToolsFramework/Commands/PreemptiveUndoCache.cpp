@@ -103,7 +103,7 @@ namespace AzToolsFramework
         newData.clear();
         AZ::IO::ByteContainerStream<CacheLineType> ms(&newData);
 
-        AZ::SerializeContext* sc = NULL;
+        AZ::SerializeContext* sc = nullptr;
         EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(sc, "Serialization context not found!");
 

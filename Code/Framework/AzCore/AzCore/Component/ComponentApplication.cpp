@@ -645,7 +645,7 @@ namespace AZ
         NameDictionary::Create();
 
         // Call this and child class's reflects
-        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), AZStd::bind(&ComponentApplication::Reflect, this, AZStd::placeholders::_1));
+        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), [this](ReflectContext* context) {Reflect(context); });
 
         RegisterCoreComponents();
         TickBus::AllowFunctionQueuing(true);
@@ -970,7 +970,12 @@ namespace AZ
     {
         if (ReflectionEnvironment::GetReflectionManager())
         {
-            ReflectionEnvironment::GetReflectionManager()->Reflect(descriptor->GetUuid(), AZStd::bind(&ComponentDescriptor::Reflect, descriptor, AZStd::placeholders::_1));
+            ReflectionEnvironment::GetReflectionManager()->Reflect(
+                descriptor->GetUuid(),
+                [descriptor](ReflectContext* context)
+                {
+                    descriptor->Reflect(context);
+                });
         }
     }
 

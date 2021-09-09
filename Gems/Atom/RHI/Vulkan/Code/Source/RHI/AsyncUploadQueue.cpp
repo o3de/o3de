@@ -210,7 +210,7 @@ namespace AZ
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
-                    AZ_Error("StreamingImage", subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
+                    AZ_Error("StreamingImage", subresourceLayout.m_size.m_height >= subresourceLayout.m_rowCount, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
 
                     // The final staging size for each CopyTextureRegion command
                     uint32_t stagingSize = stagingSlicePitch;

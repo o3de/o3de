@@ -118,7 +118,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
-        ~FileIOStreamTest()
+        ~FileIOStreamTest() override
         {
         }
 
@@ -341,7 +341,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(!local.Eof(fileHandle));
                 AZ_TEST_ASSERT(!local.Flush(fileHandle));
                 AZ_TEST_ASSERT(!local.ModificationTime(fileHandle));
-                AZ_TEST_ASSERT(!local.Read(fileHandle, 0, 0, false));
+                AZ_TEST_ASSERT(!local.Read(fileHandle, nullptr, 0, false));
                 AZ_TEST_ASSERT(!local.Tell(fileHandle, fs));
 
                 AZ_TEST_ASSERT(!local.Exists((file01Name + "notexist").c_str()));

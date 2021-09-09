@@ -709,7 +709,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     {
         /*
             * When a sequence is stopped, Resume is called just before stopped (not sure why). To ensure that a OnStop notification is sent out after the Resume,
-            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop 
+            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop
             */
         case IMovieListener::eMovieEvent_Aborted:
         {
@@ -726,7 +726,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
             // do nothing for unhandled IMovieListener events
             break;
         }
-    }    
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1858,12 +1858,6 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 {
     // Queue for processing, sequences will be removed after checked for auto start.
     m_newlyActivatedSequences.push_back(sequence);
-}
-
-//////////////////////////////////////////////////////////////////////////
-ILightAnimWrapper* CMovieSystem::CreateLightAnimWrapper(const char* name) const
-{
-    return CLightAnimWrapper::Create(name);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -38,9 +38,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     # Get the target source directory relative to the LY root folder
     ly_get_engine_relative_source_dir(${absolute_target_source_dir} relative_target_source_dir)
 
-    # get the component ID.  if the property isn't set for the target, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
-    get_property(install_component TARGET ${TARGET_NAME} PROPERTY INSTALL_COMPONENT)
-
     # All include directories marked PUBLIC or INTERFACE will be installed. We dont use PUBLIC_HEADER because in order to do that
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
@@ -69,7 +66,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
-                    COMPONENT ${install_component}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                     FILES_MATCHING
                         PATTERN *.h
                         PATTERN *.hpp
@@ -108,13 +105,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             TARGETS ${TARGET_NAME}
             ARCHIVE
                 DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-                COMPONENT ${install_component}
+                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
             LIBRARY
                 DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
-                COMPONENT ${install_component}
+                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
             RUNTIME
                 DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-                COMPONENT ${install_component}
+                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
     endif()
 
@@ -271,7 +268,7 @@ set_property(TARGET ${NAME_PLACEHOLDER}
     file(GENERATE OUTPUT "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
     install(FILES "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
         DESTINATION ${relative_target_source_dir}
-        COMPONENT ${install_component}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
@@ -320,12 +317,9 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
-    # get the component ID. if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
-    get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
-
     install(FILES "${target_install_source_dir}/CMakeLists.txt"
         DESTINATION ${relative_target_source_dir}
-        COMPONENT ${install_component}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
 endfunction()
@@ -344,6 +338,7 @@ function(ly_setup_o3de_install)
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
         DESTINATION .
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
 endfunction()
@@ -353,6 +348,7 @@ function(ly_setup_cmake_install)
 
     install(DIRECTORY "${LY_ROOT_FOLDER}/cmake"
         DESTINATION .
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
         REGEX "Findo3de.cmake" EXCLUDE
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
@@ -380,18 +376,32 @@ function(ly_setup_cmake_install)
             "${LY_ROOT_FOLDER}/CMakeLists.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
         DESTINATION .
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     # Collect all Find files that were added with ly_add_external_target_path
     unset(additional_find_files)
+    unset(additional_platform_files)
     get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
     foreach(additional_module_path ${additional_module_paths})
         unset(find_files)
         file(GLOB find_files "${additional_module_path}/Find*.cmake")
         list(APPEND additional_find_files "${find_files}")
+        foreach(find_file ${find_files})
+            # also copy the Platform/<current_platform> to the destination
+            cmake_path(GET find_file PARENT_PATH find_file_parent)
+            unset(plat_files)
+            file(GLOB plat_files "${find_file_parent}/Platform/${PAL_PLATFORM_NAME}/*.cmake")
+            list(APPEND additional_platform_files "${plat_files}")
+        endforeach()
     endforeach()
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+    install(FILES ${additional_platform_files}
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
@@ -408,6 +418,7 @@ function(ly_setup_cmake_install)
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
@@ -427,6 +438,7 @@ function(ly_setup_cmake_install)
     )
     install(FILES "${pal_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
 endfunction()
@@ -442,6 +454,7 @@ function(ly_setup_runtime_dependencies)
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
     endif()
 
@@ -476,7 +489,9 @@ endfunction()"
 
     list(REMOVE_DUPLICATES runtime_commands)
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
-    install(CODE "${runtime_commands_str}")
+    install(CODE "${runtime_commands_str}" 
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
 
 endfunction()
 
@@ -562,9 +577,15 @@ function(ly_setup_assets)
                 cmake_path(SET gem_install_dest_dir .)
             endif()
             if(IS_DIRECTORY ${gem_absolute_path})
-                install(DIRECTORY "${gem_absolute_path}" DESTINATION ${gem_install_dest_dir})
+                install(DIRECTORY "${gem_absolute_path}" 
+                    DESTINATION ${gem_install_dest_dir}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+                )
             elseif (EXISTS ${gem_absolute_path})
-                install(FILES ${gem_absolute_path} DESTINATION ${gem_install_dest_dir})
+                install(FILES ${gem_absolute_path} 
+                    DESTINATION ${gem_install_dest_dir}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+                )
             endif()
         endforeach()
 

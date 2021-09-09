@@ -777,7 +777,7 @@ namespace GridMate
         CtorContextBase::s_pCur->m_members.push_back(this);
     }
     //-----------------------------------------------------------------------------
-    CtorContextBase* CtorContextBase::s_pCur = NULL;
+    CtorContextBase* CtorContextBase::s_pCur = nullptr;
     //-----------------------------------------------------------------------------
     CtorContextBase::CtorContextBase()
     {
