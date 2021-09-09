@@ -467,6 +467,54 @@ namespace Multiplayer
         return netEntityId;
     }
 
+    AzFramework::EntitySpawnTicket NetworkEntityManager::RequestNetSpawnableInstantiation(const AZ::Data::Asset<AzFramework::Spawnable>& rootSpawnable)
+    {
+        const AzFramework::Spawnable::EntityList& entityList = rootSpawnable->GetEntities();
+        if (entityList.size() == 0)
+        {
+            AZ_Assert(false, "RequestNetSpawnableInstantiation: No entities in the spawnable %s", rootSpawnable.GetHint().c_str())
+            return {};
+        }
+
+        // The first entity in every spawnable is the root one 
+        const AZ::Entity* rootEntity = (entityList.begin())->get();
+
+        const auto* holderComponent = rootEntity->FindComponent<NetworkSpawnableHolderComponent>();
+        if(!holderComponent)
+        {
+            // This spawnable doesn't have a corresponding network spawnable.
+            return {};
+        }
+
+        // Retrieve the corresponding network spawnable asset
+        AZ::Data::Asset<AzFramework::Spawnable> netSpawnableAsset = holderComponent->GetNetworkSpawnableAsset();
+
+        // Prepare the parameters for the spawning process
+        AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+        optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
+
+        // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
+        optionalArgs.m_preInsertionCallback = [spawnableAssetId = netSpawnableAsset.GetId()](AzFramework::EntitySpawnTicket::Id,
+            AzFramework::SpawnableEntityContainerView entities)
+        {
+            for (uint32_t netEntityIndex = 0; netEntityIndex < entities.size(); netEntityIndex++)
+            {
+                AZ::Entity* netEntity = *(entities.begin() + netEntityIndex);
+                AZ::Name spawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(spawnableAssetId);
+
+                PrefabEntityId prefabEntityId;
+                prefabEntityId.m_prefabName = spawnableName;
+                prefabEntityId.m_entityOffset = netEntityIndex;
+                AZ::Interface<INetworkEntityManager>::Get()->SetupNetEntity(netEntity, prefabEntityId, NetEntityRole::Authority);
+            }
+        };
+
+        // Spawn with the newly created ticket. This allows the calling code to manage the lifetime of the constructed entities
+        AzFramework::EntitySpawnTicket ticket(netSpawnableAsset);
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(ticket, AZStd::move(optionalArgs));
+        return ticket;
+    }
+
     void NetworkEntityManager::OnRootSpawnableAssigned(
         [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
@@ -477,17 +525,27 @@ namespace Multiplayer
         {
             multiplayer->SendReadyForEntityUpdates(true);
         }
+
+        if(ShouldSpawnNetEntities())
+        {
+            m_rootNetSpawnableTicket = RequestNetSpawnableInstantiation(rootSpawnable);
+        }
     }
 
     void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
     {
-        // TODO: Do we need to clear all entities here?
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
 
         if (agentType == MultiplayerAgentType::Client)
         {
             multiplayer->SendReadyForEntityUpdates(false);
+        }
+
+        // Despawn any remaining net entities created locally
+        if (m_rootNetSpawnableTicket.IsValid())
+        {
+            AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(m_rootNetSpawnableTicket);
         }
     }
 
@@ -505,5 +563,13 @@ namespace Multiplayer
             AZ_Error("NetworkEntityManager", false, "SetupNetEntity called for an entity with no NetBindComponent. Entity: %s",
                 netEntity->GetName().c_str());
         }
+    }
+
+    bool NetworkEntityManager::ShouldSpawnNetEntities() const
+    {
+        const auto agentType = GetMultiplayer()->GetAgentType();
+        const bool shouldSpawnNetEntities =
+            (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
+        return shouldSpawnNetEntities;
     }
 }

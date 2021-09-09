@@ -33,7 +33,7 @@ namespace Multiplayer
         //! @}
 
         void SetNetworkSpawnableAsset(AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset);
-        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset();
+        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset() const;
 
     private:
         AZ::Data::Asset<AzFramework::Spawnable> m_networkSpawnableAsset{ AZ::Data::AssetLoadBehavior::PreLoad };

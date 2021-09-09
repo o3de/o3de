@@ -39,7 +39,7 @@ namespace Multiplayer
         m_networkSpawnableAsset = networkSpawnableAsset;
     }
 
-    AZ::Data::Asset<AzFramework::Spawnable> NetworkSpawnableHolderComponent::GetNetworkSpawnableAsset()
+    AZ::Data::Asset<AzFramework::Spawnable> NetworkSpawnableHolderComponent::GetNetworkSpawnableAsset() const
     {
         return m_networkSpawnableAsset;
     }

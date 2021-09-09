@@ -11,6 +11,7 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
@@ -92,6 +93,11 @@ namespace Multiplayer
     private:
         void RemoveEntities();
         NetEntityId NextId();
+        bool ShouldSpawnNetEntities() const;
+
+        // Note: This is an async function.
+        // The instantiated entities are not available immediately but will be constructed by the spawnable system
+        AzFramework::EntitySpawnTicket RequestNetSpawnableInstantiation(const AZ::Data::Asset<AzFramework::Spawnable>& rootSpawnable);
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
@@ -120,5 +126,6 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
+        AzFramework::EntitySpawnTicket m_rootNetSpawnableTicket;
     };
 }
