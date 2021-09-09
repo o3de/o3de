@@ -1399,7 +1399,7 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {% if NetworkInputsExposedToScriptCount > 0 %}
-    void {{ ControllerBaseName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    void {{ ControllerBaseName }}::CreateInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
         {{ ComponentName }}NetworkInput result;
         {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::CreateInput, deltaTime);
@@ -1411,7 +1411,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endcall %}
     }
 
-    void {{ ControllerBaseName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    void {{ ControllerBaseName }}::ProcessInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
         {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
         {{ ComponentName }}RequestBus::Event(GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::ProcessInput, {{ LowerFirst(ComponentName) }}Input, deltaTime);

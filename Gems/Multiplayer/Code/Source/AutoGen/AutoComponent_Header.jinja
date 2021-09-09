@@ -421,12 +421,12 @@ namespace {{ Component.attrib['Namespace'] }}
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
 
 {% if NetworkInputsExposedToScriptCount > 0 %}
-        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
-        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override;
-{% else %}
-        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {};
-        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {};
+        void CreateInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) final;
+        void ProcessInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) final;
 {% endif %}
+        void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+
         //! @}
 
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', false)|indent(8) -}}

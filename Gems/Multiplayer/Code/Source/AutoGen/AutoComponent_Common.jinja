@@ -420,9 +420,8 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ ControllerName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
 {%     if (GetNetworkInputsExposedToScriptCount(Component) | int) > 0 %}
-        // The following NetworkInputs have been exposed to script: {{ net_input_parameters_name|join(', ') }}.
-        // The base controller will request these inputs from script...
-        {{ ControllerName }}Base::CreateInput(input, deltaTime);
+        // Remember the following NetworkInputs have been exposed to script: {{ net_input_parameters_name|join(', ') }}.
+        // If a script is handling these inputs they will have already be filled out by now.
 {%     endif %}
     }
 
