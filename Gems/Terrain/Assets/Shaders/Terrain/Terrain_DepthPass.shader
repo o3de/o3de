@@ -1,5 +1,5 @@
 {
-    "Source" : "./Terrain.azsl",
+    "Source" : "./Terrain_DepthPass.azsl",
 
     "DepthStencilState" :
     { 
@@ -10,7 +10,7 @@
         }
     },
 
-    "DrawList" : "forward",
+    "DrawList" : "depth",
 
     "ProgramSettings":
     {
@@ -19,15 +19,8 @@
         {
           "name": "MainVS",
           "type": "Vertex"
-        },
-        {
-          "name": "MainPS",
-          "type": "Fragment"
         }
       ]
-    },
-
-    "BlendState" : {
-        "Enable" : false
     }
+
 }
