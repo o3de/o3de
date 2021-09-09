@@ -45,7 +45,7 @@ namespace AZ
     {
         namespace ShaderBuilderUtility
         {
-            static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
+            [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
