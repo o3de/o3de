@@ -36,7 +36,7 @@ namespace Terrain
     namespace
     {
         const uint32_t DEFAULT_UploadBufferSize = 512 * 1024; // 512k
-        const char* TerrainFPName = "TerrainFeatureProcessor";
+        [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
     namespace ShaderInputs
