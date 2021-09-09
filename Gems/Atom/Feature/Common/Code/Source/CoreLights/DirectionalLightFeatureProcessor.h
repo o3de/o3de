@@ -102,8 +102,7 @@ namespace AZ
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
-            uint32_t m_padding[3];
+            uint32_t m_padding[4];
         };
 
         class DirectionalLightFeatureProcessor final
@@ -218,10 +217,8 @@ namespace AZ
             void SetViewFrustumCorrectionEnabled(LightHandle handle, bool enabled) override;
             void SetDebugFlags(LightHandle handle, DebugDrawFlags flags) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
-            void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
-            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
