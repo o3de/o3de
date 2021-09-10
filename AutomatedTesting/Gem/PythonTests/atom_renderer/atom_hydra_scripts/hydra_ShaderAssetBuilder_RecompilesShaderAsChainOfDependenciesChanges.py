@@ -131,7 +131,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         # reported source dependency exists. Once the last file is copied then all source
         # dependencies are fully satisfied and the shader should compile successfully.
         # And this summarizes the importance of this Test: The previous version
-        # of ShaderAssetBuilder::CreateJobs was incapable of compiling the shader unders the conditions
+        # of ShaderAssetBuilder::CreateJobs was incapable of compiling the shader under the conditions
         # presented in this test, but with the new version of ShaderAssetBuilder::CreateJobs, which
         # doesn't use MCPP for #include files discovery, it should eventually compile the shader
         # once all the source files are in place.
@@ -175,7 +175,6 @@ if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
-    from editor_python_test_tools.asset_utils import Asset
     import ly_test_tools.environment.file_system as fs
 
     Report.start_test(ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges)
