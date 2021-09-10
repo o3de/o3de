@@ -74,7 +74,8 @@ namespace AZ
             // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 3
 
             FILE* fp = NULL;
-            if (fopen_s(&fp, path, "rb") || !fp)
+            azfopen(&fp, path, "rb"); // return type differs across platforms so can't do inside if
+            if (!fp)
             {
                 loadSettings.m_errorHandler("Cannot open file.");
                 return {};
@@ -127,8 +128,7 @@ namespace AZ
                 return {};
             }
 
-#pragma warning(push)
-#pragma warning(disable: 4611) // Disables "interaction between '_setjmp' and C++ object destruction is non-portable". See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option") // Disables "interaction between '_setjmp' and C++ object destruction is non-portable". See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
             if (setjmp(png_jmpbuf(png_ptr)))
             {
                 png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -136,7 +136,7 @@ namespace AZ
                 // We don't report an error message here because the user_error_fn should have done that already.
                 return {};
             }
-#pragma warning(pop)
+AZ_POP_DISABLE_WARNING
 
             png_init_io(png_ptr, fp);
 
@@ -221,7 +221,8 @@ namespace AZ
             // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 4
 
             FILE* fp = NULL;
-            if (fopen_s(&fp, path, "wb") || !fp)
+            azfopen(&fp, path, "wb"); // return type differs across platforms so can't do inside if
+            if (!fp)
             {
                 saveSettings.m_errorHandler("Cannot open file.");
                 return false;
@@ -248,8 +249,7 @@ namespace AZ
                 return false;
             }
 
-#pragma warning(push)
-#pragma warning(disable: 4611) // Disables "interaction between '_setjmp' and C++ object destruction is non-portable". See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option") // Disables "interaction between '_setjmp' and C++ object destruction is non-portable". See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
             if (setjmp(png_jmpbuf(png_ptr)))
             {
                 png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -257,7 +257,7 @@ namespace AZ
                 // We don't report an error message here because the user_error_fn should have done that already.
                 return false;
             }
-#pragma warning(pop)
+AZ_POP_DISABLE_WARNING
 
             png_init_io(png_ptr, fp);
 

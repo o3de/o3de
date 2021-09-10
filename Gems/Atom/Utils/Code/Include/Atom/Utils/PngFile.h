@@ -29,15 +29,17 @@ namespace AZ
 
             struct LoadSettings
             {
-                ErrorHandler m_errorHandler = {}; //!< optional callback function describing any errors that are encountered
+                ErrorHandler m_errorHandler{};    //!< optional callback function describing any errors that are encountered
                 bool m_stripAlpha = false;        //!< the alpha channel will be skipped, loading an RGBA image as RGB
+                LoadSettings() {};                // clang errors out if this is not provided.
             };
 
             struct SaveSettings
             {
-                ErrorHandler m_errorHandler = {}; //!< optional callback function describing any errors that are encountered
+                ErrorHandler m_errorHandler{}; //!< optional callback function describing any errors that are encountered
                 bool m_stripAlpha = false;        //!< the alpha channel will be skipped, saving an RGBA buffer as RGB
                 int m_compressionLevel = 6;       //!< this is the zlib compression level. See png_set_compression_level in png.h
+                SaveSettings() {};                // clang errors out if this is not provided.
             };
 
             // To keep things simple for now we limit all images to RGB and RGBA, 8 bits per channel.
