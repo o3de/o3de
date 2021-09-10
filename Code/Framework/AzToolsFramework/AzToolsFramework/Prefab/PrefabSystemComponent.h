@@ -102,6 +102,13 @@ namespace AzToolsFramework
             TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
 
             /**
+             * Changes relative filepath location of a prefab (in case of SaveAs operation).
+             * @param templateId An id of a Template to change filepath of.
+             * @param filePath new relative path of the Template.
+             */
+            void ChangeTemplateFilePath(const TemplateId& templateId, const AZ::IO::Path& filePath) override;
+
+            /**
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */

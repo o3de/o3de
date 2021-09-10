@@ -421,6 +421,38 @@ namespace AzToolsFramework
             return newTemplateId;
         }
 
+        void PrefabSystemComponent::ChangeTemplateFilePath(const TemplateId& templateId, const AZ::IO::Path& filePath)
+        {
+            auto findTemplateResult = FindTemplate(templateId);
+            if (!findTemplateResult.has_value())
+            {
+                AZ_Warning(
+                    "Prefab", false,
+                    "PrefabSystemComponent::ChangeTemplateFilePath - "
+                    "Template associated by given Id '%llu' doesn't exist in PrefabSystemComponent.",
+                    templateId);
+                return;
+            }
+            Template& templateToChange = findTemplateResult->get();
+            if (templateToChange.GetFilePath() == filePath)
+            {
+                return;
+            }
+            
+            m_templateFilePathToIdMap.erase(templateToChange.GetFilePath());
+            m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, templateId));
+
+            PrefabDom& prefabDom = templateToChange.GetPrefabDom();
+            PrefabDomValueReference pathReference = Prefab::PrefabDomUtils::FindPrefabDomValue(prefabDom, "Source");
+            if (pathReference)
+            {
+                const AZStd::string pathStr = filePath.String();
+                pathReference->get().SetString(rapidjson::StringRef(pathStr.c_str(), pathStr.length()), prefabDom.GetAllocator());
+            }
+
+            templateToChange.SetFilePath(filePath);
+        }
+
         void PrefabSystemComponent::RemoveTemplate(const TemplateId& templateId)
         {
             auto findTemplateResult = FindTemplate(templateId);

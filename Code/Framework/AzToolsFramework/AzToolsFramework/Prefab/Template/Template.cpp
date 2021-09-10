@@ -180,5 +180,9 @@ namespace AzToolsFramework
             return m_filePath;
         }
 
+        void Template::SetFilePath(const AZ::IO::Path& path)
+        {
+            m_filePath = path;
+        }
     } // namespace Prefab
 } // namespace AzToolsFramework
