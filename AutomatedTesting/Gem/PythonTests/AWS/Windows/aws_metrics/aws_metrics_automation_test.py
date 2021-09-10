@@ -167,10 +167,6 @@ class TestAWSMetricsWindows(object):
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
 
-        # Clear the analytics bucket objects before sending new metrics.
-        aws_metrics_utils.empty_bucket(
-            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
-
         log_monitor = setup(launcher, asset_processor)
 
         # Kinesis analytics application needs to be in the running state before we start the game launcher.
@@ -204,6 +200,10 @@ class TestAWSMetricsWindows(object):
             thread.start()
         for thread in operational_threads:
             thread.join()
+
+        # Clear the analytics bucket objects so that the S3 bucket can be destroyed during tear down.
+        aws_metrics_utils.empty_bucket(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
 
     def test_unauthorized_user_request_rejected(self,
                                                 level: str,
