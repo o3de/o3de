@@ -68,7 +68,7 @@ namespace AZ
             {
                 AZStd::string materialTypePath = AssetUtils::ResolvePathReference(jsonFileLoadContext->GetFilePath(), materialSourceData->m_materialType);
 
-                auto materialTypeJson = JsonSerializationUtils::ReadJsonFile(materialTypePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                auto materialTypeJson = JsonSerializationUtils::ReadJsonFile(materialTypePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!materialTypeJson.IsSuccess())
                 {
                     AZStd::string failureMessage;
