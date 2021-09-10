@@ -704,78 +704,7 @@ namespace ScriptCanvasEditor
 
         m_autoSaveTimer.setSingleShot(true);
         connect(&m_autoSaveTimer, &QTimer::timeout, this, &MainWindow::OnAutoSave);
-
         UpdateMenuState(false);
-
-        PromptForUpgrade();
-    }
-
-    void MainWindow::PromptForUpgrade()
-    {
-        static bool displayUpgradePrompt = false; // Set to true if you need the upgrade dialog to show up on ScriptCanvas editor open
-        if (displayUpgradePrompt && m_showUpgradeTool)
-        {
-            QTimer::singleShot(1.f, this, [this]()
-                {
-                    UpgradeTool* upgradeTool = aznew UpgradeTool(this);
-
-                    QPoint centerPoint = frameGeometry().center();
-
-                    upgradeTool->adjustSize();
-                    upgradeTool->move(centerPoint.x() - upgradeTool->width() / 2, centerPoint.y() - upgradeTool->height() / 2);
-
-                    if (upgradeTool->exec() == QDialog::Accepted)
-                    {
-                        // Manual correction
-                        size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
-                        QString message = QObject::tr("%1 Graph(s) upgraded<br>%2 graph(s) did not require upgrade").arg(upgradeTool->UpgradedGraphCount()).arg(upgradeTool->SkippedGraphCount());
-                        if (assetsThatNeedManualInspection > 0)
-                        {
-                            message.append(QObject::tr("<br>%1 graph(s) that need manual corrections. You will be prompted to review them after you close this dialog.<br>").arg(assetsThatNeedManualInspection));
-                        }
-
-                        // Report 
-                        char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
-                        AZStd::string outputFileName = AZStd::string::format("@devroot@/ScriptCanvasUpgradeReport.html");
-                        AZ::IO::FileIOBase::GetInstance()->ResolvePath(outputFileName.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-                        AZStd::string urlToReport = AZStd::string::format("For more information see the <a href=\"%s\">Upgrade Report</a>.", resolvedBuffer);
-                        message.append(QObject::tr("<br>%1").arg(urlToReport.c_str()));
-
-                        // Backup
-                        if (upgradeTool->HasBackup())
-                        {
-                            AZStd::string outputFileName2 = AZStd::string::format("@devroot@/ScriptCanvas_BACKUP");
-
-                            AZ::IO::FileIOBase::GetInstance()->ResolvePath(outputFileName2.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-
-                            AZStd::string backupPath = AZStd::string::format("<br>Open the <a href=\"%s\">Backup Folder</a>.", resolvedBuffer);
-                            message.append(QObject::tr("%1").arg(backupPath.c_str()));
-                        }
-
-                        // Done upgrading, show details
-                        QMessageBox mb(QMessageBox::Information,
-                            QObject::tr("Upgrade Complete"),
-                            message,
-                            QMessageBox::Ok, this);
-                        mb.setTextFormat(Qt::RichText);
-
-                        centerPoint = frameGeometry().center();
-
-                        mb.adjustSize();
-                        mb.move(centerPoint.x() - width() / 2, centerPoint.y() - height() / 2);
-
-                        mb.exec();
-
-                        // If there are graphs that need manual correction, show the helper
-                        if (assetsThatNeedManualInspection > 0)
-                        {
-                            UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
-                            upgradeHelper->show();
-                        }
-                    }
-
-                });
-        }
     }
 
     MainWindow::~MainWindow()

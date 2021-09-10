@@ -10,24 +10,28 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 #include <QProgressBar>
 AZ_POP_DISABLE_WARNING
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzQtComponents/Components/StyledDialog.h>
-#include <IConsole.h>
-#include <ISystem.h>
+
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Core.h>
+
+#include <ISystem.h>
+#include <IConsole.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 #endif
 
 class QPushButton;
 
 namespace Ui
 {
-    class VersionExplorer;
+    class Scanner;
 }
 
 namespace AzQtComponents
@@ -37,21 +41,8 @@ namespace AzQtComponents
 
 namespace ScriptCanvasEditor
 {
-    //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
-    //! the upgrade tool to work even if the editor is not in the foreground
-    class EditorKeepAlive
-    {
-    public:
-        EditorKeepAlive();
-        ~EditorKeepAlive();
-
-    private:
-        int m_keepEditorActive;
-        ICVar* m_edKeepEditorActive;
-    };
-
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
-    class VersionExplorer
+    class Scanner
         : public AzQtComponents::StyledDialog
         , private AZ::SystemTickBus::Handler
         , private UpgradeNotifications::Bus::Handler
@@ -60,10 +51,10 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VersionExplorer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
 
-        explicit VersionExplorer(QWidget* parent = nullptr);
-        ~VersionExplorer();
+        explicit Scanner(QWidget* parent = nullptr);
+        ~Scanner();
 
     private:
 
@@ -129,7 +120,7 @@ namespace ScriptCanvasEditor
 
         AZ::Data::Asset<AZ::Data::AssetData> m_currentAsset;
 
-        AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
+        AZStd::unique_ptr<Ui::Scanner> m_ui;
 
         AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
 

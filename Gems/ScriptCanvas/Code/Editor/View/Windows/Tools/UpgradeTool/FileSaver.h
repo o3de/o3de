@@ -10,17 +10,21 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 #include <QProgressBar>
 AZ_POP_DISABLE_WARNING
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzQtComponents/Components/StyledDialog.h>
-#include <IConsole.h>
-#include <ISystem.h>
+
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Core.h>
+
+#include <ISystem.h>
+#include <IConsole.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 #endif
 
 class QPushButton;

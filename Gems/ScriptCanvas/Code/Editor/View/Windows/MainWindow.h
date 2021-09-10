@@ -51,7 +51,6 @@
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
 
 #if SCRIPTCANVAS_EDITOR
@@ -806,7 +805,5 @@ namespace ScriptCanvasEditor
         Workspace* m_workspace;
 
         void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId);
-
-        void PromptForUpgrade();
     };
 }
