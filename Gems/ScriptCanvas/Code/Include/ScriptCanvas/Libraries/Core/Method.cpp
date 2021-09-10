@@ -769,27 +769,30 @@ namespace ScriptCanvas
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
-                m_warnOnMissingFunction = true;
-                const AZ::BehaviorClass* bcClass{};
-                const AZ::BehaviorMethod* method{};
-                EventType eventType;
+                if (!m_lookupName.empty() || !m_className.empty())
+                {
+                    m_warnOnMissingFunction = true;
+                    const AZ::BehaviorClass* bcClass{};
+                    const AZ::BehaviorMethod* method{};
+                    EventType eventType;
 
-                if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
-                {
-                    m_eventType = eventType;
-                    ConfigureMethod(*method, bcClass);
-                }
-                else
-                {
-                    if (!m_method)
+                    if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
                     {
-                        AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        m_eventType = eventType;
+                        ConfigureMethod(*method, bcClass);
                     }
-                }
+                    else
+                    {
+                        if (!m_method)
+                        {
+                            AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        }
+                    }
 
-                if (m_resultSlotIDs.empty())
-                {
-                    m_resultSlotIDs.emplace_back(SlotId{});
+                    if (m_resultSlotIDs.empty())
+                    {
+                        m_resultSlotIDs.emplace_back(SlotId{});
+                    }
                 }
 
                 Node::OnDeserialize();
@@ -798,6 +801,11 @@ namespace ScriptCanvas
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             void Method::OnWriteEnd()
             {
+                if (m_lookupName.empty() && m_className.empty())
+                {
+                    return;
+                }
+
                 OnDeserialize();
             }
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)

@@ -176,6 +176,8 @@ set(FILES
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -440,6 +442,7 @@ set(FILES
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
