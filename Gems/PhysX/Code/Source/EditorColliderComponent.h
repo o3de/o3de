@@ -46,8 +46,8 @@ namespace PhysX
 {
     struct EditorProxyAssetShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
+        AZ_CLASS_ALLOCATOR(PhysX::EditorProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysX::EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
         virtual ~EditorProxyAssetShapeConfig() = default;
 
@@ -84,7 +84,7 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
-        private:
+    private:
         bool ShowingSubdivisionLevel() const;
         AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
