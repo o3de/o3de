@@ -18,7 +18,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RHI.Edit/Utils.h>
@@ -388,7 +388,7 @@ namespace AZ
                 for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo : shaderVariantList.m_shaderVariants)
                 {
                     AZStd::string variantInfoAsJsonString;
-                    const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
+                    [[maybe_unused]] const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
                     AZ_Assert(convertSuccess, "Failed to convert VariantInfo to json string");
 
                     AssetBuilderSDK::JobDescriptor jobDescriptor;
@@ -478,7 +478,7 @@ namespace AZ
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
             // The shader options define what options are available, what are the allowed values/range
             // for each option and what is its default value.
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -509,7 +509,7 @@ namespace AZ
             }
 
             auto functionsJsonPath = functionsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -541,7 +541,7 @@ namespace AZ
             }
 
             auto srgJsonPath = srgJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -598,7 +598,7 @@ namespace AZ
             }
     
             auto bindingsJsonPath = bindingsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -630,7 +630,7 @@ namespace AZ
             }
 
             hlslSourcePath = hlslSourcePathOutcome.TakeValue();
-            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath);
+            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!hlslSourceOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -743,7 +743,6 @@ namespace AZ
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AZStd::string fullPath;
@@ -756,7 +755,7 @@ namespace AZ
 
             const AZStd::string& variantJsonString = jobParameters.at(ShaderVariantJobVariantParam);
             RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
+            [[maybe_unused]] const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
             AZ_Assert(fromJsonStringSuccess, "Failed to convert json string to VariantInfo");
 
             RPI::ShaderSourceData shaderSourceDescriptor;
@@ -777,6 +776,8 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
+            
+            const AZStd::sys_time_t shaderVariantAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
@@ -911,7 +912,7 @@ namespace AZ
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
                         *shaderPlatformInterface, request.m_platformInfo, buildOptions.m_compilerArguments, request.m_tempDirPath,
-                        startTime,
+                        shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,

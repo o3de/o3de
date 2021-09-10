@@ -57,6 +57,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabLoader::Reflect(context);
 
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)
@@ -369,9 +370,11 @@ namespace AzToolsFramework
         PrefabDom& PrefabSystemComponent::FindTemplateDom(TemplateId templateId)
         {
             AZStd::optional<AZStd::reference_wrapper<Template>> findTemplateResult = FindTemplate(templateId);
-            AZ_Assert(findTemplateResult.has_value(),
+            AZ_Assert(
+                findTemplateResult.has_value(),
                 "PrefabSystemComponent::FindTemplateDom - Unable to retrieve Prefab template with id: '%llu'. "
-                "Template could not be found", templateId);
+                "Template could not be found",
+                templateId);
 
             AZ_Assert(findTemplateResult->get().IsValid(),
                 "PrefabSystemComponent::FindTemplateDom - Unable to retrieve Prefab template with id: '%llu'. "
@@ -462,7 +465,7 @@ namespace AzToolsFramework
                         linkId, templateId, templateToDelete.GetFilePath().c_str());
                 }
 
-                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != 0;
+                result = m_templateToLinkIdsMap.erase(templateToLinkIterator) != nullptr;
                 AZ_Assert(result,
                     "Prefab - PrefabSystemComponent::RemoveTemplate - "
                     "Failed to remove Template with Id '%llu' on file path '%s' "
@@ -526,12 +529,10 @@ namespace AzToolsFramework
 
             Template& targetTemplate = targetTemplateReference->get();
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
-#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -753,6 +754,89 @@ namespace AzToolsFramework
             }
         }
 
+        bool PrefabSystemComponent::AreDirtyTemplatesPresent(TemplateId rootTemplateId)
+        {
+            TemplateReference prefabTemplate = FindTemplate(rootTemplateId);
+
+            if (!prefabTemplate.has_value())
+            {
+                AZ_Assert(false, "Template with id %llu is not found", rootTemplateId);
+                return false;
+            }
+
+            if (IsTemplateDirty(rootTemplateId))
+            {
+                return true;
+            }
+
+            const Template::Links& linkIds = prefabTemplate->get().GetLinks();
+
+            for (LinkId linkId : linkIds)
+            {
+                auto linkIterator = m_linkIdMap.find(linkId);
+                if (linkIterator != m_linkIdMap.end())
+                {
+                    return AreDirtyTemplatesPresent(linkIterator->second.GetSourceTemplateId());
+                }
+            }
+            return false;
+        }
+
+        void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId rootTemplateId)
+        {
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(rootTemplateId);  
+
+            for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
+            {
+                auto dirtyTemplateIterator = m_templateFilePathToIdMap.find(dirtyTemplatePath);
+                if (dirtyTemplateIterator == m_templateFilePathToIdMap.end())
+                {
+                    AZ_Assert(false, "Template id for template with path '%s' is not found.", dirtyTemplatePath);
+                }
+                else
+                {
+                    m_prefabLoader.SaveTemplate(dirtyTemplateIterator->second);
+                }
+            }
+        }
+
+        AZStd::set<AZ::IO::PathView> PrefabSystemComponent::GetDirtyTemplatePaths(TemplateId rootTemplateId)
+        {
+            AZStd::vector<AZ::IO::PathView> dirtyTemplatePathVector;
+            GetDirtyTemplatePathsHelper(rootTemplateId, dirtyTemplatePathVector);
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
+            dirtyTemplatePaths.insert(dirtyTemplatePathVector.begin(), dirtyTemplatePathVector.end());
+            return AZStd::move(dirtyTemplatePaths);
+        }
+
+        void PrefabSystemComponent::GetDirtyTemplatePathsHelper(
+            TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths)
+        {
+            TemplateReference prefabTemplate = FindTemplate(rootTemplateId);
+
+            if (!prefabTemplate.has_value())
+            {
+                AZ_Assert(false, "Template with id %llu is not found", rootTemplateId);
+                return;
+            }
+
+            if (IsTemplateDirty(rootTemplateId))
+            {
+                dirtyTemplatePaths.emplace_back(prefabTemplate->get().GetFilePath());
+            }
+
+            const Template::Links& linkIds = prefabTemplate->get().GetLinks();
+
+            for (LinkId linkId : linkIds)
+            {
+                auto linkIterator = m_linkIdMap.find(linkId);
+                if (linkIterator != m_linkIdMap.end())
+                {
+                    GetDirtyTemplatePathsHelper(linkIterator->second.GetSourceTemplateId(), dirtyTemplatePaths);
+                }
+            }
+        }
+
         bool PrefabSystemComponent::ConnectTemplates(
             Link& link,
             TemplateId sourceTemplateId,
@@ -770,10 +854,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
-#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
 
@@ -785,8 +867,7 @@ namespace AzToolsFramework
             AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
             PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
             AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
-            AZ_Assert(
-                sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
+            AZ_Assert(sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
                 "The name of the source template in the nested instance DOM does not match the name of the source template already loaded");
 
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::PatchesName);

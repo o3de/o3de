@@ -1234,8 +1234,6 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
 QMimeData* OutlinerListModel::mimeData(const QModelIndexList& indexes) const
 {
     AZ_PROFILE_FUNCTION(AzToolsFramework);
-    AZ::TypeId uuid1 = AZ::AzTypeInfo<AZ::Entity>::Uuid();
-    AZ::TypeId uuid2 = AZ::AzTypeInfo<AzToolsFramework::EditorEntityIdContainer>::Uuid();
 
     AzToolsFramework::EditorEntityIdContainer entityIdList;
     for (const QModelIndex& index : indexes)
@@ -1462,13 +1460,11 @@ void OutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, 
     QueueEntityUpdate(entityId);
 }
 
-void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentId, AZ::EntityId childId)
+void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
 {
     //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
     //so disallow selection updates until change is complete
     emit EnableSelectionUpdates(false);
-    auto parentIndex = GetIndexFromEntity(parentId);
-    auto childIndex = GetIndexFromEntity(childId);
     beginResetModel();
 }
 
@@ -2476,10 +2472,10 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
     auto backgroundBoxRect = option.rect;
 
-    backgroundBoxRect.setX(backgroundBoxRect.x() + 0.5);
-    backgroundBoxRect.setY(backgroundBoxRect.y() + 2.5);
-    backgroundBoxRect.setWidth(backgroundBoxRect.width() - 1.0);
-    backgroundBoxRect.setHeight(backgroundBoxRect.height() - 1.0);
+    backgroundBoxRect.setX(static_cast<int>(backgroundBoxRect.x() + 0.5f));
+    backgroundBoxRect.setY(static_cast<int>(backgroundBoxRect.y() + 2.5f));
+    backgroundBoxRect.setWidth(static_cast<int>(backgroundBoxRect.width() - 1.0f));
+    backgroundBoxRect.setHeight(static_cast<int>(backgroundBoxRect.height() - 1.0f));
 
     const qreal sliceBorderHeight = 0.8f;
 
@@ -2513,7 +2509,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
             else
             {
                 auto newRect = option.rect;
-                newRect.setHeight(newRect.height() - 1.0);
+                newRect.setHeight(static_cast<int>(newRect.height() - 1.0f));
                 path.addRect(newRect);
             }
 
@@ -2597,7 +2593,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
                 QString htmlStripped = layerInfoString;
                 htmlStripped.remove(htmlMarkupRegex);
                 const float layerInfoPadding = 1.2f;
-                textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding;
+                textWidthAvailable -= static_cast<int>(fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding);
             }
 
             entityNameRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);

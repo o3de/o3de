@@ -10,6 +10,7 @@
 #include "WhiteBoxToolApiReflection.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 #include <WhiteBox/WhiteBoxComponentBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>

@@ -528,7 +528,6 @@ void SandboxIntegrationManager::EntityParentChanged(
         oldAncestor = nextParentId;
     } while (oldAncestor.IsValid());
 
-    AZ::EntityId newAncestors = newParentId;
     AZ::EntityId newAncestor = newParentId;
 
     bool isGoingToRootScene = false;
@@ -626,7 +625,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         {
             view->GetDimensions(&width, &height);
         }
-        m_contextMenuViewPoint.Set(width / 2, height / 2);
+        m_contextMenuViewPoint.Set(static_cast<float>(width / 2), static_cast<float>(height / 2));
     }
     else
     {
@@ -721,7 +720,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         if (selected.size() > 0)
         {
             action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [this, selected]
+            QObject::connect(action, &QAction::triggered, [selected]
             {
                 AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
@@ -842,7 +841,7 @@ void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
 
             QAction* findLayerAssetAction = menu->addAction(QObject::tr("Find layer in Asset Browser"));
             findLayerAssetAction->setToolTip(QObject::tr("Selects this layer in the Asset Browser"));
-            QObject::connect(findLayerAssetAction, &QAction::triggered, [this, fullFilePath] {
+            QObject::connect(findLayerAssetAction, &QAction::triggered, [fullFilePath] {
                 QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
 
                 AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
@@ -1009,7 +1008,7 @@ void SandboxIntegrationManager::HandleObjectModeSelection(const AZ::Vector2& poi
     if (m_inObjectPickMode)
     {
         CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-        const QPoint viewPoint(point.GetX(), point.GetY());
+        const QPoint viewPoint(static_cast<int>(point.GetX()), static_cast<int>(point.GetY()));
 
         HitContext hitInfo;
         hitInfo.view = view;
@@ -1451,7 +1450,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     // will be created at the origin.
     if (view)
     {
-        const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
+        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
         worldPosition = view->GetHitLocation(viewPoint);
     }
 
@@ -1641,7 +1640,7 @@ void SandboxIntegrationManager::InstantiateSliceFromAssetId(const AZ::Data::Asse
     // will be instantiated at the origin.
     if (view)
     {
-        const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
+        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
         sliceWorldTransform = AZ::Transform::CreateTranslation(LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint))));
     }
 

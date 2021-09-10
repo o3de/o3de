@@ -96,7 +96,7 @@ namespace EMotionFX
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 
-            static const size_t s_invalidJointIndex = ~0;
+            static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };
 
         using ActorComponentRequestBus = AZ::EBus<ActorComponentRequests>;

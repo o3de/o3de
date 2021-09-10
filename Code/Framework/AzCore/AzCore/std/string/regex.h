@@ -22,11 +22,6 @@
 // used for std::pointer_traits \note do an AZStd version
 #include <memory>
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 6011 28198)
-#endif // AZ_COMPILER_MSVC
-
  #ifndef AZ_REGEX_MAX_COMPLEXITY_COUNT
   #define AZ_REGEX_MAX_COMPLEXITY_COUNT 10000000L   /* set to 0 to disable */
  #endif /* AZ_REGEX_MAX_COMPLEXITY_COUNT */
@@ -4766,7 +4761,3 @@ namespace AZStd
         Trans();
     }
 } // namespace AZStd
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC

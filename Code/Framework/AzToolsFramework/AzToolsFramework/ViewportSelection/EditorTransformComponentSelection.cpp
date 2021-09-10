@@ -44,39 +44,46 @@ namespace AzToolsFramework
 
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLineWidth,
+        ed_viewportGizmoAxisLineWidth,
         4.0f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The width of the line for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLineLength,
+        ed_viewportGizmoAxisLineLength,
         0.7f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The length of the line for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLabelOffset,
+        ed_viewportGizmoAxisLabelOffset,
         1.15f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The offset of the label for the viewport axis gizmo");
     AZ_CVAR(
         float,
-        cl_viewportGizmoAxisLabelSize,
+        ed_viewportGizmoAxisLabelSize,
         1.0f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The size of each label for the viewport axis gizmo");
     AZ_CVAR(
         AZ::Vector2,
-        cl_viewportGizmoAxisScreenPosition,
+        ed_viewportGizmoAxisScreenPosition,
         AZ::Vector2(0.045f, 0.9f),
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
+    AZ_CVAR(
+        bool,
+        ed_viewportStickySelect,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Sticky select implies a single click will not change selection with an entity already selected");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const s_togglePivotTitleRightClick = "Toggle pivot";
@@ -488,8 +495,8 @@ namespace AzToolsFramework
     void SnappingCluster::TrySetVisible(const bool visible)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         // show snapping viewport ui only if there are entities selected and snapping is enabled
         SetViewportUiClusterVisible(m_clusterId, visible && snapping);
@@ -991,14 +998,19 @@ namespace AzToolsFramework
 
     // ask the visible entity data cache if the entity is selectable in the viewport
     // (useful in the context of drawing when we only care about entities we can see)
-    static bool SelectableInVisibleViewportCache(const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
+    // note: return the index if it is selectable, nullopt otherwise
+    static AZStd::optional<size_t> SelectableInVisibleViewportCache(
+        const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
-            return entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex);
+            if (entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex))
+            {
+                return *entityIndex;
+            }
         }
 
-        return false;
+        return AZStd::nullopt;
     }
 
     static AZ::ComponentId GetTransformComponentId(const AZ::EntityId entityId)
@@ -1249,6 +1261,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<TranslationManipulators> translationManipulators = AZStd::make_unique<TranslationManipulators>(
             TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
+        translationManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*translationManipulators);
 
@@ -1376,6 +1389,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<RotationManipulators> rotationManipulators =
             AZStd::make_unique<RotationManipulators>(AZ::Transform::CreateIdentity());
+        rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*rotationManipulators);
 
@@ -1545,6 +1559,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZStd::unique_ptr<ScaleManipulators> scaleManipulators = AZStd::make_unique<ScaleManipulators>(AZ::Transform::CreateIdentity());
+        scaleManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
 
         InitializeManipulators(*scaleManipulators);
 
@@ -1706,17 +1721,17 @@ namespace AzToolsFramework
         m_pivotOverrideFrame.Reset();
     }
 
-    bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityIdUnderCursor)
+    bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        if (entityIdUnderCursor.IsValid())
+        if (entityId.IsValid())
         {
-            if (IsEntitySelectedInternal(entityIdUnderCursor, m_selectedEntityIds))
+            if (IsEntitySelectedInternal(entityId, m_selectedEntityIds))
             {
                 if (!UndoRedoOperationInProgress())
                 {
-                    RemoveEntityFromSelection(entityIdUnderCursor);
+                    RemoveEntityFromSelection(entityId);
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
@@ -1739,7 +1754,7 @@ namespace AzToolsFramework
             {
                 if (!UndoRedoOperationInProgress())
                 {
-                    AddEntityToSelection(entityIdUnderCursor);
+                    AddEntityToSelection(entityId);
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
@@ -1780,25 +1795,21 @@ namespace AzToolsFramework
 
         // for entities selected with no bounds of their own (just TransformComponent)
         // check selection against the selection indicator aabb
-        for (AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
-            if (!SelectableInVisibleViewportCache(*m_entityDataCache, entityId))
+            if (const auto entityIndex = SelectableInVisibleViewportCache(*m_entityDataCache, entityId); entityIndex.has_value())
             {
-                continue;
-            }
+                const AZ::Transform& worldFromLocal = m_entityDataCache->GetVisibleEntityTransform(*entityIndex);
+                const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
+                const AZ::Vector3 scaledSize =
+                    AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
 
-            AZ::Transform worldFromLocal;
-            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
-            const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
-
-            const AZ::Vector3 scaledSize =
-                AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
-
-            if (AabbIntersectMouseRay(
-                    mouseInteraction.m_mouseInteraction, AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
-            {
-                m_cachedEntityIdUnderCursor = entityId;
+                if (AabbIntersectMouseRay(
+                        mouseInteraction.m_mouseInteraction,
+                        AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
+                {
+                    m_cachedEntityIdUnderCursor = entityId;
+                }
             }
         }
 
@@ -2544,8 +2555,8 @@ namespace AzToolsFramework
             if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
             {
                 float gridSize = 1.0f;
-                ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+                ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
                 SnapSelectedEntitiesToWorldGrid(gridSize);
             }
@@ -3487,7 +3498,7 @@ namespace AzToolsFramework
         const auto cameraProjection = AzFramework::CameraProjection(gizmoCameraState);
 
         // screen space offset to move the 2d gizmo around
-        const AZ::Vector2 screenOffset = AZ::Vector2(cl_viewportGizmoAxisScreenPosition) - AZ::Vector2(0.5f, 0.5f);
+        const AZ::Vector2 screenOffset = AZ::Vector2(ed_viewportGizmoAxisScreenPosition) - AZ::Vector2(0.5f, 0.5f);
 
         // map from a position in world space (relative to the the gizmo camera near the origin) to a position in
         // screen space
@@ -3499,7 +3510,7 @@ namespace AzToolsFramework
         };
 
         // get all important axis positions in screen space
-        const float lineLength = cl_viewportGizmoAxisLineLength;
+        const float lineLength = ed_viewportGizmoAxisLineLength;
         const auto gizmoStart = calculateGizmoAxis(AZ::Vector3::CreateZero());
         const auto gizmoEndAxisX = calculateGizmoAxis(-AZ::Vector3::CreateAxisX() * lineLength);
         const auto gizmoEndAxisY = calculateGizmoAxis(-AZ::Vector3::CreateAxisY() * lineLength);
@@ -3510,7 +3521,7 @@ namespace AzToolsFramework
         const AZ::Vector2 gizmoAxisZ = gizmoEndAxisZ - gizmoStart;
 
         // draw the axes of the gizmo
-        debugDisplay.SetLineWidth(cl_viewportGizmoAxisLineWidth);
+        debugDisplay.SetLineWidth(ed_viewportGizmoAxisLineWidth);
         debugDisplay.SetColor(AZ::Colors::Red);
         debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisX, 1.0f);
         debugDisplay.SetColor(AZ::Colors::Lime);
@@ -3519,14 +3530,14 @@ namespace AzToolsFramework
         debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisZ, 1.0f);
         debugDisplay.SetLineWidth(1.0f);
 
-        const float labelOffset = cl_viewportGizmoAxisLabelOffset;
+        const float labelOffset = ed_viewportGizmoAxisLabelOffset;
         const float screenScale = GetScreenDisplayScaling(viewportId);
         const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
         const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
         const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
 
         // draw the label of of each axis for the gizmo
-        const float labelSize = cl_viewportGizmoAxisLabelSize;
+        const float labelSize = ed_viewportGizmoAxisLabelSize;
         debugDisplay.SetColor(AZ::Colors::White);
         debugDisplay.Draw2dTextLabel(labelXScreenPosition.GetX(), labelXScreenPosition.GetY(), labelSize, "X", true);
         debugDisplay.Draw2dTextLabel(labelYScreenPosition.GetX(), labelYScreenPosition.GetY(), labelSize, "Y", true);

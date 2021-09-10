@@ -1520,6 +1520,7 @@ namespace AZ
             {
                 if (m_writeElementResultStack.empty())
                 {
+                    AZ_UNUSED(classData); // Prevent unused warning in release builds
                     AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                     return true;
                 }
@@ -1581,6 +1582,7 @@ namespace AZ
                     {
                         if (m_writeElementResultStack.empty())
                         {
+                            AZ_UNUSED(classData); // Prevent unused warning in release builds
                             AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                             return true;
                         }
@@ -1644,6 +1646,7 @@ namespace AZ
                 {
                     if (m_writeElementResultStack.empty())
                     {
+                        AZ_UNUSED(classData); // Prevent unused warning in release builds
                         AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                         return true;
                     }

@@ -6,11 +6,10 @@
  *
  */
 
-
 #include "UiAnimUndoManager.h"
 #include "UiAnimUndoObject.h"
 #include "Undo/IUndoManagerListener.h"
-#include <list>
+#include <CryCommon/StlUtils.h>
 
 // UI Editor
 #include "EditorCommon.h"

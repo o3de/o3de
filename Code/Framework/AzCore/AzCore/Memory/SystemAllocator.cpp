@@ -17,15 +17,23 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-#define AZCORE_SYS_ALLOCATOR_HPPA  // If you disable this make sure you start building the heapschema.cpp
-//#define AZCORE_SYS_ALLOCATOR_MALLOC
+#define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
+#define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
+#define AZCORE_SYSTEM_ALLOCATOR_HEAP 3
 
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
-#   include <AzCore/Memory/HphaSchema.h>
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
-#include <AzCore/Memory/MallocSchema.h>
+#if !defined(AZCORE_SYSTEM_ALLOCATOR)
+    // define the default
+    #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
+#endif
+
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
+    #include <AzCore/Memory/HphaSchema.h>
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    #include <AzCore/Memory/MallocSchema.h>
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
+    #include <AzCore/Memory/HeapSchema.h>
 #else
-#   include <AzCore/Memory/HeapSchema.h>
+    #error "Invalid allocator selected for SystemAllocator"
 #endif
 
 
@@ -34,12 +42,12 @@ using namespace AZ;
 //////////////////////////////////////////////////////////////////////////
 // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
 static bool g_isSystemSchemaUsed = false;
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
-static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
-static AZStd::aligned_storage<sizeof(MallocSchema), AZStd::alignment_of<MallocSchema>::value>::type g_systemSchema;
-#else
-static AZStd::aligned_storage<sizeof(HeapSchema), AZStd::alignment_of<HeapSchema>::value>::type g_systemSchema;
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
+    static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    static AZStd::aligned_storage<sizeof(MallocSchema), AZStd::alignment_of<MallocSchema>::value>::type g_systemSchema;
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
+    static AZStd::aligned_storage<sizeof(HeapSchema), AZStd::alignment_of<HeapSchema>::value>::type g_systemSchema;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,9 +105,9 @@ SystemAllocator::Create(const Descriptor& desc)
     else
     {
         m_isCustom = false;
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
-        HphaSchema::Descriptor      heapDesc;
-        heapDesc.m_pageSize     = desc.m_heap.m_pageSize;
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
+        HphaSchema::Descriptor heapDesc;
+        heapDesc.m_pageSize = desc.m_heap.m_pageSize;
         heapDesc.m_poolPageSize = desc.m_heap.m_poolPageSize;
         AZ_Assert(desc.m_heap.m_numFixedMemoryBlocks <= 1, "We support max1 memory block at the moment!");
         if (desc.m_heap.m_numFixedMemoryBlocks > 0)
@@ -111,11 +119,10 @@ SystemAllocator::Create(const Descriptor& desc)
         heapDesc.m_isPoolAllocations = desc.m_heap.m_isPoolAllocations;
         // Fix SystemAllocator from growing in small chunks
         heapDesc.m_systemChunkSize = desc.m_heap.m_systemChunkSize;
-
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
         MallocSchema::Descriptor heapDesc;
-#else
-        HeapSchema::Descriptor      heapDesc;
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
+        HeapSchema::Descriptor heapDesc;
         memcpy(heapDesc.m_memoryBlocks, desc.m_heap.m_memoryBlocks, sizeof(heapDesc.m_memoryBlocks));
         memcpy(heapDesc.m_memoryBlocksByteSize, desc.m_heap.m_memoryBlocksByteSize, sizeof(heapDesc.m_memoryBlocksByteSize));
         heapDesc.m_numMemoryBlocks = desc.m_heap.m_numMemoryBlocks;
@@ -124,11 +131,11 @@ SystemAllocator::Create(const Descriptor& desc)
         {
             AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
 
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
             m_allocator = new(&g_systemSchema)HphaSchema(heapDesc);
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
             m_allocator = new(&g_systemSchema)MallocSchema(heapDesc);
-#else
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
             m_allocator = new(&g_systemSchema)HeapSchema(heapDesc);
 #endif
             g_isSystemSchemaUsed = true;
@@ -139,15 +146,14 @@ SystemAllocator::Create(const Descriptor& desc)
             // this class should be inheriting from SystemAllocator
             AZ_Assert(AllocatorInstance<SystemAllocator>::IsReady(), "System allocator must be created before any other allocator! They allocate from it.");
 
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
             m_allocator = azcreate(HphaSchema, (heapDesc), SystemAllocator);
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
             m_allocator = azcreate(MallocSchema, (heapDesc), SystemAllocator);
-#else
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
             m_allocator = azcreate(HeapSchema, (heapDesc), SystemAllocator);
 #endif
-
-            if (m_allocator == NULL)
+            if (m_allocator == nullptr)
             {
                 isReady = false;
             }
@@ -178,11 +184,11 @@ SystemAllocator::Destroy()
     {
         if ((void*)m_allocator == (void*)&g_systemSchema)
         {
-#ifdef AZCORE_SYS_ALLOCATOR_HPPA
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
             static_cast<HphaSchema*>(m_allocator)->~HphaSchema();
-#elif defined(AZCORE_SYS_ALLOCATOR_MALLOC)
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
             static_cast<MallocSchema*>(m_allocator)->~MallocSchema();
-#else
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
             static_cast<HeapSchema*>(m_allocator)->~HeapSchema();
 #endif
             g_isSystemSchemaUsed = false;
@@ -231,7 +237,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
     byteSize = MemorySizeAdjustedUp(byteSize);
     SystemAllocator::pointer_type address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
 
-    if (address == 0)
+    if (address == nullptr)
     {
         // Free all memory we can and try again!
         AllocatorManager::Instance().GarbageCollect();
@@ -239,7 +245,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
         address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
     }
 
-    if (address == 0)
+    if (address == nullptr)
     {
         byteSize = MemorySizeAdjustedDown(byteSize);  // restore original size
 
@@ -252,7 +258,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
         }
     }
 
-    AZ_Assert(address != 0, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
+    AZ_Assert(address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
 
     AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
     AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));

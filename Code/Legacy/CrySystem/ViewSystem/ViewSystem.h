@@ -53,7 +53,6 @@ public:
     virtual unsigned int GetViewId(IView* pView);
     virtual unsigned int GetActiveViewId();
 
-    virtual void Serialize(TSerialize ser);
     virtual void PostSerialize();
 
     virtual IView* GetViewByEntityId(const AZ::EntityId& id, bool forceCreate);
@@ -105,8 +104,6 @@ public:
     {
         return stl::find_and_erase(m_listeners, pListener);
     }
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
     void ClearAllViews();
 

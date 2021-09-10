@@ -16,6 +16,7 @@
 #include "CryPath.h"
 
 #include <LoadScreenBus.h>
+#include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Debug/AssetTracking.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -36,17 +37,9 @@ namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";
 
-void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_levelName);
-    pSizer->AddObject(m_levelPath);
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
-    LOADING_TIME_PROFILE_SECTION;
-
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
@@ -69,8 +62,6 @@ bool CLevelInfo::OpenLevelPak()
 //////////////////////////////////////////////////////////////////////////
 void CLevelInfo::CloseLevelPak()
 {
-    LOADING_TIME_PROFILE_SECTION;
-
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
@@ -190,7 +181,6 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     , m_pCurrentLevel(0)
     , m_pLoadingLevelInfo(0)
 {
-    LOADING_TIME_PROFILE_SECTION;
     CRY_ASSERT(pSystem);
 
     //if (!gEnv->IsEditor())
@@ -297,8 +287,6 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
-    const bool allowFileSystem = true;
-    const uint32_t skipPakFiles = 1;
     AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
     if (handle)
@@ -566,8 +554,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
     // Not remove a scope!!!
     {
-        LOADING_TIME_PROFILE_SECTION;
-
         //m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
 
         CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
@@ -582,7 +568,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         m_bLevelLoaded = false;
 
-        const bool bLoadingSameLevel = azstricmp(m_lastLevelName.c_str(), levelName) == 0;
         m_lastLevelName = levelName;
 
         delete m_pCurrentLevel;
@@ -746,8 +731,6 @@ void CLevelSystem::OnLoadingStart(const char* levelName)
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
-    LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
-
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
         (*it)->OnLoadingStart(levelName);
@@ -835,17 +818,7 @@ void CLevelSystem::LogLoadingTime()
         sChain = " (Chained)";
     }
 
-    AZStd::string text;
-    text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-    gEnv->pLog->Log(text.c_str());
-}
-
-void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_levelInfos);
-    pSizer->AddObject(m_levelsFolder);
-    pSizer->AddObject(m_listeners);
+    gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -8,16 +8,12 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/utils.h>
-#include <AzCore/std/string/osstring.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <AzCore/std/parallel/lock.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Memory/Memory.h>
 
 // This header file and CPP handles the platform specific implementation of code as defined by the FileIOBase interface class.
 // In order to make your code portable and functional with both this and the RemoteFileIO class, use the interface to access
@@ -33,7 +29,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LocalFileIO, "{87A8D32B-F695-4105-9A4D-D99BE15DFD50}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(LocalFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator, 0);
 
             LocalFileIO();
             ~LocalFileIO();
@@ -77,8 +73,6 @@ namespace AZ
             bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const;
             
         private:
-            typedef AZStd::pair<AZ::OSString, AZ::OSString> AliasType;
-
             SystemFile* GetFilePointerFromHandle(HandleType fileHandle);
 
             HandleType GetNextHandle();
@@ -90,13 +84,13 @@ namespace AZ
             bool LowerIfBeginsWith(char* inOutBuffer, AZ::u64 bufferLen, const char* alias) const;
 
         private:
-            static AZ::OSString RemoveTrailingSlash(const AZ::OSString& pathStr);
-            static AZ::OSString CheckForTrailingSlash(const AZ::OSString& pathStr);
+            static AZStd::string RemoveTrailingSlash(const AZStd::string& pathStr);
+            static AZStd::string CheckForTrailingSlash(const AZStd::string& pathStr);
 
             mutable AZStd::recursive_mutex m_openFileGuard;
             AZStd::atomic<HandleType> m_nextHandle;
-            AZStd::map<HandleType, SystemFile, AZStd::less<HandleType>, AZ::OSStdAllocator> m_openFiles;
-            AZStd::vector<AliasType, AZ::OSStdAllocator> m_aliases;
+            AZStd::unordered_map<HandleType, SystemFile> m_openFiles;
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_aliases;
 
             void CheckInvalidWrite(const char* path);
         };

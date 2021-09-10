@@ -165,7 +165,7 @@ namespace AZ
 
             AZStd::fixed_vector<TypeId, 64> knownBaseClasses = { typeToExamine };  // avoid allocating heap here if possible.  64 types are 64*sizeof(Uuid) which is only 1k.
             bool foundBaseClass = false;
-            auto enumerateBaseVisitor = [&foundBaseClass, &baseClassVisitor, &knownBaseClasses](const AZ::SerializeContext::ClassData* classData, const TypeId& examineTypeId)
+            auto enumerateBaseVisitor = [&baseClassVisitor, &knownBaseClasses](const AZ::SerializeContext::ClassData* classData, const TypeId& examineTypeId)
             {
                 if (!classData)
                 {

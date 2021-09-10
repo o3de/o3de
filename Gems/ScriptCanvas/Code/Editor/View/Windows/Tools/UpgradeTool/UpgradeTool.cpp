@@ -92,7 +92,7 @@ namespace ScriptCanvasEditor
 
     void UpgradeTool::closeEvent(QCloseEvent* event)
     {
-        m_keepEditorAlive.reset();
+        // m_keepEditorAlive.reset();
 
         DisconnectBuses();
 
@@ -110,7 +110,7 @@ namespace ScriptCanvasEditor
     {
         setWindowFlag(Qt::WindowCloseButtonHint, false);
 
-        m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
+        // m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
 
         UpdateSettings();
 
@@ -437,7 +437,7 @@ namespace ScriptCanvasEditor
 
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(assetToUpgrade.m_relativePath);
-                streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                streamer->SetRequestCompleteCallback(flushRequest, []([[maybe_unused]] AZ::IO::FileRequestHandle request)
                     {
                     });
                 streamer->QueueRequest(flushRequest);
@@ -581,74 +581,6 @@ namespace ScriptCanvasEditor
         accept();
     }
 
-    template <typename AssetType>
-    AZ::Entity* UpgradeGraph(AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeTool* upgradeTool)
-    {
-        AssetType* scriptCanvasAsset = asset.GetAs<AssetType>();
-        AZ_Assert(scriptCanvasAsset, "Unable to get the asset of type: %s", azrtti_typeid<AssetType>().template ToString<AZStd::string>().c_str());
-
-        if (!scriptCanvasAsset)
-        {
-            return nullptr;
-        }
-
-        AZ::Entity* scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
-        AZ_Assert(scriptCanvasEntity, "The Script Canvas asset must have a valid entity");
-        if (!scriptCanvasEntity)
-        {
-            return nullptr;
-        }
-
-        auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
-        AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
-
-        bool isLatest = graphComponent->GetVersion().IsLatest();
-        if (isLatest)
-        {
-            ++upgradeTool->SkippedGraphCount();
-
-            // No need to upgrade
-            return nullptr;
-        }
-
-
-        AZ::Entity* queryEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(queryEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
-        if (queryEntity)
-        {
-            if (queryEntity->GetState() == AZ::Entity::State::Active)
-            {
-                queryEntity->Deactivate();
-            }
-
-            scriptCanvasEntity = queryEntity;
-        }
-
-        if (scriptCanvasEntity->GetState() == AZ::Entity::State::Constructed)
-        {
-            scriptCanvasEntity->Init();
-        }
-
-        if (scriptCanvasEntity->GetState() == AZ::Entity::State::Init)
-        {
-            scriptCanvasEntity->Activate();
-        }
-
-        if (graphComponent)
-        {
-            if (!graphComponent->UpgradeGraph(asset))
-            {
-                ++upgradeTool->SkippedGraphCount();
-            }
-            else
-            {
-                ++upgradeTool->UpgradedGraphCount();
-            }
-        }
-
-        return scriptCanvasEntity;
-    }
-
     void UpgradeTool::SaveLog()
     {
         AZStd::string outputFileName = AZStd::string::format("@devroot@/ScriptCanvasUpgradeReport.html");
@@ -688,29 +620,9 @@ namespace ScriptCanvasEditor
         outputFile.Close();
     }
 
-    AZ::Entity* UpgradeTool::AssetUpgradeJob(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    AZ::Entity* UpgradeTool::AssetUpgradeJob(AZ::Data::Asset<AZ::Data::AssetData>&)
     {
-        using namespace ScriptCanvasEditor;
-
-        AZ_Assert(asset.IsReady(), "The asset must be ready by now");
-
-        AZStd::lock_guard<AZStd::recursive_mutex> myLocker(m_mutex);
-
-        AZ::Entity* scriptCanvasEntity = nullptr;
-        if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
-        {
-            scriptCanvasEntity = UpgradeGraph<ScriptCanvasAsset>(asset, this);
-        }
-
-        if (!scriptCanvasEntity)
-        {
-            // This may happen if the graph failed or did not need to upgrade
-            AZ_TracePrintf("Script Canvas", "%s .. up to date!\n", asset.GetHint().c_str());
-            return nullptr;
-        }
-
-        // The rest will happen when we get notified that the graph is done.
-        return scriptCanvasEntity;
+        return nullptr;
     }
 
     void UpgradeTool::RetryMove(AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target)
@@ -778,28 +690,6 @@ namespace ScriptCanvasEditor
     {
         CaptureLogFromTraceBus(window, message);
         return false;
-    }
-
-    ScriptCanvasEditor::EditorKeepAlive::EditorKeepAlive()
-    {
-        ISystem* system = nullptr;
-        CrySystemRequestBus::BroadcastResult(system, &CrySystemRequestBus::Events::GetCrySystem);
-
-        m_edKeepEditorActive = system->GetIConsole()->GetCVar("ed_KeepEditorActive");
-
-        if (m_edKeepEditorActive)
-        {
-            m_keepEditorActive = m_edKeepEditorActive->GetIVal();
-            m_edKeepEditorActive->Set(1);
-        }
-    }
-
-    ScriptCanvasEditor::EditorKeepAlive::~EditorKeepAlive()
-    {
-        if (m_edKeepEditorActive)
-        {
-            m_edKeepEditorActive->Set(m_keepEditorActive);
-        }
     }
 
 #include <Editor/View/Windows/Tools/UpgradeTool/moc_UpgradeTool.cpp>

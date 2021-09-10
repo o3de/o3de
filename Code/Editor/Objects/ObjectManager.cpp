@@ -37,7 +37,6 @@ AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
 
-
 /*!
  *  Class Description used for object templates.
  *  This description filled from Xml template files.
@@ -710,7 +709,7 @@ void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& 
         );
 
         // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, sRenameWarning.toUtf8().data());
+        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
 
         if (bShowMsgBox)
         {
@@ -746,7 +745,7 @@ void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
-    return m_objects.size();
+    return static_cast<int>(m_objects.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -757,17 +756,6 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
     {
         objects.push_back(it->second);
-    }
-}
-
-void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
-{
-    CBaseObjectsArray objectArray;
-    GetObjects(objectArray);
-    objects.clear();
-    for (int i = 0, iCount(objectArray.size()); i < iCount; ++i)
-    {
-        objects.push_back(objectArray[i]);
     }
 }
 
@@ -1336,11 +1324,11 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
     bbox.max.zero();
 
     pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(m_visibleObjects.size());
+    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
 
     if (dc.flags & DISPLAY_2D)
     {
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1374,7 +1362,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
             pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
         }
 
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1556,11 +1544,8 @@ void CObjectManager::DeleteSelection()
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
 
-    GUID bID = GUID_NULL;
-
-    int i;
     CSelectionGroup objects;
-    for (i = 0; i < m_currSelection->GetCount(); i++)
+    for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         // Check condition(s) if object could be deleted
         if (!IsObjectDeletionAllowed(m_currSelection->GetObject(i)))
@@ -2016,7 +2001,7 @@ void CObjectManager::GetClassCategories(QStringList& categories)
         }
     }
     categories.clear();
-    categories.reserve(cset.size());
+    categories.reserve(static_cast<int>(cset.size()));
     for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
     {
         categories.push_back(*cit);
@@ -2382,7 +2367,7 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < gSettings.gizmo.axisGizmoMaxCount)
+        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
         {
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));
@@ -2629,7 +2614,7 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
     for (size_t i = 0; i < gizmoCount; ++i)
     {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(i));
+        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
     }
 }
 
@@ -2897,17 +2882,6 @@ namespace
             throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
         }
         Vec3 position = pObject->GetPos();
-        return AZ::Vector3(position.x, position.y, position.z);
-    }
-
-    AZ::Vector3 PyGetWorldObjectPosition(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Vec3 position = pObject->GetWorldPos();
         return AZ::Vector3(position.x, position.y, position.z);
     }
 

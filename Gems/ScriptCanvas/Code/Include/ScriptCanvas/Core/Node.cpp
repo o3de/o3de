@@ -36,6 +36,8 @@
 #include <ScriptCanvas/Deprecated/VariableHelpers.h>
 ////
 
+AZ_DECLARE_BUDGET(ScriptCanvas);
+
 namespace NodeCpp
 {
     enum Version
@@ -60,6 +62,7 @@ namespace ScriptCanvas
     // Node
     /////////
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     class NodeEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
@@ -67,9 +70,10 @@ namespace ScriptCanvas
         void OnWriteEnd(void* objectPtr) override
         {
             auto node = reinterpret_cast<Node*>(objectPtr);
-            node->RebuildInternalState();
+            node->OnDeserialize();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& nodeElementNode)
     {
@@ -420,7 +424,9 @@ namespace ScriptCanvas
             serializeContext->RegisterGenericType<AZStd::unordered_map<SlotId, Deprecated::VariableInfo>>();
 
             serializeContext->Class<Node, AZ::Component>()
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<NodeEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Version(NodeCpp::Version::Current, &NodeVersionConverter)
                 ->Field("Slots", &Node::m_slots)
                 ->Field("Datums", &Node::m_slotDatums)
@@ -1461,8 +1467,6 @@ namespace ScriptCanvas
             return slot.GetDataType();
         }
 
-        Endpoint endpoint = slot.GetEndpoint();
-
         auto connectedNodes = GetConnectedNodes(slot);
 
         for (auto endpointPair : connectedNodes)
@@ -1981,7 +1985,7 @@ namespace ScriptCanvas
 
         if (slotIter == m_slots.end())
         {
-            retVal = -1;
+            retVal = std::numeric_limits<size_t>::max();
         }
 
         return retVal;
@@ -2616,6 +2620,11 @@ namespace ScriptCanvas
         }        
     }
 
+    void Node::OnDeserialize()
+    {
+        RebuildInternalState();
+    }
+
     void Node::OnEndpointConnected(const Endpoint& endpoint)
     {
         const SlotId& currentSlotId = EndpointNotificationBus::GetCurrentBusId()->GetSlotId();
@@ -2876,7 +2885,7 @@ namespace ScriptCanvas
             if (node == nullptr)
             {                
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2891,7 +2900,7 @@ namespace ScriptCanvas
             if (!endpointSlot)
             {
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Endpoint was missing slot. id (id: %s) in the graph '%s'.",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2925,7 +2934,7 @@ namespace ScriptCanvas
             if (node == nullptr)
             {
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
 
                 AZ_Error("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());

@@ -25,7 +25,7 @@
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>

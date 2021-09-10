@@ -17,7 +17,6 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;
@@ -293,7 +292,7 @@ namespace Audio
         PushRequestBlocking(request);
 
         m_audioSystemThread.Deactivate();
-        const bool bSuccess = m_oATL.ShutDown();
+        m_oATL.ShutDown();
         m_bSystemInitialized = false;
     }
 
@@ -616,7 +615,7 @@ namespace Audio
     void CAudioSystem::ProcessRequestThreadSafe(CAudioRequestInternal request)
     {
         // Audio Thread!
-        AZ_PROFILE_SCOPE(Audio, "Thread-Safe Request: %s", request.ToString().c_str());
+        AZ_PROFILE_SCOPE(Audio, "Process Thread-Safe Request");
 
         if (m_oATL.CanProcessRequests())
         {
@@ -641,7 +640,7 @@ namespace Audio
     {
         // Todo: This should handle request priority, use request priority as bus Address and process in priority order.
 
-        AZ_PROFILE_SCOPE(Audio, "Normal Request: %s", request.ToString().c_str());
+        AZ_PROFILE_SCOPE(Audio, "Process Normal Request");
 
         AZ_Assert(g_mainThreadId != AZStd::this_thread::get_id(), "AudioSystem::ProcessRequestByPriority - called from Main thread!");
 
@@ -672,7 +671,7 @@ namespace Audio
         {
             if (!(request.nInternalInfoFlags & eARIF_WAITING_FOR_REMOVAL))
             {
-                AZ_PROFILE_SCOPE(Audio, "Blocking Request: %s", request.ToString().c_str());
+                AZ_PROFILE_SCOPE(Audio, "Process Blocking Request");
 
                 if (request.eStatus == eARS_NONE)
                 {

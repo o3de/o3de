@@ -12,10 +12,12 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
-if(PAL_TRAIT_PROF_PIX_SUPPORTED AND LY_PIX_ENABLED)
-    set(LY_PIX_PATH "${LY_3RDPARTY_PATH}/winpixeventruntime" CACHE PATH "Path to the Windows Pix Event Runtime.")
-    set(AZ_CORE_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
-    set(AZ_CORE_PIX_BUILD_DEFINES "USE_PIX")
+if(PAL_TRAIT_PROF_PIX_SUPPORTED)
+    set(LY_PIX_ENABLED OFF CACHE BOOL "Enables PIX profiler integration.")
+    if(LY_PIX_ENABLED)
+        message(STATUS "PIX found, enabling as profiler")
+        set(AZ_CORE_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
+    endif()
 endif()
 
 ly_add_target(
@@ -41,9 +43,6 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::cityhash
             ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            ${AZ_CORE_PIX_BUILD_DEFINES}
 )
 ly_add_source_properties(
     SOURCES
@@ -52,6 +51,15 @@ ly_add_source_properties(
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${LY_PAL_TOOLS_DEFINES}
 )
+
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    # Default to use Malloc schema so ASan works well
+    ly_add_source_properties(
+        SOURCES AzCore/Memory/SystemAllocator.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES AZCORE_SYSTEM_ALLOCATOR=AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    )
+endif()
 
 ################################################################################
 # Tests

@@ -38,7 +38,7 @@ namespace AZ
     {
         namespace
         {
-            static const char* PassName = "ImGuiPass";
+            [[maybe_unused]] static const char* PassName = "ImGuiPass";
             static const char* ImguiShaderFilePath = "Shaders/imgui/imgui.azshader";
         }
 
@@ -67,8 +67,8 @@ namespace AZ
 
         ImGuiPass::ImGuiPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
-            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
-            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
+            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -155,11 +155,6 @@ namespace AZ
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
             return io.WantTextInput;
-        }
-
-        AZ::s32 ImGuiPass::GetPriority() const
-        {
-            return AzFramework::InputChannelEventListener::GetPriorityUI();
         }
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
@@ -396,12 +391,12 @@ namespace AZ
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
 
-            m_viewportWidth = params.m_viewportState.m_maxX - params.m_viewportState.m_minX;
-            m_viewportHeight = params.m_viewportState.m_maxY - params.m_viewportState.m_minY;
+            m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
+            m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
 
             auto& io = ImGui::GetIO();
-            io.DisplaySize.x = AZStd::max<float>(1.0f, m_viewportWidth);
-            io.DisplaySize.y = AZStd::max<float>(1.0f, m_viewportHeight);
+            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
+            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
 
             Matrix4x4 projectionMatrix =
                 Matrix4x4::CreateFromRows(
@@ -547,8 +542,8 @@ namespace AZ
                     for (const ImDrawCmd& drawCmd : drawList->CmdBuffer)
                     {
                         AZ_Assert(drawCmd.UserCallback == nullptr, "ImGui UserCallbacks are not supported by the ImGui Pass");
-                        uint32_t scissorMaxX = drawCmd.ClipRect.z;
-                        uint32_t scissorMaxY = drawCmd.ClipRect.w;
+                        uint32_t scissorMaxX = static_cast<uint32_t>(drawCmd.ClipRect.z);
+                        uint32_t scissorMaxY = static_cast<uint32_t>(drawCmd.ClipRect.w);
                         
                         //scissorMaxX/scissorMaxY can be a frame stale from imgui (ImGui::NewFrame runs after this) hence we clamp it to viewport bounds
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
@@ -559,8 +554,8 @@ namespace AZ
                             {
                                 RHI::DrawIndexed(1, 0, vertexOffset, drawCmd.ElemCount, indexOffset),
                                 RHI::Scissor(
-                                    (drawCmd.ClipRect.x),
-                                    (drawCmd.ClipRect.y),
+                                    static_cast<int32_t>(drawCmd.ClipRect.x),
+                                    static_cast<int32_t>(drawCmd.ClipRect.y),
                                              scissorMaxX,
                                              scissorMaxY
                                 )

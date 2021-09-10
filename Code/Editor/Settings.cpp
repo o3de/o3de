@@ -35,7 +35,6 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-#pragma comment(lib, "Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -83,7 +82,6 @@ private:
 
 namespace
 {
-
     class QtApplicationListener
         : public AzToolsFramework::EditorEvents::Bus::Handler
     {
@@ -100,20 +98,8 @@ namespace
             delete this;
         }
     };
-
 }
 
-//////////////////////////////////////////////////////////////////////////
-SGizmoSettings::SGizmoSettings()
-{
-    axisGizmoSize = 0.2f;
-    axisGizmoText = true;
-    axisGizmoMaxCount = 50;
-    helpersScale = 1.f;
-    tagpointScaleMulti = 0.5f;
-    rulerSphereScale = 0.5f;
-    rulerSphereTrans = 0.5f;
-}
 //////////////////////////////////////////////////////////////////////////
 SEditorSettings::SEditorSettings()
 {
@@ -255,6 +241,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
+    levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
 void SEditorSettings::Connect()
@@ -394,7 +381,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, float& v
     {
         const SettingsGroup sg(sSection);
         const QString defaultVal = s_editorSettings()->value(sKey, QString::number(value)).toString();
-        value = defaultVal.toDouble();
+        value = defaultVal.toFloat();
 
         if (GetIEditor()->GetSettingsManager())
         {
@@ -565,18 +552,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    SaveValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    SaveValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    SaveValue("Settings", "HelpersScale", gizmo.helpersScale);
-    SaveValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    SaveValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    SaveValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
-
     SaveValue("Settings", "TextEditorScript", textEditorForScript);
     SaveValue("Settings", "TextEditorShaders", textEditorForShaders);
     SaveValue("Settings", "TextEditorBSpaces", textEditorForBspaces);
@@ -669,12 +644,20 @@ void SEditorSettings::Save()
     AzFramework::ApplicationRequests::Bus::Broadcast(
         &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
+
     SaveSettingsRegistryFile();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
+
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -769,18 +752,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    LoadValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    LoadValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    LoadValue("Settings", "HelpersScale", gizmo.helpersScale);
-    LoadValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    LoadValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    LoadValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
 
     LoadValue("Settings", "TextEditorScript", textEditorForScript);
     LoadValue("Settings", "TextEditorShaders", textEditorForShaders);
@@ -1061,7 +1032,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
-    int lastSeparator = sourcePath.find_last_of("|");
+    size_t lastSeparator = sourcePath.find_last_of("|");
 
     // Everything before the last separator is the category (since only the category is hierarchical)
     category = sourcePath.substr(0, lastSeparator);
@@ -1148,11 +1119,17 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_jsonPointerPrefix = "/Amazon/Preferences";
+    dumperSettings.m_includeFilter = [](AZStd::string_view path)
+    {
+        AZStd::string_view amazonPrefixPath("/Amazon/Preferences");
+        AZStd::string_view o3dePrefixPath("/O3DE/Preferences");
+        return amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
+            o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+    };
 
     AZStd::string stringBuffer;
     AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Preferences", stringStream, dumperSettings))
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
     {
         AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
             editorPreferencesFilePath.c_str());

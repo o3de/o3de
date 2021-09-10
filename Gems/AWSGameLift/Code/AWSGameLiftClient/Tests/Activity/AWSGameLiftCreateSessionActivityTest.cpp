@@ -44,7 +44,7 @@ TEST_F(AWSGameLiftCreateSessionActivityTest, ValidateCreateSessionRequest_CallWi
 TEST_F(AWSGameLiftCreateSessionActivityTest, ValidateCreateSessionRequest_CallWithNegativeMaxPlayer_GetFalseResult)
 {
     AWSGameLiftCreateSessionRequest request;
-    request.m_maxPlayer = -1;
+    request.m_maxPlayer = std::numeric_limits<uint64_t>::max();
 
     auto result = CreateSessionActivity::ValidateCreateSessionRequest(request);
     EXPECT_FALSE(result);

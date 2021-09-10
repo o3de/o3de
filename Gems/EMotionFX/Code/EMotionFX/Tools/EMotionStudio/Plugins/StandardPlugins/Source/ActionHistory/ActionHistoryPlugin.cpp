@@ -114,7 +114,7 @@ namespace EMStudio
         }
 
         // Set the current history index in case the user called undo.
-        m_list->setCurrentRow(commandManager->GetHistoryIndex());
+        m_list->setCurrentRow(static_cast<int>(commandManager->GetHistoryIndex()));
     }
 
 

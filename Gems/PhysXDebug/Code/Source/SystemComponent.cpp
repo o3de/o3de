@@ -879,18 +879,18 @@ namespace PhysXDebug
     void SystemComponent::InitPhysXColorMappings()
     {
         AZ_PROFILE_FUNCTION(Physics);
-        m_colorMappings.m_defaultColor.FromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_black.FromU32(physx::PxDebugColor::eARGB_BLACK);
-        m_colorMappings.m_red.FromU32(physx::PxDebugColor::eARGB_RED);
-        m_colorMappings.m_green.FromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_blue.FromU32(physx::PxDebugColor::eARGB_BLUE);
-        m_colorMappings.m_yellow.FromU32(physx::PxDebugColor::eARGB_YELLOW);
-        m_colorMappings.m_magenta.FromU32(physx::PxDebugColor::eARGB_MAGENTA);
-        m_colorMappings.m_cyan.FromU32(physx::PxDebugColor::eARGB_CYAN);
-        m_colorMappings.m_white.FromU32(physx::PxDebugColor::eARGB_WHITE);
-        m_colorMappings.m_grey.FromU32(physx::PxDebugColor::eARGB_GREY);
-        m_colorMappings.m_darkRed.FromU32(physx::PxDebugColor::eARGB_DARKRED);
-        m_colorMappings.m_darkGreen.FromU32(physx::PxDebugColor::eARGB_DARKGREEN);
-        m_colorMappings.m_darkBlue.FromU32(physx::PxDebugColor::eARGB_DARKBLUE);
+        m_colorMappings.m_defaultColor.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREEN));
+        m_colorMappings.m_black.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_BLACK));
+        m_colorMappings.m_red.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_RED));
+        m_colorMappings.m_green.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREEN));
+        m_colorMappings.m_blue.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_BLUE));
+        m_colorMappings.m_yellow.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_YELLOW));
+        m_colorMappings.m_magenta.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_MAGENTA));
+        m_colorMappings.m_cyan.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_CYAN));
+        m_colorMappings.m_white.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_WHITE));
+        m_colorMappings.m_grey.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREY));
+        m_colorMappings.m_darkRed.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKRED));
+        m_colorMappings.m_darkGreen.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKGREEN));
+        m_colorMappings.m_darkBlue.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKBLUE));
     }
 }

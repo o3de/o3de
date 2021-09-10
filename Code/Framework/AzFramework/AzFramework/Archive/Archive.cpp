@@ -236,7 +236,7 @@ namespace AZ::IO::ArchiveInternal
             return 0;
         }
 
-        if (nReadBytes != nTotal)
+        if (static_cast<size_t>(nReadBytes) != nTotal)
         {
             AZ_Warning("Archive", false, "FRead did not read expected number of byte from file, only %zu of %lld bytes read", nTotal, nReadBytes);
             nTotal = (size_t)nReadBytes;
@@ -348,17 +348,12 @@ namespace AZ::IO::ArchiveInternal
             return EOF;
         }
         int c = EOF;
-        int i;
-        for (i = 0; i < 1; i++)
+        if (m_nCurSeek == GetFileSize())
         {
-            if (i + m_nCurSeek == GetFileSize())
-            {
-                return c;
-            }
-            c = pData[i + m_nCurSeek];
-            break;
+            return c;
         }
-        m_nCurSeek += i + 1;
+        c = pData[m_nCurSeek];
+        m_nCurSeek += 1;
         return c;
     }
 }
@@ -379,8 +374,8 @@ namespace AZ::IO
     {
     public:
         AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
-        CResourceList() { m_iter = m_set.end(); };
-        ~CResourceList() {};
+        CResourceList() { m_iter = m_set.end(); }
+        ~CResourceList() override {}
 
         void Add(AZStd::string_view sResourceFile) override
         {
@@ -693,9 +688,6 @@ namespace AZ::IO
         {
             return AZ::IO::InvalidHandle;
         }
-
-        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
-            aznumeric_cast<int>(pName.size()), pName.data(), this);
 
         SAutoCollectFileAccessTime accessTime(this);
 
@@ -1792,11 +1784,11 @@ namespace AZ::IO
         AZ_Assert(m_pZip, "ZipFile is nullptr");
         AZ_Assert(m_pFileEntry && m_pZip->IsOwnerOf(m_pFileEntry), "ZipFile is not owner of m_pFileEntry");
 
-        if (nDataSize != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
+        if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
         {
             return false;
         }
-        else if (nDataSize != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
+        else if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
         {
             return false;
         }
@@ -1920,7 +1912,7 @@ namespace AZ::IO
         return m_pFileEntry->nFileDataOffset;
     }
 
-    bool Archive::MakeDir(AZStd::string_view szPathIn, [[maybe_unused]] bool bGamePathMapping)
+    bool Archive::MakeDir(AZStd::string_view szPathIn)
     {
         AZ::IO::StackString pathStr{ szPathIn };
         // Determine if there is a period ('.') after the last slash to determine if the path contains a file.
@@ -2335,8 +2327,9 @@ namespace AZ::IO
             // we only want to record ASSET access
             // assets are identified as things which start with no alias, or with the @assets@ alias
             auto assetPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(szFilename);
-            constexpr AZStd::string_view assetsAlias{ "@assets@" };
-            if (assetPath && assetPath->Native().starts_with("@assets@"))
+            if (assetPath && (assetPath->Native().starts_with("@assets@")
+                || assetPath->Native().starts_with("@root@")
+                || assetPath->Native().starts_with("@projectplatformcache@")))
             {
                 IResourceList* pList = GetResourceList(m_eRecordFileOpenList);
 
@@ -2577,7 +2570,7 @@ namespace AZ::IO
         return aznumeric_cast<uint64_t>(pFileEntry->nFileDataOffset);
     }
 
-    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const 
+    EStreamSourceMediaType Archive::GetFileMediaType(AZStd::string_view szName) const
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szName);
         if (!szFullPath)

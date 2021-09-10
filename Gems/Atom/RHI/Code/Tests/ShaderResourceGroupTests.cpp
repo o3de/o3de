@@ -56,8 +56,7 @@ namespace UnitTest
         const uint32_t BufferConstantCount = 2;
         const uint32_t BufferReadCount = 2;
         const uint32_t BufferReadWriteCount = 2;
-        const uint32_t BindingIndex = 1;
-        
+
         AZStd::unique_ptr<Factory> m_factory;
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
 

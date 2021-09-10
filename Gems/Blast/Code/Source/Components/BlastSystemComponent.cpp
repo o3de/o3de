@@ -112,7 +112,7 @@ namespace Blast
 
     void BlastSystemComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
         auto blastAssetHandler = aznew BlastAssetHandler();
         blastAssetHandler->Register();
         m_assetHandlers.emplace_back(blastAssetHandler);
@@ -141,7 +141,7 @@ namespace Blast
 
     void BlastSystemComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
@@ -433,7 +433,7 @@ namespace Blast
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneEnd()
     {
-        AZ_PROFILE_END();
+        AZ_PROFILE_END(Physics);
     }
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)

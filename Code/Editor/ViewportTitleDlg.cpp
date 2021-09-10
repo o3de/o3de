@@ -19,9 +19,6 @@
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
-// CryCommon
-#include <CryCommon/SFunctor.h>
-
 // Editor
 #include "Settings.h"
 #include "ViewPane.h"
@@ -311,7 +308,7 @@ void CViewportTitleDlg::OnInitDialog()
     AZ::VR::VREventBus::Handler::BusConnect();
 
     QFontMetrics metrics({});
-    int width = metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier;
+    int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
@@ -462,7 +459,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPreset.toDouble(&ok);
+            float f = customPreset.toFloat(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
@@ -482,7 +479,7 @@ void CViewportTitleDlg::OnMenuFOVCustom()
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(fov);
+        m_pViewPane->SetViewportFOV(static_cast<float>(fov));
 
         // Update the custom presets.
         const QString text = QString::number(fov);
@@ -800,8 +797,8 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
             const int eventHeight = static_cast<int>(lparam);
             const QWidget* viewport = m_pViewPane->GetViewport();
 
-            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport 
-            // sending the event.  But for now, just detect that we've gotten width/height values that match our 
+            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport
+            // sending the event.  But for now, just detect that we've gotten width/height values that match our
             // associated viewport
             if (viewport && (eventWidth == viewport->width()) && (eventHeight == viewport->height()))
             {
@@ -986,12 +983,12 @@ void CViewportTitleDlg::OnAngleSnappingToggled()
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
 {
-    SandboxEditor::SetGridSnappingSize(value);
+    SandboxEditor::SetGridSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
 {
-    SandboxEditor::SetAngleSnappingSize(value);
+    SandboxEditor::SetAngleSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()

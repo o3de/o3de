@@ -139,8 +139,9 @@ namespace PhysX
             else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
-                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
+                if (!shapeColliderPairList->empty())
                 {
+                    const auto& shapeColliderConfigs = shapeColliderPairList->front();
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
                         {
@@ -181,7 +182,7 @@ namespace PhysX
             SimulatedBodyType* newBody = aznew SimulatedBodyType(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
@@ -193,7 +194,7 @@ namespace PhysX
             RigidBody* newBody = aznew RigidBody(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();

@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* s_exporterName = "Atom Model Builder";
+        [[maybe_unused]] static const char* s_exporterName = "Atom Model Builder";
 
         ModelExporterComponent::ModelExporterComponent()
         {
@@ -78,9 +78,17 @@ namespace AZ
             //Export MaterialAssets
             for (auto& materialPair : materialsByUid)
             {
+                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
+                
+                // MaterialAssetBuilderContext could attach an independent material asset rather than
+                // generate one using the scene data, so we must skip the export step in that case.
+                if (asset.GetId().m_guid != exportEventContext.GetScene().GetSourceGuid())
+                {
+                    continue;
+                }
+
                 uint64_t materialUid = materialPair.first;
                 const AZStd::string& sceneName = exportEventContext.GetScene().GetName();
-                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
 
                 // escape the material name acceptable for a filename
                 AZStd::string materialName = materialPair.second.m_name;

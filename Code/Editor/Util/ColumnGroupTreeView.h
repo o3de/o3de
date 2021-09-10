@@ -71,7 +71,6 @@ private:
     ColumnGroupHeaderView* m_header;
     ColumnGroupProxyModel* m_groupModel;
     QSet<QString> m_openNodes;
-    bool m_showGroups;
 };
 
 #endif // COLUMNGROUPTREEVIEW_H

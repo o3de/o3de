@@ -84,8 +84,8 @@ namespace AZ
                 StagingMemoryAllocator::Descriptor allocatorDesc;
                 allocatorDesc.m_device = this;
 
-                allocatorDesc.m_mediumPageSizeInBytes = platLimitsDesc->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
-                allocatorDesc.m_largePageSizeInBytes = platLimitsDesc->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
+                allocatorDesc.m_mediumPageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes);
+                allocatorDesc.m_largePageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes);
                 allocatorDesc.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }
@@ -187,11 +187,6 @@ namespace AZ
         void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
         {
             m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
-        }
-
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
         }
 
         void Device::EndFrameInternal()

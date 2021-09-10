@@ -16,7 +16,6 @@ import editor_python_test_tools.hydra_test_utils as hydra
 from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 120
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -175,7 +174,7 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_AddedToEntity.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -236,7 +235,7 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_LightComponent.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -299,9 +298,10 @@ class TestMaterialEditorBasicTests(object):
             generic_launcher,
             "hydra_AtomMaterialEditor_BasicTests.py",
             run_python="--runpython",
-            timeout=80,
+            timeout=120,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
+            null_renderer=True,
             log_file_name="MaterialEditor.log",
         )

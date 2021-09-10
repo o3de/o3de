@@ -291,7 +291,6 @@ set(FILES
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
-    ShaderResourceGroups/SceneTimeSrg.azsli
     ShaderResourceGroups/ViewSrg.azsli
     ShaderResourceGroups/ViewSrgAll.azsli
     ShaderResourceGroups/CoreLights/SceneSrg.azsli

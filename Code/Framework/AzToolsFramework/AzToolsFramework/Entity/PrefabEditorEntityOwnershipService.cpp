@@ -359,6 +359,12 @@ namespace AzToolsFramework
         return AZStd::nullopt;
     }
 
+    Prefab::TemplateId PrefabEditorEntityOwnershipService::GetRootPrefabTemplateId()
+    {
+        AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
+        return m_rootInstance ? m_rootInstance->GetTemplateId() : Prefab::InvalidTemplateId;
+    }
+
     const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
     {
         return m_playInEditorData.m_assets;

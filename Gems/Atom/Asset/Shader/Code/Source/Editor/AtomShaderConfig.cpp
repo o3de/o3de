@@ -12,7 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 
 namespace AZ
@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace AtomShaderConfig
         {
-            static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
+            [[maybe_unused]] static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
 
             bool MutateToFirstAbsoluteFolderThatExists(AZStd::string& relativeFolder, AZStd::vector<AZStd::string>& watchFolders)
             {

@@ -17,9 +17,10 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
 
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/FileOperations.h> // [GFX TODO] Remove when [ATOM-15472]
@@ -211,11 +212,11 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    inputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "rows")
                                 {
-                                    inputStructParams.m_variable.m_rows = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_rows = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {
@@ -304,7 +305,7 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    outputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    outputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {
@@ -908,9 +909,9 @@ namespace AZ
                 AZ_Assert(optionEntry.IsObject(), "Expected option entry to be an object!");
 
                 Name defaultValueId = optionEntry.HasMember("defaultValue") ? Name(optionEntry["defaultValue"].GetString()) : Name();
-                const AZStd::string optionName   = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
-                const bool valuesAreRange        = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
-                const bool isPredefinedType      = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
+                const AZStd::string optionName             = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
+                [[maybe_unused]] const bool valuesAreRange = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
+                const bool isPredefinedType                = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
 
                 auto optionType = RPI::ShaderOptionType::Unknown;
                 if (isPredefinedType && optionEntry.HasMember("type"))
@@ -1149,7 +1150,7 @@ namespace AZ
                 return BuildResult::CompilationFailed;
             }
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {
@@ -1170,7 +1171,7 @@ namespace AZ
             AZStd::string outputFile = m_inputFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {

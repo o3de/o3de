@@ -7,6 +7,6 @@
     "summary": "Atom TressFX Gem provides a cutting edge hair and fur simulation and rendering in Atom based and enhancing the AMD TressFX 4.1",
     "canonical_tags": ["Gem"],
     "user_tags": ["Rendering", "Physics", "Animation"],
-    "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/amd/atom-tressfx/"
 }

@@ -108,12 +108,6 @@ using namespace AzToolsFramework;
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
 
-static const char* g_openViewPaneEventName = "OpenViewPaneEvent"; //Sent when users open view panes;
-static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the current view pane
-static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
-
-static const char* g_assetImporterName = "AssetImporter";
-
 class CEditorOpenViewCommand
     : public _i_reference_target_t
 {
@@ -303,7 +297,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_settings("O3DE", "O3DE")
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
-    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
+    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
@@ -1672,7 +1666,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";
@@ -1767,7 +1761,7 @@ void MainWindow::RegisterOpenWndCommands()
         cmdUI.tooltip = (QString("Open ") + className).toUtf8().data();
         cmdUI.iconFilename = className.toUtf8().data();
         GetIEditor()->GetCommandManager()->RegisterUICommand("editor", openCommandName.toUtf8().data(),
-            "", "", AZStd::bind(&CEditorOpenViewCommand::Execute, pCmd), cmdUI);
+            "", "", [pCmd] { pCmd->Execute(); }, cmdUI);
         GetIEditor()->GetCommandManager()->GetUIInfo("editor", openCommandName.toUtf8().data(), cmdUI);
     }
 }

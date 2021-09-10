@@ -172,8 +172,6 @@ CViewSystem::~CViewSystem()
 //------------------------------------------------------------------------
 void CViewSystem::Update(float frameTime)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->IsDedicated())
     {
         return;
@@ -334,7 +332,7 @@ void CViewSystem::SetActiveView(IView* pView)
     }
     else
     {
-        m_activeViewId = ~0;
+        m_activeViewId = ~0u;
     }
 
     m_bActiveViewFromSequence = false;
@@ -612,24 +610,6 @@ void CViewSystem::DebugDraw()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CViewSystem::GetMemoryUsage(ICrySizer* s) const
-{
-    SIZER_SUBCOMPONENT_NAME(s, "ViewSystem");
-    s->Add(*this);
-    s->AddContainer(m_views);
-}
-
-void CViewSystem::Serialize(TSerialize ser)
-{
-    TViewMap::iterator iter = m_views.begin();
-    TViewMap::iterator iterEnd = m_views.end();
-    while (iter != iterEnd)
-    {
-        iter->second->Serialize(ser);
-        ++iter;
-    }
-}
-
 void CViewSystem::PostSerialize()
 {
     TViewMap::iterator iter = m_views.begin();
