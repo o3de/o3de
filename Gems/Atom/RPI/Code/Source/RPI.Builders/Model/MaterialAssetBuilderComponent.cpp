@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {
@@ -80,7 +80,8 @@ namespace AZ
 
             bool includeMaterialPropertyNames = true;
             RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
-            if (conversionEnabled && !materialTypePath.empty() && !includeMaterialPropertyNames)
+            // TODO: Use includeMaterialPropertyNames to break materialtype dependency on fbx files. Materialasset's dependency on materialtypeasset will need to be decoupled first
+            if (conversionEnabled && !materialTypePath.empty() /*&& !includeMaterialPropertyNames*/)
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;

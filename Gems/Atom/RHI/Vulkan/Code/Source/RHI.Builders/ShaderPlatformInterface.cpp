@@ -23,7 +23,7 @@ namespace AZ
 {
     namespace Vulkan
     {
-        static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
+        [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
         static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
         static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
         static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";

@@ -258,6 +258,14 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::CreateSwapChain(
+            [[maybe_unused]] const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
+            [[maybe_unused]] AZStd::array<RHI::Ptr<ID3D12Resource>, RHI::Limits::Device::FrameCountMax>& outSwapChainResources)
+        {
+            AZ_Assert(false, "Wrong Device::CreateSwapChain function called on Windows.");
+            return RHI::ResultCode::Fail;
+        }
+
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             AZStd::vector<RHI::Format> formatsList;

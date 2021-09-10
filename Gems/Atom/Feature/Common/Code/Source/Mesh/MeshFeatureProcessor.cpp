@@ -425,6 +425,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
+                SetRayTracingEnabled(meshHandle, visible);
             }
         }
 
@@ -696,8 +697,13 @@ namespace AZ
 
         void MeshDataInstance::SetRayTracingData()
         {
+            if (!m_model)
+            {
+                return;
+            }
+
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (rayTracingFeatureProcessor == nullptr)
+            if (!rayTracingFeatureProcessor)
             {
                 return;
             }

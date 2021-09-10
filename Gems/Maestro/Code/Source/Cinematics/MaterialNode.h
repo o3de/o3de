@@ -54,7 +54,7 @@ protected:
     void UpdateDynamicParamsInternal() override;
 private:
     void AnimateNamedParameter(SAnimContext& ec, IRenderShaderResources* pShaderResources, const char* name, IAnimTrack* pTrack);
-    _smart_ptr<IMaterial> GetMaterialByName(const char* pName);
+    IMaterial * GetMaterialByName(const char* pName);
 
     float m_fMinKeyValue;
     float m_fMaxKeyValue;

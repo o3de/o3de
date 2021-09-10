@@ -570,7 +570,7 @@ namespace UnitTest
         EXPECT_TRUE(found_mylevel_folder);
 
         numFound = 0;
-        found_mylevel_folder = 0;
+        found_mylevel_folder = false;
 
         // now make sure no red herrings appear
         // for example, if a file is mounted at "@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4"

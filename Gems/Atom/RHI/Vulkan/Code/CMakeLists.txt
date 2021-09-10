@@ -19,9 +19,12 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_vulkan_stub_module.cmake
+            atom_rhi_vulkan_reflect_common_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                Include
                 Source
+                ${pal_include_dir}
                 Include/Atom/RHI.Loader/Glad
         BUILD_DEPENDENCIES
             PRIVATE
@@ -37,6 +40,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+                ${pal_include_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 atom_rhi_vulkan_reflect_common_files.cmake
                 atom_rhi_vulkan_glad_files.cmake
                 atom_rhi_vulkan_builders_common_files.cmake
@@ -90,6 +94,7 @@ ly_add_target(
     FILES_CMAKE
         atom_rhi_vulkan_private_common_files.cmake
         ${pal_source_dir}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_include_dir}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_private_static_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
