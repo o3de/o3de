@@ -31,7 +31,7 @@ namespace UnitTest
         sc.Execute(R"LUA(
             my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId(my_id)
-            g_globalTemplateId = PrefabSystemComponentBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
             )LUA");
 
         EXPECT_NE(g_globalTemplateId, TemplateId{});
