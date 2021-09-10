@@ -141,6 +141,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
         &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
+    connect(
+        this, &AzAssetBrowserWindow::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+        &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
 
@@ -166,10 +170,7 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* ev)
 {
-    m_ui->m_assetBrowserTableViewWidget->setColumnWidth(0, parentWidget()->width() / 2);
-    m_ui->m_assetBrowserTableViewWidget->horizontalHeader()->setStretchLastSection(true);
-    m_ui->m_assetBrowserTableViewWidget->horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
-    m_ui->m_assetBrowserTableViewWidget->horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+    emit SizeChangedSignal(ev);
     QWidget::resizeEvent(ev);
 }
 

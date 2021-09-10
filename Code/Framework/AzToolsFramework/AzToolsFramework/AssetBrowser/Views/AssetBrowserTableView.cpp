@@ -151,6 +151,13 @@ namespace AzToolsFramework
             horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
+        void AssetBrowserTableView::UpdateSizeSlot([[maybe_unused]] QResizeEvent* ev)
+        {
+            setColumnWidth(0, parentWidget()->width() / 2);
+            horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
+            horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+        }
+
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {
             const auto& selectedAssets = GetSelectedAssets();

@@ -53,12 +53,17 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+
+Q_SIGNALS:
+    void SizeChangedSignal(QResizeEvent* ev);
+
 protected:
     void resizeEvent(QResizeEvent* ev) override;
 
 private:
     void OnInitViewToggleButton();
     void UpdateDisplayInfo();
+
 protected slots:
     void CreateSwitchViewMenu();
     void SetExpandedAssetBrowserMode();

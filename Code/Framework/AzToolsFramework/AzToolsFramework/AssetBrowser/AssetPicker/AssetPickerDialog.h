@@ -46,6 +46,9 @@ namespace AzToolsFramework
             explicit AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
             virtual ~AssetPickerDialog();
 
+        Q_SIGNALS:
+            void SizeChangedSignal(QResizeEvent* ev);
+
         protected:
             //////////////////////////////////////////////////////////////////////////
             // QDialog
