@@ -222,10 +222,10 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Hsv_To_LinearColor.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearColor_To_Hsv.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCc_To_AcesCg.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCg_To_AcesCc.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/HsvToLinearColor.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearColorToHsv.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
@@ -291,7 +291,7 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
-    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRGB.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
     ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
     ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli 
     ShaderResourceGroups/SceneSrg.azsli

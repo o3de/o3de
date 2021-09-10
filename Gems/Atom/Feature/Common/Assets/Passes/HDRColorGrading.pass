@@ -61,7 +61,7 @@
                     "FloatMappings": [
                         {
                             "Name": "m_colorGradingExposure",
-                            "Value": 0.0 // unconstrained, log2 stops (weird anomalies!)
+                            "Value": 0.0 // unconstrained, log2 stops
                         },
                         {
                             "Name": "m_colorGradingContrast",
@@ -81,7 +81,7 @@
                         },
                         {
                             "Name": "m_colorFilterMultiply",
-                            "Value": 0.0 // modulate, 0 ... 1 (can overdrive?)
+                            "Value": 0.0 // modulate, 0 ... 1
                         },
                         {
                             "Name": "m_kelvin",
@@ -136,6 +136,8 @@
                             "Value": 0.0 // 0 ... 1
                         }
                     ],
+                    // The colors defined here are expected to be in linear rgb color space.
+                    // These are converted to ACEScg color space within the HDRColorGrading.azsl shader
                     "ColorMappings": [
                         {
                             "Name": "m_colorFilterSwatch",

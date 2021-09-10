@@ -13,10 +13,10 @@
 #include "GeneratedTransforms/LinearSrgb_To_Srgb.azsli"
 #include "GeneratedTransforms/Srgb_To_LinearSrgb.azsli"
 #include "GeneratedTransforms/Aces_To_AcesCg.azsli"
-#include "GeneratedTransforms/LinearColor_To_Hsv.azsli"
-#include "GeneratedTransforms/Hsv_To_LinearColor.azsli"
-#include "GeneratedTransforms/AcesCc_To_AcesCg.azsli"
-#include "GeneratedTransforms/AcesCg_To_AcesCc.azsli"
+#include "GeneratedTransforms/LinearColorToHsv.azsli"
+#include "GeneratedTransforms/HsvToLinearColor.azsli"
+#include "GeneratedTransforms/AcesCcToAcesCg.azsli"
+#include "GeneratedTransforms/AcesCgToAcesCc.azsli"
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
@@ -63,11 +63,11 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
     }
     else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::HSV)
     {
-        color = LinearColor_To_Hsv(color);
+        color = LinearColorToHsv(color);
     }
     else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::ACEScc)
     {
-        color = AcesCg_To_AcesCc(color);
+        color = AcesCgToAcesCc(color);
     }
     else if (fromColorSpace == ColorSpaceId::ACES2065 && toColorSpace == ColorSpaceId::ACEScg)
     {
@@ -75,17 +75,17 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
     }
     else if (fromColorSpace == ColorSpaceId::HSV && toColorSpace == ColorSpaceId::ACEScg)
     {
-        color = Hsv_To_LinearColor(color);
+        color = HsvToLinearColor(color);
     }
     else if (fromColorSpace == ColorSpaceId::ACEScc && toColorSpace == ColorSpaceId::ACEScg)
     {
-        color = AcesCc_To_AcesCg(color);
+        color = AcesCcToAcesCg(color);
     }
     else
     {
         color = float3(1, 0, 1);
     }
-    
+
     return color;
 }
 

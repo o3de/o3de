@@ -41,7 +41,7 @@ Source: https://www.ryanjuckett.com/photoshop-blend-modes-in-hlsl/
 //******************************************************************************
 float Color_GetLuminosity(float3 c)
 {
-	return 0.3*c.r + 0.59*c.g + 0.11*c.b;
+    return 0.3*c.r + 0.59*c.g + 0.11*c.b;
 }
 
 //******************************************************************************
@@ -51,8 +51,8 @@ float3 Color_SetLuminosity(float3 c, float lum)
     float d = lum - Color_GetLuminosity(c);
     c.rgb += float3(d,d,d);
 
-	// clip back into legal range
-	lum = Color_GetLuminosity(c);
+    // clip back into legal range
+    lum = Color_GetLuminosity(c);
     float cMin = min(c.r, min(c.g, c.b));
     float cMax = max(c.r, max(c.g, c.b));
 
@@ -69,7 +69,7 @@ float3 Color_SetLuminosity(float3 c, float lum)
 //******************************************************************************
 float Color_GetSaturation(float3 c)
 {
-	return max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
+    return max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
 }
 
 //******************************************************************************
@@ -77,49 +77,49 @@ float Color_GetSaturation(float3 c)
 //******************************************************************************
 float3 Color_SetSaturation_MinMidMax(float3 cSorted, float s)
 {
-	if(cSorted.z > cSorted.x)
-	{
-		cSorted.y = (((cSorted.y - cSorted.x) * s) / (cSorted.z - cSorted.x));
-		cSorted.z = s;
-	}
-	else
-	{
-		cSorted.y = 0;
-		cSorted.z = 0;
-	}
+    if(cSorted.z > cSorted.x)
+    {
+        cSorted.y = (((cSorted.y - cSorted.x) * s) / (cSorted.z - cSorted.x));
+        cSorted.z = s;
+    }
+    else
+    {
+        cSorted.y = 0;
+        cSorted.z = 0;
+    }
 
-	cSorted.x = 0;
+    cSorted.x = 0;
 
-	return cSorted;
+    return cSorted;
 }
 
 //******************************************************************************
 //******************************************************************************
 float3 Color_SetSaturation(float3 c, float s)
 {
-	if (c.r <= c.g && c.r <= c.b)
-	{
-		if (c.g <= c.b)
-			c.rgb = Color_SetSaturation_MinMidMax(c.rgb, s);
-		else
-			c.rbg = Color_SetSaturation_MinMidMax(c.rbg, s);
-	}
-	else if (c.g <= c.r && c.g <= c.b)
-	{
-		if (c.r <= c.b)
-			c.grb = Color_SetSaturation_MinMidMax(c.grb, s);
-		else
-			c.gbr = Color_SetSaturation_MinMidMax(c.gbr, s);
-	}
-	else
-	{
-		if (c.r <= c.g)
-			c.brg = Color_SetSaturation_MinMidMax(c.brg, s);
-		else
-			c.bgr = Color_SetSaturation_MinMidMax(c.bgr, s);
-	}
+    if (c.r <= c.g && c.r <= c.b)
+    {
+        if (c.g <= c.b)
+            c.rgb = Color_SetSaturation_MinMidMax(c.rgb, s);
+        else
+            c.rbg = Color_SetSaturation_MinMidMax(c.rbg, s);
+    }
+    else if (c.g <= c.r && c.g <= c.b)
+    {
+        if (c.r <= c.b)
+            c.grb = Color_SetSaturation_MinMidMax(c.grb, s);
+        else
+            c.gbr = Color_SetSaturation_MinMidMax(c.gbr, s);
+    }
+    else
+    {
+        if (c.r <= c.g)
+            c.brg = Color_SetSaturation_MinMidMax(c.brg, s);
+        else
+            c.bgr = Color_SetSaturation_MinMidMax(c.bgr, s);
+    }
     
-	return c;
+    return c;
 }
 
 //******************************************************************************
@@ -128,7 +128,7 @@ float3 Color_SetSaturation(float3 c, float s)
 //******************************************************************************
 float3 BlendMode_Hue(float3 base, float3 blend)
 {
-	return Color_SetLuminosity(Color_SetSaturation(blend, Color_GetSaturation(base)), Color_GetLuminosity(base));
+    return Color_SetLuminosity(Color_SetSaturation(blend, Color_GetSaturation(base)), Color_GetLuminosity(base));
 }
 
 //******************************************************************************
@@ -137,7 +137,7 @@ float3 BlendMode_Hue(float3 base, float3 blend)
 //******************************************************************************
 float3 BlendMode_Saturation(float3 base, float3 blend)
 {
-	return Color_SetLuminosity(Color_SetSaturation(base, Color_GetSaturation(blend)), Color_GetLuminosity(base));
+    return Color_SetLuminosity(Color_SetSaturation(base, Color_GetSaturation(blend)), Color_GetLuminosity(base));
 }
 
 //******************************************************************************
@@ -146,7 +146,7 @@ float3 BlendMode_Saturation(float3 base, float3 blend)
 //******************************************************************************
 float3 BlendMode_Color(float3 base, float3 blend)
 {
-	return Color_SetLuminosity(blend, Color_GetLuminosity(base));
+    return Color_SetLuminosity(blend, Color_GetLuminosity(base));
 }
 
 //******************************************************************************
@@ -155,7 +155,7 @@ float3 BlendMode_Color(float3 base, float3 blend)
 //******************************************************************************
 float3 BlendMode_Luminosity(float3 base, float3 blend)
 {
-	return Color_SetLuminosity(base, Color_GetLuminosity(blend));
+    return Color_SetLuminosity(base, Color_GetLuminosity(blend));
 }
 
 //******************************************************************************
@@ -164,7 +164,7 @@ float3 BlendMode_Luminosity(float3 base, float3 blend)
 //******************************************************************************
 float3 BlendMode_DarkerColor(float3 base, float3 blend)
 {
-	return Color_GetLuminosity(base) <= Color_GetLuminosity(blend) ? base : blend;
+    return Color_GetLuminosity(base) <= Color_GetLuminosity(blend) ? base : blend;
 }
 
 //******************************************************************************
@@ -173,5 +173,5 @@ float3 BlendMode_DarkerColor(float3 base, float3 blend)
 //******************************************************************************
 float3 BlendMode_LighterColor(float3 base, float3 blend)
 {
-	return Color_GetLuminosity(base) > Color_GetLuminosity(blend) ? base : blend;
+    return Color_GetLuminosity(base) > Color_GetLuminosity(blend) ? base : blend;
 }

@@ -59,22 +59,21 @@ UNDISCLOSED.
 
 #pragma once
 
-static const float HALF_MAX = 65504.0f;
-
-float ACEScc_to_lin(float value)
+float LinearToAcesCc(float value)
 {
-  if (value < -0.3013698630) // (9.72-15)/17.52
-    return (pow( 2., value*17.52-9.72) - pow( 2.,-16.))*2.0;
-  else if (value < (log2(HALF_MAX)+9.72)/17.52)
-    return pow( 2., value*17.52-9.72);
-  else // (value >= (log2(HALF_MAX)+9.72)/17.52)
-    return HALF_MAX;
+  if (value <= 0)
+    return -0.3584474886; // =(log2( pow(2.,-16.))+9.72)/17.52
+  else if (value < pow(2.,-15.))
+    return (log2( pow(2.,-16.) + value * 0.5) + 9.72) / 17.52;
+  else // (value >= pow(2.,-15))
+    return (log2(value) + 9.72) / 17.52;
 }
 
-float3 AcesCc_To_AcesCg(float3 color)
+float3 AcesCgToAcesCc(float3 color)
 {
     return float3(
-        ACEScc_to_lin(color.r),
-        ACEScc_to_lin(color.g),
-        ACEScc_to_lin(color.b));
+        LinearToAcesCc(color.r),
+        LinearToAcesCc(color.g),
+        LinearToAcesCc(color.b)
+    );
 }
