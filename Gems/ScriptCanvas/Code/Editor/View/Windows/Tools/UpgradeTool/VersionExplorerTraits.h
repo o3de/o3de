@@ -2,18 +2,21 @@
 
 namespace ScriptCanvasEditor
 {
-    class VersionExplorerNotificationsTraits : public AZ::EBusTraits
+    namespace VersionExplorer
     {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusHandlerPolicy::Multiple;
-        using BusIdType = VersionExplorerNotificationsTraits*;
-    };
-    using VersionExplorerNotificationsBus = AZ:EBus<VersionExplorerNotificationsTraits>;
+        class RequestsTraits : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusAddressPolicy HandlerPolicy = AZ::EBusAddressPolicy::Single;
+        };
+        using RequestsBus = AZ::EBus<RequestsTraits>;
 
-    class VersionExplorerRequestsTraits : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy = AZ::EBusHandlerPolicy::Single;
-    };
-    using VersionExplorerRequestsBus = AZ:EBus<VersionExplorerRequestsTraits>;
+        class NotificationsTraits : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            using BusIdType = NotificationsTraits*;
+        };
+        using NotificationsBus = AZ::EBus<NotificationsTraits>;
+    }
 }
