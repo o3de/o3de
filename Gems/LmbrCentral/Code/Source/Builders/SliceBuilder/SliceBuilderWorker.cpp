@@ -211,7 +211,7 @@ namespace SliceBuilder
 
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion)
-                .append(AZStd::string::format("|%" PRIu64, static_cast<AZ::u64>(sourceSliceTypeFingerprint)));
+                .append(AZStd::string::format("|%zu", sourceSliceTypeFingerprint));
 
             for (const auto& sourceDependency : sourceFileDependencies)
             {
