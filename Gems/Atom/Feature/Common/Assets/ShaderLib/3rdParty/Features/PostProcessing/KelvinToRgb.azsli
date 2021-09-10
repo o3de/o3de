@@ -16,60 +16,60 @@
 // licensed and released under Creative Commons 3.0 Attribution
 // https://creativecommons.org/licenses/by/3.0/
 
-float3 HUEToRGB( float H )
+float3 HueToRgb(float hue)
 {
-    return saturate( float3( abs( H * 6.0f - 3.0f ) - 1.0f,
-                                  2.0f - abs( H * 6.0f - 2.0f ),
-                                  2.0f - abs( H * 6.0f - 4.0f )));
+    return saturate(float3(abs(hue * 6.0f - 3.0f) - 1.0f,
+                           2.0f - abs(hue * 6.0f - 2.0f),
+                           2.0f - abs(hue * 6.0f - 4.0f)));
 }
 
-float3 RGBToHCV( float3 RGB )
+float3 RgbToHcv(float3 rgb)
 {
     // Based on work by Sam Hocevar and Emil Persson
-    float4 P         = ( RGB.g < RGB.b ) ? float4( RGB.bg, -1.0f, 2.0f/3.0f ) : float4( RGB.gb, 0.0f, -1.0f/3.0f );
-    float4 Q1        = ( RGB.r < P.x ) ? float4( P.xyw, RGB.r ) : float4( RGB.r, P.yzx );
-    float C          = Q1.x - min( Q1.w, Q1.y );
-    float H          = abs(( Q1.w - Q1.y ) / ( 6.0f * C + 0.000001f ) + Q1.z );
-    return float3( H, C, Q1.x );
+    const float4 p = (rgb.g < rgb.b) ? float4(rgb.bg, -1.0f, 2.0f/3.0f) : float4(rgb.gb, 0.0f, -1.0f/3.0f);
+    const float4 q1 = (rgb.r < p.x) ? float4(p.xyw, rgb.r) : float4(rgb.r, p.yzx);
+    const float c = q1.x - min(q1.w, q1.y);
+    const float h = abs((q1.w - q1.y) / (6.0f * c + 0.000001f ) + q1.z);
+    return float3(h, c, q1.x);
 }
 
-float3 RGBToHSL( float3 RGB )
+float3 RgbToHsl(float3 rgb)
 {
-    RGB.xyz          = max( RGB.xyz, 0.000001f );
-    float3 HCV       = RGBToHCV(RGB);
-    float L          = HCV.z - HCV.y * 0.5f;
-    float S          = HCV.y / ( 1.0f - abs( L * 2.0f - 1.0f ) + 0.000001f);
-    return float3( HCV.x, S, L );
+    rgb.xyz = max(rgb.xyz, 0.000001f);
+    const float3 hcv = RgbToHcv(rgb);
+    const float L = hcv.z - hcv.y * 0.5f;
+    const float S = hcv.y / (1.0f - abs(L * 2.0f - 1.0f) + 0.000001f);
+    return float3(hcv.x, S, L);
 }
 
-float3 HSLToRGB( float3 HSL )
+float3 HslToRgb(float3 hsl)
 {
-    float3 RGB       = HUEToRGB(HSL.x);
-    float C          = (1.0f - abs(2.0f * HSL.z - 1.0f)) * HSL.y;
-    return ( RGB - 0.5f ) * C + HSL.z;
+    const float3 rgb = HueToRgb(hsl.x);
+    const float c = (1.0f - abs(2.0f * hsl.z - 1.0f)) * hsl.y;
+    return (rgb - 0.5f) * c + hsl.z;
 }
 
 // Color temperature
-float3 KelvinToRGB( float k )
+float3 KelvinToRgb(float k)
 {
     float3 ret;
-    float kelvin     = clamp( k, 1000.0f, 40000.0f ) / 100.0f;
-    if( kelvin <= 66.0f )
+    const float kelvin = clamp(k, 1000.0f, 40000.0f) / 100.0f;
+    if(kelvin <= 66.0f)
     {
-        ret.r        = 1.0f;
-        ret.g        = saturate( 0.39008157876901960784f * log( kelvin ) - 0.63184144378862745098f );
+        ret.r = 1.0f;
+        ret.g = saturate(0.39008157876901960784f * log(kelvin) - 0.63184144378862745098f);
     }
     else
     {
-        float t      = max( kelvin - 60.0f, 0.0f );
-        ret.r        = saturate( 1.29293618606274509804f * pow( t, -0.1332047592f ));
-        ret.g        = saturate( 1.12989086089529411765f * pow( t, -0.0755148492f ));
+        float t = max(kelvin - 60.0f, 0.0f);
+        ret.r = saturate(1.29293618606274509804f * pow(t, -0.1332047592f));
+        ret.g = saturate(1.12989086089529411765f * pow(t, -0.0755148492f));
     }
-    if( kelvin >= 66.0f )
-        ret.b        = 1.0f;
-    else if( kelvin < 19.0f )
-        ret.b        = 0.0f;
+    if(kelvin >= 66.0f)
+        ret.b = 1.0f;
+    else if(kelvin < 19.0f)
+        ret.b = 0.0f;
     else
-        ret.b        = saturate( 0.54320678911019607843f * log( kelvin - 10.0f ) - 1.19625408914f );
+        ret.b = saturate(0.54320678911019607843f * log(kelvin - 10.0f) - 1.19625408914f);
     return ret;
 }

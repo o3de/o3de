@@ -8,9 +8,9 @@
 
 #pragma once
 
-float3 Hsv_To_LinearColor(float3 color) 
+float3 HsvToLinearColor(float3 color) 
 {
-    float4 K = float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
-    float3 p = abs(frac(color.xxx + K.xyz) * 6.0f - K.www);
-    return color.z * lerp(K.xxx, saturate(p - K.xxx), color.y);
+    const float4 k = float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
+    const float3 p = abs(frac(color.xxx + k.xyz) * 6.0f - k.www);
+    return color.z * lerp(k.xxx, saturate(p - k.xxx), color.y);
 }
