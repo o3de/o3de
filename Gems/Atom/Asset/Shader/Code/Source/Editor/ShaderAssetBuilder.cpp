@@ -222,11 +222,20 @@ namespace AZ
 
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(fullPath, shaderSourceData.m_source, azslFullPath);
+
+            {
+                // Add the AZSL as source dependency
+                AssetBuilderSDK::SourceFileDependency azslFileDependency;
+                azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
+                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+            }
+
             if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
             {
                 AZ_Error(
                     ShaderAssetBuilderName, false, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+                // Treat as success, so when the azsl file shows up the AP will try to recompile.
+                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
                 return;
             }
 
@@ -239,13 +248,6 @@ namespace AZ
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
                 response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
-            }
-
-            {
-                // Add the AZSL as source dependency
-                AssetBuilderSDK::SourceFileDependency azslFileDependency;
-                azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
-                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -409,6 +411,13 @@ namespace AZ
                     AZ_Assert(false, "Incorrect conversion of ShaderAssetBuildTimestampParam");
                     return;
                 }
+            }
+            else
+            {
+                // CreateJobs was not successful if there's no timestamp property in m_jobParameters.
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                AZ_Assert(false, "Missing ShaderAssetBuildTimestampParam");
+                return;
             }
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
