@@ -66,7 +66,13 @@ namespace Terrain
     }
 
     void TerrainFeatureProcessor::ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail)
-    {   
+    {
+        if (shaderState.m_shader == nullptr)
+        {
+            AZ_Assert(shaderState.m_shader || !assertOnFail, "Terrain shader failed to load correctly.");
+            return;
+        }
+
         bool success = GetParentScene()->ConfigurePipelineState(shaderState.m_shader->GetDrawListTag(), shaderState.m_pipelineStateDescriptor);
         AZ_Assert(success || !assertOnFail, "Couldn't configure the pipeline state.");
         if (success)
@@ -110,7 +116,7 @@ namespace Terrain
             };
             
             LoadShader("Shaders/Terrain/Terrain.azshader", m_shaderStates[ShaderType::Forward]);
-            LoadShader("Shaders/Terrain/Terrain_DepthPass_WithPS.azshader", m_shaderStates[ShaderType::Depth]);
+            LoadShader("Shaders/Terrain/Terrain_DepthPass.azshader", m_shaderStates[ShaderType::Depth]);
 
             // Forward and depth shader use same srg layout.
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> perObjectSrgLayout =
@@ -248,7 +254,9 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
 
-        if (m_shaderStates[ShaderType::Forward].m_shader->GetDrawListTag().IsNull() ||
+        if ((m_shaderStates[ShaderType::Forward].m_shader == nullptr) ||
+            (m_shaderStates[ShaderType::Depth].m_shader == nullptr) ||
+            m_shaderStates[ShaderType::Forward].m_shader->GetDrawListTag().IsNull() ||
             m_shaderStates[ShaderType::Depth].m_shader->GetDrawListTag().IsNull())
         {
             return;
