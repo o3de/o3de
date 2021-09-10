@@ -84,9 +84,12 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
+        private:
         bool ShowingSubdivisionLevel() const;
-
+        AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
+
+        Physics::ShapeType m_lastShapeType = Physics::ShapeType::PhysicsAsset;
     };
 
     class EditorColliderComponentDescriptor;
