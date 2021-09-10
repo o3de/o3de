@@ -25,7 +25,7 @@ set(FILES
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
-    Entity/EditorEntityUtilityComponentTests.cpp
+    Entity/EntityUtilityComponentTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp

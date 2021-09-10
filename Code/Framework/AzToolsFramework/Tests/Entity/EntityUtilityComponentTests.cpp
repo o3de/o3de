@@ -14,7 +14,7 @@
 
 namespace UnitTest
 {
-    class EditorEntityUtilityComponentTests
+    class EntityUtilityComponentTests
         : public ToolsApplicationFixture
     {
         
@@ -23,7 +23,7 @@ namespace UnitTest
     AZ::EntityId g_globalEntityId = AZ::EntityId{};
     AZStd::string g_globalEntityName = "";
 
-    TEST_F(EditorEntityUtilityComponentTests, Create)
+    TEST_F(EntityUtilityComponentTests, Create)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
@@ -36,7 +36,7 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalEntityId = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            g_globalEntityId = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             my_entity = Entity(g_globalEntityId)
             g_globalEntityName = my_entity:GetName()
             )LUA");
