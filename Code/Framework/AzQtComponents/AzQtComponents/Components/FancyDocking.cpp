@@ -2461,6 +2461,18 @@ namespace AzQtComponents
                 placeholderRect.translate(0, -margins.bottom());
             }
 
+            // Also adjust the placeholderRect by the relative dpi change from the original screen, since setGeometry uses the screen's
+            // virtualGeometry!
+            QScreen* fromScreen = dock->screen();
+            QScreen* toScreen = Utilities::ScreenAtPoint(placeholderRect.topLeft());
+
+            if (fromScreen != toScreen)
+            {
+                placeholderRect.setWidth(placeholderRect.width() * QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen));
+                placeholderRect.setHeight(
+                    placeholderRect.height() * QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen));
+            }
+
             // Place the floating dock widget
             makeDockWidgetFloating(dock, placeholderRect);
             clearDraggingState();
