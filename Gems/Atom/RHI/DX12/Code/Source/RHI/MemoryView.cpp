@@ -93,9 +93,19 @@ namespace AZ
         {
             if (m_memoryAllocation.m_memory)
             {
+                // NOTE:  This assumes that name is null-terminated.
                 AZStd::wstring wname;
                 AZStd::to_wstring(wname, name);
                 m_memoryAllocation.m_memory->SetName(wname.data());
+            }
+        }
+
+        void MemoryView::SetName(const AZStd::wstring_view& name)
+        {
+            if (m_memoryAllocation.m_memory)
+            {
+                // NOTE:  This assumes that name is null-terminated.
+                m_memoryAllocation.m_memory->SetName(name.data());
             }
         }
 
