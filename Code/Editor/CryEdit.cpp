@@ -285,7 +285,7 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame)
 {
     assert(lpszFileName != nullptr);
 
@@ -323,7 +323,7 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAd
         }
     }
 
-    if (pOpenDocument != nullptr)
+    if (!reopenIfSame && pOpenDocument != nullptr)
     {
         return pOpenDocument;
     }
@@ -3295,7 +3295,7 @@ void CCryEditApp::OnOpenSlice()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
+CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame)
 {
     if (m_openingLevel)
     {
@@ -3337,7 +3337,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
 
         // in this case, we set bAddToMRU to always be true because adding files to the MRU list
         // automatically culls duplicate and normalizes paths anyway
-        m_pDocManager->OpenDocumentFile(lpszFileName, true);
+        m_pDocManager->OpenDocumentFile(lpszFileName, bAddToMRU, reopenIfSame);
 
         if (openDocTraceHandler.HasAnyErrors())
         {

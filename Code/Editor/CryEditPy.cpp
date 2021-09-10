@@ -102,7 +102,7 @@ namespace
         return Path::GetEditingGameDataFolder();
     }
 
-    bool PyOpenLevel(const char* pLevelName)
+    bool PyOpenLevel(const char* pLevelName, bool addToMostRecent=false, bool reopenIfSameLevel=true)
     {
         const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
         const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
@@ -150,12 +150,12 @@ namespace
 
         auto previousDocument = GetIEditor()->GetDocument();
         QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data());
+        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(), addToMostRecent, reopenIfSameLevel);
 
         // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
 
         bool result = true;
-        if (newDocument == nullptr || newDocument->IsLevelLoadFailed() || (newDocument->GetLevelPathName() == previousPathName))
+        if (newDocument == nullptr || newDocument->IsLevelLoadFailed() || (!reopenIfSameLevel && newDocument->GetLevelPathName() == previousPathName))
         {
             result = false;
         }
@@ -163,10 +163,10 @@ namespace
         return result;
     }
 
-    bool PyOpenLevelNoPrompt(const char* pLevelName)
+    bool PyOpenLevelNoPrompt(const char* pLevelName, bool addToMostRecent = false, bool reopenIfSameLevel = true)
     {
         GetIEditor()->GetDocument()->SetModifiedFlag(false);
-        return PyOpenLevel(pLevelName);
+        return PyOpenLevel(pLevelName, addToMostRecent, reopenIfSameLevel);
     }
 
     bool PyReloadCurrentLevel()
@@ -426,8 +426,8 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Legacy/Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "legacy.general");
             };
-            addLegacyGeneral(behaviorContext->Method("open_level", ::PyOpenLevel, nullptr, "Opens a level."));
-            addLegacyGeneral(behaviorContext->Method("open_level_no_prompt", ::PyOpenLevelNoPrompt, nullptr, "Opens a level. Doesn't prompt user about saving a modified level."));
+            addLegacyGeneral(behaviorContext->Method("open_level", ::PyOpenLevel, behaviorContext->MakeDefaultValues(false, true), "Opens a level."));
+            addLegacyGeneral(behaviorContext->Method("open_level_no_prompt", ::PyOpenLevelNoPrompt, behaviorContext->MakeDefaultValues(false, true), "Opens a level. Doesn't prompt user about saving a modified level."));
             addLegacyGeneral(behaviorContext->Method("reload_current_level", ::PyReloadCurrentLevel, nullptr, "Re-loads the current level. If no level is loaded, then does nothing."));
             addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
             addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));

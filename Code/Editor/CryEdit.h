@@ -174,7 +174,7 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, bool reopenIfSame=false);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -467,7 +467,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame=false);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };
