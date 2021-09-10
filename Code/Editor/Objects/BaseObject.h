@@ -798,8 +798,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     //! Area radius around object, where terrain is flatten and static objects removed.
     float m_flattenArea;
-    //! Every object keeps for itself height above terrain.
-    float m_height;
     //! Object's name.
     QString m_name;
     //! Class description for this object.

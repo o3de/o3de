@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/FancyDocking.h>

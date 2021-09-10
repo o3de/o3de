@@ -57,6 +57,8 @@ namespace ScriptCanvas
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
+    constexpr const AZStd::string_view k_VersionExplorerWindow = "VersionExplorerWindow";
+
     class Node;
     class Edge;
 
@@ -68,6 +70,13 @@ namespace ScriptCanvas
     using NodeIdList = AZStd::vector<ID>;
     using NodePtrList = AZStd::vector<Node*>;
     using NodePtrConstList = AZStd::vector<const Node*>;
+
+    enum class PropertyStatus : AZ::u8
+    {
+        Getter,
+        None,
+        Setter,
+    };
 
     enum class GrammarVersion : int
     {
@@ -87,11 +96,13 @@ namespace ScriptCanvas
         Current,
     };
 
-    enum class PropertyStatus : AZ::u8
+    enum class FileVersion : int
     {
-        Getter,
-        None,
-        Setter,
+        Initial = -1,
+        JSON = 0,
+
+        // add new entries above
+        Current,
     };
 
     struct VersionData
@@ -104,10 +115,13 @@ namespace ScriptCanvas
 
         GrammarVersion grammarVersion = GrammarVersion::Initial;
         RuntimeVersion runtimeVersion = RuntimeVersion::Initial;
+        FileVersion fileVersion = FileVersion::Initial;
 
         bool operator == (const VersionData& rhs) const
         {
-            return grammarVersion == rhs.grammarVersion && runtimeVersion == rhs.runtimeVersion;
+            return grammarVersion == rhs.grammarVersion
+                && runtimeVersion == rhs.runtimeVersion
+                && fileVersion == rhs.fileVersion;
         }
 
         bool IsLatest() const

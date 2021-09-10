@@ -41,6 +41,7 @@ namespace EMotionFX
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
             D6JointLimitConfiguration::Reflect(serializeContext);
 
             SetupPluginWindows();

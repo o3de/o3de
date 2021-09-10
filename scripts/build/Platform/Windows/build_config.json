@@ -220,13 +220,17 @@
     ],
     "steps": [
       "awsi_deployment",
-      "awsi_test_profile_vs2019"
+      "awsi_test_profile_vs2019",
+      "awsi_destruction"
     ]
   },
   "awsi_test_profile_vs2019": {
     "TAGS": [
         "weekly-build-metrics"
     ],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -410,6 +414,14 @@
       "NONBLOCKING_STEP": "True"
     },
     "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
+  },
+  "awsi_destruction": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "destroy_cdk_applications.cmd",
     "PARAMETERS": {}
   }
 }

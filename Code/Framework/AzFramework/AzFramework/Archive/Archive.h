@@ -249,7 +249,7 @@ namespace AZ::IO
         IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) override;
 
         // creates a directory
-        bool MakeDir(AZStd::string_view szPath, bool bGamePathMapping = false) override;
+        bool MakeDir(AZStd::string_view szPath) override;
 
         // compresses the raw data into raw data. The buffer for compressed data itself with the heap passed. Uses method 8 (deflate)
         // returns one of the Z_* errors (Z_OK upon success)

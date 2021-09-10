@@ -22,10 +22,6 @@ namespace AZ
 {
     namespace Utils
     {
-        //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
-        //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
-        inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
-
         //! Terminates the application without going through the shutdown procedure.
         //! This is used when due to abnormal circumstances the application can no
         //! longer continue. On most platforms and in most configurations this will
@@ -115,6 +111,7 @@ namespace AZ
         //! Read a file into a string. Returns a failure with error message if the content could not be loaded or if
         //! the file size is larger than the max file size provided.
         template<typename Container = AZStd::string>
-        AZ::Outcome<Container, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize = DefaultMaxFileSize);
+        AZ::Outcome<Container, AZStd::string> ReadFile(
+            AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
     }
 }
