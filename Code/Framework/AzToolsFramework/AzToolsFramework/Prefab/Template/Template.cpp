@@ -180,7 +180,7 @@ namespace AzToolsFramework
             return m_filePath;
         }
 
-        void Template::SetFilePath(const AZ::IO::Path& path)
+        void Template::SetFilePath(const AZ::IO::PathView& path)
         {
             m_filePath = path;
         }

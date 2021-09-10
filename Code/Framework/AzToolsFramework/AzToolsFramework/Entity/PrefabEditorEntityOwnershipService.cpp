@@ -221,7 +221,7 @@ namespace AzToolsFramework
         AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(filename);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
-        m_prefabSystemComponent->ChangeTemplateFilePath(m_rootInstance->GetTemplateId(), relativePath);
+        m_prefabSystemComponent->UpdateTemplateFilePath(m_rootInstance->GetTemplateId(), relativePath);
 
         AZStd::string out;
         if (!m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))

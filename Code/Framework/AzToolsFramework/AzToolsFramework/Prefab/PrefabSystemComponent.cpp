@@ -424,18 +424,29 @@ namespace AzToolsFramework
             return newTemplateId;
         }
 
-        void PrefabSystemComponent::ChangeTemplateFilePath(const TemplateId& templateId, const AZ::IO::Path& filePath)
+        void PrefabSystemComponent::UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath)
         {
             auto findTemplateResult = FindTemplate(templateId);
             if (!findTemplateResult.has_value())
             {
                 AZ_Warning(
                     "Prefab", false,
-                    "PrefabSystemComponent::ChangeTemplateFilePath - "
+                    "PrefabSystemComponent::UpdateTemplateFilePath - "
                     "Template associated by given Id '%llu' doesn't exist in PrefabSystemComponent.",
                     templateId);
                 return;
             }
+
+            if (!filePath.IsRelative())
+            {
+                AZ_Warning(
+                    "Prefab", false,
+                    "PrefabSystemComponent::UpdateTemplateFilePath - "
+                    "Provided filePath must be relative.",
+                    templateId);
+                return;
+            }
+
             Template& templateToChange = findTemplateResult->get();
             if (templateToChange.GetFilePath() == filePath)
             {
@@ -449,8 +460,8 @@ namespace AzToolsFramework
             PrefabDomValueReference pathReference = Prefab::PrefabDomUtils::FindPrefabDomValue(prefabDom, "Source");
             if (pathReference)
             {
-                const AZStd::string pathStr = filePath.String();
-                pathReference->get().SetString(rapidjson::StringRef(pathStr.c_str(), pathStr.length()), prefabDom.GetAllocator());
+                const AZStd::string_view pathStr = filePath.Native();
+                pathReference->get().SetString(rapidjson::StringRef(pathStr.data(), pathStr.length()), prefabDom.GetAllocator());
             }
 
             templateToChange.SetFilePath(filePath);
