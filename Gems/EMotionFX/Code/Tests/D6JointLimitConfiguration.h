@@ -14,14 +14,13 @@ namespace EMotionFX
 {
     // Add so that RagdollNodeInspectorPlugin::PhysXCharactersGemAvailable() will return the correct value
     // We duplicated the D6JointLimitConfiguration because it doesn't exist in the test environment.
-    class D6JointLimitConfiguration
+    struct D6JointLimitConfiguration
         : public AzPhysics::JointConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(D6JointLimitConfiguration, AZ::SystemAllocator, 0);
         // This uses the same uuid as the production D6JointLimitConfiguration.
-        // The Ragdoll UI uses this UUID to see if physx is available.
-        AZ_RTTI(D6JointLimitConfiguration, "{90C5C23D-16C0-4F23-AD50-A190E402388E}", AzPhysics::JointConfiguration);
+        AZ_RTTI(D6JointLimitConfiguration, "{88E067B4-21E8-4FFA-9142-6C52605B704C}", AzPhysics::JointConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
 
