@@ -11,10 +11,15 @@
 
 namespace EMStudio
 {
+    class AnimViewportRenderer;
+
     class AnimViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
     {
     public:
         AnimViewportWidget(QWidget* parent = nullptr);
+
+    private:
+        AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
     };
 }
