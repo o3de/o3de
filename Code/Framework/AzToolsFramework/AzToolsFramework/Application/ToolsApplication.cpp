@@ -484,7 +484,7 @@ namespace AzToolsFramework
         EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(serializeContext, "No serialization context found");
 
-        const AZ::Entity::ComponentArrayType& editorComponents = source.GetUserComponents();
+        const AZ::Entity::ComponentArrayType& editorComponents = source.GetComponents();
 
         // Propagate components from source entity to target, in preparation for exporting target.
         for (AZ::Component* component : editorComponents)
@@ -494,15 +494,15 @@ namespace AzToolsFramework
 
             if (asEditorComponent)
             {
-                const size_t oldComponentCount = target.GetUserComponents().size();
+                const size_t oldComponentCount = target.GetComponents().size();
 
                 asEditorComponent->BuildGameEntity(&target);
 
                 // Applying same Id persistence trick as we do in the slice compiler. Once we're off levels,
                 // this code all goes away and everything runs through the slice compiler.
-                if (target.GetUserComponents().size() > oldComponentCount)
+                if (target.GetComponents().size() > oldComponentCount)
                 {
-                    AZ::Component* newComponent = target.GetUserComponents().back();
+                    AZ::Component* newComponent = target.GetComponents().back();
                     AZ_Error("Export", asEditorComponent->GetId() != AZ::InvalidComponentId, "For entity \"%s\", component \"%s\" doesn't have a valid component id",
                              source.GetName().c_str(), asEditorComponent->RTTI_GetType().ToString<AZStd::string>().c_str());
                     newComponent->SetId(asEditorComponent->GetId());
