@@ -56,7 +56,7 @@ def _asset_exists(cache_relative_path):
     asset_id = azasset.AssetCatalogRequestBus(azbus.Broadcast, "GetAssetIdByPath", cache_relative_path, azmath.Uuid(), False)
     return asset_id.is_valid()
 
-# List of results that we want to check, this is not 100% necessary but its a good
+# List of results that we want to check, this is not 100% necessary but it's a good
 # practice to make it easier to debug tests.
 # Here we define a tuple of tests
 class Results():
