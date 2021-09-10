@@ -7,6 +7,7 @@
  */
 #include <RHI/MemoryView.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
@@ -93,10 +94,10 @@ namespace AZ
         {
             if (m_memoryAllocation.m_memory)
             {
-                // NOTE:  This assumes that name is null-terminated.
                 AZStd::wstring wname;
                 AZStd::to_wstring(wname, name);
-                m_memoryAllocation.m_memory->SetName(wname.data());
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(wname.size() * sizeof(wchar_t)), wname.data());
             }
         }
 
@@ -104,8 +105,8 @@ namespace AZ
         {
             if (m_memoryAllocation.m_memory)
             {
-                // NOTE:  This assumes that name is null-terminated.
-                m_memoryAllocation.m_memory->SetName(name.data());
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
             }
         }
 
