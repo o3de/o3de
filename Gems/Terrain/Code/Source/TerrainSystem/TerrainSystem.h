@@ -13,6 +13,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -41,7 +42,7 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
-        
+
         void SetWorldBounds(const AZ::Aabb& worldBounds) override;
         void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
 
