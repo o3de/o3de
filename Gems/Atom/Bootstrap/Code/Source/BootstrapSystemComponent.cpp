@@ -253,34 +253,6 @@ namespace AZ
                 RPI::SceneDescriptor sceneDesc;
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
-
-                // Setup scene srg modification callback.
-                RPI::ShaderResourceGroupCallback callback = [this](RPI::ShaderResourceGroup* srg)
-                    {
-                        if (srg == nullptr)
-                        {
-                            return;
-                        }
-                        bool needCompile = false;
-                        RHI::ShaderInputConstantIndex timeIndex = srg->FindShaderInputConstantIndex(Name{ "m_time" });
-                        if (timeIndex.IsValid())
-                        {
-                            srg->SetConstant(timeIndex, m_simulateTime);
-                            needCompile = true;
-                        }
-                        RHI::ShaderInputConstantIndex deltaTimeIndex = srg->FindShaderInputConstantIndex(Name{ "m_deltaTime" });
-                        if (deltaTimeIndex.IsValid())
-                        {
-                            srg->SetConstant(deltaTimeIndex, m_deltaTime);
-                            needCompile = true;
-                        }
-
-                        if (needCompile)
-                        {
-                            srg->Compile();
-                        }
-                    };
-                atomScene->SetShaderResourceGroupCallback(callback);
                 atomScene->Activate();
 
                 // Register scene to RPI system so it will be processed/rendered per tick
@@ -408,11 +380,8 @@ namespace AZ
                 m_renderPipelineId = "";
             }
 
-            void BootstrapSystemComponent::OnTick(float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void BootstrapSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
-                m_simulateTime += deltaTime;
-                m_deltaTime = deltaTime;
-
                 // Temp: When running in the launcher without the legacy renderer
                 // we need to call RenderTick on the viewport context each frame.
                 if (m_viewportContext)

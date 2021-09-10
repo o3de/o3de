@@ -13,6 +13,5 @@
 partial ShaderResourceGroup SceneSrg
 {
     float m_time;
-    float m_deltaTime;
 }
 
