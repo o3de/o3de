@@ -43,6 +43,3 @@ class TestAutomation(EditorTestSuite):
 
     class test_AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
-
-    class test_AtomEditorComponentsInDepth_LightComponent(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_LightComponent as test_module

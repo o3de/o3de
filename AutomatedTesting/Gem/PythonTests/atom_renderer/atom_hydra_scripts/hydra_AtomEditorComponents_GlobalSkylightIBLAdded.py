@@ -138,7 +138,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 11. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, not global_skylight_entity.id.isValid())
+        Report.result(Tests.deletion_redo, len(deleted_entity) == 0)
 
         # 12. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

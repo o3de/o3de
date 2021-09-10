@@ -118,7 +118,7 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
 
         # 9. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, not physical_sky_entity.id.isValid())
+        Report.result(Tests.deletion_redo, len(deleted_entity) == 0)
 
         # 10. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

@@ -122,7 +122,7 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
 
         # 9. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, not postfx_radius_weight_entity.id.isValid())
+        Report.result(Tests.deletion_redo, len(deleted_entity) == 0)
 
         # 10. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
