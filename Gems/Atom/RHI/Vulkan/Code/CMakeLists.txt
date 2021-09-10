@@ -9,7 +9,11 @@
 ly_get_list_relative_pal_filename(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
-include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED
+include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED / PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED
+
+if(PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED)
+    return() # Vulkan targets already defined in PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+endif()
 
 if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
@@ -19,17 +23,13 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_vulkan_stub_module.cmake
-            atom_rhi_vulkan_reflect_common_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include
                 Source
-                ${pal_include_dir}
                 Include/Atom/RHI.Loader/Glad
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::Atom_RHI.Public
                 Gem::Atom_RHI.Reflect
                 3rdParty::glad_vulkan
     )
