@@ -85,6 +85,12 @@ public:
 
 using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 
+enum class COpenSameLevelOptions
+{
+    ReOpenLevelIfSame,
+    NoRepoenIfSame
+};
+
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
@@ -174,7 +180,7 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, bool reopenIfSame=false);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, COpenSameLevelOptions openSameLevelOptions=COpenSameLevelOptions::NoRepoenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -467,7 +473,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame=false);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NoRepoenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };

@@ -285,10 +285,11 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions)
 {
     assert(lpszFileName != nullptr);
 
+    const bool reopenIfSame = openSameLevelOptions == COpenSameLevelOptions::ReOpenLevelIfSame;
     // find the highest confidence
     auto pos = m_templateList.begin();
     CCrySingleDocTemplate::Confidence bestMatch = CCrySingleDocTemplate::noAttempt;
@@ -3295,7 +3296,7 @@ void CCryEditApp::OnOpenSlice()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, bool reopenIfSame)
+CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions)
 {
     if (m_openingLevel)
     {
@@ -3337,7 +3338,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName, bool bAddTo
 
         // in this case, we set bAddToMRU to always be true because adding files to the MRU list
         // automatically culls duplicate and normalizes paths anyway
-        m_pDocManager->OpenDocumentFile(lpszFileName, bAddToMRU, reopenIfSame);
+        m_pDocManager->OpenDocumentFile(lpszFileName, bAddToMRU, openSameLevelOptions);
 
         if (openDocTraceHandler.HasAnyErrors())
         {
