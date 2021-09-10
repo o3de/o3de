@@ -400,7 +400,7 @@ bool CXmlNode::getAttr(const char* key, int64& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        azsscanf(svalue, "%" PRId64, &value);
+        value = strtoll(key, nullptr, 10);
         return true;
     }
     return false;
@@ -412,14 +412,7 @@ bool CXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        if (useHexFormat)
-        {
-            azsscanf(svalue, "%" PRIX64, &value);
-        }
-        else
-        {
-            azsscanf(svalue, "%" PRIu64, &value);
-        }
+        value = strtoull(key, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;
