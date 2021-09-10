@@ -53,6 +53,9 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+protected:
+    void resizeEvent(QResizeEvent* ev) override;
+
 private:
     void OnInitViewToggleButton();
     void UpdateDisplayInfo();

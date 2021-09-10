@@ -64,9 +64,6 @@ namespace AzToolsFramework
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
             QTableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
-
-            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
         }
 
         void AssetBrowserTableView::SetName(const QString& name)
@@ -146,6 +143,12 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
+            setColumnWidth(0, parentWidget()->width() / 2);
+            horizontalHeader()->setStretchLastSection(true);
+            horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
+            horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)

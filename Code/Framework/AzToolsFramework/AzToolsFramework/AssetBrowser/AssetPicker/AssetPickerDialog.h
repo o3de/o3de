@@ -53,6 +53,7 @@ namespace AzToolsFramework
             void accept() override;
             void reject() override;
             void keyPressEvent(QKeyEvent* e) override;
+            void resizeEvent(QResizeEvent* ev) override;
 
         private Q_SLOTS:
             void DoubleClickedSlot(const QModelIndex& index);

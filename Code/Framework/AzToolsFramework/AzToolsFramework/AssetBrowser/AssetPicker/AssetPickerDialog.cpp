@@ -206,6 +206,14 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetPickerDialog::resizeEvent(QResizeEvent* ev)
+        {
+            m_ui->m_assetBrowserTableViewWidget->setColumnWidth(0, parentWidget()->width() / 2);
+            m_ui->m_assetBrowserTableViewWidget->horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
+            m_ui->m_assetBrowserTableViewWidget->horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+            QDialog::resizeEvent(ev);
+        }
+
         void AssetPickerDialog::keyPressEvent(QKeyEvent* e)
         {
             // Until search widget is revised, Return key should not close the dialog,
