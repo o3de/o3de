@@ -130,8 +130,8 @@ namespace AzToolsFramework
         }
 
         QWidget* GetFirstInTabOrder(WidgetType* widget) override { return widget; }
-        virtual QWidget* GetLastInTabOrder(WidgetType* widget) { return widget; }
-        virtual void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) { }
+        QWidget* GetLastInTabOrder(WidgetType* widget) override { return widget; }
+        void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) override {}
 
         QWidget* CreateGUI(QWidget *pParent) override = 0;
     protected:
