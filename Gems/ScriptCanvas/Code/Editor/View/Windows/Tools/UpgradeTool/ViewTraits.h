@@ -5,19 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
-#include <ScriptCanvas/Core/Core.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        class Scanner
+        class ViewRequestsTraits : public AZ::EBusTraits
         {
         public:
-            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
+            // flush logs, or add log text
+            // set progress update
+            virtual void ClearProgress() {}
+            virtual void SetInProgress() {}
         };
-    }    
+        using ViewRequestsBus = AZ::EBus<ViewRequestsTraits>;
+    }
 }

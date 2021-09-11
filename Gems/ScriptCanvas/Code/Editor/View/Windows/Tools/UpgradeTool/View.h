@@ -15,7 +15,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <IConsole.h>
 #include <ISystem.h>
@@ -23,11 +22,14 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Core/Core.h>
 #endif
 
+#include <Editor/View/Windows/Tools/UpgradeTool/ViewTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
+
 class QPushButton;
 
 namespace Ui
 {
-    class VersionExplorer;
+    class View;
 }
 
 namespace AzQtComponents
@@ -37,140 +39,132 @@ namespace AzQtComponents
 
 namespace ScriptCanvasEditor
 {
-    //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
-    //! the upgrade tool to work even if the editor is not in the foreground
-    class EditorKeepAlive
+    namespace VersionExplorer
     {
-    public:
-        EditorKeepAlive();
-        ~EditorKeepAlive();
-
-    private:
-        int m_keepEditorActive;
-        ICVar* m_edKeepEditorActive;
-    };
-
-    //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
-    class VersionExplorer
-        : public AzQtComponents::StyledDialog
-        , private AZ::SystemTickBus::Handler
-        , private UpgradeNotifications::Bus::Handler
-        , private AZ::Debug::TraceMessageBus::Handler
-    {
-        Q_OBJECT
-
-    public:
-        AZ_CLASS_ALLOCATOR(VersionExplorer, AZ::SystemAllocator, 0);
-
-        explicit VersionExplorer(QWidget* parent = nullptr);
-        ~VersionExplorer();
-
-    private:
-
-        static constexpr int ColumnAsset = 0;
-        static constexpr int ColumnAction = 1;
-        static constexpr int ColumnBrowse = 2;
-        static constexpr int ColumnStatus = 3;
-
-        void OnScan();
-        void OnClose();
-
-        enum class ProcessState
+        //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
+        //! the upgrade tool to work even if the editor is not in the foreground
+        class EditorKeepAlive
         {
-            Inactive,
-            Backup,
-            Scan,
-            Upgrade,
-        };
-        ProcessState m_state = ProcessState::Inactive;
+        public:
+            EditorKeepAlive();
+            ~EditorKeepAlive();
 
-        void DoScan();
-        void ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>&);
-
-        void InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo);
-
-        void OnUpgradeAll();
-
-        // SystemTickBus::Handler
-        void OnSystemTick() override;
-        //
-
-        // AZ::Debug::TranceMessageBus::Handler
-        bool OnException(const char* /*message*/) override;
-        bool OnPrintf(const char* /*window*/, const char* /*message*/) override;
-        bool OnPreError(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override;
-        bool OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override;
-        //
-
-        bool CaptureLogFromTraceBus(const char* window, const char* message);
-
-        enum class OperationResult
-        {
-            Success,
-            Failure,
+        private:
+            int m_keepEditorActive;
+            ICVar* m_edKeepEditorActive;
         };
 
-        void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result, AZStd::string_view message);
+        //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
+        //! Handles display change notifications, handles state change notifications, sends control requests
+        class View
+            : public AzQtComponents::StyledDialog
+            , private AZ::SystemTickBus::Handler
+            , private UpgradeNotifications::Bus::Handler
+            , private ViewRequestsBus::Handler
+            , private ModelNotificationsBus::Handler
+        {
+            Q_OBJECT
 
-        bool IsUpgrading() const;
+        public:
+            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator, 0);
 
-        bool m_inProgress = false;
-        // scan fields
-        size_t m_currentAssetRowIndex = 0;
-        size_t m_inspectedAssets = 0;
-        size_t m_failedAssets = 0;
-        size_t m_discoveredAssets = 0;
+            explicit View(QWidget* parent = nullptr);
+            
+        private:
 
-        IUpgradeRequests::AssetList m_assetsToInspect;
-        IUpgradeRequests::AssetList::iterator m_inspectingAsset;
-        using UpgradeAssets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;
-        UpgradeAssets m_assetsToUpgrade;
-        UpgradeAssets::iterator m_inProgressAsset;
+            static constexpr int ColumnAsset = 0;
+            static constexpr int ColumnAction = 1;
+            static constexpr int ColumnBrowse = 2;
+            static constexpr int ColumnStatus = 3;
 
-        AZ::Data::Asset<AZ::Data::AssetData> m_currentAsset;
+            void OnCloseButtonPress();
+            void OnScanButtonPress();
+            void OnUpgradeAllButtonPress();
 
-        AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
+            enum class ProcessState
+            {
+                Inactive,
+                Backup,
+                Scan,
+                Upgrade,
+            };
+            ProcessState m_state = ProcessState::Inactive;
 
-        AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
+            void DoScan();
+            void ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>&);
 
-        // upgrade fields
-        AZStd::recursive_mutex m_mutex;
-        bool m_upgradeComplete = false;
-        AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
-        int m_upgradeAssetIndex = 0;
-        OperationResult m_upgradeResult;
-        AZStd::string m_upgradeMessage;
-        AZStd::string m_tmpFileName;
+            void InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo);
 
-        AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
+            // SystemTickBus::Handler
+            void OnSystemTick() override;
 
-        AZStd::deque<AZStd::string> m_logs;
+            enum class OperationResult
+            {
+                Success,
+                Failure,
+            };
 
-        AZ::Entity* m_scriptCanvasEntity = nullptr;
+            void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result, AZStd::string_view message);
 
-        bool m_isUpgradingSingleGraph = false;
+            bool IsUpgrading() const { return false; }
 
-        void UpgradeSingle(QPushButton* item, AzQtComponents::StyledBusyLabel* spinner, AZ::Data::AssetInfo assetInfo);
+            bool m_inProgress = false;
+            // scan fields
+            size_t m_currentAssetRowIndex = 0;
+            size_t m_inspectedAssets = 0;
+            size_t m_failedAssets = 0;
+            size_t m_discoveredAssets = 0;
 
-        void FlushLogs();
+            IUpgradeRequests::AssetList m_assetsToInspect;
+            IUpgradeRequests::AssetList::iterator m_inspectingAsset;
+            using UpgradeAssets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;
+            UpgradeAssets m_assetsToUpgrade;
+            UpgradeAssets::iterator m_inProgressAsset;
 
-        void FinalizeUpgrade();
-        void FinalizeScan();
+            AZ::Data::Asset<AZ::Data::AssetData> m_currentAsset;
 
-        void BackupComplete();
-        AZStd::string BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
-        void UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
+            AZStd::unique_ptr<Ui::View> m_ui;
 
-        void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message);
-        void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) override;
+            
+            // upgrade fields
+            AZStd::recursive_mutex m_mutex;
+            bool m_upgradeComplete = false;
+            AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
+            int m_upgradeAssetIndex = 0;
+            OperationResult m_upgradeResult;
+            AZStd::string m_upgradeMessage;
+            AZStd::string m_tmpFileName;
 
-        void OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset);
+            AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 
-        void closeEvent(QCloseEvent* event) override;
+            AZStd::deque<AZStd::string> m_logs;
 
-        bool m_overwriteAll = false;
-        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, AZStd::string source, AZStd::string target, size_t remainingAttempts);
+            AZ::Entity* m_scriptCanvasEntity = nullptr;
 
-        void Log(const char* format, ...);
-    };
+            bool m_isUpgradingSingleGraph = false;
+
+            void UpgradeSingle(QPushButton* item, AzQtComponents::StyledBusyLabel* spinner, AZ::Data::AssetInfo assetInfo);
+
+            void FlushLogs();
+
+            void FinalizeUpgrade();
+            void FinalizeScan();
+
+            void BackupComplete();
+            AZStd::string BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
+            void UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
+
+            void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message);
+            void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) override;
+
+            void OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset);
+
+            void closeEvent(QCloseEvent* event) override;
+
+            bool m_overwriteAll = false;
+            void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, AZStd::string source, AZStd::string target, size_t remainingAttempts);
+
+            void Log(const char* format, ...);
+        };
+    }
 }

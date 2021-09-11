@@ -6,18 +6,20 @@
  *
  */
 
-#pragma once
+#include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 
-#include <ScriptCanvas/Core/Core.h>
+namespace ModifierCpp
+{
+
+}
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        class Scanner
+        const AZStd::vector<AZStd::string>* Model::GetLogs()
         {
-        public:
-            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
-        };
-    }    
+            return &m_log.GetEntries();
+        }
+    }
 }

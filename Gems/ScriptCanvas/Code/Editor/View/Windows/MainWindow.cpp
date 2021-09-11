@@ -134,7 +134,7 @@
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/View.h>
 
 #include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
 
@@ -3436,7 +3436,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RunUpgradeTool()
     {
-        VersionExplorer* versionExplorer = aznew VersionExplorer(this);
+        auto versionExplorer = aznew VersionExplorer::View(this);
         versionExplorer->exec();
 
         // Manual correction
