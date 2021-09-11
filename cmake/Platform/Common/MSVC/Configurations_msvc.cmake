@@ -35,10 +35,14 @@ ly_append_configurations_options(
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
         
-        # Disabling some warnings
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
 
-        # Enabling warnings that are disabled by default from /W4
+        ###################
+        # Enabled warnings (that are disabled by default from /W4)
+        ###################
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
         /we4263 # 'function': member function does not override any base class virtual member function
         /we4264 # 'virtual_function': no override available for virtual member function from base 'class'; function is hidden
@@ -53,7 +57,6 @@ ly_append_configurations_options(
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
         /we5233 # explicit lambda capture 'identifier' is not used
-
 
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
