@@ -399,7 +399,7 @@ public:
     //! Get name of parameter.
     QString GetDescription() const override { return m_description; };
 
-    EType   GetType() const { return IVariable::UNKNOWN; };
+    EType   GetType() const override { return IVariable::UNKNOWN; };
     int GetSize() const override { return sizeof(*this); };
 
     unsigned char   GetDataType() const override { return m_dataType; };
@@ -409,8 +409,8 @@ public:
     int  GetFlags() const override { return m_flags; }
     void  SetFlagRecursive(EFlags flag) override { m_flags |= flag; }
 
-    void SetUserData(const QVariant &data){ m_userData = data; };
-    QVariant GetUserData() const { return m_userData; }
+    void SetUserData(const QVariant &data) override { m_userData = data; };
+    QVariant GetUserData() const override { return m_userData; }
 
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
@@ -1114,44 +1114,44 @@ public:
     }
 
     //! Get name of parameter.
-    virtual EType   GetType() const { return (EType)var_type::type_traits<T>::type(); };
-    virtual int     GetSize() const { return sizeof(T); };
+    EType   GetType() const override { return (EType)var_type::type_traits<T>::type(); };
+    int     GetSize() const override { return sizeof(T); };
 
     //////////////////////////////////////////////////////////////////////////
     // Set methods.
     //////////////////////////////////////////////////////////////////////////
-    virtual void Set(int value)                           { SetValue(value); }
-    virtual void Set(bool value)                      { SetValue(value); }
-    virtual void Set(float value)                     { SetValue(value); }
-    virtual void Set(double value)                { SetValue(value); }
-    virtual void Set(const Vec2& value)           { SetValue(value); }
-    virtual void Set(const Vec3& value)           { SetValue(value); }
-    virtual void Set(const Vec4& value)           { SetValue(value); }
-    virtual void Set(const Ang3& value)           { SetValue(value); }
-    virtual void Set(const Quat& value)           { SetValue(value); }
-    virtual void Set(const QString& value)    { SetValue(value); }
-    virtual void Set(const char* value)      { SetValue(QString(value)); }
+    void Set(int value) override                           { SetValue(value); }
+    void Set(bool value) override                      { SetValue(value); }
+    void Set(float value) override                     { SetValue(value); }
+    void Set(double value) override                { SetValue(value); }
+    void Set(const Vec2& value) override           { SetValue(value); }
+    void Set(const Vec3& value) override           { SetValue(value); }
+    void Set(const Vec4& value) override           { SetValue(value); }
+    void Set(const Ang3& value) override           { SetValue(value); }
+    void Set(const Quat& value) override           { SetValue(value); }
+    void Set(const QString& value) override    { SetValue(value); }
+    void Set(const char* value) override      { SetValue(QString(value)); }
 
     //////////////////////////////////////////////////////////////////////////
     // Get methods.
     //////////////////////////////////////////////////////////////////////////
-    virtual void Get(int& value) const                        { GetValue(value); }
-    virtual void Get(bool& value) const                   { GetValue(value); }
-    virtual void Get(float& value) const                  { GetValue(value); }
-    virtual void Get(double& value) const                  { GetValue(value); }
-    virtual void Get(Vec2& value) const                   { GetValue(value); }
-    virtual void Get(Vec3& value) const                   { GetValue(value); }
-    virtual void Get(Vec4& value) const                   { GetValue(value); }
-    virtual void Get(Quat& value) const                   { GetValue(value); }
-    virtual void Get(QString& value) const                { GetValue(value); }
-    virtual bool HasDefaultValue() const
+    void Get(int& value) const override                        { GetValue(value); }
+    void Get(bool& value) const override                   { GetValue(value); }
+    void Get(float& value) const override                  { GetValue(value); }
+    void Get(double& value) const override                  { GetValue(value); }
+    void Get(Vec2& value) const override                   { GetValue(value); }
+    void Get(Vec3& value) const override                   { GetValue(value); }
+    void Get(Vec4& value) const override                   { GetValue(value); }
+    void Get(Quat& value) const override                   { GetValue(value); }
+    void Get(QString& value) const override                { GetValue(value); }
+    bool HasDefaultValue() const override
     {
         T defval;
         var_type::init(defval);
         return m_valueDef == defval;
     }
 
-    virtual void ResetToDefault()
+    void ResetToDefault() override
     {
         T defval;
         var_type::init(defval);
@@ -1161,7 +1161,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Limits.
     //////////////////////////////////////////////////////////////////////////
-    virtual void SetLimits(float fMin, float fMax, float fStep = 0.f, bool bHardMin = true, bool bHardMax = true)
+    void SetLimits(float fMin, float fMax, float fStep = 0.f, bool bHardMin = true, bool bHardMax = true) override
     {
         m_valueMin = fMin;
         m_valueMax = fMax;
@@ -1173,7 +1173,7 @@ public:
         m_customLimits = true;
     }
 
-    virtual void GetLimits(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax)
+    void GetLimits(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax) override
     {
         if (!m_customLimits && var_type::type_traits<T>::supports_range())
         {
@@ -1201,7 +1201,7 @@ public:
         m_customLimits = false;
     }
 
-    virtual bool HasCustomLimits()
+    bool HasCustomLimits() override
     {
         return m_customLimits;
     }
@@ -1219,14 +1219,14 @@ public:
     void operator=(const T& value) { SetValue(value); }
 
     //////////////////////////////////////////////////////////////////////////
-    IVariable* Clone([[maybe_unused]] bool bRecursive) const
+    IVariable* Clone([[maybe_unused]] bool bRecursive) const override
     {
         Self* var = new Self(*this);
         return var;
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void CopyValue(IVariable* fromVar)
+    void CopyValue(IVariable* fromVar) override
     {
         assert(fromVar);
         T val;
@@ -1670,7 +1670,7 @@ struct CSmartVariableBase
         return *pV;
     }                                                        // Cast to CVariableBase&
     VarType& operator*() const { return *pVar; }
-    VarType* operator->(void) const { return pVar; }
+    VarType* operator->() const { return pVar; }
 
     VarType* GetVar() const { return pVar; };
 
@@ -1732,7 +1732,7 @@ struct CSmartVariableArray
     }
 
     VarType& operator*() const { return *pVar; }
-    VarType* operator->(void) const { return pVar; }
+    VarType* operator->() const { return pVar; }
 
     VarType* GetVar() const { return pVar; };
 
@@ -1754,35 +1754,35 @@ public:
     // Dtor.
     virtual ~CVarBlock() {}
     //! Add variable to block.
-    virtual void AddVariable(IVariable* var);
+    void AddVariable(IVariable* var) override;
     //! Remove variable from block
-    virtual bool DeleteVariable(IVariable* var, bool bRecursive = false);
+    bool DeleteVariable(IVariable* var, bool bRecursive = false) override;
 
     void AddVariable(IVariable* pVar, const char* varName, unsigned char dataType = IVariable::DT_SIMPLE);
     // This used from smart variable pointer.
     void AddVariable(CVariableBase& var, const char* varName, unsigned char dataType = IVariable::DT_SIMPLE);
 
     //! Returns number of variables in block.
-    virtual int GetNumVariables() const { return static_cast<int>(m_vars.size()); }
+    int GetNumVariables() const override { return static_cast<int>(m_vars.size()); }
 
     //! Get pointer to stored variable by index.
-    virtual IVariable* GetVariable(int index) const
+    IVariable* GetVariable(int index) const override
     {
         assert(index >= 0 && index < m_vars.size());
         return m_vars[index];
     }
 
     // Clear all vars from VarBlock.
-    virtual void DeleteAllVariables() { m_vars.clear(); };
+    void DeleteAllVariables() override { m_vars.clear(); };
 
     //! Return true if variable block is empty (Does not have any vars).
-    virtual bool IsEmpty() const { return m_vars.empty(); }
+    bool IsEmpty() const override { return m_vars.empty(); }
 
     // Returns true if var block contains specified variable.
-    virtual bool IsContainsVariable(IVariable* pVar, bool bRecursive = true) const;
+    bool IsContainsVariable(IVariable* pVar, bool bRecursive = true) const override;
 
     //! Find variable by name.
-    virtual IVariable* FindVariable(const char* name, bool bRecursive = true, bool bHumanName = false) const;
+    IVariable* FindVariable(const char* name, bool bRecursive = true, bool bHumanName = false) const override;
 
     //////////////////////////////////////////////////////////////////////////
     //! Clone var block.

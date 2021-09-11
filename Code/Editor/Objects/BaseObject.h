@@ -712,7 +712,7 @@ protected:
     // May be overridden in derived classes to handle helpers scaling.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetHelperScale([[maybe_unused]] float scale) {};
-    virtual float GetHelperScale() { return 1; };
+    virtual float GetHelperScale() { return 1.0f; };
 
     void SetNameInternal(const QString& name) { m_name = name; }
 
