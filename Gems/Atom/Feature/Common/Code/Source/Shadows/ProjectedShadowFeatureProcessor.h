@@ -48,7 +48,7 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
-        void SetPcfMethod(ShadowId id, PcfMethod method);
+        void SetPcfMethod(ShadowId id, PcfMethod method) override;
         void SetEsmExponent(ShadowId id, float exponent);
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
