@@ -190,7 +190,7 @@ namespace AzToolsFramework
 
         if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
         {
-            AZ_Error("EntityUtilityComponent", false, "Failed to serialize component to json",
+            AZ_Error("EntityUtilityComponent", false, "Failed to serialize component to json (%s): %s",
                 typeName.c_str(), resultCode.ToString(typeName).c_str())
             return "";
         }
@@ -207,7 +207,7 @@ namespace AzToolsFramework
         return jsonString;
     }
 
-    AZStd::vector<AZStd::string> EntityUtilityComponent::SearchComponents(const AZStd::string& searchTerm)
+    AZStd::vector<AZStd::string> EntityUtilityComponent::FindMatchingComponents(const AZStd::string& searchTerm)
     {
         if (m_typeNames.empty())
         {
@@ -256,7 +256,7 @@ namespace AzToolsFramework
                 ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity)
                 ->Event("GetOrAddComponentByTypeName", &EntityUtilityBus::Events::GetOrAddComponentByTypeName)
                 ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity)
-                ->Event("SearchComponents", &EntityUtilityBus::Events::SearchComponents)
+                ->Event("FindMatchingComponents", &EntityUtilityBus::Events::FindMatchingComponents)
                 ->Event("GetComponentJson", &EntityUtilityBus::Events::GetComponentJson)
             ;
         }

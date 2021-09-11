@@ -38,7 +38,7 @@ namespace AzToolsFramework
         virtual AZStd::string GetComponentJson(const AZStd::string& typeName) = 0;
 
         // Returns a list of matching component type names.  Supports wildcard search terms
-        virtual AZStd::vector<AZStd::string> SearchComponents(const AZStd::string& searchTerm) = 0;
+        virtual AZStd::vector<AZStd::string> FindMatchingComponents(const AZStd::string& searchTerm) = 0;
     };
 
     using EntityUtilityBus = AZ::EBus<EntityUtilityTraits>;
@@ -54,7 +54,7 @@ namespace AzToolsFramework
         AzFramework::BehaviorComponentId GetOrAddComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) override;
         bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) override;
         AZStd::string GetComponentJson(const AZStd::string& typeName) override;
-        AZStd::vector<AZStd::string> SearchComponents(const AZStd::string& searchTerm) override;
+        AZStd::vector<AZStd::string> FindMatchingComponents(const AZStd::string& searchTerm) override;
 
         static void Reflect(AZ::ReflectContext* context);
 

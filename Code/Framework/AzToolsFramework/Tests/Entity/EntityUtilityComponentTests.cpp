@@ -222,7 +222,7 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalStringVector = EntityUtilityBus.Broadcast.SearchComponents("Transform*")
+            g_globalStringVector = EntityUtilityBus.Broadcast.FindMatchingComponents("Transform*")
             )LUA");
 
         // There should be 2 transform components
@@ -236,7 +236,7 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalStringVector = EntityUtilityBus.Broadcast.SearchComponents("404")
+            g_globalStringVector = EntityUtilityBus.Broadcast.FindMatchingComponents("404")
             )LUA");
         
         EXPECT_EQ(g_globalStringVector.size(), 0);
