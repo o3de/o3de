@@ -270,8 +270,8 @@ set(FILES
     Editor/View/Windows/Tools/UpgradeTool/Scanner.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.cpp
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
-    Editor/View/Windows/Tools/UpgradeTool/View.cpp
-    Editor/View/Windows/Tools/UpgradeTool/View.h
+    Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Controller.h
     Editor/View/Windows/Tools/UpgradeTool/View.ui
     Editor/View/Windows/Tools/UpgradeTool/ViewTraits.h
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
