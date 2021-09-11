@@ -88,7 +88,7 @@ using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 enum class COpenSameLevelOptions
 {
     ReOpenLevelIfSame,
-    NoRepoenIfSame
+    NotReOpenIfSame
 };
 
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -180,7 +180,7 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, COpenSameLevelOptions openSameLevelOptions=COpenSameLevelOptions::NoRepoenIfSame);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, COpenSameLevelOptions openSameLevelOptions=COpenSameLevelOptions::NotReOpenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -473,7 +473,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NoRepoenIfSame);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReOpenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };
