@@ -689,9 +689,6 @@ namespace AZ::IO
             return AZ::IO::InvalidHandle;
         }
 
-        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
-            aznumeric_cast<int>(pName.size()), pName.data(), this);
-
         SAutoCollectFileAccessTime accessTime(this);
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
@@ -1915,7 +1912,7 @@ namespace AZ::IO
         return m_pFileEntry->nFileDataOffset;
     }
 
-    bool Archive::MakeDir(AZStd::string_view szPathIn, [[maybe_unused]] bool bGamePathMapping)
+    bool Archive::MakeDir(AZStd::string_view szPathIn)
     {
         AZ::IO::StackString pathStr{ szPathIn };
         // Determine if there is a period ('.') after the last slash to determine if the path contains a file.
@@ -2330,7 +2327,9 @@ namespace AZ::IO
             // we only want to record ASSET access
             // assets are identified as things which start with no alias, or with the @assets@ alias
             auto assetPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(szFilename);
-            if (assetPath && assetPath->Native().starts_with("@assets@"))
+            if (assetPath && (assetPath->Native().starts_with("@assets@")
+                || assetPath->Native().starts_with("@root@")
+                || assetPath->Native().starts_with("@projectplatformcache@")))
             {
                 IResourceList* pList = GetResourceList(m_eRecordFileOpenList);
 

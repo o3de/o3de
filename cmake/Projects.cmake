@@ -149,8 +149,9 @@ foreach(project ${LY_PROJECTS})
 if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
     set(install_output_folder "${CMAKE_INSTALL_PREFIX}/@runtime_output_directory@/@PAL_PLATFORM_NAME@/${CMAKE_INSTALL_CONFIG_NAME}")
     message(STATUS "Generating ${install_output_folder}/Engine.pak from @full_directory_path@/Cache")
-    file(ARCHIVE_CREATE OUTPUT ${install_output_folder}/Engine.pak
-        PATHS @full_directory_path@/Cache
+    file(MAKE_DIRECTORY "${install_output_folder}")
+    file(ARCHIVE_CREATE OUTPUT "${install_output_folder}/Engine.pak"
+        PATHS "@full_directory_path@/Cache"
         FORMAT zip
     )
     message(STATUS "${install_output_folder}/Engine.pak generated")

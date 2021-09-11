@@ -42,6 +42,7 @@ set(FILES
     Source/Authentication/LWAAuthenticationProvider.cpp
     Source/Authentication/GoogleAuthenticationProvider.cpp
 
+    Source/Authorization/ClientAuthAWSCredentials.cpp
     Source/Authorization/AWSCognitoAuthorizationController.cpp
     Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.cpp
 

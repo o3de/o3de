@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral
@@ -23,7 +24,7 @@ namespace LmbrCentral
             Call(FN_OnShapeChanged, changeReason);
         }
     };
-    
+
     void ShapeComponentGeneric::Reflect(AZ::ReflectContext* context)
     {
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
@@ -41,7 +42,7 @@ namespace LmbrCentral
 
             behaviorContext->Enum<(int)ShapeComponentNotifications::ShapeChangeReasons::TransformChanged>("ShapeChangeReasons_TransformChanged")
                            ->Enum<(int)LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged>("ShapeChangeReasons_ShapeChanged");
-            
+
             behaviorContext->EBus<ShapeComponentNotificationsBus>("ShapeComponentNotificationsBus")
                 ->Handler<BehaviorShapeComponentNotificationsBusHandler>()
                 ;

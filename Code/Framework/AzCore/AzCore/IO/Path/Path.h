@@ -256,8 +256,22 @@ namespace AZ::IO
 
         template <typename PathResultType>
         static constexpr void MakeRelativeTo(PathResultType& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base);
-        template <typename PathResultType>
-        static constexpr void LexicallyNormalInplace(PathResultType& pathResult, const AZ::IO::PathView& path);
+
+        struct PathIterable;
+        //! Returns a structure that provides a view of the path parts which can be used for iteration
+        //! Only the path parts that correspond to creating an normalized path is returned
+        //! This function is useful for returning a "view" into a normalized path without the need
+        //! to allocate memory for the heap
+        static constexpr PathIterable GetNormalPathParts(const AZ::IO::PathView& path) noexcept;
+        // joins the input path to the Path Iterable structure using similiar logic to Path::Append
+        // If the input path is absolute it will replace the current PathIterable otherwise
+        // the input path will be appended to the Path Iterable structure
+        // For example a PathIterable with parts = ['C:', '/', 'foo']
+        // If the path input = 'bar', then the new PathIterable parts = [C:', '/', 'foo', 'bar']
+        // If the path input = 'C:/bar', then the new PathIterable parts = [C:', '/', 'bar']
+        // If the path input = 'C:bar', then the new PathIterable parts = [C:', '/', 'foo', 'bar' ]
+        // If the path input = 'D:bar', then the new PathIterable parts = [D:, 'bar' ]
+        static constexpr void AppendNormalPathParts(PathIterable& pathIterableResult, const AZ::IO::PathView& path) noexcept;
 
         constexpr int compare_string_view(AZStd::string_view other) const;
         constexpr AZStd::string_view root_name_view() const;
@@ -442,14 +456,15 @@ namespace AZ::IO
         constexpr void swap(BasicPath& rhs) noexcept;
 
         // native format observers
-        constexpr const string_type& Native() const noexcept;
+        constexpr const string_type& Native() const& noexcept;
+        constexpr const string_type&& Native() const&& noexcept;
         constexpr const value_type* c_str() const noexcept;
         constexpr explicit operator string_type() const;
 
         // Adds support for retrieving a modifiable copy of the underlying string
         // Any modifications to the string invalidates existing PathIterators
-        constexpr string_type& Native() noexcept;
-        constexpr explicit operator string_type&() noexcept;
+        constexpr string_type& Native() & noexcept;
+        constexpr string_type&& Native() && noexcept;
 
         //! The string and wstring functions cannot be constexpr until AZStd::basic_string is made constexpr.
         //! This cannot occur until C++20 as operator new/delete cannot be used within constexpr functions
