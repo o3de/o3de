@@ -57,12 +57,12 @@ namespace GraphCanvas
             GraphCanvasPropertyBus::MultiHandler::BusDisconnect();
         }
 
-        void AddBusId(const AZ::EntityId& busId) override final
+        void AddBusId(const AZ::EntityId& busId) final
         {
             GraphCanvasPropertyBus::MultiHandler::BusConnect(busId);
         }
 
-        void RemoveBusId(const AZ::EntityId& busId) override final
+        void RemoveBusId(const AZ::EntityId& busId) final
         {
             GraphCanvasPropertyBus::MultiHandler::BusDisconnect(busId);
         }
@@ -86,12 +86,12 @@ namespace GraphCanvas
 
         void Init() override {};
 
-        void Activate()
+        void Activate() override
         {
             GraphCanvasPropertyBusHandler::OnActivate(GetEntityId());
         }
 
-        void Deactivate()
+        void Deactivate() override
         {
             GraphCanvasPropertyBusHandler::OnDeactivate();
         }
