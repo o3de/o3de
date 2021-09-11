@@ -87,8 +87,8 @@ using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 
 enum class COpenSameLevelOptions
 {
-    ReOpenLevelIfSame,
-    NotReOpenIfSame
+    ReopenLevelIfSame,
+    NotReopenIfSame
 };
 
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -180,7 +180,9 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU=true, COpenSameLevelOptions openSameLevelOptions=COpenSameLevelOptions::NotReOpenIfSame);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName,
+        bool addToMostRecentFileList=true,
+        COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -454,7 +456,7 @@ public:
     ~CCrySingleDocTemplate() {};
     // avoid creating another CMainFrame
     // close other type docs before opening any things
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, bool bMakeVisible);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
     virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
     virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
@@ -473,7 +475,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReOpenIfSame);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };
