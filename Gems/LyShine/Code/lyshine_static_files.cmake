@@ -9,6 +9,15 @@
 set(FILES
     Source/Draw2d.cpp
     Include/LyShine/Draw2d.h
+    Include/LyShine/IRenderGraph.h
+    Include/LyShine/ISprite.h
+    Include/LyShine/UiSerializeHelpers.h
+    Include/LyShine/UiComponentTypes.h
+    Include/LyShine/UiEntityContext.h
+    Include/LyShine/UiEditorDLLBus.h
+    Include/LyShine/UiRenderFormats.h
+    Include/LyShine/Animation/IUiAnimation.h
+    Include/LyShine/Bus/UiAnimationBus.h
     Source/LyShine.cpp
     Source/LyShine.h
     Source/LyShinePassDataBus.h

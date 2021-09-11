@@ -114,18 +114,10 @@ set(FILES
     Win64specific.h
     LyShine/IDraw2d.h
     LyShine/ILyShine.h
-    LyShine/ISprite.h
-    LyShine/IRenderGraph.h
     LyShine/UiAssetTypes.h
-    LyShine/UiComponentTypes.h
     LyShine/UiBase.h
-    LyShine/UiEntityContext.h
     LyShine/UiLayoutCellBase.h
-    LyShine/UiRenderFormats.h
-    LyShine/UiSerializeHelpers.h
-    LyShine/Animation/IUiAnimation.h
     LyShine/Bus/UiAnimateEntityBus.h
-    LyShine/Bus/UiAnimationBus.h
     LyShine/Bus/UiButtonBus.h
     LyShine/Bus/UiCanvasBus.h
     LyShine/Bus/UiCanvasManagerBus.h
