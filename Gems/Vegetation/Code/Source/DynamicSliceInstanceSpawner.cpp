@@ -9,6 +9,7 @@
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Vegetation/Ebuses/DescriptorNotificationBus.h>

@@ -8,12 +8,17 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ { namespace Data { class AssetData; } }
+namespace AZ
+{
+    namespace Data
+    {
+        class AssetData;
+    }
+} // namespace AZ
 
 namespace AZStd
 {
@@ -45,15 +50,7 @@ namespace AzToolsFramework
 
             static constexpr const char* s_name = "AssetEditorWindowSettings";
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<AssetEditorWindowSettings>()
-                        ->Field("m_openAssets", &AssetEditorWindowSettings::m_openAssets)
-                        ;
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
         };
 
         // External interaction with Asset Editor

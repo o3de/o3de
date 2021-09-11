@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Console/Console.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Components/ClothComponent.h>
 

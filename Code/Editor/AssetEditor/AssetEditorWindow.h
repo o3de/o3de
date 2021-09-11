@@ -9,7 +9,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <QWidget>

@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/utils.h>
 

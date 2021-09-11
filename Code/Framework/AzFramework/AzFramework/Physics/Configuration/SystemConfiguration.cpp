@@ -8,6 +8,7 @@
 
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

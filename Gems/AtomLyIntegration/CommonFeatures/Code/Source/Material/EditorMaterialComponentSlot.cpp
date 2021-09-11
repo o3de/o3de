@@ -10,6 +10,7 @@
 #include <Material/EditorMaterialComponentExporter.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialModelUvNameMapInspector.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>

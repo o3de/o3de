@@ -7,6 +7,7 @@
  */
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <NvCloth/ITangentSpaceHelper.h>
 

@@ -8,6 +8,7 @@
 
 #include <SerializeContextFixture.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/Component/Entity.h>

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>

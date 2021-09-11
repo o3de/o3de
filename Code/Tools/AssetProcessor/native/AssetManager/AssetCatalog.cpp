@@ -8,6 +8,7 @@
 
 #include "native/AssetManager/AssetCatalog.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/API/ApplicationAPI.h>

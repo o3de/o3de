@@ -9,6 +9,7 @@
 #include "ReflectedPropertyEditorPage.h"
 #include <AzQtComponents/Gallery/ui_ReflectedPropertyEditorPage.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

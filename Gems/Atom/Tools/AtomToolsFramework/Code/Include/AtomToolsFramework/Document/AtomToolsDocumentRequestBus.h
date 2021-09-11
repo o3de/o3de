@@ -10,6 +10,7 @@
 #include <AzCore/std/any.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace AtomToolsFramework
 {

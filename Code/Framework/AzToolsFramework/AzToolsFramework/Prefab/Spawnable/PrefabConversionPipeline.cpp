@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 

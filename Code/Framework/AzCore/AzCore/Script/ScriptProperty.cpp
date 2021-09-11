@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/Script/ScriptProperty.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

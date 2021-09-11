@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace AZ
 {

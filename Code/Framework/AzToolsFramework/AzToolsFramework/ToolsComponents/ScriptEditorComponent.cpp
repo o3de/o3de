@@ -11,6 +11,7 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/EBus/Results.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>

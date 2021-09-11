@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

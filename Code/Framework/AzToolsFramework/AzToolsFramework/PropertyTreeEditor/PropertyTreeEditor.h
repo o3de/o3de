@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 

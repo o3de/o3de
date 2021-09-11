@@ -16,6 +16,7 @@
 #include <Source/PythonReflectionComponent.h>
 #include <Source/PythonMarshalComponent.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>

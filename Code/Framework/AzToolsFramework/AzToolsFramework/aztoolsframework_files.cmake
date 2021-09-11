@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui

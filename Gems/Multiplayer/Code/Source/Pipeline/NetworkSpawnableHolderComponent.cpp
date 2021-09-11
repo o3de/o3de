@@ -8,6 +8,7 @@
 
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace Multiplayer
 {

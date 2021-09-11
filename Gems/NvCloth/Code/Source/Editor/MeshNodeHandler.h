@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <Editor/ComboBoxEditButtonPair.h>
 #include <QObject>
 #endif

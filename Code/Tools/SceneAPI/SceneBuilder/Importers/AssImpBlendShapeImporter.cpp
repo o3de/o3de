@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzToolsFramework/Debug/TraceContext.h>

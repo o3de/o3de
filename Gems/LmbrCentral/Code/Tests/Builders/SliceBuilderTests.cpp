@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

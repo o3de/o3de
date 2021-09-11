@@ -13,7 +13,9 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/DdsFile.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT

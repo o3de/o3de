@@ -18,6 +18,7 @@
 #include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 

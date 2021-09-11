@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManager.h>

@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab

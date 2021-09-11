@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/Slice/SliceComponent.h>

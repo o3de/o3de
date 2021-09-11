@@ -12,6 +12,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>

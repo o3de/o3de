@@ -20,6 +20,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
+#include <AzCore/RTTI/BehaviorContext.h>
 //////////////////////////////////////////////////////////////////////////
 
 namespace AssetBuilderSDK

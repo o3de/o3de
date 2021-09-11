@@ -8,6 +8,7 @@
 
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>

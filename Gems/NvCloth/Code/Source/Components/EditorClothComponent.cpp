@@ -16,6 +16,7 @@
 #include <Components/EditorClothComponent.h>
 #include <Components/ClothComponent.h>
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Utils/AssetHelper.h>
 

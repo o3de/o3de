@@ -10,7 +10,9 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 

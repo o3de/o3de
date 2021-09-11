@@ -15,7 +15,9 @@
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AzToolsFramework
 {

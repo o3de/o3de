@@ -26,6 +26,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/SessionConfig.h>
