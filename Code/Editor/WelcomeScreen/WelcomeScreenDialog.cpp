@@ -22,6 +22,7 @@
 #include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <AzCore/Utils/Utils.h>
 
@@ -79,12 +80,18 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
+
+    qreal screenDpiFactor = QHighDpiScaling::factor(screen());
+
+    QSize imageSize = ui->activeProjectIcon->size();
+    imageSize.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(imageSize.width()) * screenDpiFactor));
+    imageSize.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(imageSize.height()) * screenDpiFactor));
+
+    QPixmap projectImage = QPixmap(projectPreviewPath);
+    projectImage.setDevicePixelRatio(screenDpiFactor);
+    
     ui->activeProjectIcon->setPixmap(
-        QPixmap(projectPreviewPath).scaled(
-            ui->activeProjectIcon->size(),
-            Qt::KeepAspectRatioByExpanding,
-            Qt::SmoothTransformation
-        )
+        projectImage.scaled(imageSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation)
     );
 
     ui->recentLevelTable->setColumnCount(3);
