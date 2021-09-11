@@ -52,7 +52,7 @@ namespace ScriptCanvasDeveloper
 
             void OnActionNameChanged();
 
-            void OnClear();
+            void OnClear() override;
             void OnNodeDisplayed(const GraphCanvas::NodeId& graphCanvasNodeId) override;
 
         private:
