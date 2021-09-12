@@ -54,6 +54,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/ScriptSymbolsReporterSystemComponent.h>
+
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -106,6 +108,7 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorIntersectorComponent::CreateDescriptor(),
             AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
+            AzToolsFramework::Script::SymbolsReporterSystemComponent::CreateDescriptor(),
         });
     }
 }

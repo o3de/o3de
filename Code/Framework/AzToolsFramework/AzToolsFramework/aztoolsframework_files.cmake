@@ -767,6 +767,9 @@ set(FILES
     PythonTerminal/ScriptTermDialog.ui
     Input/QtEventToAzInputManager.h
     Input/QtEventToAzInputManager.cpp
+    Script/ScriptSymbolsReporterBus.h
+    Script/ScriptSymbolsReporterSystemComponent.h
+    Script/ScriptSymbolsReporterSystemComponent.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds
