@@ -11,6 +11,8 @@ set(FILES
     Source/EditorComponents/EditorTerrainHeightGradientListComponent.h
     Source/EditorComponents/EditorTerrainLayerSpawnerComponent.cpp
     Source/EditorComponents/EditorTerrainLayerSpawnerComponent.h
+    Source/EditorComponents/EditorTerrainPhysicsColliderComponent.cpp
+    Source/EditorComponents/EditorTerrainPhysicsColliderComponent.h
     Source/EditorComponents/EditorTerrainWorldComponent.cpp
     Source/EditorComponents/EditorTerrainWorldComponent.h
     Source/EditorComponents/EditorTerrainWorldDebuggerComponent.cpp
