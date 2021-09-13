@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -19,6 +20,7 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
 namespace Camera
 {
@@ -167,12 +169,30 @@ namespace Camera
         if (currentViewEntity != GetEntityId())
         {
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, GetEntityId());
+            if (AZ::RPI::ViewportContextPtr viewportContext = m_controller.GetViewportContext())
+            {
+                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(),
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::OverrideReferenceFrame, worldFromLocal);
+            }
         }
         else
         {
+            if (AZ::RPI::ViewportContextPtr viewportContext = m_controller.GetViewportContext())
+            {
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(),
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::OverrideReferenceFrame,
+                    AZ::Transform::CreateIdentity());
+            }
+
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
         }
+
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 

@@ -231,7 +231,7 @@ namespace AtomToolsFramework
                 }
             }
 
-            m_modularCameraViewportContext->SetCameraTransform(m_camera.Transform());
+            m_modularCameraViewportContext->SetCameraTransform(m_referenceFrameOverride * m_camera.Transform());
         }
         else if (m_cameraMode == CameraMode::Animation)
         {
@@ -287,5 +287,15 @@ namespace AtomToolsFramework
     AZStd::optional<AZ::Vector3> ModularViewportCameraControllerInstance::LookAtAfterInterpolation() const
     {
         return m_lookAtAfterInterpolation;
+    }
+
+    void ModularViewportCameraControllerInstance::OverrideReferenceFrame(const AZ::Transform& worldFromLocal)
+    {
+        m_referenceFrameOverride = worldFromLocal;
+        m_camera.m_pitch = 0.0f;
+        m_camera.m_yaw = 0.0f;
+        m_camera.m_lookAt = AZ::Vector3::CreateZero();
+        m_camera.m_lookDist = 0.0f;
+        m_targetCamera = m_camera;
     }
 } // namespace AtomToolsFramework

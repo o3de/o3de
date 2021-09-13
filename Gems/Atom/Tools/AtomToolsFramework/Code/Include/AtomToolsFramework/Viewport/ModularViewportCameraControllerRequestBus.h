@@ -35,6 +35,9 @@ namespace AtomToolsFramework
         //! Look at point after an interpolation has finished and no translation has occurred.
         virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
 
+        //!
+        virtual void OverrideReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+
     protected:
         ~ModularViewportCameraControllerRequests() = default;
     };

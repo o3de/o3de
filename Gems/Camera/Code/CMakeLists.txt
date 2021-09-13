@@ -61,6 +61,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCommon
                 AZ::AzToolsFramework
                 Gem::Camera.Static
+                Gem::AtomToolsFramework.Static
     )
 
     # tools and builders use the above module.
