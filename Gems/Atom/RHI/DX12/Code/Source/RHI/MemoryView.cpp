@@ -96,8 +96,12 @@ namespace AZ
             {
                 AZStd::wstring wname;
                 AZStd::to_wstring(wname, name);
+            #if defined(WKPDID_D3DDebugObjectNameW)
                 m_memoryAllocation.m_memory->SetPrivateData(
                     WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(wname.size() * sizeof(wchar_t)), wname.data());
+            #else
+                m_memoryAllocation.m_memory->SetName(wname.data());
+            #endif
             }
         }
 
@@ -105,8 +109,12 @@ namespace AZ
         {
             if (m_memoryAllocation.m_memory)
             {
+            #if defined(WKPDID_D3DDebugObjectNameW)
                 m_memoryAllocation.m_memory->SetPrivateData(
                     WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
+            #else
+                m_memoryAllocation.m_memory->SetName(name.data());
+            #endif
             }
         }
 
