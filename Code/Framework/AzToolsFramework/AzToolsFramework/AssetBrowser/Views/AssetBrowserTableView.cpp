@@ -20,9 +20,10 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-
+#include <QResizeEvent>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
+#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -143,19 +144,20 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
-            setColumnWidth(0, parentWidget()->width() / 2);
             horizontalHeader()->setStretchLastSection(true);
-            horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
-            horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+            setColumnWidth(0, static_cast<int>(parentWidget()->width() * 0.5f));
+            horizontalHeader()->setMinimumSectionSize(static_cast<int>(parentWidget()->width() * 0.25f));
+            horizontalHeader()->setMaximumSectionSize(static_cast<int>(parentWidget()->width() * 0.75f));
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
             horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
         void AssetBrowserTableView::UpdateSizeSlot([[maybe_unused]] QResizeEvent* ev)
         {
-            setColumnWidth(0, parentWidget()->width() / 2);
-            horizontalHeader()->setMinimumSectionSize(parentWidget()->width() / 4);
-            horizontalHeader()->setMaximumSectionSize(parentWidget()->width() * 3 / 4);
+            int parentWidth = parentWidget()->width();
+            setColumnWidth(0,  static_cast<int>(parentWidth * 0.5f));
+            horizontalHeader()->setMinimumSectionSize(static_cast<int>(parentWidth * 0.25f));
+            horizontalHeader()->setMaximumSectionSize(static_cast<int>(parentWidth * 0.75f));
         }
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
@@ -176,4 +178,5 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+#pragma optimize("", on)
 #include "AssetBrowser/Views/moc_AssetBrowserTableView.cpp"
