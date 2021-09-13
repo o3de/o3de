@@ -148,20 +148,10 @@ namespace
             }
         }
         const bool addToMostRecentFileList = false;
+        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(),
+            addToMostRecentFileList, COpenSameLevelOptions::ReopenLevelIfSame);
 
-        auto previousDocument = GetIEditor()->GetDocument();
-        QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(), addToMostRecentFileList, COpenSameLevelOptions::ReopenLevelIfSame);
-
-        // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
-
-        bool result = true;
-        if (newDocument == nullptr || newDocument->IsLevelLoadFailed())
-        {
-            result = false;
-        }
-
-        return result;
+        return newDocument != nullptr && !newDocument->IsLevelLoadFailed();
     }
 
     bool PyOpenLevelNoPrompt(const char* pLevelName)

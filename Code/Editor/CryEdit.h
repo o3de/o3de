@@ -180,7 +180,7 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName,
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename,
         bool addToMostRecentFileList=true,
         COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
@@ -475,7 +475,7 @@ public:
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };
