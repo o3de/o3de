@@ -114,7 +114,7 @@ namespace Multiplayer
             else
             {
                 controller->SetHierarchyRoot(InvalidNetEntityId);
-                NetworkHierarchyNotificationBus::Event(GetEntityId(), &NetworkHierarchyNotificationBus::Events::OnLeavingNetworkHierarchy);
+                NetworkHierarchyNotificationBus::Event(GetEntityId(), &NetworkHierarchyNotificationBus::Events::OnNetworkHierarchyLeave);
             }
         }
     }

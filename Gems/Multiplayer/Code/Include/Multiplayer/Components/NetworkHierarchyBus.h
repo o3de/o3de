@@ -20,7 +20,7 @@ namespace Multiplayer
         virtual void OnNetworkHierarchyUpdated([[maybe_unused]] const AZ::EntityId& rootEntityId) {}
 
         //! Called when an entity has left a hierarchy
-        virtual void OnLeavingNetworkHierarchy() {}
+        virtual void OnNetworkHierarchyLeave() {}
     };
 
     typedef AZ::EBus<NetworkHierarchyNotifications> NetworkHierarchyNotificationBus;

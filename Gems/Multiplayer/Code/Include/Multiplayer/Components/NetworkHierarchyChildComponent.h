@@ -39,13 +39,14 @@ namespace Multiplayer
 
         NetworkHierarchyChildComponent();
 
+        //! NetworkHierarchyChildComponentBase overrides.
         //! @{
         void OnInit() override;
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         //! @}
 
-        //! NetworkHierarchyRequestBus overrides
+        //! NetworkHierarchyRequestBus overrides.
         //! @{
         bool IsHierarchicalChild() const override;
         bool IsHierarchicalRoot() const override { return false; }
