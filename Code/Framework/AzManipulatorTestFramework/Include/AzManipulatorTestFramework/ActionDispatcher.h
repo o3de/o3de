@@ -79,7 +79,7 @@ namespace AzManipulatorTestFramework
         virtual void SetSelectedEntityImpl(AZ::EntityId entity) = 0;
         virtual void SetSelectedEntitiesImpl(const AzToolsFramework::EntityIdList& entities) = 0;
         virtual void EnterComponentModeImpl(const AZ::Uuid& uuid) = 0;
-        void Log(const char* format, ... );
+        void Log(const char* format, ...);
         bool m_logging = false;
 
     private:
@@ -153,9 +153,8 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::CameraState(const AzFramework::CameraState& cameraState)
     {
-        Log("Camera state: p(%f, %f, %f) d(%f, %f, %f)", float(cameraState.m_position.GetX()), float(cameraState.m_position.GetY()),
-            float(cameraState.m_position.GetZ()), float(cameraState.m_forward.GetX()), float(cameraState.m_forward.GetY()),
-            float(cameraState.m_forward.GetZ()));
+        Log("Camera state: p(%f, %f, %f) d(%f, %f, %f)", cameraState.m_position.GetX(), cameraState.m_position.GetY(),
+            cameraState.m_position.GetZ(), cameraState.m_forward.GetX(), cameraState.m_forward.GetY(), cameraState.m_forward.GetZ());
         CameraStateImpl(cameraState);
         return static_cast<DerivedDispatcherT*>(this);
     }
