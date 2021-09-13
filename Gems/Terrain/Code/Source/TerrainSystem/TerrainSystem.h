@@ -100,9 +100,6 @@ namespace Terrain
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        void SystemActivate();
-        void SystemDeactivate();
-
         struct TerrainSystemSettings
         {
             AZ::Aabb m_worldBounds;

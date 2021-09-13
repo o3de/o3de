@@ -9,6 +9,7 @@
 #include <TerrainSystem/TerrainSystem.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/RPI.Public/Scene.h>
@@ -66,14 +67,41 @@ TerrainSystem::~TerrainSystem()
 
 void TerrainSystem::Activate()
 {
-    m_requestedSettings.m_systemActive = true;
+    m_dirtyRegion = AZ::Aabb::CreateNull();
+    m_terrainHeightDirty = true;
     m_terrainSettingsDirty = true;
+    m_requestedSettings.m_systemActive = true;
+
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        m_registeredAreas.clear();
+    }
+
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
+
+    TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
 }
 
 void TerrainSystem::Deactivate()
 {
-    m_requestedSettings.m_systemActive = false;
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        m_registeredAreas.clear();
+    }
+
+    m_dirtyRegion = AZ::Aabb::CreateNull();
+    m_terrainHeightDirty = true;
     m_terrainSettingsDirty = true;
+    m_requestedSettings.m_systemActive = false;
+
+    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+    if (terrainFeatureProcessor)
+    {
+        terrainFeatureProcessor->RemoveTerrainData();
+    }
 }
 
 void TerrainSystem::SetWorldBounds(const AZ::Aabb& worldBounds)
@@ -113,6 +141,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y) const
             Terrain::TerrainAreaHeightRequestBus::Event(
                 areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition,
                 Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+            break;
         }
     }
 
@@ -147,9 +176,26 @@ bool TerrainSystem::GetIsHoleFromFloats(
     return false;
 }
 
-AZ::Vector3 TerrainSystem::GetNormalSynchronous([[maybe_unused]] float x, [[maybe_unused]] float y) const
+AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y) const
 {
-    return AZ::Vector3::CreateAxisZ();
+    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
+    AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
+
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    {
+        inPosition.SetZ(areaBounds.GetMin().GetZ());
+        if (areaBounds.Contains(inPosition))
+        {
+            Terrain::TerrainAreaHeightRequestBus::Event(
+                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetNormal, inPosition, outNormal,
+                Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+            break;
+        }
+    }
+
+    return outNormal;
 }
 
 AZ::Vector3 TerrainSystem::GetNormal(
@@ -298,35 +344,6 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, con
 }
 */
 
-void TerrainSystem::SystemActivate()
-{
-    {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-        m_registeredAreas.clear();
-    }
-
-    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
-
-    TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
-}
-
-void TerrainSystem::SystemDeactivate()
-{
-    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
-
-    {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-        m_registeredAreas.clear();
-    }
-
-    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
-    if (terrainFeatureProcessor)
-    {
-        terrainFeatureProcessor->RemoveTerrainData();
-    }
-}
-
 void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 {
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -383,6 +400,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
     if (m_terrainSettingsDirty)
     {
+        terrainSettingsChanged = true;
         m_terrainSettingsDirty = false;
 
         // This needs to happen before the "system active" check below, because activating the system will cause the various
@@ -393,24 +411,12 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainHeightDirty = true;
             m_currentSettings.m_worldBounds = m_requestedSettings.m_worldBounds;
-            terrainSettingsChanged = true;
         }
 
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
             m_dirtyRegion = AZ::Aabb::CreateNull();
             m_terrainHeightDirty = true;
-            terrainSettingsChanged = true;
-        }
-
-        if (m_requestedSettings.m_systemActive != m_currentSettings.m_systemActive)
-        {
-            m_requestedSettings.m_systemActive ? SystemActivate() : SystemDeactivate();
-
-            // Null dirty region will be interpreted as updating everything
-            m_dirtyRegion = AZ::Aabb::CreateNull();
-            m_terrainHeightDirty = true;
-            terrainSettingsChanged = true;
         }
 
         m_currentSettings = m_requestedSettings;
@@ -419,6 +425,14 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     if (m_currentSettings.m_systemActive && m_terrainHeightDirty)
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
         AZ::Transform transform = AZ::Transform::CreateTranslation(m_currentSettings.m_worldBounds.GetCenter());
 
@@ -476,6 +490,14 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
     if (terrainSettingsChanged || m_terrainHeightDirty)
     {
+        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
         AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask =
             AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
 
