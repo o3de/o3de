@@ -657,8 +657,7 @@ namespace AzToolsFramework
         m_editorBoxSelect.InstallDisplayScene(
             [this, vertexBoxSelectData](const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& /*debugDisplay*/)
             {
-                const auto keyboardModifiers = ViewportInteraction::KeyboardModifiers(
-                    ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+                const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
                 // when modifiers change ensure we refresh box selection for immediate update
                 if (keyboardModifiers != m_editorBoxSelect.PreviousModifiers())

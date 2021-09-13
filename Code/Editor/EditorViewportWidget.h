@@ -92,6 +92,7 @@ class SANDBOX_API EditorViewportWidget final
     , private AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
+    , private AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
@@ -205,7 +206,7 @@ private:
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
-    // AzToolsFramework::MainEditorViewportInteractionRequestBus
+    // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
     AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
@@ -214,6 +215,9 @@ private:
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
+
+    // EditorModifierKeyRequestBus overrides ...
+    AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
