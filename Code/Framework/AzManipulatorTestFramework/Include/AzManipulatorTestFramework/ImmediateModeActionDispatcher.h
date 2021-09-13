@@ -47,9 +47,6 @@ namespace AzManipulatorTestFramework
         //! Execute an arbitrary section of code inline in the action dispatcher.
         ImmediateModeActionDispatcher* ExecuteBlock(const AZStd::function<void()>& blockFn);
 
-        //! Get the current state of the keyboard modifiers.
-        KeyboardModifiers GetKeyboardModifiers() const;
-
         // EditorModifierKeyRequestBus overrides ...
         KeyboardModifiers QueryKeyboardModifiers() override;
 
@@ -100,17 +97,12 @@ namespace AzManipulatorTestFramework
 
     inline ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetKeyboardModifiers(KeyboardModifiers& keyboardModifiers)
     {
-        keyboardModifiers = GetKeyboardModifiers();
+        keyboardModifiers = QueryKeyboardModifiers();
         return this;
-    }
-
-    inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::GetKeyboardModifiers() const
-    {
-        return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
     }
 
     inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::QueryKeyboardModifiers()
     {
-        return GetKeyboardModifiers();
+        return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
     }
 } // namespace AzManipulatorTestFramework
