@@ -221,24 +221,6 @@ namespace AzToolsFramework
 
         using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
 
-        //! Requests to freeze the Viewport Input
-        //! Added to prevent a bug with the legacy CryEngine Viewport code that would
-        //! keep doing raycast tests even when no level is loaded, causing a crash.
-        class ViewportFreezeRequests
-        {
-        public:
-            //! Return if Viewport Input is frozen
-            virtual bool IsViewportInputFrozen() = 0;
-            //! Sets the Viewport Input freeze state
-            virtual void FreezeViewportInput(bool freeze) = 0;
-
-        protected:
-            ~ViewportFreezeRequests() = default;
-        };
-
-        //! Type to inherit to implement ViewportFreezeRequests.
-        using ViewportFreezeRequestBus = AZ::EBus<ViewportFreezeRequests, ViewportEBusTraits>;
-
         //! Viewport requests that are only guaranteed to be serviced by the Main Editor viewport.
         class MainEditorViewportInteractionRequests
         {
