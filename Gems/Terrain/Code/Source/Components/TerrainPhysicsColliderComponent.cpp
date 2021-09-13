@@ -19,7 +19,6 @@
 #include <AzCore/std/sort.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
