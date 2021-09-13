@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <AzFramework/Physics/HeightfieldProviderComponentBus.h>
 
 namespace UnitTest
 {
@@ -46,6 +47,7 @@ namespace UnitTest
         {
             provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
             provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+            provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         }
 
         static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -74,7 +76,7 @@ namespace UnitTest
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetWorldBounds(const AZ::Aabb& worldBounds) override
+        void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
         {
         }
 
@@ -101,4 +103,40 @@ namespace UnitTest
         int m_refreshAreaCalledCount = 0;
         int m_unregisterAreaCalledCount = 0;
     };
+
+    class MockHeightfieldProviderNotificationBusListener
+        : public AZ::Component
+        , private Physics::HeightfieldProviderNotificationBus::Handler
+    {
+    public:
+        AZ_COMPONENT(MockHeightfieldProviderNotificationBusListener, "{277D39B9-F485-4259-84A4-78E97C687614}");
+
+        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
+        {
+        }
+
+        void Activate()
+        {
+            Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(GetEntityId());
+        }
+
+        void Deactivate()
+        {
+            Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
+        }
+
+        void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) override
+        {
+            m_onHeightfieldDataChangedCalledCount++;
+        }
+
+        void RefreshHeightfield() override
+        {
+            m_refreshHeightfieldCalledCount++;
+        }
+
+        int m_onHeightfieldDataChangedCalledCount = 0;
+        int m_refreshHeightfieldCalledCount = 0;
+    };
+    
 }
