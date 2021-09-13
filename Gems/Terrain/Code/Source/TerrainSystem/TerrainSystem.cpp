@@ -96,11 +96,16 @@ void TerrainSystem::Deactivate()
     m_terrainSettingsDirty = true;
     m_requestedSettings.m_systemActive = false;
 
-    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
-    if (terrainFeatureProcessor)
+    if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
     {
-        terrainFeatureProcessor->RemoveTerrainData();
+        if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
+        {
+            const AZ::RPI::Scene* scene = defaultScene.get();
+            if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
+            {
+                terrainFeatureProcessor->RemoveTerrainData();
+            }
+        }
     }
 }
 
