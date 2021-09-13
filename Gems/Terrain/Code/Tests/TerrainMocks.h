@@ -65,48 +65,36 @@ namespace UnitTest
         }
     };
 
-    class MockTerrainSystem : private Terrain::TerrainSystemServiceRequestBus::Handler
+    class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
-        void Activate() override
+        MockTerrainSystemService()
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
         }
 
-        void Deactivate() override
+        ~MockTerrainSystemService()
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void RegisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_registerAreaCalledCount++;
-        }
+        MOCK_METHOD0(Activate, void());
+        MOCK_METHOD0(Deactivate, void());
 
-        void UnregisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_unregisterAreaCalledCount++;
-        }
-
-        void RefreshArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_refreshAreaCalledCount++;
-        }
-
-        int m_registerAreaCalledCount = 0;
-        int m_refreshAreaCalledCount = 0;
-        int m_unregisterAreaCalledCount = 0;
+        MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
     };
 
-    class MockTerrainListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
+    class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        MockTerrainListener()
+        MockTerrainDataNotificationListener()
         {
             AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         }
 
-        ~MockTerrainListener()
+        ~MockTerrainDataNotificationListener()
         {
             AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         }
