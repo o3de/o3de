@@ -1,0 +1,160 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LightCullingParentNoMSAATemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },
+                // Outputs...
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Output"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "TileLightData",
+                    "AttachmentRef": {
+                        "Pass": "LightCullingRemapPass",
+                        "Attachment": "TileLightData"
+                    }
+                },
+                {
+                    "LocalSlot": "LightListRemapped",
+                    "AttachmentRef": {
+                        "Pass": "LightCullingRemapPass",
+                        "Attachment": "LightListRemapped"
+                    }
+                }
+            ],
+            "PassRequests": [
+                // The light culling system can do highly accurate culling of transparent objects but it needs
+                // more depth information than the opaque geometry pass can provide
+                // Specifically the minimum and maximum depth of transparent objects
+                {
+                    "Name": "DepthTransparentMinPass",
+                    "TemplateName": "DepthPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depthTransparentMin",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthTransparentMaxPass",
+                    "TemplateName": "DepthMaxPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depthTransparentMax",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingTilePreparePass",
+                    "TemplateName": "LightCullingTilePrepareTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthTransparentMin",
+                            "AttachmentRef": {
+                                "Pass": "DepthTransparentMinPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthTransparentMax",
+                            "AttachmentRef": {
+                                "Pass": "DepthTransparentMaxPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingPass",
+                    "TemplateName": "LightCullingTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingTilePreparePass",
+                                "Attachment": "TileLightData"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingRemapPass",
+                    "TemplateName": "LightCullingRemapTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingTilePreparePass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightCount",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightCount"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightList",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightList"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

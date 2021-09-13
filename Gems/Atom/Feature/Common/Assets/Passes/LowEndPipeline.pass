@@ -53,7 +53,7 @@
                 },
                 {
                     "Name": "LightCullingPass",
-                    "TemplateName": "LightCullingParentTemplate",
+                    "TemplateName": "LightCullingParentNoMSAATemplate",
                     "Connections": [
                         {
                             "LocalSlot": "SkinnedMeshes",
@@ -63,7 +63,7 @@
                             }
                         },
                         {
-                            "LocalSlot": "DepthMSAA",
+                            "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
                                 "Attachment": "DepthMSAA"

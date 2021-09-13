@@ -150,7 +150,9 @@ set(FILES
     Passes/LightCulling.pass
     Passes/LightCullingHeatmap.pass
     Passes/LightCullingParent.pass
+    Passes/LightCullingParentNoMSAA.pass
     Passes/LightCullingRemap.pass
+    Passes/LightCullingTilePrepare.pass
     Passes/LightCullingTilePrepareMSAA.pass
     Passes/LookModificationComposite.pass
     Passes/LookModificationTransform.pass

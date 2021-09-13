@@ -66,6 +66,8 @@ void StoreTransparentMinMaxIntoSharedMemory(float2 data)
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
+    // We will use one or the other depending upon if MSAA is enabled or not
+    Texture2D<float4> m_depthBuffer;
     Texture2DMS<float4> m_depthBufferMSAA;
 
     // Depth buffer where we rendered the nearest pixels of transparent objects
@@ -285,7 +287,7 @@ void MainCS(
         float2 opaqueDepthSamples;
         if (o_msaaMode == MsaaMode::None)
         {
-            float depth = PassSrg::m_depthBufferMSAA.Load(dispatchThreadID.xy, 0).x;
+            float depth = PassSrg::m_depthBuffer.Load(uint3(dispatchThreadID.xy, 0)).x;
             opaqueDepthSamples = float2(depth, depth);
         }
         else if (o_msaaMode == MsaaMode::Msaa2x)

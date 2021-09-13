@@ -370,11 +370,19 @@ namespace AZ
         {
             // set draw list mask
             m_cullable.m_cullData.m_drawListMask.reset();
-            m_cullable.m_cullData.m_drawListMask =
-                m_stencilDrawPacket->GetDrawListMask() |
-                m_blendWeightDrawPacket->GetDrawListMask() |
-                m_renderOuterDrawPacket->GetDrawListMask() |
-                m_renderInnerDrawPacket->GetDrawListMask();
+
+            // check for draw packets due certain render pipelines such as lowend render pipeline that might not this feature enabled 
+            if (m_stencilDrawPacket 
+                && m_blendWeightDrawPacket 
+                && m_renderOuterDrawPacket 
+                && m_renderInnerDrawPacket)
+            {
+                m_cullable.m_cullData.m_drawListMask =
+                    m_stencilDrawPacket->GetDrawListMask() |
+                    m_blendWeightDrawPacket->GetDrawListMask() |
+                    m_renderOuterDrawPacket->GetDrawListMask() |
+                    m_renderInnerDrawPacket->GetDrawListMask();
+            }
 
             // setup the Lod entry, using one entry for all four draw packets
             m_cullable.m_lodData.m_lods.clear();
