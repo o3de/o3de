@@ -39,9 +39,6 @@ namespace Terrain
         virtual void Activate() = 0;
         virtual void Deactivate() = 0;
 
-        virtual void SetWorldBounds(const AZ::Aabb& worldBounds) = 0;
-        virtual void SetHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
-
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;

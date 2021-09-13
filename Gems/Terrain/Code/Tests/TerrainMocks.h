@@ -75,14 +75,6 @@ namespace UnitTest
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
-        {
-        }
-
-        void SetHeightQueryResolution([[maybe_unused]] AZ::Vector2 queryResolution) override
-        {
-        }
-
         void RegisterArea([[maybe_unused]] AZ::EntityId areaId) override
         {
             m_registerAreaCalledCount++;

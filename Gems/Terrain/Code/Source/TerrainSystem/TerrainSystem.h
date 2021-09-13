@@ -42,10 +42,6 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
-
-        void SetWorldBounds(const AZ::Aabb& worldBounds) override;
-        void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
-
         void Activate() override;
         void Deactivate() override;
 
@@ -55,8 +51,12 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainGridResolution() const override;
+        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+
         AZ::Aabb GetTerrainAabb() const override;
+        void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
+
 
         //! Returns terrains height in meters at location x,y.
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain

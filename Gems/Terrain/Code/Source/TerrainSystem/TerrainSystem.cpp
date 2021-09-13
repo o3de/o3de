@@ -109,13 +109,13 @@ void TerrainSystem::Deactivate()
     }
 }
 
-void TerrainSystem::SetWorldBounds(const AZ::Aabb& worldBounds)
+void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
 {   
     m_requestedSettings.m_worldBounds = worldBounds;
     m_terrainSettingsDirty = true;
 }
 
-void TerrainSystem::SetHeightQueryResolution(AZ::Vector2 queryResolution)
+void TerrainSystem::SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution)
 {
     m_requestedSettings.m_heightQueryResolution = queryResolution;
     m_terrainSettingsDirty = true;
@@ -126,7 +126,7 @@ AZ::Aabb TerrainSystem::GetTerrainAabb() const
     return m_currentSettings.m_worldBounds;
 }
 
-AZ::Vector2 TerrainSystem::GetTerrainGridResolution() const
+AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
 {
     return m_currentSettings.m_heightQueryResolution;
 }

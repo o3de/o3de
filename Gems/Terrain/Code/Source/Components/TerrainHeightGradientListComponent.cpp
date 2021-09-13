@@ -206,7 +206,7 @@ namespace Terrain
         // Get the height range of the entire world
         m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution);
+            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution);
 
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
