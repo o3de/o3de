@@ -245,6 +245,17 @@ namespace AzToolsFramework
         int m_treeIndentation;
         int m_leafIndentation;
 
+
+        struct QueuedWidgetInvalidation
+        {
+            QWidget* m_userWidget;
+        };
+        AZStd::unordered_map<QWidget*, QueuedWidgetInvalidation> m_queuedWidgetInvalidations;
+
+        void QueueWidgetInvalidation(QWidget* focusWidget, QWidget* userWidget);
+        void onApplicationFocusChanged(QWidget* prevFocusWidget, QWidget* newFocusWidget);
+        AZStd::optional<QWidget*> PropertyRowIsEditing(PropertyRowWidget* propertyRow);
+
     private:
         AZStd::set<void*> CreateInstanceSet();
         bool Intersects(const AZStd::set<void*>& cachedInstanceSet);
@@ -353,6 +364,11 @@ namespace AzToolsFramework
         m_impl->m_autoResizeLabels = false;
 
         m_impl->m_hasFilteredOutNodes = false;
+
+        connect(qApp, &QApplication::focusChanged, this, [this](QWidget* prevFocusWidget, QWidget* newFocusWidget)
+        {
+            m_impl->onApplicationFocusChanged(prevFocusWidget, newFocusWidget);
+        });
     }
 
     ReflectedPropertyEditor::~ReflectedPropertyEditor()
@@ -1067,12 +1083,19 @@ namespace AzToolsFramework
                     PropertyRowWidget* pWidget = rowWidget->second;
                     if (pWidget->GetHandler())
                     {
+                        if (auto focusWidget = m_impl->PropertyRowIsEditing(pWidget))
+                        {
+                            m_impl->QueueWidgetInvalidation(*focusWidget, it->first);
+                        }
+                        else
+                        {
                         pWidget->GetHandler()->ReadValuesIntoGUI_Internal(it->first, rowWidget->first);
                         pWidget->OnValuesUpdated();
                     }
                 }
             }
         }
+    }
     }
 
     PropertyRowWidget* ReflectedPropertyEditor::Impl::CreateOrPullFromPool()
@@ -1275,6 +1298,64 @@ namespace AzToolsFramework
         }
 
         return widget->AutoExpand();
+    }
+
+    void ReflectedPropertyEditor::Impl::QueueWidgetInvalidation(QWidget* focusWidget, QWidget* userWidget)
+    {
+        auto& queuedInvalidation = m_queuedWidgetInvalidations[focusWidget];
+        queuedInvalidation.m_userWidget = userWidget;
+    }
+
+    void ReflectedPropertyEditor::Impl::onApplicationFocusChanged(QWidget* prevFocusWidget, QWidget*)
+    {
+        auto queuedInvalidationIt = m_queuedWidgetInvalidations.find(prevFocusWidget);
+        if (queuedInvalidationIt != m_queuedWidgetInvalidations.end())
+        {
+            const QueuedWidgetInvalidation& queuedInvalidation = queuedInvalidationIt->second;
+            m_queuedWidgetInvalidations.erase(queuedInvalidationIt);
+
+            // Lookup the widget again, in case it's been removed/hidden
+            auto userDataIt = m_userWidgetsToData.find(queuedInvalidation.m_userWidget);
+            if (userDataIt != m_userWidgetsToData.end())
+            {
+                auto rowWidgetIt = m_widgets.find(userDataIt->second);
+                if (rowWidgetIt != m_widgets.end())
+                {
+                    PropertyRowWidget* pWidget = rowWidgetIt->second;
+                    if (auto focusWidget = PropertyRowIsEditing(pWidget))
+                    {
+                        QueueWidgetInvalidation(*focusWidget, pWidget);
+                    }
+                    else if (pWidget->GetHandler())
+                    {
+                        pWidget->GetHandler()->ReadValuesIntoGUI_Internal(userDataIt->first, rowWidgetIt->first);
+                        pWidget->OnValuesUpdated();
+                    }
+                }
+            }
+        }
+    }
+
+    AZStd::optional<QWidget*> ReflectedPropertyEditor::Impl::PropertyRowIsEditing(PropertyRowWidget* propertyRow)
+    {
+        if (auto childWidget = propertyRow->GetChildWidget())
+        {
+            if (childWidget->hasFocus())
+            {
+                return childWidget;
+            }
+
+            const QWidgetList transitiveChildren = childWidget->findChildren<QWidget*>();
+            for (QWidget* transitiveChild : transitiveChildren)
+            {
+                if (transitiveChild->hasFocus())
+                {
+                    return transitiveChild;
+                }
+            }
+        }
+
+        return {};
     }
 
     AZStd::set<void*> ReflectedPropertyEditor::Impl::CreateInstanceSet()
