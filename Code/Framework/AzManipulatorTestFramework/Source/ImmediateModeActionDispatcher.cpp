@@ -32,9 +32,13 @@ namespace AzManipulatorTestFramework
     ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(ManipulatorViewportInteraction& viewportManipulatorInteraction)
         : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
     {
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
     }
 
-    ImmediateModeActionDispatcher::~ImmediateModeActionDispatcher() = default;
+    ImmediateModeActionDispatcher::~ImmediateModeActionDispatcher()
+    {
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
+    }
 
     void ImmediateModeActionDispatcher::MouseMoveAfterButton()
     {

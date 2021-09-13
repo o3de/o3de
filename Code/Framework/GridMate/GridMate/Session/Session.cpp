@@ -1583,7 +1583,7 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
 
             // Bind member replica
             bool isAdded = AddMember(m_myMember);
-            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!")
+            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!");
             if (!isAdded)
             {
                 sm.Transition(SS_DELETE);

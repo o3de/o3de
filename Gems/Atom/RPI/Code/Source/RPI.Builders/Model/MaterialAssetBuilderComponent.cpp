@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {

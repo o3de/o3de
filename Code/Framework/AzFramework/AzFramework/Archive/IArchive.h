@@ -335,7 +335,7 @@ namespace AZ::IO
         virtual IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) = 0;
 
         // creates a directory
-        virtual bool MakeDir(AZStd::string_view szPath, bool bGamePathMapping = false) = 0;
+        virtual bool MakeDir(AZStd::string_view szPath) = 0;
 
         // open the physical archive file - creates if it doesn't exist
         // returns NULL if it's invalid or can't open the file

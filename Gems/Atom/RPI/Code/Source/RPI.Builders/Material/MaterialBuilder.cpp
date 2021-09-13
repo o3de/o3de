@@ -13,6 +13,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -36,7 +37,7 @@ namespace AZ
     {
         namespace
         {
-            static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
+            [[maybe_unused]] static constexpr char const MaterialBuilderName[] = "MaterialBuilder";
         }
 
         const char* MaterialBuilder::JobKey = "Atom Material Builder";
@@ -151,7 +152,7 @@ namespace AZ
                 AZStd::string fullSourcePath;
                 AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
 
-                auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath);
+                auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error(MaterialBuilderName, false, "%s", loadOutcome.GetError().c_str());
@@ -298,7 +299,7 @@ namespace AZ
             AZStd::string fullSourcePath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
 
-            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath);
+            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
             if (!loadOutcome.IsSuccess())
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to load material file: %s", loadOutcome.GetError().c_str());

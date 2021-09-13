@@ -178,7 +178,7 @@ void CSystem::LogVersion()
     strftime(s, 128, "%d %b %y (%H %M %S)", today);
 #endif
 
-    const SFileVersion& ver = GetFileVersion();
+    [[maybe_unused]] const SFileVersion& ver = GetFileVersion();
 
     CryLogAlways("BackupNameAttachment=\" Build(%d) %s\"  -- used by backup system\n", ver.v[0], s);          // read by CreateBackupFile()
 
@@ -188,7 +188,7 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways(s);
+    CryLogAlways("%s", s);
 
     CryLogAlways("Built on " __DATE__ " " __TIME__);
 
@@ -249,7 +249,7 @@ void CSystem::LogVersion()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::LogBuildInfo()
 {
-    auto projectName = AZ::Utils::GetProjectName();
+    [[maybe_unused]] auto projectName = AZ::Utils::GetProjectName();
     CryLogAlways("GameName: %s", projectName.c_str());
     CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 }

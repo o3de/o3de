@@ -115,6 +115,7 @@ namespace AzToolsFramework
         AZ::EntityId CreateNewEntity(AZ::EntityId parentId = AZ::EntityId()) override;
         AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& pos, AZ::EntityId parentId = AZ::EntityId()) override;
         AZ::EntityId GetExistingEntity(AZ::u64 id) override;
+        bool EntityExists(AZ::EntityId id) override;
         void DeleteSelected() override;
         void DeleteEntityById(AZ::EntityId entityId) override;
         void DeleteEntities(const EntityIdList& entities) override;

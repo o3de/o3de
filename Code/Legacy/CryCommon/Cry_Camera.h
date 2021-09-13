@@ -279,8 +279,6 @@ inline void CCamera::SetFrustum(int nWidth, int nHeight, f32 FOV, f32 nearplane,
     m_edge_plt.y = projLeftTopY;
     m_edge_plt.z = projLeftTopZ;
 
-    assert(fabs(acos_tpl(Vec3d(0, m_edge_plt.y, m_edge_plt.z).GetNormalized().y) * 2 - m_fov) < 0.001);
-
     float invProjLeftTopY = 1.0f / projLeftTopY;
 
     //Apply asym shift to the camera frustum - Necessary for properly culling tessellated objects in VR

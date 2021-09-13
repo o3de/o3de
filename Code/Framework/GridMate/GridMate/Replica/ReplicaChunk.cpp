@@ -351,7 +351,7 @@ namespace GridMate
                 DataSetBase* dataset = descriptor->GetDataSet(this, i);
                 if (!dataset)
                 {
-                    AZ_Assert(false, "How can we have a dirty dataset that doesn't exist?")
+                    AZ_Assert(false, "How can we have a dirty dataset that doesn't exist?");
                     continue;
                 }
 

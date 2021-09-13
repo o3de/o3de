@@ -8,5 +8,6 @@
 
  struct EyeAdaptation
 {
-    float m_exposureValue; // current frame's exposure value in stops (logarithmic space)
+    float m_exposureValue;      // current frame's exposure value in stops (logarithmic space)
+    float m_setValueTime;   // the time when the m_exposureValue was set
 };

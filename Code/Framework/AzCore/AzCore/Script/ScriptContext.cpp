@@ -222,7 +222,7 @@ namespace AZ
 
         int AddRefCount(int value)
         {
-            AZ_Assert(value == 1 || value == -1, "ModRefCount is only for incrementing or decrementing on copy or destruction of ExposedLambda")
+            AZ_Assert(value == 1 || value == -1, "ModRefCount is only for incrementing or decrementing on copy or destruction of ExposedLambda");
             lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_refCountRegistryIndex);
             // Lua: refCount-old
             const int refCount = Internal::azlua_tointeger(m_lua, -1) + value;

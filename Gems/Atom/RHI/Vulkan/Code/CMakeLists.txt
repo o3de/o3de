@@ -9,7 +9,11 @@
 ly_get_list_relative_pal_filename(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
-include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED
+include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED / PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED
+
+if(PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED)
+    return() # Vulkan targets already defined in PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+endif()
 
 if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
