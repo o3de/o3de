@@ -36,6 +36,7 @@ namespace Multiplayer
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
         void OnScaleChangedEvent(float scale);
         void OnResetCountChangedEvent();
+        void OnParentIdChangedEvent(NetEntityId newParent);
 
         void UpdateTargetHostFrameId();
 
@@ -46,6 +47,7 @@ namespace Multiplayer
         AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
         AZ::Event<float>::Handler m_scaleEventHandler;
         AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
+        AZ::Event<NetEntityId>::Handler m_parentIdChangedEventHandler;
 
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
@@ -64,7 +66,9 @@ namespace Multiplayer
 
     private:
         void OnTransformChangedEvent(const AZ::Transform& worldTm);
+        void OnParentIdChangedEvent(AZ::EntityId oldParent, AZ::EntityId newParent);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentIdChangedHandler;
     };
 }

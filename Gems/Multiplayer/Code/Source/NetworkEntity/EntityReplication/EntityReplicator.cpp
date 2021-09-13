@@ -6,29 +6,33 @@
  *
  */
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
-#include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/Components/NetworkTransformComponent.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Source/AutoGen/Multiplayer.AutoPackets.h>
+#include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
+#include <Source/NetworkEntity/NetworkEntityTracker.h>
+#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
+#include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 
+#include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/PacketLayer/IPacket.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
-#include <AzNetworking/ConnectionLayer/IConnection.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
 #include <AzFramework/Components/TransformComponent.h>
+
+AZ_CVAR(bool, bg_debugHierarchyActivation, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Helpful messages when debugging network hierarchy behavior");
 
 namespace Multiplayer
 {
@@ -48,7 +52,7 @@ namespace Multiplayer
         , m_onForwardRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
         , m_onSendAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
         , m_onForwardAutonomousRpcHandler([this](NetworkEntityRpcMessage& entityRpcMessage) { OnSendRpcEvent(entityRpcMessage); })
-        , m_onEntityStopHandler([this](const ConstNetworkEntityHandle &) { OnEntityRemovedEvent(); })
+        , m_onEntityStopHandler([this](const ConstNetworkEntityHandle&) { OnEntityRemovedEvent(); })
         , m_proxyRemovalEvent([this] { OnProxyRemovalTimedEvent(); }, AZ::Name("ProxyRemovalTimedEvent"))
     {
         if (auto localEnt = m_entityHandle.GetEntity())
@@ -119,12 +123,12 @@ namespace Multiplayer
         {
             m_replicationManager.AddReplicatorToPendingSend(*this);
             m_propertyPublisher = AZStd::make_unique<PropertyPublisher>
-            (
-                GetRemoteNetworkRole(),
-                !RemoteManagerOwnsEntityLifetime() ? PropertyPublisher::OwnsLifetime::True : PropertyPublisher::OwnsLifetime::False,
-                m_netBindComponent,
-                *m_connection
-            );
+                (
+                    GetRemoteNetworkRole(),
+                    !RemoteManagerOwnsEntityLifetime() ? PropertyPublisher::OwnsLifetime::True : PropertyPublisher::OwnsLifetime::False,
+                    m_netBindComponent,
+                    *m_connection
+                    );
             m_netBindComponent->AddEntityDirtiedEventHandler(m_onEntityDirtiedHandler);
         }
         else
@@ -279,7 +283,7 @@ namespace Multiplayer
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
 
             bool isAuthority = (GetBoundLocalNetworkRole() == NetEntityRole::Authority)
-                            && (GetBoundLocalNetworkRole() == netBindComponent->GetNetEntityRole());
+                && (GetBoundLocalNetworkRole() == netBindComponent->GetNetEntityRole());
             bool isClient = GetRemoteNetworkRole() == NetEntityRole::Client;
             bool isAutonomous = GetBoundLocalNetworkRole() == NetEntityRole::Autonomous;
             if (isAuthority || isClient || isAutonomous)
@@ -306,9 +310,9 @@ namespace Multiplayer
     bool EntityReplicator::RemoteManagerOwnsEntityLifetime() const
     {
         bool isServer = (GetBoundLocalNetworkRole() == NetEntityRole::Server)
-                     && (GetRemoteNetworkRole() == NetEntityRole::Authority);
+            && (GetRemoteNetworkRole() == NetEntityRole::Authority);
         bool isClient = (GetBoundLocalNetworkRole() == NetEntityRole::Client)
-                     || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
+            || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
 
         return isServer || isClient;
     }
@@ -403,6 +407,62 @@ namespace Multiplayer
     AZ::TimeMs EntityReplicator::GetResendTimeoutTimeMs() const
     {
         return m_replicationManager.GetResendTimeoutTimeMs();
+    }
+
+    bool EntityReplicator::IsReadyToActivate() const
+    {
+        const AZ::Entity* entity = m_entityHandle.GetEntity();
+        AZ_Assert(entity, "Entity replicator entity unexpectedly missing");
+
+        const NetworkHierarchyChildComponent* hierarchyChildComponent = entity->FindComponent<NetworkHierarchyChildComponent>();
+        const NetworkHierarchyRootComponent* hierarchyRootComponent = nullptr;
+
+        if (hierarchyChildComponent == nullptr)
+        {
+            // child and root hierarchy components are mutually exclusive
+            hierarchyRootComponent = entity->FindComponent<NetworkHierarchyRootComponent>();
+        }
+
+        if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchicalChild())
+            || (hierarchyRootComponent && hierarchyRootComponent->IsHierarchicalChild()))
+        {
+            // if hierarchy is enabled for the entity, check if the parent is available
+            if (const NetworkTransformComponent* networkTransform = entity->FindComponent<NetworkTransformComponent>())
+            {
+                const NetEntityId parentId = networkTransform->GetParentEntityId();
+                /*
+                 * For root entities attached to a level, a network parent won't be set.
+                 * In this case, this entity is the root entity of the hierarchy and it will be activated first.
+                 */
+                if (parentId != InvalidNetEntityId)
+                {
+                    ConstNetworkEntityHandle parentHandle = GetNetworkEntityManager()->GetEntity(parentId);
+
+                    const AZ::Entity* parentEntity = parentHandle.GetEntity();
+                    if (parentEntity && parentEntity->GetState() == AZ::Entity::State::Active)
+                    {
+                        if (bg_debugHierarchyActivation)
+                        {
+                            AZLOG_DEBUG(
+                                "Entity %s asking for activation - granted",
+                                entity->GetName().c_str());
+                        }
+                        return true;
+                    }
+
+                    if (bg_debugHierarchyActivation)
+                    {
+                        AZLOG_DEBUG(
+                            "Entity %s asking for activation - waiting on the parent %u",
+                            entity->GetName().c_str(),
+                            aznumeric_cast<uint32_t>(parentId));
+                    }
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     NetworkEntityUpdateMessage EntityReplicator::GenerateUpdatePacket()
