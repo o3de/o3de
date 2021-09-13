@@ -55,7 +55,7 @@ public:
 
 
 Q_SIGNALS:
-    void SizeChangedSignal(QResizeEvent* ev);
+    void SizeChangedSignal(int newWidth);
 
 protected:
     void resizeEvent(QResizeEvent* ev) override;
@@ -87,6 +87,10 @@ private:
 private Q_SLOTS:
     void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
     void DoubleClickedItem(const QModelIndex& element);
+
+private:
+    //Workaround in order to preserve the old size when docking.
+    QSize m_oldSize;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

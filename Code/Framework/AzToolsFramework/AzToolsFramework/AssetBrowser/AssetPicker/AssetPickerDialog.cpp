@@ -212,7 +212,7 @@ namespace AzToolsFramework
 
         void AssetPickerDialog::resizeEvent(QResizeEvent* ev)
         {
-            emit SizeChangedSignal(ev);
+            emit SizeChangedSignal(m_ui->verticalLayout_4->geometry().width());
             QDialog::resizeEvent(ev);
         }
 

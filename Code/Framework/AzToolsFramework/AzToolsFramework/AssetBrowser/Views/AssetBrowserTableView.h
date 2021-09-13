@@ -59,7 +59,7 @@ namespace AzToolsFramework
             void ClearTypeFilter();
 
         public Q_SLOTS:
-            void UpdateSizeSlot(QResizeEvent* ev);
+            void UpdateSizeSlot(int newWidth);
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;

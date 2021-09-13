@@ -170,7 +170,15 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* ev)
 {
-    emit SizeChangedSignal(ev);
+    const QWidget* leftLayout = m_ui->m_leftLayout;
+    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
+
+    float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
+    float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+
+    float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(ev->size().width()) / oldWidth;
+    
+    emit SizeChangedSignal(aznumeric_cast<int>(newWidth));
     QWidget::resizeEvent(ev);
 }
 

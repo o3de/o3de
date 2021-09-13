@@ -47,7 +47,7 @@ namespace AzToolsFramework
             virtual ~AssetPickerDialog();
 
         Q_SIGNALS:
-            void SizeChangedSignal(QResizeEvent* ev);
+            void SizeChangedSignal(int newWidth);
 
         protected:
             //////////////////////////////////////////////////////////////////////////

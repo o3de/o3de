@@ -23,7 +23,6 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QResizeEvent>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
-#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -145,19 +144,19 @@ namespace AzToolsFramework
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
             horizontalHeader()->setStretchLastSection(true);
-            setColumnWidth(0, static_cast<int>(parentWidget()->width() * 0.5f));
-            horizontalHeader()->setMinimumSectionSize(static_cast<int>(parentWidget()->width() * 0.25f));
-            horizontalHeader()->setMaximumSectionSize(static_cast<int>(parentWidget()->width() * 0.75f));
+            setColumnWidth(0, aznumeric_cast<int>(parentWidget()->width() * 0.5f));
+            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(parentWidget()->width() * 0.25f));
+            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(parentWidget()->width() * 0.75f));
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
             horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
-        void AssetBrowserTableView::UpdateSizeSlot([[maybe_unused]] QResizeEvent* ev)
+        void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
         {
-            int parentWidth = parentWidget()->width();
-            setColumnWidth(0,  static_cast<int>(parentWidth * 0.5f));
-            horizontalHeader()->setMinimumSectionSize(static_cast<int>(parentWidth * 0.25f));
-            horizontalHeader()->setMaximumSectionSize(static_cast<int>(parentWidth * 0.75f));
+           // int parentWidth = parentWidget()->geometry().width();
+            setColumnWidth(0, aznumeric_cast<int>(newWidth * 0.5f));
+            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * 0.25f));
+            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * 0.75f));
         }
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
@@ -178,5 +177,4 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#pragma optimize("", on)
 #include "AssetBrowser/Views/moc_AssetBrowserTableView.cpp"
