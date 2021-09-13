@@ -32,7 +32,7 @@ namespace Multiplayer
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<NetworkHierarchyRootComponent>(
-                    "Network Hierarchy Root", "marks the entity as the root of an entity hierarchy")
+                    "Network Hierarchy Root", "Marks the entity as the root of an entity hierarchy.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))

@@ -26,7 +26,7 @@ namespace Multiplayer
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<NetworkHierarchyChildComponent>(
-                    "Network Hierarchy Child", "declares a network dependency on the root of this hierarchy")
+                    "Network Hierarchy Child", "Declares a network dependency on the root of this hierarchy.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))

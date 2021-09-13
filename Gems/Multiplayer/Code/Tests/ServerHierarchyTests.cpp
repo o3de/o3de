@@ -66,9 +66,6 @@ namespace Multiplayer
             PopulateHierarchicalEntity(child);
             SetupEntity(child.m_entity, child.m_netId, NetEntityRole::Authority);
 
-            //// we need a parent-id value to be present in NetworkTransformComponent (which is in client mode and doesn't have a controller)
-            //SetParentIdOnNetworkTransform(child.m_entity, root.m_netId);
-
             // Create an entity replicator for the child entity
             const NetworkEntityHandle childHandle(&child.m_entity, m_networkEntityTracker.get());
             child.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childHandle);

@@ -287,8 +287,8 @@ namespace Multiplayer
         );
     }
 
-        /*
-     * Parent -> Child
+    /*
+     * Parent -> Child -> ChildOfChild
      */
     class ClientDeepHierarchyTests : public ClientSimpleHierarchyTests
     {

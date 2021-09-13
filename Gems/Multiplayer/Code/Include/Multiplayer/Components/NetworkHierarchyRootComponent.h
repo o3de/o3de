@@ -18,7 +18,7 @@ namespace Multiplayer
     //! @class NetworkHierarchyRootComponent
     //! @brief Component that declares the top level entity of a network hierarchy.
     /*
-     * Call @GetHierarchyChildren to get the list of hierarchical entities.
+     * Call @GetHierarchicalEntities to get the list of hierarchical entities.
      * A network hierarchy is meant to be a small group of entities. You can control the maximum supported size of
      * a network hierarchy by modifying CVar @bg_hierarchyEntityMaxLimit.
      *
