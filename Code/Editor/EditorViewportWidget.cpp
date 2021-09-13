@@ -669,16 +669,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndSceneSave:
         PopDisableRendering();
         break;
-
-    case eNotify_OnBeginLoad: // disables viewport input when starting to load an existing level
-    case eNotify_OnBeginCreate: // disables viewport input when starting to create a new level
-        m_freezeViewportInput = true;
-        break;
-
-    case eNotify_OnEndLoad: // enables viewport input when finished loading an existing level
-    case eNotify_OnEndCreate: // enables viewport input when finished creating a new level
-        m_freezeViewportInput = false;
-        break;
     }
 }
 
@@ -962,16 +952,6 @@ AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::V
     return m_renderViewport->ViewportWorldToScreen(worldPosition);
 }
 
-bool EditorViewportWidget::IsViewportInputFrozen()
-{
-    return m_freezeViewportInput;
-}
-
-void EditorViewportWidget::FreezeViewportInput(bool freeze)
-{
-    m_freezeViewportInput = freeze;
-}
-
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
 {
     return this;
@@ -1057,7 +1037,6 @@ void EditorViewportWidget::SetViewportId(int id)
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
 {
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
@@ -1072,7 +1051,6 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusDisconnect();
 }
 
 namespace AZ::ViewportHelpers
