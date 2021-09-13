@@ -70,7 +70,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::PrepareFrame()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: PrepareFrame");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("AuxGeom", "DynamicPrimitiveProcessor: PrepareFrame");
             m_drawPackets.clear();
             m_processSrgs.clear();
 
@@ -88,7 +88,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("AuxGeom", "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
             RHI::DrawPacketBuilder drawPacketBuilder;
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;

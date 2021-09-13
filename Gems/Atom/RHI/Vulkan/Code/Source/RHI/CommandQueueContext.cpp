@@ -55,7 +55,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait on Fences");
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueueContext: Wait on Fences");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueueContext: Wait on Fences");
 
                 FencesPerQueue& nextFences = m_frameFences[m_currentFrameIndex];
                 for (auto& fence : nextFences)

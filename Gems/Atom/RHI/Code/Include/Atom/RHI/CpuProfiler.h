@@ -113,8 +113,3 @@ namespace AZ
 #define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
     static const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(groupName, regionName); \
     AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));
-
-//! Macro that combines the AZ_TRACE_METHOD with time profiling macro
-#define AZ_ATOM_PROFILE_FUNCTION(groupName, regionName) \
-    AZ_TRACE_METHOD(); \
-    AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \

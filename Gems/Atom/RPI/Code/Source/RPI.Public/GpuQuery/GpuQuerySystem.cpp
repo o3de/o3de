@@ -75,7 +75,7 @@ namespace AZ
 
         void GpuQuerySystem::Update()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "GpuQuerySystem: Update");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "GpuQuerySystem: Update");
             for (auto& queryPool : m_queryPoolArray)
             {
                 if (queryPool)

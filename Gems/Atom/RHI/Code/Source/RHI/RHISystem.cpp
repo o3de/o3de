@@ -188,7 +188,7 @@ namespace AZ
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem: FrameUpdate");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");

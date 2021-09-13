@@ -102,7 +102,7 @@ namespace AZ
 
         void SimpleSpotLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimpleSpotLightFeatureProcessor: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "SimpleSpotLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -114,7 +114,7 @@ namespace AZ
 
         void SimpleSpotLightFeatureProcessor::Render(const SimpleSpotLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimpleSpotLightFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "SimpleSpotLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

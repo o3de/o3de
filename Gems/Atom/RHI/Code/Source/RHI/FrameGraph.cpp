@@ -73,7 +73,7 @@ namespace AZ
 
         void FrameGraph::Clear()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: Clear");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraph: Clear");
             for (Scope* scope : m_scopes)
             {
                 scope->Deactivate();
@@ -126,7 +126,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: End");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {

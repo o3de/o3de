@@ -350,7 +350,7 @@ namespace AZ
 
         void Scene::Simulate([[maybe_unused]] const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: Simulate");
 
             m_simulationTime = tickInfo.m_currentGameTime;
 
@@ -389,7 +389,7 @@ namespace AZ
         {
             if (completionJob)
             {
-                AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: WaitAndCleanCompletionJob");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: WaitAndCleanCompletionJob");
                 //[GFX TODO]: the completion job should start earlier and wait for completion here
                 completionJob->StartAndWaitForCompletion();
                 delete completionJob;
@@ -422,7 +422,7 @@ namespace AZ
 
         void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: PrepareRender");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: PrepareRender");
 
             {
                 AZ_PROFILE_SCOPE(RPI, "WaitForSimulationCompletion");
@@ -586,7 +586,7 @@ namespace AZ
 
         void Scene::OnFrameEnd()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: OnFrameEnd");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnFrameEnd");
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
@@ -717,7 +717,7 @@ namespace AZ
 
         void Scene::RebuildPipelineStatesLookup()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: RebuildPipelineStatesLookup");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: RebuildPipelineStatesLookup");
             m_pipelineStatesLookup.clear();
 
             AZStd::queue<ParentPass*> parents;

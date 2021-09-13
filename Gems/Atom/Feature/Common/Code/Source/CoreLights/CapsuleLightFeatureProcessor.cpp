@@ -102,7 +102,7 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "CapsuleLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -114,7 +114,7 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Render(const CapsuleLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "CapsuleLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

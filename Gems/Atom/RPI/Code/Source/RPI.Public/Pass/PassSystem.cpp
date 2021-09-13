@@ -169,7 +169,7 @@ namespace AZ
         void PassSystem::RemovePasses()
         {
             m_state = PassSystemState::RemovingPasses;
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: RemovePasses");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: RemovePasses");
 
             if (!m_removePassList.empty())
             {
@@ -190,7 +190,7 @@ namespace AZ
         {
             m_state = PassSystemState::BuildingPasses;
             AZ_PROFILE_FUNCTION(RPI);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
 
@@ -240,7 +240,7 @@ namespace AZ
         {
             m_state = PassSystemState::InitializingPasses;
             AZ_PROFILE_FUNCTION(RPI);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
 
@@ -277,7 +277,7 @@ namespace AZ
         void PassSystem::Validate()
         {
             m_state = PassSystemState::ValidatingPasses;
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: Validate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: Validate");
 
             if (PassValidation::IsEnabled())
             {
@@ -298,7 +298,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -308,7 +308,7 @@ namespace AZ
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
             AZ_PROFILE_FUNCTION(RPI);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PassSystem: FrameUpdate");
 
             ResetFrameStatistics();
             ProcessQueuedChanges();
@@ -324,7 +324,7 @@ namespace AZ
 
         void PassSystem::FrameEnd()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "PassSystem: FrameEnd");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "PassSystem: FrameEnd");
 
             m_state = PassSystemState::FrameEnd;
 

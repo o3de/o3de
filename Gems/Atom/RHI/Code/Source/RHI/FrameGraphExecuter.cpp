@@ -72,13 +72,13 @@ namespace AZ
         void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
         {
             AZ_TRACE_METHOD();
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: Begin");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphExecuter: Begin");
             BeginInternal(frameGraph);
         }
 
         void FrameGraphExecuter::End()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: End");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphExecuter: End");
             AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
             m_groups.clear();
             EndInternal();

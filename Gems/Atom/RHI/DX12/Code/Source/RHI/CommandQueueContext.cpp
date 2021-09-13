@@ -132,7 +132,7 @@ namespace AZ
         void CommandQueueContext::End()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandQueueContext: End");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("DX12", "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 

@@ -49,7 +49,7 @@ namespace AZ
 
         void PostProcessFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PostProcessFeatureProcessor: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PostProcessFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             UpdateTime();

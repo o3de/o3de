@@ -121,7 +121,7 @@ namespace AZ
          */
         MessageOutcome FrameGraphCompiler::Compile(const FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Compile");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: Compile");
 
             MessageOutcome outcome = ValidateCompileRequest(request);
             if (!outcome)
@@ -146,7 +146,7 @@ namespace AZ
 
             /// [Phase 4] Compile platform-specific scope data after all attachments and views have been compiled.
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Scope Compile");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: Scope Compile");
 
                 for (Scope* scope : frameGraph.GetScopes())
                 {
@@ -162,7 +162,7 @@ namespace AZ
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileQueueCentricScopeGraph");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: CompileQueueCentricScopeGraph");
 
             const bool disableAsyncQueues = CheckBitsAll(compileFlags, FrameSchedulerCompileFlags::DisableAsyncQueues);
             if (disableAsyncQueues)
@@ -480,7 +480,7 @@ namespace AZ
                 return;
             }
 
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileTransientAttachments");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: CompileTransientAttachments");
 
             ExtendTransientAttachmentAsyncQueueLifetimes(frameGraph, compileFlags);
 
@@ -769,7 +769,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileResourceViews");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: CompileResourceViews");
 
             for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
             {
