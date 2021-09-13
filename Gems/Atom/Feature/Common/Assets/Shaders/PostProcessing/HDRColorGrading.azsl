@@ -47,10 +47,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_colorGradingPreSaturation;
     float m_colorFilterIntensity;
     float m_colorFilterMultiply;
-    float m_kelvin;
-    float m_kelvinLumPreservation;
-    float m_kelvinColorMix;
-    float m_whiteBalance;
+    float m_whiteBalanceKelvin;
     float m_whiteBalanceTint;
     float m_splitToneBalance;
     float m_splitToneMix;
@@ -83,8 +80,7 @@ float SaturateWithEpsilon(float value)
 }
 
 // Below are the color grading functions. These expect the frame color to be in ACEScg space.
-// If a color parameter is introduced from external sources (e.g. Editor color picker which uses Linear RGB), 
-// it will be converted into ACEScg as needed.
+// Note that some functions may have some quirks in their implementation and is subject to change.
 float3 ColorGradePostExposure (float3 frameColor, float exposure) 
 {
     frameColor *= pow(2.0f, exposure);
@@ -111,10 +107,10 @@ float3 ColorGradeColorFilter (float3 frameColor, float3 swatchColor, float alpha
 
 float3 ColorGradeHueShift (float3 frameColor, float amount) 
 {
-    float3 frameHsv = TransformColor(frameColor, ColorSpaceId::ACEScg, ColorSpaceId::HSV);
+    float3 frameHsv = RgbToHsv(frameColor);
     const float hue = frameHsv.x + amount;
     frameHsv.x = RotateHue(hue, 0.0, 1.0);
-    return TransformColor(frameHsv, ColorSpaceId::HSV, ColorSpaceId::ACEScg);
+    return HsvToRgb(frameHsv);
 }
 
 float3 ColorGradeSaturation (float3 frameColor, float control) 
@@ -123,14 +119,12 @@ float3 ColorGradeSaturation (float3 frameColor, float control)
     return (frameColor - vLuminance) * control + vLuminance;
 }
 
-float3 ColorGradeKelvinColorTemp(float3 frameColor, float kTemp, float mix, float lumPreservation)
+float3 ColorGradeKelvinColorTemp(float3 frameColor, float kelvin)
 {
-    const float3 kColor = TransformColor(KelvinToRgb(kTemp), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float3 oLum = RgbToHsl(frameColor.rgb);
-    const float3 blended = lerp(frameColor.rgb, frameColor.rgb * kColor.rgb, mix);
-    const float3 resHsv = RgbToHsl(blended.rgb);
-    const float3 resRgb = HslToRgb(float3(resHsv.xy, oLum.z));
-    return lerp(blended.rgb, resRgb.rgb, lumPreservation);
+    const float3 kColor = TransformColor(KelvinToRgb(kelvin), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    const float luminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
+    const float3 resHsl = RgbToHsl(frameColor.rgb * kColor.rgb);    // Apply Kelvin color and convert to HSL
+    return HslToRgb(float3(resHsl.xy, luminance));                  // Preserve luminance
 }
 
 // pow(f, e) won't work if f is negative, or may cause inf/NAN.
@@ -180,10 +174,8 @@ float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStar
 
 float3 ColorGrade (float3 frameColor) 
 {
-    frameColor = min(frameColor, 60.0);
     frameColor = ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure);
-    frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_kelvin,
-                                            PassSrg::m_kelvinColorMix, PassSrg::m_kelvinLumPreservation);
+    frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
     frameColor = ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
     frameColor = ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
                                          PassSrg::m_colorFilterMultiply);

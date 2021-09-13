@@ -50,10 +50,10 @@ float3 HslToRgb(float3 hsl)
 }
 
 // Color temperature
-float3 KelvinToRgb(float k)
+float3 KelvinToRgb(float kelvin)
 {
     float3 ret;
-    const float kelvin = clamp(k, 1000.0f, 40000.0f) / 100.0f;
+    kelvin = clamp(kelvin, 1000.0f, 40000.0f) / 100.0f;
     if(kelvin <= 66.0f)
     {
         ret.r = 1.0f;

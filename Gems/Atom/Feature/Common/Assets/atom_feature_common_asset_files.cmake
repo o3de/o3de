@@ -222,8 +222,6 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/HsvToLinearColor.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearColorToHsv.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli

@@ -84,20 +84,8 @@
                             "Value": 0.0 // modulate, 0 ... 1
                         },
                         {
-                            "Name": "m_kelvin",
-                            "Value": 15000.0 // 1000.0f ... 40000.0f kelvin
-                        },
-                        {
-                            "Name": "m_kelvinLumPreservation",
-                            "Value": 1.0 // 0 ... 1
-                        },
-                        {
-                            "Name": "m_kelvinColorMix",
-                            "Value": 0.0 // 0 ... 1
-                        },
-                        {
-                            "Name": "m_whiteBalance",
-                            "Value": 0.0 // -100 ... 100
+                            "Name": "m_whiteBalanceKelvin",
+                            "Value": 6500.0 // 1000.0f ... 40000.0f kelvin
                         },
                         {
                             "Name": "m_whiteBalanceTint",
