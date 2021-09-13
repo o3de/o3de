@@ -31,7 +31,8 @@ namespace AzManipulatorTestFramework
         //! Enable/disable action logging.
         DerivedDispatcherT* LogActions(bool logging);
         //! Output a trace debug message.
-        DerivedDispatcherT* Trace(const char* format, ...);
+        template<typename... Args>
+        DerivedDispatcherT* Trace(const char* format, const Args&... args);
         //! Set the camera state.
         DerivedDispatcherT* CameraState(const AzFramework::CameraState& cameraState);
         //! Set the left mouse button down.
@@ -79,41 +80,45 @@ namespace AzManipulatorTestFramework
         virtual void SetSelectedEntityImpl(AZ::EntityId entity) = 0;
         virtual void SetSelectedEntitiesImpl(const AzToolsFramework::EntityIdList& entities) = 0;
         virtual void EnterComponentModeImpl(const AZ::Uuid& uuid) = 0;
-        void Log(const char* format, ...);
+        template<typename... Args>
+        void Log(const char* format, const Args&... args);
         bool m_logging = false;
 
     private:
         const char* KeyboardModifierString(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
+        static void DebugPrint(const char* format, ...);
     };
 
     template<typename DerivedDispatcherT>
-    void ActionDispatcher<DerivedDispatcherT>::Log(const char* format, ...)
+    void ActionDispatcher<DerivedDispatcherT>::DebugPrint(const char* format, ...)
     {
         va_list args;
         va_start(args, format);
 
-        if (m_logging)
-        {
-            vprintf(format, args);
-            printf("%s", "\n");
-        }
+        vprintf(format, args);
+        printf("\n");
 
         va_end(args);
     }
 
     template<typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::Trace(const char* format, ...)
+    template <typename... Args>
+    void ActionDispatcher<DerivedDispatcherT>::Log(const char* format, const Args&... args)
     {
-        va_list args;
-        va_start(args, format);
-
         if (m_logging)
         {
-            vprintf(format, args);
-            printf("%s", "\n");
+            DebugPrint(format, args...);
         }
+    }
 
-        va_end(args);
+    template<typename DerivedDispatcherT>
+    template <typename... Args>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::Trace(const char* format, const Args&... args)
+    {
+        if (m_logging)
+        {
+            DebugPrint(format, args...);
+        }
 
         return static_cast<DerivedDispatcherT*>(this);
     }
