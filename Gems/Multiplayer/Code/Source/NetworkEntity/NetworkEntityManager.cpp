@@ -470,14 +470,21 @@ namespace Multiplayer
     AzFramework::EntitySpawnTicket NetworkEntityManager::RequestNetSpawnableInstantiation(const AZ::Data::Asset<AzFramework::Spawnable>& rootSpawnable)
     {
         const AzFramework::Spawnable::EntityList& entityList = rootSpawnable->GetEntities();
-        if (entityList.size() == 0)
+        if (entityList.empty())
         {
-            AZ_Assert(false, "RequestNetSpawnableInstantiation: No entities in the spawnable %s", rootSpawnable.GetHint().c_str())
+            AZ_Error("NetworkEntityManager", false,
+                "RequestNetSpawnableInstantiation: No entities in the spawnable %s", rootSpawnable.GetHint().c_str());
             return {};
         }
 
         // The first entity in every spawnable is the root one 
         const AZ::Entity* rootEntity = (entityList.begin())->get();
+        if(!rootEntity)
+        {
+            AZ_Error("NetworkEntityManager", false,
+                "RequestNetSpawnableInstantiation: Root entity is null in the spawnable %s", rootSpawnable.GetHint().c_str());
+            return {};
+        }
 
         const auto* holderComponent = rootEntity->FindComponent<NetworkSpawnableHolderComponent>();
         if(!holderComponent)
@@ -493,17 +500,19 @@ namespace Multiplayer
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
 
+        AZ::Name netSpawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnableAsset.GetId());
+
         // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
-        optionalArgs.m_preInsertionCallback = [spawnableAssetId = netSpawnableAsset.GetId()](AzFramework::EntitySpawnTicket::Id,
+        optionalArgs.m_preInsertionCallback = [netSpawnableName = netSpawnableName](AzFramework::EntitySpawnTicket::Id,
             AzFramework::SpawnableEntityContainerView entities)
         {
-            for (uint32_t netEntityIndex = 0; netEntityIndex < entities.size(); netEntityIndex++)
+            for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
+                netEntityIndex < entitiesSize; netEntityIndex++)
             {
                 AZ::Entity* netEntity = *(entities.begin() + netEntityIndex);
-                AZ::Name spawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(spawnableAssetId);
 
                 PrefabEntityId prefabEntityId;
-                prefabEntityId.m_prefabName = spawnableName;
+                prefabEntityId.m_prefabName = netSpawnableName;
                 prefabEntityId.m_entityOffset = netEntityIndex;
                 AZ::Interface<INetworkEntityManager>::Get()->SetupNetEntity(netEntity, prefabEntityId, NetEntityRole::Authority);
             }
