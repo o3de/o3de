@@ -17,9 +17,6 @@ namespace AzFramework
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         #error "Linux Window Manager Wayland not supported."
         return nullptr;
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB
-        #error "Linux Window Manager XLIB not supported."
-        return nullptr;
 #else
         #error "Linux Window Manager not recognized."
         return nullptr;

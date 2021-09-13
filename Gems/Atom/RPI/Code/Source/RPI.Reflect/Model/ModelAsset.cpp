@@ -96,8 +96,6 @@ namespace AZ
             const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
             float& distanceNormalized, AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             if (!m_modelTriangleCount)
             {
                 // [GFX TODO][ATOM-4343 Bake mesh spatial information during AP processing]

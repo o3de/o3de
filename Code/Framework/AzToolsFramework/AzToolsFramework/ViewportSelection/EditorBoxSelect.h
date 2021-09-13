@@ -29,7 +29,7 @@ namespace AzToolsFramework
     class EditorBoxSelect
     {
     public:
-        EditorBoxSelect() = default;
+        EditorBoxSelect();
 
         //! Return if a box select action is currently taking place.
         bool Active() const { return m_boxSelectRegion.has_value(); }
