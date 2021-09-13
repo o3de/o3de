@@ -87,11 +87,6 @@ namespace AZ
         {
         }
 
-        void SkinnedMeshOutputStreamManager::EnsureInit() const
-        {
-            const_cast<SkinnedMeshOutputStreamManager*>(this)->EnsureInit();
-        }
-
         void SkinnedMeshOutputStreamManager::EnsureInit()
         {
             if (!m_needsInit)
@@ -156,7 +151,7 @@ namespace AZ
             }
         }
 
-        Data::Asset<RPI::BufferAsset> SkinnedMeshOutputStreamManager::GetBufferAsset() const
+        Data::Asset<RPI::BufferAsset> SkinnedMeshOutputStreamManager::GetBufferAsset()
         {
             EnsureInit();
             return m_bufferAsset;
