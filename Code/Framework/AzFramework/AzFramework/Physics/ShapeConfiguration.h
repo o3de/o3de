@@ -26,6 +26,7 @@ namespace Physics
         Native, ///< Native shape configuration if user wishes to bypass generic shape configurations.
         PhysicsAsset, ///< Shapes configured in the asset.
         CookedMesh, ///< Stores a blob of mesh data cooked for the specific engine.
+        Heightfield ///< Interacts with the physics system heightfield
     };
 
     class ShapeConfiguration
@@ -195,4 +196,29 @@ namespace Physics
         mutable void* m_cachedNativeMesh = nullptr;
     };
 
+    class HeightfieldShapeConfiguration
+        : public ShapeConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+        explicit HeightfieldShapeConfiguration(
+            const AZ::Vector3& boxDimensions = AZ::Vector3::CreateOne(), AZ::EntityId entityId = AZ::EntityId());
+        HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration&);
+        HeightfieldShapeConfiguration& operator=(const HeightfieldShapeConfiguration&);
+        ~HeightfieldShapeConfiguration();
+
+        ShapeType GetShapeType() const override
+        {
+            return ShapeType::Heightfield;
+        }
+
+        void* GetCachedNativeMesh() const;
+        void SetCachedNativeMesh(void* cachedNativeMesh) const;
+
+        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
+        AZ::EntityId m_heightProvider;
+        mutable void* m_cachedNativeMesh{ nullptr };
+    };
 } // namespace Physics
