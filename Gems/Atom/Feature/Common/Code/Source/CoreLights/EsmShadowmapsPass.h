@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/std/containers/array_view.h>
@@ -25,8 +26,8 @@ namespace AZ
     {
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(EsmChildPassKind, uint32_t,
             (Exponentiation, 0),
-            HorizontalFilter,
-            VerticalFilter);
+            KawaseBlur0,
+            KawaseBlur1);
 
         //! This pass outputs filtered shadowmap images used in ESM.
         //! ESM is an abbreviation of Exponential Shadow Maps.
@@ -88,6 +89,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void UpdateChildren();
+            // Parameters for both the depth exponentiation pass along with the kawase blur passes
+            void SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex);
+            void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
             bool m_computationEnabled = false;
             Name m_lightTypeName;
@@ -102,6 +106,8 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_shadowmapIndexTableBuffer;
             AZStd::array<RHI::ShaderInputBufferIndex, EsmChildPassKindCount> m_filterParameterBufferIndices;
             Data::Instance<RPI::Buffer> m_filterParameterBuffer;
+
+            AZStd::array<RHI::ShaderInputConstantIndex, 2> m_kawaseBlurConstantIndices;
         };
     } // namespace Render
 } // namespace AZ
