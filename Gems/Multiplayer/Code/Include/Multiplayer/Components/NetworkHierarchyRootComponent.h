@@ -67,10 +67,19 @@ namespace Multiplayer
         AZStd::vector<AZ::Entity*> m_hierarchicalEntities;
 
         void RebuildHierarchy();
-
-        //! @returns false if the maximum supported hierarchy size has been reached
+        
+        //! @param underEntity Walk the child entities that belong to @underEntity and consider adding them to the hierarchy
+        //! @param currentEntityCount The total number of entities in the hierarchy prior to calling this method,
+        //!            used to avoid adding too many entities to the hierarchy while walking recursively the relevant entities.
+        //!            @currentEntityCount will be modified to reflect the total entity count upon completion of this method.
+        //! @returns false if an attempt was made to go beyond the maximum supported hierarchy size, true otherwise
         bool RecursiveAttachHierarchicalEntities(AZ::EntityId underEntity, uint32_t& currentEntityCount);
-        //! @returns false if the maximum supported hierarchy size has been reached
+
+        //! @param entity Add the child entity and any of its relevant children to the hierarchy
+        //! @param currentEntityCount The total number of entities in the hierarchy prior to calling this method,
+        //!            used to avoid adding too many entities to the hierarchy while walking recursively the relevant entities.
+        //!            @currentEntityCount will be modified to reflect the total entity count upon completion of this method.
+        //! @returns false if an attempt was made to go beyond the maximum supported hierarchy size, true otherwise
         bool RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount);
     };
 }
