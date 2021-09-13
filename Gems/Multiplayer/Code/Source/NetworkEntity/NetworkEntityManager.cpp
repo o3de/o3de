@@ -500,10 +500,11 @@ namespace Multiplayer
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
 
-        AZ::Name netSpawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnableAsset.GetId());
+        const AZ::Name netSpawnableName =
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnableAsset.GetId());
 
         // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
-        optionalArgs.m_preInsertionCallback = [netSpawnableName = netSpawnableName](AzFramework::EntitySpawnTicket::Id,
+        optionalArgs.m_preInsertionCallback = [netSpawnableName](AzFramework::EntitySpawnTicket::Id,
             AzFramework::SpawnableEntityContainerView entities)
         {
             for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
