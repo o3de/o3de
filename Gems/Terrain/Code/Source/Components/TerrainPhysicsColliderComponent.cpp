@@ -86,12 +86,14 @@ namespace Terrain
     {
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+        Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(GetEntityId());
 
         HeightfieldUpdated();
     }
 
     void TerrainPhysicsColliderComponent::Deactivate()
     {
+        Physics::HeightfieldProviderRequestsBus::Handler ::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }

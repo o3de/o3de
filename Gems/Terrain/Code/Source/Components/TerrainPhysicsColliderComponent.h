@@ -51,6 +51,7 @@ namespace Terrain
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
+        , private Physics::HeightfieldProviderRequestsBus::Handler
     {
     public:
         template<typename, typename>
