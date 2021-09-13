@@ -175,7 +175,7 @@ namespace Multiplayer
         AZStd::vector<AZ::EntityId> allChildren;
         AZ::TransformBus::EventResult(allChildren, underEntity, &AZ::TransformBus::Events::GetChildren);
 
-        for (const AZ::EntityId newChildId : allChildren)
+        for (const AZ::EntityId& newChildId : allChildren)
         {
             if (!RecursiveAttachHierarchicalChild(newChildId, currentEntityCount))
             {
