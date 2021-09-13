@@ -22,7 +22,6 @@
 #include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <AzCore/Utils/Utils.h>
 
@@ -35,6 +34,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Editor
 #include "Settings.h"
@@ -80,18 +80,15 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
-
-    qreal screenDpiFactor = QHighDpiScaling::factor(screen());
-
-    QSize imageSize = ui->activeProjectIcon->size();
-    imageSize.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(imageSize.width()) * screenDpiFactor));
-    imageSize.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(imageSize.height()) * screenDpiFactor));
-
-    QPixmap projectImage = QPixmap(projectPreviewPath);
-    projectImage.setDevicePixelRatio(screenDpiFactor);
     
     ui->activeProjectIcon->setPixmap(
-        projectImage.scaled(imageSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation)
+        AzQtComponents::ScalePixmapForScreenDpi(
+            QPixmap(projectPreviewPath),
+            screen(),
+            ui->activeProjectIcon->size(),
+            Qt::KeepAspectRatioByExpanding,
+            Qt::SmoothTransformation
+        )
     );
 
     ui->recentLevelTable->setColumnCount(3);
