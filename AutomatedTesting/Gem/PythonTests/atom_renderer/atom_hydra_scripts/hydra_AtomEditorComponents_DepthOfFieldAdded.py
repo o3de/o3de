@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that creates an entity and attaches the DepthOfField component to it for test verification.
 """
 
 # fmt: off
@@ -55,6 +53,8 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
 
     :return: None
     """
+    import os
+
     import azlmbr.bus as bus
     import azlmbr.entity as entity
     import azlmbr.editor as editor
@@ -63,13 +63,13 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
     import azlmbr.paths
 
     from editor_python_test_tools import hydra_editor_utils as hydra
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Tracer
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
     with Tracer() as error_tracer:
         # Wait for Editor idle loop before executing Python hydra scripts.
         helper.init_idle()
+        helper.open_level(os.path.join(azlmbr.paths.devassets, "Levels"), "Base")
 
         # Delete all existing entities initially for test setup.
         search_filter = azlmbr.entity.SearchFilter()
@@ -77,37 +77,38 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
 
         # Set up camera entity and component.
-        camera_entity = hydra.Entity("camera_entity")
-        camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
+        camera_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), "camera_entity")
+        camera_entity.add_component("Camera")
         Report.result(Tests.camera_creation, camera_entity.id.IsValid())
 
         # 1. Creation of entity with DepthOfField component.
         depth_of_field = "DepthOfField"
-        depth_of_field_entity = hydra.Entity(f"{depth_of_field}")
-        depth_of_field_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [depth_of_field])
-        has_component = hydra.has_components(depth_of_field_entity.id, [depth_of_field])
+        depth_of_field_entity = EditorEntity.create_editor_entity_at(
+            math.Vector3(512.0, 512.0, 34.0), f"{depth_of_field}")
+        depth_of_field_entity.add_component(depth_of_field)
         Report.result(Tests.depth_of_field_creation, depth_of_field_entity.id.IsValid())
-        Report.critical_result(Tests.depth_of_field_component, has_component)
+        Report.critical_result(Tests.depth_of_field_component, depth_of_field_entity.has_component(depth_of_field))
 
         # 2. UNDO the entity creation.
         general.undo()
-        Report.result(Tests.creation_undo, depth_of_field_entity.id.IsValid())
+        Report.result(Tests.creation_undo, len(hydra.find_entity_by_name(depth_of_field_entity)) == 0)
 
         # 3. REDO the entity creation.
         general.redo()
-        Report.result(Tests.creation_redo, depth_of_field_entity.id.isValid())
+        Report.result(Tests.creation_redo, len(hydra.find_entity_by_name(depth_of_field_entity)) == 1)
 
         # 4. Enter/Exit game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
+        general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
         # 5. Hide test.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", depth_of_field_entity.id, False)
+        depth_of_field_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', depth_of_field_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
         # 6. Visible test.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", depth_of_field_entity.id, True)
+        depth_of_field_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', depth_of_field_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
@@ -123,17 +124,16 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
         Report.result(Tests.camera_component_added, camera_component_added)
 
         # 9. Delete DepthOfField entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", depth_of_field_entity.id)
-        deleted_entity = hydra.find_entity_by_name(depth_of_field)
-        Report.result(Tests.entity_deleted, len(deleted_entity) == 0)
+        depth_of_field_entity.delete()
+        Report.result(Tests.entity_deleted, len(hydra.find_entity_by_name(depth_of_field_entity)) == 0)
 
         # 10. UNDO deletion.
         general.undo()
-        Report.result(Tests.deletion_undo, depth_of_field_entity.id.isValid())
+        Report.result(Tests.deletion_undo, len(hydra.find_entity_by_name(depth_of_field_entity)) == 1)
 
         # 11. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, not len(deleted_entity) == 0)
+        Report.result(Tests.deletion_redo, len(hydra.find_entity_by_name(depth_of_field_entity)) == 0)
 
         # 12. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

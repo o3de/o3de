@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that creates an entity and attaches the Decal (Atom) component to it for test verification.
 """
 
 # fmt: off
@@ -45,7 +43,7 @@ def AtomEditorComponents_Decal_AddedToEntity():
     4) Enter/Exit game mode.
     5) Hide test.
     6) Visible test.
-    7) Add Material component.
+    7) Set Material property on Decal.
     8) Delete Decal entity.
     9) UNDO deletion.
     10) REDO deletion.
@@ -63,14 +61,13 @@ def AtomEditorComponents_Decal_AddedToEntity():
     import azlmbr.math as math
     import azlmbr.paths
 
-    from editor_python_test_tools import hydra_editor_utils as hydra
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Tracer
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
     with Tracer() as error_tracer:
         # Wait for Editor idle loop before executing Python hydra scripts.
         helper.init_idle()
+        helper.open_level(os.path.join(azlmbr.paths.devassets, "Levels"), "Base")
 
         # Delete all existing entities initially for test setup.
         search_filter = azlmbr.entity.SearchFilter()
@@ -79,54 +76,54 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
         # 1. Creation of entity with Decal component.
         decal = "Decal"
-        decal_entity = hydra.Entity(f"{decal}")
-        decal_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [decal])
-        has_component = hydra.has_components(decal_entity.id, [decal])
-        Report.result(Tests.decal_creation, decal_entity.id.IsValid())
-        Report.critical_result(Tests.decal_component, has_component)
+        decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), f"{decal}")
+        decal_component = decal_entity.add_component(decal)
+        Report.result(Tests.decal_creation, decal_entity.exists())
+        Report.critical_result(Tests.decal_component, decal_entity.has_component(decal))
 
         # 2. UNDO the entity creation.
         general.undo()
-        Report.result(Tests.creation_undo, decal_entity.id.IsValid())
+        Report.result(Tests.creation_undo, not decal_entity.exists())
 
         # 3. REDO the entity creation.
         general.redo()
-        Report.result(Tests.creation_redo, decal_entity.id.isValid())
+        Report.result(Tests.creation_redo, decal_entity.exists())
 
         # 4. Enter/Exit game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
+        general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
         # 5. Hide test.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", decal_entity.id, False)
+        decal_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', decal_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
         # 6. Visible test.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", decal_entity.id, True)
+        decal_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', decal_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
-        # 7. Add Material component.
+        # 7. Set Material property on Decal.
         material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
+        material_property_path = "Controller|Configuration|Material"
         material_asset = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
-        material_component_added = decal_entity.get_set_test(
-            0, "Controller|Configuration|Material", material_asset)
-        Report.result(Tests.material_component_set, material_component_added)
+        decal_component.set_component_property_value(material_property_path, material_asset)
+        get_material_property = decal_component.get_component_property_value("material_property_path")
+        Report.result(Tests.material_component_set, get_material_property == material_property_path)
 
         # 8. Delete Decal entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", decal_entity.id)
-        deleted_entity = hydra.find_entity_by_name(decal)
-        Report.result(Tests.entity_deleted, len(deleted_entity) == 0)
+        decal_entity.delete()
+        Report.result(Tests.entity_deleted, not decal_entity.exists())
 
         # 9. UNDO deletion.
         general.undo()
-        Report.result(Tests.deletion_undo, decal_entity.id.isValid())
+        Report.result(Tests.deletion_undo, decal_entity.exists())
 
         # 10. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, len(deleted_entity) == 0)
+        Report.result(Tests.deletion_redo, not decal_entity.exists())
 
         # 11. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

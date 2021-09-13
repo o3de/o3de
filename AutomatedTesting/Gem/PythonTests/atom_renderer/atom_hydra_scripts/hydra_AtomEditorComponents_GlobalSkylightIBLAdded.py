@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that creates an entity and attaches the Global Skylight (IBL) component to it for test verification.
 """
 
 # fmt: off
@@ -68,13 +66,13 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
     import azlmbr.paths
 
     from editor_python_test_tools import hydra_editor_utils as hydra
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Tracer
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
     with Tracer() as error_tracer:
         # Wait for Editor idle loop before executing Python hydra scripts.
         helper.init_idle()
+        helper.open_level(os.path.join(azlmbr.paths.devassets, "Levels"), "Base")
 
         # Delete all existing entities initially for test setup.
         search_filter = azlmbr.entity.SearchFilter()
@@ -91,14 +89,15 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 2. UNDO the entity creation.
         general.undo()
-        Report.result(Tests.creation_undo, global_skylight_entity.id.IsValid())
+        Report.result(Tests.creation_undo, len(hydra.find_entity_by_name(global_skylight_entity)) == 0)
 
         # 3. REDO the entity creation.
         general.redo()
-        Report.result(Tests.creation_redo, global_skylight_entity.id.isValid())
+        Report.result(Tests.creation_redo, len(hydra.find_entity_by_name(global_skylight_entity)) == 1)
 
         # 4. Enter/Exit game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
+        general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
         # 5. Hide test.
@@ -129,16 +128,15 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 9. Delete Global Skylight (IBL) entity.
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", global_skylight_entity.id)
-        deleted_entity = hydra.find_entity_by_name(global_skylight)
-        Report.result(Tests.entity_deleted, len(deleted_entity) == 0)
+        Report.result(Tests.entity_deleted, len(hydra.find_entity_by_name(global_skylight)) == 0)
 
         # 10. UNDO deletion.
         general.undo()
-        Report.result(Tests.deletion_undo, global_skylight_entity.id.isValid())
+        Report.result(Tests.deletion_undo, len(hydra.find_entity_by_name(global_skylight)) == 1)
 
         # 11. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, len(deleted_entity) == 0)
+        Report.result(Tests.deletion_redo, len(hydra.find_entity_by_name(global_skylight)) == 0)
 
         # 12. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

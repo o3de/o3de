@@ -20,6 +20,7 @@ import azlmbr.legacy.general as general
 # Helper file Imports
 from editor_python_test_tools.utils import Report
 
+
 class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
@@ -28,7 +29,6 @@ class EditorComponent:
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
-    # Methods
     def get_component_name(self) -> str:
         """
         Used to get name of component
@@ -318,3 +318,25 @@ class EditorEntity:
         editor.EditorEntityAPIBus(bus.Event, "SetStartStatus", self.id, status_to_set)
         set_status = self.get_start_status()
         assert set_status == status_to_set, f"Failed to set start status of {desired_start_status} to {self.get_name}"
+
+    def delete(self) -> None:
+        """
+        Used to delete the Entity.
+        :return: None
+        """
+        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+
+    def set_visibility_state(self, is_visible: bool) -> None:
+        """
+        Sets the visibility state on the object to visible or not visible.
+        :param is_visible: True for making visible, False to make not visible.
+        :return: None
+        """
+        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", self.id, is_visible)
+
+    def exists(self) -> bool:
+        """
+        Used to verify if the Entity exists.
+        :return: True if the Entity exists, False otherwise.
+        """
+        return editor.ToolsApplicationRequestBus(bus.Broadcast, "EntityExists", self.id)
