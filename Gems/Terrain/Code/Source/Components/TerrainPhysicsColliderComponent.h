@@ -16,7 +16,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Physics/Material.h>
-#include <AzFramework/Physics/HeightfieldProviderComponentBus.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
