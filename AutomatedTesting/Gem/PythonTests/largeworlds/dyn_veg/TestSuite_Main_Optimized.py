@@ -30,7 +30,6 @@ class TestAutomation(EditorTestSuite):
     class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
         from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2303")
     class test_AltitudeFilter_FilterStageToggle(EditorParallelTest):
         from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
 
@@ -116,8 +115,17 @@ class TestAutomation(EditorTestSuite):
     class test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(EditorParallelTest):
         from .EditorScripts import ShapeIntersectionFilter_InstancesPlantInAssignedShape as test_module
 
+    class test_ShapeIntersectionFilter_FilterStageToggle(EditorParallelTest):
+        from .EditorScripts import ShapeIntersectionFilter_FilterStageToggle as test_module
+
     class test_SlopeAlignmentModifier_InstanceSurfaceAlignment(EditorParallelTest):
         from .EditorScripts import SlopeAlignmentModifier_InstanceSurfaceAlignment as test_module
 
     class test_SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment(EditorParallelTest):
         from .EditorScripts import SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment as test_module
+
+    class test_SurfaceMaskFilter_BasicSurfaceTagCreation(EditorParallelTest):
+        from .EditorScripts import SurfaceMaskFilter_BasicSurfaceTagCreation as test_module
+
+    class test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(EditorParallelTest):
+        from .EditorScripts import SurfaceMaskFilter_ExclusionList as test_module
