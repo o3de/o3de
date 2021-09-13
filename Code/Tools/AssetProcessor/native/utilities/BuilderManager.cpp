@@ -190,45 +190,14 @@ namespace AssetProcessor
 
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
-        /* //This is old but they added windows vs apple paths MAKE SURE THIS IS ACCOUNTED FOR
-        AZStd::string params;
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)", task,
-            builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
-#else
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
-            task, builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
-#endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-
-        if (moduleFilePath && moduleFilePath[0])
-        {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params.append(AZStd::string::format(R"( -module="%s")", moduleFilePath).c_str());
-        #else
-            params.append(AZStd::string::format(R"( -module="\"%s\"")", moduleFilePath).c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        }
-
-        if (!jobDescriptionFile.empty() && !jobResponseFile.empty())
-        {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params = AZStd::string::format(R"(%s -input="%s" -output="%s")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #else
-            params = AZStd::string::format(R"(%s -input="\"%s\"" -output="\"%s\"")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        }
-        */
+        
         AZStd::vector<AZStd::string> params;
         params.emplace_back(AZStd::string::format("-task=%s", task));
         params.emplace_back(AZStd::string::format(R"(-id="%s")", builderGuid.c_str()));
-        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", gameName.toUtf8().constData()));
+        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", projectName.c_str()));
         params.emplace_back(AZStd::string::format(R"(-project-cache-path="%s")", projectCacheRoot.absolutePath().toUtf8().constData()));
-        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.toUtf8().constData()));
-        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", engineRoot.absolutePath().toUtf8().constData()));
+        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
         params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
         if (moduleFilePath && moduleFilePath[0])
@@ -241,7 +210,7 @@ namespace AssetProcessor
             params.emplace_back(AZStd::string::format(R"(-input="%s")", jobDescriptionFile.c_str()));
             params.emplace_back(AZStd::string::format(R"(-output="%s")", jobResponseFile.c_str()));
         }
-        /*  //THIS IS NEW MAKE SURE THIS IS ACCOUNTED FOR
+
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::CommandLine commandLine;
         AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(*settingsRegistry, commandLine);
@@ -252,16 +221,10 @@ namespace AssetProcessor
             for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
             {
                 const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
-                params.append(AZStd::string::format(
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-                    R"( --%s="%s")",
-#else
-                    R"( --%s="\"%s\"")",
-#endif
-                    optionKey, optionValue.c_str()));
+                params.emplace_back(AZStd::string::format(R"( --%s="%s")", optionKey, optionValue.c_str()));
             }
         }
-        */
+
         return params;
     }
 
