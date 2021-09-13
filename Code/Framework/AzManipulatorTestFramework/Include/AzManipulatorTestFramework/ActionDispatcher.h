@@ -137,7 +137,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::GridSize(float size)
     {
-        Log("GridSize: %f", size);
+        Log("GridSize: %.3f", size);
         GridSizeImpl(size);
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -153,7 +153,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::CameraState(const AzFramework::CameraState& cameraState)
     {
-        Log("Camera state: p(%f, %f, %f) d(%f, %f, %f)", cameraState.m_position.GetX(), cameraState.m_position.GetY(),
+        Log("Camera state: p(%.3f, %.3f, %.3f) d(%.3f, %.3f, %.3f)", cameraState.m_position.GetX(), cameraState.m_position.GetY(),
             cameraState.m_position.GetZ(), cameraState.m_forward.GetX(), cameraState.m_forward.GetY(), cameraState.m_forward.GetZ());
         CameraStateImpl(cameraState);
         return static_cast<DerivedDispatcherT*>(this);
