@@ -152,7 +152,7 @@ namespace AZ
                 AZStd::string fullSourcePath;
                 AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
 
-                auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error(MaterialBuilderName, false, "%s", loadOutcome.GetError().c_str());
@@ -299,7 +299,7 @@ namespace AZ
             AZStd::string fullSourcePath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
 
-            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
+            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!loadOutcome.IsSuccess())
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to load material file: %s", loadOutcome.GetError().c_str());
