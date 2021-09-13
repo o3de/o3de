@@ -211,8 +211,6 @@ private:
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
-    void BeginWidgetContext() override;
-    void EndWidgetContext() override;
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
@@ -271,7 +269,7 @@ private:
     // note: The argument passed to parameter **point**, originating
     // from a Qt event, must first be passed to WidgetToViewport before being
     // passed to BuildMousePick.
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point);
+    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
     bool CheckRespondToInput() const;
 
@@ -281,7 +279,6 @@ private:
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(const QPoint& point) const;
 
     void RestoreViewportAfterGameMode();
 

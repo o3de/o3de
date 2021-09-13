@@ -412,10 +412,7 @@ namespace AzToolsFramework
                 potentialSelectedEntityIds.clear();
             }
 
-            // set the widget context before calls to ViewportWorldToScreen so we are not
-            // going to constantly be pushing/popping the widget context
-            ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
-
+            const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (entityDataCache.IsVisibleEntityLocked(entityCacheIndex) || !entityDataCache.IsVisibleEntityVisible(entityCacheIndex))
@@ -426,7 +423,7 @@ namespace AzToolsFramework
                 const AZ::EntityId entityId = entityDataCache.GetVisibleEntityId(entityCacheIndex);
                 const AZ::Vector3& entityPosition = entityDataCache.GetVisibleEntityPosition(entityCacheIndex);
 
-                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(entityPosition, cameraState);
 
                 if (currentKeyboardModifiers.Ctrl())
                 {
@@ -1779,13 +1776,7 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-
-        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
-
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
+        const AzFramework::CameraState cameraState = GetCameraState(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
