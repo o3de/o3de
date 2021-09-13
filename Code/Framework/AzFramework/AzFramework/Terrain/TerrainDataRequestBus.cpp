@@ -7,6 +7,7 @@
  */
 
 #include "TerrainDataRequestBus.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {

@@ -378,6 +378,7 @@ namespace AzToolsFramework
                 ->Event("CreateNewEntityAtPosition", &ToolsApplicationRequests::CreateNewEntityAtPosition)
                 ->Event("GetCurrentLevelEntityId", &ToolsApplicationRequests::GetCurrentLevelEntityId)
                 ->Event("GetExistingEntity", &ToolsApplicationRequests::GetExistingEntity)
+                ->Event("EntityExists", &ToolsApplicationRequests::EntityExists)
                 ->Event("DeleteEntityById", &ToolsApplicationRequests::DeleteEntityById)
                 ->Event("DeleteEntities", &ToolsApplicationRequests::DeleteEntities)
                 ->Event("DeleteEntityAndAllDescendants", &ToolsApplicationRequests::DeleteEntityAndAllDescendants)
@@ -781,6 +782,11 @@ namespace AzToolsFramework
     AZ::EntityId ToolsApplication::GetExistingEntity(AZ::u64 id)
     {
         return AZ::EntityId{id};
+    }
+
+    bool ToolsApplication::EntityExists(AZ::EntityId id)
+    {
+        return FindEntity(id) != nullptr;
     }
 
     void ToolsApplication::DeleteSelected()

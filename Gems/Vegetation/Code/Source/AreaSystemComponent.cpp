@@ -211,7 +211,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         return AZ::Success();
@@ -235,7 +235,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         const float instancesPerMeter = static_cast<float>(sectorDensity) / static_cast<float>(m_sectorSizeInMeters);

@@ -350,8 +350,26 @@ function(ly_setup_cmake_install)
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
-        REGEX "Findo3de.cmake" EXCLUDE
-        REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
+        PATTERN "Findo3de.cmake" EXCLUDE
+        PATTERN "ConfigurationTypes.cmake" EXCLUDE
+        REGEX "3rdParty/Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
+    )
+    # Connect configuration types
+    install(FILES "${LY_ROOT_FOLDER}/cmake/install/ConfigurationTypes.cmake"
+        DESTINATION cmake
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+    # Inject code that will generate each ConfigurationType_<CONFIG>.cmake file
+    set(install_configuration_type_template [=[
+        configure_file(@LY_ROOT_FOLDER@/cmake/install/ConfigurationType_config.cmake.in
+            ${CMAKE_INSTALL_PREFIX}/cmake/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake
+            @ONLY
+        )
+        message(STATUS "Generated ${CMAKE_INSTALL_PREFIX}/cmake/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+    ]=])
+    string(CONFIGURE "${install_configuration_type_template}" install_configuration_type @ONLY)
+    install(CODE "${install_configuration_type}"
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     # Transform the LY_EXTERNAL_SUBDIRS list into a json array

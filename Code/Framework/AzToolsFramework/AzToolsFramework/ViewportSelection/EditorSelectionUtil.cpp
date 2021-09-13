@@ -48,18 +48,6 @@ namespace AzToolsFramework
         return AZ::GetMax(projectedCameraDistance, cameraState.m_nearClip) / apparentDistance;
     }
 
-    AzFramework::ScreenPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        auto screenPosition = AzFramework::ScreenPoint(0, 0);
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            screenPosition, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ViewportWorldToScreen,
-            worldTranslation);
-
-        return screenPosition;
-    }
-
     bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
