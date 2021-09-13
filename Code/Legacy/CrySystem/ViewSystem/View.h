@@ -26,7 +26,7 @@ class CView
 public:
 
     CView(ISystem* pSystem);
-    virtual ~CView();
+    ~CView() override;
 
     //shaking
     struct SShake

@@ -67,7 +67,7 @@ private:
     void AdjustTCB(float d_tension, float d_continuity, float d_bias);
     void MoveSelectedTangentHandleTo(const QPoint& point);
 
-    virtual ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer) override;
+    ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer) override;
 
     bool m_bKeysFreeze;
     bool m_bTangentsFreeze;

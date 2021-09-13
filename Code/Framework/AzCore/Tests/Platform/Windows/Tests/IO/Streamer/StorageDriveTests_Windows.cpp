@@ -1163,12 +1163,14 @@ namespace Benchmark
             m_absolutePath.swap(temp);
 
             delete m_streamer;
+            m_streamer = nullptr;
 
             SystemFile::Delete(TestFileName);
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
             delete m_fileIO;
+            m_fileIO = nullptr;
         }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";

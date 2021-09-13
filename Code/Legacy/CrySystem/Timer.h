@@ -21,7 +21,7 @@ public:
     // constructor
     CTimer();
     // destructor
-    ~CTimer() = default;;
+    ~CTimer() = default;
 
     bool Init();
 
