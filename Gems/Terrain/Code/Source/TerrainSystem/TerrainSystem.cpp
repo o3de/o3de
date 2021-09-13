@@ -67,6 +67,9 @@ TerrainSystem::~TerrainSystem()
 
 void TerrainSystem::Activate()
 {
+    AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+        &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateBegin);
+
     m_dirtyRegion = AZ::Aabb::CreateNull();
     m_terrainHeightDirty = true;
     m_terrainSettingsDirty = true;
@@ -80,10 +83,16 @@ void TerrainSystem::Activate()
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
 
     TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
+
+        AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+        &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateEnd);
 }
 
 void TerrainSystem::Deactivate()
 {
+    AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+        &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataDestroyBegin);
+
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
 
     {
@@ -107,6 +116,9 @@ void TerrainSystem::Deactivate()
             }
         }
     }
+
+    AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+        &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataDestroyEnd);
 }
 
 void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)

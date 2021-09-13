@@ -7,7 +7,10 @@
  */
 #pragma once
 
+#include <gmock/gmock.h>
+
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace UnitTest
@@ -94,4 +97,25 @@ namespace UnitTest
         int m_refreshAreaCalledCount = 0;
         int m_unregisterAreaCalledCount = 0;
     };
+
+    class MockTerrainListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
+    {
+    public:
+        MockTerrainListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(OnTerrainDataCreateBegin, void());
+        MOCK_METHOD0(OnTerrainDataCreateEnd, void());
+        MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
+        MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
+        MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
+    };
+
 }

@@ -9,10 +9,12 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/MemoryComponent.h>
 
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystem/TerrainSystem.h>
 
 #include <AzTest/AzTest.h>
+#include <TerrainMocks.h>
+
+using ::testing::AtLeast;
 
 class TerrainSystemTest : public ::testing::Test
 {
@@ -60,6 +62,29 @@ TEST_F(TerrainSystemTest, TrivialCreateDestroy)
 
 TEST_F(TerrainSystemTest, TrivialActivateDeactivate)
 {
+    m_terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
+    m_terrainSystem->Activate();
+    m_terrainSystem->Deactivate();
+}
+
+TEST_F(TerrainSystemTest, CreateEventsCalledOnActivation)
+{
+    UnitTest::MockTerrainListener mockTerrainListener;
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateBegin()).Times(AtLeast(1));
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateEnd()).Times(AtLeast(1));
+
+    m_terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
+    m_terrainSystem->Activate();
+}
+
+TEST_F(TerrainSystemTest, DestroyEventsCalledOnDeactivation)
+{
+    UnitTest::MockTerrainListener mockTerrainListener;
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateBegin()).Times(AtLeast(1));
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateEnd()).Times(AtLeast(1));
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataDestroyBegin()).Times(AtLeast(1));
+    EXPECT_CALL(mockTerrainListener, OnTerrainDataDestroyEnd()).Times(AtLeast(1));
+
     m_terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
     m_terrainSystem->Activate();
     m_terrainSystem->Deactivate();
