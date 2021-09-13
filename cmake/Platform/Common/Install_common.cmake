@@ -37,7 +37,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 
     # Get the target source directory relative to the LY root folder
     ly_get_engine_relative_source_dir(${absolute_target_source_dir} relative_target_source_dir)
-       
+
     # All include directories marked PUBLIC or INTERFACE will be installed. We dont use PUBLIC_HEADER because in order to do that
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
@@ -91,9 +91,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
-    string(APPEND archive_output_directory "/${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
-    string(APPEND library_output_directory "/${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
-    string(APPEND runtime_output_directory "/${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
+    cmake_path(APPEND archive_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
+    cmake_path(APPEND library_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
+    cmake_path(APPEND runtime_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
 
     if(COMMAND ly_install_target_override)
         # Mac needs special handling because of a cmake issue
