@@ -293,8 +293,8 @@ namespace AzToolsFramework
         }
 
         // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
-        m_currentInteraction.m_keyboardModifiers =
-            AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+        m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+
         // draw the manipulators
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
         debugDisplay.DepthTestOff();

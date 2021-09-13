@@ -92,6 +92,7 @@ class SANDBOX_API EditorViewportWidget final
     , private AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
+    , private AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
@@ -205,17 +206,18 @@ private:
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
-    // AzToolsFramework::MainEditorViewportInteractionRequestBus
+    // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
     AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
-    void BeginWidgetContext() override;
-    void EndWidgetContext() override;
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
+
+    // EditorModifierKeyRequestBus overrides ...
+    AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
@@ -271,7 +273,7 @@ private:
     // note: The argument passed to parameter **point**, originating
     // from a Qt event, must first be passed to WidgetToViewport before being
     // passed to BuildMousePick.
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point);
+    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
     bool CheckRespondToInput() const;
 
@@ -281,7 +283,6 @@ private:
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(const QPoint& point) const;
 
     void RestoreViewportAfterGameMode();
 

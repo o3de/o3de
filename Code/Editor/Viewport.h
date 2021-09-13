@@ -274,12 +274,6 @@ public:
 
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
 
-    //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts
-    //from screen-space to world-space.
-    virtual void PreWidgetRendering() {}
-    virtual void PostWidgetRendering() {}
-
     CViewport *asCViewport() override { return this; }
 
 protected:
@@ -289,7 +283,7 @@ protected:
     // Screen Matrix
     Matrix34 m_screenTM;
     int m_nCurViewportID;
-    // Final game view matrix before drpping back to editor
+    // Final game view matrix before dropping back to editor
     Matrix34 m_gameTM;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
@@ -428,7 +422,7 @@ public:
     QRect GetSelectionRectangle() const override { return m_selectedRect; };
     //! Called when dragging selection rectangle.
     void OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect = false) override;
-    //! Get selection procision tolerance.
+    //! Get selection precision tolerance.
     float GetSelectionTolerance() const override { return m_selectionTolerance; }
     //! Center viewport on selection.
     void CenterOnSelection() override {}
@@ -572,12 +566,6 @@ protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
-
-    //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts
-    //from screen-space to world-space.
-    void PreWidgetRendering() override {}
-    void PostWidgetRendering() override {}
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
