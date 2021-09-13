@@ -9,7 +9,7 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5        PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform TARGETS RapidJSON  PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
-ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML   PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
+ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform   TARGETS RapidXML   PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform         TARGETS cityhash   PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform          TARGETS expat      PACKAGE_HASH 452256acd1fd699cef24162575b3524fccfb712f5321c83f1df1ce878de5b418)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zstd       PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
@@ -17,7 +17,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS gla
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux_core   PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios     TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
+ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-ios         TARGETS freetype        PACKAGE_HASH 3ac3c35e056ae4baec2e40caa023d76a7a3320895ef172b6655e9261b0dc2e29)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios          TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-ios  TARGETS AWSNativeSDK    PACKAGE_HASH 1246219a213ccfff76b526011febf521586d44dbc1753e474f8fb5fd861654a4)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-ios             TARGETS Lua             PACKAGE_HASH c2d3c4e67046c293049292317a7d60fdb8f23effeea7136aefaef667163e5ffe)
