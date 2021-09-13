@@ -166,14 +166,20 @@ namespace Terrain
     }
 
     void TerrainHeightGradientListComponent::GetHeight(
-        const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
+        const AZ::Vector3& inPosition,
+        AZ::Vector3& outPosition,
+        [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT)
     {
         const float height = GetHeight(inPosition.GetX(), inPosition.GetY());
         outPosition.SetZ(height);
     }
 
     void TerrainHeightGradientListComponent::GetNormal(
-        const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
+        const AZ::Vector3& inPosition,
+        AZ::Vector3& outNormal,
+        [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT)
     {
         const float x = inPosition.GetX();
         const float y = inPosition.GetY();

@@ -94,7 +94,7 @@ namespace Terrain
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
     private:
-        float GetHeightSynchronous(float x, float y) const;
+        float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         AZ::Vector3 GetNormalSynchronous(float x, float y) const;
 
         // AZ::TickBus::Handler overrides ...

@@ -84,7 +84,7 @@ void TerrainSystem::Activate()
 
     TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
 
-        AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+    AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateEnd);
 }
 
@@ -143,8 +143,13 @@ AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
     return m_currentSettings.m_heightQueryResolution;
 }
 
-float TerrainSystem::GetHeightSynchronous(float x, float y) const
+float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = false;
+    }
+
     AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
     AZ::Vector3 outPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
 
@@ -156,8 +161,13 @@ float TerrainSystem::GetHeightSynchronous(float x, float y) const
         if (areaBounds.Contains(inPosition))
         {
             Terrain::TerrainAreaHeightRequestBus::Event(
-                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition,
-                Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampler);
+
+            if (terrainExistsPtr)
+            {
+                *terrainExistsPtr = true;
+            }
+
             break;
         }
     }
@@ -166,31 +176,21 @@ float TerrainSystem::GetHeightSynchronous(float x, float y) const
         outPosition.GetZ(), m_currentSettings.m_worldBounds.GetMin().GetZ(), m_currentSettings.m_worldBounds.GetMax().GetZ());
 }
 
-float TerrainSystem::GetHeight(AZ::Vector3 position, [[maybe_unused]] Sampler sampler, [[maybe_unused]] bool* terrainExistsPtr) const
+float TerrainSystem::GetHeight(AZ::Vector3 position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = true;
-    }
-
-    return GetHeightSynchronous(position.GetX(), position.GetY());
+    return GetHeightSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
 }
 
-float TerrainSystem::GetHeightFromFloats(
-    float x, float y, [[maybe_unused]] Sampler sampler, [[maybe_unused]] bool* terrainExistsPtr) const
+float TerrainSystem::GetHeightFromFloats(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = true;
-    }
-
-    return GetHeightSynchronous(x, y);
+    return GetHeightSynchronous(x, y, sampler, terrainExistsPtr);
 }
 
-bool TerrainSystem::GetIsHoleFromFloats(
-    [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] Sampler sampleFilter) const
+bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 {
-    return false;
+    bool terrainExists = false;
+    GetHeightSynchronous(x, y, sampler, &terrainExists);
+    return !terrainExists;
 }
 
 AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y) const
@@ -207,7 +207,7 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y) const
         {
             Terrain::TerrainAreaHeightRequestBus::Event(
                 areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetNormal, inPosition, outNormal,
-                Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+                AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::DEFAULT);
             break;
         }
     }
@@ -480,7 +480,8 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
                     }
 
                     AZ::Vector3 outPosition;
-                    const Terrain::TerrainAreaHeightRequests::Sampler sampleFilter = Terrain::TerrainAreaHeightRequests::Sampler::DEFAULT;
+                    const AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler sampleFilter =
+                        AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::DEFAULT;
 
                     Terrain::TerrainAreaHeightRequestBus::Event(
                         areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
