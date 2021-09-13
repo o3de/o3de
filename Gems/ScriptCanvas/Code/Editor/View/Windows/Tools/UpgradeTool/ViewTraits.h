@@ -13,14 +13,6 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        class ViewRequestsTraits : public AZ::EBusTraits
-        {
-        public:
-            // flush logs, or add log text
-            // set progress update
-            virtual void ClearProgress() {}
-            virtual void SetInProgress() {}
-        };
-        using ViewRequestsBus = AZ::EBus<ViewRequestsTraits>;
+        
     }
 }

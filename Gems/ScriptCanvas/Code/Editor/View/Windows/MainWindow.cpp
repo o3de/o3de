@@ -134,7 +134,6 @@
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/View.h>
 
 #include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
 
@@ -3436,8 +3435,13 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RunUpgradeTool()
     {
-        auto versionExplorer = aznew VersionExplorer::View(this);
+        // \todo, restore this behavior, post modification step
+
+        /*
+        auto versionExplorer = aznew VersionExplorer::Controller(this);
         versionExplorer->exec();
+
+
 
         // Manual correction
         size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
@@ -3448,6 +3452,8 @@ namespace ScriptCanvasEditor
             UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
             upgradeHelper->show();
         }
+        */
+
     }
 
     void MainWindow::OnShowValidationErrors()

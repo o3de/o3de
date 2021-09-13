@@ -51,7 +51,7 @@
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/View.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>

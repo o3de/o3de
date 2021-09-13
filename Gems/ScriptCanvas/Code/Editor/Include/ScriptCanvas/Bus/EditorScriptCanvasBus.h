@@ -221,8 +221,7 @@ namespace ScriptCanvasEditor
         AZ_TYPE_INFO(IUpgradeRequests, "{D25318F2-4DDA-4E76-98CB-6D561BB6234D}");
 
         using AssetList = AZStd::list<AZ::Data::AssetInfo>;
-        virtual AssetList& GetAssetsToUpgrade() = 0;
-
+       
         virtual void ClearGraphsThatNeedUpgrade() = 0;
         virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
         virtual const AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() const = 0;

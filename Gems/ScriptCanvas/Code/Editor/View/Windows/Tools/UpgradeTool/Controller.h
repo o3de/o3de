@@ -9,27 +9,26 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/PlatformDef.h>
-AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
-#include <QProgressBar>
-AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/PlatformDef.h>
 #include <AzQtComponents/Components/StyledDialog.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ViewTraits.h>
 #include <IConsole.h>
 #include <ISystem.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Core.h>
+AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
+#include <QProgressBar>
+AZ_POP_DISABLE_WARNING
 #endif
-
-#include <Editor/View/Windows/Tools/UpgradeTool/ViewTraits.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 
 class QPushButton;
 
 namespace Ui
 {
-    class View;
+    class Controller;
 }
 
 namespace AzQtComponents
@@ -56,29 +55,41 @@ namespace ScriptCanvasEditor
 
         //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
         //! Handles display change notifications, handles state change notifications, sends control requests
-        class View
+        class Controller
             : public AzQtComponents::StyledDialog
             , private AZ::SystemTickBus::Handler
             , private UpgradeNotifications::Bus::Handler
-            , private ViewRequestsBus::Handler
             , private ModelNotificationsBus::Handler
         {
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Controller, AZ::SystemAllocator, 0);
 
-            explicit View(QWidget* parent = nullptr);
+            explicit Controller(QWidget* parent = nullptr);
             
         private:
-
             static constexpr int ColumnAsset = 0;
             static constexpr int ColumnAction = 1;
             static constexpr int ColumnBrowse = 2;
             static constexpr int ColumnStatus = 3;
 
             void OnCloseButtonPress();
+            void OnScanBegin(size_t assetCount) override;
             void OnScanButtonPress();
+            void OnScanComplete(const ScanResult& result) override;
+            void OnScanFilteredGraph(const AZ::Data::AssetInfo& info) override;
+            void OnScanLoadFailure(const AZ::Data::AssetInfo& info) override;
+            void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) override;
+            enum Filtered
+            {
+                No,
+                Yes
+            };
+            void OnScannedGraph(const AZ::Data::AssetInfo& info, Filtered filtered);
+            void OnScannedGraphResult(const AZ::Data::AssetInfo& info);
+
+
             void OnUpgradeAllButtonPress();
 
             enum class ProcessState
@@ -90,10 +101,7 @@ namespace ScriptCanvasEditor
             };
             ProcessState m_state = ProcessState::Inactive;
 
-            void DoScan();
             void ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>&);
-
-            void InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo);
 
             // SystemTickBus::Handler
             void OnSystemTick() override;
@@ -123,9 +131,8 @@ namespace ScriptCanvasEditor
 
             AZ::Data::Asset<AZ::Data::AssetData> m_currentAsset;
 
-            AZStd::unique_ptr<Ui::View> m_ui;
-
-            
+            AZStd::unique_ptr<Ui::Controller> m_view;
+                        
             // upgrade fields
             AZStd::recursive_mutex m_mutex;
             bool m_upgradeComplete = false;

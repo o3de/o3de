@@ -9,15 +9,35 @@
 #pragma once
 
 #include <ScriptCanvas/Core/Core.h>
+#include <AzCore/Component/TickBus.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
         class Scanner
+            : private AZ::SystemTickBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
+
+            Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete);
+
+            const ScanResult& GetResult() const;
+
+            ScanResult&& TakeResult();
+
+        private:           
+            size_t m_catalogAssetIndex = 0;
+            AZStd::function<void()> m_onComplete;
+            ScanConfiguration m_config;
+            ScanResult m_result;
+
+            void FilterAsset(AZ::Data::Asset<AZ::Data::AssetData>);
+            const AZ::Data::AssetInfo& GetCurrentAsset() const;
+            AZ::Data::Asset<AZ::Data::AssetData> LoadAsset();
+            void OnSystemTick() override;
         };
     }    
 }
