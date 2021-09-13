@@ -399,23 +399,22 @@ namespace AzToolsFramework
             // modifier has changed - swapped from additive to subtractive box select (or vice versa)
             if (previousKeyboardModifiers != currentKeyboardModifiers)
             {
-                for (AZ::EntityId entityId : potentialDeselectedEntityIds)
+                for (const AZ::EntityId& entityId : potentialDeselectedEntityIds)
                 {
                     editorTransformComponentSelection.AddEntityToSelection(entityId);
                 }
+
                 potentialDeselectedEntityIds.clear();
 
-                for (AZ::EntityId entityId : potentialSelectedEntityIds)
+                for (const AZ::EntityId& entityId : potentialSelectedEntityIds)
                 {
                     editorTransformComponentSelection.RemoveEntityFromSelection(entityId);
                 }
+
                 potentialSelectedEntityIds.clear();
             }
 
-            // set the widget context before calls to ViewportWorldToScreen so we are not
-            // going to constantly be pushing/popping the widget context
-            ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
-
+            const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (entityDataCache.IsVisibleEntityLocked(entityCacheIndex) || !entityDataCache.IsVisibleEntityVisible(entityCacheIndex))
@@ -426,7 +425,7 @@ namespace AzToolsFramework
                 const AZ::EntityId entityId = entityDataCache.GetVisibleEntityId(entityCacheIndex);
                 const AZ::Vector3& entityPosition = entityDataCache.GetVisibleEntityPosition(entityCacheIndex);
 
-                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(entityPosition, cameraState);
 
                 if (currentKeyboardModifiers.Ctrl())
                 {
@@ -1165,15 +1164,13 @@ namespace AzToolsFramework
         m_boxSelect.InstallDisplayScene(
             [this, entityBoxSelectData](const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                const auto modifiers = ViewportInteraction::KeyboardModifiers(
-                    ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
-
-                if (m_boxSelect.PreviousModifiers() != modifiers)
+                if (const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+                    m_boxSelect.PreviousModifiers() != keyboardModifiers)
                 {
                     EntityBoxSelectUpdateGeneral(
                         m_boxSelect.BoxRegion(), *this, m_selectedEntityIds, entityBoxSelectData->m_selectedEntityIdsBeforeBoxSelect,
                         entityBoxSelectData->m_potentialSelectedEntityIds, entityBoxSelectData->m_potentialDeselectedEntityIds,
-                        *m_entityDataCache, viewportInfo.m_viewportId, modifiers, m_boxSelect.PreviousModifiers());
+                        *m_entityDataCache, viewportInfo.m_viewportId, keyboardModifiers, m_boxSelect.PreviousModifiers());
                 }
 
                 debugDisplay.DepthTestOff();
@@ -1779,13 +1776,7 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-
-        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
-
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
+        const AzFramework::CameraState cameraState = GetCameraState(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
@@ -3333,16 +3324,15 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const auto modifiers =
-            ViewportInteraction::KeyboardModifiers(ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+        const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
         m_cursorState.Update();
 
         HandleAccents(
-            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, modifiers.Ctrl(), m_hoveredEntityId,
+            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, keyboardModifiers.Ctrl(), m_hoveredEntityId,
             ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
-        const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(modifiers));
+        const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(keyboardModifiers));
 
         UpdateSpaceCluster(referenceFrame);
 

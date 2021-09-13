@@ -238,10 +238,32 @@ namespace UnitTest
             m_entityId3 = createEntityWithBoundsFn("Entity3");
         }
 
-    public:
+        void PositionEntities()
+        {
+            // the initial starting position of the entities
+            AZ::TransformBus::Event(
+                m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity1WorldTranslation));
+            AZ::TransformBus::Event(
+                m_entityId2, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity2WorldTranslation));
+            AZ::TransformBus::Event(
+                m_entityId3, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity3WorldTranslation));
+        }
+
+        static void PositionCamera(AzFramework::CameraState& cameraState)
+        {
+            // initial camera position (looking down the negative x-axis)
+            AzFramework::SetCameraTransform(
+                cameraState,
+                AZ::Transform::CreateFromQuaternionAndTranslation(
+                    AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        }
+
         AZ::EntityId m_entityId1;
         AZ::EntityId m_entityId2;
         AZ::EntityId m_entityId3;
+        AZ::Vector3 m_entity1WorldTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
+        AZ::Vector3 m_entity2WorldTranslation = AZ::Vector3(5.0f, 14.0f, 10.0f);
+        AZ::Vector3 m_entity3WorldTranslation = AZ::Vector3(5.0f, 16.0f, 10.0f);
     };
 
     void ArrangeIndividualRotatedEntitySelection(const AzToolsFramework::EntityIdList& entityIds, const AZ::Quaternion& orientation)
@@ -596,25 +618,18 @@ namespace UnitTest
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entity
-        const auto initialTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f));
-        AZ::TransformBus::Event(m_entityId1, &AZ::TransformBus::Events::SetWorldTM, initialTransformWorld);
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         using ::testing::Eq;
         auto selectedEntitiesBefore = SelectedEntities();
         EXPECT_TRUE(selectedEntitiesBefore.empty());
 
         // calculate the position in screen space of the initial entity position
-        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        const auto entity1ScreenPosition = AzFramework::WorldToScreen(m_entity1WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
-        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(initialPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity1ScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
 
         // entity is selected
         auto selectedEntitiesAfter = SelectedEntities();
@@ -626,18 +641,11 @@ namespace UnitTest
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entity
-        AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         // position in space above the entity
         const auto clickOffPositionWorld = AZ::Vector3(5.0f, 15.0f, 12.0f);
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
@@ -660,30 +668,16 @@ namespace UnitTest
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entity
-        AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f)));
-
-        const auto initialTransformWorldSecondEntity = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 10.0f, 10.0f));
-        AZ::TransformBus::Event(m_entityId2, &AZ::TransformBus::Events::SetWorldTM, initialTransformWorldSecondEntity);
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto initialPositionScreenSecondEntity =
-            AzFramework::WorldToScreen(initialTransformWorldSecondEntity.GetTranslation(), m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
-        m_actionDispatcher->CameraState(m_cameraState)
-            ->MousePosition(initialPositionScreenSecondEntity)
-            ->MouseLButtonDown()
-            ->MouseLButtonUp();
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity2ScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
 
         // entity selection was not changed
         using ::testing::Eq;
@@ -698,28 +692,17 @@ namespace UnitTest
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entity
-        AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f)));
-
-        const auto initialTransformWorldSecondEntity = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 10.0f, 10.0f));
-        AZ::TransformBus::Event(m_entityId2, &AZ::TransformBus::Events::SetWorldTM, initialTransformWorldSecondEntity);
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto initialPositionScreenSecondEntity =
-            AzFramework::WorldToScreen(initialTransformWorldSecondEntity.GetTranslation(), m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->CameraState(m_cameraState)
-            ->MousePosition(initialPositionScreenSecondEntity)
+            ->MousePosition(entity2ScreenPosition)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->MouseLButtonDown()
             ->MouseLButtonUp();
@@ -736,28 +719,17 @@ namespace UnitTest
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entity
-        AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f)));
-
-        const auto initialTransformWorldSecondEntity = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 10.0f, 10.0f));
-        AZ::TransformBus::Event(m_entityId2, &AZ::TransformBus::Events::SetWorldTM, initialTransformWorldSecondEntity);
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         AzToolsFramework::SelectEntities({ m_entityId1, m_entityId2 });
 
         // calculate the position in screen space of the second entity
-        const auto initialPositionScreenSecondEntity =
-            AzFramework::WorldToScreen(initialTransformWorldSecondEntity.GetTranslation(), m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->CameraState(m_cameraState)
-            ->MousePosition(initialPositionScreenSecondEntity)
+            ->MousePosition(entity2ScreenPosition)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->MouseLButtonDown()
             ->MouseLButtonUp();
@@ -768,45 +740,99 @@ namespace UnitTest
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
     }
 
-    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, DISABLED_BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
-        // the initial starting position of the entities
-        AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 10.0f)));
-        AZ::TransformBus::Event(
-            m_entityId2, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 14.0f, 10.0f)));
-        AZ::TransformBus::Event(
-            m_entityId3, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 16.0f, 10.0f)));
-
-        // initial camera position (looking down the negative x-axis)
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+        PositionEntities();
+        PositionCamera(m_cameraState);
 
         using ::testing::Eq;
         auto selectedEntitiesBefore = SelectedEntities();
         EXPECT_THAT(selectedEntitiesBefore.size(), Eq(0));
 
         // calculate the position in screen space of where to begin and end the box select action
-        const auto beginningPositionWorldBoxSelectStart = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 13.5f, 10.5f), m_cameraState);
-        const auto middlePositionWorldBoxSelectStart = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 15.0f, 10.0f), m_cameraState);
-        const auto endingPositionWorldBoxSelectStart = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 16.5f, 9.5f), m_cameraState);
+        const auto beginningPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 13.5f, 10.5f), m_cameraState);
+        const auto endingPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 16.5f, 9.5f), m_cameraState);
 
         // perform a box select in the viewport
         m_actionDispatcher->CameraState(m_cameraState)
-            ->MousePosition(beginningPositionWorldBoxSelectStart)
+            ->MousePosition(beginningPositionWorldBoxSelect)
             ->MouseLButtonDown()
-            ->MousePosition(middlePositionWorldBoxSelectStart)
-            ->MousePosition(endingPositionWorldBoxSelectStart)
+            ->MousePosition(endingPositionWorldBoxSelect)
             ->MouseLButtonUp();
 
         // entities are selected
         using ::testing::UnorderedElementsAre;
         auto selectedEntitiesAfter = SelectedEntities();
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1, m_entityId2, m_entityId3));
+    }
+
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, BoxSelectWithSelectionAppendsEntitiesToSelection)
+    {
+        AzToolsFramework::ed_viewportStickySelect = true;
+
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        AzToolsFramework::SelectEntity(m_entityId1);
+
+        using ::testing::UnorderedElementsAre;
+        auto selectedEntitiesBefore = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesBefore, UnorderedElementsAre(m_entityId1));
+
+        // calculate the position in screen space of where to begin and end the box select action
+        const auto beginningPositionWorldBoxSelect1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 14.5f, 10.5f), m_cameraState);
+        const auto endingPositionWorldBoxSelect1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 13.5f, 9.5f), m_cameraState);
+        const auto beginningPositionWorldBoxSelect2 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 15.5f, 10.5f), m_cameraState);
+        const auto endingPositionWorldBoxSelect2 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 16.5f, 9.5f), m_cameraState);
+
+        // perform a box select in the viewport (going left and right)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(beginningPositionWorldBoxSelect1)
+            ->MouseLButtonDown()
+            ->MousePosition(endingPositionWorldBoxSelect1)
+            ->MouseLButtonUp()
+            ->MousePosition(beginningPositionWorldBoxSelect2)
+            ->MouseLButtonDown()
+            ->MousePosition(endingPositionWorldBoxSelect2)
+            ->MouseLButtonUp();
+
+        // entities are selected
+        auto selectedEntitiesAfter = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1, m_entityId2, m_entityId3));
+    }
+
+    TEST_F(
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture,
+        BoxSelectHoldingCtrlWithSelectionRemovesEntitiesFromSelection)
+    {
+        AzToolsFramework::ed_viewportStickySelect = true;
+
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        AzToolsFramework::SelectEntities({ m_entityId1, m_entityId2, m_entityId3 });
+
+        using ::testing::UnorderedElementsAre;
+        auto selectedEntitiesBefore = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesBefore, UnorderedElementsAre(m_entityId1, m_entityId2, m_entityId3));
+
+        // calculate the position in screen space of where to begin and end the box select action
+        const auto beginningPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 13.5f, 10.5f), m_cameraState);
+        const auto endingPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 16.5f, 9.5f), m_cameraState);
+
+        // perform a box select in the viewport
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(beginningPositionWorldBoxSelect)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->MouseLButtonDown()
+            ->MousePosition(endingPositionWorldBoxSelect)
+            ->MouseLButtonUp();
+
+        // entities are selected
+        auto selectedEntitiesAfter = SelectedEntities();
+        EXPECT_TRUE(selectedEntitiesAfter.empty());
     }
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
