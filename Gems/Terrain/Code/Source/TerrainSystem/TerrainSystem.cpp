@@ -54,7 +54,7 @@ TerrainSystem::TerrainSystem()
     m_currentSettings.m_worldBounds = AZ::Aabb::CreateNull();
 
     m_requestedSettings = m_currentSettings;
-    m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(4096.0f, 4096.0f, 2048.0f));
+    m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
 }
 
 TerrainSystem::~TerrainSystem()
@@ -82,7 +82,16 @@ void TerrainSystem::Activate()
 
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
 
-    TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
+    // Register any terrain spawners that were already active before the terrain system activated.
+    auto enumerationCallback = [&]([[maybe_unused]] Terrain::TerrainSpawnerRequests* terrainSpawner) -> bool
+    {
+        AZ::EntityId areaId = *(Terrain::TerrainSpawnerRequestBus::GetCurrentBusId());
+        RegisterArea(areaId);
+
+        // Keep Enumerating
+        return true;
+    };
+    Terrain::TerrainSpawnerRequestBus::EnumerateHandlers(enumerationCallback);
 
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateEnd);

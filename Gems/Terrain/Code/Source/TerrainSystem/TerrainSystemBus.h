@@ -49,27 +49,6 @@ namespace Terrain
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;
 
-    /**
-    * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
-    */
-    class TerrainAreaRequests
-        : public AZ::ComponentBus
-    {
-    public:
-        ////////////////////////////////////////////////////////////////////////
-        // EBusTraits
-        using MutexType = AZStd::recursive_mutex;
-        ////////////////////////////////////////////////////////////////////////
-
-        virtual ~TerrainAreaRequests() = default;
-
-        virtual void RegisterArea() = 0;
-        virtual void RefreshArea() = 0;
-
-    };
-
-    using TerrainAreaRequestBus = AZ::EBus<TerrainAreaRequests>;
 
     /**
     * A bus to signal the life times of terrain areas
