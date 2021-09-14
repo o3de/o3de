@@ -51,6 +51,7 @@ namespace AZ
 
             //! MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialsEdited(const MaterialAssignmentMap& materials) override;
+            void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
 
             // Apply a material component configuration to the active controller
             void UpdateConfiguration(const MaterialComponentConfig& config);
