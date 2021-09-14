@@ -298,15 +298,6 @@ namespace AzFramework
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
 
-        /*if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }*/
-
         for (int i = 0; i < commandTokens.size(); i++)
         {
             delete [] commandAndArgs[i];
