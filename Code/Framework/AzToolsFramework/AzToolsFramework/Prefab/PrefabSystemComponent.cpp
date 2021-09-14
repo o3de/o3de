@@ -429,9 +429,8 @@ namespace AzToolsFramework
             auto findTemplateResult = FindTemplate(templateId);
             if (!findTemplateResult.has_value())
             {
-                AZ_Warning(
+                AZ_Error(
                     "Prefab", false,
-                    "PrefabSystemComponent::UpdateTemplateFilePath - "
                     "Template associated by given Id '%llu' doesn't exist in PrefabSystemComponent.",
                     templateId);
                 return;
@@ -439,9 +438,8 @@ namespace AzToolsFramework
 
             if (!filePath.IsRelative())
             {
-                AZ_Warning(
+                AZ_Error(
                     "Prefab", false,
-                    "PrefabSystemComponent::UpdateTemplateFilePath - "
                     "Provided filePath must be relative.",
                     templateId);
                 return;
@@ -461,7 +459,7 @@ namespace AzToolsFramework
             if (pathReference)
             {
                 const AZStd::string_view pathStr = filePath.Native();
-                pathReference->get().SetString(rapidjson::StringRef(pathStr.data(), pathStr.length()), prefabDom.GetAllocator());
+                pathReference->get().SetString(pathStr.data(), prefabDom.GetAllocator());
             }
 
             templateToChange.SetFilePath(filePath);
