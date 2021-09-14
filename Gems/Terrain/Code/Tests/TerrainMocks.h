@@ -9,7 +9,9 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <AzFramework/Physics/HeightfieldProviderComponentBus.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace UnitTest
 {
@@ -17,6 +19,7 @@ namespace UnitTest
 
     class MockBoxShapeComponent
         : public AZ::Component
+        , private LmbrCentral::ShapeComponentRequestsBus::Handler
     {
     public:
         AZ_COMPONENT(MockBoxShapeComponent, BoxShapeComponentTypeId)
@@ -26,10 +29,12 @@ namespace UnitTest
 
         void Activate() override
         {
+            LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
         }
 
         void Deactivate() override
         {
+            LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
         bool ReadInConfig([[maybe_unused]] const AZ::ComponentConfig* baseConfig) override
@@ -61,18 +66,54 @@ namespace UnitTest
         static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
         }
+
+        //ShapeComponentRequestsBus
+        AZ::Crc32 GetShapeType() override
+        {
+            return AZ_CRC("Box", 0x08a9483a);
+        }
+
+        AZ::Aabb m_bounds;
+
+        AZ::Aabb GetEncompassingAabb() override
+        {
+            m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100.0f, -100.0f, -100.0f), AZ::Vector3(100.0f, 100.0f, 100.0f));
+            return m_bounds;
+        }
+
+        virtual void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        {
+            transform = AZ::Transform::Identity();
+            bounds.CreateFromMinMax(AZ::Vector3(-1.0f, -1.0f, -1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
+        }
+
+        virtual bool IsPointInside([[maybe_unused]] const AZ::Vector3& point)override
+        {
+            return true;
+        }
+
+        virtual float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) override
+        {
+            return 1.0f;
+        }
+
     };
 
-    class MockTerrainSystem : private Terrain::TerrainSystemServiceRequestBus::Handler
+    class MockTerrainSystem
+        : private Terrain::TerrainSystemServiceRequestBus::Handler
+        , private AzFramework::Terrain::TerrainDataRequestBus::Handler
     {
     public:
+
         void Activate() override
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
         }
 
         void Deactivate() override
         {
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
@@ -97,6 +138,62 @@ namespace UnitTest
         void RefreshArea([[maybe_unused]] AZ::EntityId areaId) override
         {
             m_refreshAreaCalledCount++;
+        }
+
+        // TerrainDataRequestBus
+        AZ::Vector2 GetTerrainGridResolution() const override
+        {
+            return AZ::Vector2(1.0f);
+        }
+
+        AZ::Aabb GetTerrainAabb() const override
+        {
+            return {};
+        }
+
+        float GetHeight(AZ::Vector3 /*position*/, Sampler /*sampler*/, bool* /* terrainExistsPtr*/) const override
+        {
+            return 1.0f;
+        }
+
+        float GetHeightFromFloats(float /*x*/, float /*y*/, Sampler /*sampler*/, bool* /*terrainExistsPtr*/) const override
+        {
+            return 1.0f;
+        }
+
+        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
+            AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
+        {
+            AzFramework::SurfaceData::SurfaceTagWeight weight;
+            weight.m_weight = 1.0f;
+            return weight;
+        }
+
+        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
+        {
+            AzFramework::SurfaceData::SurfaceTagWeight weight;
+            weight.m_weight = 1.0f;
+            return weight;
+        }
+
+        const char* GetMaxSurfaceName(AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
+        {
+            return {};
+        }
+
+        bool GetIsHoleFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/) const override
+        {
+            return {};
+        }
+
+        AZ::Vector3 GetNormal(AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
+        {
+            return {};
+        }
+
+        AZ::Vector3 GetNormalFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
+        {
+            return {};
         }
 
         int m_registerAreaCalledCount = 0;
@@ -128,11 +225,6 @@ namespace UnitTest
         void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) override
         {
             m_onHeightfieldDataChangedCalledCount++;
-        }
-
-        void RefreshHeightfield() override
-        {
-            m_refreshHeightfieldCalledCount++;
         }
 
         int m_onHeightfieldDataChangedCalledCount = 0;

@@ -27,6 +27,7 @@ protected:
     Terrain::TerrainPhysicsColliderComponent* m_colliderComponent;
     UnitTest::MockBoxShapeComponent* m_shapeComponent;
     UnitTest::MockHeightfieldProviderNotificationBusListener* m_heightfieldBusListener;
+    AZStd::unique_ptr<UnitTest::MockTerrainSystem> m_terrainSystem;
 
     void SetUp() override
     {
@@ -40,6 +41,10 @@ protected:
 
     void TearDown() override
     {
+        if (m_terrainSystem)
+        {
+            m_terrainSystem->Deactivate();
+        }
         m_app.Destroy();
     }
 
@@ -51,12 +56,12 @@ protected:
         ASSERT_TRUE(m_entity);
     }
 
-    void AddLayerSpawnerAndShapeComponentToEntity()
+    void AddPhysicsColliderAndShapeComponentToEntity()
     {
-        AddLayerSpawnerAndShapeComponentToEntity(Terrain::TerrainPhysicsColliderConfig());
+        AddPhysicsColliderAndShapeComponentToEntity(Terrain::TerrainPhysicsColliderConfig());
     }
 
-    void AddLayerSpawnerAndShapeComponentToEntity(const Terrain::TerrainPhysicsColliderConfig& config)
+    void AddPhysicsColliderAndShapeComponentToEntity(const Terrain::TerrainPhysicsColliderConfig& config)
     {
         m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(config);
         m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
@@ -76,6 +81,12 @@ protected:
         ASSERT_TRUE(m_heightfieldBusListener);
     }
 
+    void CreateMockTerrainSystem()
+    {
+        m_terrainSystem = AZStd::make_unique<UnitTest::MockTerrainSystem>();
+        m_terrainSystem->Activate();
+    }
+
     void ResetEntity()
     {
         m_entity->Deactivate();
@@ -83,10 +94,10 @@ protected:
     }
 };
 
-TEST_F(PhysicsColliderComponentTest, ActivatEntityActivateSuccess)
+TEST_F(PhysicsColliderComponentTest, ActivateEntityActivateSuccess)
 {
     CreateEntity();
-    AddLayerSpawnerAndShapeComponentToEntity();
+    AddPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
@@ -100,7 +111,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeig
 
     AddHeightfieldListener();
 
-    AddLayerSpawnerAndShapeComponentToEntity();
+    AddPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
@@ -118,7 +129,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
 
     AddHeightfieldListener();
 
-    AddLayerSpawnerAndShapeComponentToEntity();
+    AddPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
@@ -131,22 +142,47 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
     ResetEntity();
 }
 
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    m_entity->Activate();
+
+    float heightScale = 0.0f;
+
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightScale);
+
+    EXPECT_EQ(heightScale, 1.0f / 255.0f);
+
+    ResetEntity();
+}
+
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 {
     CreateEntity();
 
     AddHeightfieldListener();
 
-    AddLayerSpawnerAndShapeComponentToEntity();
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
 
     m_entity->Activate();
 
-     AZStd::vector<int16_t> heights;
+    LmbrCentral::BoxShapeComponentRequestsBus::Event(
+        m_entity->GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, AZ::Vector3(10.0f, 10.0f, 10.0f));   
+
+    AZStd::vector<int16_t> heights;
 
     Physics::HeightfieldProviderRequestsBus::Event(
          m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights, heights);
 
     EXPECT_TRUE(heights.size() != 0);
-
+   
     ResetEntity();
 }
