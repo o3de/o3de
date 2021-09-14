@@ -95,7 +95,7 @@ namespace Terrain
 
     private:
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
-        AZ::Vector3 GetNormalSynchronous(float x, float y) const;
+        AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;

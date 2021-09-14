@@ -154,10 +154,7 @@ AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
 
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = false;
-    }
+    bool terrainExists = false;
 
     AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
     AZ::Vector3 outPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
@@ -172,13 +169,15 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             Terrain::TerrainAreaHeightRequestBus::Event(
                 areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampler);
 
-            if (terrainExistsPtr)
-            {
-                *terrainExistsPtr = true;
-            }
+            terrainExists = true;
 
             break;
         }
+    }
+
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = terrainExists;
     }
 
     return AZ::GetClamp(
@@ -202,8 +201,10 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
     return !terrainExists;
 }
 
-AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y) const
+AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
+    bool terrainExists = false;
+
     AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
     AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
 
@@ -215,35 +216,28 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y) const
         if (areaBounds.Contains(inPosition))
         {
             Terrain::TerrainAreaHeightRequestBus::Event(
-                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetNormal, inPosition, outNormal,
-                AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::DEFAULT);
+                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetNormal, inPosition, outNormal, sampler);
+            terrainExists = true;
             break;
         }
+    }
+
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = terrainExists;
     }
 
     return outNormal;
 }
 
-AZ::Vector3 TerrainSystem::GetNormal(
-    AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+AZ::Vector3 TerrainSystem::GetNormal(AZ::Vector3 position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = true;
-    }
-
-    return GetNormalSynchronous(position.GetX(), position.GetY());
+    return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
 }
 
-AZ::Vector3 TerrainSystem::GetNormalFromFloats(
-    float x, float y, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = true;
-    }
-
-    return GetNormalSynchronous(x, y);
+    return GetNormalSynchronous(x, y, sampler, terrainExistsPtr);
 }
 
 
