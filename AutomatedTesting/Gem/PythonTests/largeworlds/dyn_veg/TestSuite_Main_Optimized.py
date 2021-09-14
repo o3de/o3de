@@ -129,3 +129,42 @@ class TestAutomation(EditorTestSuite):
 
     class test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(EditorParallelTest):
         from .EditorScripts import SurfaceMaskFilter_ExclusionList as test_module
+
+    class test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(EditorParallelTest):
+        from .EditorScripts import SurfaceMaskFilter_InclusionList as test_module
+
+    class test_SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected(EditorParallelTest):
+        from .EditorScripts import SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected as test_module
+
+    class test_SystemSettings_SectorPointDensity(EditorParallelTest):
+        from .EditorScripts import SystemSettings_SectorPointDensity as test_module
+
+    class test_SystemSettings_SectorSize(EditorParallelTest):
+        from .EditorScripts import SystemSettings_SectorSize as test_module
+
+    class test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(EditorParallelTest):
+        from .EditorScripts import SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlope as test_module
+
+    class test_DynamicSliceInstanceSpawner_Embedded_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import DynamicSliceInstanceSpawner_Embedded_E2E as test_module
+
+        # Custom teardown to remove test level created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                               True, True)
+
+    class test_DynamicSliceInstanceSpawner_External_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import DynamicSliceInstanceSpawner_External_E2E as test_module
+
+        # Custom teardown to remove test level created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                               True, True)
+        
+    class test_LayerBlender_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import LayerBlender_E2E_Editor as test_module
+
+        # Custom teardown to remove test level created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                               True, True)

@@ -193,8 +193,6 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import SurfaceMaskFilter_ExclusionList as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    # ADD FROM HERE ON TO OPTIMIZED LIST
-
     def test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import SurfaceMaskFilter_InclusionList as test_module
         self._run_test(request, workspace, editor, test_module)
