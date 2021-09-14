@@ -118,7 +118,7 @@ public:
     IUiAnimStringTable* GetTrackEventStringTable() override { return m_pEventStrings.get(); }
 
     //! Call to trigger a track event
-    void TriggerTrackEvent(const char* event, const char* param = NULL) override;
+    void TriggerTrackEvent(const char* event, const char* param = nullptr) override;
 
     //! Track event listener
     void AddTrackEventListener(IUiTrackEventListener* pListener) override;
@@ -130,7 +130,7 @@ private:
     void ComputeTimeRange();
     void CopyNodeChildren(XmlNodeRef& xmlNode, IUiAnimNode* pAnimNode);
     void NotifyTrackEvent(IUiTrackEventListener::ETrackEventReason reason,
-        const char* event, const char* param = NULL);
+        const char* event, const char* param = nullptr);
 
     // Create a new animation node.
     IUiAnimNode* CreateNodeInternal(EUiAnimNodeType nodeType, uint32 nNodeId = -1);

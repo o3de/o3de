@@ -183,7 +183,6 @@ namespace PhysX::Benchmarks
     class PhysXJointBenchmarkFixture
         : public PhysXBaseBenchmarkFixture
     {
-    public:
         void internalSetUp()
         {
             PhysXBaseBenchmarkFixture::SetUpInternal();
@@ -194,7 +193,6 @@ namespace PhysX::Benchmarks
             PhysXBaseBenchmarkFixture::TearDownInternal();
         }
 
-    protected:
     public:
         void SetUp(const benchmark::State&) override
         {

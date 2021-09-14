@@ -53,7 +53,7 @@ namespace AZ
             : public UnitTest::AssetTester<ImageMipChainAsset>
         {
         public:
-            ImageMipChainAssetTester() {}
+            ImageMipChainAssetTester() = default;
             ~ImageMipChainAssetTester() override = default;
 
             void SetAssetReady(Data::Asset<ImageMipChainAsset>& asset) override
