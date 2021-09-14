@@ -33,7 +33,7 @@ namespace AZ
         
         RHI::MessageOutcome FrameGraphCompiler::CompileInternal(const RHI::FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameGraphCompiler: CompileInternal(Metal)");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameGraphCompiler: CompileInternal(Metal)");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
             {

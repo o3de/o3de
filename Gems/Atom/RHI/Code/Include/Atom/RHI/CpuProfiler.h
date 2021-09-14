@@ -111,5 +111,5 @@ namespace AZ
 
 //! Supply a group and region to the time region
 #define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
-    static const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(groupName, regionName); \
+    static const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(#groupName, regionName); \
     AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));

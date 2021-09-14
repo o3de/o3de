@@ -508,7 +508,7 @@ namespace AZ::Render
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
-        AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ProjectedShadowFeatureProcessor: Simulate");
+        AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "ProjectedShadowFeatureProcessor: Simulate");
 
         if (m_shadowmapPassNeedsUpdate)
         {
@@ -603,7 +603,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::Render(const ProjectedShadowFeatureProcessor::RenderPacket& packet)
     {
-        AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ProjectedShadowFeatureProcessor: Render");
+        AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "ProjectedShadowFeatureProcessor: Render");
 
         if (!m_projectedShadowmapsPasses.empty())
         {

@@ -161,7 +161,7 @@ namespace AZ
 
         void SMAAFeatureProcessor::Render([[maybe_unused]] const SMAAFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "SMAAFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "SMAAFeatureProcessor: Render");
 
             UpdateConvertToPerceptualPass();
             UpdateEdgeDetectionPass();

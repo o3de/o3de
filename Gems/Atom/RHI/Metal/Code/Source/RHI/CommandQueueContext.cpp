@@ -92,7 +92,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueueContext: Wait on Fences");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "CommandQueueContext: Wait on Fences");
 
                 //Synchronize the CPU with the GPU by waiting on the fence until signalled by the GPU. CPU can only go upto
                 //RHI::Limits::Device::FrameCountMax frames ahead of the GPU

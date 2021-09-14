@@ -171,14 +171,14 @@ namespace AZ
 
         MessageOutcome FrameScheduler::Compile(const FrameSchedulerCompileRequest& compileRequest)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: Compile");
 
             PrepareProducers();
 
             m_compileRequest = compileRequest;
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompile");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: Compile: OnFrameCompile");
                 FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
             }
 
@@ -193,7 +193,7 @@ namespace AZ
             if (outcome.IsSuccess())
             {
                 {
-                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompileEnd");
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: Compile: OnFrameCompileEnd");
                     FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
                 }
 
@@ -217,7 +217,7 @@ namespace AZ
         void FrameScheduler::PrepareProducers()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: PrepareProducers");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: PrepareProducers");
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
@@ -238,7 +238,7 @@ namespace AZ
         void FrameScheduler::CompileProducers()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: CompileProducers");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: CompileProducers");
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
@@ -250,7 +250,7 @@ namespace AZ
         void FrameScheduler::CompileShaderResourceGroups()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: CompileShaderResourceGroups");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: CompileShaderResourceGroups");
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
@@ -286,7 +286,7 @@ namespace AZ
 
                         const auto compileGroupsForIntervalLambda = [srgPool, interval]()
                         {
-                            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler : compileGroupsForIntervalLambda");
+                            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
                             srgPool->CompileGroupsForInterval(interval);
                         };
 
@@ -323,7 +323,7 @@ namespace AZ
         void FrameScheduler::BuildRayTracingShaderTables()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: BuildRayTracingShaderTables");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: BuildRayTracingShaderTables");
 
             for (auto rayTracingShaderTable : m_rayTracingShaderTablesToBuild)
             {
@@ -342,7 +342,7 @@ namespace AZ
         ResultCode FrameScheduler::BeginFrame()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: BeginFrame");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: BeginFrame");
 
             if (!ValidateIsInitialized())
             {
@@ -377,7 +377,7 @@ namespace AZ
         ResultCode FrameScheduler::EndFrame()
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: EndFrame");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: EndFrame");
 
             if (Validation::IsEnabled())
             {
@@ -404,7 +404,7 @@ namespace AZ
             m_scopeProducerLookup.clear();
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: EndFrame: OnFrameEnd");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: EndFrame: OnFrameEnd");
                 FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
             }
 
@@ -432,7 +432,7 @@ namespace AZ
         void FrameScheduler::ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: ExecuteGroupInternal");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: ExecuteGroupInternal");
 
             FrameGraphExecuteGroup* executeGroup = m_frameGraphExecuter->BeginGroup(groupIndex);
             const uint32_t contextCount = executeGroup->GetContextCount();
@@ -475,7 +475,7 @@ namespace AZ
         void FrameScheduler::Execute(JobPolicy overrideJobPolicy)
         {
             AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Execute");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameScheduler: Execute");
 
             const uint32_t groupCount = m_frameGraphExecuter->GetGroupCount();
             const JobPolicy platformJobPolicy = m_frameGraphExecuter->GetJobPolicy();

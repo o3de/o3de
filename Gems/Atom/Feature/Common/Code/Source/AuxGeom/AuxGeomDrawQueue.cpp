@@ -565,7 +565,7 @@ namespace AZ
 
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("AuxGeom", "AuxGeomDrawQueue: Commit");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(AuxGeom, "AuxGeomDrawQueue: Commit");
             // get a mutually exclusive lock and then switch to the next buffer, returning a pointer to the current buffer (before the switch)
 
             // grab the lock
@@ -585,7 +585,7 @@ namespace AZ
 
         void AuxGeomDrawQueue::ClearCurrentBufferData()
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("AuxGeom", "AuxGeomDrawQueue: ClearCurrentBufferData");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(AuxGeom, "AuxGeomDrawQueue: ClearCurrentBufferData");
             // no need for mutex here, this function is only called from a function holding a lock
             AuxGeomBufferData& data = m_buffers[m_currentBufferIndex];
 
@@ -721,7 +721,7 @@ namespace AZ
             int32_t viewProjOverrideIndex)
         {
             AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("AuxGeom", "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(AuxGeom, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
 
             AZ_Assert(indexCount >= verticesPerPrimitiveType && (indexCount % verticesPerPrimitiveType == 0),
                 "Index count must be at least %d and must be a multiple of %d",

@@ -128,7 +128,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsInFrame())
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "Device: EndFrame");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "Device: EndFrame");
                 EndFrameInternal();
                 m_isInFrame = false;
                 return ResultCode::Success;
@@ -150,7 +150,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "Device: CompileMemoryStatistics");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "Device: CompileMemoryStatistics");
                 MemoryStatisticsBuilder builder;
                 builder.Begin(memoryStatistics, reportFlags);
                 CompileMemoryStatisticsInternal(builder);

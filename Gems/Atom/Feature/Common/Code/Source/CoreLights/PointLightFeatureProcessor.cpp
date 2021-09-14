@@ -119,7 +119,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PointLightFeatureProcessor: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "PointLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -131,7 +131,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Render(const PointLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "PointLightFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "PointLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

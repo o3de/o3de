@@ -83,7 +83,7 @@ namespace AZ
 
         void CommandQueue::FlushCommands()
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueue: FlushCommands");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "CommandQueue: FlushCommands");
             while (!m_isWorkQueueEmpty && !m_isQuitting)
             {
                 AZStd::this_thread::yield();

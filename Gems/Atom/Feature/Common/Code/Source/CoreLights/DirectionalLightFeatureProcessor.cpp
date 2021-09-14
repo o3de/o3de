@@ -196,7 +196,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket&)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "DirectionalLightFeatureProcessor: Simulate");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "DirectionalLightFeatureProcessor: Simulate");
 
             if (m_shadowingLightHandle.IsValid())
             {
@@ -293,7 +293,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "DirectionalLightFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "DirectionalLightFeatureProcessor: Render");
 
             if (m_shadowingLightHandle.IsValid())
             {
@@ -1255,7 +1255,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION(DirectionalLightFeatureProcessor, "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
 
             if (handle != m_shadowingLightHandle)
             {
