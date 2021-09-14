@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
+#include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 
 namespace AZ
@@ -37,10 +38,7 @@ namespace AZ
 
 namespace EMStudio
 {
-    //!
-    //!
     class AnimViewportRenderer
-        : public AZ::TickBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
@@ -49,8 +47,6 @@ namespace EMStudio
         ~AnimViewportRenderer();
 
     private:
-        // AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         void Reset();
         void SetLightingPreset(const AZ::Render::LightingPreset* preset);
@@ -67,13 +63,12 @@ namespace EMStudio
 
         AZ::Entity* m_postProcessEntity = nullptr;
         AZ::Entity* m_iblEntity = nullptr;
-
         AZ::Entity* m_cameraEntity = nullptr;
         AZ::Component* m_cameraComponent = nullptr;
-
         AZ::Entity* m_modelEntity = nullptr;
         AZ::Data::AssetId m_modelAssetId;
-        
         AZ::Entity* m_gridEntity = nullptr;
+
+        AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }

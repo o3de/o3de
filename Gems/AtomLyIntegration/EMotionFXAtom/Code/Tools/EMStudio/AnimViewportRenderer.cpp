@@ -53,7 +53,7 @@ namespace EMStudio
         m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
 
         // Create and register a scene with all available feature processors
-        // TODO: We don't need every procesors.
+        // TODO: We don't need every procesors, only register the processor we are going to use.
         AZ::RPI::SceneDescriptor sceneDesc;
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
@@ -69,21 +69,8 @@ namespace EMStudio
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);
 
-        // As part of our initialization we need to create the BRDF texture generation pipeline
-        /*
-        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-        pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = "BRDFTexturePipeline";
-        pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-        pipelineDesc.m_executeOnce = true;
-
-        AZ::RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-        m_scene->AddRenderPipeline(brdfTexturePipeline);
-        */
-
         // Currently the scene has to be activated after render pipeline was added so some feature processors (i.e. imgui) can be
-        // initialized properly
-        // with pipeline's pass information.
+        // initialized properly with pipeline's pass information.
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
 
@@ -110,23 +97,6 @@ namespace EMStudio
 
         // Get the FeatureProcessors
         m_meshFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::MeshFeatureProcessorInterface>();
-        // Helper function to load meshes
-        /*
-        const auto LoadMesh = [this](const char* modelPath) -> AZ::Render::MeshFeatureProcessorInterface::MeshHandle
-        {
-            AZ_Assert(m_meshFeatureProcessor, "Cannot find mesh feature processor on scene");
-
-            auto meshAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(modelPath, AZ::RPI::AssetUtils::TraceLevel::Assert);
-            auto materialAsset =
-                AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("materials/defaultpbr.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Assert);
-            auto material = AZ::RPI::Material::FindOrCreate(materialAsset);
-            AZ::Render::MeshFeatureProcessorInterface::MeshHandle meshHandle =
-                m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ meshAsset }, material);
-
-            return meshHandle;
-        };
-        LoadMesh("objects/shaderball_simple.azmodel");
-        */
 
         // Configure tone mapper
         AzFramework::EntityContextRequestBus::EventResult(
@@ -158,13 +128,14 @@ namespace EMStudio
         m_iblEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
         m_iblEntity->Activate();
 
-        // Temp: Load light preset
+        // Load light preset
         AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             "lightingpresets/default.lightingpreset.azasset", AZ::RPI::AssetUtils::TraceLevel::Warning);
         const AZ::Render::LightingPreset* preset = lightingPresetAsset->GetDataAs<AZ::Render::LightingPreset>();
         SetLightingPreset(preset);
 
-        // Create model
+        // Create a static model.
+        // TODO: Replace this with actor component.
         AzFramework::EntityContextRequestBus::EventResult(
             m_modelEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportModel");
         AZ_Assert(m_modelEntity != nullptr, "Failed to create model entity.");
@@ -191,17 +162,39 @@ namespace EMStudio
         m_gridEntity->Activate();
 
         Reset();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     AnimViewportRenderer::~AnimViewportRenderer()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-    }
+        const AzFramework::EntityContextId entityContextId = m_entityContext->GetContextId();
+        // Destory all the entities we created.
+        auto DestoryEntity = [](AZ::Entity* entity, AzFramework::EntityContextId contextId)
+        {
+            AzFramework::EntityContextRequestBus::Event(contextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, entity);
+            entity = nullptr;
+        };
+        DestoryEntity(m_iblEntity, entityContextId);
+        DestoryEntity(m_postProcessEntity, entityContextId);
+        DestoryEntity(m_cameraEntity, entityContextId);
+        DestoryEntity(m_modelEntity, entityContextId);
+        DestoryEntity(m_gridEntity, entityContextId);
+        m_entityContext->DestroyContext();
 
-    void AnimViewportRenderer::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        // m_renderPipeline->AddToRenderTickOnce();
+        for (AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle& handle : m_lightHandles)
+        {
+            m_directionalLightFeatureProcessor->ReleaseLight(handle);
+        }
+        m_lightHandles.clear();
+
+        m_frameworkScene->UnsetSubsystem(m_scene);
+
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "AtomViewportRenderer was unable to get the scene system during destruction.");
+        bool removeSuccess = sceneSystem->RemoveScene("AnimViewport");
+        AZ_Assert(removeSuccess, "AtomViewportRenderer should be removed.");
+
+        AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
+        m_scene = nullptr;
     }
 
     void AnimViewportRenderer::Reset()
@@ -217,9 +210,6 @@ namespace EMStudio
 
         // Reset model
         AZ::Transform modelTransform = AZ::Transform::CreateIdentity();
-        modelTransform.SetTranslation(AZ::Vector3(1.0f, 2.0f, 0.5f));
-        modelTransform.SetUniformScale(3.3f);
-        // modelTransform.SetUniformScale(50.0f);
         AZ::TransformBus::Event(m_modelEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, modelTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
@@ -252,7 +242,7 @@ namespace EMStudio
     {
         if (!preset)
         {
-            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
+            AZ_Warning("AnimViewportRenderer", false, "Attempting to set invalid lighting preset.");
             return;
         }
 
@@ -269,11 +259,8 @@ namespace EMStudio
         Camera::CameraRequestBus::EventResult(
             cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
 
-        bool enableAlternateSkybox = false;
-
-        AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> lightHandles;
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
-            cameraConfig, lightHandles, nullptr, AZ::RPI::MaterialPropertyIndex::Null, enableAlternateSkybox);
+            cameraConfig, m_lightHandles, nullptr, AZ::RPI::MaterialPropertyIndex::Null, false);
     }
 } // namespace EMStudio
