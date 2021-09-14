@@ -7,25 +7,23 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt: off
 class Tests:
-    camera_creation = ("camera_entity Entity successfully created", "camera_entity Entity failed to be created")
-    camera_component_added = ("Camera component was added to entity", "Camera component failed to be added to entity")
-    camera_component_check = ("Entity has a Camera component", "Entity failed to find Camera component")
-    creation_undo = ("UNDO Entity creation success", "UNDO Entity creation failed")
-    creation_redo = ("REDO Entity creation success", "REDO Entity creation failed")
-    global_skylight_creation = (
-        "Global Skylight (IBL) Entity successfully created", "Global Skylight (IBL) Entity failed to be created")
-    global_skylight_component = (
-        "Entity has a Global Skylight (IBL) component", "Entity failed to find Global Skylight (IBL) component")
-    diffuse_image_set = ("Entity has the Diffuse Image set", "Entity did not the Diffuse Image set")
-    specular_image_set = ("Entity has the Specular Image set", "Entity did not the Specular Image set")
-    enter_game_mode = ("Entered game mode", "Failed to enter game mode")
-    exit_game_mode = ("Exited game mode", "Couldn't exit game mode")
-    is_visible = ("Entity is visible", "Entity was not visible")
-    is_hidden = ("Entity is hidden", "Entity was not hidden")
-    entity_deleted = ("Entity deleted", "Entity was not deleted")
-    deletion_undo = ("UNDO deletion success", "UNDO deletion failed")
-    deletion_redo = ("REDO deletion success", "REDO deletion failed")
-    no_error_occurred = ("No errors detected", "Errors were detected")
+    camera_creation =             ("Camera Entity successfully created",                  "Camera Entity failed to be created")
+    camera_component_added =      ("Camera component was added to entity",                "Camera component failed to be added to entity")
+    camera_component_check =      ("Entity has a Camera component",                       "Entity failed to find Camera component")
+    creation_undo =               ("UNDO Entity creation success",                        "UNDO Entity creation failed")
+    creation_redo =               ("REDO Entity creation success",                        "REDO Entity creation failed")
+    global_skylight_creation =    ("Global Skylight (IBL) Entity successfully created",   "Global Skylight (IBL) Entity failed to be created")
+    global_skylight_component =   ("Entity has a Global Skylight (IBL) component",        "Entity failed to find Global Skylight (IBL) component")
+    diffuse_image_set =           ("Entity has the Diffuse Image set",                    "Entity did not the Diffuse Image set")
+    specular_image_set =          ("Entity has the Specular Image set",                   "Entity did not the Specular Image set")
+    enter_game_mode =             ("Entered game mode",                                   "Failed to enter game mode")
+    exit_game_mode =              ("Exited game mode",                                    "Couldn't exit game mode")
+    is_visible =                  ("Entity is visible",                                   "Entity was not visible")
+    is_hidden =                   ("Entity is hidden",                                    "Entity was not hidden")
+    entity_deleted =              ("Entity deleted",                                      "Entity was not deleted")
+    deletion_undo =               ("UNDO deletion success",                               "UNDO deletion failed")
+    deletion_redo =               ("REDO deletion success",                               "REDO deletion failed")
+    no_error_occurred =           ("No errors detected",                                  "Errors were detected")
 # fmt: on
 
 
@@ -33,19 +31,22 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
     """
     Summary:
     Tests the Global Skylight (IBL) component can be added to an entity and has the expected functionality.
-    First it will setup the test by deleting existing entities. After that it follows the test steps for pass/fail.
+
+    Test setup:
+    - Wait for Editor idle loop.
+    - Open the "Base" level.
 
     Expected Behavior:
     The component can be added, used in game mode, hidden/shown, deleted, and has accurate required components.
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of entity with Global Skylight (IBL) component.
+    1) Create a Global Skylight (IBL) entity with no components.
     2) UNDO the entity creation.
     3) REDO the entity creation.
     4) Enter/Exit game mode.
-    5) Hide test.
-    6) Visible test.
+    5) Test IsHidden.
+    6) Test IsVisible.
     7) Add Post FX Layer component.
     8) Add Camera component
     9) Delete Global Skylight (IBL) entity.
@@ -79,7 +80,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
         all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
 
-        # 1. Creation of entity with Global Skylight (IBL) component.
+        # 1. Create a Global Skylight (IBL) entity with no components.
         global_skylight = "Global Skylight (IBL)"
         global_skylight_entity = hydra.Entity(f"{global_skylight}")
         global_skylight_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [global_skylight])
@@ -100,12 +101,12 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 5. Hide test.
+        # 5. Test IsHidden.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", global_skylight_entity.id, False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', global_skylight_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 6. Visible test.
+        # 6. Test IsVisible.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", global_skylight_entity.id, True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', global_skylight_entity.id)
         Report.result(Tests.is_visible, is_visible is True)

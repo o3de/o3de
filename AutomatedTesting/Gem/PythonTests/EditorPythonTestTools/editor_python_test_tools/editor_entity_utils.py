@@ -85,7 +85,7 @@ class EditorComponent:
         )
         assert (
             outcome.IsSuccess()
-        ), f"Failure: Could not set value '{self.get_component_name()}' : '{component_property_path}'"
+        ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
 
     def is_enabled(self):
         """

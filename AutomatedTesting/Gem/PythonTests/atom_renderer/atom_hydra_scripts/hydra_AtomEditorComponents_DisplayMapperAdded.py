@@ -39,13 +39,13 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of Display Mapper entity.
+    1) Create a Display Mapper entity with no components.
     2) Add Display Mapper component to Display Mapper entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
     5) Enter/Exit game mode.
-    6) Hide test.
-    7) Visible test.
+    6) Test IsHidden.
+    7) Test IsVisible.
     8) Delete Display Mapper entity.
     9) UNDO deletion.
     10) REDO deletion.
@@ -69,7 +69,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         helper.open_level("Physics", "Base")
 
         # Test steps begin.
-        # 1. Creation of Display Mapper entity.
+        # 1. Create a Display Mapper entity with no components.
         display_mapper = "Display Mapper"
         display_mapper_entity = EditorEntity.create_editor_entity_at(
             math.Vector3(512.0, 512.0, 34.0), f"{display_mapper}")
@@ -96,12 +96,12 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Hide test.
+        # 6. Test IsHidden.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", display_mapper_entity.id, False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', display_mapper_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 7. Visible test.
+        # 7. Test IsVisible.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", display_mapper_entity.id, True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', display_mapper_entity.id)
         Report.result(Tests.is_visible, is_visible is True)

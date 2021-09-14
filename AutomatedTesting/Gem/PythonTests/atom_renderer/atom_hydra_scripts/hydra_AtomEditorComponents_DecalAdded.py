@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt: off
 class Tests:
-    camera_creation =           ("camera_entity Entity successfully created",    "camera_entity Entity failed to be created")
+    camera_creation =           ("Camera Entity successfully created",           "Camera Entity failed to be created")
     camera_component_added =    ("Camera component was added to entity",         "Camera component failed to be added to entity")
     camera_component_check =    ("Entity has a Camera component",                "Entity failed to find Camera component")
     creation_undo =             ("UNDO Entity creation success",                 "UNDO Entity creation failed")
@@ -40,13 +40,13 @@ def AtomEditorComponents_Decal_AddedToEntity():
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of Decal entity.
+    1) Create a Decal entity with no components.
     2) Add Decal component to Decal entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
     5) Enter/Exit game mode.
-    6) Hide test.
-    7) Visible test.
+    6) Test IsHidden.
+    7) Test IsVisible.
     8) Set Material property on Decal component.
     9) Delete Decal entity.
     10) UNDO deletion.
@@ -73,14 +73,14 @@ def AtomEditorComponents_Decal_AddedToEntity():
         helper.open_level("Physics", "Base")
 
         # Test steps begin.
-        # 1. Creation of Decal entity.
-        decal = "Decal (Atom)"
-        decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), f"{decal}")
+        # 1. Create a Decal entity with no components.
+        decal_name = "Decal (Atom)"
+        decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), f"{decal_name}")
         Report.critical_result(Tests.decal_creation, decal_entity.exists())
 
         # 2. Add Decal component to Decal entity.
-        decal_component = decal_entity.add_component(decal)
-        Report.critical_result(Tests.decal_component, decal_entity.has_component(decal))
+        decal_component = decal_entity.add_component(decal_name)
+        Report.critical_result(Tests.decal_component, decal_entity.has_component(decal_name))
 
         # 3. UNDO the entity creation and component addition.
         # Requires 3 UNDO calls to remove the Entity completely.
@@ -101,24 +101,24 @@ def AtomEditorComponents_Decal_AddedToEntity():
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Hide test.
+        # 6. Test IsHidden.
         decal_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', decal_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 7. Visible test.
+        # 7. Test IsVisible.
         decal_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', decal_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
         # 8. Set Material property on Decal component.
         material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
-        material_property_path = "Controller|Configuration|Material"
-        material_asset = asset.AssetCatalogRequestBus(
+        decal_material_property_path = "Controller|Configuration|Material"
+        material_asset_id = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
-        decal_component.set_component_property_value(material_property_path, material_asset)
-        get_material_property = decal_component.get_component_property_value(material_property_path)
-        Report.result(Tests.material_component_set, get_material_property == material_asset)
+        decal_component.set_component_property_value(decal_material_property_path, material_asset_id)
+        get_material_property = decal_component.get_component_property_value(decal_material_property_path)
+        Report.result(Tests.material_component_set, get_material_property == material_asset_id)
 
         # 9. Delete Decal entity.
         decal_entity.delete()

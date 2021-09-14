@@ -40,16 +40,16 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of Directional Light entity.
+    1) Create a Directional Light entity with no components.
     2) Add Directional Light component to Directional Light entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
     5) Enter/Exit game mode.
-    6) Hide test.
-    7) Visible test.
+    6) Test IsHidden.
+    7) Test IsVisible.
     8) Add Camera entity.
     9) Add Camera component to Camera entity
-    10) Set the Shadow camera for the Directional Light component to the camera entity.
+    10) Set the Directional Light component property Shadow|Camera to the Camera entity.
     11) Delete Directional Light entity.
     12) UNDO deletion.
     13) REDO deletion.
@@ -73,7 +73,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         helper.open_level("Physics", "Base")
 
         # Test steps begin.
-        # 1. Creation of Directional Light entity.
+        # 1. Create a Directional Light entity with no components.
         directional_light = "Directional Light"
         directional_light_entity = EditorEntity.create_editor_entity_at(
             math.Vector3(512.0, 512.0, 34.0), f"{directional_light}")
@@ -101,12 +101,12 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Hide test.
+        # 6. Test IsHidden.
         directional_light_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', directional_light_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 7. Visible test.
+        # 7. Test IsVisible.
         directional_light_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', directional_light_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
@@ -120,9 +120,8 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         camera_entity.add_component(camera)
         Report.result(Tests.camera_component_added, camera_entity.has_component(camera))
 
-        # 10. Set the Shadow camera for the Directional Light component to the Camera entity.
+        # 10. Set the Directional Light component property Shadow|Camera to the Camera entity.
         shadow_camera_property_path = "Controller|Configuration|Shadow|Camera"
-        directional_light_component.get_property_tree()
         directional_light_component.set_component_property_value(shadow_camera_property_path, camera_entity.id)
         shadow_camera_set = directional_light_component.get_component_property_value(shadow_camera_property_path)
         Report.result(Tests.shadow_camera_check, camera == shadow_camera_set)

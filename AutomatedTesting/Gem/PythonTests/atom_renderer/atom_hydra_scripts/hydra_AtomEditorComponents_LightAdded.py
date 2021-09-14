@@ -7,21 +7,21 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt: off
 class Tests:
-    camera_creation = ("camera_entity Entity successfully created", "camera_entity Entity failed to be created")
-    camera_component_added = ("Camera component was added to entity", "Camera component failed to be added to entity")
-    camera_component_check = ("Entity has a Camera component", "Entity failed to find Camera component")
-    creation_undo = ("UNDO Entity creation success", "UNDO Entity creation failed")
-    creation_redo = ("REDO Entity creation success", "REDO Entity creation failed")
-    light_creation = ("Light Entity successfully created", "Light Entity failed to be created")
-    light_component = ("Entity has a Light component", "Entity failed to find Light component")
-    enter_game_mode = ("Entered game mode", "Failed to enter game mode")
-    exit_game_mode = ("Exited game mode", "Couldn't exit game mode")
-    is_visible = ("Entity is visible", "Entity was not visible")
-    is_hidden = ("Entity is hidden", "Entity was not hidden")
-    entity_deleted = ("Entity deleted", "Entity was not deleted")
-    deletion_undo = ("UNDO deletion success", "UNDO deletion failed")
-    deletion_redo = ("REDO deletion success", "REDO deletion failed")
-    no_error_occurred = ("No errors detected", "Errors were detected")
+    camera_creation =          ("Camera Entity successfully created",   "Camera Entity failed to be created")
+    camera_component_added =   ("Camera component was added to entity", "Camera component failed to be added to entity")
+    camera_component_check =   ("Entity has a Camera component",        "Entity failed to find Camera component")
+    creation_undo =            ("UNDO Entity creation success",         "UNDO Entity creation failed")
+    creation_redo =            ("REDO Entity creation success",         "REDO Entity creation failed")
+    light_creation =           ("Light Entity successfully created",    "Light Entity failed to be created")
+    light_component =          ("Entity has a Light component",         "Entity failed to find Light component")
+    enter_game_mode =          ("Entered game mode",                    "Failed to enter game mode")
+    exit_game_mode =           ("Exited game mode",                     "Couldn't exit game mode")
+    is_visible =               ("Entity is visible",                    "Entity was not visible")
+    is_hidden =                ("Entity is hidden",                     "Entity was not hidden")
+    entity_deleted =           ("Entity deleted",                       "Entity was not deleted")
+    deletion_undo =            ("UNDO deletion success",                "UNDO deletion failed")
+    deletion_redo =            ("REDO deletion success",                "REDO deletion failed")
+    no_error_occurred =        ("No errors detected",                   "Errors were detected")
 # fmt: on
 
 
@@ -29,19 +29,22 @@ def AtomEditorComponents_Light_AddedToEntity():
     """
     Summary:
     Tests the Light component can be added to an entity and has the expected functionality.
-    First it will setup the test by deleting existing entities. After that it follows the test steps for pass/fail.
+
+    Test setup:
+    - Wait for Editor idle loop.
+    - Open the "Base" level.
 
     Expected Behavior:
     The component can be added, used in game mode, hidden/shown, deleted, and has accurate required components.
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of entity with Light component.
+    1) Create a Light entity with no components.
     2) UNDO the entity creation.
     3) REDO the entity creation.
     4) Enter/Exit game mode.
-    5) Hide test.
-    6) Visible test.
+    5) Test IsHidden.
+    6) Test IsVisible.
     7) Delete Light entity.
     8) UNDO deletion.
     9) REDO deletion.
@@ -77,7 +80,7 @@ def AtomEditorComponents_Light_AddedToEntity():
         camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
         Report.result(Tests.camera_creation, camera_entity.id.IsValid())
 
-        # 1. Creation of entity with Light component.
+        # 1. Create a Light entity with no components.
         light = "Light"
         light_entity = hydra.Entity(f"{light}")
         light_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [light])
@@ -98,12 +101,12 @@ def AtomEditorComponents_Light_AddedToEntity():
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 5. Hide test.
+        # 5. Test IsHidden.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", light_entity.id, False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', light_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 6. Visible test.
+        # 6. Test IsVisible.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", light_entity.id, True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', light_entity.id)
         Report.result(Tests.is_visible, is_visible is True)

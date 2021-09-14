@@ -7,24 +7,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt: off
 class Tests:
-    camera_creation = ("camera_entity Entity successfully created", "camera_entity Entity failed to be created")
-    camera_component_added = ("Camera component was added to entity", "Camera component failed to be added to entity")
-    camera_component_check = ("Entity has a Camera component", "Entity failed to find Camera component")
-    creation_undo = ("UNDO Entity creation success", "UNDO Entity creation failed")
-    creation_redo = ("REDO Entity creation success", "REDO Entity creation failed")
-    exposure_control_creation = (
-        "ExposureControl Entity successfully created", "ExposureControl Entity failed to be created")
-    exposure_control_component = (
-        "Entity has a Exposure Control component", "Entity failed to find Exposure Control component")
-    post_fx_component = ("Entity has a Post FX Layer component", "Entity did not have a Post FX Layer component")
-    enter_game_mode = ("Entered game mode", "Failed to enter game mode")
-    exit_game_mode = ("Exited game mode", "Couldn't exit game mode")
-    is_visible = ("Entity is visible", "Entity was not visible")
-    is_hidden = ("Entity is hidden", "Entity was not hidden")
-    entity_deleted = ("Entity deleted", "Entity was not deleted")
-    deletion_undo = ("UNDO deletion success", "UNDO deletion failed")
-    deletion_redo = ("REDO deletion success", "REDO deletion failed")
-    no_error_occurred = ("No errors detected", "Errors were detected")
+    camera_creation =              ("Camera Entity successfully created",          "Camera Entity failed to be created")
+    camera_component_added =       ("Camera component was added to entity",        "Camera component failed to be added to entity")
+    camera_component_check =       ("Entity has a Camera component",               "Entity failed to find Camera component")
+    creation_undo =                ("UNDO Entity creation success",                "UNDO Entity creation failed")
+    creation_redo =                ("REDO Entity creation success",                "REDO Entity creation failed")
+    exposure_control_creation =    ("ExposureControl Entity successfully created", "ExposureControl Entity failed to be created")
+    exposure_control_component =   ("Entity has a Exposure Control component",     "Entity failed to find Exposure Control component")
+    post_fx_component =            ("Entity has a Post FX Layer component",        "Entity did not have a Post FX Layer component")
+    enter_game_mode =              ("Entered game mode",                           "Failed to enter game mode")
+    exit_game_mode =               ("Exited game mode",                            "Couldn't exit game mode")
+    is_visible =                   ("Entity is visible",                           "Entity was not visible")
+    is_hidden =                    ("Entity is hidden",                            "Entity was not hidden")
+    entity_deleted =               ("Entity deleted",                              "Entity was not deleted")
+    deletion_undo =                ("UNDO deletion success",                       "UNDO deletion failed")
+    deletion_redo =                ("REDO deletion success",                       "REDO deletion failed")
+    no_error_occurred =            ("No errors detected",                          "Errors were detected")
 # fmt: on
 
 
@@ -32,24 +30,28 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
     """
     Summary:
     Tests the Exposure Control component can be added to an entity and has the expected functionality.
-    First it will setup the test by deleting existing entities. After that it follows the test steps for pass/fail.
+
+    Test setup:
+    - Wait for Editor idle loop.
+    - Open the "Base" level.
 
     Expected Behavior:
     The component can be added, used in game mode, hidden/shown, deleted, and has accurate required components.
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Creation of entity with Exposure Control component.
-    2) UNDO the entity creation.
-    3) REDO the entity creation.
-    4) Enter/Exit game mode.
-    5) Hide test.
-    6) Visible test.
-    7) Add Post FX Layer component.
-    8) Delete Exposure Control entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    1) Create an Exposure Control entity with no components.
+    2) Add Exposure Control component to Exposure Control entity.
+    3) UNDO the entity creation and component addition.
+    4) REDO the entity creation and component addition.
+    5) Enter/Exit game mode.
+    6) Test IsHidden.
+    7) Test IsVisible.
+    8) Add Post FX Layer component.
+    9) Delete Exposure Control entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors.
 
     :return: None
     """
@@ -70,56 +72,65 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         helper.open_level("Physics", "Base")
 
         # Test steps begin.
-        # 1. Creation of Exposure Control entity.
+        # 1. Creation of Exposure Control entity with no components.
         exposure_control = "Exposure Control"
         exposure_control_entity = EditorEntity.create_editor_entity_at(
             math.Vector3(512.0, 512.0, 34.0), f"{exposure_control}")
-        Report.result(Tests.exposure_control_creation, exposure_control_entity.exists())
-        has_component = hydra.has_components(exposure_control_entity.id, [exposure_control])
-        Report.critical_result(Tests.exposure_control_component, has_component)
+        Report.critical_result(Tests.exposure_control_creation, exposure_control_entity.exists())
 
-        # 2. UNDO the entity creation.
-        general.undo()
-        Report.result(Tests.creation_undo, len(hydra.find_entity_by_name(exposure_control_entity)) == 0)
+        # 2. Add Exposure Control component to Exposure Control entity.
+        exposure_control_entity.add_component(exposure_control)
+        Report.critical_result(
+            Tests.exposure_control_component, exposure_control_entity.has_component(exposure_control))
 
-        # 3. REDO the entity creation.
-        general.redo()
-        Report.result(Tests.creation_redo, len(hydra.find_entity_by_name(exposure_control_entity)) == 1)
+        # 3. UNDO the entity creation and component addition.
+        # Requires 3 UNDO calls to remove the Entity completely.
+        for x in range(3):
+            general.undo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.creation_undo, not exposure_control_entity.exists())
 
-        # 4. Enter/Exit game mode.
+        # 4. REDO the entity creation and component addition.
+        # Requires 3 REDO calls to match the previous 3 UNDO calls.
+        for x in range(3):
+            general.redo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.creation_redo, exposure_control_entity.exists())
+
+        # 5. Enter/Exit game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 5. Hide test.
+        # 6. Test IsHidden.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", exposure_control_entity.id, False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', exposure_control_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 6. Visible test.
+        # 7. Test IsVisible.
         editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", exposure_control_entity.id, True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', exposure_control_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
-        # 7. Add Post FX Layer component.
+        # 8. Add Post FX Layer component.
         exposure_control_entity.add_component("PostFX Layer")
         post_fx_component_added = editor.EditorComponentAPIBus(
             bus.Broadcast, "IsComponentEnabled", exposure_control_entity.components[0])
         Report.result(Tests.post_fx_component, post_fx_component_added)
 
-        # 8. Delete ExposureControl entity.
+        # 9. Delete ExposureControl entity.
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", exposure_control_entity.id)
         Report.result(Tests.entity_deleted, len(hydra.find_entity_by_name(exposure_control_entity)) == 0)
 
-        # 9. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         Report.result(Tests.deletion_undo, len(hydra.find_entity_by_name(exposure_control_entity)) == 1)
 
-        # 10. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
         Report.result(Tests.deletion_redo, len(hydra.find_entity_by_name(exposure_control_entity)) == 0)
 
-        # 11. Look for errors.
+        # 12. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
         Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
 
