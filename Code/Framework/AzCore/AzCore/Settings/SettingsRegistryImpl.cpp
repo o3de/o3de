@@ -1032,6 +1032,11 @@ namespace AZ
 
     bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations)
     {
+        static constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + PatchExtension;
+        static constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + Extension;
+        static constexpr AZ::IO::PathView PatchExtensionView(PatchExtensionWithDot);
+        static constexpr AZ::IO::PathView ExtensionView(ExtensionWithDot);
+
         if (filename.empty())
         {
             AZ_Error("Settings Registry", false, "Settings file without name found");
@@ -1051,10 +1056,6 @@ namespace AZ
         // If token is invalid, then the filename has no <dot> characters and therefore no extension
         if (AZ::IO::PathView fileExtension = filePath.Extension(); !fileExtension.empty())
         {
-            constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + PatchExtension;
-            constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + Extension;
-            constexpr AZ::IO::PathView PatchExtensionView(PatchExtensionWithDot);
-            constexpr AZ::IO::PathView ExtensionView(ExtensionWithDot);
             if (fileExtension == PatchExtensionView)
             {
                 output.m_isPatch = true;
@@ -1110,7 +1111,7 @@ namespace AZ
         }
         else
         {
-            AZ_Error("Settings Registry", false, R"(Found relative path to settings file "%s" is too long.)", filename);
+            AZ_Error("Settings Registry", false, R"(Found relative path to settings file "%.*s" is too long.)", AZ_STRING_ARG(filename));
             return false;
         }
     }
