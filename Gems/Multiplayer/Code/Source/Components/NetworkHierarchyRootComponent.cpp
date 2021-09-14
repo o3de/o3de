@@ -124,6 +124,16 @@ namespace Multiplayer
         return GetEntity();
     }
 
+    void NetworkHierarchyRootComponent::BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_networkHierarchyChangedEvent);
+    }
+
+    void NetworkHierarchyRootComponent::BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler)
+    {
+        handler.Connect(m_networkHierarchyLeaveEvent);
+    }
+
     void NetworkHierarchyRootComponent::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
     {
         const AZ::EntityId entityBusId = *AZ::TransformNotificationBus::GetCurrentBusId();
@@ -168,6 +178,8 @@ namespace Multiplayer
 
         uint32_t currentEntityCount = aznumeric_cast<uint32_t>(m_hierarchicalEntities.size());
         RecursiveAttachHierarchicalEntities(GetEntityId(), currentEntityCount);
+
+        m_networkHierarchyChangedEvent.Signal(GetEntityId());
     }
 
     bool NetworkHierarchyRootComponent::RecursiveAttachHierarchicalEntities(AZ::EntityId underEntity, uint32_t& currentEntityCount)
@@ -255,6 +267,8 @@ namespace Multiplayer
                 }
             }
         }
+
+        m_networkHierarchyChangedEvent.Signal(GetEntityId());
     }
 
     void NetworkHierarchyRootComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot)

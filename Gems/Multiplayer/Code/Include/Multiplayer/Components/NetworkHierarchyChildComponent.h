@@ -52,6 +52,8 @@ namespace Multiplayer
         bool IsHierarchicalRoot() const override { return false; }
         AZ::Entity* GetHierarchicalRoot() const override;
         AZStd::vector<AZ::Entity*> GetHierarchicalEntities() const override;
+        void BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler) override;
+        void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
 
     protected:
@@ -63,5 +65,8 @@ namespace Multiplayer
 
         AZ::Event<NetEntityId>::Handler m_hierarchyRootNetIdChanged;
         void OnHierarchyRootNetIdChanged(NetEntityId rootNetId);
+
+        NetworkHierarchyChangedEvent m_networkHierarchyChangedEvent;
+        NetworkHierarchyLeaveEvent m_networkHierarchyLeaveEvent;
     };
 }

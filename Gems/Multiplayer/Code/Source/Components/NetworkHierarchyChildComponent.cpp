@@ -98,6 +98,16 @@ namespace Multiplayer
         return {};
     }
 
+    void NetworkHierarchyChildComponent::BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_networkHierarchyChangedEvent);
+    }
+
+    void NetworkHierarchyChildComponent::BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler)
+    {
+        handler.Connect(m_networkHierarchyLeaveEvent);
+    }
+
     void NetworkHierarchyChildComponent::SetTopLevelHierarchyRootComponent(NetworkHierarchyRootComponent* hierarchyRoot)
     {
         m_hierarchyRootComponent = hierarchyRoot;
@@ -109,12 +119,13 @@ namespace Multiplayer
                 const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(hierarchyRoot->GetEntityId());
                 controller->SetHierarchyRoot(netRootId);
 
-                NetworkHierarchyNotificationBus::Event(GetEntityId(), &NetworkHierarchyNotificationBus::Events::OnNetworkHierarchyUpdated, hierarchyRoot->GetEntityId());
+                m_networkHierarchyChangedEvent.Signal(hierarchyRoot->GetEntityId());
             }
             else
             {
                 controller->SetHierarchyRoot(InvalidNetEntityId);
-                NetworkHierarchyNotificationBus::Event(GetEntityId(), &NetworkHierarchyNotificationBus::Events::OnNetworkHierarchyLeave);
+
+                m_networkHierarchyLeaveEvent.Signal();
             }
         }
     }
@@ -125,10 +136,12 @@ namespace Multiplayer
         if (rootHandle.Exists())
         {
             m_hierarchyRootComponent = rootHandle.FindComponent<NetworkHierarchyRootComponent>();
+            m_networkHierarchyChangedEvent.Signal(m_hierarchyRootComponent->GetEntityId());
         }
         else
         {
             m_hierarchyRootComponent = nullptr;
+            m_networkHierarchyLeaveEvent.Signal();
         }
     }
 }

@@ -35,6 +35,29 @@ namespace Multiplayer
     using namespace testing;
     using namespace ::UnitTest;
 
+    class NetworkHierarchyCallbacks
+    {
+    public:
+        virtual void OnNetworkHierarchyLeave() = 0;
+        virtual void OnNetworkHierarchyUpdated(const AZ::EntityId& hierarchyRootId) = 0;
+    };
+
+    class MockNetworkHierarchyCallbackHandler : public NetworkHierarchyCallbacks
+    {
+    public:
+        MockNetworkHierarchyCallbackHandler()
+            : m_leaveHandler([this]() { OnNetworkHierarchyLeave(); })
+            , m_changedHandler([this](const AZ::EntityId& rootId) { OnNetworkHierarchyUpdated(rootId); })
+        {
+        }
+
+        NetworkHierarchyLeaveEvent::Handler m_leaveHandler;
+        NetworkHierarchyChangedEvent::Handler m_changedHandler;
+
+        MOCK_METHOD0(OnNetworkHierarchyLeave, void());
+        MOCK_METHOD1(OnNetworkHierarchyUpdated, void(const AZ::EntityId&));
+    };
+
     class HierarchyTests
         : public AllocatorsFixture
     {
@@ -282,8 +305,9 @@ namespace Multiplayer
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
+            ReplicationRecord notifyRecord = currentRecord;
             entity.FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            // now the parent id is in the component
+            entity.FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
         template <typename Component>
@@ -306,8 +330,9 @@ namespace Multiplayer
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
+            ReplicationRecord notifyRecord = currentRecord;
             entity.FindComponent<Component>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            // now the parent id is in the component
+            entity.FindComponent<Component>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
         struct EntityInfo

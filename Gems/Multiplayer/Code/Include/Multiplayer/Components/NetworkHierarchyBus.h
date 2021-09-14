@@ -12,18 +12,8 @@
 
 namespace Multiplayer
 {
-    class NetworkHierarchyNotifications
-        : public AZ::ComponentBus
-    {
-    public:
-        //! Called when a hierarchy has been updated (a child added or removed, etc.)
-        virtual void OnNetworkHierarchyUpdated([[maybe_unused]] const AZ::EntityId& rootEntityId) {}
-
-        //! Called when an entity has left a hierarchy
-        virtual void OnNetworkHierarchyLeave() {}
-    };
-
-    typedef AZ::EBus<NetworkHierarchyNotifications> NetworkHierarchyNotificationBus;
+    using NetworkHierarchyChangedEvent = AZ::Event<const AZ::EntityId&>;
+    using NetworkHierarchyLeaveEvent = AZ::Event<>;
 
     class NetworkHierarchyRequests
         : public AZ::ComponentBus
@@ -40,6 +30,14 @@ namespace Multiplayer
 
         //! @return true if this entity is the top level root of a hierarchy
         virtual bool IsHierarchicalRoot() const = 0;
+
+        //! Binds the provided NetworkHierarchyChangedEvent handler to a Network Hierarchy component.
+        //! @param handler the handler to invoke when the entity's network hierarchy has been modified.
+        virtual void BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler) = 0;
+
+        //! Binds the provided NetworkHierarchyLeaveEvent handler to a Network Hierarchy component.
+        //! @param handler the handler to invoke when the entity left its network hierarchy.
+        virtual void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) = 0;
     };
 
     typedef AZ::EBus<NetworkHierarchyRequests> NetworkHierarchyRequestBus;

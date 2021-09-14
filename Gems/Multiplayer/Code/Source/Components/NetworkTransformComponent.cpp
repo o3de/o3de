@@ -97,15 +97,28 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnParentIdChangedEvent([[maybe_unused]] NetEntityId newParent)
     {
-        const ConstNetworkEntityHandle rootHandle = GetNetworkEntityManager()->GetEntity(newParent);
-        if (rootHandle.Exists())
+        if (newParent == InvalidNetEntityId)
         {
-            const AZ::EntityId parentEntityId = rootHandle.GetEntity()->GetId();
             if (AzFramework::TransformComponent* transformComponent = GetEntity()->FindComponent<AzFramework::TransformComponent>())
             {
-                if (transformComponent->GetParentId() != parentEntityId)
+                if (transformComponent->GetParentId() != AZ::EntityId())
                 {
-                    transformComponent->SetParent(parentEntityId);
+                    transformComponent->SetParent(AZ::EntityId());
+                }
+            }
+        }
+        else
+        {
+            const ConstNetworkEntityHandle rootHandle = GetNetworkEntityManager()->GetEntity(newParent);
+            if (rootHandle.Exists())
+            {
+                const AZ::EntityId parentEntityId = rootHandle.GetEntity()->GetId();
+                if (AzFramework::TransformComponent* transformComponent = GetEntity()->FindComponent<AzFramework::TransformComponent>())
+                {
+                    if (transformComponent->GetParentId() != parentEntityId)
+                    {
+                        transformComponent->SetParent(parentEntityId);
+                    }
                 }
             }
         }

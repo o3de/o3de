@@ -226,7 +226,6 @@ namespace Multiplayer
             ReplicationRecord notifyRecord = currentRecord;
 
             entity.FindComponent<NetworkHierarchyChildComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-
             entity.FindComponent<NetworkHierarchyChildComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
@@ -285,6 +284,30 @@ namespace Multiplayer
             m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
             nullptr
         );
+    }
+
+    TEST_F(ClientSimpleHierarchyTests, Client_Sends_NetworkHierarchy_Updated_Event_On_Child_Detached_On_Server)
+    {
+        MockNetworkHierarchyCallbackHandler mock;
+        EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_rootEntity->GetId()));
+
+        m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
+
+        // simulate server detaching a child entity
+        SetParentIdOnNetworkTransform(*m_childEntity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(*m_childEntity, InvalidNetEntityId);
+    }
+
+    TEST_F(ClientSimpleHierarchyTests, Client_Sends_NetworkHierarchy_Leave_Event_On_Child_Detached_On_Server)
+    {
+        MockNetworkHierarchyCallbackHandler mock;
+        EXPECT_CALL(mock, OnNetworkHierarchyLeave);
+
+        m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyLeaveEventHandler(mock.m_leaveHandler);
+
+        // simulate server detaching a child entity
+        SetParentIdOnNetworkTransform(*m_childEntity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(*m_childEntity, InvalidNetEntityId);
     }
 
     /*

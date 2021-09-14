@@ -32,8 +32,6 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
-AZ_CVAR(bool, bg_debugHierarchyActivation, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Helpful messages when debugging network hierarchy behavior");
-
 namespace Multiplayer
 {
     EntityReplicator::EntityReplicator
@@ -441,22 +439,22 @@ namespace Multiplayer
                     const AZ::Entity* parentEntity = parentHandle.GetEntity();
                     if (parentEntity && parentEntity->GetState() == AZ::Entity::State::Active)
                     {
-                        if (bg_debugHierarchyActivation)
-                        {
-                            AZLOG_DEBUG(
-                                "Entity %s asking for activation - granted",
-                                entity->GetName().c_str());
-                        }
+                        AZLOG
+                        (
+                            NET_HierarchyActivationInfo,
+                            "Hierchical entity %s asking for activation - granted",
+                            entity->GetName().c_str()
+                        );
                         return true;
                     }
 
-                    if (bg_debugHierarchyActivation)
-                    {
-                        AZLOG_DEBUG(
-                            "Entity %s asking for activation - waiting on the parent %u",
-                            entity->GetName().c_str(),
-                            aznumeric_cast<uint32_t>(parentId));
-                    }
+                    AZLOG
+                    (
+                        NET_HierarchyActivationInfo,
+                        "Hierchical entity %s asking for activation - waiting on the parent %u",
+                        entity->GetName().c_str(),
+                        aznumeric_cast<uint32_t>(parentId)
+                    );
                     return false;
                 }
             }
