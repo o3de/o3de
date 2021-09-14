@@ -23,10 +23,6 @@ namespace Physics
         {
         }
 
-        virtual void RefreshHeightfield()
-        {
-        }
-
     protected:
         ~HeightfieldProviderNotifications() = default;
     };
@@ -38,6 +34,7 @@ namespace Physics
     public:
         virtual AZ::Vector2 GetHeightfieldGridSpacing() = 0;
         virtual void GetHeights(AZStd::vector<int16_t>& heights) = 0;
+        virtual float GetHeightScale() = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;

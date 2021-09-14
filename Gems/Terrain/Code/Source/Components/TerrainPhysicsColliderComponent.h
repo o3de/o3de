@@ -63,9 +63,10 @@ namespace Terrain
         static void Reflect(AZ::ReflectContext* context);
 
         TerrainPhysicsColliderComponent(const TerrainPhysicsColliderConfig& configuration);
-        TerrainPhysicsColliderComponent() = default;
+        TerrainPhysicsColliderComponent();
         ~TerrainPhysicsColliderComponent() = default;
 
+    protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
@@ -83,10 +84,12 @@ namespace Terrain
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
         // HeightfieldProviderRequestsBus
-        AZ::Vector2 GetHeightfieldGridSpacing();
-        void GetHeights([[maybe_unused]] AZStd::vector<int16_t>& heights);
-
+        AZ::Vector2 GetHeightfieldGridSpacing() override;
+        void GetHeights([[maybe_unused]] AZStd::vector<int16_t>& heights) override;
+        float GetHeightScale() override;
     private:
         TerrainPhysicsColliderConfig m_configuration;
+
+        float m_heightScale;
     };
 }
