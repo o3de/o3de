@@ -27,6 +27,10 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        const float MIN_HEADER_RESIZE_PROPORTION = .25f;
+        const float MAX_HEADER_RESIZE_PROPORTION = .75f;
+        const float DEFAULT_HEADER_RESIZE_PROPORTION = .5f;
+
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QTableView(parent)
             , m_delegate(new EntryDelegate(this))
@@ -144,20 +148,18 @@ namespace AzToolsFramework
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
             horizontalHeader()->setStretchLastSection(true);
-            setColumnWidth(0, aznumeric_cast<int>(parentWidget()->width() * 0.5f));
-            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(parentWidget()->width() * 0.25f));
-            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(parentWidget()->width() * 0.75f));
+            UpdateSizeSlot(parentWidget()->width());
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
             horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
         void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
         {
-           // int parentWidth = parentWidget()->geometry().width();
-            setColumnWidth(0, aznumeric_cast<int>(newWidth * 0.5f));
-            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * 0.25f));
-            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * 0.75f));
+            setColumnWidth(0, aznumeric_cast<int>(newWidth * DEFAULT_HEADER_RESIZE_PROPORTION));
+            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MIN_HEADER_RESIZE_PROPORTION));
+            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MAX_HEADER_RESIZE_PROPORTION));
         }
+
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {
