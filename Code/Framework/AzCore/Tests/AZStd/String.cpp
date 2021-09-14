@@ -980,13 +980,6 @@ namespace UnitTest
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 10000");
     }
 
-    TEST_F(String, MaxSizeReturnsMoreThan512)
-    {
-        AZStd::wstring foo;
-        printf("Max size of AZStd::wstring is %zu\n", foo.max_size());
-        EXPECT_GT(foo.max_size(), 512);
-    }
-
     class Regex
         : public AllocatorsFixture
     {

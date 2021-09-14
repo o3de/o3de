@@ -138,9 +138,8 @@ BestFitExternalMapSchema::GetMaxAllocationSize() const
 
 auto BestFitExternalMapSchema::GetMaxContiguousAllocationSize() const -> size_type
 {
-    // The free chunk map is sorted from smalles chunk to largest
-    // So return the largest chunk
-    return !m_freeChunksMap.empty() ? m_freeChunksMap.rbegin()->first : 0;
+    // Return the maximum size of any single allocation
+    return AZ_CORE_MAX_ALLOCATOR_SIZE;
 }
 
 //=========================================================================

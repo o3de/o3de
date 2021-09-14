@@ -146,7 +146,7 @@ AZ::MallocSchema::size_type AZ::MallocSchema::GetMaxAllocationSize() const
 
 AZ::MallocSchema::size_type AZ::MallocSchema::GetMaxContiguousAllocationSize() const
 {
-    return 0xFFFFFFFFull;
+    return AZ_CORE_MAX_ALLOCATOR_SIZE;
 }
 
 AZ::IAllocatorAllocate* AZ::MallocSchema::GetSubAllocator()
