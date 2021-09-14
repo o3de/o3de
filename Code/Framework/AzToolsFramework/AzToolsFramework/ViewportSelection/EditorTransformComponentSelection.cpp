@@ -1770,6 +1770,12 @@ namespace AzToolsFramework
         return false;
     }
 
+    void EditorTransformComponentSelection::ChangeSelectedEntity(const AZ::EntityId entityId)
+    {
+        DeselectEntities();
+        SelectDeselect(entityId);
+    }
+
     bool EditorTransformComponentSelection::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -1821,200 +1827,237 @@ namespace AzToolsFramework
             return true;
         }
 
-        // double click to deselect all
-        if (Input::DeselectAll(mouseInteraction))
+        if (ed_viewportStickySelect)
         {
-            // note: even if m_selectedEntityIds is technically empty, we
-            // may still have an entity selected that was clicked in the
-            // entity outliner - we still want to make sure the deselect all
-            // action clears the selection
-            DeselectEntities();
-            return false;
+            // double click to deselect all
+            if (Input::DeselectAll(mouseInteraction))
+            {
+                // note: even if m_selectedEntityIds is technically empty, we
+                // may still have an entity selected that was clicked in the
+                // entity outliner - we still want to make sure the deselect all
+                // action clears the selection
+                DeselectEntities();
+                return false;
+            }
+        }
+
+        // select/deselect (add/remove) entities with ctrl held
+        if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
+        {
+            if (SelectDeselect(entityIdUnderCursor))
+            {
+                if (m_selectedEntityIds.empty())
+                {
+                    m_pivotOverrideFrame.Reset();
+                }
+
+                return false;
+            }
         }
 
         if (!m_selectedEntityIds.empty())
         {
-            // select/deselect (add/remove) entities with ctrl held
-            if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
-            {
-                if (SelectDeselect(entityIdUnderCursor))
-                {
-                    if (m_selectedEntityIds.empty())
-                    {
-                        m_pivotOverrideFrame.Reset();
-                    }
-
-                    return false;
-                }
-            }
-
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
-            if (Input::GroupDitto(mouseInteraction))
+            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
-                if (entityIdUnderCursor.IsValid())
-                {
-                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                    switch (m_mode)
-                    {
-                    case Mode::Rotation:
-                        CopyOrientationToSelectedEntitiesGroup(QuaternionFromTransformNoScaling(worldFromLocal));
-                        break;
-                    case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
-                        break;
-                    case Mode::Translation:
-                        CopyTranslationToSelectedEntitiesGroup(worldFromLocal.GetTranslation());
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                    }
-
-                    return false;
-                }
+                return false;
             }
 
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
-            if (Input::IndividualDitto(mouseInteraction))
+            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
-                if (entityIdUnderCursor.IsValid())
-                {
-                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                    switch (m_mode)
-                    {
-                    case Mode::Rotation:
-                        CopyOrientationToSelectedEntitiesIndividual(QuaternionFromTransformNoScaling(worldFromLocal));
-                        break;
-                    case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
-                        break;
-                    case Mode::Translation:
-                        CopyTranslationToSelectedEntitiesIndividual(worldFromLocal.GetTranslation());
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                    }
-
-                    return false;
-                }
+                return false;
             }
 
             // try snapping to the terrain (if in Translation mode) and entity wasn't picked
             if (Input::SnapTerrain(mouseInteraction))
             {
-                for (AZ::EntityId entityId : m_selectedEntityIds)
-                {
-                    ScopedUndoBatch::MarkEntityDirty(entityId);
-                }
-
-                if (m_mode == Mode::Translation)
-                {
-                    const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
-
-                    // handle modifier alternatives
-                    if (Input::IndividualDitto(mouseInteraction))
-                    {
-                        CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
-                    }
-                    else if (Input::GroupDitto(mouseInteraction))
-                    {
-                        CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
-                    }
-                }
-                else if (m_mode == Mode::Rotation)
-                {
-                    // handle modifier alternatives
-                    if (Input::IndividualDitto(mouseInteraction))
-                    {
-                        CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
-                    }
-                    else if (Input::GroupDitto(mouseInteraction))
-                    {
-                        CopyOrientationToSelectedEntitiesGroup(AZ::Quaternion::CreateIdentity());
-                    }
-                }
-
+                PerformSnapToTerrain(mouseInteraction);
                 return false;
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
             if (Input::ManipulatorDitto(mouseInteraction))
             {
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    ScopedUndoBatch undoBatch(s_dittoManipulatorUndoRedoDesc);
-
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
-
-                    if (entityIdUnderCursor.IsValid())
-                    {
-                        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                        AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                        // set orientation/translation to match picked entity
-                        switch (m_mode)
-                        {
-                        case Mode::Rotation:
-                            OverrideManipulatorOrientation(QuaternionFromTransformNoScaling(worldFromLocal));
-                            break;
-                        case Mode::Translation:
-                            OverrideManipulatorTranslation(worldFromLocal.GetTranslation());
-                            break;
-                        case Mode::Scale:
-                            // do nothing
-                            break;
-                        default:
-                            break;
-                        }
-
-                        // only update pivot override when in translation or rotation mode
-                        switch (m_mode)
-                        {
-                        case Mode::Rotation:
-                            m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Orientation;
-                            [[fallthrough]];
-                        case Mode::Translation:
-                            m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Translation;
-                            m_pivotOverrideFrame.m_pickedEntityIdOverride = entityIdUnderCursor;
-                            break;
-                        case Mode::Scale:
-                            // do nothing
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        // match the same behavior as if we pressed Ctrl+R to reset the manipulator
-                        DelegateClearManipulatorOverride();
-                    }
-
-                    manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
-                        BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
-                        m_entityIdManipulators.m_manipulators->GetLocalTransform(), entityIdUnderCursor));
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
+                PerformManipulatorDitto(entityIdUnderCursor);
+                return false;
             }
 
-            return false;
+            if (ed_viewportStickySelect)
+            {
+                return false;
+            }
         }
 
         // standard toggle selection
         if (Input::IndividualSelect(clickOutcome))
         {
-            SelectDeselect(entityIdUnderCursor);
+            if (!ed_viewportStickySelect)
+            {
+                ChangeSelectedEntity(entityIdUnderCursor);
+            }
+            else
+            {
+                SelectDeselect(entityIdUnderCursor);
+            }
         }
 
         return false;
+    }
+
+    bool EditorTransformComponentSelection::PerformGroupDitto(const AZ::EntityId entityId)
+    {
+        if (entityId.IsValid())
+        {
+            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+            switch (m_mode)
+            {
+            case Mode::Rotation:
+                CopyOrientationToSelectedEntitiesGroup(QuaternionFromTransformNoScaling(worldFromLocal));
+                break;
+            case Mode::Scale:
+                CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
+                break;
+            case Mode::Translation:
+                CopyTranslationToSelectedEntitiesGroup(worldFromLocal.GetTranslation());
+                break;
+            default:
+                // do nothing
+                break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool EditorTransformComponentSelection::PerformIndividualDitto(const AZ::EntityId entityId)
+    {
+        if (entityId.IsValid())
+        {
+            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+            switch (m_mode)
+            {
+            case Mode::Rotation:
+                CopyOrientationToSelectedEntitiesIndividual(QuaternionFromTransformNoScaling(worldFromLocal));
+                break;
+            case Mode::Scale:
+                CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
+                break;
+            case Mode::Translation:
+                CopyTranslationToSelectedEntitiesIndividual(worldFromLocal.GetTranslation());
+                break;
+            default:
+                // do nothing
+                break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void EditorTransformComponentSelection::PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        for (AZ::EntityId entityId : m_selectedEntityIds)
+        {
+            ScopedUndoBatch::MarkEntityDirty(entityId);
+        }
+
+        if (m_mode == Mode::Translation)
+        {
+            const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
+
+            // handle modifier alternatives
+            if (Input::IndividualDitto(mouseInteraction))
+            {
+                CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
+            }
+            else if (Input::GroupDitto(mouseInteraction))
+            {
+                CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
+            }
+        }
+        else if (m_mode == Mode::Rotation)
+        {
+            // handle modifier alternatives
+            if (Input::IndividualDitto(mouseInteraction))
+            {
+                CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
+            }
+            else if (Input::GroupDitto(mouseInteraction))
+            {
+                CopyOrientationToSelectedEntitiesGroup(AZ::Quaternion::CreateIdentity());
+            }
+        }
+    }
+
+    void EditorTransformComponentSelection::PerformManipulatorDitto(const AZ::EntityId entityId)
+    {
+        if (m_entityIdManipulators.m_manipulators)
+        {
+            ScopedUndoBatch undoBatch(s_dittoManipulatorUndoRedoDesc);
+
+            auto manipulatorCommand =
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+
+            if (entityId.IsValid())
+            {
+                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+                // set orientation/translation to match picked entity
+                switch (m_mode)
+                {
+                case Mode::Rotation:
+                    OverrideManipulatorOrientation(QuaternionFromTransformNoScaling(worldFromLocal));
+                    break;
+                case Mode::Translation:
+                    OverrideManipulatorTranslation(worldFromLocal.GetTranslation());
+                    break;
+                case Mode::Scale:
+                    // do nothing
+                    break;
+                default:
+                    break;
+                }
+
+                // only update pivot override when in translation or rotation mode
+                switch (m_mode)
+                {
+                case Mode::Rotation:
+                    m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Orientation;
+                    [[fallthrough]];
+                case Mode::Translation:
+                    m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Translation;
+                    m_pivotOverrideFrame.m_pickedEntityIdOverride = entityId;
+                    break;
+                case Mode::Scale:
+                    // do nothing
+                    break;
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                // match the same behavior as if we pressed Ctrl+R to reset the manipulator
+                DelegateClearManipulatorOverride();
+            }
+
+            manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
+                BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
+                m_entityIdManipulators.m_manipulators->GetLocalTransform(), entityId));
+
+            manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
+            manipulatorCommand.release();
+        }
     }
 
     template<typename T>
