@@ -81,7 +81,7 @@ namespace AZ
             static CpuProfiler* Get();
 
             //! Add a new time region
-            virtual void BeginTimeRegion(TimeRegion& timeRegion) = 0;
+            virtual void BeginTimeRegion(CachedTimeRegion& timeRegion) = 0;
 
             //! Ends a time region
             virtual void EndTimeRegion() = 0;

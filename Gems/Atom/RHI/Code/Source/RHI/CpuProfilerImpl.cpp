@@ -121,7 +121,7 @@ namespace AZ
             SystemTickBus::Handler::BusDisconnect();
         }
 
-        void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)
+        void CpuProfilerImpl::BeginTimeRegion(CachedTimeRegion& timeRegion)
         {
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
@@ -294,7 +294,7 @@ namespace AZ
             m_deleteFlag = true;
         }
 
-        void CpuTimingLocalStorage::RegionStackPushBack(TimeRegion& timeRegion)
+        void CpuTimingLocalStorage::RegionStackPushBack(CachedTimeRegion& timeRegion)
         {
             // If it was (re)enabled, clear the lists first
             if (m_clearContainers)
@@ -331,7 +331,7 @@ namespace AZ
             const AZStd::sys_time_t endRegionTime = AZStd::GetTimeNowTicks();
 
             AZ_Assert(!m_timeRegionStack.empty(), "Trying to pop an element in the stack, but it's empty.");
-            TimeRegion* back = m_timeRegionStack.back();
+            CachedTimeRegion* back = m_timeRegionStack.back();
             m_timeRegionStack.pop_back();
 
             // Set the ending time

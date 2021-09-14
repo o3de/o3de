@@ -43,7 +43,7 @@ namespace AZ
             static constexpr uint32_t TimeRegionStackSize = 2048u;
 
             // Adds a region to the stack, gets called each time a region begins
-            void RegionStackPushBack(TimeRegion& timeRegion);
+            void RegionStackPushBack(CachedTimeRegion& timeRegion);
 
             // Pops a region from the stack, gets called each time a region ends
             void RegionStackPopBack();
@@ -63,7 +63,7 @@ namespace AZ
 
             // Use fixed vectors to avoid re-allocating new elements
             // Keeps track of the regions that added and removed using the macro
-            AZStd::fixed_vector<TimeRegion*, TimeRegionStackSize> m_timeRegionStack;
+            AZStd::fixed_vector<CachedTimeRegion*, TimeRegionStackSize> m_timeRegionStack;
 
             // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
             // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be
@@ -108,7 +108,7 @@ namespace AZ
             void OnSystemTick() final override;
 
             //! CpuProfiler overrides...
-            void BeginTimeRegion(TimeRegion& timeRegion) final override;
+            void BeginTimeRegion(CachedTimeRegion& timeRegion) final override;
             void EndTimeRegion() final override;
             const TimeRegionMap& GetTimeRegionMap() const final override;
             bool BeginContinuousCapture() final override;
