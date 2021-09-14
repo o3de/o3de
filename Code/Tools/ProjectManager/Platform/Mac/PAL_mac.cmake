@@ -6,7 +6,7 @@
 #
 #
 
-add_executable(O3DE_SDK Platform/Mac/main_dummy.cpp)
+add_executable(O3DE_SDK Platform/Mac/O3DE_SDK_Launcher.cpp)
 
 set_target_properties(O3DE_SDK PROPERTIES
     XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
