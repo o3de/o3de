@@ -22,7 +22,7 @@ namespace AZ
         {
             //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
             //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
-            inline constexpr size_t AtomMaxFileSize = 1024 * 1024;
+            inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
 
             // Declarations...
 
@@ -43,7 +43,7 @@ namespace AZ
             {
                 objectData = ObjectType();
 
-                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, AtomMaxFileSize);
+                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, DefaultMaxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
