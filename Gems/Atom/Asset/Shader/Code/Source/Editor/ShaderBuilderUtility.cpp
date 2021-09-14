@@ -52,7 +52,7 @@ namespace AZ
             {
                 RPI::ShaderSourceData shaderSourceData;
 
-                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
                 if (!document.IsSuccess())
                 {
@@ -128,7 +128,7 @@ namespace AZ
                 AZStd::unordered_map<int, Outcome<rapidjson::Document, AZStd::string>> outcomes;
                 for (int i : indicesOfInterest)
                 {
-                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i], AZ::RPI::JsonUtils::AtomMaxFileSize);
+                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i], AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!outcomes[i].IsSuccess())
                     {
                         AZ_Error(builderName, false, "%s", outcomes[i].GetError().c_str());
@@ -623,7 +623,7 @@ namespace AZ
                 StructData inputStruct;
                 inputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
@@ -716,7 +716,7 @@ namespace AZ
                 StructData outputStruct;
                 outputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
