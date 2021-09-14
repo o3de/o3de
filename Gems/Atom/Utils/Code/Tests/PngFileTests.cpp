@@ -310,21 +310,4 @@ namespace UnitTest
         EXPECT_TRUE(gotErrorMessage.find("PngFile is invalid") != AZStd::string::npos);
         EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(m_tempPngFilePath.c_str()));
     }
-    
-    TEST_F(PngFileTests, Error_SaveOverLockedFile)
-    {
-        AZStd::string gotErrorMessage;
-
-        PngFile::SaveSettings saveSettings;
-        saveSettings.m_errorHandler = [&gotErrorMessage](const char* errorMessage) { gotErrorMessage = errorMessage; };
-
-        AZ::IO::FileIOStream tempFileStream;
-        tempFileStream.Open(m_tempPngFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
-        EXPECT_TRUE(tempFileStream.IsOpen());
-
-        PngFile savedImage = PngFile::Create(AZ::RHI::Size{3, 1, 0}, AZ::RHI::Format::R8G8B8A8_UNORM, m_primaryColors3x1);
-        bool result = savedImage.Save(m_tempPngFilePath.c_str(), saveSettings);
-        EXPECT_FALSE(result);
-        EXPECT_TRUE(gotErrorMessage.find("not open file") != AZStd::string::npos);
-    }
 }
