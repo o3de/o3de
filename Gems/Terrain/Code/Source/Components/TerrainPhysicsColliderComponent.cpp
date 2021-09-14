@@ -10,21 +10,14 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/std/sort.h>
-
-#include <AzFramework/Physics/ShapeConfiguration.h>
-#include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <SurfaceData/SurfaceDataProviderRequestBus.h>
-#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
 {
+    constexpr float DefaultHeightScale = 1.f / 256.f;
+
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
@@ -39,7 +32,7 @@ namespace Terrain
             {
                 edit->Class<TerrainPhysicsColliderConfig>(
                         "Terrain Physics Collider Component",
-                        "Creates a physics collider in the given area with configurable surface mappings.")
+                        "Provides terrain data to a physics collider with configurable surface mappings.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
@@ -49,17 +42,17 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("PhysicsHeightfieldProviderService"));
+        services.push_back(AZ_CRC_CE("PhysicsHeightfieldProviderService"));
     }
 
     void TerrainPhysicsColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("PhysicsHeightfieldProviderService"));
+        services.push_back(AZ_CRC_CE("PhysicsHeightfieldProviderService"));
     }
 
     void TerrainPhysicsColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("AxisAlignedBoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainPhysicsColliderComponent::Reflect(AZ::ReflectContext* context)
@@ -70,15 +63,22 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<TerrainPhysicsColliderComponent, AZ::Component>()
-                ->Version(0)->Field(
-                "Configuration", &TerrainPhysicsColliderComponent::m_configuration)
+                ->Version(0)
+                ->Field("Configuration", &TerrainPhysicsColliderComponent::m_configuration)
             ;
         }
     }
 
     TerrainPhysicsColliderComponent::TerrainPhysicsColliderComponent(const TerrainPhysicsColliderConfig& configuration)
         : m_configuration(configuration)
+        , m_heightScale(DefaultHeightScale)
     {
+    }
+
+    TerrainPhysicsColliderComponent::TerrainPhysicsColliderComponent()
+        : m_heightScale(DefaultHeightScale)
+    {
+
     }
 
     void TerrainPhysicsColliderComponent::Activate()
@@ -148,7 +148,7 @@ namespace Terrain
         return gridResolution;
     }
 
-    void TerrainPhysicsColliderComponent::GetHeights([[maybe_unused]] AZStd::vector<int16_t>& heights)
+    void TerrainPhysicsColliderComponent::GetHeights(AZStd::vector<int16_t>& heights)
     {
         AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
@@ -157,6 +157,7 @@ namespace Terrain
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
+        float worldCenterZ = worldSize.GetCenter().GetZ();
         float heightScale = 0.1f;
 
         int32_t gridWidth, gridHeight;
@@ -167,8 +168,8 @@ namespace Terrain
         minBounds.SetY(minBounds.GetY() - fmodf(minBounds.GetY(), gridResolution.GetY()));
 
         AZ::Vector3 maxBounds = worldSize.GetMax();
-        maxBounds.SetX(maxBounds.GetX() - fmodf(maxBounds.GetX(), gridResolution.GetX()));
-        maxBounds.SetY(maxBounds.GetY() - fmodf(maxBounds.GetY(), gridResolution.GetY()));
+        maxBounds.SetX(maxBounds.GetX() + gridResolution.GetX() - fmodf(maxBounds.GetX(), gridResolution.GetX()));
+        maxBounds.SetY(maxBounds.GetY() + gridResolution.GetX() - fmodf(maxBounds.GetY(), gridResolution.GetY()));
 
         gridWidth = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
         gridHeight = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
@@ -188,8 +189,13 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
 
-                heights.emplace_back(aznumeric_cast<int16_t>(height / heightScale));
+                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) / heightScale));
             }
         }
+    }
+
+    float TerrainPhysicsColliderComponent::GetHeightScale()
+    {
+        return m_heightScale;
     }
 }

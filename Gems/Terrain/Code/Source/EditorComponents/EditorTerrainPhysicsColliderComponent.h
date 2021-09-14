@@ -24,7 +24,7 @@ namespace Terrain
 
         static constexpr const char* const s_categoryName = "Terrain";
         static constexpr const char* const s_componentName = "Terrain Physics Collider";
-        static constexpr const char* const s_componentDescription = "Defines a terrain region for use by the terrain system";
+        static constexpr const char* const s_componentDescription = "Provides terrain data to a physics collider in the form of a heightfield and surface->material mapping.";
         static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
         static constexpr const char* const s_helpUrl = "";
