@@ -336,11 +336,11 @@ namespace Physics
 
     HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
     {
-        if (m_cachedHeightfield)
+        if (m_cachedNativeHeightfield)
         {
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseHeightfieldObject, m_cachedHeightfield);
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
 
-            m_cachedHeightfield = nullptr;
+            m_cachedNativeHeightfield = nullptr;
         }
     }
 
@@ -348,7 +348,7 @@ namespace Physics
         : ShapeConfiguration(other)
         , m_dimensions(other.m_dimensions)
         , m_heightProvider(other.m_heightProvider)
-        , m_cachedNativeMesh(nullptr)
+        , m_cachedNativeHeightfield(nullptr)
     {
     }
 
@@ -360,24 +360,24 @@ namespace Physics
         m_heightProvider = other.m_heightProvider;
 
         // Prevent raw pointer from being copied
-        m_cachedNativeMesh = nullptr;
+        m_cachedNativeHeightfield = nullptr;
 
         return *this;
     }
 
-    void* HeightfieldShapeConfiguration::GetCachedNativeMesh() const
+    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
     {
-        return m_cachedNativeMesh;
+        return m_cachedNativeHeightfield;
     }
 
-    void HeightfieldShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh) const
+    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield) const
     {
-        if (m_cachedNativeMesh)
+        if (m_cachedNativeHeightfield)
         {
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeMeshObject, m_cachedNativeMesh);
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeMeshObject, m_cachedNativeHeightfield);
         }
 
-        m_cachedNativeMesh = cachedNativeMesh;
+        m_cachedNativeHeightfield = cachedNativeHeightfield;
     }
 
 
