@@ -13,7 +13,6 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/std/containers/array_view.h>
@@ -22,6 +21,11 @@
 
 namespace AZ
 {
+    namespace RPI
+    {
+        class ShaderResourceGroup;
+    }
+
     namespace Render
     {
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(EsmChildPassKind, uint32_t,

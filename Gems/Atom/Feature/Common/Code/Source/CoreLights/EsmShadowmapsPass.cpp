@@ -172,7 +172,7 @@ namespace AZ
                 m_kawaseBlurConstantIndices[kawaseBlurIndex] = srg->FindShaderInputConstantIndex(Name("m_rcpResolutionAndIteration"));
             }
             const AZ::Vector4 data(
-                1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0);
+                1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0.0f);
 
             srg->SetConstant(m_kawaseBlurConstantIndices[kawaseBlurIndex], data);
         }
