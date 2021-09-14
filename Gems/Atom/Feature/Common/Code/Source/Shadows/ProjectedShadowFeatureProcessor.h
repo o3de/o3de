@@ -48,10 +48,8 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
-        void SetPcfMethod(ShadowId id, PcfMethod method) override;
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
-        void SetPredictionSampleCount(ShadowId id, uint16_t count) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
@@ -65,8 +63,7 @@ namespace AZ::Render
         {
             Matrix4x4 m_depthBiasMatrix = Matrix4x4::CreateIdentity();
             uint32_t m_shadowmapArraySlice = 0; // array slice who has shadowmap in the atlas.
-            uint16_t m_shadowFilterMethod = 0; // filtering method of shadows.
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;  // method for performing Pcf (uint16_t)
+            uint32_t m_shadowFilterMethod = 0; // filtering method of shadows.
             float m_boundaryScale = 0.f; // the half of boundary of lit/shadowed areas. (in degrees)
             uint32_t m_predictionSampleCount = 0; // sample count to judge whether it is on the shadow boundary or not.
             uint32_t m_filteringSampleCount = 0;
