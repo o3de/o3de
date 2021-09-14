@@ -11,6 +11,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace UnitTest
@@ -21,8 +22,8 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     protected:
-        AZStd::string m_testImageFolder;
-        AZStd::string m_tempPngFilePath;
+        AZ::IO::Path m_testImageFolder;
+        AZ::IO::Path m_tempPngFilePath;
         AZStd::vector<uint8_t> m_primaryColors3x1;
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_localFileIO;
 
@@ -30,9 +31,10 @@ namespace UnitTest
         {
             AllocatorsFixture::SetUp();
 
-            m_testImageFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Utils/Code/Tests/PngTestImages/";
-            m_tempPngFilePath = m_testImageFolder + "temp.png";
+            m_testImageFolder = AZ::IO::Path(AZ::Test::GetEngineRootPath()) / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages", '/');
             
+            m_tempPngFilePath = m_testImageFolder / "temp.png";
+                        
             m_localFileIO.reset(aznew AZ::IO::LocalFileIO());
             AZ::IO::FileIOBase::SetInstance(m_localFileIO.get());
 
@@ -47,8 +49,8 @@ namespace UnitTest
 
         void TearDown() override
         {
-            m_testImageFolder = AZStd::string{};
-            m_tempPngFilePath = AZStd::string{};
+            m_testImageFolder = AZ::IO::Path{};
+            m_tempPngFilePath = AZ::IO::Path{};
             m_primaryColors3x1 = AZStd::vector<uint8_t>{};
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
@@ -74,7 +76,7 @@ namespace UnitTest
 
     TEST_F(PngFileTests, LoadRgb)
     {
-        PngFile image = PngFile::Load((m_testImageFolder + "ColorChart_rgb.png").c_str());
+        PngFile image = PngFile::Load((m_testImageFolder / "ColorChart_rgb.png").c_str());
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
         EXPECT_EQ(image.GetWidth(), 3);
@@ -90,7 +92,7 @@ namespace UnitTest
 
     TEST_F(PngFileTests, LoadRgba)
     {
-        PngFile image = PngFile::Load((m_testImageFolder + "ColorChart_rgba.png").c_str());
+        PngFile image = PngFile::Load((m_testImageFolder / "ColorChart_rgba.png").c_str());
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGBA);
         EXPECT_EQ(image.GetWidth(), 3);
@@ -109,7 +111,7 @@ namespace UnitTest
         PngFile::LoadSettings loadSettings;
         loadSettings.m_stripAlpha = true;
 
-        PngFile image = PngFile::Load((m_testImageFolder + "ColorChart_rgba.png").c_str(), loadSettings);
+        PngFile image = PngFile::Load((m_testImageFolder / "ColorChart_rgba.png").c_str(), loadSettings);
         // Note these checks are identical to the LoadRgb test.
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
@@ -126,7 +128,7 @@ namespace UnitTest
     
     TEST_F(PngFileTests, LoadColorPaletteTwoBits)
     {
-        PngFile image = PngFile::Load((m_testImageFolder + "ColorPalette_2bit.png").c_str());
+        PngFile image = PngFile::Load((m_testImageFolder / "ColorPalette_2bit.png").c_str());
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
         EXPECT_EQ(image.GetWidth(), 1);
@@ -139,7 +141,7 @@ namespace UnitTest
 
     TEST_F(PngFileTests, LoadGrayscaleOneBit)
     {
-        PngFile image = PngFile::Load((m_testImageFolder + "GrayPalette_1bit.png").c_str());
+        PngFile image = PngFile::Load((m_testImageFolder / "GrayPalette_1bit.png").c_str());
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
         EXPECT_EQ(image.GetWidth(), 1);
@@ -151,7 +153,7 @@ namespace UnitTest
     
     TEST_F(PngFileTests, LoadRgba64Bits)
     {
-        PngFile image = PngFile::Load((m_testImageFolder + "Gradient_rgb_16bpc.png").c_str());
+        PngFile image = PngFile::Load((m_testImageFolder / "Gradient_rgb_16bpc.png").c_str());
         EXPECT_TRUE(image.IsValid());
         EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
         EXPECT_EQ(image.GetWidth(), 5);
@@ -266,7 +268,7 @@ namespace UnitTest
         PngFile::LoadSettings loadSettings;
         loadSettings.m_errorHandler = [&gotErrorMessage](const char* errorMessage) { gotErrorMessage = errorMessage; };
 
-        PngFile image = PngFile::Load((m_testImageFolder + "DoesNotExist.png").c_str(), loadSettings);
+        PngFile image = PngFile::Load((m_testImageFolder / "DoesNotExist.png").c_str(), loadSettings);
         EXPECT_FALSE(image.IsValid());
         EXPECT_TRUE(gotErrorMessage.find("not open file") != AZStd::string::npos);
     }
@@ -278,7 +280,7 @@ namespace UnitTest
         PngFile::LoadSettings loadSettings;
         loadSettings.m_errorHandler = [&gotErrorMessage](const char* errorMessage) { gotErrorMessage = errorMessage; };
 
-        PngFile image = PngFile::Load((m_testImageFolder + "EmptyFile.png").c_str(), loadSettings);
+        PngFile image = PngFile::Load((m_testImageFolder / "EmptyFile.png").c_str(), loadSettings);
         EXPECT_FALSE(image.IsValid());
         EXPECT_TRUE(gotErrorMessage.find("Invalid png header") != AZStd::string::npos);
     }
@@ -290,7 +292,7 @@ namespace UnitTest
         PngFile::LoadSettings loadSettings;
         loadSettings.m_errorHandler = [&gotErrorMessage](const char* errorMessage) { gotErrorMessage = errorMessage; };
 
-        PngFile image = PngFile::Load((m_testImageFolder + "ColorChart_rgba.jpg").c_str(), loadSettings);
+        PngFile image = PngFile::Load((m_testImageFolder / "ColorChart_rgba.jpg").c_str(), loadSettings);
         EXPECT_FALSE(image.IsValid());
         EXPECT_TRUE(gotErrorMessage.find("Invalid png header") != AZStd::string::npos);
     }
