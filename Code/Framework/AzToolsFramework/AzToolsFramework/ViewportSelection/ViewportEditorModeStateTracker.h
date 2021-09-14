@@ -51,7 +51,7 @@ namespace AzToolsFramework
         // ViewportEditorModeTrackerInterface ...
         void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
-        const ViewportEditorModesInterface* GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
+        const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
         size_t GetNumTrackedViewports() const override;
         bool IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
 

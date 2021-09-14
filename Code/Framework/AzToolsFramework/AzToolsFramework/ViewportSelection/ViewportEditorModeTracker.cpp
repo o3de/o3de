@@ -96,7 +96,7 @@ namespace AzToolsFramework
             viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeExit, *editorModeStates, mode);
     }
 
-    const ViewportEditorModesInterface* ViewportEditorModeTracker::GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    const ViewportEditorModesInterface* ViewportEditorModeTracker::GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
         if (auto editorModeStates = m_viewportEditorModeStates.find(viewportEditorModeInfo.m_id);
             editorModeStates != m_viewportEditorModeStates.end())

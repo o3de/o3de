@@ -291,12 +291,12 @@ namespace UnitTest
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid }), nullptr);
 
         // When a mode is activated for that viewport
         const auto editorMode = ViewportEditorMode::Default;
         m_viewportEditorModeStteTracker.EnterMode({ viewportid }, editorMode);
-        const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+        const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
 
         // Expect that viewport to now be tracked
         EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
@@ -311,7 +311,7 @@ namespace UnitTest
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid }), nullptr);
 
         // When a mode is deactivated for that viewport
         const auto editorMode = ViewportEditorMode::Default;
@@ -323,7 +323,7 @@ namespace UnitTest
         EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
 
         // Expect that viewport to now be tracked
-        const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+        const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
         EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
 
         // Expect the mode for that viewport to be inactive
@@ -335,7 +335,7 @@ namespace UnitTest
     {
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid }), nullptr);
     }
 
     TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModesForExistingIdInThatStateIssuesWarningMsg)
@@ -343,7 +343,7 @@ namespace UnitTest
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid }), nullptr);
 
         const auto editorMode = ViewportEditorMode::Default;
         const auto expectedWarning = AZStd::string::format(
@@ -359,7 +359,7 @@ namespace UnitTest
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 0);
 
             // Expect the mode to be active for the viewport
-            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
             EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
             EXPECT_NE(viewportEditorModeState, nullptr);
             EXPECT_TRUE(viewportEditorModeState->IsModeActive(editorMode));
@@ -373,7 +373,7 @@ namespace UnitTest
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
 
             // Expect the mode to still be active for the viewport
-            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
             EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
             EXPECT_NE(viewportEditorModeState, nullptr);
             EXPECT_TRUE(viewportEditorModeState->IsModeActive(editorMode));
@@ -385,7 +385,7 @@ namespace UnitTest
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid }), nullptr);
 
         const auto editorMode = ViewportEditorMode::Default;
         const auto expectedWarning =
@@ -402,7 +402,7 @@ namespace UnitTest
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 0);
 
             // Expect the mode to be inctive for the viewport
-            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
             EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
             EXPECT_NE(viewportEditorModeState, nullptr);
             EXPECT_FALSE(viewportEditorModeState->IsModeActive(editorMode));
@@ -417,7 +417,7 @@ namespace UnitTest
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
 
             // Expect the mode to still be inactive for the viewport
-            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid });
+            const auto* viewportEditorModeState = m_viewportEditorModeStteTracker.GetViewportEditorModes({ viewportid });
             EXPECT_TRUE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
             EXPECT_NE(viewportEditorModeState, nullptr);
             EXPECT_FALSE(viewportEditorModeState->IsModeActive(editorMode));

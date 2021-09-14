@@ -28,7 +28,7 @@ namespace AzToolsFramework
         virtual void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
 
         //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.
-        virtual const ViewportEditorModesInterface* GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
+        virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
 
         //! Returns the number of viewports currently being tracked.
         virtual size_t GetNumTrackedViewports() const = 0;
