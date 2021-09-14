@@ -7,8 +7,11 @@
  */
 
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
+#include <CryCommon/CrySystemBus.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
+#include <IConsole.h>
+#include <ISystem.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 
 namespace ModifierCpp
@@ -20,6 +23,31 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        EditorKeepAlive::EditorKeepAlive()
+        {
+            ISystem* system = nullptr;
+            CrySystemRequestBus::BroadcastResult(system, &CrySystemRequestBus::Events::GetCrySystem);
+
+            if (system)
+            {
+                m_edKeepEditorActive = system->GetIConsole()->GetCVar("ed_KeepEditorActive");
+
+                if (m_edKeepEditorActive)
+                {
+                    m_keepEditorActive = m_edKeepEditorActive->GetIVal();
+                    m_edKeepEditorActive->Set(1);
+                }
+            }            
+        }
+
+        EditorKeepAlive::~EditorKeepAlive()
+        {
+            if (m_edKeepEditorActive)
+            {
+                m_edKeepEditorActive->Set(m_keepEditorActive);
+            }
+        }
+
         Model::Model()
         {
             ModelRequestsBus::Handler::BusConnect();
@@ -33,20 +61,58 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         }
 
-        const AZStd::vector<AZStd::string>* Model::GetLogs()
+        void Model::Idle()
         {
-            return &m_log.GetEntries();
+            m_state = State::Idle;
+            m_keepEditorAlive.reset();
         }
-        
+
+        bool Model::IsReadyToModify() const
+        {
+            if (IsWorking())
+            {
+                return false;
+            }
+
+            if (!m_scanner)
+            {
+                return false;
+            }
+
+            return !m_scanner->GetResult().m_unfiltered.empty();
+        }
+
         bool Model::IsWorking() const
         {
             return m_state != State::Idle;
         }
 
+        void Model::Modify(const ModifyConfiguration& modification)
+        {
+            if (!IsReadyToModify())
+            {
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Explorer is not ready to modify graphs.");
+                return;
+            }
+
+            m_state = State::Modifying;
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
+            auto results = m_scanner->TakeResult();
+            m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::move(results.m_unfiltered), [this](){ OnModificationComplete(); });
+        }
+
+        void Model::OnModificationComplete()
+        {
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanComplete, m_scanner->GetResult());
+            m_modifier.reset();
+            m_scanner.reset();
+            Idle();
+        }
+
         void Model::OnScanComplete()
         {
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanComplete, m_scanner->GetResult());
-            m_state = State::Idle;
+            Idle();
         }
 
         void Model::Scan(const ScanConfiguration& config)
@@ -58,6 +124,7 @@ namespace ScriptCanvasEditor
             }
 
             m_state = State::Scanning;
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
             m_scanner = AZStd::make_unique<Scanner>(config, [this](){ OnScanComplete(); });
         }
 

@@ -17,6 +17,19 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        Modifier::Modifier
+            ( const ModifyConfiguration& modification
+            , AZStd::vector<AZ::Data::AssetInfo>&& assets
+            , AZStd::function<void()> onComplete)
+        {
 
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeAllBegin);
+            AZ::SystemTickBus::Handler::BusConnect();
+        }
+
+        void Modifier::OnSystemTick()
+        {
+
+        }
     }
 }

@@ -8,11 +8,7 @@
 
 #include <Editor/View/Windows/Tools/UpgradeTool/Scanner.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-
-namespace ScannerCpp
-{
-
-}
+#include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 
 namespace ScriptCanvasEditor
 {
@@ -42,11 +38,13 @@ namespace ScriptCanvasEditor
         {
             if (m_config.filter && m_config.filter(asset))
             {
+                VE_LOG("Scanner: Excluded: %s ", GetCurrentAsset().m_relativePath.c_str());
                 m_result.m_filteredAssets.push_back(GetCurrentAsset());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanFilteredGraph, GetCurrentAsset());
             }
             else
             {
+                VE_LOG("Scanner: Included: %s ", GetCurrentAsset().m_relativePath.c_str());
                 m_result.m_unfiltered.push_back(GetCurrentAsset());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, GetCurrentAsset());
             }
@@ -69,7 +67,6 @@ namespace ScriptCanvasEditor
                 , azrtti_typeid<ScriptCanvasAsset>()
                 , AZ::Data::AssetLoadBehavior::PreLoad);
 
-            // Log("Scan: Loading: %s ", m_catalogAssets[m_catalogAssetIndex].GetHint().c_str());
             asset.BlockUntilLoadComplete();
 
             if (asset.IsReady())
@@ -86,7 +83,9 @@ namespace ScriptCanvasEditor
         {
             if (m_catalogAssetIndex == m_result.m_catalogAssets.size())
             {
-                AZ::SystemTickBus::Handler::BusConnect();
+                VE_LOG("Scanner: Complete.");
+                AZ::SystemTickBus::Handler::BusDisconnect();
+
                 if (m_onComplete)
                 {
                     m_onComplete();
@@ -96,14 +95,17 @@ namespace ScriptCanvasEditor
             {
                 if (auto asset = LoadAsset())
                 {
+                    VE_LOG("Scanner: Loaded: %s ", GetCurrentAsset().m_relativePath.c_str());
                     FilterAsset(asset);
                 }
                 else
                 {
+                    VE_LOG("Scanner: Failed to load: %s ", GetCurrentAsset().m_relativePath.c_str());
                     m_result.m_loadErrors.push_back(GetCurrentAsset());
                     ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanLoadFailure, GetCurrentAsset());
                 }
 
+                VE_LOG("Scanner: scan of %s complete", GetCurrentAsset().m_relativePath.c_str());
                 ++m_catalogAssetIndex;
             }
         }

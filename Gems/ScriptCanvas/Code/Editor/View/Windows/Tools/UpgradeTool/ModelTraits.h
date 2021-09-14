@@ -14,6 +14,12 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        struct ModifyConfiguration
+        {
+            AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
+            bool backupGraphBeforeModification = false;
+        };
+
         struct ScanConfiguration
         {
             AZStd::function<bool(AZ::Data::Asset<AZ::Data::AssetData>)> filter;
@@ -24,10 +30,15 @@ namespace ScriptCanvasEditor
             : public AZ::EBusTraits
         {
         public:
-            virtual const AZStd::vector<AZStd::string>* GetLogs() = 0;
+            virtual void Modify(const ModifyConfiguration& modification) = 0;
             virtual void Scan(const ScanConfiguration& filter) = 0;
         };
         using ModelRequestsBus = AZ::EBus<ModelRequestsTraits>;
+
+        struct ModificationResult
+        {
+
+        };
 
         struct ScanResult
         {
@@ -46,6 +57,11 @@ namespace ScriptCanvasEditor
             virtual void OnScanFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
             virtual void OnScanLoadFailure(const AZ::Data::AssetInfo& info) = 0;
             virtual void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
+
+            virtual void OnUpgradeAllBegin() = 0;
+            virtual void OnUpgradeAllComplete() = 0;
+            virtual void OnUpgradeAllDependencySortBegin() = 0;
+            virtual void OnUpgradeAllDependencySortEnd(const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets) = 0;
         };
         using ModelNotificationsBus = AZ::EBus<ModelNotificationsTraits>;
     }

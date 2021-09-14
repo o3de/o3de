@@ -15,10 +15,25 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h>
 #include <ScriptCanvas/Core/Core.h>
 
+struct ICVar;
+
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        //!Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
+        //! the upgrade tool to work even if the editor is not in the foreground
+        class EditorKeepAlive
+        {
+        public:
+            EditorKeepAlive();
+            ~EditorKeepAlive();
+
+        private:
+            int m_keepEditorActive;
+            ICVar* m_edKeepEditorActive;
+        };
+
         //! Handles model change requests, state queries; sends state change notifications
         class Model
             : public ModelRequestsBus::Handler
@@ -28,7 +43,8 @@ namespace ScriptCanvasEditor
 
             Model();
 
-            const AZStd::vector<AZStd::string>* GetLogs();
+            void Modify(const ModifyConfiguration& modification) override;
+
             void Scan(const ScanConfiguration& config) override;
 
         private:
@@ -45,9 +61,13 @@ namespace ScriptCanvasEditor
             AZStd::unique_ptr<Modifier> m_modifier;
             AZStd::unique_ptr<Scanner> m_scanner;
             AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
+            AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 
             void CacheSettings();
+            void Idle();
+            bool IsReadyToModify() const;
             bool IsWorking() const;
+            void OnModificationComplete();
             void OnScanComplete();
             void RestoreSettings();
         };

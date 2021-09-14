@@ -20,20 +20,12 @@ namespace ScriptCanvasEditor
         void Log::Activate()
         {
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
+            LogBus::Handler::BusConnect();
         }
 
-        void Log::AddEntry(const char* format, ...)
+        void Log::Clear()
         {
-            if (m_isVerbose)
-            {
-                char sBuffer[2048];
-                va_list ArgList;
-                va_start(ArgList, format);
-                azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
-                sBuffer[sizeof(sBuffer) - 1] = '\0';
-                va_end(ArgList);
-                AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "%s\n", sBuffer);
-            }
+            m_logs.clear();
         }
 
         bool Log::CaptureFromTraceBus(const char* window, const char* message)
@@ -58,9 +50,23 @@ namespace ScriptCanvasEditor
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
 
-        const AZStd::vector<AZStd::string>& Log::GetEntries() const
+        void Log::Entry(const char* format, ...)
         {
-            return m_logs;
+            if (m_isVerbose)
+            {
+                char sBuffer[2048];
+                va_list ArgList;
+                va_start(ArgList, format);
+                azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
+                sBuffer[sizeof(sBuffer) - 1] = '\0';
+                va_end(ArgList);
+                AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "%s\n", sBuffer);
+            }
+        }
+
+        const AZStd::vector<AZStd::string>* Log::GetEntries() const
+        {
+            return &m_logs;
         }
 
         void Log::SetVersionExporerExclusivity(bool enabled)

@@ -10,6 +10,7 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 
 namespace ScriptCanvasEditor
 {
@@ -17,16 +18,18 @@ namespace ScriptCanvasEditor
     {
         class Log
             : private AZ::Debug::TraceMessageBus::Handler
+            , private LogBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(Log, AZ::SystemAllocator, 0);
 
-            void Activate();
-            void AddEntry(const char* format, ...);
+            void Activate() override;
+            void Clear() override;
             void Deactivate();
-            const AZStd::vector<AZStd::string>& GetEntries() const;
-            void SetVersionExporerExclusivity(bool enabled);
-            void SetVerbose(bool verbosity);
+            void Entry(const char* format, ...) override;
+            const AZStd::vector<AZStd::string>* GetEntries() const override;
+            void SetVersionExporerExclusivity(bool enabled) override;
+            void SetVerbose(bool verbosity) override;
 
         private:
             bool m_isExclusiveReportingEnabled = false;
