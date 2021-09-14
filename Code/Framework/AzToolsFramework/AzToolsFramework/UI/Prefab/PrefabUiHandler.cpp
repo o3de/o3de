@@ -81,14 +81,14 @@ namespace AzToolsFramework
         return tooltip;
     }
 
-    QPixmap PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
+    QIcon PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
     {
         if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
         {
-            return QPixmap(m_prefabEditIconPath);
+            return QIcon(m_prefabEditIconPath);
         }
 
-        return QPixmap(m_prefabIconPath);
+        return QIcon(m_prefabIconPath);
     }
 
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

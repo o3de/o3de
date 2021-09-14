@@ -66,6 +66,7 @@ namespace AZ
         size_type       NumAllocatedBytes() const override;
         size_type       Capacity() const override;
         size_type       GetMaxAllocationSize() const override;
+        size_type       GetMaxContiguousAllocationSize() const override;
         size_type       GetUnAllocatedMemory(bool isPrint = false) const override;
         IAllocatorAllocate* GetSubAllocator() override                       { return m_desc.m_subAllocator; }
 

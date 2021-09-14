@@ -86,6 +86,7 @@ namespace AZ
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
         size_type GetMaxAllocationSize() const override;
+        size_type GetMaxContiguousAllocationSize() const override;
         IAllocatorAllocate* GetSubAllocator() override;
         void GarbageCollect() override;
 
