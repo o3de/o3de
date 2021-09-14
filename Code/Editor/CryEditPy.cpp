@@ -77,10 +77,6 @@ namespace
             // This closes the current document (level)
             currentLevel->OnNewDocument();
 
-            // Then we freeze the viewport's input
-            AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Broadcast(
-                &AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Events::FreezeViewportInput, true);
-
             // Then we need to tell the game engine there is no level to render anymore
             if (GetIEditor()->GetGameEngine())
             {
