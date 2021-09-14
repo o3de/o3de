@@ -94,6 +94,7 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScanButtonPress()
         {
+            // \todo move to another file
             auto isUpToDate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
             {
                 AZ::Entity* scriptCanvasEntity = nullptr;

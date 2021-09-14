@@ -28,12 +28,29 @@ namespace ScriptCanvasEditor
                 , AZStd::function<void()> onComplete);
 
         private:
+            enum class State
+            {
+                GatheringDependencies,
+                ModifyingGraphs
+            };
+
+            State m_state = State::GatheringDependencies;
             size_t m_assetIndex = 0;
             AZStd::function<void()> m_onComplete;
+            AZStd::vector<AZ::Data::AssetInfo> m_assets;
+            AZStd::vector<size_t> m_dependencyOrderedIndicies;
+            AZStd::unordered_map<size_t, AZStd::unordered_set<size_t>> m_dependencies;
+            AZStd::vector<size_t> m_failures;
             ModifyConfiguration m_config;
-            ModifyConfiguration m_result;
+            ModificationResult m_result;
 
+            void GatherDependencies();
+            const AZ::Data::AssetInfo& GetCurrentAsset() const;
+            AZ::Data::Asset<AZ::Data::AssetData> LoadAsset();
+            void SortGraphsByDependencies();
             void OnSystemTick() override;
+            void TickGatherDependencies();
+            void TickUpdateGraph();
         };
     }
 }

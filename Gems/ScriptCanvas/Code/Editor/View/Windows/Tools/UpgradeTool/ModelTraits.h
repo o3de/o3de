@@ -18,6 +18,8 @@ namespace ScriptCanvasEditor
         {
             AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
             bool backupGraphBeforeModification = false;
+            // disabling this can be acceptable, but be careful
+            bool successfulDependencyUpgradeRequired = true;
         };
 
         struct ScanConfiguration
