@@ -15,6 +15,7 @@
 #include <TerrainMocks.h>
 
 using ::testing::AtLeast;
+using ::testing::NiceMock;
 
 class TerrainSystemTest : public ::testing::Test
 {
@@ -69,7 +70,7 @@ TEST_F(TerrainSystemTest, TrivialActivateDeactivate)
 
 TEST_F(TerrainSystemTest, CreateEventsCalledOnActivation)
 {
-    UnitTest::MockTerrainListener mockTerrainListener;
+    NiceMock<UnitTest::MockTerrainDataNotificationListener> mockTerrainListener;
     EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateBegin()).Times(AtLeast(1));
     EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateEnd()).Times(AtLeast(1));
 
@@ -79,9 +80,7 @@ TEST_F(TerrainSystemTest, CreateEventsCalledOnActivation)
 
 TEST_F(TerrainSystemTest, DestroyEventsCalledOnDeactivation)
 {
-    UnitTest::MockTerrainListener mockTerrainListener;
-    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateBegin()).Times(AtLeast(1));
-    EXPECT_CALL(mockTerrainListener, OnTerrainDataCreateEnd()).Times(AtLeast(1));
+    NiceMock<UnitTest::MockTerrainDataNotificationListener> mockTerrainListener;
     EXPECT_CALL(mockTerrainListener, OnTerrainDataDestroyBegin()).Times(AtLeast(1));
     EXPECT_CALL(mockTerrainListener, OnTerrainDataDestroyEnd()).Times(AtLeast(1));
 
@@ -89,3 +88,5 @@ TEST_F(TerrainSystemTest, DestroyEventsCalledOnDeactivation)
     m_terrainSystem->Activate();
     m_terrainSystem->Deactivate();
 }
+
+
