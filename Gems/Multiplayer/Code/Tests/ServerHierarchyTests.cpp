@@ -176,9 +176,9 @@ namespace Multiplayer
     class ServerDeepHierarchyTests : public HierarchyTests
     {
     public:
-        static const NetEntityId RootNetEntityId = NetEntityId{ 1 };
-        static const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
-        static const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
+        const NetEntityId RootNetEntityId = NetEntityId{ 1 };
+        const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
+        const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
 
         void SetUp() override
         {

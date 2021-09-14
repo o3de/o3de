@@ -148,8 +148,8 @@ namespace Multiplayer
     class ClientSimpleHierarchyTests : public HierarchyTests
     {
     public:
-        static const NetEntityId RootNetEntityId = NetEntityId{ 1 };
-        static const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
+        const NetEntityId RootNetEntityId = NetEntityId{ 1 };
+        const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
 
         void SetUp() override
         {
