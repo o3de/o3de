@@ -136,6 +136,13 @@ BestFitExternalMapSchema::GetMaxAllocationSize() const
     return 0;
 }
 
+auto BestFitExternalMapSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    // The free chunk map is sorted from smalles chunk to largest
+    // So return the largest chunk
+    return !m_freeChunksMap.empty() ? m_freeChunksMap.rbegin()->first : 0;
+}
+
 //=========================================================================
 // GarbageCollect
 // [1/28/2011]
