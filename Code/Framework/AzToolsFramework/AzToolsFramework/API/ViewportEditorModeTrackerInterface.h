@@ -34,7 +34,7 @@ namespace AzToolsFramework
         virtual size_t GetTrackedViewportCount() const = 0;
 
         //! Returns true if the specified viewport is being tracked, otherwise false.
-        virtual bool IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
+        virtual bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
 
     private:
     };

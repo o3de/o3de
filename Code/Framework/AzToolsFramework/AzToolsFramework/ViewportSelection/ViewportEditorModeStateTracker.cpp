@@ -114,7 +114,7 @@ namespace AzToolsFramework
         return m_viewportEditorModeStates.size();
     }
 
-    bool ViewportEditorModeTracker::IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    bool ViewportEditorModeTracker::IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
         return m_viewportEditorModeStates.count(viewportEditorModeInfo.m_id) > 0;
     }

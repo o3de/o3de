@@ -53,7 +53,7 @@ namespace AzToolsFramework
         void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
         size_t GetTrackedViewportCount() const override;
-        bool IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
+        bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
 
     private:
         using ViewportEditorModess = AZStd::unordered_map<typename ViewportEditorModeInfo::IdType, ViewportEditorModes>;
