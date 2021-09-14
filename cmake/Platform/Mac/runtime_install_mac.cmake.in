@@ -14,6 +14,16 @@ if(@runtime_output_filename@ MATCHES ".app")
         codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
     endif()
 
+else()
+
+    find_program(LY_INSTALL_NAME_TOOL install_name_tool)
+    if (NOT LY_INSTALL_NAME_TOOL)
+        message(FATAL_ERROR "Unable to locate 'install_name_tool'")
+    endif()
+
+    execute_process(COMMAND
+        ${LY_INSTALL_NAME_TOOL} -add_rpath @loader_path ${file_path})
+
 endif()
 
 codesign_file("${file_path}" "@entitlement_file@")
