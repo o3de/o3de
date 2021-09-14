@@ -106,7 +106,7 @@ namespace UnitTest
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             ent_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
-            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent")
+            g_globalComponentId = EntityUtilityBus.Broadcast.GetOrAddComponentByTypeName(ent_id, "27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0 TransformComponent")
             )LUA");
         
         EXPECT_TRUE(g_globalComponentId.IsValid());

@@ -38,7 +38,7 @@ namespace AzToolsFramework
     AZ::TypeId GetComponentTypeIdFromName(const AZStd::string& typeName)
     {
         // Try to create a TypeId first.  We won't show any warnings if this fails as the input might be a class name instead
-        AZ::TypeId typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, true);
+        AZ::TypeId typeId = AZ::TypeId::CreateStringPermissive(typeName.data());
 
         // If the typeId is null, try a lookup by class name
         if (typeId.IsNull())
