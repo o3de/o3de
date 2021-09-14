@@ -1858,16 +1858,14 @@ namespace AzToolsFramework
         if (!m_selectedEntityIds.empty())
         {
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
-            if (Input::GroupDitto(mouseInteraction))
+            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
-                PerformGroupDitto(entityIdUnderCursor);
                 return false;
             }
 
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
-            if (Input::IndividualDitto(mouseInteraction))
+            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
-                PerformIndividualDitto(entityIdUnderCursor);
                 return false;
             }
 
@@ -1907,7 +1905,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void EditorTransformComponentSelection::PerformGroupDitto(const AZ::EntityId entityId)
+    bool EditorTransformComponentSelection::PerformGroupDitto(const AZ::EntityId entityId)
     {
         if (entityId.IsValid())
         {
@@ -1929,10 +1927,14 @@ namespace AzToolsFramework
                 // do nothing
                 break;
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    void EditorTransformComponentSelection::PerformIndividualDitto(const AZ::EntityId entityId)
+    bool EditorTransformComponentSelection::PerformIndividualDitto(const AZ::EntityId entityId)
     {
         if (entityId.IsValid())
         {
@@ -1954,7 +1956,11 @@ namespace AzToolsFramework
                 // do nothing
                 break;
             }
+
+            return true;
         }
+
+        return false;
     }
 
     void EditorTransformComponentSelection::PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)

@@ -299,8 +299,8 @@ namespace AzToolsFramework
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
 
-        void PerformGroupDitto(AZ::EntityId entityId);
-        void PerformIndividualDitto(AZ::EntityId entityId);
+        bool PerformGroupDitto(AZ::EntityId entityId);
+        bool PerformIndividualDitto(AZ::EntityId entityId);
         void PerformManipulatorDitto(AZ::EntityId entityId);
         void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
