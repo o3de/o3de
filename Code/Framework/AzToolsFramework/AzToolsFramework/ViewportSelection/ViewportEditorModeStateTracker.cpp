@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzToolsFramework/API/ViewportEditorModesTrackerNotificationBus.h>
-#include <AzToolsFramework/ViewportSelection/ViewportEditorModesTracker.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/ViewportSelection/ViewportEditorModeTracker.h>
 
 namespace AzToolsFramework
 {
@@ -43,23 +43,23 @@ namespace AzToolsFramework
         return m_editorModes[static_cast<AZ::u32>(mode)];
     }
 
-    void ViewportEditorModesTracker::RegisterInterface()
+    void ViewportEditorModeTracker::RegisterInterface()
     {
-        if (AZ::Interface<ViewportEditorModesTrackerInterface>::Get() == nullptr)
+        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() == nullptr)
         {
-            AZ::Interface<ViewportEditorModesTrackerInterface>::Register(this);
+            AZ::Interface<ViewportEditorModeTrackerInterface>::Register(this);
         }
     }
 
-    void ViewportEditorModesTracker::UnregisterInterface()
+    void ViewportEditorModeTracker::UnregisterInterface()
     {
-        if (AZ::Interface<ViewportEditorModesTrackerInterface>::Get() != nullptr)
+        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() != nullptr)
         {
-            AZ::Interface<ViewportEditorModesTrackerInterface>::Unregister(this);
+            AZ::Interface<ViewportEditorModeTrackerInterface>::Unregister(this);
         }
     }
 
-    void ViewportEditorModesTracker::EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+    void ViewportEditorModeTracker::EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         auto& editorModeStates = m_viewportEditorModeStates[viewportEditorModeInfo.m_id];
         AZ_Warning(
@@ -71,7 +71,7 @@ namespace AzToolsFramework
             viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeEnter, editorModeStates, mode);
     }
 
-    void ViewportEditorModesTracker::ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+    void ViewportEditorModeTracker::ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         ViewportEditorModes* editorModeStates = nullptr;
         if (m_viewportEditorModeStates.count(viewportEditorModeInfo.m_id))
@@ -96,7 +96,7 @@ namespace AzToolsFramework
             viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeExit, *editorModeStates, mode);
     }
 
-    const ViewportEditorModesInterface* ViewportEditorModesTracker::GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    const ViewportEditorModesInterface* ViewportEditorModeTracker::GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
         if (auto editorModeStates = m_viewportEditorModeStates.find(viewportEditorModeInfo.m_id);
             editorModeStates != m_viewportEditorModeStates.end())
@@ -109,12 +109,12 @@ namespace AzToolsFramework
         }
     }
 
-    size_t ViewportEditorModesTracker::GetNumTrackedViewports() const
+    size_t ViewportEditorModeTracker::GetNumTrackedViewports() const
     {
         return m_viewportEditorModeStates.size();
     }
 
-    bool ViewportEditorModesTracker::IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    bool ViewportEditorModeTracker::IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
         return m_viewportEditorModeStates.count(viewportEditorModeInfo.m_id) > 0;
     }

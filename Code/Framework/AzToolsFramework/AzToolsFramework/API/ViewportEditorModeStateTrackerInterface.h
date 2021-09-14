@@ -9,17 +9,17 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/API/ViewportEditorModesTrackerNotificationBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 
 namespace AzToolsFramework
 {
     //! The AZ::Interface of the central editor mode state tracker for all viewports.
-    class ViewportEditorModesTrackerInterface
+    class ViewportEditorModeTrackerInterface
     {
     public:
-        AZ_RTTI(ViewportEditorModesTrackerInterface, "{7D72A4F7-2147-4ED9-A315-E456A3BE3CF6}");
+        AZ_RTTI(ViewportEditorModeTrackerInterface, "{7D72A4F7-2147-4ED9-A315-E456A3BE3CF6}");
 
-        virtual ~ViewportEditorModesTrackerInterface() = default;
+        virtual ~ViewportEditorModeTrackerInterface() = default;
 
         //! Enters the specified editor mode for the specified viewport.
         virtual void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;

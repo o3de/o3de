@@ -8,13 +8,13 @@
 
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <AzToolsFramework/ViewportSelection/ViewportEditorModesTracker.h>
+#include <AzToolsFramework/ViewportSelection/ViewportEditorModeTracker.h>
 
 namespace UnitTest
 {
     using ViewportEditorMode = AzToolsFramework::ViewportEditorMode;
     using ViewportEditorModes = AzToolsFramework::ViewportEditorModes;
-    using ViewportEditorModesTracker = AzToolsFramework::ViewportEditorModesTracker;
+    using ViewportEditorModeTracker = AzToolsFramework::ViewportEditorModeTracker;
     using ViewportEditorModeInfo = AzToolsFramework::ViewportEditorModeInfo;
     using ViewportId = ViewportEditorModeInfo::IdType;
     using ViewportEditorModesInterface = AzToolsFramework::ViewportEditorModesInterface;
@@ -58,11 +58,11 @@ namespace UnitTest
     };
 
     // Fixture for testing the viewport editor mode state tracker
-    class ViewportEditorModesTrackerTestFixture
+    class ViewportEditorModeTrackerTestFixture
         : public ToolsApplicationFixture
     {
     public:
-        ViewportEditorModesTracker m_viewportEditorModeStteTracker;
+        ViewportEditorModeTracker m_viewportEditorModeStteTracker;
     };
 
     // Subscriber of viewport editor mode notifications for a single viewport that expects a single mode to be activated/deactivated
@@ -117,7 +117,7 @@ namespace UnitTest
 
     // Fixture for testing viewport editor mode notifications publishing
     class ViewportEditorModePublisherTestFixture
-        : public ViewportEditorModesTrackerTestFixture
+        : public ViewportEditorModeTrackerTestFixture
     {
     public:
 
@@ -281,12 +281,12 @@ namespace UnitTest
         EXPECT_EQ(1, UnitTest::TestRunner::Instance().StopAssertTests());
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, InitialCentralStateTrackerHasNoViewportEditorModess)
+    TEST_F(ViewportEditorModeTrackerTestFixture, InitialCentralStateTrackerHasNoViewportEditorModess)
     {
         EXPECT_EQ(m_viewportEditorModeStteTracker.GetNumTrackedViewports(), 0);
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, EnteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
+    TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
     {
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
@@ -306,7 +306,7 @@ namespace UnitTest
         EXPECT_TRUE(viewportEditorModeState->IsModeActive(editorMode));
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, ExitingViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatIdButIssuesErrorMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, ExitingViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatIdButIssuesErrorMsg)
     {
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
@@ -331,14 +331,14 @@ namespace UnitTest
         EXPECT_FALSE(viewportEditorModeState->IsModeActive(editorMode));
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, GettingNonExistentViewportEditorModesForIdReturnsNull)
+    TEST_F(ViewportEditorModeTrackerTestFixture, GettingNonExistentViewportEditorModesForIdReturnsNull)
     {
         const ViewportId viewportid = 0;
         EXPECT_FALSE(m_viewportEditorModeStteTracker.IsViewportStateBeingTracked({ viewportid }));
         EXPECT_EQ(m_viewportEditorModeStteTracker.GetEditorModeState({ viewportid }), nullptr);
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, EnteringViewportEditorModesForExistingIdInThatStateIssuesWarningMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModesForExistingIdInThatStateIssuesWarningMsg)
     {
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;
@@ -380,7 +380,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(ViewportEditorModesTrackerTestFixture, ExitingViewportEditorModesForExistingIdNotInThatStateIssuesWarningMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, ExitingViewportEditorModesForExistingIdNotInThatStateIssuesWarningMsg)
     {
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;

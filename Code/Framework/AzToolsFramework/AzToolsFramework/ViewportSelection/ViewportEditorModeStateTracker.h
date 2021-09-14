@@ -11,8 +11,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzToolsFramework/API/ViewportEditorModesTrackerNotificationBus.h>
-#include <AzToolsFramework/API/ViewportEditorModesTrackerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 
 namespace AzToolsFramework
 {
@@ -38,8 +38,8 @@ namespace AzToolsFramework
     };
 
     //! The implementation of the central editor mode state tracker for all viewports.
-    class ViewportEditorModesTracker
-        : public ViewportEditorModesTrackerInterface
+    class ViewportEditorModeTracker
+        : public ViewportEditorModeTrackerInterface
     {
     public:
         //! Registers this object with the AZ::Interface.
@@ -48,7 +48,7 @@ namespace AzToolsFramework
         //! Unregisters this object with the AZ::Interface.
         void UnregisterInterface();
 
-        // ViewportEditorModesTrackerInterface ...
+        // ViewportEditorModeTrackerInterface ...
         void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         const ViewportEditorModesInterface* GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
