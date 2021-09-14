@@ -176,8 +176,8 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 
     AZStd::vector<int16_t> heights;
 
-    Physics::HeightfieldProviderRequestsBus::Event(
-         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights, heights);
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
     EXPECT_TRUE(heights.size() != 0);
    
@@ -207,8 +207,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
 
     AZStd::vector<int16_t> heights;
 
-    Physics::HeightfieldProviderRequestsBus::Event(
-        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights, heights);
+    Physics::HeightfieldProviderRequestsBus::EventResult(heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
     ASSERT_TRUE(heights.size() != 0);
 
@@ -220,7 +219,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
     float aabbCenter = min + (max - min) / 2.0f;
     
     // The height returned by the terrain system(mockHeight) is absolute, the collider will return a relative value.
-    int16_t expectedHeight = aznumeric_cast<int16_t>((mockHeight - aabbCenter) / heightScale);
+    int16_t expectedHeight = aznumeric_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
 
     EXPECT_TRUE(heights[0] == expectedHeight);
 
