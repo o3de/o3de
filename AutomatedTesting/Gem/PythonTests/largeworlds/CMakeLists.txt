@@ -14,8 +14,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::DynamicVegetationTests_Main
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -27,26 +26,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Sandbox
-        TEST_SERIAL
-        TEST_SUITE sandbox
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_sandbox"
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationFilterTests_Periodic
+        NAME AutomatedTesting::DynamicVegetationTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_filter"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -56,75 +39,18 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationModifierTests_Periodic
+        NAME AutomatedTesting::DynamicVegetationTests_Main_Optimized
         TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_modifier"
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main_Optimized.py
         RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.Assets
+           AZ::AssetProcessor
+           Legacy::Editor
+           AutomatedTesting.Assets
         COMPONENT
             LargeWorlds
     )
 
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationRegressionTests_Periodic
-        TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_regression"
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationAreaTests_Periodic
-        TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_area"
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationMiscTests_Periodic
-        TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_misc"
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationSurfaceTagTests_Periodic
-        TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-        PYTEST_MARKS "SUITE_periodic and dynveg_surfacetagemitter"
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-    
 ## LandscapeCanvas ##
 
     ly_add_pytest(

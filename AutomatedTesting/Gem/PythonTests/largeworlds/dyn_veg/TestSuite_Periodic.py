@@ -9,6 +9,7 @@ import os
 import pytest
 import sys
 
+import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as file_system
 import editor_python_test_tools.hydra_test_utils as hydra
 from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
@@ -210,12 +211,15 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import SystemSettings_SectorSize as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlope as test_module
+        self._run_test(request, workspace, editor, test_module)
 
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["tmp_level"])
-class TestAutomation(TestAutomationBase):
+class TestAutomationE2E(TestAutomationBase):
 
     # The following tests must run in order, please do not move tests out of order
 
@@ -257,6 +261,32 @@ class TestAutomation(TestAutomationBase):
         ]
 
         hydra.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines, launch_ap=False)
+
+        # Cleanup our temp level
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+
+    @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+    def test_LayerBlender_E2E_Editor(self, request, workspace, project, level, editor, launcher_platform):
+        # Ensure our test level does not already exist
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+
+        from .EditorScripts import LayerBlender_E2E_Editor as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.parametrize("launcher_platform", ['windows'])
+    def test_LayerBlender_E2E_Launcher(self, workspace, launcher, level,
+                                                               remote_console_instance, project, launcher_platform):
+
+        launcher.args.extend(["-rhi=Null"])
+        launcher.start(launch_ap=False)
+        assert launcher.is_alive(), "Launcher failed to start"
+
+        # Wait for test script to quit the launcher. If wait_for returns exc, test was not successful
+        waiter.wait_for(lambda: not launcher.is_alive(), timeout=300)
+
+        # Verify launcher quit successfully and did not crash
+        ret_code = launcher.get_returncode()
+        assert ret_code == 0, "Test failed. See Game.log for details"
 
         # Cleanup our temp level
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)

@@ -23,10 +23,6 @@ class Tests:
         "Found the expected number of instances",
         "Found an unexpected number of instances"
     )
-    camera_entity_created = (
-        "Camera entity created successfully",
-        "Failed to create Camera entity"
-    )
     saved_and_exported = (
         "Saved and exported level successfully",
         "Failed to save and export level"
@@ -61,6 +57,7 @@ def DynamicSliceInstanceSpawner_External_E2E():
     import os
 
     import azlmbr.asset as asset
+    import azlmbr.components as components
     import azlmbr.editor as editor
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
@@ -124,11 +121,12 @@ def DynamicSliceInstanceSpawner_External_E2E():
                                                                                                num_expected_instances), 5.0)
     Report.result(Tests.instance_count, success)
 
-    # 5) Create a Camera entity and move it to a view of the spawner area for testing in the launcher
+    # 5) Move the default Camera entity for testing in the launcher
     cam_position = math.Vector3(512.0, 500.0, 35.0)
-    camera = hydra.Entity("Camera")
-    camera.create_entity(cam_position, ["Camera"])
-    Report.result(Tests.camera_entity_created, camera.id.IsValid() and hydra.has_components(camera.id, ["Camera"]))
+    search_filter = entity.SearchFilter()
+    search_filter.names = ["Camera"]
+    search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+    components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
 
     # 6) Save and export to engine
     general.save_level()
