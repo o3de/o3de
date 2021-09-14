@@ -157,8 +157,6 @@ namespace AZ::IO::ZipDir
 
     int FEof(CZipFile* zipFile);
 
-    uint32_t FileNameHash(AZStd::string_view filename);
-
 
     //////////////////////////////////////////////////////////////////////////
     struct SExtraZipFileData

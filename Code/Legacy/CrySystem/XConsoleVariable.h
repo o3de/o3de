@@ -257,12 +257,12 @@ public:
     virtual void Set(const char* s);
     virtual void Set(float f)
     {
-        stack_string s = stack_string::format("%g", f);
+        AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%g", f);
         Set(s.c_str());
     }
     virtual void Set(int i)
     {
-        stack_string s = stack_string::format("%d", i);
+        AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%d", i);
         Set(s.c_str());
     }
     virtual int GetType() { return CVAR_STRING; }

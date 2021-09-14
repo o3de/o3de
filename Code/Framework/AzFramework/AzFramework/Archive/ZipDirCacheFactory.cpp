@@ -41,13 +41,6 @@ namespace AZ::IO::ZipDir
         m_encryptedHeaders = ZipFile::HEADERS_NOT_ENCRYPTED;
         m_signedHeaders = ZipFile::HEADERS_NOT_SIGNED;
 
-        if (m_nFlags & FLAGS_FILENAMES_AS_CRC32)
-        {
-            m_bBuildFileEntryMap = false;
-            m_bBuildFileEntryTree = false;
-            m_bBuildOptimizedFileEntry = true;
-        }
-
         if (m_nFlags & FLAGS_READ_INSIDE_PAK)
         {
             m_fileExt.m_fileIOBase = AZ::IO::FileIOBase::GetInstance();

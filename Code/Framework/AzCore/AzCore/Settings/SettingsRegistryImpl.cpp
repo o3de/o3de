@@ -9,11 +9,14 @@
 #include <cctype>
 #include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/NativeUI//NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
@@ -129,6 +132,12 @@ namespace AZ
 
         rapidjson::Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY);
         pointer.Create(m_settings, m_settings.GetAllocator()).SetArray();
+    }
+
+    SettingsRegistryImpl::SettingsRegistryImpl(bool useFileIo)
+        : SettingsRegistryImpl()
+    {
+        m_useFileIo = useFileIo;
     }
 
     void SettingsRegistryImpl::SetContext(SerializeContext* context)
@@ -723,15 +732,10 @@ namespace AZ
         RegistryFileList fileList;
         scratchBuffer->clear();
 
-        AZ::IO::FixedMaxPathString folderPath{ path };
-        constexpr AZStd::string_view pathSeparators{ AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR };
-        if (pathSeparators.find_first_of(folderPath.back()) == AZStd::string_view::npos)
-        {
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        }
+        AZ::IO::FixedMaxPath folderPath{ path };
 
-        const size_t platformKeyOffset = folderPath.size();
-        folderPath.push_back('*');
+        const size_t platformKeyOffset = folderPath.Native().size();
+        folderPath /= '*';
 
         Value specialzationArray(kArrayType);
         size_t specializationCount = specializations.GetCount();
@@ -741,47 +745,13 @@ namespace AZ
             specialzationArray.PushBack(Value(name.data(), aznumeric_caster(name.length()), m_settings.GetAllocator()), m_settings.GetAllocator());
         }
         pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
-            .AddMember(StringRef("Folder"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
+            .AddMember(StringRef("Folder"), Value(folderPath.c_str(), aznumeric_caster(folderPath.Native().size()), m_settings.GetAllocator()), m_settings.GetAllocator())
             .AddMember(StringRef("Specializations"), AZStd::move(specialzationArray), m_settings.GetAllocator());
 
-        auto callback = [this, &fileList, &specializations, &pointer, &folderPath](const char* filename, bool isFile) -> bool
+
+        auto CreateSettingsFindCallback = [this, &fileList, &specializations, &pointer, &folderPath](bool isPlatformFile)
         {
-            if (isFile)
-            {
-                if (fileList.size() >= MaxRegistryFolderEntries)
-                {
-                    AZ_Error("Settings Registry", false, "Too many files in registry folder.");
-                    AZStd::scoped_lock lock(m_settingMutex);
-                    pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
-                        .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
-                        .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
-                        .AddMember(StringRef("File"), Value(filename, m_settings.GetAllocator()), m_settings.GetAllocator());
-                    return false;
-                }
-
-                fileList.push_back();
-                RegistryFile& registryFile = fileList.back();
-                if (!ExtractFileDescription(registryFile, filename, specializations))
-                {
-                    fileList.pop_back();
-                }
-            }
-            return true;
-        };
-        SystemFile::FindFiles(folderPath.c_str(), callback);
-
-
-        if (!platform.empty())
-        {
-            // Move the folderPath prefix back to the supplied path before the wildcard
-            folderPath.erase(platformKeyOffset);
-            folderPath += PlatformFolder;
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-            folderPath += platform;
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-            folderPath.push_back('*');
-
-            auto platformCallback = [this, &fileList, &specializations, &pointer, &folderPath](const char* filename, bool isFile) -> bool
+            return [this, &fileList, &specializations, &pointer, &folderPath, isPlatformFile](AZStd::string_view filename, bool isFile) -> bool
             {
                 if (isFile)
                 {
@@ -791,8 +761,8 @@ namespace AZ
                         AZStd::scoped_lock lock(m_settingMutex);
                         pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                             .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
-                            .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
-                            .AddMember(StringRef("File"), Value(filename, m_settings.GetAllocator()), m_settings.GetAllocator());
+                            .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.Native().size()), m_settings.GetAllocator()), m_settings.GetAllocator())
+                            .AddMember(StringRef("File"), Value(filename.data(), aznumeric_caster(filename.size()), m_settings.GetAllocator()), m_settings.GetAllocator());
                         return false;
                     }
 
@@ -800,7 +770,7 @@ namespace AZ
                     RegistryFile& registryFile = fileList.back();
                     if (ExtractFileDescription(registryFile, filename, specializations))
                     {
-                        registryFile.m_isPlatformFile = true;
+                        registryFile.m_isPlatformFile = isPlatformFile;
                     }
                     else
                     {
@@ -809,7 +779,42 @@ namespace AZ
                 }
                 return true;
             };
-            SystemFile::FindFiles(folderPath.c_str(), platformCallback);
+        };
+
+        struct FindFilesPayload
+        {
+            bool m_isPlatformFile{};
+            AZStd::fixed_vector<AZStd::string_view, 2> m_pathSegmentsToAppend;
+        };
+
+        AZStd::fixed_vector<FindFilesPayload, 2> findFilesPayloads{ {false} };
+        if (!platform.empty())
+        {
+            findFilesPayloads.push_back(FindFilesPayload{ true, { PlatformFolder, platform } });
+        }
+
+        for (const FindFilesPayload& findFilesPayload : findFilesPayloads)
+        {
+            // Erase back to initial path
+            folderPath.Native().erase(platformKeyOffset);
+            for (AZStd::string_view pathSegmentToAppend : findFilesPayload.m_pathSegmentsToAppend)
+            {
+                folderPath /= pathSegmentToAppend;
+            }
+
+            auto findFilesCallback = CreateSettingsFindCallback(findFilesPayload.m_isPlatformFile);
+            if (AZ::IO::FileIOBase* fileIo = m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr; fileIo != nullptr)
+            {
+                auto FileIoToSystemFileFindFiles = [findFilesCallback = AZStd::move(findFilesCallback), fileIo](const char* filePath) -> bool
+                {
+                    return findFilesCallback(AZ::IO::PathView(filePath).Filename().Native(), !fileIo->IsDirectory(filePath));
+                };
+                fileIo->FindFiles(folderPath.c_str(), "*", FileIoToSystemFileFindFiles);
+            }
+            else
+            {
+                SystemFile::FindFiles((folderPath / "*").c_str(), findFilesCallback);
+            }
         }
 
         if (!fileList.empty())
@@ -831,16 +836,14 @@ namespace AZ
             // Load the registry files in the sorted order.
             for (RegistryFile& registryFile : fileList)
             {
-                folderPath.erase(platformKeyOffset); // Erase all characters after the platformKeyOffset
+                folderPath.Native().erase(platformKeyOffset); // Erase all characters after the platformKeyOffset
                 if (registryFile.m_isPlatformFile)
                 {
-                    folderPath += PlatformFolder;
-                    folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-                    folderPath += platform;
-                    folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
+                    folderPath /= PlatformFolder;
+                    folderPath /= platform;
                 }
 
-                folderPath += registryFile.m_relativePath;
+                folderPath /= registryFile.m_relativePath;
 
                 if (!registryFile.m_isPatch)
                 {
@@ -1027,39 +1030,43 @@ namespace AZ
         return false;
     }
 
-    bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations)
+    bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations)
     {
-        if (!filename || filename[0] == 0)
+        if (filename.empty())
         {
             AZ_Error("Settings Registry", false, "Settings file without name found");
             return false;
         }
 
-        AZStd::string_view filePath{ filename };
-        const size_t filePathSize = filePath.size();
+        AZ::IO::PathView filePath{ filename };
+        const size_t filePathSize = filePath.Native().size();
 
         // The filePath.empty() check makes sure that the file extension after the final <dot> isn't added to the output.m_tags
-        AZStd::optional<AZStd::string_view> pathTag = AZ::StringFunc::TokenizeNext(filePath, '.');
-        for (; pathTag && !filePath.empty(); pathTag = AZ::StringFunc::TokenizeNext(filePath, '.'))
+        auto AppendSpecTags = [&output](AZStd::string_view pathTag)
         {
-            output.m_tags.push_back(Specializations::Hash(*pathTag));
-        }
+            output.m_tags.push_back(Specializations::Hash(pathTag));
+        };
+        AZ::StringFunc::TokenizeVisitor(filePath.Stem().Native(), AppendSpecTags, '.');
 
         // If token is invalid, then the filename has no <dot> characters and therefore no extension
-        if (pathTag)
+        if (AZ::IO::PathView fileExtension = filePath.Extension(); !fileExtension.empty())
         {
-            if (pathTag->size() >= AZStd::char_traits<char>::length(PatchExtension) && azstrnicmp(pathTag->data(), PatchExtension, pathTag->size()) == 0)
+            constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + PatchExtension;
+            constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + Extension;
+            constexpr AZ::IO::PathView PatchExtensionView(PatchExtensionWithDot);
+            constexpr AZ::IO::PathView ExtensionView(ExtensionWithDot);
+            if (fileExtension == PatchExtensionView)
             {
                 output.m_isPatch = true;
             }
-            else if (pathTag->size() != AZStd::char_traits<char>::length(Extension) || azstrnicmp(pathTag->data(), Extension, pathTag->size()) != 0)
+            else if (fileExtension != ExtensionView)
             {
                 return false;
             }
         }
         else
         {
-            AZ_Error("Settings Registry", false, R"(Settings file without extension found: "%s")", filename);
+            AZ_Error("Settings Registry", false, R"(Settings file without extension found: "%.*s")", AZ_STRING_ARG(filename));
             return false;
         }
 
@@ -1074,7 +1081,7 @@ namespace AZ
             {
                 if (*currentIt == *(currentIt - 1))
                 {
-                    AZ_Error("Settings Registry", false, R"(One or more tags are duplicated in registry file "%s")", filename);
+                    AZ_Error("Settings Registry", false, R"(One or more tags are duplicated in registry file "%.*s")", AZ_STRING_ARG(filename));
                     return false;
                 }
                 ++currentIt;
@@ -1108,6 +1115,118 @@ namespace AZ
         }
     }
 
+    //! Structure which encapsulates Commands to either the FileIOBase or SystemFile classes based on
+    //! the SettingsRegistry option to use FileIO
+    struct SettingsRegistryFileReader
+    {
+        using FileHandleType = AZStd::variant<AZStd::monostate, AZ::IO::SystemFile, AZ::IO::HandleType>;
+
+        SettingsRegistryFileReader() = default;
+        SettingsRegistryFileReader(bool useFileIo, const char* filePath)
+        {
+            Open(useFileIo, filePath);
+        }
+
+        ~SettingsRegistryFileReader()
+        {
+            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
+            {
+                if (AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+                {
+                    fileIo->Close(*fileHandle);
+                }
+            }
+        }
+
+        bool Open(bool useFileIo, const char* filePath)
+        {
+            Close();
+            if (AZ::IO::FileIOBase* fileIo = useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr; fileIo != nullptr)
+            {
+                AZ::IO::HandleType fileHandle;
+                if (fileIo->Open(filePath, IO::OpenMode::ModeRead, fileHandle))
+                {
+                    m_file = fileHandle;
+                    return true;
+                }
+            }
+            else
+            {
+                AZ::IO::SystemFile file;
+                if (file.Open(filePath, IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
+                {
+                    m_file = AZStd::move(file);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool IsOpen() const
+        {
+            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
+            {
+                return *fileHandle != AZ::IO::InvalidHandle;
+            }
+            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
+            {
+                return systemFile->IsOpen();
+            }
+
+            return false;
+        }
+
+        void Close()
+        {
+            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
+            {
+                if (AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+                {
+                    fileIo->Close(*fileHandle);
+                }
+            }
+
+            m_file = AZStd::monostate{};
+        }
+
+        u64 Length() const
+        {
+            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
+            {
+                if (u64 fileSize{}; AZ::IO::FileIOBase::GetInstance()->Size(*fileHandle, fileSize))
+                {
+                    return fileSize;
+                }
+            }
+            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
+            {
+                return systemFile->Length();
+            }
+
+            return 0;
+        }
+
+        AZ::IO::SizeType Read(AZ::IO::SizeType byteSize, void* buffer)
+        {
+            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
+            {
+                if (AZ::u64 bytesRead{}; AZ::IO::FileIOBase::GetInstance()->Read(*fileHandle, buffer, byteSize, false, &bytesRead))
+                {
+                    return bytesRead;
+                }
+            }
+            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
+            {
+                return systemFile->Read(byteSize, buffer);
+            }
+
+            return 0;
+        }
+
+        FileHandleType m_file;
+    };
+
     bool SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>& scratchBuffer)
     {
@@ -1116,8 +1235,8 @@ namespace AZ
 
         Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
 
-        SystemFile file;
-        if (!file.Open(path, SystemFile::OpenMode::SF_OPEN_READ_ONLY))
+        SettingsRegistryFileReader fileReader(m_useFileIo, path);
+        if (!fileReader.IsOpen())
         {
             AZ_Error("Settings Registry", false, R"(Unable to open registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
@@ -1126,7 +1245,7 @@ namespace AZ
             return false;
         }
 
-        u64 fileSize = file.Length();
+        u64 fileSize = fileReader.Length();
         if (fileSize == 0)
         {
             AZ_Warning("Settings Registry", false, R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path);
@@ -1136,9 +1255,10 @@ namespace AZ
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
             return false;
         }
+
         scratchBuffer.clear();
         scratchBuffer.resize_no_construct(fileSize + 1);
-        if (file.Read(fileSize, scratchBuffer.data()) != fileSize)
+        if (fileReader.Read(fileSize, scratchBuffer.data()) != fileSize)
         {
             AZ_Error("Settings Registry", false, R"(Unable to read registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
@@ -1267,5 +1387,10 @@ namespace AZ
     void SettingsRegistryImpl::GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings)
     {
         applyPatchSettings = m_applyPatchSettings;
+    }
+
+    void SettingsRegistryImpl::SetUseFileIO(bool useFileIo)
+    {
+        m_useFileIo = useFileIo;
     }
 } // namespace AZ

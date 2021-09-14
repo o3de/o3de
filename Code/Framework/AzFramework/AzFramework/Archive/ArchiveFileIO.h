@@ -13,7 +13,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/string/osstring.h>
 
 
 namespace AZ::IO
@@ -78,7 +77,7 @@ namespace AZ::IO
     protected:
         // we keep a list of file names ever opened so that we can easily return it.
         mutable AZStd::recursive_mutex m_operationGuard;
-        AZStd::unordered_map<IO::HandleType, AZ::OSString, AZStd::hash<IO::HandleType>, AZStd::equal_to<IO::HandleType>, AZ::OSStdAllocator> m_trackedFiles;
+        AZStd::unordered_map<IO::HandleType, AZStd::string> m_trackedFiles;
         AZStd::fixed_vector<char, ArchiveFileIoMaxBuffersize> m_copyBuffer;
         IArchive* m_archive;
     };

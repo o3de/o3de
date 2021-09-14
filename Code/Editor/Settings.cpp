@@ -171,7 +171,6 @@ SEditorSettings::SEditorSettings()
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
     bApplyConfigSpecInEditor = true;
-    useLowercasePaths = 0;
     showErrorDialogOnLoad = 1;
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
@@ -887,6 +886,7 @@ void SEditorSettings::Load()
 
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
+AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 
 void SEditorSettings::PostInitApply()
 {
@@ -898,7 +898,6 @@ void SEditorSettings::PostInitApply()
     // Create CVars.
     REGISTER_CVAR2("ed_highlightGeometry", &viewports.bHighlightMouseOverGeometry, viewports.bHighlightMouseOverGeometry, 0, "Highlight geometry when mouse over it");
     REGISTER_CVAR2("ed_showFrozenHelpers", &viewports.nShowFrozenHelpers, viewports.nShowFrozenHelpers, 0, "Show helpers of frozen objects");
-    REGISTER_CVAR2("ed_lowercasepaths", &useLowercasePaths, useLowercasePaths, 0, "generate paths in lowercase");
     gEnv->pConsole->RegisterInt("fe_fbx_savetempfile", 0, 0, "When importing an FBX file into Facial Editor, this will save out a conversion FSQ to the Animations/temp folder for trouble shooting");
 
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
