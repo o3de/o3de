@@ -554,10 +554,10 @@ set(FILES
     EditorPreferencesPageFiles.cpp
     EditorPreferencesPageViewportGeneral.h
     EditorPreferencesPageViewportGeneral.cpp
-    EditorPreferencesPageViewportGizmo.h
-    EditorPreferencesPageViewportGizmo.cpp
-    EditorPreferencesPageViewportMovement.h
-    EditorPreferencesPageViewportMovement.cpp
+    EditorPreferencesPageViewportManipulator.h
+    EditorPreferencesPageViewportManipulator.cpp
+    EditorPreferencesPageViewportCamera.h
+    EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
@@ -787,6 +787,9 @@ set(FILES
     EditorViewportSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
+    EditorModularViewportCameraComposer.cpp
+    EditorModularViewportCameraComposer.h
+    EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     TopRendererWnd.cpp

@@ -63,7 +63,7 @@ namespace ImageProcessingAtom
         StepAll
     };
 
-    const char ProcessStepNames[StepAll][64] =
+    [[maybe_unused]] const char ProcessStepNames[StepAll][64] =
     {
         "ValidateInput",
         "GenerateColorChart",
@@ -350,7 +350,7 @@ namespace ImageProcessingAtom
         // output conversion log
         if (m_isSucceed && m_isFinished)
         {
-            const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
+            [[maybe_unused]] const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
             if (m_input->m_isPreview)
             {
                 AZ_TracePrintf("Image Processing", "Image (%d bytes) converted in %f seconds\n", sizeTotal, m_processTime);
@@ -869,7 +869,7 @@ namespace ImageProcessingAtom
         return process;
     }
 
-    void ImageConvertProcess::CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr cubemapImage)
+    void ImageConvertProcess::CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
     {
         const AZStd::string& platformId = m_input->m_platform;
         AZStd::string_view filePath;
@@ -971,7 +971,7 @@ namespace ImageProcessingAtom
             IImageObjectPtr previewImageAlpha = imageToProcess2.Get();
 
             const uint32 imageMips = previewImage->GetMipCount();
-            const uint32 alphaMips = previewImageAlpha->GetMipCount();
+            [[maybe_unused]] const uint32 alphaMips = previewImageAlpha->GetMipCount();
 
             // Get count of bytes per pixel for both rgb and alpha images
             uint32 imagePixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_R8G8B8A8)->bitsPerBlock / 8;
@@ -983,7 +983,7 @@ namespace ImageProcessingAtom
             for (uint32 mipLevel = 0; mipLevel < imageMips; ++mipLevel)
             {
                 const uint32 pixelCount = previewImage->GetPixelCount(mipLevel);
-                const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
+                [[maybe_unused]] const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
 
                 AZ_Assert(pixelCount == alphaPixelCount, "Pixel count for image and alpha image at mip level %d is not equal!", mipLevel);
 

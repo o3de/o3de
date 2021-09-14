@@ -709,7 +709,7 @@ void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& 
         );
 
         // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, sRenameWarning.toUtf8().data());
+        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
 
         if (bShowMsgBox)
         {
@@ -756,17 +756,6 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
     {
         objects.push_back(it->second);
-    }
-}
-
-void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
-{
-    CBaseObjectsArray objectArray;
-    GetObjects(objectArray);
-    objects.clear();
-    for (size_t i = 0, iCount(objectArray.size()); i < iCount; ++i)
-    {
-        objects.push_back(objectArray[i]);
     }
 }
 
@@ -2378,7 +2367,7 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < gSettings.gizmo.axisGizmoMaxCount)
+        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
         {
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));

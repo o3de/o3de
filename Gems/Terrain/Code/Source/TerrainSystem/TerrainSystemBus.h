@@ -39,10 +39,8 @@ namespace Terrain
         virtual void Activate() = 0;
         virtual void Deactivate() = 0;
 
-        virtual void SetWorldMin(AZ::Vector3 worldOrigin) = 0;
-        virtual void SetWorldMax(AZ::Vector3 worldBounds) = 0;
+        virtual void SetWorldBounds(const AZ::Aabb& worldBounds) = 0;
         virtual void SetHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
-        virtual void SetDebugWireframe(bool wireframeEnabled) = 0;
 
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
@@ -111,10 +109,29 @@ namespace Terrain
 
         virtual void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter = Sampler::DEFAULT) = 0;
         virtual void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter = Sampler::DEFAULT) = 0;
-        //virtual void GetSurfaceWeights(const AZ::Vector3& inPosition, SurfaceTagWeightMap& outSurfaceWeights, Sampler sampleFilter = DEFAULT) = 0;
-        //virtual void GetSurfacePoint(const AZ::Vector3& inPosition, SurfacePoint& outSurfacePoint, SurfacePointDataMask dataMask = DEFAULT, Sampler sampleFilter = DEFAULT) = 0;
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;
+    
+    /**
+    * A bus for the TerrainSystem to interrogate TerrainLayerSpawners.
+    */
+    class TerrainSpawnerRequests
+        : public AZ::ComponentBus
+    {
+    public:
+        ////////////////////////////////////////////////////////////////////////
+        // EBusTraits
+        using MutexType = AZStd::recursive_mutex;
+        ////////////////////////////////////////////////////////////////////////
+
+        virtual ~TerrainSpawnerRequests() = default;
+
+        virtual void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) = 0;
+        virtual bool GetUseGroundPlane() = 0;
+
+    };
+
+    using TerrainSpawnerRequestBus = AZ::EBus<TerrainSpawnerRequests>;
 
 }

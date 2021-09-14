@@ -44,7 +44,7 @@ enum
 {
     // in milliseconds
     GameModeIdleFrequency = 0,
-    EditorModeIdleFrequency = 1,
+    EditorModeIdleFrequency = 0,
     InactiveModeFrequency = 10,
     UninitializedFrequency = 9999,
 };
@@ -425,7 +425,7 @@ namespace Editor
                 AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
                 LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-                const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+                [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
                 CRY_ASSERT(bytesCopied == rawInputSize);
 
                 RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;

@@ -408,10 +408,6 @@ public:
     CBaseObject* GetParent() const { return m_parent; };
     //! Scans hierarchy up to determine if we child of specified node.
     virtual bool IsChildOf(CBaseObject* node);
-    //! Get all child objects
-    void GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj = nullptr) const;
-    void GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj = nullptr) const;
     //! Clone Children
     void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.
@@ -802,8 +798,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     //! Area radius around object, where terrain is flatten and static objects removed.
     float m_flattenArea;
-    //! Every object keeps for itself height above terrain.
-    float m_height;
     //! Object's name.
     QString m_name;
     //! Class description for this object.

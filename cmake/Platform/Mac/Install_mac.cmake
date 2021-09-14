@@ -28,7 +28,7 @@ foreach(config ${CMAKE_CONFIGURATION_TYPES})
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_mac.cmake @ONLY)
 endforeach()
         
-install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_mac.cmake)
+install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
 #! ly_install_target_override: Mac specific target installation
 function(ly_install_target_override)
@@ -37,8 +37,6 @@ function(ly_install_target_override)
     set(oneValueArgs TARGET ARCHIVE_DIR LIBRARY_DIR RUNTIME_DIR LIBRARY_SUBDIR RUNTIME_SUBDIR)
     set(multiValueArgs)
     cmake_parse_arguments(ly_platform_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    get_property(install_component TARGET ${ly_platform_install_target_TARGET} PROPERTY INSTALL_COMPONENT)
 
     # For bundles on Mac, we set the icons by passing in a path to the Images.xcassets directory.
     # However, the CMake install command expects paths to files for the the RESOURCE property.
@@ -53,19 +51,19 @@ function(ly_install_target_override)
         TARGETS ${ly_platform_install_target_TARGET}
         ARCHIVE
             DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${install_component}
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         LIBRARY
             DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_SUBDIR}
-            COMPONENT ${install_component}
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         RUNTIME
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${install_component}
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         BUNDLE
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${install_component}
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         RESOURCE
             DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}/
-            COMPONENT ${install_component}
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}")
@@ -111,7 +109,7 @@ endfunction()
 function(ly_install_code_function_override)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
-    install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake)
+    install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
 endfunction()
 
@@ -130,12 +128,13 @@ function(ly_post_install_steps)
             continue()
         endif()
         
-        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
+        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
     endforeach()
 
     install(CODE
 "ly_download_and_codesign_sdk_python()
 ly_codesign_sdk()"
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
 endfunction()

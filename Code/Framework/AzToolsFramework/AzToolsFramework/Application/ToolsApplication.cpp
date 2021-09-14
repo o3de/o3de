@@ -139,7 +139,7 @@ namespace AzToolsFramework
                     AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
                     for (const auto& entityId : entityIds)
                     {
-                        AZ::Entity* entity = NULL;
+                        AZ::Entity* entity = nullptr;
                         EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
 
                         if (entity)
@@ -378,6 +378,7 @@ namespace AzToolsFramework
                 ->Event("CreateNewEntityAtPosition", &ToolsApplicationRequests::CreateNewEntityAtPosition)
                 ->Event("GetCurrentLevelEntityId", &ToolsApplicationRequests::GetCurrentLevelEntityId)
                 ->Event("GetExistingEntity", &ToolsApplicationRequests::GetExistingEntity)
+                ->Event("EntityExists", &ToolsApplicationRequests::EntityExists)
                 ->Event("DeleteEntityById", &ToolsApplicationRequests::DeleteEntityById)
                 ->Event("DeleteEntities", &ToolsApplicationRequests::DeleteEntities)
                 ->Event("DeleteEntityAndAllDescendants", &ToolsApplicationRequests::DeleteEntityAndAllDescendants)
@@ -781,6 +782,11 @@ namespace AzToolsFramework
     AZ::EntityId ToolsApplication::GetExistingEntity(AZ::u64 id)
     {
         return AZ::EntityId{id};
+    }
+
+    bool ToolsApplication::EntityExists(AZ::EntityId id)
+    {
+        return FindEntity(id) != nullptr;
     }
 
     void ToolsApplication::DeleteSelected()
@@ -1237,7 +1243,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::RequestEditForFile(const char* assetPath, RequestEditResultCallback resultCallback)
     {
-        AZ_Error("RequestEdit", resultCallback != 0, "User result callback is required.");
+        AZ_Error("RequestEdit", resultCallback != nullptr, "User result callback is required.");
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         if (fileIO && !fileIO->IsReadOnly(assetPath))

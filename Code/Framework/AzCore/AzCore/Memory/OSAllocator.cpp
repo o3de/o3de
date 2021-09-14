@@ -75,7 +75,7 @@ namespace AZ
             address = AZ_OS_MALLOC(byteSize, alignment);
         }
 
-        if (address == 0 && byteSize > 0)
+        if (address == nullptr && byteSize > 0)
         {
             AZ_Printf("Memory", "======================================================\n");
             AZ_Printf("Memory", "OSAllocator run out of system memory!\nWe can't track the debug allocator, since it's used for tracking and pipes trought the OS... here are the other allocator status:\n");

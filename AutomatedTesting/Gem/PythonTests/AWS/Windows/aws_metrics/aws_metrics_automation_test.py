@@ -133,7 +133,7 @@ def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixtur
         aws_metrics_utils.stop_kinesis_data_analytics_application(
             resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('aws_credentials')
 @pytest.mark.usefixtures('resource_mappings')
@@ -166,10 +166,6 @@ class TestAWSMetricsWindows(object):
         kinesis_analytics_application_thread = AWSMetricsThread(target=update_kinesis_analytics_application_status,
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
-
-        # Clear the analytics bucket objects before sending new metrics.
-        aws_metrics_utils.empty_bucket(
-            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
 
         log_monitor = setup(launcher, asset_processor)
 
@@ -204,6 +200,10 @@ class TestAWSMetricsWindows(object):
             thread.start()
         for thread in operational_threads:
             thread.join()
+
+        # Clear the analytics bucket objects so that the S3 bucket can be destroyed during tear down.
+        aws_metrics_utils.empty_bucket(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
 
     def test_unauthorized_user_request_rejected(self,
                                                 level: str,

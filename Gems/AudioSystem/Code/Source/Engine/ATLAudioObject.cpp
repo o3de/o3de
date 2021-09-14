@@ -762,7 +762,7 @@ namespace Audio
         AZStd::string eventsString;
         for (auto activeEvent : m_cActiveEvents)
         {
-            eventsString = AZStd::string::format("%s%" PRIu64 "%s", eventsString.c_str(), activeEvent, sSeparator);
+            eventsString = AZStd::string::format("%s%llu%s", eventsString.c_str(), activeEvent, sSeparator);
         }
 
         return eventsString;

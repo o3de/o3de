@@ -48,7 +48,6 @@ OutlinerCheckBox
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
-    font-size: 0px;
     margin: 0px;
     background-color: none;
     max-height: 20px;
@@ -66,7 +65,6 @@ OutlinerCheckBox::indicator
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
-    font-size: 0px;
     margin: 0;
 }
 

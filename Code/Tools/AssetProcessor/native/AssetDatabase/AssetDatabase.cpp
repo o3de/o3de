@@ -758,6 +758,14 @@ namespace AssetProcessor
             "FileID = :fileid;";
         static const auto s_DeleteFileQuery = MakeSqlQuery(DELETE_FILE, DELETE_FILE_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":fileid"));
+
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
+
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::DropIndexBuilderGuid_Source_SourceDependency";
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
+            "DROP INDEX IF EXISTS BuilderGuid_Source_SourceDependency;";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1033,6 +1041,15 @@ namespace AssetProcessor
         // sqlite doesn't not support altering a table to remove a column
         // This is fine as the extra OutputPrefix column will not be queried
 
+        if (foundVersion == AssetDatabase::DatabaseVersion::RemoveOutputPrefixFromScanFolders)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY) && m_databaseConnection->ExecuteOneOffStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedSourceIndexForSourceDependencyTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedSourceIndexForSourceDependencyTable)\n", foundVersion)
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1305,6 +1322,12 @@ namespace AssetProcessor
 
         m_databaseConnection->AddStatement(CREATEINDEX_SCANFOLDERS_FILES, CREATEINDEX_SCANFOLDERS_FILES_STATEMENT);
         m_createStatements.push_back(CREATEINDEX_SCANFOLDERS_FILES);
+
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE, CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCE);
+
+        m_databaseConnection->AddStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY, DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT);
+        m_createStatements.push_back(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY);
 
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
     }

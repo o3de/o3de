@@ -20,6 +20,7 @@
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
+#include <CryCommon/MiniQueue.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -28,6 +29,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/algorithm.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -123,14 +125,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "Log.h"
 
 #include "XML/xml.h"
-#include "XML/ReadWriteXMLSink.h"
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
 #include "HMDBus.h"
 
-#include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
@@ -338,9 +338,6 @@ CSystem::~CSystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::Release()
 {
-    //Disconnect the render bus
-    AZ::RenderNotificationsBus::Handler::BusDisconnect();
-
     delete this;
 }
 
@@ -641,7 +638,7 @@ void CSystem::SleepIfNeeded()
     allowStallCatchup = true;
 
     float totalElapsed = (now - prevNow.Front()).GetSeconds();
-    float wantSleepTime = CLAMP(minTime * (prevNow.Size() - 1) - totalElapsed, 0, (minTime - elapsed) * 0.9f);
+    float wantSleepTime = AZStd::clamp(minTime * (prevNow.Size() - 1) - totalElapsed, 0.0f, (minTime - elapsed) * 0.9f);
     static float sleepTime = 0;
     sleepTime = (15 * sleepTime + wantSleepTime) / 16;
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
@@ -1465,7 +1462,7 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
         if (gEnv && gEnv->pTimer)
         {
             const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-            const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
+            [[maybe_unused]] const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
             CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
                 m_systemGlobalState, systemGlobalState,
                 CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
@@ -1650,10 +1647,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-        const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+        [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
         CRY_ASSERT(bytesCopied == rawInputSize);
 
-        RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+        [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
         CRY_ASSERT(rawInput);
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);

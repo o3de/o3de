@@ -293,7 +293,7 @@ namespace AZ
                     // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
                     m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                    // Update View Srgs
+                    // Update Scene and View Srgs
                     for (auto& scenePtr : m_scenes)
                     {
                         scenePtr->UpdateSrgs();
@@ -372,7 +372,7 @@ namespace AZ
                 return;
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -396,7 +396,7 @@ namespace AZ
             }
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
 

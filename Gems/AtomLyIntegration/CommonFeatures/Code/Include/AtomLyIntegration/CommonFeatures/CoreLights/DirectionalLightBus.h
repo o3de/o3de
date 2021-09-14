@@ -185,6 +185,14 @@ namespace AZ
             //! This sets the type of Pcf (percentage-closer filtering) to use.
             //! @param method The Pcf method to use.
             virtual void SetPcfMethod(PcfMethod method) = 0;
+
+            //! Gets whether the directional shadowmap should use receiver plane bias.
+            //! This attempts to reduce shadow acne when using large pcf filters.
+            virtual bool GetShadowReceiverPlaneBiasEnabled() const = 0;
+
+            //! Sets whether the directional shadowmap should use receiver plane bias.
+            //! @param enable flag specifying whether to enable the receiver plane bias feature
+            virtual void SetShadowReceiverPlaneBiasEnabled(bool enable) = 0;
         };
         using DirectionalLightRequestBus = EBus<DirectionalLightRequests>;
 

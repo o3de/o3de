@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -109,6 +110,11 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // IUpgradeRequests...
+        void ClearGraphsThatNeedUpgrade()
+        {
+            m_assetsThatNeedManualUpgrade.clear();
+        }
+
         IUpgradeRequests::AssetList& GetAssetsToUpgrade() override
         {
             return m_assetsToConvert;
@@ -122,7 +128,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() override
+        const AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() const override
         {
             return m_assetsThatNeedManualUpgrade;
         }

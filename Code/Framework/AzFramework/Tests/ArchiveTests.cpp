@@ -570,7 +570,7 @@ namespace UnitTest
         EXPECT_TRUE(found_mylevel_folder);
 
         numFound = 0;
-        found_mylevel_folder = 0;
+        found_mylevel_folder = false;
 
         // now make sure no red herrings appear
         // for example, if a file is mounted at "@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4"
@@ -607,6 +607,9 @@ namespace UnitTest
         // delete test files in case they already exist
         archive->ClosePack(genericArchiveFileName);
         cpfio.Remove(genericArchiveFileName);
+
+        // create the asset alias directory
+        cpfio.CreatePath("@assets@");
 
         // create generic file
 
@@ -848,13 +851,17 @@ namespace UnitTest
         const char *assetsPath = ioBase->GetAlias("@assets@");
         ASSERT_NE(nullptr, assetsPath);
 
-        AZStd::string stringToAdd = AZStd::string::format("%s/textures/test.dds", assetsPath);
+        auto stringToAdd = AZ::IO::Path(assetsPath) / "textures" / "test.dds";
 
         reslist->Clear();
-        reslist->Add(stringToAdd.c_str());
+        reslist->Add(stringToAdd.Native());
 
         // it normalizes the string, so the slashes flip and everything is lowercased.
-        EXPECT_STREQ(reslist->GetFirst(), "@assets@/textures/test.dds");
+        AZ::IO::FixedMaxPath resolvedAddedPath;
+        AZ::IO::FixedMaxPath resolvedResourcePath;
+        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedAddedPath, "@assets@/textures/test.dds"));
+        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedResourcePath, reslist->GetFirst()));
+        EXPECT_EQ(resolvedAddedPath, resolvedResourcePath);
         reslist->Clear();
     }
 

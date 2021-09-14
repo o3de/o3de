@@ -188,7 +188,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             float scale = 0;
 
             i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
 
             switch (m_drawMode)
             {
@@ -253,7 +253,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         for (size_t x = 0, xCount = abs(rcGraph.width()); x < xCount; ++x)
         {
             i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
             crtX = static_cast<UINT>(rcGraph.left() + x + 1);
             scaleR = scaleG = scaleB = scaleA = 0;
 
@@ -345,7 +345,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         {
             pos = (float)x / graphWidth;
             i = static_cast<int>((float)((int)(pos * kNumColorLevels) % aThirdOfNumColorLevels) / aThirdOfNumColorLevels * kNumColorLevels);
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
             scale = 0;
 
             // R

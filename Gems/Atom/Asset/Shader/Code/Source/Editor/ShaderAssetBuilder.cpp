@@ -20,6 +20,7 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
@@ -462,7 +463,7 @@ namespace AZ
                     {
                         finalShaderOptionGroupLayout = shaderOptionGroupLayout;
                         shaderAssetCreator.SetShaderOptionGroupLayout(finalShaderOptionGroupLayout);
-                        const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
+                        [[maybe_unused]] const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
                         AZ_TracePrintf(
                             ShaderAssetBuilderName, "Note: This shader uses %u of %u available shader variant key bits. \n",
                             usedShaderOptionBits, RPI::ShaderVariantKeyBitCount);
@@ -555,7 +556,7 @@ namespace AZ
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
 
-                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath);
+                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!hlslSourceCodeOutcome.IsSuccess())
                     {
                         AZ_Error(

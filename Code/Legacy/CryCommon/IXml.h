@@ -5,17 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_IXML_H
-#define CRYINCLUDE_CRYCOMMON_IXML_H
 #pragma once
 
 #include <platform.h>
 #include <Cry_Math.h>
 #include <AzCore/IO/FileIO.h>
-
-class ICrySizer;
 
 template <class T>
 struct Color_tpl;
@@ -24,17 +18,12 @@ typedef Color_tpl<uint8> ColorB;
 template <typename F>
 struct Vec2_tpl;
 typedef Vec2_tpl<f32>   Vec2;
-typedef Vec2_tpl<f64>  Vec2d;
 
 template <typename F>
 struct Vec3_tpl;
 typedef Vec3_tpl<f32>   Vec3;
-typedef Vec3_tpl<f64>  Vec3d;
 
-template <typename F>
-struct Vec4_tpl;
-typedef Vec4_tpl<f32>   Vec4;
-typedef Vec4_tpl<f64>  Vec4d;
+struct Vec4;
 
 template <typename F>
 struct Quat_tpl;
@@ -59,7 +48,6 @@ class QColor;
 class QString;
 
 class IXMLBinarySerializer;
-struct IReadWriteXMLSink;
 struct ISerialize;
 
 /*
@@ -329,11 +317,9 @@ public:
     virtual void setAttr(const char* key, float value) = 0;
     virtual void setAttr(const char* key, double value) = 0;
     virtual void setAttr(const char* key, const Vec2& value) = 0;
-    virtual void setAttr(const char* key, const Vec2d& value) = 0;
     virtual void setAttr(const char* key, const Ang3& value) = 0;
     virtual void setAttr(const char* key, const Vec3& value) = 0;
     virtual void setAttr(const char* key, const Vec4& value) = 0;
-    virtual void setAttr(const char* key, const Vec3d& value) = 0;
     virtual void setAttr(const char* key, const Quat& value) = 0;
 #if defined(LINUX64) || defined(APPLE)
     // Compatibility functions, on Linux and Mac long int is the default int64_t
@@ -378,11 +364,9 @@ public:
     virtual bool getAttr(const char* key, float& value) const = 0;
     virtual bool getAttr(const char* key, double& value) const = 0;
     virtual bool getAttr(const char* key, Vec2& value) const = 0;
-    virtual bool getAttr(const char* key, Vec2d& value) const = 0;
     virtual bool getAttr(const char* key, Ang3& value) const = 0;
     virtual bool getAttr(const char* key, Vec3& value) const = 0;
     virtual bool getAttr(const char* key, Vec4& value) const = 0;
-    virtual bool getAttr(const char* key, Vec3d& value) const = 0;
     virtual bool getAttr(const char* key, Quat& value) const = 0;
     virtual bool getAttr(const char* key, bool& value) const = 0;
     virtual bool getAttr(const char* key, XmlString& value) const = 0;
@@ -400,13 +384,6 @@ public:
         return getAttr(key, (int64&)value);
     }
 #endif
-
-    // </interfuscator:shuffle>
-
-    // <interfuscator:shuffle>
-    // Summary:
-    //   Collect all allocated memory
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 
     // Summary:
     //   Copies children to this node from a given node.
@@ -700,7 +677,7 @@ public:
 
     XmlNodeRefIterator& operator=(const XmlNodeRefIterator& other) = default;
 
-    XmlNodeRefIterator& operator++() 
+    XmlNodeRefIterator& operator++()
     {
         ++m_index;
         Update();
@@ -714,7 +691,7 @@ public:
         return ret;
     }
 
-    IXmlNode* operator*() const 
+    IXmlNode* operator*() const
     {
         return m_currentChildNode;
     }
@@ -794,7 +771,6 @@ struct IXmlSerializer
     virtual ISerialize* GetWriter(XmlNodeRef& node) = 0;
     virtual ISerialize* GetReader(XmlNodeRef& node) = 0;
     // </interfuscator:shuffle>
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -802,7 +778,6 @@ struct IXmlSerializer
 //   XML Parser interface.
 struct IXmlParser
 {
-    // <interfuscator:shuffle>
     virtual ~IXmlParser(){}
     virtual void AddRef() = 0;
     virtual void Release() = 0;
@@ -814,9 +789,6 @@ struct IXmlParser
     // Summary:
     //   Parses xml from memory buffer.
     virtual XmlNodeRef ParseBuffer(const char* buffer, int nBufLen, bool bCleanPools, bool bSuppressWarnings = false) = 0;
-
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
-    // </interfuscator:shuffle>
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -863,7 +835,6 @@ struct IXmlTableReader
     // to know absolute cell index (i.e. column).
     // Returns false if no cells left in the row.
     virtual bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize) = 0;
-    virtual float GetCurrentRowHeight() = 0;
     // </interfuscator:shuffle>
 };
 
@@ -877,28 +848,17 @@ struct IXmlUtils
 
     // Summary:
     //   Loads xml file, returns 0 if load failed.
-    virtual XmlNodeRef LoadXmlFromFile(const char* sFilename, bool bReuseStrings = false, bool bEnablePatching = true) = 0;
+    virtual XmlNodeRef LoadXmlFromFile(const char* sFilename, bool bReuseStrings = false) = 0;
     // Summary:
     //   Loads xml from memory buffer, returns 0 if load failed.
     virtual XmlNodeRef LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings = false, bool bSuppressWarnings = false) = 0;
-
-    // Summary:
-    //   Creates an MD5 hash of an XML file
-    virtual const char* HashXml(XmlNodeRef node) = 0;
-
-    // Summary:
-    //   Gets an object that can read a xml into a IReadXMLSink
-    //   and writes a xml from a IWriteXMLSource
-    virtual IReadWriteXMLSink* GetIReadWriteXMLSink() = 0;
 
     // Summary:
     //   Creates XML Writer for ISerialize interface.
     // See also:
     //   IXmlSerializer
     virtual IXmlSerializer* CreateXmlSerializer() = 0;
-    // </interfuscator:shuffle>
 
-    // <interfuscator:shuffle>
     // Summary:
     //   Creates XML Parser.
     // Notes:
@@ -909,39 +869,8 @@ struct IXmlUtils
     virtual IXmlParser* CreateXmlParser() = 0;
 
     // Summary:
-    //   Creates XML to file in the binary form.
-    virtual bool SaveBinaryXmlFile(const char* sFilename, XmlNodeRef root) = 0;
-    // Summary:
-    //   Reads XML data from file in the binary form.
-    virtual XmlNodeRef LoadBinaryXmlFile(const char* sFilename, bool bEnablePatching = true) = 0;
-
-    // Summary:
-    //   Enables or disables checking for binary xml files.
-    // Return Value:
-    //   The previous status.
-    virtual bool EnableBinaryXmlLoading(bool bEnable) = 0;
-
-    // Summary:
     //   Creates XML Table reader.
     // Notes:
     //   After use it must be released with call to Release method.
     virtual IXmlTableReader* CreateXmlTableReader() = 0;
-
-    // Init xml stats nodes pool
-    virtual void InitStatsXmlNodePool(uint32 nPoolSize) = 0;
-
-    // Creates new xml node for statistics.
-    virtual XmlNodeRef CreateStatsXmlNode(const char* sNodeName) = 0;
-    // Set owner thread
-    virtual void SetStatsOwnerThread(threadID threadId) = 0;
-
-    // Free memory held on to by xml pool if empty
-    virtual void FlushStatsXmlNodePool() = 0;
-
-    // Sets the patch which is used to transform loaded XML files. the patch itself is encoded into XML
-    // Set to NULL to clear an existing transform and disable further patching
-    virtual void SetXMLPatcher(XmlNodeRef* pPatcher) = 0;
-    // </interfuscator:shuffle>
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_IXML_H
