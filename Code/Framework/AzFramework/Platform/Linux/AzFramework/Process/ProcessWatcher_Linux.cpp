@@ -20,6 +20,7 @@
 #include <iostream>
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <sys/types.h>
@@ -278,6 +279,32 @@ namespace AzFramework
                 azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
             }
             environmentVariables[numEnvironmentVars] = nullptr;
+        }
+        else
+        {
+            // If no environment variables were specified, then copy the current process's environment variables
+            // and pass it along for the unwatch process.
+            extern char **environ;  // Read the current environment global system pointer
+            char **env = ::environ;
+            AZ_Assert(env, "Environment variables for current process not available\n");
+
+            // Do a first pass across the global ::environ array to count how many environment variables are set (the array is null-terminated)
+            for (;env[numEnvironmentVars]!=nullptr;numEnvironmentVars++) 
+            {
+            }
+
+            if (numEnvironmentVars>0)
+            {
+                environmentVariables = new char*[numEnvironmentVars + 1];
+                for (size_t index=0; index<numEnvironmentVars; index++)
+                {
+                    size_t envLength = strlen(env[index]);
+                    environmentVariables[index] = new char[envLength + 1];
+                    environmentVariables[index][0] = '\0';
+                    azstrcat(environmentVariables[index], envLength + 1, env[index]);
+                }
+                environmentVariables[numEnvironmentVars] = nullptr;
+            }
         }
 
         pid_t child_pid = fork();
