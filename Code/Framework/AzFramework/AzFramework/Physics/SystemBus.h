@@ -132,6 +132,10 @@ namespace Physics
 
         virtual AZStd::shared_ptr<Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) = 0;
 
+        /// Releases the height field object created by the physics backend.
+        /// @param nativeHeightfieldObject Pointer to the height field object.
+        virtual void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) = 0;
+
         /// Releases the mesh object created by the physics backend.
         /// @param nativeMeshObject Pointer to the mesh object.
         virtual void ReleaseNativeMeshObject(void* nativeMeshObject) = 0;

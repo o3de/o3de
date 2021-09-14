@@ -342,6 +342,14 @@ namespace PhysX
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
+    void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
+    {
+        if (nativeHeightfieldObject)
+        {
+            static_cast<physx::PxBase*>(nativeHeightfieldObject)->release();
+        }
+    }
+
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
     {
         if (nativeMeshObject)
