@@ -27,6 +27,7 @@ ly_add_target(
             AZ::AzNetworking
         PRIVATE
             Gem::EMotionFXStaticLib
+            Gem::PhysX.Static
     AUTOGEN_RULES
         *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
         *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
