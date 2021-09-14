@@ -157,7 +157,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightScale);
 
-    EXPECT_EQ(heightScale, 1.0f / 255.0f);
+    EXPECT_EQ(heightScale, 1.0f / 256.0f);
 
     ResetEntity();
 }
@@ -174,9 +174,6 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 
     m_entity->Activate();
 
-    LmbrCentral::BoxShapeComponentRequestsBus::Event(
-        m_entity->GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, AZ::Vector3(10.0f, 10.0f, 10.0f));   
-
     AZStd::vector<int16_t> heights;
 
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -184,5 +181,48 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 
     EXPECT_TRUE(heights.size() != 0);
    
+    ResetEntity();
+}
+
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
+
+    m_entity->Activate();
+
+    float min = 100;
+    float max = 200;
+
+    float mockHeight = 10.0f;
+
+    m_terrainSystem->SetMockHeight(mockHeight);
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    AZStd::vector<int16_t> heights;
+
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights, heights);
+
+    ASSERT_TRUE(heights.size() != 0);
+
+    float heightScale = 0.0f;
+
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightScale);
+
+    float aabbCenter = min + (max - min) / 2.0f;
+    
+    // The height returned by the terrain system(mockHeight) is absolute, the collider will return a relative value.
+    int16_t expectedHeight = aznumeric_cast<int16_t>((mockHeight - aabbCenter) / heightScale);
+
+    EXPECT_TRUE(heights[0] == expectedHeight);
+
     ResetEntity();
 }

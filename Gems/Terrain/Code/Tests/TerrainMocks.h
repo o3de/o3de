@@ -29,6 +29,7 @@ namespace UnitTest
 
         void Activate() override
         {
+            m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100.0f, -100.0f, -100.0f), AZ::Vector3(100.0f, 100.0f, 100.0f));
             LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
         }
 
@@ -45,6 +46,11 @@ namespace UnitTest
         bool WriteOutConfig([[maybe_unused]] AZ::ComponentConfig* outBaseConfig) const override
         {
             return true;
+        }
+
+        void SetAabbFromMinMax(const AZ::Vector3& min, const AZ::Vector3& max)
+        {
+            m_bounds = AZ::Aabb::CreateFromMinMax(min, max);
         }
 
     private:
@@ -73,11 +79,8 @@ namespace UnitTest
             return AZ_CRC("Box", 0x08a9483a);
         }
 
-        AZ::Aabb m_bounds;
-
         AZ::Aabb GetEncompassingAabb() override
         {
-            m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100.0f, -100.0f, -100.0f), AZ::Vector3(100.0f, 100.0f, 100.0f));
             return m_bounds;
         }
 
@@ -97,6 +100,7 @@ namespace UnitTest
             return 1.0f;
         }
 
+        AZ::Aabb m_bounds;
     };
 
     class MockTerrainSystem
@@ -115,6 +119,11 @@ namespace UnitTest
         {
             AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
+        }
+
+        void SetMockHeight(const float height)
+        {
+            m_height = height;
         }
 
         void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
@@ -153,12 +162,12 @@ namespace UnitTest
 
         float GetHeight(AZ::Vector3 /*position*/, Sampler /*sampler*/, bool* /* terrainExistsPtr*/) const override
         {
-            return 1.0f;
+            return m_height;
         }
 
         float GetHeightFromFloats(float /*x*/, float /*y*/, Sampler /*sampler*/, bool* /*terrainExistsPtr*/) const override
         {
-            return 1.0f;
+            return m_height;
         }
 
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
@@ -199,6 +208,8 @@ namespace UnitTest
         int m_registerAreaCalledCount = 0;
         int m_refreshAreaCalledCount = 0;
         int m_unregisterAreaCalledCount = 0;
+
+        float m_height = 1.0f;
     };
 
     class MockHeightfieldProviderNotificationBusListener
