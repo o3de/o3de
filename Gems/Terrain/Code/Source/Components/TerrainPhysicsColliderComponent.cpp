@@ -158,7 +158,6 @@ namespace Terrain
             worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         float worldCenterZ = worldSize.GetCenter().GetZ();
-        float heightScale = 0.1f;
 
         int32_t gridWidth, gridHeight;
 
@@ -189,7 +188,7 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
 
-                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) / heightScale));
+                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) / m_heightScale));
             }
         }
     }
