@@ -62,11 +62,11 @@ namespace Physics
     {
     public:
         /// Returns the distance between each height in the map.
-        /// @return Vector containing Rows Spacing, Column Spacing.
+        /// @return Vector containing Column Spacing, Rows Spacing.
         virtual AZ::Vector2 GetHeightfieldGridSpacing() = 0;
 
         /// Returns the height field gridsize.
-        /// @param nulColumns contains the size of the grid in the x direction.
+        /// @param numColumns contains the size of the grid in the x direction.
         /// @param numRows contains the size of the grid in the y direction.
         virtual void GetHeightfieldGridSize(int32_t& nulColumns, int32_t& numRows) = 0;
       
@@ -83,7 +83,7 @@ namespace Physics
         virtual void GetHeightsAndMaterials(AZStd::vector<HeightMaterialPoint>& heights) = 0;
 
         /// Returns the scale used by the height field.
-        /// @param heightScale contains all the heights in the height field.
+        /// @param heightScale contains the scale of the height values returned by GetHeights.
         virtual void GetScale(float& heightScale) = 0;
 
         /// Updates values in the height field.
