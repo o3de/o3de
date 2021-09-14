@@ -669,12 +669,12 @@ namespace UnitTest
         PositionEntities();
         PositionCamera(m_cameraState);
 
-        // position in space above the entity
+        // position in space above the entities
         const auto clickOffPositionWorld = AZ::Vector3(5.0f, 15.0f, 12.0f);
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
-        // calculate the position in screen space of the initial position of the entity
+        // calculate the screen space position of the click
         const auto clickOffPositionScreen = AzFramework::WorldToScreen(clickOffPositionWorld, m_cameraState);
 
         // click the empty space in the viewport
@@ -697,16 +697,15 @@ namespace UnitTest
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
-        // position in space above the entity
+        // position in space above the entities
         const auto clickOffPositionWorld = AZ::Vector3(5.0f, 15.0f, 12.0f);
-        // calculate the position in screen space of the initial position of the entity
+        // calculate the screen space position of the click
         const auto clickOffPositionScreen = AzFramework::WorldToScreen(clickOffPositionWorld, m_cameraState);
 
         // click the empty space in the viewport
         m_actionDispatcher->CameraState(m_cameraState)->MousePosition(clickOffPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
 
         // entity was deselected
-        using ::testing::Eq;
         auto selectedEntitiesAfter = SelectedEntities();
         EXPECT_TRUE(selectedEntitiesAfter.empty());
     }
@@ -977,9 +976,9 @@ namespace UnitTest
         auto selectedEntitiesBefore = SelectedEntities();
         EXPECT_THAT(selectedEntitiesBefore, UnorderedElementsAre(m_entityId1, m_entityId2, m_entityId3));
 
-        // position in space above the entity
+        // position in space above the entities
         const auto clickOffPositionWorld = AZ::Vector3(5.0f, 15.0f, 12.0f);
-        // calculate the position in screen space
+        // calculate the screen space position of the click
         const auto clickOffPositionScreen = AzFramework::WorldToScreen(clickOffPositionWorld, m_cameraState);
 
         // double click to deselect entities

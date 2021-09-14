@@ -170,7 +170,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDown()
     {
-        Log("%s", "Mouse left button down");
+        Log("Mouse left button down");
         MouseLButtonDownImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -178,7 +178,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonUp()
     {
-        Log("%s", "Mouse left button up");
+        Log("Mouse left button up");
         MouseLButtonUpImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -186,7 +186,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDoubleClick()
     {
-        Log("%s", "Mouse left button double click");
+        Log("Mouse left button double click");
         MouseLButtonDoubleClickImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
