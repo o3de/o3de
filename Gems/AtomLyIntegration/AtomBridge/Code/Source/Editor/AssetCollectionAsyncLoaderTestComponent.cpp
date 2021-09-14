@@ -115,7 +115,7 @@ namespace AZ
         {
             rapidjson::Document jsonDoc;
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(pathToAssetListJson, AZ::RPI::JsonUtils::AtomMaxFileSize);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(pathToAssetListJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (!readJsonResult.IsSuccess())
             {

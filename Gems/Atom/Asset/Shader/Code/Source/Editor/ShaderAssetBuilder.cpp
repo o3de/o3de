@@ -556,7 +556,7 @@ namespace AZ
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
 
-                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!hlslSourceCodeOutcome.IsSuccess())
                     {
                         AZ_Error(
