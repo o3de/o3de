@@ -16,23 +16,13 @@ set(installed_binaries_path_template [[
         "AzCore": {
             "Runtime": {
                 "FilePaths": {
-                    "InstalledBinariesFolder": "bin/Mac/$<CONFIG>"
+                    "InstalledBinariesFolder": "@install_relative_binaries_path@"
                 }
             }
         }
     }
 }]]
 )
-
-unset(target_conf_dir)
-foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-    string(TOUPPER ${conf} UCONF)
-    string(APPEND target_conf_dir $<$<CONFIG:${conf}>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF}}>)
-endforeach()
-
-set(installed_binaries_setreg_path ${target_conf_dir}/Registry/installed_binaries_path.setreg)
-
-file(GENERATE OUTPUT ${installed_binaries_setreg_path} CONTENT ${installed_binaries_path_template})
 
 foreach(config ${CMAKE_CONFIGURATION_TYPES})
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_mac.cmake @ONLY)
@@ -78,14 +68,43 @@ function(ly_install_target_override)
             COMPONENT ${install_component}
     )
 
+    set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}")
+
     if (${is_bundle})
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
+        set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>.app")
+
+        # For bundles, add a setreg file that contains install relative path to the bundle.
+        # This will be used when loading dynamic libraries outside the bundle.
+        string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
+        file(GENERATE
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}BundlePath.setreg
+            CONTENT "${configured_setreg_file}"
+        )
+        ly_install_add_install_path_setreg(${ly_platform_install_target_TARGET} ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}BundlePath.setreg)
+    else()
+        set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>")
+    endif()
+    
+    get_target_property(target_type ${ly_platform_install_target_TARGET} TYPE)
+    if(target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+        get_target_property(entitlement_file ${ly_platform_install_target_TARGET} ENTITLEMENT_FILE_PATH)
+        if (NOT entitlement_file)
+            set(entitlement_file "none")
+        endif()
+        
+        ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
+        string(CONFIGURE "${template_file}" configured_template_file @ONLY)
+        file(GENERATE
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}.cmake
+            CONTENT "${configured_template_file}"
+        )
     endif()
 endfunction()
 
 #! ly_install_add_install_path_setreg: Adds the install path setreg file as a dependency
-function(ly_install_add_install_path_setreg NAME)
-    set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${installed_binaries_setreg_path}\nRegistry")
+function(ly_install_add_install_path_setreg NAME SETREG_FILE_PATH)
+    set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${SETREG_FILE_PATH}\nRegistry")
 endfunction()
 
 #! ly_install_code_function_override: Mac specific copy function to handle frameworks
@@ -111,22 +130,6 @@ function(ly_post_install_steps)
             continue()
         endif()
         
-        get_target_property(is_bundle ${target} MACOSX_BUNDLE)
-        if (${is_bundle})
-            set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>.app")
-        else()
-            set(runtime_output_filename "$<TARGET_FILE_NAME:${target}>")
-        endif()
-        get_target_property(entitlement_file ${target} ENTITLEMENT_FILE_PATH)
-        if (NOT entitlement_file)
-            set(entitlement_file "none")
-        endif()
-        ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
-        string(CONFIGURE "${template_file}" configured_template_file @ONLY)
-        file(GENERATE
-            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake
-            CONTENT "${configured_template_file}"
-        )
         install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
     endforeach()
 

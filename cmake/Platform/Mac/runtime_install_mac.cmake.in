@@ -6,7 +6,7 @@
 #
 #
 
-cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/bin/Mac/$<CONFIG>/@runtime_output_filename@")
+cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/@install_relative_binaries_path@/@runtime_output_filename@")
 
 if(@runtime_output_filename@ MATCHES ".app")
 
