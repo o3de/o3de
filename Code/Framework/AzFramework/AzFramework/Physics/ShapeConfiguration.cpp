@@ -356,7 +356,7 @@ namespace Physics
     {
         ShapeConfiguration::operator=(other);
 
-        m_dimensions = other.m_dimensions;
+        // The EntityID is all we need to get the heightfield information.
         m_heightProvider = other.m_heightProvider;
 
         // Prevent raw pointer from being copied

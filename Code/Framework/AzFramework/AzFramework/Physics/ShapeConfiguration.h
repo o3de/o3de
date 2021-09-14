@@ -217,7 +217,6 @@ namespace Physics
         void* GetCachedNativeHeightfield() const;
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield) const;
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
         AZ::EntityId m_heightProvider;
         mutable void* m_cachedNativeHeightfield{ nullptr };
     };
