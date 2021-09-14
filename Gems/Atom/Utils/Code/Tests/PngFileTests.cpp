@@ -318,6 +318,7 @@ namespace UnitTest
 
         AZ::IO::FileIOStream tempFileStream;
         tempFileStream.Open(m_tempPngFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
+        EXPECT_TRUE(tempFileStream.IsOpen());
 
         PngFile savedImage = PngFile::Create(AZ::RHI::Size{3, 1, 0}, AZ::RHI::Format::R8G8B8A8_UNORM, m_primaryColors3x1);
         bool result = savedImage.Save(m_tempPngFilePath.c_str(), saveSettings);
