@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -90,7 +91,7 @@ namespace Terrain
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(GetEntityId());
 
-        HeightfieldUpdated();
+        NotifyListenersOfHeightfieldDataChange();
     }
 
     void TerrainPhysicsColliderComponent::Deactivate()
@@ -120,7 +121,7 @@ namespace Terrain
         return false;
     }
 
-    void TerrainPhysicsColliderComponent::HeightfieldUpdated()
+    void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange()
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
@@ -134,15 +135,15 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
-        HeightfieldUpdated();
+        NotifyListenersOfHeightfieldDataChange();
     }
 
     void TerrainPhysicsColliderComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
-        HeightfieldUpdated();
+        NotifyListenersOfHeightfieldDataChange();
     }
 
-    AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing()
+    AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
         AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -151,7 +152,7 @@ namespace Terrain
         return gridResolution;
     }
 
-    AZStd::vector<int16_t> TerrainPhysicsColliderComponent::GetHeights()
+    AZStd::vector<int16_t> TerrainPhysicsColliderComponent::GetHeights() const
     {
         AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
@@ -189,7 +190,7 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
 
-                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) * m_heightScale));
+                heights.emplace_back(azlossy_cast<int16_t>((height - worldCenterZ) * m_heightScale));
             }
         }
 

@@ -46,6 +46,7 @@ namespace Terrain
         template<typename, typename>
         friend class LmbrCentral::EditorWrappedComponentBase;
         AZ_COMPONENT(TerrainPhysicsColliderComponent, "{33C20287-1D37-44D0-96A0-2C3766E23624}");
+
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -63,7 +64,7 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        void HeightfieldUpdated();
+        void NotifyListenersOfHeightfieldDataChange();
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::TransformNotificationBus::Handler
@@ -73,8 +74,8 @@ namespace Terrain
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
         // HeightfieldProviderRequestsBus
-        AZ::Vector2 GetHeightfieldGridSpacing() override;
-        AZStd::vector<int16_t> GetHeights() override;
+        AZ::Vector2 GetHeightfieldGridSpacing() const override;
+        AZStd::vector<int16_t> GetHeights() const override;
         float GetHeightScale() const override;
     private:
         TerrainPhysicsColliderConfig m_configuration;

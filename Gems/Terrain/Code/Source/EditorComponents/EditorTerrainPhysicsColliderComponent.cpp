@@ -14,7 +14,7 @@ namespace Terrain
 {
     void EditorTerrainPhysicsColliderComponent::Reflect(AZ::ReflectContext* context)
     {
-        // Automatically reflect common components, name, icon etc...
+        // Call ReflectSubClass in EditorWrappedComponentBase to handle all the boilerplate reflection.
         BaseClassType::ReflectSubClass<EditorTerrainPhysicsColliderComponent, BaseClassType>(
             context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,

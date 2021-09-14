@@ -18,7 +18,7 @@ namespace Physics
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) = 0;
+        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) {}
 
     protected:
         ~HeightfieldProviderNotifications() = default;
@@ -26,12 +26,12 @@ namespace Physics
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 
-    //! Bus used to retrieve heightfield data from a PhysicsCollider.
+    //! Bus used to retrieve heightfield data from a HeightfieldProvider.
     class HeightfieldProviderRequests : public AZ::ComponentBus
     {
     public:
-        virtual AZ::Vector2 GetHeightfieldGridSpacing() = 0;
-        virtual AZStd::vector<int16_t> GetHeights() = 0;
+        virtual AZ::Vector2 GetHeightfieldGridSpacing() const = 0;
+        virtual AZStd::vector<int16_t> GetHeights() const = 0;
         virtual float GetHeightScale() const = 0;
     };
 
