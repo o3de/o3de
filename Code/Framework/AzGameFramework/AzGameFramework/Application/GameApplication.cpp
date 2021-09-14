@@ -32,15 +32,15 @@ namespace AzGameFramework
         // at the Assets alias, otherwise to attempting to mount the engine pak
         // from the Cache folder
         AZ::IO::FixedMaxPath enginePakPath = AZ::Utils::GetExecutableDirectory();
-        enginePakPath /= "engine.pak";
+        enginePakPath /= "Engine.pak";
         if (m_archiveFileIO->Exists(enginePakPath.c_str()))
         {
             m_archive->OpenPack("@assets@", enginePakPath.Native());
         }
         else if (enginePakPath.clear(); m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
-            // fall back to checking if there is an engine.pak in the Asset Cache
-            enginePakPath /= "engine.pak";
+            // fall back to checking if there is an Engine.pak in the Asset Cache
+            enginePakPath /= "Engine.pak";
             if (m_archiveFileIO->Exists(enginePakPath.c_str()))
             {
                 m_archive->OpenPack("@assets@", enginePakPath.Native());
