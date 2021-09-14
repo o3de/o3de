@@ -34,7 +34,7 @@ set(FILES
     API/EditorAnimationSystemRequestBus.h
     API/EditorEntityAPI.h
     API/EditorLevelNotificationBus.h
-    API/ViewportEditorModeStateTrackerNotificationBus.h
+    API/ViewportEditorModesTrackerNotificationBus.h
     API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
@@ -45,7 +45,7 @@ set(FILES
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/ViewPaneOptions.h
-    API/ViewportEditorModeStateTrackerInterface.h
+    API/ViewportEditorModesTrackerInterface.h
     Application/Ticker.h
     Application/Ticker.cpp
     Application/EditorEntityManager.cpp
@@ -540,8 +540,8 @@ set(FILES
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
-    ViewportSelection/ViewportEditorModeStateTracker.cpp
-    ViewportSelection/ViewportEditorModeStateTracker.h
+    ViewportSelection/ViewportEditorModesTracker.cpp
+    ViewportSelection/ViewportEditorModesTracker.h
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
     AssetBrowser/AssetBrowserSourceDropBus.h

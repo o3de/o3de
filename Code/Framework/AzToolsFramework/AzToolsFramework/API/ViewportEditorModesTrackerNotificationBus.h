@@ -30,10 +30,10 @@ namespace AzToolsFramework
     };
 
     //! Interface for the editor mode state of a given viewport.
-    class ViewportEditorModeStateInterface
+    class ViewportEditorModesInterface
     {
     public:
-        virtual ~ViewportEditorModeStateInterface() = default;
+        virtual ~ViewportEditorModesInterface() = default;
 
         //! Returns true if the specified editor mode is active, otherwise false.
         virtual bool IsModeActive(ViewportEditorMode mode) const = 0;
@@ -52,12 +52,12 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //! Notifies subscribers of the a given viewport to the entering of the specified editor mode.
-        virtual void OnEditorModeEnter([[maybe_unused]] const ViewportEditorModeStateInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeEnter([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
 
         //! Notifies subscribers of the a given viewport to the exiting of the specified editor mode.
-        virtual void OnEditorModeExit([[maybe_unused]] const ViewportEditorModeStateInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeExit([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
     };

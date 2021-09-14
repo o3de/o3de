@@ -9,17 +9,17 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/API/ViewportEditorModeStateTrackerNotificationBus.h>
+#include <AzToolsFramework/API/ViewportEditorModesTrackerNotificationBus.h>
 
 namespace AzToolsFramework
 {
     //! The AZ::Interface of the central editor mode state tracker for all viewports.
-    class ViewportEditorModeStateTrackerInterface
+    class ViewportEditorModesTrackerInterface
     {
     public:
-        AZ_RTTI(ViewportEditorModeStateTrackerInterface, "{7D72A4F7-2147-4ED9-A315-E456A3BE3CF6}");
+        AZ_RTTI(ViewportEditorModesTrackerInterface, "{7D72A4F7-2147-4ED9-A315-E456A3BE3CF6}");
 
-        virtual ~ViewportEditorModeStateTrackerInterface() = default;
+        virtual ~ViewportEditorModesTrackerInterface() = default;
 
         //! Enters the specified editor mode for the specified viewport.
         virtual void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
@@ -28,7 +28,7 @@ namespace AzToolsFramework
         virtual void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
 
         //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.
-        virtual const ViewportEditorModeStateInterface* GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
+        virtual const ViewportEditorModesInterface* GetEditorModeState(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
 
         //! Returns the number of viewports currently being tracked.
         virtual size_t GetNumTrackedViewports() const = 0;
