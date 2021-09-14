@@ -109,7 +109,7 @@ namespace AzToolsFramework
         }
     }
 
-    size_t ViewportEditorModeTracker::GetNumTrackedViewports() const
+    size_t ViewportEditorModeTracker::GetTrackedViewportCount() const
     {
         return m_viewportEditorModeStates.size();
     }

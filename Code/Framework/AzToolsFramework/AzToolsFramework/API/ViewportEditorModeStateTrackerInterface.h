@@ -31,7 +31,7 @@ namespace AzToolsFramework
         virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
 
         //! Returns the number of viewports currently being tracked.
-        virtual size_t GetNumTrackedViewports() const = 0;
+        virtual size_t GetTrackedViewportCount() const = 0;
 
         //! Returns true if the specified viewport is being tracked, otherwise false.
         virtual bool IsViewportStateBeingTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;

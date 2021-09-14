@@ -283,7 +283,7 @@ namespace UnitTest
 
     TEST_F(ViewportEditorModeTrackerTestFixture, InitialCentralStateTrackerHasNoViewportEditorModess)
     {
-        EXPECT_EQ(m_viewportEditorModeStteTracker.GetNumTrackedViewports(), 0);
+        EXPECT_EQ(m_viewportEditorModeStteTracker.GetTrackedViewportCount(), 0);
     }
 
     TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
