@@ -20,7 +20,6 @@
 #include <iostream>
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <sys/types.h>
