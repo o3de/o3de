@@ -109,6 +109,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::Atom_RPI.Editor
             Gem::Atom_Feature_Common.Editor
+            Legacy::EditorCommon
     )
 
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
