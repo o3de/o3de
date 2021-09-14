@@ -58,7 +58,7 @@ Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
 
 protected:
-    void resizeEvent(QResizeEvent* ev) override;
+    void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
     void OnInitViewToggleButton();
