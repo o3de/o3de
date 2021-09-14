@@ -63,7 +63,7 @@ namespace UnitTest
             entities = vector_EntityId()
             entities:push_back(my_id)
             template_id = PrefabSystemComponentBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
-            my_result = PrefabLoaderRequestBus.Broadcast.SaveTemplateToString(template_id)
+            my_result = PrefabLoaderScriptingBus.Broadcast.SaveTemplateToString(template_id)
 
             if my_result:IsSuccess() then
                 g_globalPrefabString = my_result:GetValue()
@@ -87,6 +87,8 @@ namespace UnitTest
 
         // Instantiate the prefab we saved
         AZStd::unique_ptr<Instance> instance = prefabSystemComponentInterface->InstantiatePrefab(templateFromString);
+
+        EXPECT_NE(instance, nullptr);
 
         AZStd::vector<const AZ::Entity*> loadedEntities;
 

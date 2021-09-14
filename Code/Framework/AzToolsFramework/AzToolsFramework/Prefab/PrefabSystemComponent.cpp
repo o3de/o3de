@@ -74,11 +74,11 @@ namespace AzToolsFramework
                     ->Event("CreatePrefab", &PrefabSystemComponentBus::Events::CreatePrefabTemplate)
                 ;
 
-                behaviorContext->EBus<PrefabLoaderRequestBus>("PrefabLoaderRequestBus")
+                behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("SaveTemplateToString", &PrefabLoaderRequestBus::Events::SaveTemplateToString);
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
                 ;
             }
 

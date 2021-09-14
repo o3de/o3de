@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <Prefab/ScriptingPrefabLoader.h>
 
 namespace AZ
 {
@@ -34,7 +35,6 @@ namespace AzToolsFramework
         */
         class PrefabLoader final
             : public PrefabLoaderInterface
-            , private PrefabLoaderRequestBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
@@ -111,10 +111,6 @@ namespace AzToolsFramework
             
         private:
 
-            //////////////////////////////////////////////////////////////////////////
-            // PrefabLoaderRequestBus implementation
-            AZ::Outcome<AZStd::string, void> SaveTemplateToString(TemplateId templateId) override;
-            //////////////////////////////////////////////////////////////////////////
             /**
              * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
              * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
@@ -178,6 +174,7 @@ namespace AzToolsFramework
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            ScriptingPrefabLoader m_scriptingPrefabLoader;
             AZ::IO::Path m_projectPathWithOsSeparator;
             AZ::IO::Path m_projectPathWithSlashSeparator;
         };

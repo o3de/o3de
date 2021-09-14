@@ -89,21 +89,6 @@ namespace AzToolsFramework
             // Generates a new path
             static AZ::IO::Path GeneratePath();
         };
-
-        struct PrefabLoaderTraits : AZ::EBusTraits
-        {
-            AZ_TYPE_INFO(PrefabLoaderTraits, "{C344B7D8-8299-48C9-8450-26E1332EA011}");
-
-            virtual ~PrefabLoaderTraits() = default;
-
-            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-
-            virtual AZ::Outcome<AZStd::string, void> SaveTemplateToString(TemplateId templateId) = 0;
-        };
-
-        using PrefabLoaderRequestBus = AZ::EBus<PrefabLoaderTraits>;
-
     } // namespace Prefab
 } // namespace AzToolsFramework
 
