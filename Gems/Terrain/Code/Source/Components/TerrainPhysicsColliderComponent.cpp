@@ -14,6 +14,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+
 namespace Terrain
 {
     constexpr float DefaultHeightScale = 1.f / 256.f;
@@ -159,8 +161,6 @@ namespace Terrain
 
         float worldCenterZ = worldSize.GetCenter().GetZ();
 
-        int32_t gridWidth, gridHeight;
-
         // Expand heightfield to contain aabb
         AZ::Vector3 minBounds = worldSize.GetMin();
         minBounds.SetX(minBounds.GetX() - fmodf(minBounds.GetX(), gridResolution.GetX()));
@@ -170,8 +170,8 @@ namespace Terrain
         maxBounds.SetX(maxBounds.GetX() + gridResolution.GetX() - fmodf(maxBounds.GetX(), gridResolution.GetX()));
         maxBounds.SetY(maxBounds.GetY() + gridResolution.GetX() - fmodf(maxBounds.GetY(), gridResolution.GetY()));
 
-        gridWidth = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
-        gridHeight = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
+        int32_t gridWidth = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
+        int32_t gridHeight = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
 
         heights.clear();
         heights.reserve(gridWidth * gridHeight);
@@ -188,7 +188,7 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
 
-                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) / m_heightScale));
+                heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) * m_heightScale));
             }
         }
     }

@@ -29,6 +29,7 @@ namespace Physics
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 
+    //! Bus used to retrieve heightfield data from a PhysicsCollider
     class HeightfieldProviderRequests : public AZ::ComponentBus
     {
     public:
@@ -38,4 +39,4 @@ namespace Physics
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;
-} // namespace AzFramework
+} // namespace Physics
