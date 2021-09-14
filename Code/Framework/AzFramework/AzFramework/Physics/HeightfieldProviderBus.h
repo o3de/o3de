@@ -16,11 +16,42 @@
 
 namespace Physics
 {
+    class FlagAndUint7
+    {
+    public:
+        FlagAndUint7()
+            : m_data(0)
+        {
+        }
+
+        FlagAndUint7(const uint8_t data, bool flag = false)
+        {
+            AZ_Assert(data < 0x80, "Value is greater than 0x80 in FlagAndUint7");
+            m_data = flag ? (data & 0x7f) | 0x80 : data & 0x7f;
+        }
+
+        FlagAndUint7 operator=(uint8_t data)
+        {
+            AZ_Assert(data < 0x80, "Value is greater than 0x80 in FlagAndUint7");
+            m_data = (m_data & 0x80) | (data & 0x7f);
+            return m_data;
+        }
+
+        operator uint8_t() const { return m_data & 0x7f; }
+
+        void SetFlag() { m_data |= 0x80; }
+        void ClearFlag() { m_data &= 0x7f; }
+        bool Flag() const { return m_data & 0x80; }
+
+    private:
+        uint8_t m_data;
+    };
+
     struct HeightMaterialPoint
     {
         int16_t m_height;
-        uint8_t m_materialIndex0; // Top bit is a tesselation flag specifying which way the triangles go for this quad
-        uint8_t m_materialIndex1; // Top bit is "reserved"
+        FlagAndUint7 m_materialIndex0; // Flag is a tesselation flag specifying which way the triangles go for this quad
+        FlagAndUint7 m_materialIndex1; // Flag is "reserved"
 
         static inline constexpr uint8_t HoleMaterial = 0x7F;
     };
@@ -30,19 +61,39 @@ namespace Physics
         : public AZ::ComponentBus
     {
     public:
+        /// Returns the distance between each height in the map.
+        /// @return Vector containing Rows Spacing, Column Spacing.
         virtual AZ::Vector2 GetHeightfieldGridSpacing() = 0;
-        virtual void GetHeightfieldGridSize(int32_t& width, int32_t& height) = 0;
-        virtual void GetMaterialList(AZStd::vector<MaterialId>& materialList) = 0;
-        virtual void GetHeights(AZStd::vector<int16_t>& heights) = 0;
-        virtual void GetHeightsAsFloats(AZStd::vector<float>& heights) = 0;
-        virtual void GetHeightsAsUint8(AZStd::vector<uint8_t>& heights) = 0;
 
+        /// Returns the height field gridsize.
+        /// @param nulColumns contains the size of the grid in the x direction.
+        /// @param numRows contains the size of the grid in the y direction.
+        virtual void GetHeightfieldGridSize(int32_t& nulColumns, int32_t& numRows) = 0;
+      
+        /// Returns the list of materials used by the height field.
+        /// @param materialList contains a vector of all materials.
+        virtual void GetMaterialList(AZStd::vector<MaterialId>& materialList) = 0;
+
+        /// Returns the list of heights used by the height field.
+        /// @param heights contains the rows*columns vector of the heights.
+        virtual void GetHeights(AZStd::vector<int16_t>& heights) = 0;
+
+        /// Returns the list of heights and materials used by the height field.
+        /// @param heights contains the rows*columns vector of the heights and materials.
         virtual void GetHeightsAndMaterials(AZStd::vector<HeightMaterialPoint>& heights) = 0;
 
-        virtual void UpdateHeights(const AZ::Aabb& dirtyRegion, AZStd::vector<int16_t>& heights) = 0;
-        virtual void UpdateHeightsAsFloats(const AZ::Aabb& dirtyRegion, AZStd::vector<float>& heights) = 0;
-        virtual void UpdateHeightsAsUint8(const AZ::Aabb& dirtyRegion, AZStd::vector<uint8_t>& heights) = 0;
+        /// Returns the scale used by the height field.
+        /// @param heightScale contains all the heights in the height field.
+        virtual void GetScale(float& heightScale) = 0;
 
+        /// Updates values in the height field.
+        /// @param dirtyRegion contains the axis aligned bounding box that will be updated.
+        /// @param heights contains all the new heights for the height field.
+        virtual void UpdateHeights(const AZ::Aabb& dirtyRegion, AZStd::vector<int16_t>& heights) = 0;
+
+        /// Updates values in the height field.
+        /// @param dirtyRegion contains the axis aligned bounding box that will be updated.
+        /// @param heights contains all the new heights and materials for the height field.
         virtual void UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion, AZStd::vector<HeightMaterialPoint>& heights) = 0;
     };
 
@@ -56,10 +107,6 @@ namespace Physics
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
         virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
-        {
-        }
-
-        virtual void RefreshHeightfield()
         {
         }
 

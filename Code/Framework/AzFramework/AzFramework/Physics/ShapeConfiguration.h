@@ -214,11 +214,11 @@ namespace Physics
             return ShapeType::Heightfield;
         }
 
-        void* GetCachedNativeMesh() const;
-        void SetCachedNativeMesh(void* cachedNativeMesh) const;
+        void* GetCachedHeightfield() const;
+        void SetCachedHeightfield(void* cachedHeightfield) const;
 
         AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
         AZ::EntityId m_heightProvider;
-        mutable void* m_cachedNativeMesh{ nullptr };
+        mutable void* m_cachedHeightfield{ nullptr };
     };
 } // namespace Physics

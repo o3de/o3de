@@ -112,6 +112,7 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
 
         void ReleaseNativeMeshObject(void* nativeMeshObject) override;
+        void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) override;
 
         // Assets related data
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
