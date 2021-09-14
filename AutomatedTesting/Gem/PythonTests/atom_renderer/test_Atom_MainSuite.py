@@ -201,8 +201,6 @@ class TestAtomEditorComponentsMain(object):
             "Controller|Configuration|Shadows|Shadow filter method set to 1",  # PCF
             "Controller|Configuration|Shadows|Filtering sample count set to 4",
             "Controller|Configuration|Shadows|Filtering sample count set to 64",
-            "Controller|Configuration|Shadows|PCF method set to 0",
-            "Controller|Configuration|Shadows|PCF method set to 1",
             "Controller|Configuration|Shadows|Shadow filter method set to 2",  # ESM
             "Controller|Configuration|Shadows|ESM exponent set to 50.0",
             "Controller|Configuration|Shadows|ESM exponent set to 5000.0",
