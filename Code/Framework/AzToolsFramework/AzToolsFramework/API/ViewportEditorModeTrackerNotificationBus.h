@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/EBus/Event.h>
@@ -13,7 +14,7 @@
 
 namespace AzToolsFramework
 {
-    //! Enumeration of each viewport editor state.
+    //! Enumeration of each viewport editor mode.
     enum class ViewportEditorMode : AZ::u8
     {
         Default,
@@ -62,4 +63,4 @@ namespace AzToolsFramework
         }
     };
     using ViewportEditorModeNotificationsBus = AZ::EBus<ViewportEditorModeNotifications>;
-}
+} // namespace AzToolsFramework
