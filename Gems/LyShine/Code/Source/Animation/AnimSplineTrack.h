@@ -326,16 +326,16 @@ public:
         m_defaultValue = value;
     }
 
-    ColorB GetCustomColor() const override
+    ColorB GetCustomColor() const
     { return m_customColor; }
-    void SetCustomColor(ColorB color) override
+    void SetCustomColor(ColorB color)
     {
         m_customColor = color;
         m_bCustomColorSet = true;
     }
-    bool HasCustomColor() const override
+    bool HasCustomColor() const
     { return m_bCustomColorSet; }
-    void ClearCustomColor() override
+    void ClearCustomColor()
     { m_bCustomColorSet = false; }
 
     static void Reflect(AZ::SerializeContext* serializeContext) {}
