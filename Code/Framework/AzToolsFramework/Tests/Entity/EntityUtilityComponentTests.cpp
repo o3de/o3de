@@ -194,7 +194,7 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalString = EntityUtilityBus.Broadcast.GetComponentJson("ScriptEditorComponent")
+            g_globalString = EntityUtilityBus.Broadcast.GetComponentDefaultJson("ScriptEditorComponent")
             )LUA");
 
         EXPECT_STRNE(g_globalString.c_str(), "");
@@ -208,7 +208,7 @@ namespace UnitTest
         sc.BindTo(behaviorContext);
         AZ_TEST_START_TRACE_SUPPRESSION;
         sc.Execute(R"LUA(
-            g_globalString = EntityUtilityBus.Broadcast.GetComponentJson("404")
+            g_globalString = EntityUtilityBus.Broadcast.GetComponentDefaultJson("404")
             )LUA");
         AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 error: Failed to find component id for type name 404
 

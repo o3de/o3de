@@ -35,7 +35,7 @@ namespace AzToolsFramework
         virtual bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) = 0;
 
         // Gets a JSON string containing describing the default serialization state of the specified component
-        virtual AZStd::string GetComponentJson(const AZStd::string& typeName) = 0;
+        virtual AZStd::string GetComponentDefaultJson(const AZStd::string& typeName) = 0;
 
         // Returns a list of matching component type names.  Supports wildcard search terms
         virtual AZStd::vector<AZStd::string> FindMatchingComponents(const AZStd::string& searchTerm) = 0;
@@ -53,7 +53,7 @@ namespace AzToolsFramework
         AZ::EntityId CreateEditorReadyEntity(const AZStd::string& entityName) override;
         AzFramework::BehaviorComponentId GetOrAddComponentByTypeName(AZ::EntityId entity, const AZStd::string& typeName) override;
         bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) override;
-        AZStd::string GetComponentJson(const AZStd::string& typeName) override;
+        AZStd::string GetComponentDefaultJson(const AZStd::string& typeName) override;
         AZStd::vector<AZStd::string> FindMatchingComponents(const AZStd::string& searchTerm) override;
 
         static void Reflect(AZ::ReflectContext* context);

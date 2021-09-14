@@ -37,18 +37,11 @@ namespace AzToolsFramework
 
     AZ::TypeId GetComponentTypeIdFromName(const AZStd::string& typeName)
     {
-        AZ::TypeId typeId;
-        if (typeName[0] == '{')
-        {
-            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, false);
+        // Try to create a TypeId first.  We won't show any warnings if this fails as the input might be a class name instead
+        AZ::TypeId typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, true);
 
-            if (typeId.IsNull())
-            {
-                AZ_Error("EntityUtilityComponent", false, "Invalid type id %s", typeName.c_str());
-                return AZ::TypeId::CreateNull();
-            }
-        }
-        else
+        // If the typeId is null, try a lookup by class name
+        if (typeId.IsNull())
         {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -56,9 +49,10 @@ namespace AzToolsFramework
             auto typeNameCrc = AZ::Crc32(typeName.data());
             auto typeUuidList = serializeContext->FindClassId(typeNameCrc);
 
+            // TypeId is invalid or class name is invalid
             if (typeUuidList.empty())
             {
-                AZ_Error("EntityUtilityComponent", false, "Failed to find ClassId for component type name %s", typeName.c_str());
+                AZ_Error("EntityUtilityComponent", false, "Provided type %s is either an invalid TypeId or does not match any class names", typeName.c_str());
                 return AZ::TypeId::CreateNull();
             }
 
@@ -160,7 +154,7 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != Processing::Halted;
     }
 
-    AZStd::string EntityUtilityComponent::GetComponentJson(const AZStd::string& typeName)
+    AZStd::string EntityUtilityComponent::GetComponentDefaultJson(const AZStd::string& typeName)
     {
         AZ::TypeId typeId = GetComponentTypeIdFromName(typeName);
 
@@ -257,7 +251,7 @@ namespace AzToolsFramework
                 ->Event("GetOrAddComponentByTypeName", &EntityUtilityBus::Events::GetOrAddComponentByTypeName)
                 ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity)
                 ->Event("FindMatchingComponents", &EntityUtilityBus::Events::FindMatchingComponents)
-                ->Event("GetComponentJson", &EntityUtilityBus::Events::GetComponentJson)
+                ->Event("GetComponentDefaultJson", &EntityUtilityBus::Events::GetComponentDefaultJson)
             ;
         }
     }
