@@ -12,15 +12,9 @@
 
 namespace Terrain
 {
-    static constexpr const char* const CategoryName = "Terrain";
-    static constexpr const char* const ComponentName = "Terrain Physics Collider";
-    static constexpr const char* const ComponentDescription = "Provides terrain data to a physics collider in the form of a heightfield and surface->material mapping.";
-    static constexpr const char* const Icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
-    static constexpr const char* const ViewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
-    static constexpr const char* const HelpUrl = "";
-
     void EditorTerrainPhysicsColliderComponent::Reflect(AZ::ReflectContext* context)
     {
+        // Automatically reflect common components, name, icon etc...
         BaseClassType::ReflectSubClass<EditorTerrainPhysicsColliderComponent, BaseClassType>(
             context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,

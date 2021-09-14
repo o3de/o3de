@@ -18,6 +18,7 @@
 
 namespace Terrain
 {
+    // Scale value used to convert from float heights to int16 values in the heightfield.
     constexpr float DefaultHeightScale = 1.f / 256.f;
 
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
@@ -150,7 +151,7 @@ namespace Terrain
         return gridResolution;
     }
 
-    void TerrainPhysicsColliderComponent::GetHeights(AZStd::vector<int16_t>& heights)
+    AZStd::vector<int16_t> TerrainPhysicsColliderComponent::GetHeights()
     {
         AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
@@ -159,7 +160,7 @@ namespace Terrain
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-        float worldCenterZ = worldSize.GetCenter().GetZ();
+        const float worldCenterZ = worldSize.GetCenter().GetZ();
 
         // Expand heightfield to contain aabb
         AZ::Vector3 minBounds = worldSize.GetMin();
@@ -170,18 +171,18 @@ namespace Terrain
         maxBounds.SetX(maxBounds.GetX() + gridResolution.GetX() - fmodf(maxBounds.GetX(), gridResolution.GetX()));
         maxBounds.SetY(maxBounds.GetY() + gridResolution.GetX() - fmodf(maxBounds.GetY(), gridResolution.GetY()));
 
-        int32_t gridWidth = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
-        int32_t gridHeight = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
+        const int32_t gridWidth = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
+        const int32_t gridHeight = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
 
-        heights.clear();
+        AZStd::vector<int16_t> heights; 
         heights.reserve(gridWidth * gridHeight);
 
         for (int32_t row = 0; row < gridHeight; row++)
         {
-            float y = row * gridResolution.GetY() + minBounds.GetY();
+            const float y = row * gridResolution.GetY() + minBounds.GetY();
             for (int32_t col = 0; col < gridWidth; col++)
             {
-                float x = col * gridResolution.GetX() + minBounds.GetX();
+                const float x = col * gridResolution.GetX() + minBounds.GetX();
                 float height = 0.0f;
 
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -191,9 +192,11 @@ namespace Terrain
                 heights.emplace_back(aznumeric_cast<int16_t>((height - worldCenterZ) * m_heightScale));
             }
         }
+
+        return heights;
     }
 
-    float TerrainPhysicsColliderComponent::GetHeightScale()
+    float TerrainPhysicsColliderComponent::GetHeightScale() const
     {
         return m_heightScale;
     }

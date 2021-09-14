@@ -21,5 +21,13 @@ namespace Terrain
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>;
         AZ_EDITOR_COMPONENT(EditorTerrainPhysicsColliderComponent, "{C43FAB8F-3968-46A6-920E-E84AEDED3DF5}", BaseClassType);
         static void Reflect(AZ::ReflectContext* context);
+
+        static constexpr auto s_categoryName = "Terrain";
+        static constexpr auto s_componentName = "Terrain Physics Collider";
+        static constexpr auto s_componentDescription =
+            "Provides terrain data to a physics collider in the form of a heightfield and surface->material mapping.";
+        static constexpr auto s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
+        static constexpr auto s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
+        static constexpr auto s_helpUrl = "";
     };
 }

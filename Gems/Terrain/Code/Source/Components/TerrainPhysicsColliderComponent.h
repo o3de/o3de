@@ -74,8 +74,8 @@ namespace Terrain
 
         // HeightfieldProviderRequestsBus
         AZ::Vector2 GetHeightfieldGridSpacing() override;
-        void GetHeights(AZStd::vector<int16_t>& heights) override;
-        float GetHeightScale() override;
+        AZStd::vector<int16_t> GetHeights() override;
+        float GetHeightScale() const override;
     private:
         TerrainPhysicsColliderConfig m_configuration;
 
