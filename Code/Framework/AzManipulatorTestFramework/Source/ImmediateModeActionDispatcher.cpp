@@ -83,7 +83,17 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::MouseLButtonUpImpl()
     {
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Up;
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*GetMouseInteractionEvent());
+        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
+        // the mouse position will be the same as the previous event, thus the delta will be 0
+        MouseMoveAfterButton();
+    }
+
+    void ImmediateModeActionDispatcher::MouseLButtonDoubleClickImpl()
+    {
+        GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::DoubleClick;
+        ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
+        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
         ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
         // the mouse position will be the same as the previous event, thus the delta will be 0
         MouseMoveAfterButton();
