@@ -53,40 +53,29 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
 
     :return: None
     """
-    import os
 
     import azlmbr.bus as bus
-    import azlmbr.entity as entity
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
-    import azlmbr.paths
 
     from editor_python_test_tools import hydra_editor_utils as hydra
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
     with Tracer() as error_tracer:
-        # Wait for Editor idle loop before executing Python hydra scripts.
+        # Test setup begins.
+        # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level(os.path.join(azlmbr.paths.devassets, "Levels"), "Base")
+        helper.open_level("Physics", "Base")
 
-        # Delete all existing entities initially for test setup.
-        search_filter = azlmbr.entity.SearchFilter()
-        all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-
-        # Set up camera entity and component.
-        camera_entity = hydra.Entity("camera_entity")
-        camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
-        Report.result(Tests.camera_creation, camera_entity.id.IsValid())
-
-        # 1. Creation of entity with Exposure Control component.
+        # Test steps begin.
+        # 1. Creation of Exposure Control entity.
         exposure_control = "Exposure Control"
-        exposure_control_entity = hydra.Entity(f"{exposure_control}")
-        exposure_control_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [exposure_control])
+        exposure_control_entity = EditorEntity.create_editor_entity_at(
+            math.Vector3(512.0, 512.0, 34.0), f"{exposure_control}")
+        Report.result(Tests.exposure_control_creation, exposure_control_entity.exists())
         has_component = hydra.has_components(exposure_control_entity.id, [exposure_control])
-        Report.result(Tests.exposure_control_creation, exposure_control_entity.id.IsValid())
         Report.critical_result(Tests.exposure_control_component, has_component)
 
         # 2. UNDO the entity creation.

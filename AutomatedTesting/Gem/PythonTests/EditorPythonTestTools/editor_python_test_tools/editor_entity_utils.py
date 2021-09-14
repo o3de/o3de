@@ -85,7 +85,14 @@ class EditorComponent:
         )
         assert (
             outcome.IsSuccess()
-        ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
+        ), f"Failure: Could not set value '{self.get_component_name()}' : '{component_property_path}'"
+
+    def is_enabled(self):
+        """
+        Used to verify if the component is enabled.
+        :return: True if enabled, otherwise False.
+        """
+        return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
 
     @staticmethod
     def get_type_ids(component_names: list) -> list:
@@ -254,7 +261,7 @@ class EditorEntity:
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
         Used to get components of type component_name that already exists on Entity
-        :param component_name: Name to component to check
+        :param component_names: List of names of components to check
         :return: List of Entity Component objects of given component name
         """
         component_list = []
