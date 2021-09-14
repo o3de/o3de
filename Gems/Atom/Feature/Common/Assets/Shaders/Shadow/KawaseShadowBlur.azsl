@@ -46,15 +46,9 @@ ShaderResourceGroup FilterPassSrg : SRG_PerPass
     };    
 }
 
-void CalculateBlurBoundaries(const uint3 dispatchId, out float2 sourceMinTex, out float2 sourceMaxTex)
+void CalculateBlurBoundaries(const uint shadowmapIndex, out float2 sourceMinTex, out float2 sourceMaxTex)
 {
-    const float inputSize = GetImageSize(FilterPassSrg::m_inputImage).x;
     const float2 rcpPixelSize = FilterPassSrg::m_rcpResolutionAndIteration.xy;
-
-    const uint shadowmapIndex = GetShadowmapIndex(
-        FilterPassSrg::m_shadowmapIndexTable,
-        dispatchId,
-        inputSize);
 
     const FilterParameter filterParameter = FilterPassSrg::m_filterParameters[shadowmapIndex];
     const uint shadowmapSize = filterParameter.m_shadowmapSize;
@@ -78,11 +72,31 @@ float AccumulateShadowSamples(Texture2DArray<float> tex, float3 texCoord, Sample
 [numthreads(16,16,1)]
 void MainCS(uint3 dispatchId: SV_DispatchThreadID)
 {
+    const float inputSize = GetImageSize(FilterPassSrg::m_inputImage).x;
+    const uint shadowmapIndex = GetShadowmapIndex(
+        FilterPassSrg::m_shadowmapIndexTable,
+        dispatchId,
+        inputSize);
+    
+    // Early return if thread is outside of shadowmaps.
+    if (shadowmapIndex == ~0)
+    {
+        return;
+    }    
+
+    const FilterParameter filterParameter = FilterPassSrg::m_filterParameters[shadowmapIndex];
+    const uint shadowmapSize = filterParameter.m_shadowmapSize;
+    // Early return if filter is disabled.
+    if (!filterParameter.m_isEnabled || shadowmapSize <= 1)
+    {
+        return; // early return if filter parameter is empty.
+    }
+
     const float2 rcpPixelSize = FilterPassSrg::m_rcpResolutionAndIteration.xy;
     const float blurIteration = FilterPassSrg::m_rcpResolutionAndIteration.z;
 
     float2 sourceMinTex, sourceMaxTex;
-    CalculateBlurBoundaries(dispatchId, sourceMinTex, sourceMaxTex);
+    CalculateBlurBoundaries(shadowmapIndex, sourceMinTex, sourceMaxTex);
 
     const float2 halfRcpPixelSize = rcpPixelSize / 2.0f;
     const float2 dUV = rcpPixelSize.xy * blurIteration + halfRcpPixelSize.xy;
