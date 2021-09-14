@@ -13,7 +13,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
 #include "Test1Color.azsli"
-#include "Test3Color.azsli"
+#include <Test3Color.azsli>
 
 ShaderResourceGroup DummySrg : SRG_PerDraw
 {

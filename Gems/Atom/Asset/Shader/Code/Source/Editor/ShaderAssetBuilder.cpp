@@ -61,45 +61,6 @@ namespace AZ
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
         static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
-        //! Opens the file @sourceFilePath, parses the content looking for "#include file" lines with a regular expression.
-        //! Returns the list of relative paths as included by the file.
-        //! REMARK: The algorithm may over prescribe what files to include because it doesn't discern between comments, etc.
-        //!         Also, a #include line may be protected by #ifdef macros but this algorithm doesn't care.
-        //! Over prescribing is not a real problem, albeit potential waste in processing. Under prescribing would be a real problem.
-        static AZ::Outcome<AZStd::vector<AZStd::string>, AZStd::string> ParseFileAndGetIncludedFiles(AZStd::string_view sourceFilePath)
-        {
-            AZ::IO::FileIOStream stream(sourceFilePath.data(), AZ::IO::OpenMode::ModeRead);
-            if (!stream.IsOpen())
-            {
-                return AZ::Failure(AZStd::string::format("\"%s\" source file could not be opened.", sourceFilePath.data()));
-            }
-
-            if (!stream.CanRead())
-            {
-                return AZ::Failure(AZStd::string::format("\"%s\" source file could not be read.", sourceFilePath.data()));
-            }
-
-            AZStd::string hayStack;
-            hayStack.resize_no_construct(stream.GetLength());
-            stream.Read(stream.GetLength(), hayStack.data());
-
-            AZStd::vector<AZStd::string> listOfFilePaths;
-            static const AZStd::regex includeRegex(R"(#include\s+[<|"]([\w|/|\\|\.]+)[>|"])", AZStd::regex::ECMAScript);
-            AZStd::smatch match;
-            AZStd::string::const_iterator searchStart(hayStack.cbegin());
-            while (AZStd::regex_search(searchStart, hayStack.cend(), match, includeRegex))
-            {
-                if (match.size() > 1)
-                {
-                    AZStd::string relativeFilePath(match[1].str().c_str());
-                    AzFramework::StringFunc::Path::Normalize(relativeFilePath);
-                    listOfFilePaths.push_back(relativeFilePath);
-                }
-                searchStart = match.suffix().first;
-            }
-            return AZ::Success(AZStd::move(listOfFilePaths));
-        }
-
         //! The search will start in @currentFolderPath.
         //! if the file is not found then it searches in order of appearence in @includeDirectories.
         //! If the search yields no existing file it returns an empty string.
@@ -132,17 +93,11 @@ namespace AZ
         {
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
-            if (!includedFiles.count(fullPath))
-            {
-                includedFiles.insert(fullPath);
-            }
+            includedFiles.insert(fullPath);
             for (const auto &includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
-                if (!includedFiles.count(fullPath))
-                {
-                    includedFiles.insert(fullPath);
-                }
+                includedFiles.insert(fullPath);
             }
         }
 
@@ -150,9 +105,10 @@ namespace AZ
         //! and in turn parses the included files.
         //! The included files are searched in the directories listed in @includeDirectories. Basically it's a similar approach
         //! as how most C-preprocessors would find included files.
-        static void GetListOfIncludedFiles(AZStd::string_view sourceFilePath, const AZStd::vector<AZStd::string>& includeDirectories, AZStd::unordered_set<AZStd::string>& includedFiles)
+        static void GetListOfIncludedFiles(AZStd::string_view sourceFilePath, const AZStd::vector<AZStd::string>& includeDirectories,
+            const ShaderBuilderUtility::IncludedFilesParser& includedFilesParser, AZStd::unordered_set<AZStd::string>& includedFiles)
         {
-            auto outcome = ParseFileAndGetIncludedFiles(sourceFilePath);
+            auto outcome = includedFilesParser.ParseFileAndGetIncludedFiles(sourceFilePath);
             if (!outcome.IsSuccess())
             {
                 AZ_Warning(ShaderAssetBuilderName, false, outcome.GetError().c_str());
@@ -189,7 +145,7 @@ namespace AZ
                     continue;
                 }
                 includedFiles.insert(fullPath);
-                GetListOfIncludedFiles(fullPath, includeDirectories, includedFiles);
+                GetListOfIncludedFiles(fullPath, includeDirectories, includedFilesParser, includedFiles);
             }
         }
 
@@ -197,6 +153,7 @@ namespace AZ
         {
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
 
             AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", fullPath.data());
 
@@ -242,7 +199,7 @@ namespace AZ
             GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName);
 
             AZStd::unordered_set<AZStd::string> includedFiles;
-            GetListOfIncludedFiles(azslFullPath, buildOptions.m_preprocessorSettings.m_projectIncludePaths, includedFiles);
+            GetListOfIncludedFiles(azslFullPath, buildOptions.m_preprocessorSettings.m_projectIncludePaths, includedFilesParser, includedFiles);
             for (auto includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
