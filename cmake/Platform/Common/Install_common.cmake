@@ -25,9 +25,9 @@ cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_B
 cmake_path(RELATIVE_PATH CMAKE_LIBRARY_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE library_output_directory)
 
 if(LY_MONOLITHIC_GAME)
-    set(BUILD_PERMUTATION Monolithic)
+    set(LY_BUILD_PERMUTATION Monolithic)
 else()
-    set(BUILD_PERMUTATION Default)
+    set(LY_BUILD_PERMUTATION Default)
 endif()
 
 #! ly_setup_target: Setup the data needed to re-create the cmake target commands for a single target
@@ -91,9 +91,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
-    cmake_path(APPEND archive_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
-    cmake_path(APPEND library_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
-    cmake_path(APPEND runtime_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
+    cmake_path(APPEND archive_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${LY_BUILD_PERMUTATION}")
+    cmake_path(APPEND library_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${LY_BUILD_PERMUTATION}")
+    cmake_path(APPEND runtime_output_directory "${PAL_PLATFORM_NAME}/$<CONFIG>/${LY_BUILD_PERMUTATION}")
 
     if(COMMAND ly_install_target_override)
         # Mac needs special handling because of a cmake issue
@@ -269,9 +269,9 @@ set_property(TARGET ${NAME_PLACEHOLDER}
     endif()
 
     set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
-    file(GENERATE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
-    install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
-        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}
+    file(GENERATE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
+        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -340,7 +340,7 @@ endif()
     ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
 
     # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
-    file(WRITE "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}/permutation.cmake"
+    file(WRITE "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
         "${cmake_copyright_comment}"
         "${all_configured_targets}"
         "\n"
@@ -348,8 +348,8 @@ endif()
         "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
-    install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}/permutation.cmake"
-        DESTINATION ${relative_target_source_dir}//Platform/${PAL_PLATFORM_NAME}/${BUILD_PERMUTATION}
+    install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
+        DESTINATION ${relative_target_source_dir}//Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -393,10 +393,10 @@ function(ly_setup_cmake_install)
     # Inject code that will generate each ConfigurationType_<CONFIG>.cmake file
     set(install_configuration_type_template [=[
         configure_file(@LY_ROOT_FOLDER@/cmake/install/ConfigurationType_config.cmake.in
-            ${CMAKE_INSTALL_PREFIX}/cmake/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake
+            ${CMAKE_INSTALL_PREFIX}/cmake/Platform/@PAL_PLATFORM_NAME@/@LY_BUILD_PERMUTATION@/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake
             @ONLY
         )
-        message(STATUS "Generated ${CMAKE_INSTALL_PREFIX}/cmake/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+        message(STATUS "Generated ${CMAKE_INSTALL_PREFIX}/cmake/Platform/@PAL_PLATFORM_NAME@/@LY_BUILD_PERMUTATION@/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
     ]=])
     string(CONFIGURE "${install_configuration_type_template}" install_configuration_type @ONLY)
     install(CODE "${install_configuration_type}"
@@ -528,7 +528,7 @@ endfunction()"
         # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
         # used to generate the solution.
         # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${BUILD_PERMUTATION}")
+        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${LY_BUILD_PERMUTATION}")
         set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
