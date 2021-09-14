@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/string/string.h>
 
 #define VE_LOG(...) LogBus::Broadcast(&LogTraits::Entry, __VA_ARGS__);
 

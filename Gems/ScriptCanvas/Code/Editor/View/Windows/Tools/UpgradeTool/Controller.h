@@ -78,7 +78,9 @@ namespace ScriptCanvasEditor
             void OnUpgradeAllBegin() override;
             void OnUpgradeAllComplete() override;
             void OnUpgradeAllDependencySortBegin() override;
-            void OnUpgradeAllDependencySortEnd(const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets) override;
+            void OnUpgradeAllDependencySortEnd
+                ( const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets
+                , const AZStd::vector<size_t>& sortedOrder) override;
         };
     }
 }

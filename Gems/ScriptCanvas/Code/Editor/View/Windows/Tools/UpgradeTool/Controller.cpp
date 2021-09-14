@@ -342,7 +342,9 @@ namespace ScriptCanvasEditor
 
         }
 
-        void Controller::OnUpgradeAllDependencySortEnd(const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets)
+        void Controller::OnUpgradeAllDependencySortEnd
+            ( const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets
+            , [[maybe_unused]] const AZStd::vector<size_t>& sortedOrder)
         {
             m_view->progressBar->setRange(0, aznumeric_cast<int>(sortedAssets.size()));
         }

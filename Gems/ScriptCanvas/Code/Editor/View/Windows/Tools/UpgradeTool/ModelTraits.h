@@ -63,7 +63,9 @@ namespace ScriptCanvasEditor
             virtual void OnUpgradeAllBegin() = 0;
             virtual void OnUpgradeAllComplete() = 0;
             virtual void OnUpgradeAllDependencySortBegin() = 0;
-            virtual void OnUpgradeAllDependencySortEnd(const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets) = 0;
+            virtual void OnUpgradeAllDependencySortEnd
+                ( const AZStd::vector<AZ::Data::AssetInfo>& assets
+                , const AZStd::vector<size_t>& sortedOrder) = 0;
         };
         using ModelNotificationsBus = AZ::EBus<ModelNotificationsTraits>;
     }
