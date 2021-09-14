@@ -12,8 +12,12 @@
 
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
+#include <AzCore/AzCore_Traits_Platform.h>
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/RTTI/ReflectionManager.h>
@@ -59,7 +63,7 @@
 
 //Enable generate image files for result of some tests.
 //This is slow and only useful for debugging. This should be disabled for unit test
-//#define DEBUG_OUTPUT_IMAGES
+#define DEBUG_OUTPUT_IMAGES
 
 //There are some test functions in this test which are DISABLED. They were mainly for programming tests.
 //It's only recommended to enable them for programming test purpose.
@@ -123,6 +127,9 @@ namespace UnitTest
         AZStd::string m_outputRootFolder;
         AZStd::string m_outputFolder;
 
+        AZStd::unique_ptr<AZ::JobManager> m_jobManager;
+        AZStd::unique_ptr<AZ::JobContext> m_jobContext;
+
         void SetUp() override
         {
             AllocatorsBase::SetupAllocator();
@@ -159,6 +166,27 @@ namespace UnitTest
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
 
+            // Setup job context for job system
+            JobManagerDesc jobManagerDesc;
+            JobManagerThreadDesc threadDesc;
+#if AZ_TRAIT_SET_JOB_PROCESSOR_ID
+            threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
+#endif 
+
+            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+
+            for (unsigned int i = 0; i < numWorkerThreads; ++i)
+            {
+                jobManagerDesc.m_workerThreads.push_back(threadDesc);
+#if AZ_TRAIT_SET_JOB_PROCESSOR_ID
+                threadDesc.m_cpuId++;
+#endif 
+            }
+
+            m_jobManager = AZStd::make_unique<JobManager>(jobManagerDesc);
+            m_jobContext = AZStd::make_unique<JobContext>(*m_jobManager);
+            JobContext::SetGlobalContext(m_jobContext.get());
+
             // Startup default local FileIO (hits OSAllocator) if not already setup.
             if (AZ::IO::FileIOBase::GetInstance() == nullptr)
             {
@@ -192,6 +220,10 @@ namespace UnitTest
             delete AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
 
+            JobContext::SetGlobalContext(nullptr);
+            m_jobContext = nullptr;
+            m_jobManager = nullptr;
+
             m_jsonRegistrationContext->EnableRemoveReflection();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
@@ -223,7 +255,7 @@ namespace UnitTest
             Image_512X288_RGB8_Tga,
             Image_1024X1024_RGB8_Tif,
             Image_UpperCase_Tga,
-            Image_512x512_Normal_Tga,       // QImage doesn't support loading this file.
+            Image_1024x1024_normal_tiff,
             Image_128x128_Transparent_Tga,
             Image_237x177_RGB_Jpg,
             Image_GreyScale_Png,
@@ -251,7 +283,7 @@ namespace UnitTest
             m_imagFileNameMap[Image_512X288_RGB8_Tga] = m_testFileFolder + "512x288_24bit.tga";
             m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = m_testFileFolder + "1024x1024_24bit.tif";
             m_imagFileNameMap[Image_UpperCase_Tga] = m_testFileFolder + "uppercase.TGA";
-            m_imagFileNameMap[Image_512x512_Normal_Tga] = m_testFileFolder + "512x512_RGB_N.tga";
+            m_imagFileNameMap[Image_1024x1024_normal_tiff] = m_testFileFolder + "1024x1024_normal.tiff";
             m_imagFileNameMap[Image_128x128_Transparent_Tga] = m_testFileFolder + "128x128_RGBA8.tga";
             m_imagFileNameMap[Image_237x177_RGB_Jpg] = m_testFileFolder + "237x177_RGB.jpg";
             m_imagFileNameMap[Image_GreyScale_Png] = m_testFileFolder + "greyscale.png";
@@ -801,8 +833,7 @@ namespace UnitTest
             auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
             if (formatInfo->bCompressed)
             {
-                // exclude astc formats until we add astc compressor to all platforms
-                // exclude pvrtc formats (deprecating) 
+                // skip ASTC formats which are tested in TestConvertASTCCompressor
                 if (!IsASTCFormat(pixelFormat)
                     && pixelFormat != ePixelFormat_PVRTC2 && pixelFormat != ePixelFormat_PVRTC4
                     && !IsETCFormat(pixelFormat)) // skip ETC since it's very slow
@@ -830,30 +861,123 @@ namespace UnitTest
                     continue;
                 }
 
-                [[maybe_unused]] auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
-                imageToProcess.Set(srcImage);
-                imageToProcess.ConvertFormat(pixelFormat);
+                auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+                ColorSpace sourceColorSpace = srcImage->HasImageFlags(EIF_SRGBRead) ? ColorSpace::sRGB : ColorSpace::linear;
+                ICompressorPtr compressor = ICompressor::FindCompressor(pixelFormat, sourceColorSpace, true);
 
-                if (!imageToProcess.Get())
+                if (!compressor)
                 {
                     AZ_Warning("test", false, "unsupported format: %s",  formatInfo->szName);
                     continue;
                 }
+
+                imageToProcess.Set(srcImage);
+                imageToProcess.ConvertFormat(pixelFormat);
+
                 ASSERT_TRUE(imageToProcess.Get());
                 ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
 
-                // Get compressor name
-                ColorSpace sourceColorSpace = srcImage->HasImageFlags(EIF_SRGBRead) ? ColorSpace::sRGB : ColorSpace::linear;
-                ICompressorPtr compressor = ICompressor::FindCompressor(pixelFormat, sourceColorSpace, true);
+                //convert back to an uncompressed format and expect it will be successful
+                imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
 
-                //save the image to a file so we can check the visual result
+                // Save the image to a file so we can check the visual result
                 AZStd::string outputName = AZStd::string::format("%s_%s", imageName.c_str(), compressor->GetName());
                 SaveImageToFile(imageToProcess.Get(), outputName, 1);
-
-                //convert back to an uncompressed format and expect it will be successful
-                imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == ePixelFormat_R8G8B8A8);
             }
+        }
+    }
+        
+    TEST_F(ImageProcessingTest, Test_ConvertAllAstc_Success)
+    {
+        // Compress/Decompress to all astc formats (LDR)
+        auto imageIdx = Image_237x177_RGB_Jpg;
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
+        // get image's name and it will be used for output file name
+        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
+        AZStd::string imageName = fi.baseName().toUtf8().constData();
+        for (uint32 i = 0; i < ePixelFormat_Count; i++)
+        {
+            EPixelFormat pixelFormat = (EPixelFormat)i;
+            if (IsASTCFormat(pixelFormat))
+            {
+                ImageToProcess imageToProcess(srcImage);
+                imageToProcess.ConvertFormat(pixelFormat);
+
+                ASSERT_TRUE(imageToProcess.Get());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
+                ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
+                ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
+
+                // convert back to an uncompressed format and expect it will be successful
+                imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
+
+                // save the image to a file so we can check the visual result
+                AZStd::string outputName = AZStd::string::format("ASTC_", imageName.c_str());
+                SaveImageToFile(imageToProcess.Get(), outputName, 1);
+            }
+        }
+    }
+        
+    TEST_F(ImageProcessingTest, Test_ConvertHdrToAstc_Success)
+    {
+        // Compress/Decompress HDR
+        auto imageIdx = Image_defaultprobe_cm_1536x256_64bits_tif;
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
+        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
+        AZStd::string imageName = fi.baseName().toUtf8().constData();
+
+        EPixelFormat dstFormat = ePixelFormat_ASTC_4x4;
+        ImageToProcess imageToProcess(srcImage);
+        imageToProcess.ConvertFormat(ePixelFormat_ASTC_4x4);
+                
+        ASSERT_TRUE(imageToProcess.Get());
+        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == dstFormat);
+        ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
+        ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
+                                
+        //convert back to an uncompressed format and expect it will be successful
+        imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
+                                
+        //save the image to a file so we can check the visual result
+        AZStd::string outputName = AZStd::string::format("ASTC_HDR_", imageName.c_str());
+        SaveImageToFile(imageToProcess.Get(), outputName, 1);
+    }
+    
+    TEST_F(ImageProcessingTest, Test_AstcNormalPreset_Success)
+    {
+        // Normal.preset which uses ASTC as output format
+        // This test compress a normal texture and its mipmaps
+
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        ASSERT_TRUE(outcome.IsSuccess());
+
+        AZStd::string inputFile;
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        inputFile = m_imagFileNameMap[Image_1024x1024_normal_tiff];
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(inputFile));
+
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "ios", outProducts, m_context.get());
+
+        const PresetSettings* preset = &process->GetInputDesc()->m_presetSetting;
+
+        if (process != nullptr)
+        {
+            process->ProcessAll();
+
+            //get process result
+            ASSERT_TRUE(process->IsSucceed());
+            auto outputImage = process->GetOutputImage();
+            ASSERT_TRUE(outputImage->GetPixelFormat() == preset->m_pixelFormat);
+            ASSERT_TRUE(outputImage->GetWidth(0) == srcImage->GetWidth(0));
+            ASSERT_TRUE(outputImage->GetHeight(0) == srcImage->GetHeight(0));
+            
+            SaveImageToFile(outputImage, "ASTC_Normal", 10);
+
+            delete process;
         }
     }
 
