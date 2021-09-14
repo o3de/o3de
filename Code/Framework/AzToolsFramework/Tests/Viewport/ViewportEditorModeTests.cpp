@@ -489,4 +489,4 @@ namespace UnitTest
             EXPECT_TRUE(expectedEditorModeSet->second.m_onLeave);
         }
     }
-}
+} // namespace UnitTest
