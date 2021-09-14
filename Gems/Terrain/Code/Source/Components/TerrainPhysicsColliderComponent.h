@@ -8,25 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Vector3.h>
+#include <AzCore/Component/TransformBus.h>
 
-#include <AzCore/Jobs/JobManagerBus.h>
-#include <AzCore/Jobs/JobFunction.h>
-
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
-#include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <AzCore/Math/Aabb.h>
 
-#include <AzCore/RTTI/RTTI.h>
-
-#include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace LmbrCentral
 {
@@ -49,9 +38,9 @@ namespace Terrain
 
     class TerrainPhysicsColliderComponent
         : public AZ::Component
-        , private AZ::TransformNotificationBus::Handler
-        , private LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , private Physics::HeightfieldProviderRequestsBus::Handler
+        , protected AZ::TransformNotificationBus::Handler
+        , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
+        , protected Physics::HeightfieldProviderRequestsBus::Handler
     {
     public:
         template<typename, typename>
@@ -85,11 +74,11 @@ namespace Terrain
 
         // HeightfieldProviderRequestsBus
         AZ::Vector2 GetHeightfieldGridSpacing() override;
-        void GetHeights([[maybe_unused]] AZStd::vector<int16_t>& heights) override;
-        float GetHeightScale() override;
+        AZStd::vector<int16_t> GetHeights() override;
+        float GetHeightScale() const override;
     private:
         TerrainPhysicsColliderConfig m_configuration;
 
-        float m_heightScale;
+        float m_heightScale = 0.0f;
     };
 }
