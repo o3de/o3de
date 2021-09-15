@@ -20,6 +20,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
     constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
     constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
@@ -156,6 +157,16 @@ namespace SandboxEditor
     void SetShowingGrid(const bool showing)
     {
         SetRegistry(ShowGridSetting, showing);
+    }
+
+    bool StickySelectEnabled()
+    {
+        return GetRegistry(StickySelectSetting, false);
+    }
+
+    void SetStickySelectEnabled(const bool enabled)
+    {
+        SetRegistry(StickySelectSetting, enabled);
     }
 
     float ManipulatorLineBoundWidth()
