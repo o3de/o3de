@@ -14,7 +14,6 @@
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/EBus/EBus.h>
 
 namespace AzToolsFramework
 {
