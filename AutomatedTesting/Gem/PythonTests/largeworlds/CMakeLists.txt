@@ -42,7 +42,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::DynamicVegetationTests_Main_Optimized
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main_Optimized.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
