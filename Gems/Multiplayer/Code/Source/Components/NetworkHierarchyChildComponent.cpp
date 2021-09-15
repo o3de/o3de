@@ -67,6 +67,8 @@ namespace Multiplayer
 
     void NetworkHierarchyChildComponent::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
+        m_isHierarchyEnabled = true;
+
         HierarchyRootAddEvent(m_hierarchyRootNetIdChanged);
         NetworkHierarchyRequestBus::Handler::BusConnect(GetEntityId());
 
@@ -79,7 +81,7 @@ namespace Multiplayer
 
     void NetworkHierarchyChildComponent::OnDeactivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
-        m_isDeactivating = true;
+        m_isHierarchyEnabled = false;
 
         if (m_rootEntity)
         {
@@ -96,7 +98,7 @@ namespace Multiplayer
 
     bool NetworkHierarchyChildComponent::IsHierarchyEnabled() const
     {
-        return !m_isDeactivating;
+        return m_isHierarchyEnabled;
     }
 
     bool NetworkHierarchyChildComponent::IsHierarchicalChild() const
@@ -197,11 +199,9 @@ namespace Multiplayer
         }
         else
         {
-            if (!m_rootEntity)
-            {
-                m_rootEntity = nullptr;
-                m_networkHierarchyLeaveEvent.Signal();
-            }
+            m_isHierarchyEnabled = false;
+            m_rootEntity = nullptr;
+            m_networkHierarchyLeaveEvent.Signal();
         }
     }
 

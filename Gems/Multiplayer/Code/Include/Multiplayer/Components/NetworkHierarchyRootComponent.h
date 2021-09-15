@@ -93,7 +93,8 @@ namespace Multiplayer
         bool RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount);
 
         void SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity);
-
-        bool m_isDeactivating = false;
+        
+        //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
+        bool m_isHierarchyEnabled = true;
     };
 }

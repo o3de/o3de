@@ -78,7 +78,8 @@ namespace Multiplayer
         NetworkHierarchyChangedEvent m_networkHierarchyChangedEvent;
         NetworkHierarchyLeaveEvent m_networkHierarchyLeaveEvent;
 
-        bool m_isDeactivating = false;
+        //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
+        bool m_isHierarchyEnabled = true;
 
         void NotifyChildrenHierarchyDisbanded();
     };
