@@ -57,6 +57,7 @@ namespace AZ
         virtual size_type       NumAllocatedBytes() const               { return m_used; }
         virtual size_type       Capacity() const                        { return m_capacity; }
         virtual size_type       GetMaxAllocationSize() const;
+        size_type               GetMaxContiguousAllocationSize() const override;
         virtual IAllocatorAllocate* GetSubAllocator()                   { return m_subAllocator; }
         virtual void GarbageCollect()                                   {}
 

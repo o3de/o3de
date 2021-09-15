@@ -46,6 +46,7 @@ namespace UnitTest
         {
             provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
             provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+            provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         }
 
         static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -74,7 +75,7 @@ namespace UnitTest
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetWorldBounds(const AZ::Aabb& worldBounds) override
+        void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
         {
         }
 

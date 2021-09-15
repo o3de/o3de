@@ -19,6 +19,7 @@
 #include <wrl.h>
 
 #include <d3dx12.h>
+#include <d3dcommon.h>
 
 // This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
 // Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures
