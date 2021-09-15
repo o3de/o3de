@@ -183,13 +183,12 @@ namespace AZ::IO::Internal
         return IsAbsolute(pathView.begin(), pathView.end(), preferredSeparator);
     }
 
-    // Compares path segments using either Posix  or Windows path rules based on the path separator in use
-    // Posix paths perform a case-sensitive comparison, while Windows paths perform a case-insensitive comparison
-    static int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, char pathSeparator)
+    // Compares path segments using either Posix or Windows path rules based on the exactCaseCompare option
+    static int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, bool exactCaseCompare)
     {
         const size_t maxCharsToCompare = (AZStd::min)(left.size(), right.size());
 
-        int charCompareResult = pathSeparator == PosixPathSeparator
+        int charCompareResult = exactCaseCompare
             ? maxCharsToCompare ? strncmp(left.data(), right.data(), maxCharsToCompare) : 0
             : maxCharsToCompare ? azstrnicmp(left.data(), right.data(), maxCharsToCompare) : 0;
         return charCompareResult == 0
@@ -594,7 +593,10 @@ namespace AZ::IO::parser
         {
             return pathParser->InRootName() ? **pathParser : "";
         };
-        int res = Internal::ComparePathSegment(GetRootName(lhsPathParser), GetRootName(rhsPathParser), lhsPathParser->m_preferred_separator);
+
+        const bool exactCaseCompare = lhsPathParser->m_preferred_separator == PosixPathSeparator
+            || rhsPathParser->m_preferred_separator == PosixPathSeparator;
+        int res = Internal::ComparePathSegment(GetRootName(lhsPathParser), GetRootName(rhsPathParser), exactCaseCompare);
         ConsumeRootName(lhsPathParser);
         ConsumeRootName(rhsPathParser);
         return res;
@@ -621,9 +623,11 @@ namespace AZ::IO::parser
         auto& lhsPathParser = *lhsPathParserPtr;
         auto& rhsPathParser = *rhsPathParserPtr;
 
+        const bool exactCaseCompare = lhsPathParser.m_preferred_separator == PosixPathSeparator
+            || rhsPathParser.m_preferred_separator == PosixPathSeparator;
         while (lhsPathParser && rhsPathParser)
         {
-            if (int res = Internal::ComparePathSegment(*lhsPathParser, *rhsPathParser, lhsPathParser.m_preferred_separator);
+            if (int res = Internal::ComparePathSegment(*lhsPathParser, *rhsPathParser, exactCaseCompare);
                 res != 0)
             {
                 return res;
@@ -644,6 +648,46 @@ namespace AZ::IO::parser
             return 1;
         }
         return 0;
+    }
+
+    //path.hash
+    /// Path is using FNV-1a algorithm 64 bit version.
+    inline size_t HashSegment(AZStd::string_view pathSegment, bool hashExactPath)
+    {
+        size_t hash = 14695981039346656037ULL;
+        constexpr size_t fnvPrime = 1099511628211ULL;
+
+        for (const char first : pathSegment)
+        {
+            hash ^= static_cast<size_t>(hashExactPath ? first : tolower(first));
+            hash *= fnvPrime;
+        }
+        return hash;
+    }
+    constexpr size_t HashPath(PathParser& pathParser)
+    {
+        size_t hash_value = 0;
+        const bool hashExactPath = pathParser.m_preferred_separator == AZ::IO::PosixPathSeparator;
+        while (pathParser)
+        {
+            switch (pathParser.m_parser_state)
+            {
+            case PS_InRootName:
+            case PS_InFilenames:
+                AZStd::hash_combine(hash_value, HashSegment(*pathParser, hashExactPath));
+                break;
+            case PS_InRootDir:
+                // Only hash the PosixPathSeparator when a root directory is seen
+                // This makes the hash consistent for root directories path of C:\ and C:/
+                AZStd::hash_combine(hash_value, HashSegment("/", hashExactPath));
+                break;
+            default:
+                // The BeforeBegin and AtEnd states contain no segments to hash
+                break;
+            }
+            ++pathParser;
+        }
+        return hash_value;
     }
 
     constexpr int DetermineLexicalElementCount(PathParser pathParser)

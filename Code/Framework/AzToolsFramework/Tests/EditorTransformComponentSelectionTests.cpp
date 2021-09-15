@@ -866,9 +866,7 @@ namespace UnitTest
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
     }
 
-    TEST_F(
-        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture,
-        BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, BoxSelectWithNoInitialSelectionAddsEntitiesToSelection)
     {
         AzToolsFramework::ed_viewportStickySelect = true;
 
@@ -987,6 +985,30 @@ namespace UnitTest
         // no entities are selected
         auto selectedEntitiesAfter = SelectedEntities();
         EXPECT_TRUE(selectedEntitiesAfter.empty());
+    }
+
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, UnstickyUndoOperationForChangeInSelectionIsAtomic)
+    {
+        AzToolsFramework::ed_viewportStickySelect = false;
+
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        AzToolsFramework::SelectEntity(m_entityId1);
+
+        // calculate the position in screen space of the second entity
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+
+        // single click select entity2
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity2ScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
+
+        // undo action
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::UndoPressed);
+
+        // entity1 is selected after undo
+        using ::testing::UnorderedElementsAre;
+        auto selectedEntitiesAfter = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
     }
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
