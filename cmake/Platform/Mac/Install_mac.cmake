@@ -24,11 +24,9 @@ set(installed_binaries_path_template [[
 }]]
 )
 
-foreach(config ${CMAKE_CONFIGURATION_TYPES})
-    configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/${config}/PreInstallSteps_mac.cmake @ONLY)
-endforeach()
+configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake @ONLY)
         
-install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
 #! ly_install_target_override: Mac specific target installation
 function(ly_install_target_override)

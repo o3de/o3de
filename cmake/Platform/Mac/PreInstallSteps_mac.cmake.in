@@ -19,11 +19,19 @@ file(COPY @LY_ROOT_FOLDER@/cmake/Platform/Mac/info.plist
 )
 
 # This SDK launcher will install python site-packages and then launch the ProjectManager
-# when a user double clicks on the SDK from Finder.
-file(COPY @CMAKE_BINARY_DIR@/bin/@config@/O3DE_SDK
+# when a user double clicks on the SDK from Finder. We're only going to need one version
+# of the SDK launcher regardless of what configs of the engine are installed.
+if (EXISTS @CMAKE_BINARY_DIR@/bin/profile/O3DE_SDK)
+    set(sdk_launcher_config profile)
+elseif (EXISTS @CMAKE_BINARY_DIR@/bin/debug/O3DE_SDK)
+    set(sdk_launcher_config debug)
+elseif (EXISTS @CMAKE_BINARY_DIR@/bin/release/O3DE_SDK)
+    set(sdk_launcher_config release)
+endif()
+file(COPY @CMAKE_BINARY_DIR@/bin/${sdk_launcher_config}/O3DE_SDK
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS
 )
-file(COPY @CMAKE_BINARY_DIR@/runtime_install/@config@/ProjectManagerBundlePath.setreg
+file(COPY @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/ProjectManagerBundlePath.setreg
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS/Registry
 )
 
