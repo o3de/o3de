@@ -48,7 +48,7 @@ namespace AzQtComponents
 
     void FancyDockingGhostWidget::setPixmap(const QPixmap& pixmap, const QRect& targetRect, QScreen* screen)
     {
-        const bool needsRepaint = m_pixmap.cacheKey() != pixmap.cacheKey() || m_clipToWidgets;
+        bool needsRepaint = m_pixmap.cacheKey() != pixmap.cacheKey() || m_clipToWidgets;
         m_pixmap = pixmap;
 
         if (pixmap.isNull() || targetRect.isNull() || !screen)
@@ -80,6 +80,7 @@ namespace AzQtComponents
         QPoint midPoint = targetRect.topLeft() + QPoint(targetRect.width() / 2, targetRect.height() / 2);
         QScreen* pointScreen = QApplication::screenAt(midPoint);
         QRect rect(targetRect);
+        PaintMode paintMode = PaintMode::FULL;
 
         if (!pointScreen || pointScreen != screen)
         {
@@ -87,26 +88,28 @@ namespace AzQtComponents
             {
                 rect.setLeft(rect.left() - rect.width());
                 rect.setTop(rect.top() - rect.height());
-                m_paintMode = PaintMode::BOTTOMRIGHT;
+                paintMode = PaintMode::BOTTOMRIGHT;
             }
             else
             {
                 rect.setRight(rect.right() + rect.width());
                 rect.setTop(rect.top() - rect.height());
-                m_paintMode = PaintMode::BOTTOMLEFT;
+                paintMode = PaintMode::BOTTOMLEFT;
             }
         }
-        else
+
+        if (m_paintMode != paintMode)
         {
-            m_paintMode = PaintMode::FULL;
+            needsRepaint = true;
         }
 
         setGeometry(rect);
+        m_paintMode = paintMode;
 
         setPixmapVisible(true);
         if (needsRepaint)
         {
-            update();
+            repaint();
         }
     }
 
