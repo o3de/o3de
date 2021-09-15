@@ -893,6 +893,8 @@ namespace UnitTest
         // Compress/Decompress to all astc formats (LDR)
         auto imageIdx = Image_237x177_RGB_Jpg;
         IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
+        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
+        AZStd::string imageName = fi.baseName().toUtf8().constData();
         for (uint32 i = 0; i < ePixelFormat_Count; i++)
         {
             EPixelFormat pixelFormat = (EPixelFormat)i;
@@ -911,7 +913,8 @@ namespace UnitTest
                 ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
 
                 // save the image to a file so we can check the visual result
-                SaveImageToFile(imageToProcess.Get(), "ASTC", 1);
+                AZStd::string outputName = AZStd::string::format("ASTC_%s", imageName.c_str());
+                SaveImageToFile(imageToProcess.Get(), outputName, 1);
             }
         }
     }
