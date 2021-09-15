@@ -42,8 +42,8 @@ private:
         bool m_sync2DViews;
         float m_defaultFOV;
         float m_defaultAspectRatio;
-        bool m_enableContextMenu;
-        bool m_stickySelect;
+        bool m_contextMenuEnabled;
+        bool m_stickySelectEnabled;
     };
 
     struct Display

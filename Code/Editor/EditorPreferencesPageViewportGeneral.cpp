@@ -24,8 +24,8 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         ->Field("Sync2DViews", &General::m_sync2DViews)
         ->Field("DefaultFOV", &General::m_defaultFOV)
         ->Field("DefaultAspectRatio", &General::m_defaultAspectRatio)
-        ->Field("EnableContextMenu", &General::m_enableContextMenu)
-        ->Field("StickySelect", &General::m_stickySelect);
+        ->Field("EnableContextMenu", &General::m_contextMenuEnabled)
+        ->Field("StickySelect", &General::m_stickySelectEnabled);
 
     serialize.Class<Display>()
         ->Version(1)
@@ -48,7 +48,12 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         ->Field("ShowGridGuide", &Display::m_showGridGuide)
         ->Field("DisplayDimensions", &Display::m_displayDimension);
 
-    serialize.Class<MapViewport>()->Version(1)->Field("SwapXY", &MapViewport::m_swapXY)->Field("Resolution", &MapViewport::m_resolution);
+    // clang-format off
+    serialize.Class<MapViewport>()
+        ->Version(1)
+        ->Field("SwapXY", &MapViewport::m_swapXY)
+        ->Field("Resolution", &MapViewport::m_resolution);
+    // clang-format on
 
     serialize.Class<TextLabels>()
         ->Version(1)
@@ -86,9 +91,9 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
                 AZ::Edit::UIHandlers::SpinBox, &General::m_defaultAspectRatio, "Perspective View Aspect Ratio",
                 "Perspective View Aspect Ratio")
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &General::m_enableContextMenu, "Enable Right-Click Context Menu",
+                AZ::Edit::UIHandlers::CheckBox, &General::m_contextMenuEnabled, "Enable Right-Click Context Menu",
                 "Enable Right-Click Context Menu")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelect, "Enable Sticky Select", "Enable Sticky Select");
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelectEnabled, "Enable Sticky Select", "Enable Sticky Select");
 
         editContext->Class<Display>("Viewport Display Settings", "")
             ->DataElement(
@@ -216,9 +221,9 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
 
     gSettings.viewports.fDefaultAspectRatio = m_general.m_defaultAspectRatio;
     gSettings.viewports.fDefaultFov = m_general.m_defaultFOV;
-    gSettings.viewports.bEnableContextMenu = m_general.m_enableContextMenu;
+    gSettings.viewports.bEnableContextMenu = m_general.m_contextMenuEnabled;
     gSettings.viewports.bSync2DViews = m_general.m_sync2DViews;
-    SandboxEditor::SetStickySelectEnabled(m_general.m_stickySelect);
+    SandboxEditor::SetStickySelectEnabled(m_general.m_stickySelectEnabled);
 
     gSettings.viewports.bShowSafeFrame = m_display.m_showSafeFrame;
     gSettings.viewports.bHighlightSelectedGeometry = m_display.m_highlightSelGeom;
@@ -279,9 +284,9 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
 
     m_general.m_defaultAspectRatio = gSettings.viewports.fDefaultAspectRatio;
     m_general.m_defaultFOV = gSettings.viewports.fDefaultFov;
-    m_general.m_enableContextMenu = gSettings.viewports.bEnableContextMenu;
+    m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
-    m_general.m_stickySelect = SandboxEditor::StickySelectEnabled();
+    m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();
 
     m_display.m_showSafeFrame = gSettings.viewports.bShowSafeFrame;
     m_display.m_highlightSelGeom = gSettings.viewports.bHighlightSelectedGeometry;
