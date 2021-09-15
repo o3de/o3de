@@ -1,5 +1,5 @@
 {
-    "Source" : "GaussianFilterFloatHorizontal",
+    "Source" : "KawaseShadowBlur",
 
     "DrawList" : "shadow",
 
