@@ -6,6 +6,13 @@
  *
  */
 
-#include <AzTest/AzTest.h>
+ /*
+    This is a dummy shader used to validate detection of "#included files"
+ */
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+#include "Test2Color.azsli"
+
+float4 GetTest1Color(float4 color)
+{
+    return color + GetTest2Color(color);
+}

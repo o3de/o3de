@@ -6,6 +6,11 @@
  *
  */
 
-#include <AzTest/AzTest.h>
+ /*
+    This is a dummy shader used to validate detection of "#included files"
+ */
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+float4 GetTest3Color(float4 color)
+{
+    return color * 0.13; 
+}
