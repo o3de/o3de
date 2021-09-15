@@ -440,8 +440,7 @@ namespace AzToolsFramework
             {
                 AZ_Error(
                     "Prefab", false,
-                    "Provided filePath must be relative.",
-                    templateId);
+                    "Provided filePath %s must be relative.", filePath.Native().data());
                 return;
             }
 
@@ -452,6 +451,11 @@ namespace AzToolsFramework
             }
             
             m_templateFilePathToIdMap.erase(templateToChange.GetFilePath());
+            if (!m_templateFilePathToIdMap.try_emplace(filePath, templateId).second)
+            {
+                AZ_Error("Prefab", false, "Provided filePath %s already exists.", filePath.Native().data());
+                return;
+            }
             m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, templateId));
 
             PrefabDom& prefabDom = templateToChange.GetPrefabDom();
