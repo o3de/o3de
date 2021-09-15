@@ -1,21 +1,12 @@
 :: Need to set up
 
 @echo off
-
-REM 
-REM Copyright (c) Contributors to the Open 3D Engine Project.
-REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
-REM
-REM SPDX-License-Identifier: Apache-2.0 OR MIT
-REM
-REM
-
-:: Set up and run LY Python CMD prompt
-:: Sets up the DccScriptingInterface_Env,
+:: Set up and start a O3DE CMD prompt
+:: Sets up the current (DCC) Project_Env,
 :: Puts you in the CMD within the dev environment
 
 :: Set up window
-TITLE Lumberyard DCC Scripting Interface Cmd
+TITLE O3DE DCC Scripting Interface Cmd
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
