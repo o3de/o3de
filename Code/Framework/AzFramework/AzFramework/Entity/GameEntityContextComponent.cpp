@@ -290,7 +290,10 @@ namespace AzFramework
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
                 if (isPrefabSystemEnabled)
                 {
-                    AZ::Interface<SpawnedEntityTicketMapperInterface>::Get()->RemoveSpawnedEntity(currentEntity->GetId());
+                    SpawnedEntityTicketMapperInterface* spawnedEntityTicketMapperInterface =
+                        AZ::Interface<SpawnedEntityTicketMapperInterface>::Get();
+                    AZ_Assert(spawnedEntityTicketMapperInterface != nullptr, "SpawnedEntityTicketMapperInterface is not found.");
+                    spawnedEntityTicketMapperInterface->RemoveSpawnedEntity(currentEntity->GetId());
                 }
 
                 if (currentEntity->GetState() == AZ::Entity::State::Active)

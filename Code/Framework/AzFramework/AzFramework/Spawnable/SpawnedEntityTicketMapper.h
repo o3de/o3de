@@ -23,7 +23,7 @@ namespace AzFramework
         SpawnedEntityTicketMapper();
         ~SpawnedEntityTicketMapper();
 
-        //! Removes the entityId from the spawned entities map.
+        //! Removes the entityId from the spawned entities map if present.
         //! @param entityId The id of the entity to remove.
         void RemoveSpawnedEntity(AZ::EntityId entityId) override;
 
@@ -32,6 +32,7 @@ namespace AzFramework
         //! @param ticket The ticket pointer to add.
         void AddSpawnedEntity(AZ::EntityId entityId, void* ticket) override;
     private:
+        SpawnableEntitiesDefinition* spawnableEntitiesInterface = nullptr;
         AZStd::unordered_map<AZ::EntityId, void*> m_spawnedEntities;
     };
 } // namespace AzFramework

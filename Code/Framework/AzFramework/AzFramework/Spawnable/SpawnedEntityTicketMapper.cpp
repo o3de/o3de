@@ -13,6 +13,9 @@ namespace AzFramework
 {
     SpawnedEntityTicketMapper::SpawnedEntityTicketMapper()
     {
+        spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
+        AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
+
         AZ::Interface<SpawnedEntityTicketMapperInterface>::Register(this);
     }
 
@@ -26,8 +29,6 @@ namespace AzFramework
         auto spawnedGameEntitiesIterator = m_spawnedEntities.find(entityId);
         if (spawnedGameEntitiesIterator != m_spawnedEntities.end())
         {
-            SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
-            AZ_Assert(spawnableEntitiesInterface == nullptr, "SpawnableEntitiesInterface is not found.");
             spawnableEntitiesInterface->ClaimEntity(
                 spawnedGameEntitiesIterator->first, spawnedGameEntitiesIterator->second);
             m_spawnedEntities.erase(entityId);
