@@ -61,7 +61,6 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
-    from editor_python_test_tools import hydra_editor_utils as hydra
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
@@ -73,26 +72,26 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
 
         # Test steps begin.
         # 1. Creation of Exposure Control entity with no components.
-        exposure_control = "Exposure Control"
+        exposure_control_name = "Exposure Control"
         exposure_control_entity = EditorEntity.create_editor_entity_at(
-            math.Vector3(512.0, 512.0, 34.0), f"{exposure_control}")
+            math.Vector3(512.0, 512.0, 34.0), f"{exposure_control_name}")
         Report.critical_result(Tests.exposure_control_creation, exposure_control_entity.exists())
 
         # 2. Add Exposure Control component to Exposure Control entity.
-        exposure_control_entity.add_component(exposure_control)
+        exposure_control_entity.add_component(exposure_control_name)
         Report.critical_result(
-            Tests.exposure_control_component, exposure_control_entity.has_component(exposure_control))
+            Tests.exposure_control_component, exposure_control_entity.has_component(exposure_control_name))
 
         # 3. UNDO the entity creation and component addition.
         # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not exposure_control_entity.exists())
 
         # 4. REDO the entity creation and component addition.
         # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(3):
+        for x in range(4):
             general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, exposure_control_entity.exists())
@@ -103,32 +102,31 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         helper.exit_game_mode(Tests.exit_game_mode)
 
         # 6. Test IsHidden.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", exposure_control_entity.id, False)
+        exposure_control_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', exposure_control_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
         # 7. Test IsVisible.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", exposure_control_entity.id, True)
+        exposure_control_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', exposure_control_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
         # 8. Add Post FX Layer component.
-        exposure_control_entity.add_component("PostFX Layer")
-        post_fx_component_added = editor.EditorComponentAPIBus(
-            bus.Broadcast, "IsComponentEnabled", exposure_control_entity.components[0])
-        Report.result(Tests.post_fx_component, post_fx_component_added)
+        post_fx_layer_name = "PostFX Layer"
+        exposure_control_entity.add_component(post_fx_layer_name)
+        Report.result(Tests.post_fx_component, exposure_control_entity.has_component(post_fx_layer_name))
 
         # 9. Delete ExposureControl entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", exposure_control_entity.id)
-        Report.result(Tests.entity_deleted, len(hydra.find_entity_by_name(exposure_control_entity)) == 0)
+        exposure_control_entity.delete()
+        Report.result(Tests.entity_deleted, not exposure_control_entity.exists())
 
         # 10. UNDO deletion.
         general.undo()
-        Report.result(Tests.deletion_undo, len(hydra.find_entity_by_name(exposure_control_entity)) == 1)
+        Report.result(Tests.deletion_undo, exposure_control_entity.exists())
 
         # 11. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, len(hydra.find_entity_by_name(exposure_control_entity)) == 0)
+        Report.result(Tests.deletion_redo, not exposure_control_entity.exists())
 
         # 12. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)

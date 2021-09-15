@@ -42,17 +42,18 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
     Test Steps:
     1) Create a Global Skylight (IBL) entity with no components.
-    2) UNDO the entity creation.
-    3) REDO the entity creation.
-    4) Enter/Exit game mode.
-    5) Test IsHidden.
-    6) Test IsVisible.
-    7) Add Post FX Layer component.
-    8) Add Camera component
-    9) Delete Global Skylight (IBL) entity.
-    10) UNDO deletion.
-    11) REDO deletion.
-    12) Look for errors.
+    2) Add Global Skylight (IBL) component to Global Skylight (IBL) entity.
+    3) UNDO the entity creation and component addition.
+    4) REDO the entity creation and component addition.
+    5) Enter/Exit game mode.
+    6) Test IsHidden.
+    7) Test IsVisible.
+    8) Add Post FX Layer component.
+    9) Add Camera component
+    10) Delete Global Skylight (IBL) entity.
+    11) UNDO deletion.
+    12) REDO deletion.
+    13) Look for errors.
 
     :return: None
     """
@@ -60,86 +61,95 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
     import azlmbr.asset as asset
     import azlmbr.bus as bus
-    import azlmbr.entity as entity
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
-    import azlmbr.paths
 
-    from editor_python_test_tools import hydra_editor_utils as hydra
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
     with Tracer() as error_tracer:
-        # Wait for Editor idle loop before executing Python hydra scripts.
+        # Test setup begins.
+        # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level(os.path.join(azlmbr.paths.devassets, "Levels"), "Base")
+        helper.open_level("Physics", "Base")
 
-        # Delete all existing entities initially for test setup.
-        search_filter = azlmbr.entity.SearchFilter()
-        all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-
+        # Test steps begin.
         # 1. Create a Global Skylight (IBL) entity with no components.
-        global_skylight = "Global Skylight (IBL)"
-        global_skylight_entity = hydra.Entity(f"{global_skylight}")
-        global_skylight_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [global_skylight])
-        has_component = hydra.has_components(global_skylight_entity.id, [global_skylight])
-        Report.result(Tests.global_skylight_creation, global_skylight_entity.id.IsValid())
-        Report.critical_result(Tests.global_skylight_component, has_component)
+        global_skylight_name = "Global Skylight (IBL)"
+        global_skylight_entity = EditorEntity.create_editor_entity_at(
+            math.Vector3(512.0, 512.0, 34.0), global_skylight_name)
+        Report.critical_result(Tests.global_skylight_creation, global_skylight_entity.exists())
 
-        # 2. UNDO the entity creation.
-        general.undo()
-        Report.result(Tests.creation_undo, len(hydra.find_entity_by_name(global_skylight_entity)) == 0)
+        # 2. Add Global Skylight (IBL) component to Global Skylight (IBL) entity.
+        global_skylight_component = global_skylight_entity.add_component(global_skylight_name)
+        Report.critical_result(
+            Tests.global_skylight_component, global_skylight_entity.has_component(global_skylight_name))
 
-        # 3. REDO the entity creation.
-        general.redo()
-        Report.result(Tests.creation_redo, len(hydra.find_entity_by_name(global_skylight_entity)) == 1)
+        # 3. UNDO the entity creation and component addition.
+        # Requires 3 UNDO calls to remove the Entity completely.
+        for x in range(4):
+            general.undo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.creation_undo, not global_skylight_entity.exists())
 
-        # 4. Enter/Exit game mode.
+        # 4. REDO the entity creation and component addition.
+        # Requires 3 REDO calls to match the previous 3 UNDO calls.
+        for x in range(4):
+            general.redo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.creation_redo, global_skylight_entity.exists())
+
+        # 5. Enter/Exit game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         helper.exit_game_mode(Tests.exit_game_mode)
 
-        # 5. Test IsHidden.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", global_skylight_entity.id, False)
+        # 6. Test IsHidden.
+        global_skylight_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', global_skylight_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
-        # 6. Test IsVisible.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", global_skylight_entity.id, True)
+        # 7. Test IsVisible.
+        global_skylight_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', global_skylight_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
-        # 7. Set the Diffuse Image asset on the Global Skylight (IBL) entity.
+        # 8. Set the Diffuse Image asset on the Global Skylight (IBL) entity.
+        global_skylight_diffuse_image_property = "Controller|Configuration|Diffuse Image"
         diffuse_image_path = os.path.join("LightingPresets", "greenwich_park_02_4k_iblskyboxcm.exr.streamingimage")
         diffuse_image_asset = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", diffuse_image_path, math.Uuid(), False)
-        diffuse_image_added = global_skylight_entity.get_set_test(
-            0, "Controller|Configuration|Diffuse Image", diffuse_image_asset)
-        Report.result(Tests.diffuse_image_set, diffuse_image_added)
+        global_skylight_component.set_component_property_value(
+            global_skylight_diffuse_image_property, diffuse_image_asset)
+        diffuse_image_set = global_skylight_component.get_component_property_value(
+            global_skylight_diffuse_image_property)
+        Report.result(Tests.diffuse_image_set, diffuse_image_asset == diffuse_image_set)
 
-        # 8. Set the Specular Image asset on the Global Light (IBL) entity.
+        # 9. Set the Specular Image asset on the Global Light (IBL) entity.
+        global_skylight_specular_image_property = "Controller|Configuration|Specular Image"
         specular_image_path = os.path.join("LightingPresets", "greenwich_park_02_4k_iblskyboxcm.exr.streamingimage")
         specular_image_asset = asset.AssetCatalogRequestBus(
             bus.Broadcast, "GetAssetIdByPath", specular_image_path, math.Uuid(), False)
-        specular_image_added = global_skylight_entity.get_set_test(
-            0, "Controller|Configuration|Specular Image", specular_image_asset)
-        Report.result(Tests.specular_image_set, specular_image_added)
+        global_skylight_component.set_component_property_value(
+            global_skylight_specular_image_property, specular_image_asset)
+        specular_image_added = global_skylight_component.get_component_property_value(
+            global_skylight_specular_image_property)
+        Report.result(Tests.specular_image_set, specular_image_asset == specular_image_added)
 
-        # 9. Delete Global Skylight (IBL) entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", global_skylight_entity.id)
-        Report.result(Tests.entity_deleted, len(hydra.find_entity_by_name(global_skylight)) == 0)
+        # 10. Delete Global Skylight (IBL) entity.
+        global_skylight_entity.delete()
+        Report.result(Tests.entity_deleted, not global_skylight_entity.exists())
 
-        # 10. UNDO deletion.
+        # 11. UNDO deletion.
         general.undo()
-        Report.result(Tests.deletion_undo, len(hydra.find_entity_by_name(global_skylight)) == 1)
+        Report.result(Tests.deletion_undo, global_skylight_entity.exists())
 
-        # 11. REDO deletion.
+        # 12. REDO deletion.
         general.redo()
-        Report.result(Tests.deletion_redo, len(hydra.find_entity_by_name(global_skylight)) == 0)
+        Report.result(Tests.deletion_redo, not  global_skylight_entity.exists())
 
-        # 12. Look for errors.
+        # 13. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
         Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
 

@@ -84,14 +84,14 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
         # 3. UNDO the entity creation and component addition.
         # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not decal_entity.exists())
 
         # 4. REDO the entity creation and component addition.
         # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(3):
+        for x in range(4):
             general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, decal_entity.exists())

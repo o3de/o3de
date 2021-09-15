@@ -74,25 +74,25 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
 
         # Test steps begin.
         # 1. Create a Directional Light entity with no components.
-        directional_light = "Directional Light"
+        directional_light_name = "Directional Light"
         directional_light_entity = EditorEntity.create_editor_entity_at(
-            math.Vector3(512.0, 512.0, 34.0), f"{directional_light}")
+            math.Vector3(512.0, 512.0, 34.0), f"{directional_light_name}")
         Report.critical_result(Tests.directional_light_creation, directional_light_entity.exists())
 
         # 2. Add Directional Light component to Directional Light entity.
-        directional_light_component = directional_light_entity.add_component(directional_light)
+        directional_light_component = directional_light_entity.add_component(directional_light_name)
         Report.critical_result(
-            Tests.directional_light_component, directional_light_entity.has_component(directional_light))
+            Tests.directional_light_component, directional_light_entity.has_component(directional_light_name))
 
         # 3. UNDO the entity creation and component addition.
         # Requires 3 UNDO to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.undo()
         Report.result(Tests.creation_undo, not directional_light_entity.exists())
 
         # 4. REDO the entity creation and component addition.
         # Requires 3 REDO calls to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.redo()
         Report.result(Tests.creation_redo, directional_light_entity.exists())
 
@@ -112,22 +112,22 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         Report.result(Tests.is_visible, is_visible is True)
 
         # 8. Add Camera entity.
-        camera = "Camera"
-        camera_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), camera)
+        camera_name = "Camera"
+        camera_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), camera_name)
         Report.result(Tests.camera_creation, camera_entity.exists())
 
         # 9. Add Camera component to Camera entity.
-        camera_entity.add_component(camera)
-        Report.result(Tests.camera_component_added, camera_entity.has_component(camera))
+        camera_entity.add_component(camera_name)
+        Report.result(Tests.camera_component_added, camera_entity.has_component(camera_name))
 
         # 10. Set the Directional Light component property Shadow|Camera to the Camera entity.
         shadow_camera_property_path = "Controller|Configuration|Shadow|Camera"
         directional_light_component.set_component_property_value(shadow_camera_property_path, camera_entity.id)
         shadow_camera_set = directional_light_component.get_component_property_value(shadow_camera_property_path)
-        Report.result(Tests.shadow_camera_check, camera == shadow_camera_set)
+        Report.result(Tests.shadow_camera_check, camera_entity.id == shadow_camera_set)
 
         # 11. Delete DirectionalLight entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", directional_light_entity.id)
+        directional_light_entity.delete()
         Report.result(Tests.entity_deleted, not directional_light_entity.exists())
 
         # 12. UNDO deletion.

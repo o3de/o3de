@@ -30,7 +30,6 @@ def onEditorEntityDeleted(parameters):
             createdEntityIds.remove(entityId)
             break
 
-
 # Open a level (any level should work)
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
 

@@ -81,13 +81,13 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
 
         # 3. UNDO the entity creation and component addition.
         # Requires 3 UNDO to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.undo()
         Report.result(Tests.creation_undo, not display_mapper_entity.exists())
 
         # 4. REDO the entity creation and component addition.
         # Requires 3 REDO to remove the Entity completely.
-        for x in range(3):
+        for x in range(4):
             general.redo()
         Report.result(Tests.creation_redo, display_mapper_entity.exists())
 
@@ -97,17 +97,17 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         helper.exit_game_mode(Tests.exit_game_mode)
 
         # 6. Test IsHidden.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", display_mapper_entity.id, False)
+        display_mapper_entity.set_visibility_state(False)
         is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', display_mapper_entity.id)
         Report.result(Tests.is_hidden, is_hidden is True)
 
         # 7. Test IsVisible.
-        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", display_mapper_entity.id, True)
+        display_mapper_entity.set_visibility_state(True)
         is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', display_mapper_entity.id)
         Report.result(Tests.is_visible, is_visible is True)
 
         # 8. Delete Display Mapper entity.
-        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", display_mapper_entity.id)
+        display_mapper_entity.delete()
         Report.result(Tests.entity_deleted, not display_mapper_entity.exists())
 
         # 9. UNDO deletion.
