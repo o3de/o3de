@@ -45,7 +45,7 @@ namespace UnitTest
 
         virtual ~AllocatorsBase() = default;
 
-        void SetupAllocator()
+        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
             m_drillerManager = AZ::Debug::DrillerManager::Create();
             m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
@@ -54,7 +54,7 @@ namespace UnitTest
             // Only create the SystemAllocator if it s not ready
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
                 m_ownsAllocator = true;
             }
         }
@@ -85,6 +85,7 @@ namespace UnitTest
     {
     public:
         ScopedAllocatorSetupFixture() { SetupAllocator(); }
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
         ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
     };
 
