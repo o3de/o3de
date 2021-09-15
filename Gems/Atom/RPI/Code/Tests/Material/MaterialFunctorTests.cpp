@@ -168,7 +168,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionA.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
@@ -184,7 +185,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionB.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
@@ -201,7 +203,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionC.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionC.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionC.GetProcessResult());
@@ -216,7 +219,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionInvalid.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionInvalid.GetProcessResult());
