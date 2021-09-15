@@ -86,6 +86,7 @@ namespace AZ
         class AssetTreeNodeBase
         {
         public:
+            virtual ~AssetTreeNodeBase() = default;
             virtual const AssetPrimaryInfo* GetAssetPrimaryInfo() const = 0;
             virtual AssetTreeNodeBase* FindOrAddChild(const AssetTrackingId& id, const AssetPrimaryInfo* info) = 0;
         };
@@ -94,6 +95,7 @@ namespace AZ
         class AssetTreeBase
         {
         public:
+            virtual ~AssetTreeBase() = default;
             virtual AssetTreeNodeBase& GetRoot() = 0;
         };
 
@@ -101,6 +103,7 @@ namespace AZ
         class AssetAllocationTableBase
         {
         public:
+            virtual ~AssetAllocationTableBase() = default;
             virtual AssetTreeNodeBase* FindAllocation(void* ptr) const = 0;
         };
     }
