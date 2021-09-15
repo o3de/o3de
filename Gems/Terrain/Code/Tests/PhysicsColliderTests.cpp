@@ -155,7 +155,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     float heightScale = 0.0f;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(
-        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightScale);
+        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
 
     EXPECT_EQ(heightScale, 1.0f / 256.0f);
 
@@ -214,7 +214,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
     float heightScale = 0.0f;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(
-        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightScale);
+        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
 
     float aabbCenter = min + (max - min) / 2.0f;
     
