@@ -85,6 +85,13 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
+            # For some reason zlib and libpng need to be declared here, otherwise libAtom_Feature_Common.so will fail to link
+            # when building for Android. These libraries are appropriately indicated in Atom/Utils's CCmakeLists.txt and those dependencies are 
+            # supposed to be inherited here through the PUBLIC dependencies chaining ... but something is amiss. libpng and zlib were both 
+            # appearing in the link command so it isn't clear why it was failing. Perhaps it was because libpng appeared before zlib
+            # in the link command? Somehow repeating them here works around this issue.
+            3rdParty::libpng
+            3rdParty::zlib
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_Feature_Common.Static
