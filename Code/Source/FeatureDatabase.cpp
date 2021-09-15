@@ -187,6 +187,7 @@ namespace EMotionFX
                 {
                     Feature* frameData = frameDataEntry.second;
                     context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
+                    context.m_motionInstance->SetCurrentTime(frame.GetSampleTime());
                     frameData->ExtractFrameData(context);
                 }
 
@@ -226,18 +227,18 @@ namespace EMotionFX
             return result->second;
         }
 
-        void FeatureDatabase::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeatureDatabase::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex)
         {
-            for (Feature* frameData: m_features)
+            for (Feature* feature: m_features)
             {
-                if (frameData && frameData->GetId().IsNull())
+                if (feature && feature->GetId().IsNull())
                 {
                     continue;
                 }
 
-                if (frameData->GetDebugDrawEnabled())
+                if (feature->GetDebugDrawEnabled())
                 {
-                    frameData->DebugDraw(draw, behaviorInstance);
+                    feature->DebugDraw(draw, behaviorInstance, frameIndex);
                 }
             }
         }
