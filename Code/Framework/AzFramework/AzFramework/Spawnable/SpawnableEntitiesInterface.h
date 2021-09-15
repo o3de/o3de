@@ -38,9 +38,15 @@ namespace AzFramework
 
         AZ::Entity** begin();
         AZ::Entity** end();
+        const AZ::Entity* const* begin() const;
+        const AZ::Entity* const* end() const;
         const AZ::Entity* const* cbegin();
         const AZ::Entity* const* cend();
-        size_t size();
+
+        AZ::Entity* operator[](size_t n);
+        const AZ::Entity* operator[](size_t n) const;
+
+        size_t size() const;
 
     private:
         AZ::Entity** m_begin;
@@ -55,9 +61,15 @@ namespace AzFramework
 
         const AZ::Entity* const* begin();
         const AZ::Entity* const* end();
+        const AZ::Entity* const* begin() const;
+        const AZ::Entity* const* end() const;
         const AZ::Entity* const* cbegin();
         const AZ::Entity* const* cend();
-        size_t size();
+
+        const AZ::Entity* operator[](size_t n);
+        const AZ::Entity* operator[](size_t n) const;
+
+        size_t size() const;
 
     private:
         AZ::Entity** m_begin;
