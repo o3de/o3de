@@ -279,6 +279,12 @@ namespace AzFramework
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
+    struct ClaimEntityOptionalArgs final
+    {
+        //! The priority at which this call will be executed.
+        SpawnablePriority m_priority{ SpawnablePriority_Default };
+    };
+
     struct BarrierOptionalArgs final
     {
         //! The priority at which this call will be executed.
@@ -383,6 +389,8 @@ namespace AzFramework
         //! @param optionalArgs Optional additional arguments, see ClaimEntitiesOptionalArgs.
         virtual void ClaimEntities(
             EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) = 0;
+
+        virtual void ClaimEntity(AZ::EntityId entityId, void* ticket, ClaimEntityOptionalArgs optionalArgs = {}) = 0;
 
         //! Blocks until all operations made on the provided ticket before the barrier call have completed.
         //! @param ticket The ticket to monitor.
