@@ -180,19 +180,34 @@ namespace AzToolsFramework
 
                 // Draw main entry thumbnail.
                 QRect remainingRect(optionCopy.rect);
-                remainingRect.adjust(
-                    ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0,
-                    0); // bump it rightwards to give some margin to the icon.
+                //remainingRect.adjust(
+                //    ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0,
+                //    0); // bump it rightwards to give some margin to the icon.
 
                 QSize iconSize(m_iconSize, m_iconSize);
                 // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
                 // so it needs to center vertically with padding in that case:
-                QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
-
-                QPalette actualPalette(optionCopy.palette);
+                QPoint iconTopLeft; //(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+                QPoint branchIconTopLeft = QPoint();
 
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
                 auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+
+                //If it is a SourceEntry or it is not the column name we don't want to add space for the branch Icon
+                if (sourceEntry || index.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+                {
+                    remainingRect.adjust(ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+                    iconTopLeft = QPoint(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+                }
+                else
+                {
+                    remainingRect.adjust(ENTRY_ICON_MARGIN_LEFT_PIXELS + m_iconSize, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+                    iconTopLeft = QPoint(remainingRect.x() / 2 + m_iconSize, remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+                    branchIconTopLeft =QPoint((remainingRect.x() / 2) - 2, remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+                }
+
+                QPalette actualPalette(optionCopy.palette);
+
 
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
