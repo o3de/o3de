@@ -80,6 +80,14 @@ namespace AzQtComponents
         QPoint midPoint = targetRect.topLeft() + QPoint(targetRect.width() / 2, targetRect.height() / 2);
         QScreen* pointScreen = QApplication::screenAt(midPoint);
         QRect rect(targetRect);
+
+        // On environment with multiple screens with different scaling settings, the screen coordinate system may have gaps
+        // due to the screen real estate shrinking according to the scale. When that happens, if a widget is moved into the gap
+        // it will resize and translate with undefined behavior, causing a lot of jitter and flashes.
+        // To prevent this, whenever the widget would end up outside screen boundaries, we resize the widget to be twice its
+        // original size so that the center of the widget is back inside the screen boundaries, and set the ghost widget
+        // to paint the widget pixmap at half the previous size to make the process seamless.
+        // This makes the dragging a lot smoother in most situations.
         PaintMode paintMode = PaintMode::FULL;
 
         if (!pointScreen || pointScreen != screen)
