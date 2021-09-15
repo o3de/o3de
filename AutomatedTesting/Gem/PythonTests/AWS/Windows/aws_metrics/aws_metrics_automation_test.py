@@ -139,7 +139,6 @@ def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixtur
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('assume_role_arn', [constants.ASSUME_ROLE_ARN])
 @pytest.mark.parametrize('feature_name', [AWS_METRICS_FEATURE_NAME])
-@pytest.mark.parametrize('level', ['AWS/Metrics'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('region_name', [constants.AWS_REGION])
@@ -150,6 +149,7 @@ class TestAWSMetricsWindows(object):
     """
     Test class to verify the real-time and batch analytics for metrics.
     """
+    @pytest.mark.parametrize('level', ['AWS/Metrics'])
     def test_realtime_and_batch_analytics(self,
                                           level: str,
                                           launcher: pytest.fixture,
@@ -201,10 +201,7 @@ class TestAWSMetricsWindows(object):
         for thread in operational_threads:
             thread.join()
 
-        # Clear the analytics bucket objects so that the S3 bucket can be destroyed during tear down.
-        aws_metrics_utils.empty_bucket(
-            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))
-
+    @pytest.mark.parametrize('level', ['AWS/Metrics'])
     def test_unauthorized_user_request_rejected(self,
                                                 level: str,
                                                 launcher: pytest.fixture,
@@ -227,3 +224,13 @@ class TestAWSMetricsWindows(object):
                 halt_on_unexpected=True)
             assert result, 'Metrics events are sent successfully by unauthorized user'
             logger.info('Unauthorized user is rejected to send metrics.')
+
+    def test_clean_up_s3_bucket(self,
+                                aws_utils: pytest.fixture,
+                                resource_mappings: pytest.fixture,
+                                aws_metrics_utils: pytest.fixture):
+        """
+        Clear the analytics bucket objects so that the S3 bucket can be destroyed during tear down.
+        """
+        aws_metrics_utils.empty_bucket(
+            resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName'))

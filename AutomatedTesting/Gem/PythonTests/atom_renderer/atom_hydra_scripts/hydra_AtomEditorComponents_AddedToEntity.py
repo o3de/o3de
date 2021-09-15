@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that creates an entity and attaches Atom components to it for test verification.
 """
 
 import os
@@ -17,6 +15,7 @@ import azlmbr.asset as asset
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 import azlmbr.editor as editor
+import azlmbr.render as render
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 
@@ -125,6 +124,19 @@ def run():
     def verify_set_property(entity_obj, path, value):
         entity_obj.get_set_test(0, path, value)
 
+    # Verify cubemap generation
+    def verify_cubemap_generation(component_name, entity_obj):
+        # Initially Check if the component has Reflection Probe component
+        if not hydra.has_components(entity_obj.id, ["Reflection Probe"]):
+            raise ValueError(f"Given entity {entity_obj.name} has no Reflection Probe component")
+        render.EditorReflectionProbeBus(azlmbr.bus.Event, "BakeReflectionProbe", entity_obj.id)
+
+        def get_value():
+            hydra.get_component_property_value(entity_obj.components[0], "Cubemap|Baked Cubemap Path")
+
+        TestHelper.wait_for_condition(lambda: get_value() != "", 20.0)
+        general.log(f"{component_name}_test: Cubemap is generated: {get_value() != ''}")
+
     # Wait for Editor idle loop before executing Python hydra scripts.
     TestHelper.init_idle()
 
@@ -215,6 +227,12 @@ def run():
     # Display Mapper Component
     ComponentTests("Display Mapper")
 
+    # Reflection Probe Component
+    reflection_probe = "Reflection Probe"
+    ComponentTests(
+        reflection_probe,
+        lambda entity_obj: verify_required_component_addition(entity_obj, ["Box Shape"], reflection_probe),
+        lambda entity_obj: verify_cubemap_generation(reflection_probe, entity_obj),)
 
 if __name__ == "__main__":
     run()

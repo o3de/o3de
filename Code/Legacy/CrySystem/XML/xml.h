@@ -203,6 +203,7 @@ public:
     bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle); // save in small memory chunks
 
     //! Set new XML Node attribute (or override attribute with same key).
+    using IXmlNode::setAttr;
     void setAttr(const char* key, const char* value);
     void setAttr(const char* key, int value);
     void setAttr(const char* key, unsigned int value);

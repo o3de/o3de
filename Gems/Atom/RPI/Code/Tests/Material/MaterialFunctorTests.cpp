@@ -41,6 +41,7 @@ namespace UnitTest
             {
             }
 
+            using MaterialFunctor::Process;
             void Process(MaterialFunctor::RuntimeContext& context) override
             {
                 m_processResult = context.SetShaderOptionValue(0, m_shaderOptionIndex, m_shaderOptionValue);
@@ -65,6 +66,7 @@ namespace UnitTest
         public:
             MOCK_METHOD0(ProcessCalled, void());
 
+            using MaterialFunctor::Process;
             void Process(RuntimeContext& context) override
             {
                 ProcessCalled();
@@ -87,6 +89,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
                 Ptr<PropertyDependencyTestFunctor> functor = aznew PropertyDependencyTestFunctor;
