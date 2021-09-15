@@ -18,7 +18,6 @@
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
-#include <AzFramework/Spawnable/SpawnedEntityTicketMapper.h>
 
 namespace AzFramework
 {
@@ -93,7 +92,6 @@ namespace AzFramework
         void LoadRootSpawnableFromSettingsRegistry();
 
         SpawnableAssetHandler m_assetHandler;
-        SpawnedEntityTicketMapper m_spawnedEntityTicketMapper;
         SpawnableEntitiesManager m_entitiesManager;
         SpawnableEntitiesContainer m_rootSpawnableContainer;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_registryChangeHandler;
