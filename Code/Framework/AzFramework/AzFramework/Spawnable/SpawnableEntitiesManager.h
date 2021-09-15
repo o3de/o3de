@@ -66,6 +66,8 @@ namespace AzFramework
             EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
         void ClaimEntities(
             EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) override;
+        void ClaimEntity(
+            AZ::EntityId entityId, void* ticket, ClaimEntityOptionalArgs optionalArgs = {}) override;
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
@@ -162,6 +164,13 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
+        struct ClaimEntityCommand
+        {
+            Ticket* m_ticket;
+            EntitySpawnTicket::Id m_ticketId;
+            uint32_t m_requestId;
+            AZ::EntityId m_entityId;
+        };
         struct BarrierCommand
         {
             BarrierCallback m_completionCallback;
@@ -177,7 +186,7 @@ namespace AzFramework
 
         using Requests = AZStd::variant<
             SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand, ListEntitiesCommand,
-            ListIndicesEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
+            ListIndicesEntitiesCommand, ClaimEntitiesCommand, ClaimEntityCommand, BarrierCommand, DestroyTicketCommand>;
 
         struct Queue
         {
@@ -187,7 +196,7 @@ namespace AzFramework
         };
 
         template<typename T>
-        void QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request);
+        void QueueRequest(Ticket* ticket, SpawnablePriority priority, T&& request);
         AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) override;
         void DestroyTicket(void* ticket) override;
 
@@ -203,6 +212,7 @@ namespace AzFramework
         bool ProcessRequest(ListEntitiesCommand& request);
         bool ProcessRequest(ListIndicesEntitiesCommand& request);
         bool ProcessRequest(ClaimEntitiesCommand& request);
+        bool ProcessRequest(ClaimEntityCommand& request);
         bool ProcessRequest(BarrierCommand& request);
         bool ProcessRequest(DestroyTicketCommand& request);
 
