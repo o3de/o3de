@@ -278,6 +278,7 @@ namespace Multiplayer
         AZ_Assert(IsNetEntityRoleAutonomous(), "Incorrect network role for input creation");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
+            multiplayerComponent->GetController()->CreateInputFromScript(networkInput, deltaTime);
             multiplayerComponent->GetController()->CreateInput(networkInput, deltaTime);
         }
     }
@@ -289,6 +290,7 @@ namespace Multiplayer
         AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
+            multiplayerComponent->GetController()->ProcessInputFromScript(networkInput, deltaTime);
             multiplayerComponent->GetController()->ProcessInput(networkInput, deltaTime);
         }
         m_isProcessingInput = false;

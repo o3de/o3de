@@ -16,6 +16,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+
 namespace Terrain
 {
     /**
@@ -39,9 +41,6 @@ namespace Terrain
         virtual void Activate() = 0;
         virtual void Deactivate() = 0;
 
-        virtual void SetWorldBounds(const AZ::Aabb& worldBounds) = 0;
-        virtual void SetHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
-
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;
@@ -50,27 +49,6 @@ namespace Terrain
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;
 
-    /**
-    * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
-    */
-    class TerrainAreaRequests
-        : public AZ::ComponentBus
-    {
-    public:
-        ////////////////////////////////////////////////////////////////////////
-        // EBusTraits
-        using MutexType = AZStd::recursive_mutex;
-        ////////////////////////////////////////////////////////////////////////
-
-        virtual ~TerrainAreaRequests() = default;
-
-        virtual void RegisterArea() = 0;
-        virtual void RefreshArea() = 0;
-
-    };
-
-    using TerrainAreaRequestBus = AZ::EBus<TerrainAreaRequests>;
 
     /**
     * A bus to signal the life times of terrain areas
@@ -87,15 +65,6 @@ namespace Terrain
 
         virtual ~TerrainAreaHeightRequests() = default;
 
-        enum class Sampler
-        {
-            BILINEAR,   // Get the value at the requested location, using terrain sample grid to bilinear filter between sample grid points
-            CLAMP,      // Clamp the input point to the terrain sample grid, then get the exact value
-            EXACT,       // Directly get the value at the location, regardless of terrain sample grid density
-
-            DEFAULT = BILINEAR
-        };
-
         enum SurfacePointDataMask
         {
             POSITION = 0x01,
@@ -107,8 +76,16 @@ namespace Terrain
 
         // Synchronous single input location.  The Vector3 input position versions are defined to ignore the input Z value.
 
-        virtual void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter = Sampler::DEFAULT) = 0;
-        virtual void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter = Sampler::DEFAULT) = 0;
+        virtual void GetHeight(
+            const AZ::Vector3& inPosition,
+            AZ::Vector3& outPosition,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
+                AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT) = 0;
+        virtual void GetNormal(
+            const AZ::Vector3& inPosition,
+            AZ::Vector3& outNormal,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
+                AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT) = 0;
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;
