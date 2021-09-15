@@ -103,7 +103,7 @@ namespace ScriptCanvasEditor
 
         void Model::OnModificationComplete()
         {
-            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanComplete, m_scanner->GetResult());
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeComplete, m_modifier->GetResult());
             m_modifier.reset();
             m_scanner.reset();
             Idle();

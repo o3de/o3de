@@ -25,7 +25,6 @@ namespace ScriptCanvasEditor
             Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete);
 
             const ScanResult& GetResult() const;
-
             ScanResult&& TakeResult();
 
         private:           

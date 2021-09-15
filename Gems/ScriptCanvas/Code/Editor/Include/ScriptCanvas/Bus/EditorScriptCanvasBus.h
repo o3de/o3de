@@ -236,8 +236,6 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        using Bus = AZ::EBus<UpgradeNotifications>;
-
         virtual void OnUpgradeStart() {}
         virtual void OnUpgradeComplete() {}
         virtual void OnUpgradeCancelled() {}
@@ -245,6 +243,5 @@ namespace ScriptCanvasEditor
         virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
     };
 
-
-
+    using UpgradeNotificationsBus = AZ::EBus<UpgradeNotifications>;
 }

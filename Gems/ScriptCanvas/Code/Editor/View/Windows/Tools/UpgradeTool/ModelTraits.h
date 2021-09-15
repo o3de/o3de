@@ -17,10 +17,26 @@ namespace ScriptCanvasEditor
         struct ModifyConfiguration
         {
             AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
+            AZStd::function<bool()> onReadOnlyFile;
             bool modifySingleAsset = false;
             bool backupGraphBeforeModification = false;
             bool successfulDependencyUpgradeRequired = true;
         };
+
+        struct ModificationResult
+        {
+            AZ::Data::Asset<AZ::Data::AssetData> asset;
+            AZ::Data::AssetInfo assetInfo;
+            AZStd::string errorMessage;
+        };
+
+        class ModificationNotificationsTraits
+            : public AZ::EBusTraits
+        {
+        public:
+            virtual void ModificationComplete(const ModificationResult& result) = 0;
+        };
+        using ModificationNotificationsBus = AZ::EBus<ModificationNotificationsTraits>;
 
         struct ScanConfiguration
         {
@@ -37,9 +53,10 @@ namespace ScriptCanvasEditor
         };
         using ModelRequestsBus = AZ::EBus<ModelRequestsTraits>;
 
-        struct ModificationResult
+        struct ModificationResults
         {
-
+            AZStd::vector<AZ::Data::AssetInfo> m_successes;
+            AZStd::vector<ModificationResult> m_failures;
         };
 
         struct ScanResult
@@ -67,9 +84,7 @@ namespace ScriptCanvasEditor
             virtual void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
 
             virtual void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<AZ::Data::AssetInfo>& assets) = 0;
-            virtual void OnUpgradeComplete() = 0;
-            // virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config) = 0;
-            // virtual void OnUpgradeModification(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, Result result) = 0;
+            virtual void OnUpgradeComplete(const ModificationResults& results) = 0;
             virtual void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) = 0;
             virtual void OnUpgradeDependencySortBegin
                 ( const ModifyConfiguration& config
@@ -78,6 +93,8 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& config
                 , const AZStd::vector<AZ::Data::AssetInfo>& assets
                 , const AZStd::vector<size_t>& sortedOrder) = 0;
+            virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) = 0;
+            virtual void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) = 0;
         };
         using ModelNotificationsBus = AZ::EBus<ModelNotificationsTraits>;
     }

@@ -57,7 +57,8 @@ namespace ScriptCanvasEditor
 
             State m_state = State::Idle;
             Log m_log;
-            
+
+            // these two are managed by the same class because the modifer will only operate on the results of the scanner
             AZStd::unique_ptr<Modifier> m_modifier;
             AZStd::unique_ptr<Scanner> m_scanner;
             AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;

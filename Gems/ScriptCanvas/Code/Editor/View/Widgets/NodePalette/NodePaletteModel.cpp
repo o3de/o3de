@@ -829,12 +829,12 @@ namespace ScriptCanvasEditor
     NodePaletteModel::NodePaletteModel()
         : m_paletteId(AZ::Entity::MakeId())
     {
-        UpgradeNotifications::Bus::Handler::BusConnect();
+        UpgradeNotificationsBus::Handler::BusConnect();
     }
 
     NodePaletteModel::~NodePaletteModel()
     {
-        UpgradeNotifications::Bus::Handler::BusDisconnect();
+        UpgradeNotificationsBus::Handler::BusDisconnect();
 
         DisconnectLambdas();
 

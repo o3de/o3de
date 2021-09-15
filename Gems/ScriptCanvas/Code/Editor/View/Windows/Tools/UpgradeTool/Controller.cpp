@@ -52,9 +52,9 @@ namespace ScriptCanvasEditor
             m_view->tableWidget->setColumnWidth(3, 22);
             m_view->textEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
             m_view->textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
-            connect(m_view->scanButton, &QPushButton::pressed, this, &Controller::OnScanButtonPress);
-            connect(m_view->closeButton, &QPushButton::pressed, this, &Controller::OnCloseButtonPress);
-            connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnUpgradeButtonPress);
+            connect(m_view->scanButton, &QPushButton::pressed, this, &Controller::OnButtonPressScan);
+            connect(m_view->closeButton, &QPushButton::pressed, this, &Controller::OnButtonPressClose);
+            connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnButtonPressUpgrade);
             m_view->progressBar->setValue(0);
             m_view->progressBar->setVisible(false);
 
@@ -87,12 +87,12 @@ namespace ScriptCanvasEditor
             LogBus::Broadcast(&LogTraits::Clear);
         }
 
-        void Controller::OnCloseButtonPress()
+        void Controller::OnButtonPressClose()
         {
             reject();
         }
 
-        void Controller::OnScanButtonPress()
+        void Controller::OnButtonPressScan()
         {
             // \todo move to another file
             auto isUpToDate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -126,6 +126,148 @@ namespace ScriptCanvasEditor
             config.filter = isUpToDate;
 
             ModelRequestsBus::Broadcast(&ModelRequestsTraits::Scan, config);
+        }
+
+        void Controller::OnButtonPressUpgrade()
+        {
+            auto simpleUpdate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
+            {
+                if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
+                {
+                    ScriptCanvasAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
+                    AZ_Assert(scriptCanvasAsset, "Unable to get the asset of ScriptCanvasAsset, but received type: %s"
+                        , azrtti_typeid<ScriptCanvasAsset>().template ToString<AZStd::string>().c_str());
+                    if (!scriptCanvasAsset)
+                    {
+                        return;
+                    }
+
+                    AZ::Entity* scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
+                    AZ_Assert(scriptCanvasEntity, "View::UpgradeGraph The Script Canvas asset must have a valid entity");
+                    if (!scriptCanvasEntity)
+                    {
+                        return;
+                    }
+
+                    AZ::Entity* queryEntity = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(queryEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
+                    if (queryEntity)
+                    {
+                        if (queryEntity->GetState() == AZ::Entity::State::Active)
+                        {
+                            queryEntity->Deactivate();
+                        }
+
+                        scriptCanvasEntity = queryEntity;
+                    }
+
+                    if (scriptCanvasEntity->GetState() == AZ::Entity::State::Constructed)
+                    {
+                        scriptCanvasEntity->Init();
+                    }
+
+                    if (scriptCanvasEntity->GetState() == AZ::Entity::State::Init)
+                    {
+                        scriptCanvasEntity->Activate();
+                    }
+
+                    AZ_Assert(scriptCanvasEntity->GetState() == AZ::Entity::State::Active, "Graph entity is not active");
+                    auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
+                    AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
+                    if (graphComponent)
+                    {
+                        graphComponent->UpgradeGraph
+                            ( asset
+                            , m_view->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
+                            , m_view->verbose->isChecked());
+                    }
+                }
+            };
+
+            auto onReadyOnlyFile = [this]()->bool
+            {
+                int result = QMessageBox::No;
+                QMessageBox mb
+                    ( QMessageBox::Warning
+                    , QObject::tr("Failed to Save Upgraded File")
+                    , QObject::tr("The upgraded file could not be saved because the file is read only.\n"
+                        "Do you want to make it writeable and overwrite it?")
+                    , QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No
+                    , this);
+                result = mb.exec();
+                return result == QMessageBox::YesToAll;
+            };
+
+            ModifyConfiguration config;
+            config.modification = simpleUpdate;
+            config.onReadOnlyFile = onReadyOnlyFile;
+            config.backupGraphBeforeModification = m_view->makeBackupCheckbox->isChecked();
+            ModelRequestsBus::Broadcast(&ModelRequestsTraits::Modify, config);
+        }
+
+        void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const AZ::Data::AssetInfo& info)
+        {
+            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
+            if (!items.isEmpty())
+            {
+                for (auto* item : items)
+                {
+                    int row = item->row();
+                    SetRowBusy(row);
+                }
+            }
+        }
+
+        void Controller::OnUpgradeModificationEnd
+            ( [[maybe_unused]] const ModifyConfiguration& config
+            , const AZ::Data::AssetInfo& info
+            , ModificationResult result)
+        {
+            if (result.errorMessage.empty())
+            {
+                VE_LOG("Successfully modified %s", result.assetInfo.m_relativePath.c_str());
+            }
+            else
+            {
+                VE_LOG("Failed to modify %s: %s", result.assetInfo.m_relativePath.c_str(), result.errorMessage.data());
+            }
+            
+            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
+            if (!items.isEmpty())
+            {
+                for (auto* item : items)
+                {
+                    int row = item->row();
+
+                    if (result.errorMessage.empty())
+                    {
+                        SetRowSucceeded(row);
+                    }
+                    else
+                    {
+                        SetRowFailed(row, "");
+                    }
+                }
+            }
+
+            m_view->progressBar->setVisible(true);
+            ++m_handledAssetCount;
+            m_view->progressBar->setValue(m_handledAssetCount);
+        }
+
+        void Controller::OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool skipped)
+        {
+            ModificationResult result;
+            result.asset = asset;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult
+                ( result.assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, asset.GetId());
+
+            if (skipped)
+            {
+                result.errorMessage = "Failed in editor upgrade state machine - check logs";
+            }
+
+            ModificationNotificationsBus::Broadcast(&ModificationNotificationsTraits::ModificationComplete, result);
         }
 
         void Controller::OnScanBegin(size_t assetCount)
@@ -264,68 +406,6 @@ namespace ScriptCanvasEditor
             OnScannedGraph(info, Filtered::No);
         }
 
-        void Controller::OnUpgradeButtonPress()
-        {
-            auto simpleUpdate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
-            {
-                if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
-                {
-                    ScriptCanvasAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
-                    AZ_Assert(scriptCanvasAsset, "Unable to get the asset of ScriptCanvasAsset, but received type: %s"
-                        , azrtti_typeid<ScriptCanvasAsset>().template ToString<AZStd::string>().c_str());
-                    if (!scriptCanvasAsset)
-                    {
-                        return;
-                    }
-
-                    AZ::Entity* scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
-                    AZ_Assert(scriptCanvasEntity, "View::UpgradeGraph The Script Canvas asset must have a valid entity");
-                    if (!scriptCanvasEntity)
-                    {
-                        return;
-                    }
-
-                    AZ::Entity* queryEntity = nullptr;
-                    AZ::ComponentApplicationBus::BroadcastResult(queryEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
-                    if (queryEntity)
-                    {
-                        if (queryEntity->GetState() == AZ::Entity::State::Active)
-                        {
-                            queryEntity->Deactivate();
-                        }
-
-                        scriptCanvasEntity = queryEntity;
-                    }
-
-                    if (scriptCanvasEntity->GetState() == AZ::Entity::State::Constructed)
-                    {
-                        scriptCanvasEntity->Init();
-                    }
-
-                    if (scriptCanvasEntity->GetState() == AZ::Entity::State::Init)
-                    {
-                        scriptCanvasEntity->Activate();
-                    }
-
-                    AZ_Assert(scriptCanvasEntity->GetState() == AZ::Entity::State::Active, "Graph entity is not active");
-                    auto graphComponent = scriptCanvasEntity->FindComponent<ScriptCanvasEditor::Graph>();
-                    AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
-                    if (graphComponent)
-                    {
-                        graphComponent->UpgradeGraph
-                            ( asset
-                            , m_view->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
-                            , m_view->verbose->isChecked());
-                    }
-                }
-            };
-
-            ModifyConfiguration config;
-            config.modification = simpleUpdate;
-            config.backupGraphBeforeModification = m_view->makeBackupCheckbox->isChecked();
-            ModelRequestsBus::Broadcast(&ModelRequestsTraits::Modify, config);
-        }
-
         void Controller::OnUpgradeBegin
             ( const ModifyConfiguration& config
             , [[maybe_unused]] const AZStd::vector<AZ::Data::AssetInfo>& assets)
@@ -359,8 +439,13 @@ namespace ScriptCanvasEditor
             m_view->spinner->SetBusyIconSize(16);
         }
 
-        void Controller::OnUpgradeComplete()
+        void Controller::OnUpgradeComplete(const ModificationResults& result)
         {
+            QString spinnerText = QStringLiteral("Upgrade Complete - ");
+            spinnerText.append(QString::asprintf(" - Upgraded: %zu, Failed: %zu"
+                , result.m_successes.size()
+                , result.m_failures.size()));
+            m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
         }
 

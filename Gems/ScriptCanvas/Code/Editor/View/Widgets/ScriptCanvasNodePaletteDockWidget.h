@@ -57,7 +57,7 @@ namespace ScriptCanvasEditor
             : public GraphCanvas::NodePaletteTreeItem
             , AzFramework::AssetCatalogEventBus::Handler
             , AZ::Data::AssetBus::MultiHandler
-            , UpgradeNotifications::Bus::Handler
+            , UpgradeNotificationsBus::Handler
             , AZ::SystemTickBus::Handler
         {
         public:

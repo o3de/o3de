@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <ScriptCanvas/Core/Core.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <AzCore/Component/TickBus.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasEditor
 {
@@ -18,6 +19,7 @@ namespace ScriptCanvasEditor
     {
         class Modifier
             : private AZ::SystemTickBus::Handler
+            , private ModificationNotificationsBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator, 0);
@@ -26,6 +28,9 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& modification
                 , AZStd::vector<AZ::Data::AssetInfo>&& assets
                 , AZStd::function<void()> onComplete);
+
+            const ModificationResults& GetResult() const;
+            ModificationResults&& TakeResult();
 
         private:
             friend class Sorter;
@@ -48,7 +53,16 @@ namespace ScriptCanvasEditor
                 ModifyingGraphs
             };
 
+            enum class ModifyState
+            {
+                Idle,
+                InProgress,
+                Saving,
+            };
+
+            // the two states reside in this class because the modification is only complete if the new source file saves out
             State m_state = State::GatheringDependencies;
+            ModifyState m_modifyState = ModifyState::Idle;
             size_t m_assetIndex = 0;
             AZStd::function<void()> m_onComplete;
             // asset infos in scanned order
@@ -61,12 +75,21 @@ namespace ScriptCanvasEditor
             AZStd::vector<size_t> m_failures;
             ModifyConfiguration m_config;
             ModificationResult m_result;
+            ModificationResults m_results;
+            AZStd::unique_ptr<FileSaver> m_fileSaver;
 
             void GatherDependencies();
             const AZ::Data::AssetInfo& GetCurrentAsset() const;
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
             AZ::Data::Asset<AZ::Data::AssetData> LoadAsset();
+            void ModifyCurrentAsset();
+            void ModifyNextAsset();
+            void ModificationComplete(const ModificationResult& result) override;
+            void ReportModificationError(AZStd::string_view report);
+            void ReportModificationSuccess();
+            void SaveModifiedGraph(const ModificationResult& result);
             void SortGraphsByDependencies();
+            void OnFileSaveComplete(const FileSaveResult& result);
             void OnSystemTick() override;
             void TickGatherDependencies();
             void TickUpdateGraph();

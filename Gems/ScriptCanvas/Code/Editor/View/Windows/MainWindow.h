@@ -98,19 +98,19 @@ namespace ScriptCanvasEditor
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
-        , private UpgradeNotifications::Bus::Handler
+        , private UpgradeNotificationsBus::Handler
     {
     public:
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
         }
 
         ~ScriptCanvasAssetBrowserModel() override
         {
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
         }
 
         void OnUpgradeStart() override

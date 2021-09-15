@@ -61,7 +61,7 @@ namespace ScriptCanvasEditor
 
     class NodePaletteModel
         : public GraphCanvas::CategorizerInterface
-        , UpgradeNotifications::Bus::Handler
+        , UpgradeNotificationsBus::Handler
     {
     public:
         typedef AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, NodePaletteModelInformation* > NodePaletteRegistry;

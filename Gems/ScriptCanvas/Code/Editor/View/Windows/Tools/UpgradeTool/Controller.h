@@ -41,7 +41,7 @@ namespace ScriptCanvasEditor
         //! Handles display change notifications, handles state change notifications, sends control requests
         class Controller
             : public AzQtComponents::StyledDialog
-            , private UpgradeNotifications::Bus::Handler
+            , private UpgradeNotificationsBus::Handler
             , private ModelNotificationsBus::Handler
         {
             Q_OBJECT
@@ -62,10 +62,12 @@ namespace ScriptCanvasEditor
 
             void AddLogEntries();
 
-            void OnCloseButtonPress();
-            void OnScanButtonPress();
-            void OnUpgradeButtonPress();
+            void OnButtonPressClose();
+            void OnButtonPressScan();
+            void OnButtonPressUpgrade();
 
+            void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped) override;
+                        
             void OnScanBegin(size_t assetCount) override;
             void OnScanComplete(const ScanResult& result) override;
             void OnScanFilteredGraph(const AZ::Data::AssetInfo& info) override;
@@ -77,7 +79,7 @@ namespace ScriptCanvasEditor
 
             // for single operation UI updates, just check the assets size, or note it on the request
             void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<AZ::Data::AssetInfo>& assets) override;
-            void OnUpgradeComplete() override;
+            void OnUpgradeComplete(const ModificationResults& results) override;
             void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) override;
             void OnUpgradeDependencySortBegin
                 ( const ModifyConfiguration& config
@@ -86,6 +88,8 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& config
                 , const AZStd::vector<AZ::Data::AssetInfo>& assets
                 , const AZStd::vector<size_t>& sortedOrder) override;
+            void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) override;
+            void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) override;
 
             void SetSpinnerIsBusy(bool isBusy);
             void SetRowBusy(int index);

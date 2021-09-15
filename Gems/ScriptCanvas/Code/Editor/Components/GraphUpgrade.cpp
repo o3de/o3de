@@ -686,7 +686,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
-        UpgradeNotifications::Bus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
+        UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
 
         m_asset = {};
     }

@@ -30,6 +30,7 @@ namespace ScriptCanvasEditor
             , m_assets(assets)
             , m_onComplete(onComplete)
         {
+            AZ_Assert(m_config.modification, "No modification function provided");
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeBegin, modification, m_assets);
             AZ::SystemTickBus::Handler::BusConnect();
         }
@@ -52,6 +53,11 @@ namespace ScriptCanvasEditor
             return iter->second;
         }
 
+        const ModificationResults& Modifier::GetResult() const
+        {
+            return m_results;
+        }
+            
         void Modifier::GatherDependencies()
         {
             AZ::SerializeContext* serializeContext{};
@@ -140,6 +146,84 @@ namespace ScriptCanvasEditor
             }
         }
 
+        void Modifier::ModificationComplete(const ModificationResult& result)
+        {
+            m_result = result;
+
+            if (result.errorMessage.empty())
+            {
+                SaveModifiedGraph(result);
+            }
+            else
+            {
+                ReportModificationError(result.errorMessage);
+            }
+        }
+
+        void Modifier::ModifyCurrentAsset()
+        {
+            m_result = {};
+            m_result.assetInfo = GetCurrentAsset();
+
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeModificationBegin, m_config, GetCurrentAsset());
+
+            if (auto asset = LoadAsset())
+            {
+                ModificationNotificationsBus::Handler::BusConnect();
+                m_modifyState = ModifyState::InProgress;
+                m_config.modification(asset);
+            }
+            else
+            {
+                ReportModificationError("Failed to load during modification");
+            }
+        }
+
+        void Modifier::ModifyNextAsset()
+        {
+            ModelNotificationsBus::Broadcast
+                ( &ModelNotificationsTraits::OnUpgradeModificationEnd, m_config, GetCurrentAsset(), m_result);
+            m_modifyState = ModifyState::Idle;
+            ++m_assetIndex;
+            m_result = {};
+        }
+
+        void Modifier::ReportModificationError(AZStd::string_view report)
+        {
+            m_result.asset = {};
+            m_result.errorMessage = report;
+            m_results.m_failures.push_back(m_result);
+            ModifyNextAsset();
+        }
+
+        void Modifier::ReportModificationSuccess()
+        {
+            m_results.m_successes.push_back(m_result.assetInfo);
+            ModifyNextAsset();
+        }
+
+        void Modifier::OnFileSaveComplete(const FileSaveResult& result)
+        {
+            if (!result.tempFileRemovalError.empty())
+            {
+                VE_LOG
+                    ( "Temporary file not removed for %s: %s"
+                    , m_result.assetInfo.m_relativePath.c_str()
+                    , result.tempFileRemovalError.c_str());
+            }
+
+            m_fileSaver.reset();
+
+            if (result.fileSaveError.empty())
+            {
+                ReportModificationSuccess();
+            }
+            else
+            {
+                ReportModificationError(result.fileSaveError);
+            }
+        }
+
         void Modifier::OnSystemTick()
         {
             switch (m_state)
@@ -154,50 +238,13 @@ namespace ScriptCanvasEditor
             }
         }
 
-        const AZStd::unordered_set<size_t>* Modifier::Sorter::GetDependencies(size_t index) const
+        void Modifier::SaveModifiedGraph(const ModificationResult& result)
         {
-            auto iter = modifier->m_dependencies.find(index);
-            return iter != modifier->m_dependencies.end() ? &iter->second : nullptr;
-        }
-
-        void Modifier::Sorter::Sort()
-        {
-            for (size_t index = 0; index != modifier->m_assets.size(); ++index)
-            {
-                Visit(index);
-            }
-        }
-
-        void Modifier::Sorter::Visit(size_t index)
-        {
-            if (markedPermanent.contains(index))
-            {
-                return;
-            }
-
-            if (markedTemporary.contains(index))
-            {
-                AZ_Error
-                    ( ScriptCanvas::k_VersionExplorerWindow.data()
-                    , false
-                    , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
-                    , modifier->GetCurrentAsset().m_relativePath.c_str());
-                return;
-            }
-
-            markedTemporary.insert(index);
-
-            if (auto dependencies = GetDependencies(index))
-            {
-                for (auto& dependency : *dependencies)
-                {
-                    Visit(dependency);
-                }
-            }
-
-            markedTemporary.erase(index);
-            markedPermanent.insert(index);
-            modifier->m_dependencyOrderedAssetIndicies.push_back(index);
+            m_modifyState = ModifyState::Saving;
+            m_fileSaver = AZStd::make_unique<FileSaver>
+                    ( m_config.onReadOnlyFile
+                    , [this](const FileSaveResult& result) { OnFileSaveComplete(result); });
+            m_fileSaver->Save(result.asset);
         }
 
         void Modifier::SortGraphsByDependencies()
@@ -206,6 +253,11 @@ namespace ScriptCanvasEditor
             Sorter sorter;
             sorter.modifier = this;
             sorter.Sort();           
+        }
+
+        ModificationResults&& Modifier::TakeResult()
+        {
+            return AZStd::move(m_results);
         }
 
         void Modifier::TickGatherDependencies()
@@ -260,8 +312,69 @@ namespace ScriptCanvasEditor
 
         void Modifier::TickUpdateGraph()
         {
+            if (m_assetIndex == m_assets.size())
+            {
+                VE_LOG("Modifier: Complete.");
+                AZ::SystemTickBus::Handler::BusDisconnect();
 
+                if (m_onComplete)
+                {
+                    m_onComplete();
+                }
+            }
+            else
+            {
+                if (m_modifyState == ModifyState::Idle)
+                {
+                    ModifyCurrentAsset();
+                }
+            }
         }
 
+        const AZStd::unordered_set<size_t>* Modifier::Sorter::GetDependencies(size_t index) const
+        {
+            auto iter = modifier->m_dependencies.find(index);
+            return iter != modifier->m_dependencies.end() ? &iter->second : nullptr;
+        }
+
+        void Modifier::Sorter::Sort()
+        {
+            for (size_t index = 0; index != modifier->m_assets.size(); ++index)
+            {
+                Visit(index);
+            }
+        }
+
+        void Modifier::Sorter::Visit(size_t index)
+        {
+            if (markedPermanent.contains(index))
+            {
+                return;
+            }
+
+            if (markedTemporary.contains(index))
+            {
+                AZ_Error
+                (ScriptCanvas::k_VersionExplorerWindow.data()
+                    , false
+                    , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
+                    , modifier->GetCurrentAsset().m_relativePath.c_str());
+                return;
+            }
+
+            markedTemporary.insert(index);
+
+            if (auto dependencies = GetDependencies(index))
+            {
+                for (auto& dependency : *dependencies)
+                {
+                    Visit(dependency);
+                }
+            }
+
+            markedTemporary.erase(index);
+            markedPermanent.insert(index);
+            modifier->m_dependencyOrderedAssetIndicies.push_back(index);
+        }
     }
 }
