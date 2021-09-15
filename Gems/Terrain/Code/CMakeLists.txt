@@ -97,6 +97,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
+                Gem::LmbrCentral.Mocks
                 Gem::Terrain.Static
     )
 
@@ -120,6 +121,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
+                    Gem::LmbrCentral.Mocks
                     Gem::Terrain.Editor
         )
 

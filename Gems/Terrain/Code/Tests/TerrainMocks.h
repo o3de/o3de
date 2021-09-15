@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <LmbrCentral/Shape/MockShapes.h>
 
 namespace UnitTest
 {
@@ -47,8 +48,8 @@ namespace UnitTest
     private:
         static void GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("BoxShapeService"));
             provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         }
 
@@ -106,4 +107,44 @@ namespace UnitTest
         MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
     };
 
+    class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
+    {
+    public:
+        MockTerrainAreaHeightRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainAreaHeightRequests()
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD3(GetHeight, void(
+            const AZ::Vector3& inPosition,
+            AZ::Vector3& outPosition,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter));
+
+        MOCK_METHOD3(GetNormal, void(
+                const AZ::Vector3& inPosition,
+                AZ::Vector3& outNormal,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter));
+    };
+
+    class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
+    {
+    public:
+        MockTerrainSpawnerRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainSpawnerRequests()
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
+        MOCK_METHOD0(GetUseGroundPlane, bool());
+    };
 }
