@@ -70,6 +70,12 @@ namespace EMotionFX
             AZStd::vector<Frame>& GetFrames();
             const AZStd::vector<const Motion*>& GetUsedMotions() const;
 
+            /**
+             * Find the frame index for the given playtime and motion.
+             * NOTE: This is a slow operation and should not be used by the runtime without visual debugging.
+             */
+            size_t FindFrameIndex(Motion* motion, float playtime) const;
+
         private:
             void ImportFrame(Motion* motion, float timeValue, bool mirrored);
             bool IsFrameDiscarded(const AZStd::vector<MotionMatchEventData*>& activeEventDatas) const;
@@ -77,6 +83,7 @@ namespace EMotionFX
 
         private:
             AZStd::vector<Frame> m_frames; /**< The collection of frames. Keep in mind these don't hold a pose, but reference to a given frame/time value inside a given motion. */
+            AZStd::unordered_map<Motion*, AZStd::vector<size_t>> m_frameIndexByMotion;
             AZStd::vector<const Motion*> m_usedMotions; /**< The list of used motions. */
         };
     } // namespace MotionMatching

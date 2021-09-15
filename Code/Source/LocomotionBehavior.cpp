@@ -125,7 +125,7 @@ namespace EMotionFX
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootVelocityData->SetId(s_leftFootVelocitiesId);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Teal);
-            m_leftFootVelocityData->SetDebugDrawEnabled(false);
+            m_leftFootVelocityData->SetDebugDrawEnabled(true);
             m_leftFootVelocityData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_leftFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ namespace EMotionFX
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootVelocityData->SetId(s_rightFootVelocitiesId);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
-            m_rightFootVelocityData->SetDebugDrawEnabled(false);
+            m_rightFootVelocityData->SetDebugDrawEnabled(true);
             m_rightFootVelocityData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
@@ -161,11 +161,21 @@ namespace EMotionFX
             Behavior::DebugDraw(draw, behaviorInstance);
             DebugDrawControlSpline(draw, behaviorInstance);
 
-            // Draw all possible directions.
+            // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
+            // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
+            // feature values from the shown pose.
             const size_t curFrameIndex = behaviorInstance->GetLowestCostFrameIndex();
             if (curFrameIndex == InvalidIndex)
             {
                 return;
+            }
+
+            // Find the frame index in the frame database that belongs to the currently used pose.
+            MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
+            const size_t currentFrame = m_data.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
+            if (currentFrame != InvalidIndex)
+            {
+                m_features.DebugDraw(draw, behaviorInstance, currentFrame);
             }
 
             //// Draw the root direction
@@ -174,11 +184,10 @@ namespace EMotionFX
             //draw.DrawLine(actorInstance->GetWorldSpaceTransform().mPosition,
             //              actorInstance->GetWorldSpaceTransform().mPosition + direction, AZ::Colors::LightCyan);
 
-
-            //const Transform& transform = actorInstance->GetWorldSpaceTransform();
-            //const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_rootNodeIndex);
-            //m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, curFrameIndex, transform, AZ::Colors::LawnGreen);
-            //m_rootTrajectoryData->DebugDrawPastTrajectory(draw, curFrameIndex, transform, AZ::Colors::Red);
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_rootNodeIndex);
+            m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, curFrameIndex, transform, AZ::Colors::LawnGreen);
+            m_rootTrajectoryData->DebugDrawPastTrajectory(draw, curFrameIndex, transform, AZ::Colors::Red);
         }
 
         void LocomotionBehavior::DebugDrawControlSpline(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)

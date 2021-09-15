@@ -108,9 +108,9 @@ namespace EMotionFX
             m_positions[context.m_frameIndex] = invRootTransform.TransformPoint(nodeWorldPosition);
         }
 
-        void FeaturePosition::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeaturePosition::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
         {
-            AZ_UNUSED(behaviorInstance);
+            /*AZ_UNUSED(behaviorInstance);
 
             const size_t numPositions = m_positions.size();
             if (numPositions < 2)
@@ -121,7 +121,7 @@ namespace EMotionFX
             for (size_t i = 0; i < numPositions-1; ++i)
             {
                 draw.DrawLine(m_positions[i], m_positions[i+1], m_debugColor);
-            }
+            }*/
         }
 
         float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const

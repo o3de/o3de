@@ -14,6 +14,8 @@
 #include <Allocators.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <BehaviorInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
 
@@ -30,7 +32,6 @@ namespace EMotionFX
 
         FeatureVelocity::FeatureVelocity()
             : Feature()
-            , m_nodeIndex(MCORE_INVALIDINDEX32)
         {
         }
 
@@ -46,7 +47,7 @@ namespace EMotionFX
         {
             MCORE_UNUSED(settings);
 
-            if (m_nodeIndex == MCORE_INVALIDINDEX32)
+            if (m_nodeIndex == InvalidIndex)
             {
                 return false;
             }
@@ -104,32 +105,27 @@ namespace EMotionFX
         void FeatureVelocity::ExtractFrameData(const ExtractFrameContext& context)
         {
             Velocity& currentVelocity = m_velocities[context.m_frameIndex];
-            CalculateVelocity(m_nodeIndex, context.m_pose, context.m_nextPose, context.m_timeDelta, currentVelocity.m_direction, currentVelocity.m_speed);
-
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            currentVelocity.m_direction = invRootTransform.TransformVector(currentVelocity.m_direction);
-            currentVelocity.m_direction.NormalizeSafe();
+            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, currentVelocity.m_direction, currentVelocity.m_speed);
         }
 
-        void FeatureVelocity::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void FeatureVelocity::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
         {
-            AZ_UNUSED(behaviorInstance);
-
-            const size_t numVelocities = m_velocities.size();
-            if (numVelocities == 0)
+            if (m_nodeIndex == InvalidIndex)
             {
                 return;
             }
 
-            for (size_t i = 0; i < numVelocities; ++i)
-            {
-                const Velocity& vel = m_velocities[i];
-                const float intensity = 1.0f;
-                //if (intensity > AZ::Constants::FloatEpsilon)
-                {
-                    draw.DrawLine(AZ::Vector3::CreateZero(), vel.m_direction * vel.m_speed * 0.25f, AZ::Color(intensity, intensity, 0.0f, 1.0f));
-                }
-            }
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
+            const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
+            const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
+
+            const Velocity& velocity = m_velocities[frameIndex];
+            const float scale = 0.15f;
+            const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
+            const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
+            draw.DrawLine(jointPosition, jointPosition + directionWorldSpace,
+                AZ::Color(1.0f, 1.0f, 0.0f, 1.0f));
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const

@@ -104,11 +104,6 @@ namespace EMotionFX
             return behavior;
         }
 
-        void Behavior::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
-        {
-            m_features.DebugDraw(draw, behaviorInstance);
-        }
-
         void Behavior::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

@@ -55,6 +55,8 @@ namespace EMotionFX
             m_frames.clear();
             m_frames.shrink_to_fit();
 
+            m_frameIndexByMotion.clear();
+
             // Clear other things.
             m_usedMotions.clear();
             m_usedMotions.shrink_to_fit();
@@ -182,6 +184,7 @@ namespace EMotionFX
         void FrameDatabase::ImportFrame(Motion* motion, float timeValue, bool mirrored)
         {
             m_frames.emplace_back(Frame(m_frames.size(), motion, timeValue, mirrored));
+            m_frameIndexByMotion[motion].emplace_back(m_frames.back().GetFrameIndex());
         }
 
         size_t FrameDatabase::CalcMemoryUsageInBytes() const
@@ -228,6 +231,29 @@ namespace EMotionFX
         const AZStd::vector<const Motion*>& FrameDatabase::GetUsedMotions() const
         {
             return m_usedMotions;
+        }
+
+        size_t FrameDatabase::FindFrameIndex(Motion* motion, float playtime) const
+        {
+            auto iterator = m_frameIndexByMotion.find(motion);
+            if (iterator == m_frameIndexByMotion.end())
+            {
+                return InvalidIndex;
+            }
+
+            const AZStd::vector<size_t>& frameIndices = iterator->second;
+            for (const size_t frameIndex : frameIndices)
+            {
+                const Frame& frame = m_frames[frameIndex];
+                if (playtime >= frame.GetSampleTime() &&
+                    frameIndex + 1 < m_frames.size() &&
+                    playtime <= m_frames[frameIndex + 1].GetSampleTime())
+                {
+                    return frameIndex;
+                }
+            }
+
+            return InvalidIndex;
         }
     } // namespace MotionMatching
 } // namespace EMotionFX
