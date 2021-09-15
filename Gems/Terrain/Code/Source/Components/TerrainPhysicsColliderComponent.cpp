@@ -150,15 +150,26 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::GetHeightfieldBounds(const AZ::Aabb& bounds, AZ::Vector3& minBounds, AZ::Vector3& maxBounds) const
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        const AZ::Vector3 gridResolution3 = AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 1.0f);
 
         // Expand heightfield to contain aabb
-        minBounds = bounds.GetMin();
-        minBounds.SetX(minBounds.GetX() - fmodf(minBounds.GetX(), gridResolution.GetX()));
-        minBounds.SetY(minBounds.GetY() - fmodf(minBounds.GetY(), gridResolution.GetY()));
+        minBounds = AZ::Vector3(bounds.GetMin()) / gridResolution3;
+        const AZ::Vector3 minDelta = AZ::Vector3
+        (
+            minBounds.GetX() - floor(minBounds.GetX()),
+            minBounds.GetY() - floor(minBounds.GetY()),
+            0
+        );
+        minBounds = (minBounds - minDelta) * gridResolution3;
 
-        maxBounds = bounds.GetMax();
-        maxBounds.SetX(maxBounds.GetX() + gridResolution.GetX() - fmodf(maxBounds.GetX(), gridResolution.GetX()));
-        maxBounds.SetY(maxBounds.GetY() + gridResolution.GetX() - fmodf(maxBounds.GetY(), gridResolution.GetY()));
+        maxBounds = AZ::Vector3(bounds.GetMax()) / gridResolution3;
+        const AZ::Vector3 maxDelta = AZ::Vector3
+        (
+            gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())),
+            gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())),
+            0
+        );
+        maxBounds = (maxBounds + maxDelta) * gridResolution3;
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSizeInBounds(const AZ::Aabb& bounds, int32_t& numColumns, int32_t& numRows) const
@@ -238,9 +249,10 @@ namespace Terrain
                 const float x = col * gridResolution.GetX() + minBounds.GetX();
                 float height = 0.0f;
 
+                bool terrainExists = true;
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, terrainExists);
 
                 Physics::HeightMaterialPoint point;
                 point.m_height = azlossy_cast<int16_t>((height - worldCenterZ) * m_heightScale);
