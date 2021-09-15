@@ -63,7 +63,7 @@ namespace AZ
 
             // Use fixed vectors to avoid re-allocating new elements
             // Keeps track of the regions that added and removed using the macro
-            AZStd::fixed_vector<CachedTimeRegion*, TimeRegionStackSize> m_timeRegionStack;
+            AZStd::fixed_vector<CachedTimeRegion, TimeRegionStackSize> m_timeRegionStack;
 
             // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
             // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -27,9 +28,9 @@ namespace AZ
             {
                 GroupRegionName() = delete;
                 GroupRegionName(const char* const group, const char* const region);
-                
-                const char* const m_groupName = nullptr;
-                const char* const m_regionName = nullptr;
+
+                const char* m_groupName = nullptr;
+                const char* m_regionName = nullptr;
 
                 struct Hash
                 {
@@ -39,13 +40,13 @@ namespace AZ
             };
 
             CachedTimeRegion() = default;
-            CachedTimeRegion(const GroupRegionName* groupRegionName);
-            CachedTimeRegion(const GroupRegionName* groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
+            CachedTimeRegion(const GroupRegionName& groupRegionName);
+            CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
             //! Pointer to the GroupRegionName static instance.
             //! NOTE: When used in a separate shared library, the library mustn't be unloaded before
             //! the CpuProfiler is shutdown.
-            const GroupRegionName* m_groupRegionName = nullptr;
+            GroupRegionName m_groupRegionName{nullptr, nullptr};
 
             uint16_t m_stackDepth = 0u;
             AZStd::sys_time_t m_startTick = 0;
@@ -57,7 +58,7 @@ namespace AZ
         {
         public:
             TimeRegion() = delete;
-            TimeRegion(const GroupRegionName* groupRegionName);
+            TimeRegion(const GroupRegionName& groupRegionName);
             ~TimeRegion();
 
             //! End region
@@ -111,5 +112,13 @@ namespace AZ
 
 //! Supply a group and region to the time region
 #define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
-    static const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(#groupName, regionName); \
-    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));
+    const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(AZ_BUDGET_GETTER(groupName)()->Name(), regionName); \
+    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(AZ_JOIN(groupRegionName, __LINE__));
+
+// temporarily add remaining atom groups here
+AZ_DECLARE_BUDGET(AuxGeom);
+AZ_DECLARE_BUDGET(DirectionalLightFeatureProcessor);
+AZ_DECLARE_BUDGET(DX12);
+AZ_DECLARE_BUDGET(Pass);
+AZ_DECLARE_BUDGET(ReflectionProbe);
+AZ_DECLARE_BUDGET(SkinnedMesh);

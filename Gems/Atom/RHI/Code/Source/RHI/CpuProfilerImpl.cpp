@@ -14,6 +14,14 @@
 #include <AzCore/Debug/Timer.h>
 #include <Atom/RHI/RHIUtils.h>
 
+// temporarily add remaining atom groups here
+AZ_DEFINE_BUDGET(AuxGeom);
+AZ_DEFINE_BUDGET(DirectionalLightFeatureProcessor);
+AZ_DEFINE_BUDGET(DX12);
+AZ_DEFINE_BUDGET(Pass);
+AZ_DEFINE_BUDGET(ReflectionProbe);
+AZ_DEFINE_BUDGET(SkinnedMesh);
+
 namespace AZ
 {
     namespace RHI
@@ -29,7 +37,7 @@ namespace AZ
 
         // --- TimeRegion ---
 
-        TimeRegion::TimeRegion(const GroupRegionName* groupRegionName) :
+        TimeRegion::TimeRegion(const GroupRegionName& groupRegionName) :
             CachedTimeRegion(groupRegionName)
         {
             if (CpuProfiler::Get())
@@ -53,12 +61,12 @@ namespace AZ
 
         // --- CachedTimeRegion ---
 
-        CachedTimeRegion::CachedTimeRegion(const GroupRegionName* groupRegionName)
+        CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName)
         {
             m_groupRegionName = groupRegionName;
         }
 
-        CachedTimeRegion::CachedTimeRegion(const GroupRegionName* groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick)
+        CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick)
         {
             m_groupRegionName = groupRegionName;
             m_stackDepth = stackDepth;
@@ -310,13 +318,13 @@ namespace AZ
             timeRegion.m_stackDepth = static_cast<uint16_t>(m_stackLevel);
 
             AZ_Assert(m_timeRegionStack.size() < TimeRegionStackSize, "Adding too many time regions to the stack. Increase the size of TimeRegionStackSize.");
-            m_timeRegionStack.push_back(&timeRegion);
+            m_timeRegionStack.push_back(timeRegion);
 
             // Increment the stack
             m_stackLevel++;
 
             // Set the starting time at the end, to avoid recording the minor overhead
-            timeRegion.m_startTick = AZStd::GetTimeNowTicks();
+            m_timeRegionStack.back().m_startTick = AZStd::GetTimeNowTicks();
         }
 
         void CpuTimingLocalStorage::RegionStackPopBack()
@@ -331,23 +339,23 @@ namespace AZ
             const AZStd::sys_time_t endRegionTime = AZStd::GetTimeNowTicks();
 
             AZ_Assert(!m_timeRegionStack.empty(), "Trying to pop an element in the stack, but it's empty.");
-            CachedTimeRegion* back = m_timeRegionStack.back();
+            CachedTimeRegion back = m_timeRegionStack.back();
             m_timeRegionStack.pop_back();
 
             // Set the ending time
-            back->m_endTick = endRegionTime;
+            back.m_endTick = endRegionTime;
 
             // Decrement the stack
             m_stackLevel--;
 
             // Add an entry to the cached region
-            AddCachedRegion(CachedTimeRegion(back->m_groupRegionName, back->m_stackDepth, back->m_startTick, back->m_endTick));
+            AddCachedRegion(AZStd::move(back));
         }
 
         // Gets called when region ends and all data is set
         void CpuTimingLocalStorage::AddCachedRegion(CachedTimeRegion&& timeRegionCached)
         {
-            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName->m_regionName])
+            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName.m_regionName])
             {
                 return;
             }
@@ -366,12 +374,12 @@ namespace AZ
                 // Add the cached regions to the map
                 for (auto& cachedTimeRegion : m_cachedTimeRegions)
                 {
-                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
                     AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
                     regionVec.push_back(cachedTimeRegion);
                     if (regionVec.size() >= TimeRegionStackSize)
                     {
-                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName->m_regionName] = true;
+                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName.m_regionName] = true;
                     }
                 }
 
@@ -435,8 +443,8 @@ namespace AZ
         CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(
             const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId)
         {
-            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
-            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+            m_groupName = cachedTimeRegion.m_groupRegionName.m_groupName;
+            m_regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
             m_stackDepth = cachedTimeRegion.m_stackDepth;
             m_startTick = cachedTimeRegion.m_startTick;
             m_endTick = cachedTimeRegion.m_endTick;

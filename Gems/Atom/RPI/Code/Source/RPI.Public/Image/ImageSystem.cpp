@@ -34,6 +34,8 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Math/Color.h>
 
+AZ_DECLARE_BUDGET(RPI);
+
 namespace AZ
 {
     namespace RPI
