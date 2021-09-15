@@ -366,7 +366,7 @@ namespace AZ
 
                 m_dirtyPropertyFlags.set();
                 RunEditorMaterialFunctors();
-                RefreshAll();
+                RebuildAll();
             }
 
             void MaterialPropertyInspector::SaveOverridesToEntity(bool commitChanges)
