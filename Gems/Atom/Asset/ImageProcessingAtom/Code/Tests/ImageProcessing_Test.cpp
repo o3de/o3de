@@ -893,9 +893,6 @@ namespace UnitTest
         // Compress/Decompress to all astc formats (LDR)
         auto imageIdx = Image_237x177_RGB_Jpg;
         IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
-        // get image's name and it will be used for output file name
-        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
-        AZStd::string imageName = fi.baseName().toUtf8().constData();
         for (uint32 i = 0; i < ePixelFormat_Count; i++)
         {
             EPixelFormat pixelFormat = (EPixelFormat)i;
@@ -914,8 +911,7 @@ namespace UnitTest
                 ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
 
                 // save the image to a file so we can check the visual result
-                AZStd::string outputName = AZStd::string::format("ASTC_", imageName.c_str());
-                SaveImageToFile(imageToProcess.Get(), outputName, 1);
+                SaveImageToFile(imageToProcess.Get(), "ASTC", 1);
             }
         }
     }
@@ -925,8 +921,6 @@ namespace UnitTest
         // Compress/Decompress HDR
         auto imageIdx = Image_defaultprobe_cm_1536x256_64bits_tif;
         IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
-        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
-        AZStd::string imageName = fi.baseName().toUtf8().constData();
 
         EPixelFormat dstFormat = ePixelFormat_ASTC_4x4;
         ImageToProcess imageToProcess(srcImage);
@@ -942,8 +936,7 @@ namespace UnitTest
         ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
                                 
         //save the image to a file so we can check the visual result
-        AZStd::string outputName = AZStd::string::format("ASTC_HDR_", imageName.c_str());
-        SaveImageToFile(imageToProcess.Get(), outputName, 1);
+        SaveImageToFile(imageToProcess.Get(), "ASTC_HDR", 1);
     }
     
     TEST_F(ImageProcessingTest, Test_AstcNormalPreset_Success)
