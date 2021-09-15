@@ -47,11 +47,14 @@ namespace UnitTest
 
     TEST_F(PrefabBuilderTests, PrefabGroup_JsonWithPrefabArbitraryPrefab_Works)
     {
+        namespace JSR = AZ::JsonSerializationResult;
         using namespace AZ::SceneAPI;
         auto* serializeContext = m_app.GetSerializeContext();
         ASSERT_NE(nullptr, serializeContext);
         SceneData::PrefabGroup::Reflect(serializeContext);
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(serializeContext);
         SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(m_app.GetJsonRegistrationContext());
 
         // fill out a PrefabGroup using JSON
         AZStd::string_view input = R"JSON(
@@ -66,7 +69,7 @@ namespace UnitTest
         ASSERT_FALSE(document.HasParseError());
 
         SceneData::PrefabGroup instancePrefabGroup;
-        AZ::JsonSerialization::Load(instancePrefabGroup, document);
+        EXPECT_EQ(AZ::JsonSerialization::Load(instancePrefabGroup, document).GetOutcome(), JSR::Outcomes::PartialDefaults);
 
         ASSERT_TRUE(instancePrefabGroup.GetPrefabDomRef().has_value());
         const AzToolsFramework::Prefab::PrefabDom& dom = instancePrefabGroup.GetPrefabDomRef().value();
@@ -78,6 +81,7 @@ namespace UnitTest
 
         m_app.GetJsonRegistrationContext()->EnableRemoveReflection();
         SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(m_app.GetJsonRegistrationContext());
     }
 
     TEST_F(PrefabBuilderTests, PrefabGroup_InvalidPrefabJson_Detected)
