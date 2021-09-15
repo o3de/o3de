@@ -15,7 +15,7 @@
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <AzTest/AzTest.h>
 
-#include <TerrainMocks.h>
+#include <Terrain/MockTerrain.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;

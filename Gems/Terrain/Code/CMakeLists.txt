@@ -84,6 +84,15 @@ endif()
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
+        NAME Terrain.Mocks HEADERONLY
+        NAMESPACE Gem
+        FILES_CMAKE
+            terrain_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+    ly_add_target(
         NAME Terrain.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
@@ -98,6 +107,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::LmbrCentral.Mocks
+                Gem::Terrain.Mocks
                 Gem::Terrain.Static
     )
 
@@ -122,6 +132,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     Gem::LmbrCentral.Mocks
+                    Gem::Terrain.Mocks
                     Gem::Terrain.Editor
         )
 
