@@ -41,6 +41,8 @@
 #include <AzCore/Console/IConsole.h>
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
+
 AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
 
 namespace AZ
@@ -295,6 +297,11 @@ namespace AZ
                 Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+
+                // set pipeline MSAA samples
+                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
+                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
 
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
