@@ -66,7 +66,7 @@ function(ly_install_target_override)
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}")
+    set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}")
 
     if (${is_bundle})
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
