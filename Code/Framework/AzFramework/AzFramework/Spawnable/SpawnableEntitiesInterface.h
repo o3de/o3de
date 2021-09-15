@@ -36,17 +36,18 @@ namespace AzFramework
         SpawnableEntityContainerView(AZ::Entity** begin, size_t length);
         SpawnableEntityContainerView(AZ::Entity** begin, AZ::Entity** end);
 
-        AZ::Entity** begin();
-        AZ::Entity** end();
-        const AZ::Entity* const* begin() const;
-        const AZ::Entity* const* end() const;
-        const AZ::Entity* const* cbegin();
-        const AZ::Entity* const* cend();
+        [[nodiscard]] AZ::Entity** begin();
+        [[nodiscard]] AZ::Entity** end();
+        [[nodiscard]] const AZ::Entity* const* begin() const;
+        [[nodiscard]] const AZ::Entity* const* end() const;
+        [[nodiscard]] const AZ::Entity* const* cbegin();
+        [[nodiscard]] const AZ::Entity* const* cend();
 
-        AZ::Entity* operator[](size_t n);
-        const AZ::Entity* operator[](size_t n) const;
+        [[nodiscard]] AZ::Entity* operator[](size_t n);
+        [[nodiscard]] const AZ::Entity* operator[](size_t n) const;
 
-        size_t size() const;
+        [[nodiscard]] size_t size() const;
+        [[nodiscard]] bool empty() const;
 
     private:
         AZ::Entity** m_begin;
@@ -59,17 +60,18 @@ namespace AzFramework
         SpawnableConstEntityContainerView(AZ::Entity** begin, size_t length);
         SpawnableConstEntityContainerView(AZ::Entity** begin, AZ::Entity** end);
 
-        const AZ::Entity* const* begin();
-        const AZ::Entity* const* end();
-        const AZ::Entity* const* begin() const;
-        const AZ::Entity* const* end() const;
-        const AZ::Entity* const* cbegin();
-        const AZ::Entity* const* cend();
+        [[nodiscard]] const AZ::Entity* const* begin();
+        [[nodiscard]] const AZ::Entity* const* end();
+        [[nodiscard]] const AZ::Entity* const* begin() const;
+        [[nodiscard]] const AZ::Entity* const* end() const;
+        [[nodiscard]] const AZ::Entity* const* cbegin();
+        [[nodiscard]] const AZ::Entity* const* cend();
 
-        const AZ::Entity* operator[](size_t n);
-        const AZ::Entity* operator[](size_t n) const;
+        [[nodiscard]] const AZ::Entity* operator[](size_t n);
+        [[nodiscard]] const AZ::Entity* operator[](size_t n) const;
 
-        size_t size() const;
+        [[nodiscard]] size_t size() const;
+        [[nodiscard]] bool empty() const;
 
     private:
         AZ::Entity** m_begin;

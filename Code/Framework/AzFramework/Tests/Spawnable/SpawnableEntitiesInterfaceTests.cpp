@@ -55,6 +55,16 @@ namespace UnitTest
         EXPECT_EQ(m_view.size(), m_values.size());
     }
 
+    TEST_F(SpawnableEntityContainerViewTest, empty_GetFromFilledArray_ReturnsFalse)
+    {
+        EXPECT_FALSE(m_view.empty());
+    }
+
+    TEST_F(SpawnableEntityContainerViewTest, empty_GetFromEmtpyView_ReturnsTrue)
+    {
+        AzFramework::SpawnableEntityContainerView view{ nullptr, nullptr };
+        EXPECT_TRUE(view.empty());
+    }
 
 
     //
@@ -94,8 +104,19 @@ namespace UnitTest
         EXPECT_EQ(m_view[2], m_values[2]);
     }
 
-    TEST_F(SpawnableConstEntityContainerViewTest, Size_Get_MatchesSizeOfArray)
+    TEST_F(SpawnableConstEntityContainerViewTest, size_Get_MatchesSizeOfArray)
     {
         EXPECT_EQ(m_view.size(), m_values.size());
+    }
+
+    TEST_F(SpawnableConstEntityContainerViewTest, empty_GetFromFilledArray_ReturnsFalse)
+    {
+        EXPECT_FALSE(m_view.empty());
+    }
+
+    TEST_F(SpawnableConstEntityContainerViewTest, empty_GetFromEmtpyView_ReturnsTrue)
+    {
+        AzFramework::SpawnableConstEntityContainerView view{ nullptr, nullptr };
+        EXPECT_TRUE(view.empty());
     }
 } // namespace UnitTest

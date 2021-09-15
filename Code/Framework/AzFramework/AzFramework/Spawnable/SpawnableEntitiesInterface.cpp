@@ -73,6 +73,11 @@ namespace AzFramework
         return AZStd::distance(m_begin, m_end);
     }
 
+    bool SpawnableEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
+    }
+
 
     //
     // SpawnableConstEntityContainerView
@@ -135,6 +140,11 @@ namespace AzFramework
     size_t SpawnableConstEntityContainerView::size() const
     {
         return AZStd::distance(m_begin, m_end);
+    }
+
+    bool SpawnableConstEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
     }
 
 
