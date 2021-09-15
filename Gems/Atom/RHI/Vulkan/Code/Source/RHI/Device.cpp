@@ -691,26 +691,14 @@ namespace AZ
             }
             else
             {
-                // Temporarily initialize a CommandQueueContext in order to query the timestampValidBits of each queue family 
-                CommandQueueContext commandQueueContext;
-                CommandQueueContext::Descriptor commandQueueContextDescriptor;
-                commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
-
-                RHI::ResultCode result = commandQueueContext.Init(*this, commandQueueContextDescriptor);
-
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to create command queues %s", physicalDevice.GetName().GetCStr());
-
                 for (uint32_t i = 0; i < RHI::HardwareQueueClassCount; ++i)
                 {
-                    QueueId id = commandQueueContext.GetCommandQueue(static_cast<RHI::HardwareQueueClass>(i)).GetId();
+                    QueueId id = m_commandQueueContext.GetCommandQueue(static_cast<RHI::HardwareQueueClass>(i)).GetId();
                     if (m_queueFamilyProperties[id.m_familyIndex].timestampValidBits)
                     {
                         m_features.m_queryTypesMask[i] |= RHI::QueryTypeFlags::Timestamp;
                     }
                 }
-
-                // Delete afterwards
-                commandQueueContext.Shutdown();
             }
 
             m_features.m_occlusionQueryPrecise = m_enabledDeviceFeatures.occlusionQueryPrecise == VK_TRUE;
