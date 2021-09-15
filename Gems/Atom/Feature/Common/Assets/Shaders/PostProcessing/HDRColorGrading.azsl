@@ -69,9 +69,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_smhShadowsColor;
     float4 m_smhMidtonesColor;
     float4 m_smhHighlightsColor;
-
-    // my color grading output
-    float4 m_color;
 }
 
 float SaturateWithEpsilon(float value)
