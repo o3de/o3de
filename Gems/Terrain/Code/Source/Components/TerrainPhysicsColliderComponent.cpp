@@ -24,15 +24,13 @@ namespace Terrain
 
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderConfig, AZ::ComponentConfig>()
                 ->Version(1)
             ;
 
-            AZ::EditContext* edit = serialize->GetEditContext();
-            if (edit)
+            if (auto edit = serialize->GetEditContext())
             {
                 edit->Class<TerrainPhysicsColliderConfig>(
                         "Terrain Physics Collider Component",
@@ -63,8 +61,7 @@ namespace Terrain
     {
         TerrainPhysicsColliderConfig::Reflect(context);
 
-        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderComponent, AZ::Component>()
                 ->Version(0)
@@ -87,9 +84,10 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::Activate()
     {
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-        Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(GetEntityId());
+        const auto entityId = GetEntityId();
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
+        Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(entityId);
 
         NotifyListenersOfHeightfieldDataChange();
     }
@@ -140,6 +138,12 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
+        if (changeReason == ShapeChangeReasons::TransformChanged)
+        {
+            // This will be handled by the OnTransformChanged handler.
+            return;
+        }
+
         NotifyListenersOfHeightfieldDataChange();
     }
 
@@ -154,7 +158,7 @@ namespace Terrain
 
     AZStd::vector<int16_t> TerrainPhysicsColliderComponent::GetHeights() const
     {
-        AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
