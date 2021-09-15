@@ -17,6 +17,10 @@
 
 #include <TerrainMocks.h>
 
+using ::testing::NiceMock;
+using ::testing::AtLeast;
+using ::testing::_;
+
 class LayerSpawnerComponentTest
     : public ::testing::Test
 {
@@ -26,7 +30,7 @@ protected:
     AZStd::unique_ptr<AZ::Entity> m_entity;
     Terrain::TerrainLayerSpawnerComponent* m_layerSpawnerComponent;
     UnitTest::MockBoxShapeComponent* m_shapeComponent;
-    AZStd::unique_ptr<UnitTest::MockTerrainSystem> m_terrainSystem;
+    AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainSystemService>> m_terrainSystem;
 
     void SetUp() override
     {
@@ -40,10 +44,8 @@ protected:
 
     void TearDown() override
     {
-        if (m_terrainSystem)
-        {
-            m_terrainSystem->Deactivate();
-        }
+        m_entity.reset();
+        m_terrainSystem.reset();
         m_app.Destroy();
     }
 
@@ -72,16 +74,9 @@ protected:
         ASSERT_TRUE(m_shapeComponent);
     }
 
-    void ResetEntity()
-    {
-        m_entity->Deactivate();
-        m_entity->Reset();
-    }
-
     void CreateMockTerrainSystem()
     {
-        m_terrainSystem = AZStd::make_unique<UnitTest::MockTerrainSystem>();
-        m_terrainSystem->Activate();
+        m_terrainSystem = AZStd::make_unique<NiceMock<UnitTest::MockTerrainSystemService>>();
     }
 };
 
@@ -93,7 +88,7 @@ TEST_F(LayerSpawnerComponentTest, ActivatEntityActivateSuccess)
     m_entity->Activate();
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
      
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
@@ -115,7 +110,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 
     EXPECT_TRUE(useGroundPlane);
 
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
@@ -147,7 +142,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
 
     EXPECT_FALSE(useGroundPlane);
 
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerRegisterAreaUpdatesTerrainSystem)
@@ -156,14 +151,14 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerRegisterAreaUpdatesTerrainSystem)
 
     CreateMockTerrainSystem();
 
+    // The Activate call should register the area.
+    EXPECT_CALL(*m_terrainSystem, RegisterArea(_)).Times(1);
+
     AddLayerSpawnerAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    // The Activate call should have registered the area.
-    EXPECT_EQ(1, m_terrainSystem->m_registerAreaCalledCount);
-
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerUnregisterAreaUpdatesTerrainSystem)
@@ -172,16 +167,14 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerUnregisterAreaUpdatesTerrainSystem
 
     CreateMockTerrainSystem();
 
+    // The Deactivate call should unregister the area.
+    EXPECT_CALL(*m_terrainSystem, UnregisterArea(_)).Times(1);
+
     AddLayerSpawnerAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    m_layerSpawnerComponent->Deactivate();
-
-    // The Deactivate call should have unregistered the area.
-    EXPECT_EQ(1, m_terrainSystem->m_unregisterAreaCalledCount);
-
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSystem)
@@ -190,6 +183,9 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
 
     CreateMockTerrainSystem();
 
+    // The TransformChanged call should refresh the area.
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
+
     AddLayerSpawnerAndShapeComponentToEntity();
 
     m_entity->Activate();
@@ -197,9 +193,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
     AZ::TransformNotificationBus::Event(
         m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
 
-    EXPECT_EQ(1, m_terrainSystem->m_refreshAreaCalledCount);
-
-    ResetEntity();
+    m_entity->Deactivate();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
@@ -207,6 +201,9 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
     CreateEntity();
 
     CreateMockTerrainSystem();
+
+    // The ShapeChanged call should refresh the area.
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
 
     AddLayerSpawnerAndShapeComponentToEntity();
 
@@ -216,7 +213,5 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
         LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
 
-    EXPECT_EQ(1, m_terrainSystem->m_refreshAreaCalledCount);
-
-    ResetEntity();
+    m_entity->Deactivate();
 }

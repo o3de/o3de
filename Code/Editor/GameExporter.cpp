@@ -318,7 +318,7 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     root->setAttr("Name", levelName.toUtf8().data());
     auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
     const AZ::Aabb terrainAabb = terrain ? terrain->GetTerrainAabb() : AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-    const AZ::Vector2 terrainGridResolution = terrain ? terrain->GetTerrainGridResolution() : AZ::Vector2::CreateOne();
+    const AZ::Vector2 terrainGridResolution = terrain ? terrain->GetTerrainHeightQueryResolution() : AZ::Vector2::CreateOne();
     const int compiledHeightmapSize = static_cast<int>(terrainAabb.GetXExtent() / terrainGridResolution.GetX());
     root->setAttr("HeightmapSize", compiledHeightmapSize);
 

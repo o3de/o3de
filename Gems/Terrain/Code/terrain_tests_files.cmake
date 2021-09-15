@@ -9,5 +9,6 @@
 set(FILES
     Tests/TerrainMocks.h
     Tests/TerrainTest.cpp
+    Tests/TerrainSystemTest.cpp
     Tests/LayerSpawnerTests.cpp
 )
