@@ -38,7 +38,7 @@ namespace AzFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<InputContextComponent>("Input Context",
-                    "An input context is a collection of input mappings, which map 'raw' input to custom input events.")
+                    "An input context is a collection of input mappings, which map 'raw' input to custom input channels (ie. events).")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Input")
@@ -50,7 +50,7 @@ namespace AzFramework
                         "The list of all input mappings that will be created when the input context is activated.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &InputContextComponent::m_localPlayerIndex, "Local Player Index",
-                        "The local player index that this component will receive input from (0 based, -1 means all controllers).\n"
+                        "The local player index that this context will receive input from (0 based, -1 means all controllers).\n"
                         "Will only work on platforms such as PC where the local user id corresponds to the local player index.\n"
                         "For other platforms, SetLocalUserId must be called at runtime with the id of a logged in user.")
                         ->Attribute(AZ::Edit::Attributes::Min, -1)
