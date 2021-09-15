@@ -438,9 +438,7 @@ namespace AzToolsFramework
 
             if (!filePath.IsRelative())
             {
-                AZ_Error(
-                    "Prefab", false,
-                    "Provided filePath %s must be relative.", filePath.Native().data());
+                AZ_Error("Prefab", false, "Provided filePath '%.*s' must be relative.", AZ_STRING_ARG(filePath.Native()));
                 return;
             }
 
@@ -453,7 +451,7 @@ namespace AzToolsFramework
             m_templateFilePathToIdMap.erase(templateToChange.GetFilePath());
             if (!m_templateFilePathToIdMap.try_emplace(filePath, templateId).second)
             {
-                AZ_Error("Prefab", false, "Provided filePath %s already exists.", filePath.Native().data());
+                AZ_Error("Prefab", false, "Provided filePath '%.*s' already exists.", AZ_STRING_ARG(filePath.Native()));
                 return;
             }
 
@@ -462,7 +460,7 @@ namespace AzToolsFramework
             if (pathReference)
             {
                 const AZStd::string_view pathStr = filePath.Native();
-                pathReference->get().SetString(pathStr.data(), prefabDom.GetAllocator());
+                pathReference->get().SetString(pathStr.data(), aznumeric_caster(pathStr.length()), prefabDom.GetAllocator());
             }
 
             templateToChange.SetFilePath(filePath);
