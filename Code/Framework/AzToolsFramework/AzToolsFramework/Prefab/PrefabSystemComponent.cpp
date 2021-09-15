@@ -456,7 +456,6 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Provided filePath %s already exists.", filePath.Native().data());
                 return;
             }
-            m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, templateId));
 
             PrefabDom& prefabDom = templateToChange.GetPrefabDom();
             PrefabDomValueReference pathReference = Prefab::PrefabDomUtils::FindPrefabDomValue(prefabDom, "Source");
