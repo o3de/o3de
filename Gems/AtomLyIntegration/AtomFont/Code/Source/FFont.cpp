@@ -159,7 +159,7 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
         return false;
     }
 
-    size_t fileSize{};
+    AZ::u64 fileSize{};
     fileIoBase->Size(fileHandle, fileSize);
     if (!fileSize)
     {
