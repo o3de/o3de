@@ -8,6 +8,7 @@
 #pragma once
 
 #include <PrefabGroup/IPrefabGroup.h>
+#include <PrefabGroup/ProceduralPrefabAsset.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -40,7 +41,7 @@ namespace AZ::SceneAPI::SceneData
         ~PrefabGroup() override = default;
 
         // DataTypes::IPrefabGroup
-        const AzToolsFramework::Prefab::PrefabDom& GetPrefabDom() const override;
+        AzToolsFramework::Prefab::PrefabDomConstReference GetPrefabDomRef() const override;
         const AZStd::string& GetName() const override;
         const Uuid& GetId() const override;
         Containers::RuleContainer& GetRuleContainer() override;
@@ -52,16 +53,12 @@ namespace AZ::SceneAPI::SceneData
         void SetId(Uuid id);
         void SetName(AZStd::string name);
         void SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom);
-        void SetPrefabDomBuffer(AZStd::string prefabDomBuffer);
-        const AZStd::string& GetPrefabDomBuffer() const { return m_prefabDomBuffer; }
 
     private:
         SceneNodeSelectionList m_nodeSelectionList;
         Containers::RuleContainer m_rules;
         AZStd::string m_name;
         Uuid m_id;
-        AZStd::string m_prefabDomBuffer;
-        mutable AzToolsFramework::Prefab::PrefabDom m_prefabDom;
+        AZStd::shared_ptr<Prefab::PrefabDomData> m_prefabDomData;
     };
-
 }

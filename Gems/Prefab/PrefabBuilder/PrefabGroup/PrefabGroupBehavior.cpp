@@ -89,8 +89,23 @@ namespace AZ::SceneAPI::Behaviors
             return {};
         }
 
+        // write to a UTF-8 string buffer
+        auto prefabDomRef = prefabGroup->GetPrefabDomRef();
+        if (!prefabDomRef)
+        {
+            return {};
+        }
+
+        const AzToolsFramework::Prefab::PrefabDom& prefabDom = prefabDomRef.value();
+        rapidjson::StringBuffer sb;
+        rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+        if (prefabDom.Accept(writer) == false)
+        {
+            return {};
+        }
+
         // validate the PrefabDom will make a valid Prefab template instance
-        auto templateId = prefabLoaderInterface->LoadTemplateFromString(prefabGroup->GetPrefabDomBuffer(), prefabGroup->GetName().c_str());
+        auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), prefabGroup->GetName().c_str());
         if (templateId == InvalidTemplateId)
         {
             return {};
@@ -180,7 +195,7 @@ namespace AZ::SceneAPI::Behaviors
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
-                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(),
+                azrtti_typeid<Prefab::ProceduralPrefabAsset>(),
                 {},
                 AZStd::make_optional(subId));
 
@@ -227,6 +242,9 @@ namespace AZ::SceneAPI::Behaviors
 
     void PrefabGroupBehavior::Reflect(ReflectContext* context)
     {
+        AZ::SceneAPI::SceneData::PrefabGroup::Reflect(context);
+        Prefab::ProceduralPrefabAsset::Reflect(context);
+
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
         if (serializeContext)
         {

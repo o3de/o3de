@@ -133,10 +133,13 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory tempDir;
         context.SetOutputDirectory(tempDir.GetDirectory());
 
+        auto jsonOutcome = AzFramework::FileFunc::ReadJsonFromString(Data::jsonPrefab);
+        ASSERT_TRUE(jsonOutcome);
+
         auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
         prefabGroup.get()->SetId(AZ::Uuid::CreateRandom());
         prefabGroup.get()->SetName("fake_prefab");
-        prefabGroup.get()->SetPrefabDomBuffer(Data::jsonPrefab);
+        prefabGroup.get()->SetPrefabDom(AZStd::move(jsonOutcome.GetValue()));
         context.m_scene.GetManifest().AddEntry(prefabGroup);
         context.m_scene.SetSource("mock", AZ::Uuid::CreateRandom());
 
