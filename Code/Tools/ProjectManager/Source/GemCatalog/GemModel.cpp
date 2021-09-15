@@ -261,7 +261,7 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    GemModel* GemModel::GetModel(QAbstractItemModel& model)
+    GemModel* GetGemModel(QAbstractItemModel& model)
     {
         GemModel* gemModel = nullptr;
         GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(&model);
@@ -279,7 +279,7 @@ namespace O3DE::ProjectManager
 
     void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
     {
-        GemModel* gemModel = GetModel(model);
+        GemModel* gemModel = GetGemModel(model);
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
         if (IsAdded(modelIndex))
         {
@@ -312,7 +312,7 @@ namespace O3DE::ProjectManager
         if (wasAdded)
         {
             // update all dependencies
-            GemModel* gemModel = GetModel(model);
+            GemModel* gemModel = GetGemModel(model);
             QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
             for (const QModelIndex& dependency : dependencies)
             {

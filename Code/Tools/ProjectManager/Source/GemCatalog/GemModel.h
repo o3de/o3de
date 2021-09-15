@@ -31,9 +31,6 @@ namespace O3DE::ProjectManager
         void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
-        void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
-        void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
-        QStringList GetDependingGems(const QModelIndex& modelIndex);
         QStringList GetDependingGemNames(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex);
 
@@ -74,6 +71,10 @@ namespace O3DE::ProjectManager
         int TotalAddedGems() const;
 
     private:
+        void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
+        void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
+        QStringList GetDependingGems(const QModelIndex& modelIndex);
+
         enum UserRole
         {
             RoleName = Qt::UserRole,
@@ -102,7 +103,5 @@ namespace O3DE::ProjectManager
         QItemSelectionModel* m_selectionModel = nullptr;
         QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
         QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;
-
-        static GemModel* GetModel(QAbstractItemModel& model);
     };
 } // namespace O3DE::ProjectManager
