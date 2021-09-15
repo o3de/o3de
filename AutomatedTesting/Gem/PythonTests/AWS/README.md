@@ -11,7 +11,7 @@
 3. Open a new Command Prompt window at the engine root and set the following environment variables:  
    Set O3DE_AWS_PROJECT_NAME=AWSAUTO
    Set O3DE_AWS_DEPLOY_REGION=us-east-1
-   Set ASSUME_ROLE_ARN="arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests"
+   Set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
    Set COMMIT_ID=HEAD
 4. In the same Command Prompt window, Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd.
    

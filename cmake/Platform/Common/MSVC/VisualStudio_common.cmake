@@ -15,4 +15,4 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 endforeach()
   
 configure_file("${CMAKE_CURRENT_LIST_DIR}/Directory.Build.props" "${CMAKE_BINARY_DIR}/Directory.Build.props" @ONLY)
-
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/CodeAnalysis.ruleset" DESTINATION "${CMAKE_BINARY_DIR}")

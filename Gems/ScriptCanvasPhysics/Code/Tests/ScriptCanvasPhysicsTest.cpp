@@ -175,7 +175,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_CONST_METHOD0(GetNativePointer, void*());
     };
 
-    class MockShape        
+    class MockShape
         : public Physics::Shape
     {
     public:
@@ -203,10 +203,12 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD1(SetContactOffset, void(float));
     };
 
-    class MockPhysicsMaterial        
+    class MockPhysicsMaterial
         : public Physics::Material
     {
     public:
+        virtual ~MockPhysicsMaterial() = default;
+
         MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
         MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
         MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));

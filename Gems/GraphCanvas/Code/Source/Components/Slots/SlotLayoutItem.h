@@ -38,7 +38,7 @@ namespace GraphCanvas
 
     protected:
         // QGraphicsItem  
-        void mousePressEvent(QGraphicsSceneMouseEvent* event)
+        void mousePressEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMousePress, GetEntityId(), event);
@@ -48,7 +48,7 @@ namespace GraphCanvas
             }
         }
 
-        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMouseRelease, GetEntityId(), event);
