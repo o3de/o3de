@@ -36,7 +36,7 @@ namespace AzToolsFramework
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             AZ_Assert(settingsRegistry, "Settings registry is not set");
-            
+
             [[maybe_unused]] bool result =
                 settingsRegistry->Get(m_projectPathWithOsSeparator.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
             AZ_Warning("Prefab", result, "Couldn't retrieve project root path");
