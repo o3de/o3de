@@ -24,7 +24,6 @@ namespace AZ
     {
         namespace Hair
         {
-            static const char* const HairPPLLResolvePassTemplateName = "HairPPLLResolvePassTemplate";
             class HairFeatureProcessor;
 
             //! The hair PPLL resolve pass is a full screen pass that runs over the hair fragments list

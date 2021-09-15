@@ -87,7 +87,6 @@ namespace AZ
             void HairSystemComponent::Deactivate()
             {
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Hair::HairFeatureProcessor>();
-
                 m_loadTemplatesHandler.Disconnect();
             }
         } // namespace Hair

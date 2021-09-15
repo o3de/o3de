@@ -71,12 +71,17 @@ namespace AZ
                 , public HairGlobalSettingsRequestBus::Handler
                 , private AZ::TickBus::Handler
             {
-                Name GlobalShapeConstraintsPass;
-                Name CalculateStrandDataPass;
-                Name VelocityShockPropagationPass;
-                Name LocalShapeConstraintsPass;
-                Name LengthConstriantsWindAndCollisionPass;
-                Name UpdateFollowHairPass;
+                Name HairParentPassName;
+
+                Name HairPPLLRasterPassName;
+                Name HairPPLLResolvePassName;
+
+                Name GlobalShapeConstraintsPassName;
+                Name CalculateStrandDataPassName;
+                Name VelocityShockPropagationPassName;
+                Name LocalShapeConstraintsPassName;
+                Name LengthConstriantsWindAndCollisionPassName;
+                Name UpdateFollowHairPassName;
 
             public:
                 AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
@@ -85,12 +90,12 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 HairFeatureProcessor();
-                virtual ~HairFeatureProcessor() = default;
+                virtual ~HairFeatureProcessor();
 
 
                 void UpdateHairSkinning();
 
-                bool Init();
+                bool Init(RPI::RenderPipeline* pipeline);
                 bool IsInitialized() { return m_initialized; }
 
                 // FeatureProcessor overrides ...
@@ -107,8 +112,8 @@ namespace AZ
                 bool RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject);
 
                 // RPI::SceneNotificationBus overrides ...
-                void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-                void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+                void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
+                void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
                 void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
                 void OnBeginPrepareRender() override;
@@ -149,10 +154,17 @@ namespace AZ
 
                 void EnablePasses(bool enable);
 
-                static const char* s_featureProcessorName;
-
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
+
+                //! The render pipeline is acquired and set when a pipeline is created or changed
+                //! and accordingly the passes and the feature processor are associated.
+                //! Notice that scene can contain several pipelines all using the same feature
+                //! processor.  On the pass side, it will acquire the scene and request the FP, 
+                //! but on the FP side, it will only associate to the latest pass hence such a case
+                //! might still be a problem.  If needed, it can be resolved using a map for each
+                //! pass name per pipeline.
+                RPI::RenderPipeline* m_renderPipeline = nullptr;
 
                 //! The Hair Objects in the scene (one per hair component)
                 AZStd::list<Data::Instance<HairRenderObject>> m_hairRenderObjects;

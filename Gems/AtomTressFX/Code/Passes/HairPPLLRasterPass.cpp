@@ -158,13 +158,13 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-                RHI::DrawListTag drawListTag = m_shader->GetDrawListTag();
-                RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+                RPI::Scene* scene = GetScene();
                 if (!scene)
                 {
                     AZ_Error("Hair Gem", false, "Scene could not be acquired" );
                     return false;
                 }
+                RHI::DrawListTag drawListTag = m_shader->GetDrawListTag();
                 scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
                 pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
@@ -312,4 +312,3 @@ namespace AZ
         } // namespace Hair
     }   // namespace Render
 }   // namespace AZ
-

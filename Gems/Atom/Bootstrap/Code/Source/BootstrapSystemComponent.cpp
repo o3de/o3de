@@ -94,6 +94,7 @@ namespace AZ
                 dependent.push_back(AZ_CRC("CoreLightsService", 0x91932ef6));
                 dependent.push_back(AZ_CRC("DynamicDrawService", 0x023c1673));
                 dependent.push_back(AZ_CRC("CommonService", 0x6398eec4));
+                dependent.push_back(AZ_CRC_CE("HairService"));
             }
 
             void BootstrapSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)

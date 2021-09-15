@@ -30,8 +30,6 @@ namespace AZ
             class HairRenderObject;
             class HairFeatureProcessor;
 
-            static const char* const HairPPLLRasterPassTemplateName = "HairPPLLRasterPassTemplate";
-
             //! A HairPPLLRasterPass is used for the hair fragments fill render after the data
             //!  went through the skinning and simulation passes.
             //! The output of this pass is the general list of fragment data that can now be
