@@ -66,7 +66,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level("Physics", "Base")
+        helper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Display Mapper entity with no components.

@@ -70,12 +70,12 @@ def AtomEditorComponents_Decal_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level("Physics", "Base")
+        helper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Decal entity with no components.
         decal_name = "Decal (Atom)"
-        decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), f"{decal_name}")
+        decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), decal_name)
         Report.critical_result(Tests.decal_creation, decal_entity.exists())
 
         # 2. Add Decal component to Decal entity.

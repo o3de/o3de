@@ -76,13 +76,13 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level("Physics", "Base")
+        helper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a DepthOfField entity with no components.
         depth_of_field_name = "DepthOfField"
         depth_of_field_entity = EditorEntity.create_editor_entity_at(
-            math.Vector3(512.0, 512.0, 34.0), f"{depth_of_field_name}")
+            math.Vector3(512.0, 512.0, 34.0), depth_of_field_name)
         Report.critical_result(Tests.depth_of_field_creation, depth_of_field_entity.exists())
 
         # 2. Add a DepthOfField component to DepthOfField entity.

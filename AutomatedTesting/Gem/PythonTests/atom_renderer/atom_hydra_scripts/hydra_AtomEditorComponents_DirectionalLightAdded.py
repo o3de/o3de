@@ -70,13 +70,13 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         helper.init_idle()
-        helper.open_level("Physics", "Base")
+        helper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Directional Light entity with no components.
         directional_light_name = "Directional Light"
         directional_light_entity = EditorEntity.create_editor_entity_at(
-            math.Vector3(512.0, 512.0, 34.0), f"{directional_light_name}")
+            math.Vector3(512.0, 512.0, 34.0), directional_light_name)
         Report.critical_result(Tests.directional_light_creation, directional_light_entity.exists())
 
         # 2. Add Directional Light component to Directional Light entity.
