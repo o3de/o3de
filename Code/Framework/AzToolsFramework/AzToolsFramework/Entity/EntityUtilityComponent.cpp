@@ -17,6 +17,47 @@
 
 namespace AzToolsFramework
 {
+    void ComponentDetails::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ComponentDetails>()
+            ->Field("TypeInfo", &ComponentDetails::m_typeInfo)
+            ->Field("BaseClasses", &ComponentDetails::m_baseClasses);
+
+            serializeContext->RegisterGenericType<AZStd::vector<ComponentDetails>>();
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ComponentDetails>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+            ->Property("TypeInfo", BehaviorValueProperty(&ComponentDetails::m_typeInfo))
+            ->Property("BaseClasses", BehaviorValueProperty(&ComponentDetails::m_baseClasses))
+            ->Method("__repr__", [](const ComponentDetails& obj)
+            {
+                std::ostringstream result;
+                bool first = true;
+
+                for (const auto& baseClass : obj.m_baseClasses)
+                {
+                    if (!first)
+                    {
+                        result << ", ";
+                    }
+
+                    first = false;
+                    result << baseClass.c_str();
+                }
+                
+                return AZStd::string::format("%s, Base Classes: <%s>", obj.m_typeInfo.c_str(), result.str().c_str());
+            })
+            ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString);
+        }
+    }
+
     AZ::EntityId EntityUtilityComponent::CreateEditorReadyEntity(const AZStd::string& entityName)
     {
         auto* newEntity = m_entityContext->CreateEntity(entityName.c_str());
@@ -182,6 +223,9 @@ namespace AzToolsFramework
 
         auto resultCode = AZ::JsonSerialization::Store(document, document.GetAllocator(), component, nullptr, typeId, settings);
 
+        // Clean up the allocated component ASAP, we don't need it anymore
+        classData->m_factory->Destroy(component);
+
         if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
         {
             AZ_Error("EntityUtilityComponent", false, "Failed to serialize component to json (%s): %s",
@@ -201,30 +245,44 @@ namespace AzToolsFramework
         return jsonString;
     }
 
-    AZStd::vector<AZStd::string> EntityUtilityComponent::FindMatchingComponents(const AZStd::string& searchTerm)
+    AZStd::vector<ComponentDetails> EntityUtilityComponent::FindMatchingComponents(const AZStd::string& searchTerm)
     {
-        if (m_typeNames.empty())
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        if (m_typeInfo.empty())
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
             serializeContext->EnumerateDerived<AZ::Component>(
-                [this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/)
+                [this, serializeContext](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/)
                 {
-                    m_typeNames.emplace_back(classData->m_typeId, classData->m_name);
+                    auto& typeInfo = m_typeInfo.emplace_back(classData->m_typeId, classData->m_name, AZStd::vector<AZStd::string>{});
 
+                    serializeContext->EnumerateBase(
+                        [&typeInfo](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&)
+                        {
+                            if (classData)
+                            {
+                                AZStd::get<2>(typeInfo).emplace_back(classData->m_name);
+                            }
+                            return true;
+                        },
+                        classData->m_typeId);
+                    
                     return true;
                 });
         }
         
-        AZStd::vector<AZStd::string> matches;
+        AZStd::vector<ComponentDetails> matches;
 
-        for (const auto& [typeId, typeName] : m_typeNames)
+        for (const auto& [typeId, typeName, baseClasses] : m_typeInfo)
         {
             if (AZStd::wildcard_match(searchTerm, typeName))
             {
-                matches.emplace_back(
-                    AZStd::string::format("%s %s", typeId.ToString<AZStd::string>().c_str(), typeName.c_str()));
+                ComponentDetails details;
+                details.m_typeInfo = AZStd::string::format("%s %s", typeId.ToString<AZStd::string>().c_str(), typeName.c_str());
+                details.m_baseClasses = baseClasses;
+                
+                matches.emplace_back(AZStd::move(details));
             }
         }
 
@@ -233,6 +291,8 @@ namespace AzToolsFramework
 
     void EntityUtilityComponent::Reflect(AZ::ReflectContext* context)
     {
+        ComponentDetails::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EntityUtilityComponent, AZ::Component>();

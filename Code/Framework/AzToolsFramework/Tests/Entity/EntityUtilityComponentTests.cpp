@@ -20,7 +20,7 @@ namespace UnitTest
     AZ::EntityId g_globalEntityId = AZ::EntityId{};
     AZStd::string g_globalString = "";
     AzFramework::BehaviorComponentId g_globalComponentId = {};
-    AZStd::vector<AZStd::string> g_globalStringVector = {};
+    AZStd::vector<AzToolsFramework::ComponentDetails> g_globalComponentDetails = {};
     bool g_globalBool = false;
 
     class EntityUtilityComponentTests
@@ -40,13 +40,13 @@ namespace UnitTest
             behaviorContext->Property("g_globalString", BehaviorValueProperty(&g_globalString));
             behaviorContext->Property("g_globalComponentId", BehaviorValueProperty(&g_globalComponentId));
             behaviorContext->Property("g_globalBool", BehaviorValueProperty(&g_globalBool));
-            behaviorContext->Property("g_globalStringVector", BehaviorValueProperty(&g_globalStringVector));
+            behaviorContext->Property("g_globalComponentDetails", BehaviorValueProperty(&g_globalComponentDetails));
 
             g_globalEntityId = AZ::EntityId{};
             g_globalString = AZStd::string{};
             g_globalComponentId = AzFramework::BehaviorComponentId{};
             g_globalBool = false;
-            g_globalStringVector = AZStd::vector<AZStd::string>{};
+            g_globalComponentDetails = AZStd::vector<AzToolsFramework::ComponentDetails>{};
         }
 
         void SetUpEditorFixtureImpl() override
@@ -57,7 +57,7 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override
         {
             g_globalString.set_capacity(0); // Free all memory
-            g_globalStringVector.set_capacity(0);
+            g_globalComponentDetails.set_capacity(0);
         }
     };
 
@@ -222,11 +222,11 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalStringVector = EntityUtilityBus.Broadcast.FindMatchingComponents("Transform*")
+            g_globalComponentDetails = EntityUtilityBus.Broadcast.FindMatchingComponents("Transform*")
             )LUA");
 
         // There should be 2 transform components
-        EXPECT_EQ(g_globalStringVector.size(), 2);
+        EXPECT_EQ(g_globalComponentDetails.size(), 2);
     }
 
     TEST_F(EntityUtilityComponentTests, SearchComponentsNotFound)
@@ -236,9 +236,9 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            g_globalStringVector = EntityUtilityBus.Broadcast.FindMatchingComponents("404")
+            g_globalComponentDetails = EntityUtilityBus.Broadcast.FindMatchingComponents("404")
             )LUA");
         
-        EXPECT_EQ(g_globalStringVector.size(), 0);
+        EXPECT_EQ(g_globalComponentDetails.size(), 0);
     }
 }

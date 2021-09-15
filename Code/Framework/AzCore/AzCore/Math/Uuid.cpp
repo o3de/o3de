@@ -138,7 +138,6 @@ namespace AZ
 
         size_t newLength{ 0 };
         char createString[MaxPermissiveStringSize];
-        constexpr int ValidUuidStringLength = 32; // Number of characters (data only, no extra formatting) in a valid UUID string
 
         // Loop until we get to the end of the string OR stop once we've accumulated a full UUID string worth of data
         for (size_t curPos = 0; curPos < stringLength && newLength < ValidUuidStringLength; ++curPos)
