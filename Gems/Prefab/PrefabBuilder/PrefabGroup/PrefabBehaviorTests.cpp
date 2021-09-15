@@ -69,7 +69,7 @@ namespace UnitTest
             m_assetSystemRequestMock.BusDisconnect();
 
             m_prefabGroupBehavior->Deactivate();
-            m_prefabGroupBehavior.release();
+            m_prefabGroupBehavior.reset();
 
             PrefabBuilderTests::TearDown();
         }

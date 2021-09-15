@@ -62,7 +62,7 @@ namespace AZ::Prefab
     };
 
     //! An asset type to register templates into the Prefab system so that they
-    //! can instantiated like Authored Prefabs
+    //! can instantiate like Authored Prefabs
     class ProceduralPrefabAsset
         : public AZ::Data::AssetData
     {

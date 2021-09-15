@@ -86,6 +86,7 @@ namespace AZ::SceneAPI::Behaviors
         auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
         if (!prefabLoaderInterface)
         {
+            AZ_Error("prefab", false, "Could not get PrefabLoaderInterface");
             return {};
         }
 
@@ -93,6 +94,7 @@ namespace AZ::SceneAPI::Behaviors
         auto prefabDomRef = prefabGroup->GetPrefabDomRef();
         if (!prefabDomRef)
         {
+            AZ_Error("prefab", false, "PrefabGroup(%s) missing PrefabDom", prefabGroup->GetName().c_str());
             return {};
         }
 
@@ -101,6 +103,7 @@ namespace AZ::SceneAPI::Behaviors
         rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
         if (prefabDom.Accept(writer) == false)
         {
+            AZ_Error("prefab", false, "Could not write PrefabGroup(%s) to JSON", prefabGroup->GetName().c_str());
             return {};
         }
 
@@ -108,12 +111,14 @@ namespace AZ::SceneAPI::Behaviors
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), prefabGroup->GetName().c_str());
         if (templateId == InvalidTemplateId)
         {
+            AZ_Error("prefab", false, "PrefabGroup(%s) Could not write load template", prefabGroup->GetName().c_str());
             return {};
         }
 
         auto* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
         if (!prefabSystemComponentInterface)
         {
+            AZ_Error("prefab", false, "Could not get PrefabSystemComponentInterface");
             return {};
         }
 
@@ -121,12 +126,14 @@ namespace AZ::SceneAPI::Behaviors
         auto instance = prefabSystemComponentInterface->InstantiatePrefab(templateId);
         if (!instance)
         {
+            AZ_Error("prefab", false, "PrefabGroup(%s) Could not instantiate prefab", prefabGroup->GetName().c_str());
             return {};
         }
 
         auto* instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
         if (!instanceToTemplateInterface)
         {
+            AZ_Error("prefab", false, "Could not get InstanceToTemplateInterface");
             return {};
         }
 
@@ -177,6 +184,7 @@ namespace AZ::SceneAPI::Behaviors
         AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen() == false)
         {
+            AZ_Error("prefab", false, "File path(%s) could not open for write", filePath.c_str());
             return false;
         }
 
@@ -185,6 +193,7 @@ namespace AZ::SceneAPI::Behaviors
         rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
         if (doc.Accept(writer) == false)
         {
+            AZ_Error("prefab", false, "PrefabGroup(%s) Could not buffer JSON", prefabGroup->GetName().c_str());
             return false;
         }
 
