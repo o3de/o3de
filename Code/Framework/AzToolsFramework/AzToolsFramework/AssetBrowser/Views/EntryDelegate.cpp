@@ -12,7 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
-
+#include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
 
 #include <QApplication>
@@ -25,6 +25,11 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        static constexpr const char* TreeIconPathFirst = "Assets/Editor/Icons/AssetBrowser/TreeBranch_First.svg";
+        static constexpr const char* TreeIconPathMiddle = "Assets/Editor/Icons/AssetBrowser/TreeBranch_Middle.svg";
+        static constexpr const char* TreeIconPathLast = "Assets/Editor/Icons/AssetBrowser/TreeBranch_Last.svg";
+        static constexpr const char* TreeIconPathOneChild = "Assets/Editor/Icons/AssetBrowser/TreeBranch_OneChild.svg";
+
         const int ENTRY_SPACING_LEFT_PIXELS = 8;
         const int ENTRY_ICON_MARGIN_LEFT_PIXELS = 2;
 
@@ -225,6 +230,43 @@ namespace AzToolsFramework
                             actualPalette.setCurrentColorGroup(QPalette::Disabled);
                         }
                     }
+                    else
+                    {
+                        //Get the indexes above and bellow our entry to see what type are they.
+                        const QAbstractItemModel* viewModel = view->model();
+
+                        const QModelIndex indexBellow = viewModel->index(index.row() + 1, index.column());
+                        const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
+
+                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBellow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto bellowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
+
+                        auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
+                        auto bellowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(bellowEntry);
+
+                        // if current index is the last entry in the view
+                        // or the index above it is a Source Entry and
+                        // the index bellow is invalid or is valid but it is also a source entry
+                        // then the current index is the only child.
+                        if (index.row() == viewModel->rowCount() - 1 ||
+                            (indexBellow.isValid() && aboveSourceEntry &&
+                             (!indexAbove.isValid() || (indexAbove.isValid() && bellowSourceEntry))))
+                        {
+                            DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
+                        }
+                        else if (indexBellow.isValid() && aboveSourceEntry) // The index above is a source entry
+                        {
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw First child Icon
+                        }
+                        else if (indexAbove.isValid() && bellowSourceEntry) // The index bellow is a source entry
+                        {
+                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw Last Child Icon
+                        }
+                        else //the index above and bellow are also child entries
+                        {
+                            DrawBranchPixMap(EntryBranchType::Middle, painter, branchIconTopLeft, iconSize); // Draw Default child Icon.
+                        }
+                    }
 
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
@@ -238,7 +280,37 @@ namespace AzToolsFramework
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }
-    } // namespace Thumbnailer
+
+        void SearchEntryDelegate::DrawBranchPixMap(
+            EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const
+        {
+            QPixmap pixmap;
+            AZ::IO::BasicPath<AZ::IO::FixedMaxPathString> absoluteIconPath;
+            switch (branchType)
+            {
+            case AzToolsFramework::AssetBrowser::EntryBranchType::First:
+                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathFirst;
+                break;
+            case AzToolsFramework::AssetBrowser::EntryBranchType::Middle:
+                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathMiddle;
+                break;
+            case AzToolsFramework::AssetBrowser::EntryBranchType::Last:
+                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
+                break;
+            case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
+            default:
+                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
+                break;
+            }
+
+            pixmap.load(absoluteIconPath.c_str());
+            pixmap.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            const QSize sizeDelta = size - pixmap.size();
+            const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+            painter->drawPixmap(point + pointDelta, pixmap);
+        }
+
+    } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
 #include "AssetBrowser/Views/moc_EntryDelegate.cpp"

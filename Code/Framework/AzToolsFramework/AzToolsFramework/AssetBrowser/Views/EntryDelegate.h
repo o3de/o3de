@@ -27,6 +27,14 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        enum class EntryBranchType
+        {
+            First,
+            Middle,
+            Last,
+            OneChild
+        };
+
         class AssetBrowserFilterModel;
 
         //! EntryDelegate draws a single item in AssetBrowser
@@ -64,6 +72,9 @@ namespace AzToolsFramework
             {
             }
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        private:
+            void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
