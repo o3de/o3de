@@ -61,24 +61,24 @@ namespace AzToolsFramework
 
     void ViewportEditorModeTracker::EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
-        auto& editorModeStates = m_viewportEditorModeStates[viewportEditorModeInfo.m_id];
+        auto& editorModes = m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
         AZ_Warning(
-                ViewportEditorModeLogWindow, !editorModeStates.IsModeActive(mode),
+                ViewportEditorModeLogWindow, !editorModes.IsModeActive(mode),
                 AZStd::string::format(
                     "Duplicate call to EnterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
-        editorModeStates.SetModeActive(mode);
+        editorModes.SetModeActive(mode);
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeEnter, editorModeStates, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeEnter, editorModes, mode);
     }
 
     void ViewportEditorModeTracker::ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
-        ViewportEditorModes* editorModeStates = nullptr;
-        if (m_viewportEditorModeStates.count(viewportEditorModeInfo.m_id))
+        ViewportEditorModes* editorModes = nullptr;
+        if (m_viewportEditorModesMap.count(viewportEditorModeInfo.m_id))
         {
-            editorModeStates = &m_viewportEditorModeStates.at(viewportEditorModeInfo.m_id);
+            editorModes = &m_viewportEditorModesMap.at(viewportEditorModeInfo.m_id);
             AZ_Warning(
-                ViewportEditorModeLogWindow, editorModeStates->IsModeActive(mode),
+                ViewportEditorModeLogWindow, editorModes->IsModeActive(mode),
                 AZStd::string::format(
                     "Duplicate call to ExitMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
         }
@@ -88,20 +88,20 @@ namespace AzToolsFramework
                 ViewportEditorModeLogWindow, false, "Call to ExitMode for mode '%u' on id '%i' without precursor call to EnterMode",
                 static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id);
 
-            editorModeStates = &m_viewportEditorModeStates[viewportEditorModeInfo.m_id];
+            editorModes = &m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
         }
 
-        editorModeStates->SetModeInactive(mode);
+        editorModes->SetModeInactive(mode);
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeExit, *editorModeStates, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeExit, *editorModes, mode);
     }
 
     const ViewportEditorModesInterface* ViewportEditorModeTracker::GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
-        if (auto editorModeStates = m_viewportEditorModeStates.find(viewportEditorModeInfo.m_id);
-            editorModeStates != m_viewportEditorModeStates.end())
+        if (auto editorModes = m_viewportEditorModesMap.find(viewportEditorModeInfo.m_id);
+            editorModes != m_viewportEditorModesMap.end())
         {
-            return &editorModeStates->second;
+            return &editorModes->second;
         }
         else
         {
@@ -111,11 +111,11 @@ namespace AzToolsFramework
 
     size_t ViewportEditorModeTracker::GetTrackedViewportCount() const
     {
-        return m_viewportEditorModeStates.size();
+        return m_viewportEditorModesMap.size();
     }
 
     bool ViewportEditorModeTracker::IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
     {
-        return m_viewportEditorModeStates.count(viewportEditorModeInfo.m_id) > 0;
+        return m_viewportEditorModesMap.count(viewportEditorModeInfo.m_id) > 0;
     }
 } // namespace AzToolsFramework

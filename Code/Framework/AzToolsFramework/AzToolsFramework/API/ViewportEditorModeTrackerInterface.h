@@ -13,7 +13,7 @@
 
 namespace AzToolsFramework
 {
-    //! The AZ::Interface of the central editor mode state tracker for all viewports.
+    //! The AZ::Interface of the central editor mode tracker for all viewports.
     class ViewportEditorModeTrackerInterface
     {
     public:
@@ -35,8 +35,6 @@ namespace AzToolsFramework
 
         //! Returns true if the specified viewport is being tracked, otherwise false.
         virtual bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
-
-    private:
     };
 } // namespace AzToolsFramework
 

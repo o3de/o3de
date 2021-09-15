@@ -30,7 +30,7 @@ namespace AzToolsFramework
         IdType m_id = ViewportUi::DefaultViewportId; //!< The unique identifier for a given viewport.
     };
 
-    //! Interface for the editor mode state of a given viewport.
+    //! Interface for the editor modes of a given viewport.
     class ViewportEditorModesInterface
     {
     public:

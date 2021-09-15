@@ -56,7 +56,7 @@ namespace AzToolsFramework
         bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
 
     private:
-        using ViewportEditorModess = AZStd::unordered_map<typename ViewportEditorModeInfo::IdType, ViewportEditorModes>;
-        ViewportEditorModess m_viewportEditorModeStates; //!< Editor mode state per viewport.
+        using ViewportEditorModesMap = AZStd::unordered_map<typename ViewportEditorModeInfo::IdType, ViewportEditorModes>;
+        ViewportEditorModesMap m_viewportEditorModesMap; //!< Editor mode state per viewport.
     };
 } // namespace AzToolsFramework
