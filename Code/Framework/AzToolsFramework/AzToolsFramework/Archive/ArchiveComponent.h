@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
 
+#include <AzFramework/Archive/IArchive.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 
 namespace AzToolsFramework
@@ -55,16 +57,10 @@ namespace AzToolsFramework
         bool CreateArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& dirToArchive) override;
         bool ExtractArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& destinationPath, bool extractWithRootDirectory) override;
         void ExtractArchive(const AZStd::string& archivePath, const AZStd::string& destinationPath, AZ::Uuid taskHandle, const ArchiveResponseCallback& respCallback) override;
-        void ExtractArchiveOutput(const AZStd::string& archivePath, const AZStd::string& destinationPath, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
-        void ExtractArchiveWithoutRoot(const AZStd::string& archivePath, const AZStd::string& destinationPath, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
-        void ExtractFile(const AZStd::string& archivePath, const AZStd::string& fileInArchive, const AZStd::string& destinationPath, bool overWrite, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
         bool ExtractFileBlocking(const AZStd::string& archivePath, const AZStd::string& fileInArchive, const AZStd::string& destinationPath, bool overWrite) override;
-        void ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& fileEntries, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
         bool ListFilesInArchiveBlocking(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& fileEntries) override;
-        void AddFileToArchive(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& fileToAdd, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
         bool AddFileToArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& fileToAdd) override;
         bool AddFilesToArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& listFilePath) override;
-        void AddFilesToArchive(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& listFilePath, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
         void CancelTasks(AZ::Uuid taskHandle) override;
         //////////////////////////////////////////////////////////////////////////
         
@@ -74,6 +70,9 @@ namespace AzToolsFramework
 
         AZStd::string m_zipExePath;
         AZStd::string m_unzipExePath;
+
+        AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIO;
+        AZ::IO::IArchive* m_archive = nullptr;
 
         // Struct for tracking background threads/tasks
         struct ThreadInfo

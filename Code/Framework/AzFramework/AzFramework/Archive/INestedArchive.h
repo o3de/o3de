@@ -147,6 +147,10 @@ namespace AZ::IO
         virtual int RemoveAll() = 0;
 
         // Summary:
+        //   Lists all the files in the archive.
+        virtual int ListAllFiles(AZStd::vector<AZStd::string>& fileEntries) = 0;
+
+        // Summary:
         //   Finds the file; you don't have to close the returned handle.
         // Returns:
         //   NULL if the file doesn't exist

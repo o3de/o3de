@@ -89,9 +89,50 @@ namespace AZ::IO
         return m_pCache->RemoveDir(fullPath);
     }
 
+    //////////////////////////////////////////////////////////////////////////
     int NestedArchive::RemoveAll()
     {
         return m_pCache->RemoveAll();
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Helper for 'ListAllFiles' to recursively traverse the FileEntryTree and gather all the files
+    void EnumerateFilesRecursive(AZ::IO::Path currentPath, ZipDir::FileEntryTree* currentTree, AZStd::vector<AZStd::string>& fileList)
+    {
+        // Drill down directories first...
+        for (auto dirIter = currentTree->GetDirBegin(); dirIter != currentTree->GetDirEnd(); ++dirIter)
+        {
+            if (ZipDir::FileEntryTree* subTree = currentTree->GetDirEntry(dirIter);
+                subTree != nullptr)
+            {
+                EnumerateFilesRecursive(currentPath / currentTree->GetDirName(dirIter), subTree, fileList);
+            }
+        }
+
+        // Then enumerate the files in current directory...
+        for (auto fileIter = currentTree->GetFileBegin(); fileIter != currentTree->GetFileEnd(); ++fileIter)
+        {
+            AZ::IO::Path filePath = currentPath / currentTree->GetFileName(fileIter);
+            fileList.emplace_back(filePath.c_str());
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // lists all files in the archive
+    int NestedArchive::ListAllFiles(AZStd::vector<AZStd::string>& fileEntries)
+    {
+        AZStd::vector<AZStd::string> filesInArchive;
+
+        ZipDir::FileEntryTree* tree = m_pCache->GetRoot();
+        if (!tree)
+        {
+            return ZipDir::ZD_ERROR_UNEXPECTED;
+        }
+
+        EnumerateFilesRecursive({}, tree, filesInArchive);
+
+        AZStd::swap(fileEntries, filesInArchive);
+        return ZipDir::ZD_ERROR_SUCCESS;
     }
 
     //////////////////////////////////////////////////////////////////////////
