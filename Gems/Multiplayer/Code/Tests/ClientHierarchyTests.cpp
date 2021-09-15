@@ -27,14 +27,14 @@ namespace Multiplayer
      */
     TEST_F(HierarchyTests, On_Client_NetBindComponent_Activate)
     {
-        AZ::Entity entity;
-        entity.CreateComponent<NetBindComponent>();
+        AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
+        entity->CreateComponent<NetBindComponent>();
         SetupEntity(entity, NetEntityId{ 1 }, NetEntityRole::Client);
-        entity.Activate();
+        entity->Activate();
 
         StopEntity(entity);
 
-        entity.Deactivate();
+        entity->Deactivate();
     }
 
     /*
@@ -43,7 +43,7 @@ namespace Multiplayer
     TEST_F(HierarchyTests, On_Client_EntityReplicator_DontActivate_BeforeParent)
     {
         // Create a child entity that will be tested for activation inside a hierarchy
-        AZ::Entity childEntity;
+        AZStd::unique_ptr<AZ::Entity> childEntity = AZStd::make_unique<AZ::Entity>();
         CreateEntityWithChildHierarchy(childEntity);
         SetupEntity(childEntity, NetEntityId{ 2 }, NetEntityRole::Client);
         // child entity is not activated on purpose here, we are about to test conditional activation check
@@ -53,7 +53,7 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(childEntity, NetEntityId{ 1 });
 
         // Create an entity replicator for the child entity
-        const NetworkEntityHandle childHandle(&childEntity, m_networkEntityTracker.get());
+        const NetworkEntityHandle childHandle(childEntity.get(), m_networkEntityTracker.get());
         EntityReplicator entityReplicator(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, childHandle);
         entityReplicator.Initialize(childHandle);
 
@@ -64,7 +64,7 @@ namespace Multiplayer
     TEST_F(HierarchyTests, On_Client_EntityReplicator_DontActivate_Inner_Root_Before_Top_Root)
     {
         // Create a child entity that will be tested for activation inside a hierarchy
-        AZ::Entity innerRootEntity;
+        AZStd::unique_ptr<AZ::Entity> innerRootEntity = AZStd::make_unique<AZ::Entity>();
         CreateEntityWithRootHierarchy(innerRootEntity);
         SetupEntity(innerRootEntity, NetEntityId{ 2 }, NetEntityRole::Client);
         // child entity is not activated on purpose here, we are about to test conditional activation check
@@ -74,7 +74,7 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyRootComponent>(innerRootEntity, NetEntityId{ 1 });
 
         // Create an entity replicator for the child entity
-        const NetworkEntityHandle innerRootHandle(&innerRootEntity, m_networkEntityTracker.get());
+        const NetworkEntityHandle innerRootHandle(innerRootEntity.get(), m_networkEntityTracker.get());
         EntityReplicator entityReplicator(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, innerRootHandle);
         entityReplicator.Initialize(innerRootHandle);
 
@@ -85,7 +85,7 @@ namespace Multiplayer
     TEST_F(HierarchyTests, On_Client_Not_In_Hierarchy_EntityReplicator_Ignores_Parent)
     {
         // Create a child entity that will be tested for activation inside a hierarchy
-        AZ::Entity childEntity;
+        AZStd::unique_ptr<AZ::Entity> childEntity = AZStd::make_unique<AZ::Entity>();
         CreateEntityWithChildHierarchy(childEntity);
         SetupEntity(childEntity, NetEntityId{ 2 }, NetEntityRole::Client);
         // child entity is not activated on purpose here, we are about to test conditional activation check
@@ -95,7 +95,7 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(childEntity, InvalidNetEntityId);
 
         // Create an entity replicator for the child entity
-        const NetworkEntityHandle childHandle(&childEntity, m_networkEntityTracker.get());
+        const NetworkEntityHandle childHandle(childEntity.get(), m_networkEntityTracker.get());
         EntityReplicator entityReplicator(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, childHandle);
         entityReplicator.Initialize(childHandle);
 
@@ -108,7 +108,7 @@ namespace Multiplayer
      */
     TEST_F(HierarchyTests, On_Client_EntityReplicator_Activates_AfterParent)
     {
-        AZ::Entity childEntity;
+        AZStd::unique_ptr<AZ::Entity> childEntity = AZStd::make_unique<AZ::Entity>();
         CreateEntityWithChildHierarchy(childEntity);
         SetupEntity(childEntity, NetEntityId{ 2 }, NetEntityRole::Client);
 
@@ -117,29 +117,29 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(childEntity, NetEntityId{ 1 });
 
         // Create an entity replicator for the child entity
-        const NetworkEntityHandle childHandle(&childEntity, m_networkEntityTracker.get());
+        const NetworkEntityHandle childHandle(childEntity.get(), m_networkEntityTracker.get());
         EntityReplicator childEntityReplicator(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, childHandle);
         childEntityReplicator.Initialize(childHandle);
 
         // Now let's create a parent entity and activate it
-        AZ::Entity parentEntity;
+        AZStd::unique_ptr<AZ::Entity> parentEntity = AZStd::make_unique<AZ::Entity>();
         CreateEntityWithRootHierarchy(parentEntity);
         SetupEntity(parentEntity, NetEntityId{ 1 }, NetEntityRole::Client);
 
         // Create an entity replicator for the parent entity
-        const NetworkEntityHandle parentHandle(&parentEntity, m_networkEntityTracker.get());
+        const NetworkEntityHandle parentHandle(parentEntity.get(), m_networkEntityTracker.get());
         ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Return(parentHandle));
         EntityReplicator parentEntityReplicator(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, parentHandle);
         parentEntityReplicator.Initialize(parentHandle);
 
-        parentEntity.Activate();
+        parentEntity->Activate();
 
         // The child should be ready to be activated
         EXPECT_EQ(childEntityReplicator.IsReadyToActivate(), true);
 
         StopEntity(parentEntity);
 
-        parentEntity.Deactivate();
+        parentEntity->Deactivate();
     }
 
     /*
@@ -155,25 +155,19 @@ namespace Multiplayer
         {
             HierarchyTests::SetUp();
 
-            m_rootEntity = AZStd::make_unique<AZ::Entity>(AZ::EntityId(1), "root");
-            m_childEntity = AZStd::make_unique<AZ::Entity>(AZ::EntityId(2), "child");
+            m_root = AZStd::make_unique<EntityInfo>(1, "root", RootNetEntityId, EntityInfo::Role::Root);
+            m_child = AZStd::make_unique<EntityInfo>(2, "child", ChildNetEntityId, EntityInfo::Role::Child);
 
-            m_rootEntityInfo = AZStd::make_unique<EntityInfo>(*m_rootEntity.get(), RootNetEntityId, EntityInfo::Role::Root);
-            m_childEntityInfo = AZStd::make_unique<EntityInfo>(*m_childEntity.get(), ChildNetEntityId, EntityInfo::Role::Child);
+            CreateSimpleHierarchy(*m_root, *m_child);
 
-            CreateSimpleHierarchy(*m_rootEntityInfo, *m_childEntityInfo);
-
-            m_childEntity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_rootEntity->GetId());
+            m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
             // now the two entities are under one hierarchy
         }
 
         void TearDown() override
         {
-            m_childEntityInfo.reset();
-            m_rootEntityInfo.reset();
-
-            StopAndDeleteEntity(m_childEntity);
-            StopAndDeleteEntity(m_rootEntity);
+            m_child.reset();
+            m_root.reset();
 
             HierarchyTests::TearDown();
         }
@@ -191,20 +185,20 @@ namespace Multiplayer
             SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(child.m_entity, root.m_netId);
 
             // Create an entity replicator for the child entity
-            const NetworkEntityHandle childHandle(&child.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle childHandle(child.m_entity.get(), m_networkEntityTracker.get());
             child.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, childHandle);
             child.m_replicator->Initialize(childHandle);
 
             // Create an entity replicator for the root entity
-            const NetworkEntityHandle rootHandle(&root.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle rootHandle(root.m_entity.get(), m_networkEntityTracker.get());
             root.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, rootHandle);
             root.m_replicator->Initialize(rootHandle);
 
-            root.m_entity.Activate();
-            child.m_entity.Activate();
+            root.m_entity->Activate();
+            child.m_entity->Activate();
         }
 
-        void SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(const AZ::Entity& entity, NetEntityId value)
+        void SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId value)
         {
             /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
             constexpr int totalBits = 1 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::Count*/;
@@ -225,47 +219,44 @@ namespace Multiplayer
 
             ReplicationRecord notifyRecord = currentRecord;
 
-            entity.FindComponent<NetworkHierarchyChildComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            entity.FindComponent<NetworkHierarchyChildComponent>()->NotifyStateDeltaChanges(notifyRecord);
+            entity->FindComponent<NetworkHierarchyChildComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
+            entity->FindComponent<NetworkHierarchyChildComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
-        AZStd::unique_ptr<AZ::Entity> m_rootEntity;
-        AZStd::unique_ptr<AZ::Entity> m_childEntity;
-
-        AZStd::unique_ptr<EntityInfo> m_rootEntityInfo;
-        AZStd::unique_ptr<EntityInfo> m_childEntityInfo;
+        AZStd::unique_ptr<EntityInfo> m_root;
+        AZStd::unique_ptr<EntityInfo> m_child;
     };
 
     TEST_F(ClientSimpleHierarchyTests, Client_Activates_Hierarchy_From_Network_Fields)
     {
         EXPECT_EQ(
-            m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchyRoot(),
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchyRoot(),
             InvalidNetEntityId
         );
 
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
             RootNetEntityId
         );
 
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
-            m_rootEntity.get()
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
+            m_root->m_entity.get()
         );
 
         EXPECT_EQ(
-            m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
             2
         );
-        if (m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size() == 2)
+        if (m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size() == 2)
         {
             EXPECT_EQ(
-                m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[0],
-                m_rootEntity.get()
+                m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[0],
+                m_root->m_entity.get()
             );
             EXPECT_EQ(
-                m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[1],
-                m_childEntity.get()
+                m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[1],
+                m_child->m_entity.get()
             );
         }
     }
@@ -273,15 +264,15 @@ namespace Multiplayer
     TEST_F(ClientSimpleHierarchyTests, Client_Detaches_Child_When_Server_Detaches)
     {
         // simulate server detaching child entity
-        SetParentIdOnNetworkTransform(*m_childEntity, InvalidNetEntityId);
-        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(*m_childEntity, InvalidNetEntityId);
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
 
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
             InvalidNetEntityId
         );
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
             nullptr
         );
     }
@@ -289,13 +280,13 @@ namespace Multiplayer
     TEST_F(ClientSimpleHierarchyTests, Client_Sends_NetworkHierarchy_Updated_Event_On_Child_Detached_On_Server)
     {
         MockNetworkHierarchyCallbackHandler mock;
-        EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_rootEntity->GetId()));
+        EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_root->m_entity->GetId()));
 
-        m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
+        m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
 
         // simulate server detaching a child entity
-        SetParentIdOnNetworkTransform(*m_childEntity, InvalidNetEntityId);
-        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(*m_childEntity, InvalidNetEntityId);
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
     }
 
     TEST_F(ClientSimpleHierarchyTests, Client_Sends_NetworkHierarchy_Leave_Event_On_Child_Detached_On_Server)
@@ -303,11 +294,11 @@ namespace Multiplayer
         MockNetworkHierarchyCallbackHandler mock;
         EXPECT_CALL(mock, OnNetworkHierarchyLeave);
 
-        m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyLeaveEventHandler(mock.m_leaveHandler);
+        m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyLeaveEventHandler(mock.m_leaveHandler);
 
         // simulate server detaching a child entity
-        SetParentIdOnNetworkTransform(*m_childEntity, InvalidNetEntityId);
-        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(*m_childEntity, InvalidNetEntityId);
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
     }
 
     /*
@@ -322,18 +313,16 @@ namespace Multiplayer
         {
             ClientSimpleHierarchyTests::SetUp();
 
-            m_childOfChildEntity = AZStd::make_unique<AZ::Entity>(AZ::EntityId(3), "child of child");
-            m_childOfChildEntityInfo = AZStd::make_unique<EntityInfo>(*m_childOfChildEntity.get(), ChildOfChildNetEntityId, EntityInfo::Role::Child);
+            m_childOfChild = AZStd::make_unique<EntityInfo>((3), "child of child", ChildOfChildNetEntityId, EntityInfo::Role::Child);
 
-            CreateDeepHierarchyOnClient(*m_childOfChildEntityInfo);
+            CreateDeepHierarchyOnClient(*m_childOfChild);
 
-            m_childOfChildEntity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childEntity->GetId());
+            m_childOfChild->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_child->m_entity->GetId());
         }
 
         void TearDown() override
         {
-            m_childOfChildEntityInfo.reset();
-            StopAndDeleteEntity(m_childOfChildEntity);
+            m_childOfChild.reset();
 
             ClientSimpleHierarchyTests::TearDown();
         }
@@ -344,58 +333,57 @@ namespace Multiplayer
             SetupEntity(childOfChild.m_entity, childOfChild.m_netId, NetEntityRole::Client);
 
             // we need a parent-id value to be present in NetworkTransformComponent (which is in client mode and doesn't have a controller)
-            SetParentIdOnNetworkTransform(childOfChild.m_entity, m_childEntityInfo->m_netId);
-            SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(childOfChild.m_entity, m_rootEntityInfo->m_netId);
+            SetParentIdOnNetworkTransform(childOfChild.m_entity, m_childOfChild->m_netId);
+            SetHierarchyRootFieldOnNetworkHierarchyChild<NetworkHierarchyChildComponent>(childOfChild.m_entity, m_root->m_netId);
 
             // Create an entity replicator for the child entity
-            const NetworkEntityHandle childOfChildHandle(&childOfChild.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle childOfChildHandle(childOfChild.m_entity.get(), m_networkEntityTracker.get());
             childOfChild.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, childOfChildHandle);
             childOfChild.m_replicator->Initialize(childOfChildHandle);
 
-            childOfChild.m_entity.Activate();
+            childOfChild.m_entity->Activate();
         }
 
-        AZStd::unique_ptr<AZ::Entity> m_childOfChildEntity;
-        AZStd::unique_ptr<EntityInfo> m_childOfChildEntityInfo;
+        AZStd::unique_ptr<EntityInfo> m_childOfChild;
     };
 
     TEST_F(ClientDeepHierarchyTests, Client_Activates_Hierarchy_From_Network_Fields)
     {
         EXPECT_EQ(
-            m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchyRoot(),
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchyRoot(),
             InvalidNetEntityId
         );
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
             RootNetEntityId
         );
         EXPECT_EQ(
-            m_childOfChildEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_childOfChild->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
             RootNetEntityId
         );
 
         EXPECT_EQ(
-            m_childEntity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
-            m_rootEntity.get()
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
+            m_root->m_entity.get()
         );
 
         EXPECT_EQ(
-            m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
             3
         );
-        if (m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size() == 3)
+        if (m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size() == 3)
         {
             EXPECT_EQ(
-                m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[0],
-                m_rootEntity.get()
+                m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[0],
+                m_root->m_entity.get()
             );
             EXPECT_EQ(
-                m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[1],
-                m_childEntity.get()
+                m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[1],
+                m_child->m_entity.get()
             );
             EXPECT_EQ(
-                m_rootEntity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[2],
-                m_childOfChildEntity.get()
+                m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[2],
+                m_childOfChild->m_entity.get()
             );
         }
     }

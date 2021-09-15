@@ -38,6 +38,7 @@ namespace Multiplayer
     class NetworkHierarchyCallbacks
     {
     public:
+        virtual ~NetworkHierarchyCallbacks() = default;
         virtual void OnNetworkHierarchyLeave() = 0;
         virtual void OnNetworkHierarchyUpdated(const AZ::EntityId& hierarchyRootId) = 0;
     };
@@ -245,48 +246,48 @@ namespace Multiplayer
             return nullptr;
         }
 
-        void SetupEntity(AZ::Entity& entity, NetEntityId netId, NetEntityRole role)
+        void SetupEntity(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId netId, NetEntityRole role)
         {
-            const auto netBindComponent = entity.FindComponent<Multiplayer::NetBindComponent>();
+            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
             EXPECT_NE(netBindComponent, nullptr);
-            netBindComponent->PreInit(&entity, PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
-            entity.Init();
+            netBindComponent->PreInit(entity.get(), PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
+            entity->Init();
         }
 
-        void StopEntity(const AZ::Entity& entity)
+        static void StopEntity(const AZStd::unique_ptr<AZ::Entity>& entity)
         {
-            const auto netBindComponent = entity.FindComponent<Multiplayer::NetBindComponent>();
+            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
             EXPECT_NE(netBindComponent, nullptr);
             netBindComponent->StopEntity();
         }
 
-        void StopAndDeleteEntity(AZStd::unique_ptr<AZ::Entity>& entity)
+        static void StopAndDeactivateEntity(AZStd::unique_ptr<AZ::Entity>& entity)
         {
             if (entity)
             {
-                StopEntity(*entity);
+                StopEntity(entity);
                 entity->Deactivate();
                 entity.reset();
             }
         }
 
-        void CreateEntityWithRootHierarchy(AZ::Entity& rootEntity)
+        void CreateEntityWithRootHierarchy(AZStd::unique_ptr<AZ::Entity>& rootEntity)
         {
-            rootEntity.CreateComponent<AzFramework::TransformComponent>();
-            rootEntity.CreateComponent<NetBindComponent>();
-            rootEntity.CreateComponent<NetworkTransformComponent>();
-            rootEntity.CreateComponent<NetworkHierarchyRootComponent>();
+            rootEntity->CreateComponent<AzFramework::TransformComponent>();
+            rootEntity->CreateComponent<NetBindComponent>();
+            rootEntity->CreateComponent<NetworkTransformComponent>();
+            rootEntity->CreateComponent<NetworkHierarchyRootComponent>();
         }
 
-        void CreateEntityWithChildHierarchy(AZ::Entity& childEntity)
+        void CreateEntityWithChildHierarchy(AZStd::unique_ptr<AZ::Entity>& childEntity)
         {
-            childEntity.CreateComponent<AzFramework::TransformComponent>();
-            childEntity.CreateComponent<NetBindComponent>();
-            childEntity.CreateComponent<NetworkTransformComponent>();
-            childEntity.CreateComponent<NetworkHierarchyChildComponent>();
+            childEntity->CreateComponent<AzFramework::TransformComponent>();
+            childEntity->CreateComponent<NetBindComponent>();
+            childEntity->CreateComponent<NetworkTransformComponent>();
+            childEntity->CreateComponent<NetworkHierarchyChildComponent>();
         }
 
-        void SetParentIdOnNetworkTransform(const AZ::Entity& entity, NetEntityId netParentId)
+        void SetParentIdOnNetworkTransform(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId netParentId)
         {
             /* Derived from NetworkTransformComponent.AutoComponent.xml */
             constexpr int totalBits = 6 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::Count*/;
@@ -306,12 +307,12 @@ namespace Multiplayer
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
             ReplicationRecord notifyRecord = currentRecord;
-            entity.FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            entity.FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
+            entity->FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
+            entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
         template <typename Component>
-        void SetHierarchyRootFieldOnNetworkHierarchyChild(const AZ::Entity& entity, NetEntityId value)
+        void SetHierarchyRootFieldOnNetworkHierarchyChild(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId value)
         {
             /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
             constexpr int totalBits = 1 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::Count*/;
@@ -331,8 +332,8 @@ namespace Multiplayer
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
             ReplicationRecord notifyRecord = currentRecord;
-            entity.FindComponent<Component>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            entity.FindComponent<Component>()->NotifyStateDeltaChanges(notifyRecord);
+            entity->FindComponent<Component>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
+            entity->FindComponent<Component>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
         struct EntityInfo
@@ -344,14 +345,19 @@ namespace Multiplayer
                 None
             };
 
-            EntityInfo(AZ::Entity& entity, NetEntityId netId, Role role)
-                : m_entity(entity)
+            EntityInfo(AZ::u64 entityId, const char* entityName, NetEntityId netId, Role role)
+                : m_entity(AZStd::make_unique<AZ::Entity>(AZ::EntityId(entityId), entityName))
                 , m_netId(netId)
                 , m_role(role)
             {
             }
 
-            AZ::Entity& m_entity;
+            ~EntityInfo()
+            {
+                StopAndDeactivateEntity(m_entity);
+            }
+
+            AZStd::unique_ptr<AZ::Entity> m_entity;
             NetEntityId m_netId;
             AZStd::unique_ptr<EntityReplicator> m_replicator;
             Role m_role = Role::None;
@@ -359,16 +365,16 @@ namespace Multiplayer
 
         void PopulateHierarchicalEntity(const EntityInfo& entityInfo)
         {
-            entityInfo.m_entity.CreateComponent<AzFramework::TransformComponent>();
-            entityInfo.m_entity.CreateComponent<NetBindComponent>();
-            entityInfo.m_entity.CreateComponent<NetworkTransformComponent>();
+            entityInfo.m_entity->CreateComponent<AzFramework::TransformComponent>();
+            entityInfo.m_entity->CreateComponent<NetBindComponent>();
+            entityInfo.m_entity->CreateComponent<NetworkTransformComponent>();
             switch (entityInfo.m_role)
             {
             case EntityInfo::Role::Root:
-                entityInfo.m_entity.CreateComponent<NetworkHierarchyRootComponent>();
+                entityInfo.m_entity->CreateComponent<NetworkHierarchyRootComponent>();
                 break;
             case EntityInfo::Role::Child:
-                entityInfo.m_entity.CreateComponent<NetworkHierarchyChildComponent>();
+                entityInfo.m_entity->CreateComponent<NetworkHierarchyChildComponent>();
                 break;
             case EntityInfo::Role::None:
                 break;
@@ -390,23 +396,23 @@ namespace Multiplayer
             SetParentIdOnNetworkTransform(childOfChild.m_entity, child.m_netId);
 
             // Create an entity replicator for the child entity
-            const NetworkEntityHandle childOfChildHandle(&childOfChild.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle childOfChildHandle(childOfChild.m_entity.get(), m_networkEntityTracker.get());
             childOfChild.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childOfChildHandle);
             childOfChild.m_replicator->Initialize(childOfChildHandle);
 
             // Create an entity replicator for the child entity
-            const NetworkEntityHandle childHandle(&child.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle childHandle(child.m_entity.get(), m_networkEntityTracker.get());
             child.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childHandle);
             child.m_replicator->Initialize(childHandle);
 
             // Create an entity replicator for the root entity
-            const NetworkEntityHandle rootHandle(&root.m_entity, m_networkEntityTracker.get());
+            const NetworkEntityHandle rootHandle(root.m_entity.get(), m_networkEntityTracker.get());
             root.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, rootHandle);
             root.m_replicator->Initialize(rootHandle);
 
-            root.m_entity.Activate();
-            child.m_entity.Activate();
-            childOfChild.m_entity.Activate();
+            root.m_entity->Activate();
+            child.m_entity->Activate();
+            childOfChild.m_entity->Activate();
         }
     };
 }
