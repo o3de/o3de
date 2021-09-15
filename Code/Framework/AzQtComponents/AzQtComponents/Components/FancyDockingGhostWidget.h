@@ -45,5 +45,14 @@ namespace AzQtComponents
         QPixmap m_pixmap;
         bool m_visible = false; // maintain our own flag, so that we're always ready to render ignoring Qt's widget caching system
         bool m_clipToWidgets = false;
+
+        enum class PaintMode
+        {
+            FULL = 0,
+            BOTTOMLEFT,
+            BOTTOMRIGHT
+        };
+
+        PaintMode m_paintMode = PaintMode::FULL;
     };
 } // namespace AzQtComponents

@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/FancyDockingGhostWidget.h>
 
+#include <QApplication>
 #include <QDebug>
 #include <QCloseEvent>
 #include <QScreen>
@@ -76,7 +77,32 @@ namespace AzQtComponents
             window->setScreen(screen);
         }
 
-        setGeometry(targetRect);
+        QPoint midPoint = targetRect.topLeft() + QPoint(targetRect.width() / 2, targetRect.height() / 2);
+        QScreen* pointScreen = QApplication::screenAt(midPoint);
+        QRect rect(targetRect);
+
+        if (!pointScreen || pointScreen != screen)
+        {
+            if (midPoint.x() >= QCursor::pos().x())
+            {
+                rect.setLeft(rect.left() - rect.width());
+                rect.setTop(rect.top() - rect.height());
+                m_paintMode = PaintMode::BOTTOMRIGHT;
+            }
+            else
+            {
+                rect.setRight(rect.right() + rect.width());
+                rect.setTop(rect.top() - rect.height());
+                m_paintMode = PaintMode::BOTTOMLEFT;
+            }
+        }
+        else
+        {
+            m_paintMode = PaintMode::FULL;
+        }
+
+        setGeometry(rect);
+
         setPixmapVisible(true);
         if (needsRepaint)
         {
@@ -135,7 +161,27 @@ namespace AzQtComponents
                 yOffset = widgetSize.height() - aspectRatioHeight;
             }
 
-            painter.drawPixmap(QRect(0, yOffset, widgetSize.width(), aspectRatioHeight), m_pixmap);
+            switch (m_paintMode)
+            {
+                case PaintMode::FULL:
+                    {
+                        painter.drawPixmap(QRect(0, yOffset, widgetSize.width(), aspectRatioHeight), m_pixmap);
+                    }
+                break;
+
+                case PaintMode::BOTTOMLEFT:
+                    {
+                        painter.drawPixmap(QRect(0, (widgetSize.height() + yOffset) / 2, widgetSize.width() / 2, aspectRatioHeight / 2), m_pixmap);
+                    }
+                break;
+
+                case PaintMode::BOTTOMRIGHT:
+                    {
+                        painter.drawPixmap(QRect(widgetSize.width() / 2, (widgetSize.height() + yOffset) / 2, widgetSize.width() / 2, aspectRatioHeight / 2), m_pixmap);
+                    }
+                break;
+            }
+
             if (m_clipToWidgets)
             {
                 painter.restore();
