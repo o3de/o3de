@@ -84,10 +84,12 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import AssetWeightSelector_InstancesExpressBasedOnWeight as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
         self._run_test(request, workspace, editor, test_module)
