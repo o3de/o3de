@@ -216,6 +216,11 @@ namespace AZ
             return m_source->GetMaxAllocationSize();
         }
 
+        auto AllocatorOverrideShim::GetMaxContiguousAllocationSize() const -> size_type
+        {
+            return m_source->GetMaxContiguousAllocationSize();
+        }
+
         IAllocatorAllocate* AllocatorOverrideShim::GetSubAllocator()
         {
             return m_source->GetSubAllocator();

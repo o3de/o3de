@@ -707,6 +707,11 @@ PoolSchema::GarbageCollect()
     //m_impl->GarbageCollect();
 }
 
+auto PoolSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_impl->m_allocator.m_maxAllocationSize;
+}
+
 //=========================================================================
 // NumAllocatedBytes
 // [11/1/2010]
@@ -1050,6 +1055,11 @@ void
 ThreadPoolSchema::GarbageCollect()
 {
     m_impl->GarbageCollect();
+}
+
+auto ThreadPoolSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_impl->m_maxAllocationSize;
 }
 
 //=========================================================================
