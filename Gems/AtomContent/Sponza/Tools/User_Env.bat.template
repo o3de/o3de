@@ -25,6 +25,8 @@ SET TAG_LY_BUILD_PATH=build
 SET DCCSI_GDEBUG=True
 SET DCCSI_DEV_MODE=True
 
+set DCCSI_MAYA_VERSION=2020
+
 :: set the your user name here for windows path
 SET TAG_USERNAME=NOT_SET
 SET DCCSI_PY_REV=rev1
