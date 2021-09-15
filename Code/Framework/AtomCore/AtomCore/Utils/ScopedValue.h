@@ -20,11 +20,11 @@ namespace AZ
         T m_finalValue;
 
     public:
-        ScopedValue(T* ptr, T initialValue, T finalValue)
+        ScopedValue(T* ptr, T initialValue, T finalValue) :
+            m_ptr(ptr), m_finalValue(finalValue)
         {
-            m_ptr = ptr;
+            AZ_Assert(m_ptr, "ScopedValue::m_ptr is null");
             *m_ptr = initialValue;
-            m_finalValue = finalValue;
         }
 
         ~ScopedValue()
