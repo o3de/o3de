@@ -213,6 +213,82 @@ namespace UnitTest
             AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
         ));
 
+
+    struct PathHashCompareParams
+    {
+        AZ::IO::PathView m_testPath{};
+        ::testing::Matcher<AZ::IO::PathView> m_compareMatcher;
+        ::testing::Matcher<size_t> m_hashMatcher;
+    };
+
+    class PathHashCompareFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<PathHashCompareParams>
+    {};
+
+    // Verifies that two paths that compare equal has their hash value compare equal
+    TEST_P(PathHashCompareFixture, PathsWhichCompareEqual_HashesToSameValue_Succeeds)
+    {
+        auto&& [testPath1, compareMatcher, hashMatcher] = GetParam();
+
+        // Compare path using parameterized Matcher
+        EXPECT_THAT(testPath1, compareMatcher);
+        // Compare hash using parameterized Matcher
+        const size_t testPath1Hash = AZStd::hash<AZ::IO::PathView>{}(testPath1);
+AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
+        EXPECT_THAT(testPath1Hash, hashMatcher);
+AZ_POP_DISABLE_WARNING
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        HashPathCompareValidation,
+        PathHashCompareFixture,
+        ::testing::Values(
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(/test/FOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/FOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::PosixPathSeparator),
+                testing::Ne(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView(R"(C:\test\foo)", AZ::IO::WindowsPathSeparator),
+                testing::Ne(AZ::IO::PathView(R"(c:/test/foo)", AZ::IO::PosixPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:/test/foo)", AZ::IO::PosixPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::PosixPathSeparator),
+                testing::Gt(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Gt(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::PosixPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::PosixPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/AOO", AZ::IO::PosixPathSeparator),
+                testing::Lt(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/AOO", AZ::IO::WindowsPathSeparator),
+                testing::Lt(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::PosixPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::PosixPathSeparator))) },
+            // Paths with different character values, comparison based on path separator
+            PathHashCompareParams{ AZ::IO::PathView("/test/BOO", AZ::IO::PosixPathSeparator),
+                testing::Le(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/BOO", AZ::IO::WindowsPathSeparator),
+                testing::Ge(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Le(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::PosixPathSeparator),
+                testing::Ge(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator))) }
+        ));
+
     class PathSingleParamFixture
         : public ScopedAllocatorSetupFixture
         , public ::testing::WithParamInterface<AZStd::tuple<AZStd::string_view>>
