@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
 
         m_layout = new QVBoxLayout();
         m_layout->setSpacing(0);
-        m_layout->setMargin(0);
+        m_layout->setMargin(5);
         m_layout->setAlignment(Qt::AlignTop);
         setLayout(m_layout);
 
@@ -86,7 +86,7 @@ namespace O3DE::ProjectManager
 
     void CartOverlayWidget::Update()
     {
-        const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
+        const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
         if (toBeAdded.isEmpty())
         {
             m_enabledWidget->hide();
@@ -98,7 +98,7 @@ namespace O3DE::ProjectManager
             m_enabledWidget->show();
         }
 
-        const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+        const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
         if (toBeRemoved.isEmpty())
         {
             m_disabledWidget->hide();
@@ -154,8 +154,8 @@ namespace O3DE::ProjectManager
         // Adjust the label text whenever the model gets updated.
         connect(gemModel, &GemModel::dataChanged, [=]
             {
-                const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
-                const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+                const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
+                const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
 
                 const int count = toBeAdded.size() + toBeRemoved.size();
                 m_countLabel->setText(QString::number(count));
@@ -186,8 +186,8 @@ namespace O3DE::ProjectManager
 
     void CartButton::ShowOverlay()
     {
-        const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
-        const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+        const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
+        const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
         if (toBeAdded.isEmpty() && toBeRemoved.isEmpty())
         {
             return;

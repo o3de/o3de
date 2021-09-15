@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the gem item
         const QColor m_borderColor = QColor("#1E70EB");
         const QColor m_buttonEnabledColor = QColor("#00B931");
+        const QColor m_buttonImplicitlyEnabledColor = QColor("#777777");
 
         // Item
         inline constexpr static int s_height = 105; // Gem item total height

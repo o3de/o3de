@@ -8,6 +8,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <GemCatalog/GemModel.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 namespace O3DE::ProjectManager
@@ -40,8 +41,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
         item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
         item->setData(gemInfo.m_documentationLink, RoleDocLink);
-        item->setData(gemInfo.m_dependingGemUuids, RoleDependingGems);
-        item->setData(gemInfo.m_conflictingGemUuids, RoleConflictingGems);
+        item->setData(gemInfo.m_dependencies, RoleDependingGems);
         item->setData(gemInfo.m_version, RoleVersion);
         item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
@@ -58,6 +58,39 @@ namespace O3DE::ProjectManager
     void GemModel::Clear()
     {
         clear();
+    }
+
+    void GemModel::UpdateGemDependencies()
+    {
+        m_gemDependencyMap.clear();
+        m_gemReverseDependencyMap.clear();
+
+        for (auto iter = m_nameToIndexMap.begin(); iter != m_nameToIndexMap.end(); ++iter)
+        {
+            const QString& key = iter.key();
+            const QModelIndex modelIndex = iter.value();
+            QSet<QModelIndex> dependencies;
+            GetAllDependingGems(modelIndex, dependencies);
+            if (!dependencies.isEmpty())
+            {
+                m_gemDependencyMap.insert(key, dependencies);
+            }
+        }
+
+        for (auto iter = m_gemDependencyMap.begin(); iter != m_gemDependencyMap.end(); ++iter)
+        {
+            const QString& dependant = iter.key();
+            for (const QModelIndex& dependency : iter.value())
+            {
+                const QString& dependencyName = dependency.data(RoleName).toString();
+                if (!m_gemReverseDependencyMap.contains(dependencyName))
+                {
+                    m_gemReverseDependencyMap.insert(dependencyName, QSet<QModelIndex>());
+                }
+
+                m_gemReverseDependencyMap[dependencyName].insert(m_nameToIndexMap[dependant]);
+            }
+        }
     }
 
     QString GemModel::GetName(const QModelIndex& modelIndex)
@@ -137,31 +170,28 @@ namespace O3DE::ProjectManager
         }
     }
 
-    QStringList GemModel::GetDependingGemUuids(const QModelIndex& modelIndex)
+    QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDependingGems).toStringList();
     }
 
+    void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems)
+    {
+        QStringList dependencies = GetDependingGems(modelIndex);
+        for (QString& dependency : dependencies)
+        {
+            QModelIndex dependencyIndex = FindIndexByNameString(dependency);
+            if (!inOutGems.contains(dependencyIndex))
+            {
+                inOutGems.insert(dependencyIndex);
+                GetAllDependingGems(dependencyIndex, inOutGems);
+            }
+        }
+    }
+
     QStringList GemModel::GetDependingGemNames(const QModelIndex& modelIndex)
     {
-        QStringList result = GetDependingGemUuids(modelIndex);
-        if (result.isEmpty())
-        {
-            return {};
-        }
-
-        FindGemNamesByNameStrings(result);
-        return result;
-    }
-
-    QStringList GemModel::GetConflictingGemUuids(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleConflictingGems).toStringList();
-    }
-
-    QStringList GemModel::GetConflictingGemNames(const QModelIndex& modelIndex)
-    {
-        QStringList result = GetConflictingGemUuids(modelIndex);
+        QStringList result = GetDependingGems(modelIndex);
         if (result.isEmpty())
         {
             return {};
@@ -206,24 +236,118 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleIsAdded).toBool();
     }
 
+    bool GemModel::IsAddedDependency(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleIsAddedDependency).toBool();
+    }
+
     void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
     {
         model.setData(modelIndex, isAdded, RoleIsAdded);
+
+        UpdateDependencies(model, modelIndex);
+    }
+
+    bool GemModel::HasDependentGems(const QModelIndex& modelIndex)
+    {
+        QVector<QModelIndex> dependentGems = GatherDependentGems(modelIndex);
+        for (const QModelIndex& dependency : dependentGems)
+        {
+            if (IsAdded(dependency))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    GemModel* GemModel::GetModel(QAbstractItemModel& model)
+    {
+        GemModel* gemModel = nullptr;
+        GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(&model);
+        if (proxyModel)
+        {
+            gemModel = proxyModel->GetSourceModel();
+        }
+        else
+        {
+            gemModel = qobject_cast<GemModel*>(&model);
+        }
+        AZ_Assert(gemModel, "Failed to obtain GemModel");
+        return gemModel;
+    }
+
+    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    {
+        GemModel* gemModel = GetModel(model);
+        QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+        if (IsAdded(modelIndex))
+        {
+            for (const QModelIndex& dependency : dependencies)
+            {
+                SetIsAddedDependency(*gemModel, dependency, true);
+            }
+        }
+        else
+        {
+            // still a dependency if some added gem depends on this one 
+            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+
+            for (const QModelIndex& dependency : dependencies)
+            {
+                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+            }
+        }
+    }
+
+    void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
+    {
+        model.setData(modelIndex, isAdded, RoleIsAddedDependency);
     }
 
     void GemModel::SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded)
     {
         model.setData(modelIndex, wasAdded, RoleWasPreviouslyAdded);
+
+        if (wasAdded)
+        {
+            // update all dependencies
+            GemModel* gemModel = GetModel(model);
+            QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+            for (const QModelIndex& dependency : dependencies)
+            {
+                SetWasPreviouslyAddedDependency(*gemModel, dependency, true);
+            }
+        }
     }
 
-    bool GemModel::NeedsToBeAdded(const QModelIndex& modelIndex)
+    void GemModel::SetWasPreviouslyAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded)
     {
-        return (!modelIndex.data(RoleWasPreviouslyAdded).toBool() && modelIndex.data(RoleIsAdded).toBool());
+        model.setData(modelIndex, wasAdded, RoleWasPreviouslyAddedDependency);
     }
 
-    bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex)
+    bool GemModel::NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies)
     {
-        return (modelIndex.data(RoleWasPreviouslyAdded).toBool() && !modelIndex.data(RoleIsAdded).toBool());
+        bool previouslyAdded = modelIndex.data(RoleWasPreviouslyAdded).toBool();
+        bool added = modelIndex.data(RoleIsAdded).toBool();
+        if (includeDependencies)
+        {
+            previouslyAdded |= modelIndex.data(RoleWasPreviouslyAddedDependency).toBool();
+            added |= modelIndex.data(RoleIsAddedDependency).toBool();
+        }
+        return !previouslyAdded && added;
+    }
+
+    bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies)
+    {
+        bool previouslyAdded = modelIndex.data(RoleWasPreviouslyAdded).toBool();
+        bool added = modelIndex.data(RoleIsAdded).toBool();
+        if (includeDependencies)
+        {
+            previouslyAdded |= modelIndex.data(RoleWasPreviouslyAddedDependency).toBool();
+            added |= modelIndex.data(RoleIsAddedDependency).toBool();
+        }
+        return previouslyAdded && !added;
     }
 
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
@@ -244,13 +368,41 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const
+    QVector<QModelIndex> GemModel::GatherGemDependencies(const QModelIndex& modelIndex)
+    {
+        QVector<QModelIndex> result;
+        const QString& gemName = modelIndex.data(RoleName).toString();
+        if (m_gemDependencyMap.contains(gemName))
+        {
+            for (const QModelIndex& dependency : m_gemDependencyMap[gemName])
+            {
+                result.push_back(dependency);
+            }
+        }
+        return result;
+    }
+
+    QVector<QModelIndex> GemModel::GatherDependentGems(const QModelIndex& modelIndex)
+    {
+        QVector<QModelIndex> result;
+        const QString& gemName = modelIndex.data(RoleName).toString();
+        if (m_gemReverseDependencyMap.contains(gemName))
+        {
+            for (const QModelIndex& dependency : m_gemReverseDependencyMap[gemName])
+            {
+                result.push_back(dependency);
+            }
+        }
+        return result;
+    }
+
+    QVector<QModelIndex> GemModel::GatherGemsToBeAdded(bool includeDependencies) const
     {
         QVector<QModelIndex> result;
         for (int row = 0; row < rowCount(); ++row)
         {
             const QModelIndex modelIndex = index(row, 0);
-            if (NeedsToBeAdded(modelIndex))
+            if (NeedsToBeAdded(modelIndex, includeDependencies))
             {
                 result.push_back(modelIndex);
             }
@@ -258,13 +410,13 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    QVector<QModelIndex> GemModel::GatherGemsToBeRemoved() const
+    QVector<QModelIndex> GemModel::GatherGemsToBeRemoved(bool includeDependencies) const
     {
         QVector<QModelIndex> result;
         for (int row = 0; row < rowCount(); ++row)
         {
             const QModelIndex modelIndex = index(row, 0);
-            if (NeedsToBeRemoved(modelIndex))
+            if (NeedsToBeRemoved(modelIndex, includeDependencies))
             {
                 result.push_back(modelIndex);
             }

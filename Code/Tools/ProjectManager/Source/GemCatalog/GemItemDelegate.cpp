@@ -260,11 +260,17 @@ namespace O3DE::ProjectManager
         const QRect buttonRect = CalcButtonRect(contentRect);
         QPoint circleCenter;
 
-        const bool isAdded = GemModel::IsAdded(modelIndex);
-        if (isAdded)
+        if (GemModel::IsAdded(modelIndex))
         {
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);
+
+            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
+        }
+        else if (GemModel::IsAddedDependency(modelIndex))
+        {
+            painter->setBrush(m_buttonImplicitlyEnabledColor);
+            painter->setPen(m_buttonImplicitlyEnabledColor);
 
             circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
         }

@@ -339,7 +339,7 @@ namespace O3DE::ProjectManager
             {
                 for (auto engine : allEngines)
                 {
-                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine));
                     if (enginePath.Compare(m_enginePath) == 0)
                     {
                         return;
@@ -672,6 +672,14 @@ namespace O3DE::ProjectManager
                     for (auto tag : data["user_tags"])
                     {
                         gemInfo.m_features.push_back(Py_To_String(tag));
+                    }
+                }
+
+                if (data.contains("dependencies"))
+                {
+                    for (auto dependency : data["dependencies"])
+                    {
+                        gemInfo.m_dependencies.push_back(Py_To_String(dependency));
                     }
                 }
 
