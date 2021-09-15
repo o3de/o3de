@@ -295,28 +295,17 @@ void EditorViewportWidget::mousePressEvent(QMouseEvent* event)
     QtViewport::mousePressEvent(event);
 }
 
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePickInternal(const QPoint& point) const
+AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MousePick mousePick;
-    mousePick.m_screenCoordinates = ScreenPointFromQPoint(point);
-    const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
-    if (ray.has_value())
+    AzToolsFramework::ViewportInteraction::MousePick mousePick;
+    mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
+    if (const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
+        ray.has_value())
     {
         mousePick.m_rayOrigin = ray.value().origin;
         mousePick.m_rayDirection = ray.value().direction;
     }
-    return mousePick;
-}
 
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point)
-{
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    PreWidgetRendering();
-    const MousePick mousePick = BuildMousePickInternal(point);
-    PostWidgetRendering();
     return mousePick;
 }
 
@@ -325,9 +314,7 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
     const AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
     const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MouseInteraction mouse;
+    AzToolsFramework::ViewportInteraction::MouseInteraction mouse;
     mouse.m_interactionId.m_cameraId = m_viewEntityId;
     mouse.m_interactionId.m_viewportId = GetViewportId();
     mouse.m_mouseButtons = buttons;
@@ -339,11 +326,11 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
 AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::BuildMouseInteraction(
     const Qt::MouseButtons buttons, const Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    using namespace AzToolsFramework::ViewportInteraction;
+    namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
     return BuildMouseInteractionInternal(
-        BuildMouseButtons(buttons),
-        BuildKeyboardModifiers(modifiers),
+        AztfVi::BuildMouseButtons(buttons),
+        AztfVi::BuildKeyboardModifiers(modifiers),
         BuildMousePick(WidgetToViewport(point)));
 }
 
@@ -682,16 +669,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndSceneSave:
         PopDisableRendering();
         break;
-
-    case eNotify_OnBeginLoad: // disables viewport input when starting to load an existing level
-    case eNotify_OnBeginCreate: // disables viewport input when starting to create a new level
-        m_freezeViewportInput = true;
-        break;
-
-    case eNotify_OnEndLoad: // enables viewport input when finished loading an existing level
-    case eNotify_OnEndCreate: // enables viewport input when finished creating a new level
-        m_freezeViewportInput = false;
-        break;
     }
 }
 
@@ -721,8 +698,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    PreWidgetRendering();
-
     RenderAll();
 
     // Draw 2D helpers.
@@ -748,8 +723,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     m_debugDisplay->SetState(prevState);
     m_debugDisplay->DepthTestOn();
-
-    PostWidgetRendering();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -769,15 +742,14 @@ void EditorViewportWidget::RenderAll()
 
     if (m_manipulatorManager != nullptr)
     {
-        using namespace AzToolsFramework::ViewportInteraction;
+        namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
             *m_debugDisplay, GetCameraState(),
             BuildMouseInteractionInternal(
-                MouseButtons(TranslateMouseButtons(QGuiApplication::mouseButtons())),
-                BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
-                BuildMousePickInternal(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), QueryKeyboardModifiers(),
+                BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
     }
 }
@@ -950,8 +922,6 @@ AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& po
 
 AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
 {
-    PreWidgetRendering();
-
     AZ::EntityId entityId;
     HitContext hitInfo;
     hitInfo.view = this;
@@ -963,8 +933,6 @@ AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& po
             entityId = entityObject->GetAssociatedEntityId();
         }
     }
-
-    PostWidgetRendering();
 
     return entityId;
 }
@@ -984,43 +952,27 @@ AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::V
     return m_renderViewport->ViewportWorldToScreen(worldPosition);
 }
 
-bool EditorViewportWidget::IsViewportInputFrozen()
-{
-    return m_freezeViewportInput;
-}
-
-void EditorViewportWidget::FreezeViewportInput(bool freeze)
-{
-    m_freezeViewportInput = freeze;
-}
-
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
 {
     return this;
 }
 
-void EditorViewportWidget::BeginWidgetContext()
-{
-    PreWidgetRendering();
-}
-
-void EditorViewportWidget::EndWidgetContext()
-{
-    PostWidgetRendering();
-}
-
 bool EditorViewportWidget::ShowingWorldSpace()
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-    return BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
+    return QueryKeyboardModifiers().Shift();
+}
+
+AzToolsFramework::ViewportInteraction::KeyboardModifiers EditorViewportWidget::QueryKeyboardModifiers()
+{
+    return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
 }
 
 void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
 
-    // Clear the cached debugdisplay pointer. we're about to delete that render viewport, and deleting the render
-    // viewport invalidates the debugdisplay.
+    // Clear the cached DebugDisplay pointer. we're about to delete that render viewport, and deleting the render
+    // viewport invalidates the DebugDisplay.
     m_debugDisplay = nullptr;
 
     // First delete any existing layout
@@ -1085,9 +1037,9 @@ void EditorViewportWidget::SetViewportId(int id)
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
 {
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
+    AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
 
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
@@ -1098,9 +1050,9 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
     m_viewportUi.DisconnectViewportUiBus();
+    AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusDisconnect();
 }
 
 namespace AZ::ViewportHelpers
