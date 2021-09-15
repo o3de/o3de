@@ -1,6 +1,3 @@
-:: Launches maya wityh a bunch of local hooks for Lumberyard
-:: ToDo: move all of this to a .json data driven boostrapping system
-
 @echo off
 
 REM 
