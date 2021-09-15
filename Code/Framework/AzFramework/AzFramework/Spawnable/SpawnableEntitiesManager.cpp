@@ -17,7 +17,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
-#include <AzFramework/Spawnable/SpawnedEntityTicketMapperInterface.h>
 
 namespace AzFramework
 {
@@ -352,7 +351,7 @@ namespace AzFramework
             for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
             {
                 GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                AZ::Interface<SpawnedEntityTicketMapperInterface>::Get()->AddSpawnedEntity((*it)->GetId(), &ticket);
+                m_spawnedEntityTicketMapper.AddSpawnedEntity((*it)->GetId(), &ticket);
             }
 
             // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -434,7 +433,7 @@ namespace AzFramework
             for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
             {
                 GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                AZ::Interface<SpawnedEntityTicketMapperInterface>::Get()->AddSpawnedEntity((*it)->GetId(), &ticket);
+                m_spawnedEntityTicketMapper.AddSpawnedEntity((*it)->GetId(), &ticket);
             }
 
             if (request.m_completionCallback)
@@ -625,18 +624,18 @@ namespace AzFramework
 
     bool SpawnableEntitiesManager::ProcessRequest(ClaimEntityCommand& request)
     {
-        Ticket& ticket = *request.m_ticket;
-        if (request.m_requestId == ticket.m_currentRequestId)
+        Ticket* ticket = request.m_ticket;
+        if (request.m_requestId == ticket->m_currentRequestId)
         {
-            AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
+            AZStd::vector<AZ::Entity*>& spawnedEntities = ticket->m_spawnedEntities;
             AZStd::vector<AZ::Entity*>::size_type entityIndex = 0;
             for (entityIndex = 0; entityIndex < spawnedEntities.size(); entityIndex++)
             {
                 if (spawnedEntities[entityIndex]->GetId() == request.m_entityId)
                 {
                     spawnedEntities.erase(spawnedEntities.begin() + entityIndex);
-                    ticket.m_spawnedEntityIndices.erase(ticket.m_spawnedEntityIndices.begin() + entityIndex);
-                    ticket.m_currentRequestId++;
+                    ticket->m_spawnedEntityIndices.erase(ticket->m_spawnedEntityIndices.begin() + entityIndex);
+                    ticket->m_currentRequestId++;
                     return true;
                 }
             }

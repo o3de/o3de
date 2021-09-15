@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/SpawnedEntityTicketMapper.h>
 
 namespace AZ
 {
@@ -167,7 +168,6 @@ namespace AzFramework
         struct ClaimEntityCommand
         {
             Ticket* m_ticket;
-            EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
             AZ::EntityId m_entityId;
         };
@@ -234,6 +234,8 @@ namespace AzFramework
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
         //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
+    private:
+        SpawnedEntityTicketMapper m_spawnedEntityTicketMapper;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);
