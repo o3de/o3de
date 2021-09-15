@@ -35,112 +35,112 @@ public:
     ~CBaseLibraryManager();
 
     //! Clear all libraries.
-    virtual void ClearAll() override;
+    void ClearAll() override;
 
     //////////////////////////////////////////////////////////////////////////
     // IDocListener implementation.
     //////////////////////////////////////////////////////////////////////////
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Library items.
     //////////////////////////////////////////////////////////////////////////
     //! Make a new item in specified library.
-    virtual IDataBaseItem* CreateItem(IDataBaseLibrary* pLibrary) override;
+    IDataBaseItem* CreateItem(IDataBaseLibrary* pLibrary) override;
     //! Delete item from library and manager.
-    virtual void DeleteItem(IDataBaseItem* pItem) override;
+    void DeleteItem(IDataBaseItem* pItem) override;
 
     //! Find Item by its GUID.
-    virtual IDataBaseItem* FindItem(REFGUID guid) const;
-    virtual IDataBaseItem* FindItemByName(const QString& fullItemName);
-    virtual IDataBaseItem* LoadItemByName(const QString& fullItemName);
+    IDataBaseItem* FindItem(REFGUID guid) const override;
+    IDataBaseItem* FindItemByName(const QString& fullItemName) override;
+    IDataBaseItem* LoadItemByName(const QString& fullItemName) override;
     virtual IDataBaseItem* FindItemByName(const char* fullItemName);
     virtual IDataBaseItem* LoadItemByName(const char* fullItemName);
 
-    virtual IDataBaseItemEnumerator* GetItemEnumerator() override;
+    IDataBaseItemEnumerator* GetItemEnumerator() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Set item currently selected.
-    virtual void SetSelectedItem(IDataBaseItem* pItem) override;
+    void SetSelectedItem(IDataBaseItem* pItem) override;
     // Get currently selected item.
-    virtual IDataBaseItem* GetSelectedItem() const override;
-    virtual IDataBaseItem* GetSelectedParentItem() const override;
+    IDataBaseItem* GetSelectedItem() const override;
+    IDataBaseItem* GetSelectedParentItem() const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Libraries.
     //////////////////////////////////////////////////////////////////////////
     //! Add Item library.
-    virtual IDataBaseLibrary* AddLibrary(const QString& library, bool bIsLevelLibrary = false, bool bIsLoading = true) override;
-    virtual void DeleteLibrary(const QString& library, bool forceDeleteLevel = false) override;
+    IDataBaseLibrary* AddLibrary(const QString& library, bool bIsLevelLibrary = false, bool bIsLoading = true) override;
+    void DeleteLibrary(const QString& library, bool forceDeleteLevel = false) override;
     //! Get number of libraries.
-    virtual int GetLibraryCount() const override { return static_cast<int>(m_libs.size()); };
+    int GetLibraryCount() const override { return static_cast<int>(m_libs.size()); };
     //! Get number of modified libraries.
-    virtual int GetModifiedLibraryCount() const override;
+    int GetModifiedLibraryCount() const override;
 
     //! Get Item library by index.
-    virtual IDataBaseLibrary* GetLibrary(int index) const override;
+    IDataBaseLibrary* GetLibrary(int index) const override;
 
     //! Get Level Item library.
-    virtual IDataBaseLibrary* GetLevelLibrary() const override;
+    IDataBaseLibrary* GetLevelLibrary() const override;
 
     //! Find Items Library by name.
-    virtual IDataBaseLibrary* FindLibrary(const QString& library) override;
+    IDataBaseLibrary* FindLibrary(const QString& library) override;
 
     //! Find Items Library's index by name.
     int FindLibraryIndex(const QString& library) override;
     
     //! Load Items library.
-    virtual IDataBaseLibrary* LoadLibrary(const QString& filename, bool bReload = false) override;
+    IDataBaseLibrary* LoadLibrary(const QString& filename, bool bReload = false) override;
 
     //! Save all modified libraries.
-    virtual void SaveAllLibs() override;
+    void SaveAllLibs() override;
 
     //! Serialize property manager.
-    virtual void Serialize(XmlNodeRef& node, bool bLoading) override;
+    void Serialize(XmlNodeRef& node, bool bLoading) override;
 
     //! Export items to game.
-    virtual void Export([[maybe_unused]] XmlNodeRef& node) override {};
+    void Export([[maybe_unused]] XmlNodeRef& node) override {};
 
     //! Returns unique name base on input name.
-    virtual QString MakeUniqueItemName(const QString& name, const QString& libName = "") override;
-    virtual QString MakeFullItemName(IDataBaseLibrary* pLibrary, const QString& group, const QString& itemName) override;
+    QString MakeUniqueItemName(const QString& name, const QString& libName = "") override;
+    QString MakeFullItemName(IDataBaseLibrary* pLibrary, const QString& group, const QString& itemName) override;
 
     //! Root node where this library will be saved.
-    virtual QString GetRootNodeName() override = 0;
+    QString GetRootNodeName() override = 0;
     //! Path to libraries in this manager.
-    virtual QString GetLibsPath() override = 0;
+    QString GetLibsPath() override = 0;
 
     //////////////////////////////////////////////////////////////////////////
     //! Validate library items for errors.
-    virtual void Validate() override;
+    void Validate() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual void GatherUsedResources(CUsedResources& resources) override;
+    void GatherUsedResources(CUsedResources& resources) override;
 
-    virtual void AddListener(IDataBaseManagerListener* pListener) override;
-    virtual void RemoveListener(IDataBaseManagerListener* pListener) override;
+    void AddListener(IDataBaseManagerListener* pListener) override;
+    void RemoveListener(IDataBaseManagerListener* pListener) override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual void RegisterItem(CBaseLibraryItem* pItem, REFGUID newGuid) override;
-    virtual void RegisterItem(CBaseLibraryItem* pItem) override;
-    virtual void UnregisterItem(CBaseLibraryItem* pItem) override;
+    void RegisterItem(CBaseLibraryItem* pItem, REFGUID newGuid) override;
+    void RegisterItem(CBaseLibraryItem* pItem) override;
+    void UnregisterItem(CBaseLibraryItem* pItem) override;
 
     // Only Used internally.
-    virtual void OnRenameItem(CBaseLibraryItem* pItem, const QString& oldName) override;
+    void OnRenameItem(CBaseLibraryItem* pItem, const QString& oldName) override;
 
     // Called by items to indicated that they have been modified.
     // Sends item changed event to listeners.
-    virtual void OnItemChanged(IDataBaseItem* pItem) override;
-    virtual void OnUpdateProperties(IDataBaseItem* pItem, bool bRefresh) override;
+    void OnItemChanged(IDataBaseItem* pItem) override;
+    void OnUpdateProperties(IDataBaseItem* pItem, bool bRefresh) override;
 
     QString MakeFilename(const QString& library);
-    virtual bool IsUniqueFilename(const QString& library) override;
+    bool IsUniqueFilename(const QString& library) override;
 
     //CONFETTI BEGIN
     // Used to change the library item order
-    virtual void ChangeLibraryOrder(IDataBaseLibrary* lib, unsigned int newLocation) override;
+    void ChangeLibraryOrder(IDataBaseLibrary* lib, unsigned int newLocation) override;
 
-    virtual bool SetLibraryName(CBaseLibrary* lib, const QString& name) override;
+    bool SetLibraryName(CBaseLibrary* lib, const QString& name) override;
 
 protected:
     void SplitFullItemName(const QString& fullItemName, QString& libraryName, QString& itemName);
@@ -199,8 +199,8 @@ public:
         m_pMap = pMap;
         m_iterator = m_pMap->begin();
     }
-    virtual void Release() { delete this; };
-    virtual IDataBaseItem* GetFirst()
+    void Release() override { delete this; };
+    IDataBaseItem* GetFirst() override
     {
         m_iterator = m_pMap->begin();
         if (m_iterator == m_pMap->end())
@@ -209,7 +209,7 @@ public:
         }
         return m_iterator->second;
     }
-    virtual IDataBaseItem* GetNext()
+    IDataBaseItem* GetNext() override
     {
         if (m_iterator != m_pMap->end())
         {

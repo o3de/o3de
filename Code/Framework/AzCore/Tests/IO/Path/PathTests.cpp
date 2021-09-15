@@ -956,18 +956,8 @@ AZ_POP_DISABLE_WARNING
 namespace Benchmark
 {
     class PathBenchmarkFixture
-        : public ::benchmark::Fixture
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::AllocatorsBenchmarkFixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
-        {
-            ::UnitTest::AllocatorsBase::SetupAllocator();
-        }
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
-        {
-            ::UnitTest::AllocatorsBase::TeardownAllocator();
-        }
     protected:
         AZStd::fixed_vector<const char*, 20> m_appendPaths{ "foo", "bar", "baz", "bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
             "boo/bar/base", "C:\\path\\to\\O3DE", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };

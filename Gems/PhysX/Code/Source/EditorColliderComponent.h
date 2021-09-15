@@ -144,7 +144,7 @@ namespace PhysX
         void OnDeselected() override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;

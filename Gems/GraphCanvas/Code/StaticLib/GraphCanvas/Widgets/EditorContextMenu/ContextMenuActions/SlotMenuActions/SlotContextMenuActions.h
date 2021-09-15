@@ -22,7 +22,10 @@ namespace GraphCanvas
         AddSlotMenuAction(QObject* parent);
         virtual ~AddSlotMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -35,7 +38,10 @@ namespace GraphCanvas
         RemoveSlotMenuAction(QObject* parent);
         virtual ~RemoveSlotMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -49,7 +55,10 @@ namespace GraphCanvas
         ClearConnectionsMenuAction(QObject* parent);
         virtual ~ClearConnectionsMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -66,7 +75,10 @@ namespace GraphCanvas
         ResetToDefaultValueMenuAction(QObject* parent);
         virtual ~ResetToDefaultValueMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -79,7 +91,10 @@ namespace GraphCanvas
         ToggleReferenceStateAction(QObject* parent);
         virtual ~ToggleReferenceStateAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -92,7 +107,10 @@ namespace GraphCanvas
         PromoteToVariableAction(QObject* parent);
         virtual ~PromoteToVariableAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 

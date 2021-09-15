@@ -39,7 +39,7 @@ namespace GraphCanvas
         ////
 
         // LayerControllerNotificationBus
-        void OnOffsetsChanged(int selectionOffset, int groupOffset);
+        void OnOffsetsChanged(int selectionOffset, int groupOffset) override;
         ////
 
     private:
