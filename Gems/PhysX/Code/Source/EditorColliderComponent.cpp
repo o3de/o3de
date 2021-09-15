@@ -375,6 +375,7 @@ namespace PhysX
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
+
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
         PhysX::MeshColliderComponentRequestsBus::Handler::BusConnect(GetEntityId());
@@ -384,6 +385,7 @@ namespace PhysX
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        EditorColliderValidationRequestBus::Handler::BusConnect(GetEntityId());
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
@@ -428,6 +430,7 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
+        EditorColliderValidationRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
@@ -794,23 +797,22 @@ namespace PhysX
             }
 
             //We check if the shapes are triangle meshes, if any mesh is a triangle mesh we activate the warning.
-            bool shapeIsTM = false;
-            size_t size = shapes.size();
+            bool shapeIsTrinagleMeshes = false;
 
-            for (size_t i = 0; i < size; i++)
+            for (const auto& shape : shapes)
             {
-                auto shape = AZStd::rtti_pointer_cast<PhysX::Shape>(shapes[i]);
-                if (shape &&
-                    shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH &&
+                auto current_shape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
+                if (current_shape &&
+                    current_shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH &&
                     entityRigidbody->GetRigidBody() &&
                     entityRigidbody->GetRigidBody()->IsKinematic() == false)
                 {
-                    shapeIsTM = true;
+                    shapeIsTrinagleMeshes = true;
                     break;
                 }
             }
 
-            if (shapeIsTM)
+            if (shapeIsTrinagleMeshes)
             {
                 m_componentWarnings.clear();
 

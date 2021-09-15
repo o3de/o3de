@@ -82,4 +82,15 @@ namespace PhysX
     };
 
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;
+
+    class EditorColliderValidationRequests : public AZ::ComponentBus
+    {
+    public:
+        // TODO
+        virtual void ValidateRigidBodyMeshGeometryType() = 0;
+    };
+
+    using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
 }
+
+

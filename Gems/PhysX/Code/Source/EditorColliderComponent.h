@@ -46,8 +46,8 @@ namespace PhysX
 {
     struct EditorProxyAssetShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(PhysX::EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysX::EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
         static void Reflect(AZ::ReflectContext* context);
         virtual ~EditorProxyAssetShapeConfig() = default;
 
@@ -106,6 +106,7 @@ namespace PhysX
         , private PhysX::ColliderShapeRequestBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
+        , private PhysX::EditorColliderValidationRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
@@ -132,8 +133,6 @@ namespace PhysX
         virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-
-        void ValidateRigidBodyMeshGeometryType(); 
 
     private:
         AZ_DISABLE_COPY_MOVE(EditorColliderComponent)
@@ -198,6 +197,9 @@ namespace PhysX
         float GetCapsuleHeight() override;
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
+
+        // PhysX::EditorColliderValidationRequestBus
+        void ValidateRigidBodyMeshGeometryType() override;
 
         AZ::Transform GetColliderLocalTransform() const;
 
