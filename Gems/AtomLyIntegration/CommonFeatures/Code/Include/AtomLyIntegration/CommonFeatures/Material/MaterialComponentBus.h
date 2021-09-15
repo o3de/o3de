@@ -117,8 +117,15 @@ namespace AZ
             : public ComponentBus
         {
         public:
-            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials) {}
+
+            //! This message is sent every time a material or property update affects UI.
             virtual void OnMaterialsEdited() {}
+
+            //! This message is sent when one or more material property changes have been applied, at most once per frame.
+            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials) {}
+
+            //! This message is sent when the component has created the material instance to be used for rendering.
+            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment) {}
         };
         using MaterialComponentNotificationBus = EBus<MaterialComponentNotifications>;
 

@@ -259,6 +259,7 @@ namespace AZ
                 for (auto& materialPair : m_configuration.m_materials)
                 {
                     materialPair.second.RebuildInstance();
+                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialPair.second);
                     QueuePropertyChanges(materialPair.first);
                 }
                 QueueMaterialUpdateNotification();
@@ -405,6 +406,7 @@ namespace AZ
             {
                 materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
                 materialAssignment.RebuildInstance();
+                MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialAssignment);
                 QueueMaterialUpdateNotification();
             }
             else
@@ -597,6 +599,7 @@ namespace AZ
             if (materialIt->second.m_propertyOverrides.empty())
             {
                 materialIt->second.RebuildInstance();
+                MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialIt->second);
                 QueueMaterialUpdateNotification();
             }
 
@@ -615,6 +618,7 @@ namespace AZ
             {
                 materialIt->second.m_propertyOverrides = {};
                 materialIt->second.RebuildInstance();
+                MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialIt->second);
                 QueueMaterialUpdateNotification();
             }
         }
@@ -628,6 +632,7 @@ namespace AZ
                 {
                     materialPair.second.m_propertyOverrides = {};
                     materialPair.second.RebuildInstance();
+                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialPair.second);
                     QueueMaterialUpdateNotification();
                     cleared = true;
                 }

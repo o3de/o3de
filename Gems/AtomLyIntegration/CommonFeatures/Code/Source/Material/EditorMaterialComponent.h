@@ -49,6 +49,9 @@ namespace AZ
             //! MaterialReceiverNotificationBus::Handler overrides...
             void OnMaterialAssignmentsChanged() override;
 
+            //! MaterialComponentNotificationBus::Handler overrides...
+            void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
+
             // Regenerates the editor component material slots based on the material and
             // LOD mapping from the model or other consumer of materials.
             // If any corresponding material assignments are found in the component
