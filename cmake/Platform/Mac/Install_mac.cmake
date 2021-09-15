@@ -79,7 +79,6 @@ function(ly_install_target_override)
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}BundlePath.setreg
             CONTENT "${configured_setreg_file}"
         )
-        ly_install_add_install_path_setreg(${ly_platform_install_target_TARGET} ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}BundlePath.setreg)
     else()
         set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>")
     endif()

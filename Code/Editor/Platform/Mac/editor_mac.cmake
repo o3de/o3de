@@ -14,3 +14,5 @@ set_target_properties(Editor PROPERTIES
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME EditorAppIcon
     ENTITLEMENT_FILE_PATH ${CMAKE_CURRENT_LIST_DIR}/EditorEntitlements.plist
 )
+
+ly_install_add_install_path_setreg(Editor ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/EditorBundlePath.setreg)
