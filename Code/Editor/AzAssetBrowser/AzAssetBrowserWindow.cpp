@@ -170,7 +170,7 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
 {
-    // LeftLayout is the parent of the tableView
+    // leftLayout is the parent of the tableView
     // rightLayout is the parent of the preview window.
     // Workaround: When docking windows this event keeps holding the old size of the widgets instead of the new one
     // but the resizeEvent holds the new size of the whole widget

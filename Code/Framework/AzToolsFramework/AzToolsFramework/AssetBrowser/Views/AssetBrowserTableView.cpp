@@ -27,9 +27,9 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        const float MIN_HEADER_RESIZE_PROPORTION = .25f;
-        const float MAX_HEADER_RESIZE_PROPORTION = .75f;
-        const float DEFAULT_HEADER_RESIZE_PROPORTION = .5f;
+        const float MinHeaderResizeProportion = .25f;
+        const float MaxHeaderResizeProportion = .75f;
+        const float DefaultHeaderResizeProportion = .5f;
 
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QTableView(parent)
@@ -155,9 +155,9 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
         {
-            setColumnWidth(0, aznumeric_cast<int>(newWidth * DEFAULT_HEADER_RESIZE_PROPORTION));
-            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MIN_HEADER_RESIZE_PROPORTION));
-            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MAX_HEADER_RESIZE_PROPORTION));
+            setColumnWidth(0, aznumeric_cast<int>(newWidth * DefaultHeaderResizeProportion));
+            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
+            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
         }
 
 
