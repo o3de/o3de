@@ -17,17 +17,18 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
+#include <AzFramework/Spawnable/SpawnedEntityTicketMapperInterface.h>
 
 namespace AzFramework
 {
     template<typename T>
-    void SpawnableEntitiesManager::QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request)
+    void SpawnableEntitiesManager::QueueRequest(Ticket* ticket, SpawnablePriority priority, T&& request)
     {
-        request.m_ticket = &GetTicketPayload<Ticket>(ticket);
+        request.m_ticket = ticket;
         Queue& queue = priority <= m_highPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
         {
             AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
-            request.m_requestId = GetTicketPayload<Ticket>(ticket).m_nextRequestId++;
+            request.m_requestId = ticket->m_nextRequestId++;
             queue.m_pendingRequest.push(AZStd::move(request));
         }
     }
@@ -56,7 +57,7 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::SpawnEntities(
@@ -72,7 +73,7 @@ namespace AzFramework
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
         queueEntry.m_referencePreviouslySpawnedEntities = optionalArgs.m_referencePreviouslySpawnedEntities;
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs)
@@ -82,7 +83,7 @@ namespace AzFramework
         DespawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ReloadSpawnable(
@@ -96,7 +97,7 @@ namespace AzFramework
         queueEntry.m_serializeContext =
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ListEntities(
@@ -108,7 +109,7 @@ namespace AzFramework
         ListEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ListIndicesAndEntities(
@@ -120,7 +121,7 @@ namespace AzFramework
         ListIndicesEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ClaimEntities(
@@ -132,7 +133,18 @@ namespace AzFramework
         ClaimEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
+    }
+
+    void SpawnableEntitiesManager::ClaimEntity(
+        AZ::EntityId entityId, void* ticket,
+        ClaimEntityOptionalArgs optionalArgs)
+    {
+        AZ_Assert(ticket == nullptr, "Ticket provided to ClaimEntity is invalid.");
+
+        ClaimEntityCommand queueEntry;
+        queueEntry.m_entityId = entityId;
+        QueueRequest(reinterpret_cast<Ticket*>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs)
@@ -143,7 +155,7 @@ namespace AzFramework
         BarrierCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
+        QueueRequest(&GetTicketPayload<Ticket>(ticket), optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     auto SpawnableEntitiesManager::ProcessQueue(CommandQueuePriority priority) -> CommandQueueStatus
@@ -340,6 +352,7 @@ namespace AzFramework
             for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
             {
                 GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                AZ::Interface<SpawnedEntityTicketMapperInterface>::Get()->AddSpawnedEntity((*it)->GetId(), &ticket);
             }
 
             // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -421,6 +434,7 @@ namespace AzFramework
             for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
             {
                 GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                AZ::Interface<SpawnedEntityTicketMapperInterface>::Get()->AddSpawnedEntity((*it)->GetId(), &ticket);
             }
 
             if (request.m_completionCallback)
@@ -448,7 +462,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     GameEntityContextRequestBus::Broadcast(
-                        &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, entity->GetId());
+                        &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
             }
 
@@ -483,7 +497,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     GameEntityContextRequestBus::Broadcast(
-                        &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, entity->GetId());
+                        &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
             }
 
@@ -609,6 +623,31 @@ namespace AzFramework
         }
     }
 
+    bool SpawnableEntitiesManager::ProcessRequest(ClaimEntityCommand& request)
+    {
+        Ticket& ticket = *request.m_ticket;
+        if (request.m_requestId == ticket.m_currentRequestId)
+        {
+            AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
+            AZStd::vector<AZ::Entity*>::size_type entityIndex = 0;
+            for (entityIndex = 0; entityIndex < spawnedEntities.size(); entityIndex++)
+            {
+                if (spawnedEntities[entityIndex]->GetId() == request.m_entityId)
+                {
+                    spawnedEntities.erase(spawnedEntities.begin() + entityIndex);
+                    ticket.m_spawnedEntityIndices.erase(ticket.m_spawnedEntityIndices.begin() + entityIndex);
+                    ticket.m_currentRequestId++;
+                    return true;
+                }
+            }
+            return false; 
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     bool SpawnableEntitiesManager::ProcessRequest(BarrierCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
@@ -637,7 +676,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     GameEntityContextRequestBus::Broadcast(
-                        &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, entity->GetId());
+                        &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
             }
             delete request.m_ticket;
