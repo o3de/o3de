@@ -484,7 +484,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
                     AZ::Vector3 outPosition;
                     const AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler sampleFilter =
-                        AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::DEFAULT;
+                        AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::EXACT;
 
                     Terrain::TerrainAreaHeightRequestBus::Event(
                         areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
@@ -497,15 +497,18 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             }
         }
         
-
-        const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-        auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
-
-        AZ_Assert(terrainFeatureProcessor, "Unable to find a TerrainFeatureProcessor.");
-        if (terrainFeatureProcessor)
+        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
         {
-            terrainFeatureProcessor->UpdateTerrainData(
-                transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height, pixels);
+            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
+            {
+                const AZ::RPI::Scene* scene = defaultScene.get();
+                if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
+                {
+                    terrainFeatureProcessor->UpdateTerrainData(
+                        transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height,
+                        pixels);
+                }
+            }
         }
     }
 
