@@ -20,7 +20,7 @@ ly_append_configurations_options(
         # Disabled warnings (please do not disable any others without first consulting sig-build)
         ###################
         -Wno-inconsistent-missing-override # unfortunately there is no warning in MSVC to detect missing overrides, 
-            # MSVC's static analyzer can, but that is a different run that most developers are not ware of. A pass
+            # MSVC's static analyzer can, but that is a different run that most developers are not aware of. A pass
             # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
 
         -Wrange-loop-analysis
