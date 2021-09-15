@@ -58,6 +58,7 @@ namespace AzManipulatorTestFramework
         void CameraStateImpl(const AzFramework::CameraState& cameraState) override;
         void MouseLButtonDownImpl() override;
         void MouseLButtonUpImpl() override;
+        void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
         void KeyboardModifierUpImpl(const KeyboardModifier& keyModifier) override;

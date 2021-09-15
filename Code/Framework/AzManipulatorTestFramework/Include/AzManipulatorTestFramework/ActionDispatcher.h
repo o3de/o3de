@@ -39,6 +39,8 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* MouseLButtonDown();
         //! Set the left mouse button up.
         DerivedDispatcherT* MouseLButtonUp();
+        //! Send a double click event.
+        DerivedDispatcherT* MouseLButtonDoubleClick();
         //! Set the keyboard modifier button down.
         DerivedDispatcherT* KeyboardModifierDown(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
         //! Set the keyboard modifier button up.
@@ -71,6 +73,7 @@ namespace AzManipulatorTestFramework
         virtual void CameraStateImpl(const AzFramework::CameraState& cameraState) = 0;
         virtual void MouseLButtonDownImpl() = 0;
         virtual void MouseLButtonUpImpl() = 0;
+        virtual void MouseLButtonDoubleClickImpl() = 0;
         virtual void MousePositionImpl(const AzFramework::ScreenPoint& position) = 0;
         virtual void KeyboardModifierDownImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
         virtual void KeyboardModifierUpImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
@@ -167,7 +170,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDown()
     {
-        Log("%s", "Mouse left button down");
+        Log("Mouse left button down");
         MouseLButtonDownImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -175,8 +178,16 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonUp()
     {
-        Log("%s", "Mouse left button up");
+        Log("Mouse left button up");
         MouseLButtonUpImpl();
+        return static_cast<DerivedDispatcherT*>(this);
+    }
+
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDoubleClick()
+    {
+        Log("Mouse left button double click");
+        MouseLButtonDoubleClickImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
 
