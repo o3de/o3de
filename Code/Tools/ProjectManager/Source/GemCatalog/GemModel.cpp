@@ -158,14 +158,14 @@ namespace O3DE::ProjectManager
         return {};
     }
 
-    void GemModel::FindGemNamesByNameStrings(QStringList& inOutGemNames)
+    void GemModel::FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames)
     {
-        for (QString& dependingGemString : inOutGemNames)
+        for (QString& name : inOutGemNames)
         {
-            QModelIndex modelIndex = FindIndexByNameString(dependingGemString);
+            QModelIndex modelIndex = FindIndexByNameString(name);
             if (modelIndex.isValid())
             {
-                dependingGemString = GetDisplayName(modelIndex);
+                name = GetDisplayName(modelIndex);
             }
         }
     }
@@ -178,7 +178,7 @@ namespace O3DE::ProjectManager
     void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems)
     {
         QStringList dependencies = GetDependingGems(modelIndex);
-        for (QString& dependency : dependencies)
+        for (const QString& dependency : dependencies)
         {
             QModelIndex dependencyIndex = FindIndexByNameString(dependency);
             if (!inOutGems.contains(dependencyIndex))
@@ -197,7 +197,7 @@ namespace O3DE::ProjectManager
             return {};
         }
 
-        FindGemNamesByNameStrings(result);
+        FindGemDisplayNamesByNameStrings(result);
         return result;
     }
 

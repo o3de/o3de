@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
-        void FindGemNamesByNameStrings(QStringList& inOutGemNames);
+        void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
         QStringList GetDependingGems(const QModelIndex& modelIndex);
         QStringList GetDependingGemNames(const QModelIndex& modelIndex);
