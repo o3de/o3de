@@ -303,4 +303,68 @@ namespace Physics
             m_cachedNativeMesh = nullptr;
         }
     }
+
+    void HeightfieldShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<HeightfieldShapeConfiguration>>();
+
+            serializeContext->Class<HeightfieldShapeConfiguration, ShapeConfiguration>()
+                ->Version(1);
+        }
+    }
+
+    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(AZ::EntityId entityId)
+        : m_heightProvider(entityId)
+    {
+    }
+
+    HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
+    {
+        if (m_cachedNativeHeightfield)
+        {
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
+
+            m_cachedNativeHeightfield = nullptr;
+        }
+    }
+
+    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
+        : ShapeConfiguration(other)
+        , m_heightProvider(other.m_heightProvider)
+        , m_cachedNativeHeightfield(nullptr)
+    {
+    }
+
+    HeightfieldShapeConfiguration& HeightfieldShapeConfiguration::operator=(const HeightfieldShapeConfiguration& other)
+    {
+        ShapeConfiguration::operator=(other);
+
+        // The EntityID is all we need to get the heightfield information.
+        m_heightProvider = other.m_heightProvider;
+
+        // Prevent raw pointer from being copied
+        m_cachedNativeHeightfield = nullptr;
+
+        return *this;
+    }
+
+    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield) const
+    {
+        if (m_cachedNativeHeightfield)
+        {
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeMeshObject, m_cachedNativeHeightfield);
+        }
+
+        m_cachedNativeHeightfield = cachedNativeHeightfield;
+    }
+
+
 }

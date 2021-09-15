@@ -241,7 +241,10 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RPI);
             m_drawListContext.FinalizeLists();
-            SortFinalizedDrawLists();
+            if (m_passesByDrawList)
+            {
+                SortFinalizedDrawLists();
+            }
         }
 
         void View::SortFinalizedDrawLists()

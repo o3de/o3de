@@ -66,7 +66,7 @@ namespace AZ
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS instances buffer");
             
                 MemoryView& tlasInstancesMemoryView = static_cast<Buffer*>(buffers.m_tlasInstancesBuffer.get())->GetMemoryView();
-                tlasInstancesMemoryView.SetName("TLAS Instance");
+                tlasInstancesMemoryView.SetName(L"TLAS Instance");
             
                 RHI::BufferMapResponse mapResponse;
                 resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::BufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
@@ -130,7 +130,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS scratch buffer");
             
             MemoryView& scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetMemoryView();
-            scratchMemoryView.SetName("TLAS Scratch");
+            scratchMemoryView.SetName(L"TLAS Scratch");
             
             // create TLAS buffer
             buffers.m_tlasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -145,7 +145,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS buffer");
             
             MemoryView& tlasMemoryView = static_cast<Buffer*>(buffers.m_tlasBuffer.get())->GetMemoryView();
-            tlasMemoryView.SetName("TLAS");
+            tlasMemoryView.SetName(L"TLAS");
 #endif
             return RHI::ResultCode::Success;
         }

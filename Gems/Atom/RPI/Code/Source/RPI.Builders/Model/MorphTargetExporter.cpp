@@ -70,11 +70,9 @@ namespace AZ::RPI
     {
         const Containers::SceneGraph& sceneGraph = scene.GetGraph();
 
-#if defined(AZ_ENABLE_TRACING)
         const auto baseMeshIt = AZStd::find(sceneGraph.GetContentStorage().cbegin(), sceneGraph.GetContentStorage().cend(), sourceMesh.m_meshData);
         const Containers::SceneGraph::NodeIndex baseMeshIndex = sceneGraph.ConvertToNodeIndex(baseMeshIt);
         const AZStd::string_view baseMeshName{sceneGraph.GetNodeName(baseMeshIndex).GetName(), sceneGraph.GetNodeName(baseMeshIndex).GetNameLength()};
-#endif
 
         // Get the blend shapes for the given mesh
         AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> blendShapeInfos = GetBlendShapeInfos(scene, sourceMesh.m_meshData.get());
@@ -90,10 +88,8 @@ namespace AZ::RPI
                 AZ_Assert(blendShapeData, "Node is expected to be a blend shape.");
                 if (blendShapeData)
                 {
-#if defined(AZ_ENABLE_TRACING)
                     const Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
                     const AZStd::string_view sourceMeshName{sceneGraph.GetNodeName(morphMeshParentIndex).GetName(), sceneGraph.GetNodeName(morphMeshParentIndex).GetNameLength()};
-#endif
 
                     AZ_Assert(AZ::StringFunc::Equal(baseMeshName, sourceMeshName, /*bCaseSensitive=*/true),
                         "Scene graph mesh node (%.*s) has a different name than the product mesh (%.*s).",

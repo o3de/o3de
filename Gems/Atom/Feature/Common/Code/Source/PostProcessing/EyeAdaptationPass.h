@@ -52,6 +52,7 @@ namespace AZ
             struct ExposureCalculationData
             {
                 float   m_exposureValue = 1.0f;
+                float   m_setValueTime = 0;
             };
 
             void BuildInternal() override;

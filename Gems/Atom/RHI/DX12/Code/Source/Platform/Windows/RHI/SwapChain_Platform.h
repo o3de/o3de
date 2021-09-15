@@ -5,14 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#ifndef AZ_COLLECTING_PARTIAL_SRGS
-#error Do not include this file directly. Include the main .srgi file instead.
-#endif
-
-partial ShaderResourceGroup SceneSrg
-{
-    float m_time;
-    float m_deltaTime;
-}
-
+#include <RHI/SwapChain_Windows.h>

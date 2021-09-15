@@ -240,11 +240,6 @@ namespace AZ
         {
             IO::SizeType length = stream.GetLength();
 
-            if (length > AZ::Utils::DefaultMaxFileSize)
-            {
-                return AZ::Failure(AZStd::string{ "Data is too large." });
-            }
-
             AZStd::vector<char> memoryBuffer;
             memoryBuffer.resize_no_construct(static_cast<AZStd::vector<char>::size_type>(static_cast<AZStd::vector<char>::size_type>(length) + 1));
 
@@ -259,12 +254,12 @@ namespace AZ
             return ReadJsonString(AZStd::string_view{memoryBuffer.data(), memoryBuffer.size()});
         }
 
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(AZStd::string_view filePath)
+        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(AZStd::string_view filePath, size_t maxFileSize)
         {
             // Read into memory first and then parse the json, rather than passing a file stream to rapidjson.
             // This should avoid creating a large number of micro-reads from the file.
 
-            auto readResult = AZ::Utils::ReadFile<AZStd::string>(filePath);
+            auto readResult = AZ::Utils::ReadFile<AZStd::string>(filePath, maxFileSize);
             if(!readResult.IsSuccess())
             {
                 return AZ::Failure(readResult.GetError());
@@ -303,6 +298,55 @@ namespace AZ
             if (dataItr != jsonDocument.MemberEnd() && !dataItr->value.IsObject())
             {
                 return AZ::Failure(AZStd::string::format("ClassData should be an object"));
+            }
+
+            return AZ::Success();
+        }
+
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& classId, AZStd::string_view stream,
+            const JsonDeserializerSettings* settings)
+        {
+            JsonDeserializerSettings loadSettings;
+            AZStd::string deserializeErrors;
+            auto prepare = PrepareDeserializerSettings(settings, loadSettings, deserializeErrors);
+            if (!prepare.IsSuccess())
+            {
+                return AZ::Failure(prepare.GetError());
+            }
+
+            auto parseResult = ReadJsonString(stream);
+            if (!parseResult.IsSuccess())
+            {
+                return AZ::Failure(parseResult.GetError());
+            }
+
+            const rapidjson::Document& jsonDocument = parseResult.GetValue();
+
+            auto validateResult = ValidateJsonClassHeader(jsonDocument);
+            if (!validateResult.IsSuccess())
+            {
+                return AZ::Failure(validateResult.GetError());
+            }
+
+            const char* className = jsonDocument.FindMember(ClassNameTag)->value.GetString();
+
+            // validate class name 
+            auto classData = loadSettings.m_serializeContext->FindClassData(classId);
+            if (!classData)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class from Id %s", classId.ToString<AZStd::string>().c_str()));
+            }
+
+            if (azstricmp(classData->m_name, className) != 0)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class %s from class %s data", classData->m_name, className));
+            }
+
+            JsonSerializationResult::ResultCode result = JsonSerialization::Load(objectToLoad, classId, jsonDocument.FindMember(ClassDataTag)->value, loadSettings);
+
+            if (!WasLoadSuccess(result.GetOutcome()) || !deserializeErrors.empty())
+            {
+                return AZ::Failure(deserializeErrors);
             }
 
             return AZ::Success();

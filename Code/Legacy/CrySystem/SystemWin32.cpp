@@ -273,11 +273,7 @@ static const char* GetLastSystemErrorMessage()
 
         return szBuffer;
     }
-#else
-    return 0;
-
 #endif //WIN32
-
     return 0;
 }
 

@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
         bool DeleteProjectFiles(const QString& path, bool force = false);
         bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister = false);
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
+        bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(QWidget* parent = nullptr);
         AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();

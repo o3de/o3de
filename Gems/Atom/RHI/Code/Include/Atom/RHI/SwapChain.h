@@ -83,11 +83,11 @@ namespace AZ
 
 #if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
             // On Linux platforms that uses XCB, a resize may occur in the swap chain but the command queue may still
-            // reference the original surface. This flag is a temporary fix to make sure that all the swap chains
-            // have finished their resize events before presenting the command queue.
+            // reference the original surface. This flag is a temporary fix to make sure the swap chain is ready to present
+            // We need to remove this work around with
 
             // [GFX TODO][GHI - 2678]
-            AZStd::atomic_bool m_resized{ false };
+            AZStd::atomic_bool m_readyToPresent { false };
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
         protected:
