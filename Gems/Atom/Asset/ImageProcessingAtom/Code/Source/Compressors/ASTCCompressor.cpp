@@ -15,7 +15,7 @@
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Compressors/ASTCCompressor.h>
 #include <Processing/ImageFlags.h>
-#include <Processing/ImageToprocess.h>
+#include <Processing/ImageToProcess.h>
 #include <Processing/PixelFormatInfo.h>
 
 
