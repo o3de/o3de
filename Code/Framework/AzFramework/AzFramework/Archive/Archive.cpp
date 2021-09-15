@@ -397,7 +397,7 @@ namespace AZ::IO
     void Archive::LogFileAccessCallStack([[maybe_unused]] AZStd::string_view name, [[maybe_unused]] AZStd::string_view nameFull, [[maybe_unused]] const char* mode)
     {
         // Print call stack for each find.
-        AZ_TracePrintf("Archive", "LogFileAccessCallStack() - name=%.*s; nameFull=%.*s; mode=%s\n", aznumeric_cast<int>(name.size()), name.data(), aznumeric_cast<int>(nameFull.size()), nameFull.data(), mode);
+        AZ_TracePrintf("Archive", "LogFileAccessCallStack() - name=%.*s; nameFull=%.*s; mode=%s\n", AZ_STRING_ARG(name), AZ_STRING_ARG(nameFull), mode);
         AZ::Debug::Trace::PrintCallstack("Archive", 32);
     }
 
@@ -1153,7 +1153,7 @@ namespace AZ::IO
             return false; // couldn't open the archive
         }
 
-        AZ_TracePrintf("Archive", "Opening archive file %.*s\n", aznumeric_cast<int>(szFullPath.size()), szFullPath.data());
+        AZ_TracePrintf("Archive", "Opening archive file %.*s\n", AZ_STRING_ARG(szFullPath));
         desc.pZip = static_cast<NestedArchive*>(desc.pArchive.get())->GetCache();
 
         AZStd::unique_lock lock(m_csZips);
@@ -1624,7 +1624,10 @@ namespace AZ::IO
         if (!pakOnDisk && (nFactoryFlags & ZipDir::CacheFactory::FLAGS_READ_ONLY))
         {
             // Archive file not found.
-            AZ_TracePrintf("Archive", "Archive file %s does not exist\n", szFullPath->c_str());
+            if (az_archive_verbosity)
+            {
+                AZ_TracePrintf("Archive", "Archive file %s does not exist\n", szFullPath->c_str());
+            }
             return nullptr;
         }
 
@@ -1651,7 +1654,7 @@ namespace AZ::IO
         AZStd::unique_lock lock(m_archiveMutex);
         if (pArchive)
         {
-            AZ_TracePrintf("Archive", "Closing Archive file: %s", pArchive->GetFullPath());
+            AZ_TracePrintf("Archive", "Closing Archive file: %.*s", AZ_STRING_ARG(pArchive->GetFullPath().Native()));
         }
         ArchiveArray::iterator it;
         if (m_arrArchives.size() < 16)
