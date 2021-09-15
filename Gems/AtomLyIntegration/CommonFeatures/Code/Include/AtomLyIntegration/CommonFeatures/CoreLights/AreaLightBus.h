@@ -127,25 +127,12 @@ namespace AZ
             //! 0 disables softening.
             virtual void SetSofteningBoundaryWidthAngle(float degrees) = 0;
 
-            //! Gets the sample count to predict boundary of shadow.
-            virtual uint32_t GetPredictionSampleCount() const = 0;
-            
-            //! Sets the sample count to predict boundary of shadow. Maximum 16, and should also be 
-            //! less than the filtering sample count.
-            virtual void SetPredictionSampleCount(uint32_t count) = 0;
-
             //! Gets the sample count for filtering of the shadow boundary.
             virtual uint32_t GetFilteringSampleCount() const = 0;
 
             //! Sets the sample count for filtering of the shadow boundary. Maximum 64.
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
             
-            //! Gets the type of Pcf (percentage-closer filtering) to use.
-            virtual PcfMethod GetPcfMethod() const = 0;
-
-            //! Sets the type of Pcf (percentage-closer filtering) to use.
-            virtual void SetPcfMethod(PcfMethod method) = 0;
-
             //! Gets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual float GetEsmExponent() const = 0;
 

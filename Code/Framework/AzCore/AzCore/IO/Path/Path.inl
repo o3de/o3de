@@ -224,15 +224,15 @@ namespace AZ::IO
     // compare
     constexpr int PathView::Compare(const PathView& other) const noexcept
     {
-        return compare_string_view(other.m_path);
+        return ComparePathView(other);
     }
     constexpr int PathView::Compare(AZStd::string_view pathView) const noexcept
     {
-        return compare_string_view(pathView);
+        return ComparePathView(PathView(pathView, m_preferred_separator));
     }
     constexpr int PathView::Compare(const value_type* path) const noexcept
     {
-        return compare_string_view(path);
+        return ComparePathView(PathView(path, m_preferred_separator));
     }
 
     constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathString() const noexcept
@@ -398,10 +398,10 @@ namespace AZ::IO
         return true;
     }
 
-    constexpr int PathView::compare_string_view(AZStd::string_view pathView) const
+    constexpr int PathView::ComparePathView(const PathView& other) const
     {
         auto lhsPathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
-        auto rhsPathParser = parser::PathParser::CreateBegin(pathView, m_preferred_separator);
+        auto rhsPathParser = parser::PathParser::CreateBegin(other.m_path, other.m_preferred_separator);
 
         if (int res = CompareRootName(&lhsPathParser, &rhsPathParser); res != 0)
         {
@@ -476,6 +476,8 @@ namespace AZ::IO
     template <typename PathResultType>
     constexpr void PathView::MakeRelativeTo(PathResultType& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base)
     {
+        const bool exactCaseCompare = path.m_preferred_separator == PosixPathSeparator
+            || base.m_preferred_separator == PosixPathSeparator;
         {
             // perform root-name/root-directory mismatch checks
             auto pathParser = parser::PathParser::CreateBegin(path.m_path, path.m_preferred_separator);
@@ -487,7 +489,7 @@ namespace AZ::IO
             };
             if (pathParser.InRootName() && pathParserBase.InRootName())
             {
-                if (int res = Internal::ComparePathSegment(*pathParser, *pathParserBase, pathParser.m_preferred_separator);
+                if (int res = Internal::ComparePathSegment(*pathParser, *pathParserBase, exactCaseCompare);
                     res != 0)
                 {
                     pathResult.m_path = AZStd::string_view{};
@@ -519,7 +521,7 @@ namespace AZ::IO
         auto pathParser = parser::PathParser::CreateBegin(path.m_path, path.m_preferred_separator);
         auto pathParserBase = parser::PathParser::CreateBegin(base.m_path, base.m_preferred_separator);
         while (pathParser && pathParserBase && pathParser.m_parser_state == pathParserBase.m_parser_state &&
-            Internal::ComparePathSegment(*pathParser, *pathParserBase, pathParser.m_preferred_separator) == 0)
+            Internal::ComparePathSegment(*pathParser, *pathParserBase, exactCaseCompare) == 0)
         {
             ++pathParser;
             ++pathParserBase;
@@ -1080,25 +1082,25 @@ namespace AZ::IO
     template <typename StringType>
     constexpr int BasicPath<StringType>::Compare(const PathView& other) const noexcept
     {
-        return static_cast<PathView>(*this).compare_string_view(other.m_path);
+        return static_cast<PathView>(*this).ComparePathView(other);
     }
 
     template <typename StringType>
     constexpr int BasicPath<StringType>::Compare(const string_type& pathString) const
     {
-        return static_cast<PathView>(*this).compare_string_view(pathString);
+        return static_cast<PathView>(*this).ComparePathView(PathView(pathString, m_preferred_separator));
     }
 
     template <typename StringType>
     constexpr int BasicPath<StringType>::Compare(AZStd::string_view pathView) const noexcept
     {
-        return static_cast<PathView>(*this).compare_string_view(pathView);
+        return static_cast<PathView>(*this).ComparePathView(pathView);
     }
 
     template <typename StringType>
     constexpr int BasicPath<StringType>::Compare(const value_type* pathString) const noexcept
     {
-        return static_cast<PathView>(*this).compare_string_view(pathString);
+        return static_cast<PathView>(*this).ComparePathView(pathString);
     }
 
     // decomposition
@@ -1330,10 +1332,12 @@ namespace AZ::IO
         // PathView::LexicallyRelative is not being used as it returns a FixedMaxPath
         // which has a limitation that it requires the relative path to fit within
         // an AZ::IO::MaxPathLength buffer
-        auto ComparePathPart = [pathSeparator = m_preferred_separator](
+        const bool exactCaseCompare = m_preferred_separator == PosixPathSeparator
+            || base.m_preferred_separator == PosixPathSeparator;
+        auto ComparePathPart = [exactCaseCompare](
             const PathIterable::PartKindPair& left, const PathIterable::PartKindPair& right) -> bool
         {
-            return Internal::ComparePathSegment(left.first, right.first, pathSeparator) == 0;
+            return Internal::ComparePathSegment(left.first, right.first, exactCaseCompare) == 0;
         };
 
         const PathIterable thisPathParts = GetNormalPathParts(*this);
@@ -1471,37 +1475,16 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        /// Path is using FNV-1a algorithm 64 bit version.
-        static size_t hash_path(AZStd::string_view pathSegment, const char pathSeparator)
-        {
-            size_t hash = 14695981039346656037ULL;
-            constexpr size_t fnvPrime = 1099511628211ULL;
-
-            for (const char first : pathSegment)
-            {
-                hash ^= static_cast<size_t>((pathSeparator == AZ::IO::PosixPathSeparator)
-                    ? first : tolower(first));
-                hash *= fnvPrime;
-            }
-            return hash;
-        }
-
         size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
-            size_t hash_value = 0;
-            while (pathParser)
-            {
-                AZStd::hash_combine(hash_value, hash_path(*pathParser, pathToHash.m_preferred_separator));
-                ++pathParser;
-            }
-            return hash_value;
+            return AZ::IO::parser::HashPath(pathParser);
         }
     };
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        const size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }
