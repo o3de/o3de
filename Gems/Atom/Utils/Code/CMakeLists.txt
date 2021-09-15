@@ -22,6 +22,7 @@ ly_add_target(
             Gem::Atom_RHI.Public
         PUBLIC
             Gem::Atom_RHI.Reflect
+            3rdParty::zlib
             3rdParty::libpng
 )
 
