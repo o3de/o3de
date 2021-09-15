@@ -49,19 +49,35 @@ namespace UnitTest
         it = AZStd::find(fileList.begin(), fileList.end(), "valid_file3.azsli");
         EXPECT_TRUE(it != fileList.end());
 
-        it = AZStd::find(fileList.begin(), fileList.end(), "a\\dire-ctory\\invalid-file4.azsli");
-        EXPECT_TRUE(it == fileList.end());
-
-        // Remark: Originally this path is using '/' for directory separator, but AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser
+        // Remark: From now on We must normalize because internally AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser
         // always returns normalized paths.
-        it = AZStd::find(fileList.begin(), fileList.end(), "a\\directory\\valid-file5.azsli");
-        EXPECT_TRUE(it != fileList.end());
+        {
+            AZStd::string fileName("a\\dire-ctory\\invalid-file4.azsli");
+            AzFramework::StringFunc::Path::Normalize(fileName);
+            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
+            EXPECT_TRUE(it == fileList.end());
+        }
 
-        it = AZStd::find(fileList.begin(), fileList.end(), "a\\dire-ctory\\valid-file6.azsli");
-        EXPECT_TRUE(it != fileList.end());
+        {
+            AZStd::string fileName("a\\directory\\valid-file5.azsli");
+            AzFramework::StringFunc::Path::Normalize(fileName);
+            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
+            EXPECT_TRUE(it != fileList.end());
+        }
 
-        it = AZStd::find(fileList.begin(), fileList.end(), "a\\dire-ctory\\invalid-file7.azsli");
-        EXPECT_TRUE(it == fileList.end());
+        {
+            AZStd::string fileName("a\\dire-ctory\\valid-file6.azsli");
+            AzFramework::StringFunc::Path::Normalize(fileName);
+            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
+            EXPECT_TRUE(it != fileList.end());
+        }
+
+        {
+            AZStd::string fileName("a\\dire-ctory\\invalid-file7.azsli");
+            AzFramework::StringFunc::Path::Normalize(fileName);
+            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
+            EXPECT_TRUE(it == fileList.end());
+        }
     }
 
 } //namespace UnitTest
