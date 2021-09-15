@@ -30,7 +30,7 @@ namespace ScriptCanvasEditor
             , m_assets(assets)
             , m_onComplete(onComplete)
         {
-            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeAllBegin);
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeBegin, modification, m_assets);
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
@@ -58,52 +58,64 @@ namespace ScriptCanvasEditor
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "SerializeContext is required to enumerate dependent assets in the ScriptCanvas file");
 
+            bool anyFailures = false;
             auto asset = LoadAsset();
-            if (!asset
-            || !asset.GetAs<ScriptCanvasAsset>()
-            || !asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()
-            || !asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData())
-            {
-                VE_LOG("Modifier: Failed to load asset %s for modification, even though it scanned properly");
-                return;
-            }
 
-            auto graphData = asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData();
-
-            auto dependencyGrabber = [this]
-                ( void* instancePointer
-                , const AZ::SerializeContext::ClassData* classData
-                , [[maybe_unused]] const AZ::SerializeContext::ClassElement* classElement)
+            if (asset
+            && asset.GetAs<ScriptCanvasAsset>()
+            && asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()
+            && asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData())
             {
-                auto azTypeId = classData->m_azRtti->GetTypeId();
-                if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
+                auto graphData = asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData();
+
+                auto dependencyGrabber = [this]
+                    ( void* instancePointer
+                    , const AZ::SerializeContext::ClassData* classData
+                    , [[maybe_unused]] const AZ::SerializeContext::ClassElement* classElement)
                 {
-                    const auto* subgraphAsset = reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
-                    if (subgraphAsset->GetId().IsValid())
+                    if (auto azTypeId = classData->m_azRtti->GetTypeId();
+                        azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
                     {
-                        if (auto iter = m_assetInfoIndexById.find(subgraphAsset->GetId().m_guid); iter != m_assetInfoIndexById.end())
+                        const auto* subgraphAsset =
+                            reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
+                        if (subgraphAsset->GetId().IsValid())
                         {
-                            GetOrCreateDependencyIndexSet().insert(iter->second);
-                        }
-                        else
-                        {
-                            VE_LOG("Modifier: Dependency found that was not picked up by the scanner: %s"
-                                , subgraphAsset->GetId().ToString<AZStd::string>().c_str());
+                            if (auto iter = m_assetInfoIndexById.find(subgraphAsset->GetId().m_guid); iter != m_assetInfoIndexById.end())
+                            {
+                                // insert the index of the dependency into the set that belongs to this asset
+                                GetOrCreateDependencyIndexSet().insert(iter->second);
+                            }
                         }
                     }
-                }
-                // always continue, make note of the script canvas dependencies
-                return true;
-            };
+                    // always continue, make note of the script canvas dependencies
+                    return true;
+                };
 
-            AZ_Verify(serializeContext->EnumerateInstanceConst
-                ( graphData
-                , azrtti_typeid<ScriptCanvas::GraphData>()
-                , dependencyGrabber
-                , {}
-                , AZ::SerializeContext::ENUM_ACCESS_FOR_READ
-                , nullptr
-                , nullptr), "Failed to gather dependencies from graph data");
+                if (!serializeContext->EnumerateInstanceConst
+                    ( graphData
+                    , azrtti_typeid<ScriptCanvas::GraphData>()
+                    , dependencyGrabber
+                    , {}
+                    , AZ::SerializeContext::ENUM_ACCESS_FOR_READ
+                    , nullptr
+                    , nullptr))
+                {
+                    anyFailures = true;
+                    VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
+                        , GetCurrentAsset().m_relativePath.c_str())
+                }
+            }
+            else
+            {
+                anyFailures = true;
+                VE_LOG("Modifier: ERROR - Failed to load asset %s for modification, even though it scanned properly"
+                    , GetCurrentAsset().m_relativePath.c_str());
+            }
+            
+            ModelNotificationsBus::Broadcast
+                ( &ModelNotificationsTraits::OnUpgradeDependenciesGathered
+                , GetCurrentAsset()
+                , anyFailures ? Result::Failure : Result::Success);
 
             // Flush asset database events to ensure no asset references are held by closures queued on Ebuses.
             AZ::Data::AssetManager::Instance().DispatchEvents();
@@ -154,14 +166,6 @@ namespace ScriptCanvasEditor
             {
                 Visit(index);
             }
-            /*
-            L ← Empty list that will contain the sorted nodes
-            (m_dependencyOrderedAssetIndicies)
-
-               while exists nodes without a permanent mark do
-                   select an unmarked node n
-                   visit(n)
-            */
         }
 
         void Modifier::Sorter::Visit(size_t index)
@@ -210,7 +214,7 @@ namespace ScriptCanvasEditor
             {
                 if (m_config.successfulDependencyUpgradeRequired)
                 {
-                    ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeAllDependencySortBegin);
+                    ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeDependencySortBegin, m_config, m_assets);
                     m_assetInfoIndexById.reserve(m_assets.size());
 
                     for (size_t index = 0; index != m_assets.size(); ++index)
@@ -226,16 +230,24 @@ namespace ScriptCanvasEditor
                     {
                         m_dependencyOrderedAssetIndicies.push_back(index);
                     }
+
+                    // go straight into ModifyinGraphs
+                    m_assetIndex = m_assets.size();
                 }
             }
 
             if (m_assetIndex == m_assets.size())
             {
-                SortGraphsByDependencies();
-                ModelNotificationsBus::Broadcast
-                    ( &ModelNotificationsTraits::OnUpgradeAllDependencySortEnd
-                    , m_assets
-                    , m_dependencyOrderedAssetIndicies);
+                if (m_config.successfulDependencyUpgradeRequired)
+                {
+                    SortGraphsByDependencies();
+                    ModelNotificationsBus::Broadcast
+                        ( &ModelNotificationsTraits::OnUpgradeDependencySortEnd
+                        , m_config
+                        , m_assets
+                        , m_dependencyOrderedAssetIndicies);
+                }
+
                 m_assetIndex = 0;
                 m_state = State::ModifyingGraphs;
             }
@@ -245,5 +257,11 @@ namespace ScriptCanvasEditor
                 ++m_assetIndex;
             }
         }
+
+        void Modifier::TickUpdateGraph()
+        {
+
+        }
+
     }
 }

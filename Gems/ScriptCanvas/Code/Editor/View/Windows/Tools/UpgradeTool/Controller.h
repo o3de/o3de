@@ -58,13 +58,13 @@ namespace ScriptCanvasEditor
             static constexpr int ColumnStatus = 3;
 
             AZStd::unique_ptr<Ui::Controller> m_view;
-            size_t m_currentAssetRowIndex = 0;
+            int m_handledAssetCount = 0;
 
             void AddLogEntries();
 
             void OnCloseButtonPress();
             void OnScanButtonPress();
-            void OnUpgradeAllButtonPress();
+            void OnUpgradeButtonPress();
 
             void OnScanBegin(size_t assetCount) override;
             void OnScanComplete(const ScanResult& result) override;
@@ -74,13 +74,25 @@ namespace ScriptCanvasEditor
             enum class Filtered { No, Yes };
             void OnScannedGraph(const AZ::Data::AssetInfo& info, Filtered filtered);
             void OnScannedGraphResult(const AZ::Data::AssetInfo& info);
-                        
-            void OnUpgradeAllBegin() override;
-            void OnUpgradeAllComplete() override;
-            void OnUpgradeAllDependencySortBegin() override;
-            void OnUpgradeAllDependencySortEnd
-                ( const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets
+
+            // for single operation UI updates, just check the assets size, or note it on the request
+            void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<AZ::Data::AssetInfo>& assets) override;
+            void OnUpgradeComplete() override;
+            void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) override;
+            void OnUpgradeDependencySortBegin
+                ( const ModifyConfiguration& config
+                , const AZStd::vector<AZ::Data::AssetInfo>& assets) override;
+            void OnUpgradeDependencySortEnd
+                ( const ModifyConfiguration& config
+                , const AZStd::vector<AZ::Data::AssetInfo>& assets
                 , const AZStd::vector<size_t>& sortedOrder) override;
+
+            void SetSpinnerIsBusy(bool isBusy);
+            void SetRowBusy(int index);
+            void SetRowFailed(int index, AZStd::string_view message);
+            void SetRowPending(int index);
+            void SetRowsBusy();
+            void SetRowSucceeded(int index);
         };
     }
 }

@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
             m_view->textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
             connect(m_view->scanButton, &QPushButton::pressed, this, &Controller::OnScanButtonPress);
             connect(m_view->closeButton, &QPushButton::pressed, this, &Controller::OnCloseButtonPress);
-            connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnUpgradeAllButtonPress);
+            connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnUpgradeButtonPress);
             m_view->progressBar->setValue(0);
             m_view->progressBar->setVisible(false);
 
@@ -130,7 +130,7 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScanBegin(size_t assetCount)
         {
-            m_currentAssetRowIndex = 0;
+            m_handledAssetCount = 0;
             m_view->tableWidget->setRowCount(0);
             m_view->progressBar->setVisible(true);
             m_view->progressBar->setRange(0, aznumeric_cast<int>(assetCount));
@@ -138,6 +138,10 @@ namespace ScriptCanvasEditor
             m_view->scanButton->setEnabled(false);
             m_view->upgradeAllButton->setEnabled(false);
             m_view->onlyShowOutdated->setEnabled(false);
+
+            QString spinnerText = QStringLiteral("Scan in progress - gathering graphs that can be updated");
+            m_view->spinner->SetText(spinnerText);
+            SetSpinnerIsBusy(true);
         }
 
         void Controller::OnScanComplete(const ScanResult& result)
@@ -161,6 +165,7 @@ namespace ScriptCanvasEditor
                 , result.m_filteredAssets.size()));
 
             m_view->spinner->SetText(spinnerText);
+            SetSpinnerIsBusy(false);
             m_view->progressBar->setVisible(false);
 
             if (!result.m_unfiltered.empty())
@@ -176,17 +181,17 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScannedGraph(const AZ::Data::AssetInfo& assetInfo, Filtered filtered)
         {
-            m_view->tableWidget->insertRow(static_cast<int>(m_currentAssetRowIndex));
+            m_view->tableWidget->insertRow(m_handledAssetCount);
             QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
-            m_view->tableWidget->setItem(static_cast<int>(m_currentAssetRowIndex), static_cast<int>(ColumnAsset), rowName);
+            m_view->tableWidget->setItem(m_handledAssetCount, static_cast<int>(ColumnAsset), rowName);
+            SetRowSucceeded(m_handledAssetCount);
 
             if (filtered == Filtered::No)
             {
                 QPushButton* rowGoToButton = new QPushButton(this);
                 rowGoToButton->setText("Upgrade");
                 rowGoToButton->setEnabled(false);
-                AzQtComponents::StyledBusyLabel* spinner = new AzQtComponents::StyledBusyLabel(this);
-                spinner->SetBusyIconSize(16);
+                SetRowBusy(m_handledAssetCount);
 // \\ todo restore this
 //                 connect(rowGoToButton, &QPushButton::clicked, [this, rowGoToButton, assetInfo] {
 // 
@@ -200,8 +205,7 @@ namespace ScriptCanvasEditor
 // 
 //                 });
 
-                m_view->tableWidget->setCellWidget(static_cast<int>(m_currentAssetRowIndex), static_cast<int>(ColumnAction), rowGoToButton);
-                m_view->tableWidget->setCellWidget(static_cast<int>(m_currentAssetRowIndex), static_cast<int>(ColumnStatus), spinner);
+                m_view->tableWidget->setCellWidget(m_handledAssetCount, static_cast<int>(ColumnAction), rowGoToButton);
             }
 
             char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
@@ -234,23 +238,24 @@ namespace ScriptCanvasEditor
                 AzQtComponents::ShowFileOnDesktop(absolutePath);
             });
 
-            m_view->tableWidget->setCellWidget(static_cast<int>(m_currentAssetRowIndex), static_cast<int>(ColumnBrowse), browseButton);
+            m_view->tableWidget->setCellWidget(m_handledAssetCount, static_cast<int>(ColumnBrowse), browseButton);
             OnScannedGraphResult(assetInfo);
         }
 
         void Controller::OnScannedGraphResult([[maybe_unused]] const AZ::Data::AssetInfo& info)
         {
-            m_view->progressBar->setValue(aznumeric_cast<int>(m_currentAssetRowIndex));
-            ++m_currentAssetRowIndex;
+            m_view->progressBar->setValue(aznumeric_cast<int>(m_handledAssetCount));
+            ++m_handledAssetCount;
             AddLogEntries();
         }
 
         void Controller::OnScanLoadFailure(const AZ::Data::AssetInfo& info)
         {
-            m_view->tableWidget->insertRow(static_cast<int>(m_currentAssetRowIndex));
+            m_view->tableWidget->insertRow(m_handledAssetCount);
             QTableWidgetItem* rowName = new QTableWidgetItem
                 ( tr(AZStd::string::format("Load Error: %s", info.m_relativePath.c_str()).c_str()));
-            m_view->tableWidget->setItem(static_cast<int>(m_currentAssetRowIndex), static_cast<int>(ColumnAsset), rowName);
+            m_view->tableWidget->setItem(m_handledAssetCount, static_cast<int>(ColumnAsset), rowName);
+            SetRowFailed(m_handledAssetCount, "Load failed");
             OnScannedGraphResult(info);
         }
 
@@ -259,7 +264,7 @@ namespace ScriptCanvasEditor
             OnScannedGraph(info, Filtered::No);
         }
 
-        void Controller::OnUpgradeAllButtonPress()
+        void Controller::OnUpgradeButtonPress()
         {
             auto simpleUpdate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
             {
@@ -321,32 +326,167 @@ namespace ScriptCanvasEditor
             ModelRequestsBus::Broadcast(&ModelRequestsTraits::Modify, config);
         }
 
-        void Controller::OnUpgradeAllBegin()
+        void Controller::OnUpgradeBegin
+            ( const ModifyConfiguration& config
+            , [[maybe_unused]] const AZStd::vector<AZ::Data::AssetInfo>& assets)
         {
-            m_currentAssetRowIndex = 0;
-            m_view->tableWidget->setRowCount(0);
+            for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
+            {
+                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                {
+                    button->setEnabled(false);
+                    SetRowBusy(row);
+                }
+            }
+
+            QString spinnerText = QStringLiteral("Upgrade in progress - ");
+            if (config.modifySingleAsset)
+            {
+                spinnerText.append(" single graph");
+            }
+            else
+            {
+                spinnerText.append(" all scanned graphs");
+            }
+
+            m_view->spinner->SetText(spinnerText);
+            SetSpinnerIsBusy(true);
+        }
+
+        void Controller::SetSpinnerIsBusy(bool isBusy)
+        {
+            m_view->spinner->SetIsBusy(isBusy);
+            m_view->spinner->SetBusyIconSize(16);
+        }
+
+        void Controller::OnUpgradeComplete()
+        {
+            SetSpinnerIsBusy(false);
+        }
+
+        void Controller::OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result)
+        {
+            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
+            if (!items.isEmpty())
+            {
+                for (auto* item : items)
+                {
+                    int row = item->row();
+
+                    if (result == Result::Success)
+                    {
+                        SetRowSucceeded(row);
+                    }
+                    else
+                    {
+                        SetRowFailed(row, "");
+                    }
+                }
+            }
+
             m_view->progressBar->setVisible(true);
+            ++m_handledAssetCount;
+            m_view->progressBar->setValue(m_handledAssetCount);
+        }
+
+        void Controller::OnUpgradeDependencySortBegin
+            ( [[maybe_unused]] const ModifyConfiguration& config
+            , const AZStd::vector<AZ::Data::AssetInfo>& assets)
+        {
+            m_handledAssetCount = 0;
+            m_view->progressBar->setVisible(true);
+            m_view->progressBar->setRange(0, aznumeric_caster(assets.size()));
             m_view->progressBar->setValue(0);
             m_view->scanButton->setEnabled(false);
             m_view->upgradeAllButton->setEnabled(false);
             m_view->onlyShowOutdated->setEnabled(false);
+
+            for (int row = 0; row != m_view->tableWidget->rowCount(); ++row)
+            {
+                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                {
+                    button->setEnabled(false);
+                    SetRowBusy(row);
+                }
+            }
+
+            QString spinnerText = QStringLiteral("Upgrade in progress - gathering dependencies for the scanned graphs");
+            m_view->spinner->SetText(spinnerText);
+            SetSpinnerIsBusy(true);
         }
 
-        void Controller::OnUpgradeAllComplete()
-        {
-
-        }
-
-        void Controller::OnUpgradeAllDependencySortBegin()
-        {
-
-        }
-
-        void Controller::OnUpgradeAllDependencySortEnd
-            ( const AZStd::vector<AZ::Data::AssetInfo>& sortedAssets
+        void Controller::OnUpgradeDependencySortEnd
+            ( [[maybe_unused]] const ModifyConfiguration& config
+            , const AZStd::vector<AZ::Data::AssetInfo>& assets
             , [[maybe_unused]] const AZStd::vector<size_t>& sortedOrder)
         {
-            m_view->progressBar->setRange(0, aznumeric_cast<int>(sortedAssets.size()));
+            m_handledAssetCount = 0;
+            m_view->progressBar->setRange(0, aznumeric_caster(assets.size()));
+            m_view->progressBar->setValue(0);
+            m_view->progressBar->setVisible(true);
+
+            for (int row = 0; row != m_view->tableWidget->rowCount(); ++row)
+            {
+                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                {
+                    button->setEnabled(false);
+                    SetRowPending(row);
+                }
+            }
+
+            QString spinnerText = QStringLiteral("Upgrade in progress - gathering dependencies is complete");
+            m_view->spinner->SetText(spinnerText);
+            SetSpinnerIsBusy(false);
+        }
+
+        void Controller::SetRowBusy(int index)
+        {
+            if (index >= m_view->tableWidget->rowCount())
+            {
+                return;
+            }
+
+            AzQtComponents::StyledBusyLabel* busy = new AzQtComponents::StyledBusyLabel(this);
+            busy->SetBusyIconSize(16);
+            m_view->tableWidget->setCellWidget(index, ColumnStatus, busy);         
+        }
+
+        void Controller::SetRowFailed(int index, AZStd::string_view message)
+        {
+            if (index >= m_view->tableWidget->rowCount())
+            {
+                return;
+            }
+
+            QToolButton* doneButton = new QToolButton(this);
+            doneButton->setIcon(QIcon(":/stylesheet/img/UI20/titlebar-close.svg"));
+            doneButton->setToolTip(message.data());
+            m_view->tableWidget->setCellWidget(index, ColumnStatus, doneButton);
+        }
+
+        void Controller::SetRowPending(int index)
+        {
+            m_view->tableWidget->removeCellWidget(index, ColumnStatus);
+        }
+
+        void Controller::SetRowsBusy()
+        {
+            for (int i = 0; i != m_view->tableWidget->rowCount(); ++i)
+            {
+                SetRowBusy(i);
+            }
+        }
+
+        void Controller::SetRowSucceeded(int index)
+        {
+            if (index >= m_view->tableWidget->rowCount())
+            {
+                return;
+            }
+
+            QToolButton* doneButton = new QToolButton(this);
+            doneButton->setIcon(QIcon(":/stylesheet/img/UI20/checkmark-menu.svg"));
+            m_view->tableWidget->setCellWidget(index, ColumnStatus, doneButton);
         }
     }
 }

@@ -17,8 +17,8 @@ namespace ScriptCanvasEditor
         struct ModifyConfiguration
         {
             AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
+            bool modifySingleAsset = false;
             bool backupGraphBeforeModification = false;
-            // disabling this can be acceptable, but be careful
             bool successfulDependencyUpgradeRequired = true;
         };
 
@@ -50,6 +50,12 @@ namespace ScriptCanvasEditor
             AZStd::vector<AZ::Data::AssetInfo> m_loadErrors;
         };
 
+        enum Result
+        {
+            Failure,
+            Success
+        };
+
         class ModelNotificationsTraits
             : public AZ::EBusTraits
         {
@@ -60,11 +66,17 @@ namespace ScriptCanvasEditor
             virtual void OnScanLoadFailure(const AZ::Data::AssetInfo& info) = 0;
             virtual void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
 
-            virtual void OnUpgradeAllBegin() = 0;
-            virtual void OnUpgradeAllComplete() = 0;
-            virtual void OnUpgradeAllDependencySortBegin() = 0;
-            virtual void OnUpgradeAllDependencySortEnd
-                ( const AZStd::vector<AZ::Data::AssetInfo>& assets
+            virtual void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<AZ::Data::AssetInfo>& assets) = 0;
+            virtual void OnUpgradeComplete() = 0;
+            // virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config) = 0;
+            // virtual void OnUpgradeModification(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, Result result) = 0;
+            virtual void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) = 0;
+            virtual void OnUpgradeDependencySortBegin
+                ( const ModifyConfiguration& config
+                , const AZStd::vector<AZ::Data::AssetInfo>& assets) = 0;
+            virtual void OnUpgradeDependencySortEnd
+                ( const ModifyConfiguration& config
+                , const AZStd::vector<AZ::Data::AssetInfo>& assets
                 , const AZStd::vector<size_t>& sortedOrder) = 0;
         };
         using ModelNotificationsBus = AZ::EBus<ModelNotificationsTraits>;
