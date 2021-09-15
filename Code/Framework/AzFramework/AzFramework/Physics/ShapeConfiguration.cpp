@@ -312,25 +312,12 @@ namespace Physics
                 ->RegisterGenericType<AZStd::shared_ptr<HeightfieldShapeConfiguration>>();
 
             serializeContext->Class<HeightfieldShapeConfiguration, ShapeConfiguration>()
-                ->Version(1)
-                ->Field("Configuration", &HeightfieldShapeConfiguration::m_dimensions);
-
-            if (auto editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<HeightfieldShapeConfiguration>("HeightfieldShapeConfiguration", "Configuration for heightfield collider")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &HeightfieldShapeConfiguration::m_dimensions, "Dimensions", "Heightfield bounds")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.01f);
-            }
+                ->Version(1);
         }
     }
 
-    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const AZ::Vector3& boxDimensions, AZ::EntityId entityId)
-        : m_dimensions(boxDimensions)
-        , m_heightProvider(entityId)
+    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(AZ::EntityId entityId)
+        : m_heightProvider(entityId)
     {
     }
 
@@ -346,7 +333,6 @@ namespace Physics
 
     HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
         : ShapeConfiguration(other)
-        , m_dimensions(other.m_dimensions)
         , m_heightProvider(other.m_heightProvider)
         , m_cachedNativeHeightfield(nullptr)
     {
