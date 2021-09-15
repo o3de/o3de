@@ -417,14 +417,14 @@ namespace Multiplayer
 
         if (hierarchyChildComponent == nullptr)
         {
-            // child and root hierarchy components are mutually exclusive
+            // Child and root hierarchy components are mutually exclusive
             hierarchyRootComponent = entity->FindComponent<NetworkHierarchyRootComponent>();
         }
 
         if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchicalChild())
             || (hierarchyRootComponent && hierarchyRootComponent->IsHierarchicalChild()))
         {
-            // if hierarchy is enabled for the entity, check if the parent is available
+            // If hierarchy is enabled for the entity, check if the parent is available
             if (const NetworkTransformComponent* networkTransform = entity->FindComponent<NetworkTransformComponent>())
             {
                 const NetEntityId parentId = networkTransform->GetParentEntityId();

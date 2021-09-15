@@ -89,7 +89,7 @@ namespace Multiplayer
 
         if (m_rootEntity)
         {
-            // tell parent to re-build the hierarchy
+            // Tell parent to re-build the hierarchy
             if (NetworkHierarchyRootComponent* root = m_rootEntity->FindComponent<NetworkHierarchyRootComponent>())
             {
                 root->RebuildHierarchy();
@@ -97,8 +97,7 @@ namespace Multiplayer
         }
         else
         {
-            // notify children to that a hierarchy is disbanded
-
+            // Notify children that the hierarchy is disbanding
             AZStd::vector<AZ::EntityId> allChildren;
             AZ::TransformBus::EventResult(allChildren, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
 
@@ -127,12 +126,7 @@ namespace Multiplayer
 
     bool NetworkHierarchyRootComponent::IsHierarchicalRoot() const
     {
-        if (GetHierarchyRoot() != InvalidNetEntityId)
-        {
-            return false;
-        }
-
-        return true;
+        return GetHierarchyRoot() == InvalidNetEntityId;
     }
 
     bool NetworkHierarchyRootComponent::IsHierarchicalChild() const
@@ -199,7 +193,7 @@ namespace Multiplayer
         }
         else
         {
-            // detached from parent
+            // Detached from parent
             RebuildHierarchy();
         }
     }
@@ -217,7 +211,6 @@ namespace Multiplayer
         bool hierarchyChanged = false;
 
         // Send out join and leave events.
-
         for (AZ::Entity* currentEntity : m_hierarchicalEntities)
         {
             const auto prevEntityIterator = AZStd::find(previousEntities.begin(), previousEntities.end(), currentEntity);
