@@ -847,6 +847,41 @@ namespace Multiplayer
         );
     }
 
+    TEST_F(ServerHierarchyOfHierarchyTests, Inner_Root_Has_Child_References_After_Top_Root_Deactivates)
+    {
+        m_rootEntity2->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChildEntity->GetId());
+
+        StopAndDeleteEntity(m_rootEntity);
+
+        EXPECT_EQ(
+            m_rootEntity2->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
+            3
+        );
+    }
+
+    TEST_F(ServerHierarchyOfHierarchyTests, Inner_Root_Has_Child_References_After_Child_Of_Top_Root_Deactivates)
+    {
+        m_rootEntity2->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChildEntity->GetId());
+
+        StopAndDeleteEntity(m_childEntity);
+
+        EXPECT_EQ(
+            m_rootEntity2->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
+            3
+        );
+    }
+
+    TEST_F(ServerHierarchyOfHierarchyTests, Inner_Root_Has_Child_References_After_Child_Of_Child_Deactivates)
+    {
+        m_rootEntity2->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChildEntity->GetId());
+        StopAndDeleteEntity(m_childOfChildEntity);
+
+        EXPECT_EQ(
+            m_rootEntity2->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
+            3
+        );
+    }
+
     TEST_F(ServerHierarchyOfHierarchyTests, Stress_Test_Inner_Root_Has_Child_References_After_Detachment_From_Child_Of_Child)
     {
         for (int i = 0; i < 100; ++i)

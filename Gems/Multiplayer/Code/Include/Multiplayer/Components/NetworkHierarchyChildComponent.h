@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TransformBus.h>
 #include <Multiplayer/Components/NetworkHierarchyBus.h>
 #include <Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.h>
 
@@ -42,12 +43,13 @@ namespace Multiplayer
         //! NetworkHierarchyChildComponentBase overrides.
         //! @{
         void OnInit() override;
-        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
-        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnActivate(EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(EntityIsMigrating entityIsMigrating) override;
         //! @}
 
         //! NetworkHierarchyRequestBus overrides.
         //! @{
+        bool IsHierarchyEnabled() const override;
         bool IsHierarchicalChild() const override;
         bool IsHierarchicalRoot() const override { return false; }
         AZ::Entity* GetHierarchicalRoot() const override;
@@ -58,15 +60,26 @@ namespace Multiplayer
 
     protected:
         //! Used by @NetworkHierarchyRootComponent
-        void SetTopLevelHierarchyRootComponent(NetworkHierarchyRootComponent* hierarchyRoot);
+        void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
 
     private:
-        const NetworkHierarchyRootComponent* m_hierarchyRootComponent = nullptr;
+        AZ::ChildChangedEvent::Handler m_childChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentChangedHandler;
+
+        void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
+        void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId parent);
+
+        //! Points to the top level root.
+        AZ::Entity* m_rootEntity = nullptr;
 
         AZ::Event<NetEntityId>::Handler m_hierarchyRootNetIdChanged;
         void OnHierarchyRootNetIdChanged(NetEntityId rootNetId);
 
         NetworkHierarchyChangedEvent m_networkHierarchyChangedEvent;
         NetworkHierarchyLeaveEvent m_networkHierarchyLeaveEvent;
+
+        bool m_isDeactivating = false;
+
+        void NotifyChildrenHierarchyDisbanded();
     };
 }

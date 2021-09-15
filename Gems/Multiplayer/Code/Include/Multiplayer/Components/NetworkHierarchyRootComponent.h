@@ -10,8 +10,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
-#include <Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyBus.h>
+#include <Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.h>
 
 namespace Multiplayer
 {
@@ -27,8 +27,8 @@ namespace Multiplayer
     class NetworkHierarchyRootComponent final
         : public NetworkHierarchyRootComponentBase
         , public NetworkHierarchyRequestBus::Handler
-        , protected AZ::TransformNotificationBus::MultiHandler
     {
+        friend class NetworkHierarchyChildComponent;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 
@@ -36,6 +36,8 @@ namespace Multiplayer
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        NetworkHierarchyRootComponent();
 
         //! NetworkHierarchyRootComponentBase overrides.
         //! @{
@@ -46,6 +48,7 @@ namespace Multiplayer
 
         //! NetworkHierarchyRequestBus overrides.
         //! @{
+        bool IsHierarchyEnabled() const override;
         bool IsHierarchicalRoot() const override;
         bool IsHierarchicalChild() const override;
         AZStd::vector<AZ::Entity*> GetHierarchicalEntities() const override;
@@ -55,22 +58,24 @@ namespace Multiplayer
         //! @}
 
     protected:
-        //! AZ::TransformNotificationBus::Handler overrides.
-        //! @{
-        void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId newParent) override;
-        void OnChildAdded(AZ::EntityId child) override;
-        void OnChildRemoved(AZ::EntityId childRemovedId) override;
-        //! @}
-
         void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
 
     private:
+        AZ::ChildChangedEvent::Handler m_childChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentChangedHandler;
+
+        void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
+        void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId parent);
+
         NetworkHierarchyChangedEvent m_networkHierarchyChangedEvent;
         NetworkHierarchyLeaveEvent m_networkHierarchyLeaveEvent;
 
-        AZ::Entity* m_higherRootEntity = nullptr;
+        //! Points to the top level root, if this root is an inner root in this hierarchy.
+        AZ::Entity* m_rootEntity = nullptr;
+
         AZStd::vector<AZ::Entity*> m_hierarchicalEntities;
 
+        //! Rebuilds hierarchy starting from this root component's entity.
         void RebuildHierarchy();
         
         //! @param underEntity Walk the child entities that belong to @underEntity and consider adding them to the hierarchy
@@ -86,5 +91,9 @@ namespace Multiplayer
         //!            @currentEntityCount will be modified to reflect the total entity count upon completion of this method.
         //! @returns false if an attempt was made to go beyond the maximum supported hierarchy size, true otherwise
         bool RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount);
+
+        void SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity);
+
+        bool m_isDeactivating = false;
     };
 }

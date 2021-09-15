@@ -19,6 +19,10 @@ namespace Multiplayer
         : public AZ::ComponentBus
     {
     public:
+        //! @returns true if the entity a hierarchical component attached should be considered for inclusion in a hierarchy
+        //!          this should return false when an entity is deactivating
+        virtual bool IsHierarchyEnabled() const = 0;
+
         //! @returns hierarchical entities, the first element is the top level root
         virtual AZStd::vector<AZ::Entity*> GetHierarchicalEntities() const = 0;
 
