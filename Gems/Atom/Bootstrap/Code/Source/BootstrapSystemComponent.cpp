@@ -386,7 +386,7 @@ namespace AZ
                     // Unbind m_defaultScene to the GameEntityContext's AzFramework::Scene
                     if (m_defaultFrameworkScene)
                     {
-                        m_defaultFrameworkScene->UnsetSubsystem<RPI::Scene>();
+                        m_defaultFrameworkScene->UnsetSubsystem(m_defaultScene);
                     }
 
                     m_defaultScene = nullptr;

@@ -233,6 +233,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 //------------------------------------------------------------------------
 CLevelSystem::~CLevelSystem()
 {
+    UnloadLevel();
 }
 
 //------------------------------------------------------------------------
