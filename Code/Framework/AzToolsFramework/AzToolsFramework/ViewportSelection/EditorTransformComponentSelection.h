@@ -207,6 +207,7 @@ namespace AzToolsFramework
         void SetSelectedEntities(const EntityIdList& entityIds);
         void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
+        void ChangeSelectedEntity(AZ::EntityId entityId);
 
         void RefreshSelectedEntityIds();
         void RefreshSelectedEntityIds(const EntityIdList& selectedEntityIds);
@@ -235,7 +236,7 @@ namespace AzToolsFramework
         // can be returned to its previous state after an undo/redo operation
         void CreateEntityManipulatorDeselectCommand(ScopedUndoBatch& undoBatch);
 
-        // EditorTransformComponentSelectionRequestBus ...
+        // EditorTransformComponentSelectionRequestBus overrides ...
         Mode GetTransformMode() override;
         void SetTransformMode(Mode mode) override;
         void RefreshManipulators(RefreshType refreshType) override;
@@ -252,34 +253,34 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
-        // EditorManipulatorCommandUndoRedoRequestBus ...
+        // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
-        // EditorContextMenuBus...
+        // EditorContextMenuBus overrides ...
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
 
-        // EditorEventsBus ...
+        // EditorEventsBus overrides ...
         void OnEscape() override;
 
-        // ToolsApplicationNotificationBus ...
+        // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
         void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
-        // TransformNotificationBus ...
+        // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
 
-        // Camera::EditorCameraNotificationBus ...
+        // Camera::EditorCameraNotificationBus overrides ...
         void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
 
-        // EditorContextVisibilityNotificationBus ...
+        // EditorContextVisibilityNotificationBus overrides ...
         void OnEntityVisibilityChanged(bool visibility) override;
 
-        // EditorContextLockComponentNotificationBus ...
+        // EditorContextLockComponentNotificationBus overrides ...
         void OnEntityLockChanged(bool locked) override;
 
-        // EditorComponentModeNotificationBus ...
+        // EditorComponentModeNotificationBus overrides ...
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
@@ -298,10 +299,15 @@ namespace AzToolsFramework
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
 
+        bool PerformGroupDitto(AZ::EntityId entityId);
+        bool PerformIndividualDitto(AZ::EntityId entityId);
+        void PerformManipulatorDitto(AZ::EntityId entityId);
+        void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
 
-        //! Hides/Shows all viewportUi toolbars.
+        //! Hides/Shows all viewportUi tool bars.
         void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).

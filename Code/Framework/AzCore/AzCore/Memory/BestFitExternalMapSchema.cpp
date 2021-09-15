@@ -136,6 +136,12 @@ BestFitExternalMapSchema::GetMaxAllocationSize() const
     return 0;
 }
 
+auto BestFitExternalMapSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    // Return the maximum size of any single allocation
+    return AZ_CORE_MAX_ALLOCATOR_SIZE;
+}
+
 //=========================================================================
 // GarbageCollect
 // [1/28/2011]
