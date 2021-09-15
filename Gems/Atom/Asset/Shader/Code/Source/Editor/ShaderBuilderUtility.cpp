@@ -20,6 +20,7 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/string/regex.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -812,6 +813,51 @@ namespace AZ
                     }
                 }
                 return success;
+            }
+
+            IncludedFilesParser::IncludedFilesParser()
+            {
+                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|-]+)[>|"])", AZStd::regex::ECMAScript);
+                m_includeRegex.swap(regex);
+            }
+
+            AZStd::vector<AZStd::string> IncludedFilesParser::ParseStringAndGetIncludedFiles(AZStd::string_view haystack) const
+            {
+                AZStd::vector<AZStd::string> listOfFilePaths;
+                AZStd::smatch match;
+                AZStd::string::const_iterator searchStart(haystack.cbegin());
+                while (AZStd::regex_search(searchStart, haystack.cend(), match, m_includeRegex))
+                {
+                    if (match.size() > 1)
+                    {
+                        AZStd::string relativeFilePath(match[1].str().c_str());
+                        AzFramework::StringFunc::Path::Normalize(relativeFilePath);
+                        listOfFilePaths.push_back(relativeFilePath);
+                    }
+                    searchStart = match.suffix().first;
+                }
+                return listOfFilePaths;
+            }
+
+            AZ::Outcome<AZStd::vector<AZStd::string>, AZStd::string> IncludedFilesParser::ParseFileAndGetIncludedFiles(AZStd::string_view sourceFilePath) const
+            {
+                AZ::IO::FileIOStream stream(sourceFilePath.data(), AZ::IO::OpenMode::ModeRead);
+                if (!stream.IsOpen())
+                {
+                    return AZ::Failure(AZStd::string::format("\"%s\" source file could not be opened.", sourceFilePath.data()));
+                }
+
+                if (!stream.CanRead())
+                {
+                    return AZ::Failure(AZStd::string::format("\"%s\" source file could not be read.", sourceFilePath.data()));
+                }
+
+                AZStd::string hayStack;
+                hayStack.resize_no_construct(stream.GetLength());
+                stream.Read(stream.GetLength(), hayStack.data());
+
+                auto listOfFilePaths = ParseStringAndGetIncludedFiles(hayStack);
+                return AZ::Success(AZStd::move(listOfFilePaths));
             }
 
         }  // namespace ShaderBuilderUtility
