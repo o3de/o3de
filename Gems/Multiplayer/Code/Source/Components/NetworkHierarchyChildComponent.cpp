@@ -103,12 +103,7 @@ namespace Multiplayer
 
     bool NetworkHierarchyChildComponent::IsHierarchicalChild() const
     {
-        if (GetHierarchyRoot() != InvalidNetEntityId)
-        {
-            return true;
-        }
-
-        return false;
+        return GetHierarchyRoot() != InvalidNetEntityId;
     }
 
     AZ::Entity* NetworkHierarchyChildComponent::GetHierarchicalRoot() const
