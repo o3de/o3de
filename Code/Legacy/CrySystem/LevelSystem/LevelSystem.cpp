@@ -50,11 +50,10 @@ bool CLevelInfo::OpenLevelPak()
         return false;
     }
 
-    AZStd::string levelpak(m_levelPath);
-    levelpak += "/level.pak";
+    AZ::IO::Path levelPak(m_levelPath);
+    levelPak /= "level.pak";
     AZ::IO::FixedMaxPathString fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(
-        levelpak.c_str(), 0U, nullptr, &fullLevelPakPath, false);
+    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
     m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
     return bOk;
 }
@@ -323,7 +322,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
     // Open all the available paks found in the levels folder
     for (auto iter = pakList.begin(); iter != pakList.end(); iter++)
     {
-        gEnv->pCryPak->OpenPack(iter->c_str(), 0U, nullptr, nullptr, false);
+        gEnv->pCryPak->OpenPack(iter->c_str(), nullptr, nullptr, false);
     }
 
     // Levels in bundles now take priority over levels outside of bundles.
