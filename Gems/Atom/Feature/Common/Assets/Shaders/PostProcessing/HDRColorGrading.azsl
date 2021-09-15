@@ -96,7 +96,7 @@ float3 ColorGradingContrast (float3 frameColor, float midgrey, float amount)
     return frameColor = TransformColor(frameColor.rgb, ColorSpaceId::ACEScc, ColorSpaceId::ACEScg);
 }
 
-// The swatch_color param expects a linear RGB value.
+// The swatchColor param expects a linear RGB value.
 float3 ColorGradeColorFilter (float3 frameColor, float3 swatchColor, float alpha) 
 {
     swatchColor = TransformColor(swatchColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
