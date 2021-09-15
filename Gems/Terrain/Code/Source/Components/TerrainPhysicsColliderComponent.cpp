@@ -158,7 +158,7 @@ namespace Terrain
         (
             minBounds.GetX() - floor(minBounds.GetX()),
             minBounds.GetY() - floor(minBounds.GetY()),
-            0
+            0.0f
         );
         minBounds = (minBounds - minDelta) * gridResolution3;
 
@@ -167,7 +167,7 @@ namespace Terrain
         (
             gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())),
             gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())),
-            0
+            0.0f
         );
         maxBounds = (maxBounds + maxDelta) * gridResolution3;
     }
