@@ -54,8 +54,6 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
     :return: None
     """
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
@@ -80,15 +78,27 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         Report.critical_result(Tests.display_mapper_component, display_mapper_entity.has_component(display_mapper))
 
         # 3. UNDO the entity creation and component addition.
-        # Requires 3 UNDO to remove the Entity completely.
-        for x in range(4):
-            general.undo()
+        # -> UNDO component addition.
+        general.undo()
+        # -> UNDO naming entity.
+        general.undo()
+        # -> UNDO selecting entity.
+        general.undo()
+        # -> UNDO entity creation.
+        general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not display_mapper_entity.exists())
 
         # 4. REDO the entity creation and component addition.
-        # Requires 3 REDO to remove the Entity completely.
-        for x in range(4):
-            general.redo()
+        # -> REDO entity creation.
+        general.redo()
+        # -> REDO selecting entity.
+        general.redo()
+        # -> REDO naming entity.
+        general.redo()
+        # -> REDO component addition.
+        general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, display_mapper_entity.exists())
 
         # 5. Enter/Exit game mode.
@@ -98,13 +108,12 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
 
         # 6. Test IsHidden.
         display_mapper_entity.set_visibility_state(False)
-        is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', display_mapper_entity.id)
-        Report.result(Tests.is_hidden, is_hidden is True)
+        Report.result(Tests.is_hidden, display_mapper_entity.is_hidden() is True)
 
         # 7. Test IsVisible.
         display_mapper_entity.set_visibility_state(True)
-        is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', display_mapper_entity.id)
-        Report.result(Tests.is_visible, is_visible is True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, display_mapper_entity.is_visible() is True)
 
         # 8. Delete Display Mapper entity.
         display_mapper_entity.delete()

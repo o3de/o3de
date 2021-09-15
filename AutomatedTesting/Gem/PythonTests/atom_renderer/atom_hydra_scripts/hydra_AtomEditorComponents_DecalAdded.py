@@ -14,7 +14,7 @@ class Tests:
     creation_redo =             ("REDO Entity creation success",                 "REDO Entity creation failed")
     decal_creation =            ("Decal Entity successfully created",            "Decal Entity failed to be created")
     decal_component =           ("Entity has a Decal component",                 "Entity failed to find Decal component")
-    material_component_set =    ("Entity has a Material component",              "Entity did not have a Material component")
+    material_property_set =     ("Material property set on Decal component",     "Couldn't set Material property on Decal component")
     enter_game_mode =           ("Entered game mode",                            "Failed to enter game mode")
     exit_game_mode =            ("Exited game mode",                             "Couldn't exit game mode")
     is_visible =                ("Entity is visible",                            "Entity was not visible")
@@ -59,7 +59,6 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
     import azlmbr.asset as asset
     import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
@@ -83,16 +82,26 @@ def AtomEditorComponents_Decal_AddedToEntity():
         Report.critical_result(Tests.decal_component, decal_entity.has_component(decal_name))
 
         # 3. UNDO the entity creation and component addition.
-        # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(4):
-            general.undo()
+        # -> UNDO component addition.
+        general.undo()
+        # -> UNDO naming entity.
+        general.undo()
+        # -> UNDO selecting entity.
+        general.undo()
+        # -> UNDO entity creation.
+        general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not decal_entity.exists())
 
         # 4. REDO the entity creation and component addition.
-        # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(4):
-            general.redo()
+        # -> REDO entity creation.
+        general.redo()
+        # -> REDO selecting entity.
+        general.redo()
+        # -> REDO naming entity.
+        general.redo()
+        # -> REDO component addition.
+        general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, decal_entity.exists())
 
@@ -103,22 +112,21 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
         # 6. Test IsHidden.
         decal_entity.set_visibility_state(False)
-        is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', decal_entity.id)
-        Report.result(Tests.is_hidden, is_hidden is True)
+        Report.result(Tests.is_hidden, decal_entity.is_hidden() is True)
 
         # 7. Test IsVisible.
         decal_entity.set_visibility_state(True)
-        is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', decal_entity.id)
-        Report.result(Tests.is_visible, is_visible is True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, decal_entity.is_visible() is True)
 
         # 8. Set Material property on Decal component.
-        material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
         decal_material_property_path = "Controller|Configuration|Material"
-        material_asset_id = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
-        decal_component.set_component_property_value(decal_material_property_path, material_asset_id)
+        decal_material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
+        decal_material_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", decal_material_asset_path, math.Uuid(), False)
+        decal_component.set_component_property_value(decal_material_property_path, decal_material_asset)
         get_material_property = decal_component.get_component_property_value(decal_material_property_path)
-        Report.result(Tests.material_component_set, get_material_property == material_asset_id)
+        Report.result(Tests.material_property_set, get_material_property == decal_material_asset)
 
         # 9. Delete Decal entity.
         decal_entity.delete()

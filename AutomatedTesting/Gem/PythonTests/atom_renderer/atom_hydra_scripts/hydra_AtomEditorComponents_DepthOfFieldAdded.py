@@ -64,8 +64,6 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
     :return: None
     """
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
@@ -90,16 +88,26 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
         Report.critical_result(Tests.depth_of_field_component, depth_of_field_entity.has_component(depth_of_field_name))
 
         # 3. UNDO the entity creation and component addition.
-        # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(4):
-            general.undo()
+        # -> UNDO component addition.
+        general.undo()
+        # -> UNDO naming entity.
+        general.undo()
+        # -> UNDO selecting entity.
+        general.undo()
+        # -> UNDO entity creation.
+        general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not depth_of_field_entity.exists())
 
         # 4. REDO the entity creation and component addition.
-        # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(4):
-            general.redo()
+        # -> REDO entity creation.
+        general.redo()
+        # -> REDO selecting entity.
+        general.redo()
+        # -> REDO naming entity.
+        general.redo()
+        # -> REDO component addition.
+        general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, depth_of_field_entity.exists())
 
@@ -121,13 +129,12 @@ def AtomEditorComponents_DepthOfField_AddedToEntity():
 
         # 9. Test IsHidden.
         depth_of_field_entity.set_visibility_state(False)
-        is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', depth_of_field_entity.id)
-        Report.result(Tests.is_hidden, is_hidden is True)
+        Report.result(Tests.is_hidden, depth_of_field_entity.is_hidden() is True)
 
         # 10. Test IsVisible.
         depth_of_field_entity.set_visibility_state(True)
-        is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', depth_of_field_entity.id)
-        Report.result(Tests.is_visible, is_visible is True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, depth_of_field_entity.is_visible() is True)
 
         # 11. Add Camera entity.
         camera_name = "Camera"

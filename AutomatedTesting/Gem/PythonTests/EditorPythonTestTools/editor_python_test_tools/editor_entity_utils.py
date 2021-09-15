@@ -347,3 +347,17 @@ class EditorEntity:
         :return: True if the Entity exists, False otherwise.
         """
         return editor.ToolsApplicationRequestBus(bus.Broadcast, "EntityExists", self.id)
+
+    def is_hidden(self) -> bool:
+        """
+        Gets the "isHidden" value from the Entity.
+        :return: True if "isHidden" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsHidden", self.id)
+
+    def is_visible(self) -> bool:
+        """
+        Gets the "isVisible" value from the Entity.
+        :return: True if "isVisible" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)

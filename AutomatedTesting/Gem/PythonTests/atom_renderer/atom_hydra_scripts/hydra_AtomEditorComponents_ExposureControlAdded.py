@@ -56,8 +56,6 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
     :return: None
     """
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
@@ -83,16 +81,26 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.exposure_control_component, exposure_control_entity.has_component(exposure_control_name))
 
         # 3. UNDO the entity creation and component addition.
-        # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(4):
-            general.undo()
+        # -> UNDO component addition.
+        general.undo()
+        # -> UNDO naming entity.
+        general.undo()
+        # -> UNDO selecting entity.
+        general.undo()
+        # -> UNDO entity creation.
+        general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not exposure_control_entity.exists())
 
         # 4. REDO the entity creation and component addition.
-        # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(4):
-            general.redo()
+        # -> REDO entity creation.
+        general.redo()
+        # -> REDO selecting entity.
+        general.redo()
+        # -> REDO naming entity.
+        general.redo()
+        # -> REDO component addition.
+        general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, exposure_control_entity.exists())
 
@@ -103,13 +111,12 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
 
         # 6. Test IsHidden.
         exposure_control_entity.set_visibility_state(False)
-        is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', exposure_control_entity.id)
-        Report.result(Tests.is_hidden, is_hidden is True)
+        Report.result(Tests.is_hidden, exposure_control_entity.is_hidden() is True)
 
         # 7. Test IsVisible.
         exposure_control_entity.set_visibility_state(True)
-        is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', exposure_control_entity.id)
-        Report.result(Tests.is_visible, is_visible is True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, exposure_control_entity.is_visible() is True)
 
         # 8. Add Post FX Layer component.
         post_fx_layer_name = "PostFX Layer"

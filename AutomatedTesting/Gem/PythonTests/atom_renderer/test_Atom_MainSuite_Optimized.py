@@ -14,11 +14,11 @@ from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
-    class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
-
     class AtomEditorComponents_DecalAdded(EditorSharedTest):
         from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DecalAdded as test_module
+
+    class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
+        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
 
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):
         from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DirectionalLightAdded as test_module

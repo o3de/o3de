@@ -54,8 +54,6 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
     :return: None
     """
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
@@ -81,16 +79,26 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
             Tests.postfx_radius_weight_component, postfx_radius_weight_entity.has_component(postfx_radius_weight_name))
 
         # 3. UNDO the entity creation and component addition.
-        # Requires 3 UNDO calls to remove the Entity completely.
-        for x in range(4):
-            general.undo()
+        # -> UNDO component addition.
+        general.undo()
+        # -> UNDO naming entity.
+        general.undo()
+        # -> UNDO selecting entity.
+        general.undo()
+        # -> UNDO entity creation.
+        general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo, not postfx_radius_weight_entity.exists())
 
         # 4. REDO the entity creation and component addition.
-        # Requires 3 REDO calls to match the previous 3 UNDO calls.
-        for x in range(4):
-            general.redo()
+        # -> REDO entity creation.
+        general.redo()
+        # -> REDO selecting entity.
+        general.redo()
+        # -> REDO naming entity.
+        general.redo()
+        # -> REDO component addition.
+        general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, postfx_radius_weight_entity.exists())
 
@@ -101,13 +109,12 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
 
         # 6. Test IsHidden.
         postfx_radius_weight_entity.set_visibility_state(False)
-        is_hidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', postfx_radius_weight_entity.id)
-        Report.result(Tests.is_hidden, is_hidden is True)
+        Report.result(Tests.is_hidden, postfx_radius_weight_entity.is_hidden() is True)
 
         # 7. Test IsVisible.
         postfx_radius_weight_entity.set_visibility_state(True)
-        is_visible = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', postfx_radius_weight_entity.id)
-        Report.result(Tests.is_visible, is_visible is True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, postfx_radius_weight_entity.is_visible() is True)
 
         # 8. Delete PostFX Radius Weight Modifier entity.
         postfx_radius_weight_entity.delete()
