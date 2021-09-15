@@ -223,9 +223,9 @@ namespace ScriptCanvasEditor
         using AssetList = AZStd::list<AZ::Data::AssetInfo>;
         virtual AssetList& GetAssetsToUpgrade() = 0;
 
+        virtual void ClearGraphsThatNeedUpgrade() = 0;
         virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
-        virtual AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() = 0;
-
+        virtual const AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() const = 0;
         virtual bool IsUpgrading() = 0;
         virtual void SetIsUpgrading(bool isUpgrading) = 0;
     };

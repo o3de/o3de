@@ -70,7 +70,7 @@ struct CryPakMock
     MOCK_METHOD2(IsFileExist, bool(AZStd::string_view sFilename, EFileSearchLocation));
     MOCK_METHOD1(IsFolder, bool(AZStd::string_view sPath));
     MOCK_METHOD1(GetFileSizeOnDisk, AZ::IO::IArchive::SignedFileSize(AZStd::string_view filename));
-    MOCK_METHOD2(MakeDir, bool(AZStd::string_view szPath, bool bGamePathMapping));
+    MOCK_METHOD1(MakeDir, bool(AZStd::string_view szPath));
     MOCK_METHOD4(OpenArchive, AZStd::intrusive_ptr<AZ::IO::INestedArchive> (AZStd::string_view szPath, AZStd::string_view bindRoot, uint32_t nFlags, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData));
     MOCK_METHOD1(GetFileArchivePath, const char* (AZ::IO::HandleType f));
     MOCK_METHOD5(RawCompress, int(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel));

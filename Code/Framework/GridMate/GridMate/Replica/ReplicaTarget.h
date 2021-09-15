@@ -64,7 +64,7 @@ namespace GridMate
         // Create Callback
         AZStd::weak_ptr<TargetCallbackBase> CreateCallback(AZ::u64 revision)
         {
-            AZ_Assert(IsAckEnabled(), "ACK disabled.")  //Shouldn't happen
+            AZ_Assert(IsAckEnabled(), "ACK disabled.");  //Shouldn't happen
             AZ_Assert(m_replicaRevision <= revision, "Cannot decrease replica revision");
 
             if(!m_callback || m_callback->m_revision != revision)

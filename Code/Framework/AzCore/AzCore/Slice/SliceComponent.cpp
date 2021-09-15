@@ -3464,7 +3464,7 @@ namespace AZ
     const SliceComponent::DataFlagsPerEntity* SliceComponent::GetCorrectBundleOfDataFlags(EntityId entityId) const
     {
         // It would be possible to search non-instantiated slices by crawling over lists, but we haven't needed the capability yet.
-        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.")
+        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.");
 
         if (IsInstantiated())
         {

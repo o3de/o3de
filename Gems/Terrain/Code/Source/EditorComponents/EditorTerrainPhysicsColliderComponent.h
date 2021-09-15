@@ -24,8 +24,7 @@ namespace Terrain
 
         static constexpr auto s_categoryName = "Terrain";
         static constexpr auto s_componentName = "Terrain Physics Collider";
-        static constexpr auto s_componentDescription =
-            "Provides terrain data to a physics collider in the form of a heightfield and surface->material mapping.";
+        static constexpr auto s_componentDescription = "Provides terrain data to a physics collider in the form of a heightfield and surface->material mapping.";
         static constexpr auto s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
         static constexpr auto s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
         static constexpr auto s_helpUrl = "";

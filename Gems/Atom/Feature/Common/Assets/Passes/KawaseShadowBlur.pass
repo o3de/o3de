@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "FilterDepthHorizontalTemplate",
+            "Name": "KawaseShadowBlurTemplate",
             "PassClass": "ComputePass",
             "Slots": [
                 {
@@ -28,7 +28,7 @@
                     "LoadStoreAction": {
                         "LoadAction": "DontCare",
                         "StoreAction": "Store"
-                    },
+                    }, 
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
@@ -37,12 +37,12 @@
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Math/GaussianFilterFloatHorizontal.shader"
+                    "FilePath": "Shaders/Shadow/KawaseShadowBlur.shader"
                 }
             },
             "ImageAttachments": [
                 {
-                    "Name": "HorizontalFiltered",
+                    "Name": "FilteredImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "This",
@@ -54,7 +54,7 @@
                         "Attachment": "Input"
                     },
                     "ImageDescriptor": {
-                        "Format": "R32_FLOAT"
+                        "Format": "R16_FLOAT"
                     }
                 }
             ],
@@ -63,7 +63,7 @@
                     "localSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "HorizontalFiltered"
+                        "Attachment": "FilteredImage"
                     }
                 }
             ]

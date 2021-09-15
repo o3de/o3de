@@ -185,14 +185,6 @@
                 "Path": "Passes/DepthOfFieldWriteFocusDepthFromGpu.pass"
             },
             {
-                "Name": "FilterDepthHorizontalTemplate",
-                "Path": "Passes/FilterDepthHorizontal.pass"
-            },
-            {
-                "Name": "FilterDepthVerticalTemplate",
-                "Path": "Passes/FilterDepthVertical.pass"
-            },
-            {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },
@@ -503,7 +495,11 @@
             {
                 "Name": "LowEndPipelineTemplate",
                 "Path": "Passes/LowEndPipeline.pass"
-            }
+            },
+            {
+                "Name": "KawaseShadowBlurTemplate",
+                "Path": "Passes/KawaseShadowBlur.pass"
+            }             
         ]
     }
 }
