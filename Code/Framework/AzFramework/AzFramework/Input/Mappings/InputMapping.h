@@ -49,6 +49,10 @@ namespace AzFramework
             InputChannelNameFilteredByDeviceType();
 
             ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Destructor
+            virtual ~InputChannelNameFilteredByDeviceType() = default;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the currently selected input device type.
             //! \return Currently selected input device type.
             inline const AZStd::string& GetInputDeviceType() const { return m_inputDeviceType; }
@@ -68,7 +72,7 @@ namespace AzFramework
             //! Get the name label override to display.
             //! \return Name label override to display.
             virtual AZStd::string GetNameLabelOverride() const;
-            
+
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the valid input device types for this input mapping.
             //! \return Valid input device types for this input mapping.
@@ -112,7 +116,6 @@ namespace AzFramework
             //! \param[in] inputContext Input context that the input mapping will be added to.
             AZStd::shared_ptr<InputMapping> CreateInputMappingAndAddToContext(InputContext& inputContext) const;
 
-        protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Override to create the relevant input mapping.
             //! \param[in] inputContext Input context that owns the input mapping.
@@ -123,6 +126,7 @@ namespace AzFramework
             //! \return Name label override to display.
             virtual AZStd::string GetNameLabelOverride() const;
 
+        protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! The unique input channel name (event) output by the input mapping.
             AZStd::string m_outputInputChannelName;

@@ -32,7 +32,7 @@ namespace AzFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &InputMapping::ConfigBase::GetNameLabelOverride)
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &InputMappingOr::Config::GetNameLabelOverride)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_sourceInputChannelNames, "Source Input Channel Names",
                         "The source input channel names that will be mapped to the output input channel name.")
                 ;
