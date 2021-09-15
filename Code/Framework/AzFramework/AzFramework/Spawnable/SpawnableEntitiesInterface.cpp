@@ -58,13 +58,13 @@ namespace AzFramework
 
     AZ::Entity* SpawnableEntityContainerView::operator[](size_t n)
     {
-        AZ_Assert(n <= size(), "Index %llu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
         return *(m_begin + n);
     }
 
     const AZ::Entity* SpawnableEntityContainerView::operator[](size_t n) const
     {
-        AZ_Assert(n <= size(), "Index %llu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
         return *(m_begin + n);
     }
 
@@ -122,13 +122,13 @@ namespace AzFramework
 
     const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n)
     {
-        AZ_Assert(n <= size(), "Index %llu is out of bounds (size: %llu) for Spawnable Const Entity Container View", n, size());
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Const Entity Container View", n, size());
         return *(m_begin + n);
     }
 
     const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n) const
     {
-        AZ_Assert(n <= size(), "Index %llu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
         return *(m_begin + n);
     }
 
