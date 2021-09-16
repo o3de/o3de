@@ -79,12 +79,12 @@ namespace AZ
                     OnConfigChanged();
                 }
             }
-            //HDRColorGradingRequestBus::Handler::BusConnect(m_entityId);
+            HDRColorGradingRequestBus::Handler::BusConnect(m_entityId);
         }
 
         void HDRColorGradingComponentController::Deactivate()
         {
-            //HDRColorGradingRequestBus::Handler::BusDisconnect(m_entityId);
+            HDRColorGradingRequestBus::Handler::BusDisconnect(m_entityId);
 
             if (m_postProcessInterface)
             {
@@ -120,12 +120,12 @@ namespace AZ
         // The setter functions will set the values on the Atom settings class, then get the value back
         // from the settings class to set the local configuration. This is in case the settings class
         // applies some custom logic that results in the set value being different from the input
-#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                                                     \
-        ValueType HDRColorGradingComponentController::Get##Name() const                                                                       \
+#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                                                         \
+        ValueType HDRColorGradingComponentController::Get##Name() const                                                                        \
         {                                                                                                                                      \
             return m_configuration.MemberName;                                                                                                 \
         }                                                                                                                                      \
-        void HDRColorGradingComponentController::Set##Name(ValueType val)                                                                     \
+        void HDRColorGradingComponentController::Set##Name(ValueType val)                                                                      \
         {                                                                                                                                      \
             if (m_settingsInterface)                                                                                                           \
             {                                                                                                                                  \
@@ -139,20 +139,6 @@ namespace AZ
             }                                                                                                                                  \
         }
 
-#define AZ_GFX_COMMON_OVERRIDE(ValueType, Name, MemberName, OverrideValueType)                                                             \
-        OverrideValueType HDRColorGradingComponentController::Get##Name##Override() const                                                     \
-        {                                                                                                                                      \
-            return m_configuration.MemberName##Override;                                                                                       \
-        }                                                                                                                                      \
-        void HDRColorGradingComponentController::Set##Name##Override(OverrideValueType val)                                                   \
-        {                                                                                                                                      \
-            m_configuration.MemberName##Override = val;                                                                                        \
-            if (m_settingsInterface)                                                                                                           \
-            {                                                                                                                                  \
-                m_settingsInterface->Set##Name##Override(val);                                                                                 \
-                m_settingsInterface->OnConfigChanged();                                                                                        \
-            }                                                                                                                                  \
-        }
 #include <Atom/Feature/ParamMacros/MapAllCommon.inl>
 #include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>

@@ -35,14 +35,14 @@ namespace AZ
 #define AZ_GFX_BOOL_PARAM(NAME, MEMBER_NAME, DefaultValue) ;
 #define AZ_GFX_FLOAT_PARAM(NAME, MEMBER_NAME, DefaultValue)                                                  \
     {                                                                                                        \
-                target->Set##NAME(AZ::Lerp(target->MEMBER_NAME, MEMBER_NAME, alpha));                      \
+                target->Set##NAME(AZ::Lerp(target->MEMBER_NAME, MEMBER_NAME, alpha));                        \
     }
 
 #define AZ_GFX_VEC3_PARAM(NAME, MEMBER_NAME, DefaultValue)                                                   \
     {                                                                                                        \
-                target->MEMBER_NAME.Set(AZ::Lerp(target->MEMBER_NAME.GetX(), MEMBER_NAME.GetX(), alpha), \
-                    AZ::Lerp(target->MEMBER_NAME.GetX(), MEMBER_NAME.GetX(), alpha),                       \
-                    AZ::Lerp(target->MEMBER_NAME.GetX(), MEMBER_NAME.GetX(), alpha));                      \
+                target->MEMBER_NAME.Set(AZ::Lerp(target->MEMBER_NAME.GetX(), MEMBER_NAME.GetX(), alpha),     \
+                    AZ::Lerp(target->MEMBER_NAME.GetY(), MEMBER_NAME.GetY(), alpha),                         \
+                    AZ::Lerp(target->MEMBER_NAME.GetZ(), MEMBER_NAME.GetZ(), alpha));                        \
     }
 
 #include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl>
