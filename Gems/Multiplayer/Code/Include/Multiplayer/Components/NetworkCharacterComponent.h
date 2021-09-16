@@ -10,6 +10,7 @@
 
 #include <Source/AutoGen/NetworkCharacterComponent.AutoComponent.h>
 #include <PhysX/CharacterGameplayBus.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Physics
 {
