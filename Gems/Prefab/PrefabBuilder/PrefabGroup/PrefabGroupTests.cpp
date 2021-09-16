@@ -10,6 +10,8 @@
 #include <PrefabGroup/IPrefabGroup.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace UnitTest
 {
@@ -19,6 +21,7 @@ namespace UnitTest
         auto* serializeContext = m_app.GetSerializeContext();
         ASSERT_NE(nullptr, serializeContext);
         SceneData::PrefabGroup::Reflect(serializeContext);
+        SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
         ASSERT_NE(nullptr, serializeContext->FindClassData(azrtti_typeid<DataTypes::IPrefabGroup>()));
         ASSERT_NE(nullptr, serializeContext->FindClassData(azrtti_typeid<SceneData::PrefabGroup>()));
 
@@ -36,22 +39,29 @@ namespace UnitTest
         EXPECT_TRUE(findElementWithName(prefabGroupClassData, "nodeSelectionList"));
         EXPECT_TRUE(findElementWithName(prefabGroupClassData, "rules"));
         EXPECT_TRUE(findElementWithName(prefabGroupClassData, "id"));
-        EXPECT_TRUE(findElementWithName(prefabGroupClassData, "prefabDomBuffer"));
+        EXPECT_TRUE(findElementWithName(prefabGroupClassData, "prefabDomData"));
+
+        m_app.GetJsonRegistrationContext()->EnableRemoveReflection();
+        SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
     }
 
     TEST_F(PrefabBuilderTests, PrefabGroup_JsonWithPrefabArbitraryPrefab_Works)
     {
+        namespace JSR = AZ::JsonSerializationResult;
         using namespace AZ::SceneAPI;
         auto* serializeContext = m_app.GetSerializeContext();
         ASSERT_NE(nullptr, serializeContext);
         SceneData::PrefabGroup::Reflect(serializeContext);
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(serializeContext);
+        SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(m_app.GetJsonRegistrationContext());
 
         // fill out a PrefabGroup using JSON
         AZStd::string_view input = R"JSON(
         {
             "name" : "tester",
             "id" : "{49698DBC-B447-49EF-9B56-25BB29342AFB}",
-            "prefabDomBuffer" : "{\"foo\":\"bar\"}"
+            "prefabDomData" : {"foo": "bar"}
         })JSON";
 
         rapidjson::Document document;
@@ -59,16 +69,19 @@ namespace UnitTest
         ASSERT_FALSE(document.HasParseError());
 
         SceneData::PrefabGroup instancePrefabGroup;
-        AZ::JsonSerialization::Load(instancePrefabGroup, document);
+        EXPECT_EQ(AZ::JsonSerialization::Load(instancePrefabGroup, document).GetOutcome(), JSR::Outcomes::PartialDefaults);
 
-        const auto& dom = instancePrefabGroup.GetPrefabDom();
+        ASSERT_TRUE(instancePrefabGroup.GetPrefabDomRef().has_value());
+        const AzToolsFramework::Prefab::PrefabDom& dom = instancePrefabGroup.GetPrefabDomRef().value();
+        EXPECT_TRUE(dom.IsObject());
         EXPECT_TRUE(dom.GetObject().HasMember("foo"));
         EXPECT_STREQ(dom.GetObject().FindMember("foo")->value.GetString(), "bar");
         EXPECT_STREQ(instancePrefabGroup.GetName().c_str(), "tester");
-        EXPECT_STREQ(
-            instancePrefabGroup.GetId().ToString<AZStd::string>().c_str(),
-            "{49698DBC-B447-49EF-9B56-25BB29342AFB}");
-        EXPECT_TRUE(instancePrefabGroup.GetPrefabDom().IsObject());
+        EXPECT_STREQ(instancePrefabGroup.GetId().ToString<AZStd::string>().c_str(), "{49698DBC-B447-49EF-9B56-25BB29342AFB}");
+
+        m_app.GetJsonRegistrationContext()->EnableRemoveReflection();
+        SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
+        AZ::Prefab::ProceduralPrefabAsset::Reflect(m_app.GetJsonRegistrationContext());
     }
 
     TEST_F(PrefabBuilderTests, PrefabGroup_InvalidPrefabJson_Detected)
@@ -88,26 +101,7 @@ namespace UnitTest
         prefabGroup.SetName("tester");
         prefabGroup.SetPrefabDom(AZStd::move(document));
 
-        const auto& dom = prefabGroup.GetPrefabDom();
-        EXPECT_TRUE(dom.IsNull());
-        EXPECT_STREQ("tester", prefabGroup.GetName().c_str());
-    }
-
-    TEST_F(PrefabBuilderTests, PrefabGroup_InvalidPrefabJsonBuffer_Detected)
-    {
-        using namespace AZ::SceneAPI;
-
-        AZStd::string_view inputJson = R"JSON(
-        {
-            bad json that will not parse
-        })JSON";
-
-        SceneData::PrefabGroup prefabGroup;
-        prefabGroup.SetId(AZ::Uuid::CreateRandom());
-        prefabGroup.SetName("tester");
-        prefabGroup.SetPrefabDomBuffer(inputJson);
-
-        const auto& dom = prefabGroup.GetPrefabDom();
+        const AzToolsFramework::Prefab::PrefabDom& dom = prefabGroup.GetPrefabDomRef().value();
         EXPECT_TRUE(dom.IsNull());
         EXPECT_STREQ("tester", prefabGroup.GetName().c_str());
     }
@@ -122,12 +116,17 @@ namespace UnitTest
             PrefabBuilderTests::SetUp();
             SceneData::PrefabGroup::Reflect(m_app.GetSerializeContext());
             SceneData::PrefabGroup::Reflect(m_app.GetBehaviorContext());
+            SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_app.GetBehaviorContext());
         }
 
         void TearDown() override
         {
+            using namespace AZ::SceneAPI;
+            m_app.GetJsonRegistrationContext()->EnableRemoveReflection();
+            SceneData::PrefabGroup::Reflect(m_app.GetJsonRegistrationContext());
+
             m_scriptContext.reset();
             PrefabBuilderTests::TearDown();
         }
@@ -146,7 +145,7 @@ namespace UnitTest
         ExpectExecute("assert(group)");
         ExpectExecute("assert(group.name)");
         ExpectExecute("assert(group.id)");
-        ExpectExecute("assert(group.prefabDomBuffer)");
+        ExpectExecute("assert(group.prefabDomData)");
     }
 
     TEST_F(PrefabBuilderBehaviorTests, PrefabGroup_PrefabGroupAssignment_Works)
@@ -154,9 +153,9 @@ namespace UnitTest
         ExpectExecute("group = PrefabGroup()");
         ExpectExecute("group.name = 'tester'");
         ExpectExecute("group.id = Uuid.CreateString('{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}', 0)");
-        ExpectExecute("group.prefabDomBuffer = '{}'");
+        ExpectExecute("group.prefabDomData = '{\"foo\": \"bar\"}'");
         ExpectExecute("assert(group.name == 'tester')");
         ExpectExecute("assert(tostring(group.id) == '{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}')");
-        ExpectExecute("assert(group.prefabDomBuffer == '{}')");
+        ExpectExecute("assert(group.prefabDomData == '{\\n    \"foo\": \"bar\"\\n}')");
     }
 }

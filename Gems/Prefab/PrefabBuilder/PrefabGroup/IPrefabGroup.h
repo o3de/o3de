@@ -20,6 +20,6 @@ namespace AZ::SceneAPI::DataTypes
         AZ_RTTI(IPrefabGroup, "{7E50FAEF-3379-4521-99C5-B428FDEE3B7B}", ISceneNodeGroup);
 
         ~IPrefabGroup() override = default;
-        virtual const AzToolsFramework::Prefab::PrefabDom& GetPrefabDom() const = 0;
+        virtual AzToolsFramework::Prefab::PrefabDomConstReference GetPrefabDomRef() const = 0;
     };
 }
