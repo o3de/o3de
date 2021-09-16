@@ -113,7 +113,7 @@ class RealTimeDataProcessing:
             ),
         )
 
-        analytics_application_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AnalyticsApplicationName',
             description='Kinesis Data Analytics application to process the real-time metrics data',
@@ -199,7 +199,7 @@ class RealTimeDataProcessing:
                 os.path.join(os.path.dirname(__file__), 'lambdas', 'analytics_processing_lambda')),
             role=self._analytics_processing_lambda_role
         )
-        analytics_processing_lambda = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AnalyticsProcessingLambdaName',
             description='Lambda function for sending processed data to CloudWatch.',

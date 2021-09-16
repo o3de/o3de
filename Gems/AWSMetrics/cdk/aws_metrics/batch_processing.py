@@ -62,7 +62,7 @@ class BatchProcessing:
                     os.path.join(os.path.dirname(__file__), 'lambdas', 'events_processing_lambda')),
             role=self._events_processing_lambda_role
         )
-        events_processing_lambda_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='EventProcessingLambdaName',
             description='Lambda function for processing metrics events data.',

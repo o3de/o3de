@@ -60,7 +60,7 @@ class BatchAnalytics:
                 )
             )
         )
-        athena_work_group_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AthenaWorkGroupName',
             description='Name of the Athena work group that contains sample queries',
