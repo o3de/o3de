@@ -31,8 +31,6 @@ SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES = [
     ("Controller|Configuration|Shadows|Shadow filter method", 1),  # PCF
     ("Controller|Configuration|Shadows|Filtering sample count", 4.0),
     ("Controller|Configuration|Shadows|Filtering sample count", 64.0),
-    ("Controller|Configuration|Shadows|PCF method", 0),  # Bicubic
-    ("Controller|Configuration|Shadows|PCF method", 1),  # Boundary search
     ("Controller|Configuration|Shadows|Shadow filter method", 2),  # ECM
     ("Controller|Configuration|Shadows|ESM exponent", 50),
     ("Controller|Configuration|Shadows|ESM exponent", 5000),

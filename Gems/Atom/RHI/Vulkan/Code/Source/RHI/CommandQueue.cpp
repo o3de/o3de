@@ -45,7 +45,7 @@ namespace AZ
 #if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
             for (RHI::SwapChain* swapChain : rhiRequest.m_swapChainsToPresent)
             {
-                if (!swapChain->m_resized)
+                if (!swapChain->m_readyToPresent)
                 {
                     return;
                 }

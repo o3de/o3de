@@ -352,6 +352,8 @@ namespace AZ
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: Simulate");
 
+            m_simulationTime = tickInfo.m_currentGameTime;
+
             // If previous simulation job wasn't done, wait for it to finish.
             WaitAndCleanCompletionJob(m_simulationCompletion);
 
@@ -395,7 +397,30 @@ namespace AZ
             }
         }
 
-        void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::ConnectEvent(PrepareSceneSrgEvent::Handler& handler)
+        {
+            handler.Connect(m_prepareSrgEvent);
+        }
+
+        void Scene::PrepareSceneSrg()
+        {
+            if (m_srg)
+            {
+                // Set value for constants defined in SceneTimeSrg.azsli
+                RHI::ShaderInputConstantIndex timeIndex = m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
+                if (timeIndex.IsValid())
+                {
+                    m_srg->SetConstant(timeIndex, m_simulationTime);
+                }
+
+                // signal any handlers to update values for their partial scene srg
+                m_prepareSrgEvent.Signal(m_srg.get());
+
+                m_srg->Compile();
+            }
+        }
+
+        void Scene::PrepareRender([[maybe_unused]]const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: PrepareRender");
 
@@ -407,28 +432,25 @@ namespace AZ
 
             SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
 
+            // Get active pipelines which need to be rendered and notify them of an impending frame.
+            AZStd::vector<RenderPipelinePtr> activePipelines;
             {
-                AZ_PROFILE_SCOPE(RPI, "m_srgCallback");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ShaderResourceGroupCallback: SrgCallback");
-                // Set values for scene srg
-                if (m_srg && m_srgCallback)
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnPrepareFrame");
+                for (auto& pipeline : m_pipelines)
                 {
-                    m_srgCallback(m_srg.get());
+                    pipeline->OnPrepareFrame();
+                    if (pipeline->NeedsRender())
+                    {
+                        activePipelines.push_back(pipeline);
+                    }
                 }
             }
 
             // Get active pipelines which need to be rendered and notify them frame started
-            AZStd::vector<RenderPipelinePtr> activePipelines;
+            for (const auto& pipeline : activePipelines)
             {
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnStartFrame");
-                for (auto& pipeline : m_pipelines)
-                {
-                    if (pipeline->NeedsRender())
-                    {
-                        activePipelines.push_back(pipeline);
-                        pipeline->OnStartFrame(tickInfo);
-                    }
-                }
+                pipeline->OnStartFrame();
             }
 
             // Return if there is no active render pipeline
@@ -572,10 +594,12 @@ namespace AZ
         void Scene::OnFrameEnd()
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: OnFrameEnd");
+            bool didRender = false;
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
                 {
+                    didRender = true;
                     pipeline->OnFrameEnd();
                 }
             }
@@ -583,19 +607,20 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+            if (didRender)
+            {
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnFrameEnd);
+            }
         }
 
         void Scene::UpdateSrgs()
         {
+            PrepareSceneSrg();
+
             for (auto& view : m_renderPacket.m_views)
             {
                 view->UpdateSrg();
             }
-        }
-
-        void Scene::SetShaderResourceGroupCallback(ShaderResourceGroupCallback callback)
-        {
-            m_srgCallback = callback;
         }
 
         const RHI::ShaderResourceGroup* Scene::GetRHIShaderResourceGroup() const
@@ -641,11 +666,6 @@ namespace AZ
             return m_pipelines;
         }
         
-        Scene* Scene::FindSelf()
-        {
-            return this;
-        }
-
         void Scene::OnSceneNotifictaionHandlerConnected(SceneNotification* handler)
         {
             for (auto renderPipeline : m_pipelines)

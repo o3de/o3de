@@ -116,7 +116,7 @@ namespace ScriptCanvas
             return;
         }
 #else
-        AZ_Assert(m_runtimeAsset.Get(), "RuntimeComponent::m_runtimeAsset AssetId: %s was valid, but the data was not pre-loaded, so this script will not run", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
+        AZ_Assert(m_runtimeOverrides.m_runtimeAsset.Get(), "RuntimeComponent::m_runtimeAsset AssetId: %s was valid, but the data was not pre-loaded, so this script will not run", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
@@ -130,7 +130,7 @@ namespace ScriptCanvas
             return;
         }
 #else
-        AZ_Assert(m_executionState, "RuntimeComponent::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run", m_runtimeAsset.GetId().ToString<AZStd::string>().data());
+        AZ_Assert(m_executionState, "RuntimeComponent::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif
 
         AZ::EntityBus::Handler::BusConnect(GetEntityId());

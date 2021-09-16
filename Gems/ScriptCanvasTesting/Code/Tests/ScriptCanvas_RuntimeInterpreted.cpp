@@ -367,11 +367,6 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleOutDataFlowParseError)
     ExpectParseError("LY_SC_UnitTest_MultipleOutDataFlowParseError");
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedSimultaneousDataInputError)
-{
-    ExpectParseError("LY_SC_UnitTest_SimultaneousDataInputError");
-}
-
 TEST_F(ScriptCanvasTestFixture, InterpretedAnyAsTailNoOp)
 {
     RunUnitTestGraph("LY_SC_UnitTest_AnyAsTailNoOp");

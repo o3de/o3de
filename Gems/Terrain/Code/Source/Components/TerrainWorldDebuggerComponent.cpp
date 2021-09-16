@@ -171,7 +171,7 @@ namespace Terrain
                 // Determine how far to draw in each direction in world space based on our MaxSectorsToDraw
                 AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+                    queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
                 AZ::Vector3 viewDistance(
                     queryResolution.GetX() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
                     queryResolution.GetY() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
@@ -214,7 +214,7 @@ namespace Terrain
 
         AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // Calculate the world size of each sector.  Note that this size actually ends at the last point, not the last square.
         // So for example, the sector size for 3 points will go from (*--*--*) even though it will be used to draw (*--*--*--).

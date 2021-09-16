@@ -57,6 +57,10 @@ namespace AZ
                 const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
                 RHI::Ptr<IDXGISwapChainX>& swapChain);
 
+            RHI::ResultCode CreateSwapChain(
+                const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
+                AZStd::array<RHI::Ptr<ID3D12Resource>, RHI::Limits::Device::FrameCountMax>& outSwapChainResources);
+
             void GetImageAllocationInfo(
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);

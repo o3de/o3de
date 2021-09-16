@@ -213,18 +213,18 @@ namespace UnitTest
         // AzToolsFramework::AssetSystem::AssetSystemRequestBus::Handler overrides
         const char* GetAbsoluteDevGameFolderPath() override { return ""; }
         const char* GetAbsoluteDevRootFolderPath() override { return ""; }
-        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) { return true; }
+        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return true; }
         bool GenerateRelativeSourcePath(
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
-            [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) { return true; }
-        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) { return true; }
-        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) { return true; }
-        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) { return true; }
-        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) { return 0; }
-        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) { return true; }
+            [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) override { return true; }
+        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) override { return true; }
+        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) override { return true; }
+        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) override { return true; }
+        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) override { return 0; }
+        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) override { return true; }
         bool GetAssetSafeFolders(AZStd::vector<AZStd::string>& assetSafeFolders) override
         {
             char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };

@@ -831,7 +831,6 @@ namespace AZStd
         // find first element that value is before, using operator<
         typename iterator_traits<ForwardIterator>::difference_type count = AZStd::distance(first, last);
         typename iterator_traits<ForwardIterator>::difference_type step{};
-        count = AZStd::distance(first, last);
         for (; 0 < count; )
         {   // divide and conquer, find half that contains answer
             step = count / 2;

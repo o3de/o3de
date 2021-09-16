@@ -13,6 +13,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -41,10 +42,6 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
-        
-        void SetWorldBounds(const AZ::Aabb& worldBounds) override;
-        void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
-
         void Activate() override;
         void Deactivate() override;
 
@@ -54,8 +51,12 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainGridResolution() const override;
+        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+
         AZ::Aabb GetTerrainAabb() const override;
+        void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
+
 
         //! Returns terrains height in meters at location x,y.
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
@@ -93,14 +94,11 @@ namespace Terrain
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
     private:
-        float GetHeightSynchronous(float x, float y) const;
-        AZ::Vector3 GetNormalSynchronous(float x, float y) const;
+        float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
+        AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-        void SystemActivate();
-        void SystemDeactivate();
 
         struct TerrainSystemSettings
         {

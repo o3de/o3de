@@ -681,6 +681,13 @@ namespace ScriptCanvas
                             outType = eventType;
                             return true;
                         }
+                        
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find event: %s, in bus: %s, anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
@@ -693,6 +700,12 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find free method: %s anywhere in BehaviorContext"
+                            , methodName.c_str());
+                        return false;
                     }
                     break;
 
@@ -709,14 +722,26 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find method or property: %s in class %s: , anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
-                    default:
-                        AZ_Warning("Script Canvas", !m_warnOnMissingFunction, "unsupported method type in method");
+                    default:    
                         break;
                     }
                 }
+
+                AZ_Warning("Script Canvas"
+                    , !m_warnOnMissingFunction
+                    , "Could not find overloaded method: %s, class or event name: %s, anywhere in BehaviorContext"
+                    , methodName.c_str()
+                    , m_className.c_str());
 
                 return false;
             }
@@ -744,27 +769,30 @@ namespace ScriptCanvas
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
-                m_warnOnMissingFunction = true;
-                const AZ::BehaviorClass* bcClass{};
-                const AZ::BehaviorMethod* method{};
-                EventType eventType;
+                if (!m_lookupName.empty() || !m_className.empty())
+                {
+                    m_warnOnMissingFunction = true;
+                    const AZ::BehaviorClass* bcClass{};
+                    const AZ::BehaviorMethod* method{};
+                    EventType eventType;
 
-                if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
-                {
-                    m_eventType = eventType;
-                    ConfigureMethod(*method, bcClass);
-                }
-                else
-                {
-                    if (!m_method)
+                    if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
                     {
-                        AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        m_eventType = eventType;
+                        ConfigureMethod(*method, bcClass);
                     }
-                }
+                    else
+                    {
+                        if (!m_method)
+                        {
+                            AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        }
+                    }
 
-                if (m_resultSlotIDs.empty())
-                {
-                    m_resultSlotIDs.emplace_back(SlotId{});
+                    if (m_resultSlotIDs.empty())
+                    {
+                        m_resultSlotIDs.emplace_back(SlotId{});
+                    }
                 }
 
                 Node::OnDeserialize();
@@ -773,6 +801,11 @@ namespace ScriptCanvas
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             void Method::OnWriteEnd()
             {
+                if (m_lookupName.empty() && m_className.empty())
+                {
+                    return;
+                }
+
                 OnDeserialize();
             }
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
