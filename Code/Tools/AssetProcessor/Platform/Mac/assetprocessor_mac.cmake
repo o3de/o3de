@@ -14,5 +14,3 @@ set_target_properties(AssetProcessor PROPERTIES
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AssetProcessorAppIcon
     ENTITLEMENT_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/AssetProcessorEntitlements.plist
 )
-
-ly_install_add_install_path_setreg(AssetProcessor ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/AssetProcessorBundlePath.setreg)

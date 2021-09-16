@@ -6,6 +6,8 @@
 #
 #
 
+include(cmake/Platform/Common/Install_common.cmake)
+
 # This is used to generate a setreg file which will be placed inside the bundle
 # for targets that request it(eg. AssetProcessor/Editor). This is the relative path
 # to the bundle from the installed engine's root. This will be used to compute the
@@ -16,7 +18,7 @@ set(installed_binaries_path_template [[
         "AzCore": {
             "Runtime": {
                 "FilePaths": {
-                    "InstalledBinariesFolder": "@install_relative_binaries_path@"
+                    "InstalledBinariesFolder": "@runtime_output_directory@"
                 }
             }
         }
@@ -24,8 +26,17 @@ set(installed_binaries_path_template [[
 }]]
 )
 
+# This will be used by the O3DE_SDK.app bundle to find the 
+string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
+file(GENERATE
+    OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/O3DE_SDK_InstallPath.setreg
+    CONTENT "${configured_setreg_file}"
+)
+
+# ly_install_run_script isn't defined yet so we use install(SCRIPT) directly.
+# This needs to be done here because it needs to update the install prefix 
+# before cmake does anything else in the install process.
 configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake @ONLY)
-        
 install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
 #! ly_install_target_override: Mac specific target installation
@@ -69,14 +80,6 @@ function(ly_install_target_override)
     if (${is_bundle})
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
         set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>.app")
-
-        # For bundles, add a setreg file that contains install relative path to the bundle.
-        # This will be used when loading dynamic libraries outside the bundle.
-        string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
-        file(GENERATE
-            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}BundlePath.setreg
-            CONTENT "${configured_setreg_file}"
-        )
     else()
         set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>")
     endif()
@@ -91,7 +94,7 @@ function(ly_install_target_override)
         ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE
-            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}.cmake
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${LY_BUILD_PERMUTATION}/${ly_platform_install_target_TARGET}.cmake
             CONTENT "${configured_template_file}"
         )
     endif()
@@ -106,7 +109,7 @@ endfunction()
 function(ly_install_code_function_override)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
-    install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+    ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake)
 
 endfunction()
 
@@ -125,15 +128,14 @@ function(ly_post_install_steps)
             continue()
         endif()
         
-        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+        ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${LY_BUILD_PERMUTATION}/${target}.cmake)
     endforeach()
 
-    install(CODE
-"ly_download_and_codesign_sdk_python()
-ly_codesign_sdk()"
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+    ly_install_run_code("
+        ly_download_and_codesign_sdk_python()
+        ly_codesign_sdk()
+        set(CMAKE_INSTALL_PREFIX ${LY_INSTALL_PATH_ORIGINAL})
+    ")
 
 endfunction()
 
-include(cmake/Platform/Common/Install_common.cmake)

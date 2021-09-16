@@ -11,10 +11,8 @@ cmake_minimum_required(VERSION 3.20)
 # The O3DE SDK will be shipped as an app bundle. So we create an O3DE_SDK.app directory
 # and install SDK into the app's Contents/Engine directory.
 set(LY_INSTALL_PATH_ORIGINAL ${CMAKE_INSTALL_PREFIX})
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS)
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS/Registry)
 
-file(COPY @LY_ROOT_FOLDER@/cmake/Platform/Mac/info.plist
+file(INSTALL @LY_ROOT_FOLDER@/Code/Tools/BundleLauncher/info.plist
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents
 )
 
@@ -28,10 +26,10 @@ elseif (EXISTS @CMAKE_BINARY_DIR@/bin/debug/O3DE_SDK)
 elseif (EXISTS @CMAKE_BINARY_DIR@/bin/release/O3DE_SDK)
     set(sdk_launcher_config release)
 endif()
-file(COPY @CMAKE_BINARY_DIR@/bin/${sdk_launcher_config}/O3DE_SDK
+file(INSTALL @CMAKE_BINARY_DIR@/bin/${sdk_launcher_config}/O3DE_SDK
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS
 )
-file(COPY @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/ProjectManagerBundlePath.setreg
+file(INSTALL @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/O3DE_SDK_InstallPath.setreg
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS/Registry
 )
 

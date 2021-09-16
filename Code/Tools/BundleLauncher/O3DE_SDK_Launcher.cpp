@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     shellProcessLaunch.m_processExecutableString = AZStd::move(shellPath.Native());
     shellProcessLaunch.m_commandlineParameters = parameters;
     shellProcessLaunch.m_showWindow = true;
-    shellProcessLaunch.m_workingDirectory = AZStd::string::format("%s", enginePath.c_str());
+    shellProcessLaunch.m_workingDirectory = enginePath.Native();
     AZStd::unique_ptr<AzFramework::ProcessWatcher> shellProcess(AzFramework::ProcessWatcher::LaunchProcess(shellProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
     shellProcess->WaitForProcessToExit(120);
     shellProcess.reset();
