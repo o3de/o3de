@@ -65,7 +65,18 @@ namespace AzToolsFramework
             {
                 serialize->Class<PrefabSystemComponent, AZ::Component>()->Version(1);
             }
-            
+
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+
+                behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
+                ;
+            }
+
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
             if (jsonRegistration)
             {

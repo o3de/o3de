@@ -630,6 +630,9 @@ set(FILES
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
     Prefab/PrefabLoaderInterface.h
+    Prefab/PrefabLoaderScriptingBus.h
+    Prefab/ScriptingPrefabLoader.h
+    Prefab/ScriptingPrefabLoader.cpp
     Prefab/PrefabSystemComponent.h
     Prefab/PrefabSystemComponent.cpp
     Prefab/PrefabSystemComponentInterface.h
