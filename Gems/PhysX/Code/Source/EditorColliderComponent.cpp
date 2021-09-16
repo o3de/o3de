@@ -131,7 +131,6 @@ namespace PhysX
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()
     {
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
@@ -374,7 +373,6 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
-
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
@@ -773,14 +771,14 @@ namespace PhysX
         {
             m_componentWarnings.clear();
             m_configuration.m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
         }
     }
 
     void EditorColliderComponent::ValidateRigidBodyMeshGeometryType()
     {
         const PhysX::EditorRigidBodyComponent* entityRigidbody = m_entity->FindComponent<PhysX::EditorRigidBodyComponent>();
-
 
         if (m_shapeConfiguration.m_physicsAsset.m_pxAsset && (m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset) && entityRigidbody)
         {

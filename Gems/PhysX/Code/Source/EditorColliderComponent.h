@@ -198,7 +198,7 @@ namespace PhysX
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
 
-        // PhysX::EditorColliderValidationRequestBus
+        // PhysX::EditorColliderValidationRequestBus overrides ...
         void ValidateRigidBodyMeshGeometryType() override;
 
         AZ::Transform GetColliderLocalTransform() const;
