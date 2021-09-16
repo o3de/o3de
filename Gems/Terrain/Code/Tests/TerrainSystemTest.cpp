@@ -175,7 +175,6 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
 
     // Set up a mock height provider that always returns 5.0 and a normal of Y-up.
     const float spawnerHeight = 5.0f;
-    const AZ::Vector3 spawnerNormal = AZ::Vector3::CreateAxisY();
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> terrainAreaHeightRequests(entity->GetId());
     ON_CALL(terrainAreaHeightRequests, GetHeight)
         .WillByDefault(
@@ -183,14 +182,6 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
             {
                 outPosition = inPosition;
                 outPosition.SetZ(spawnerHeight);
-                terrainExists = true;
-            });
-    ON_CALL(terrainAreaHeightRequests, GetNormal)
-        .WillByDefault(
-            [spawnerNormal](
-                [[maybe_unused]] const AZ::Vector3& inPosition, AZ::Vector3& outNormal, bool& terrainExists)
-            {
-                outNormal = spawnerNormal;
                 terrainExists = true;
             });
 
@@ -231,7 +222,6 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
                 EXPECT_TRUE(normalQueryTerrainExists);
                 EXPECT_FALSE(isHole);
                 EXPECT_EQ(height, spawnerHeight);
-                EXPECT_EQ(normal, spawnerNormal);
             }
             else
             {
