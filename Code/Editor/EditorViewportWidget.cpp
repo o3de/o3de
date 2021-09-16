@@ -2522,6 +2522,11 @@ float EditorViewportSettings::ManipulatorCircleBoundWidth() const
     return SandboxEditor::ManipulatorCircleBoundWidth();
 }
 
+bool EditorViewportSettings::StickySelectEnabled() const
+{
+    return SandboxEditor::StickySelectEnabled();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const

@@ -163,12 +163,12 @@ namespace Terrain
         minBounds = (minBounds - minDelta) * gridResolution3;
 
         maxBounds = AZ::Vector3(bounds.GetMax()) / gridResolution3;
-        const AZ::Vector3 maxDelta = AZ::Vector3
-        (
-            gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())),
-            gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())),
-            0.0f
-        );
+
+        float dx = (maxBounds.GetX() - floor(maxBounds.GetX())) ? gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())) : 0;
+        float dy = (maxBounds.GetY() - floor(maxBounds.GetY())) ? gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())) : 0;
+
+        const AZ::Vector3 maxDelta = AZ::Vector3(dx, dy, 0.0f);
+
         maxBounds = (maxBounds + maxDelta) * gridResolution3;
     }
 
