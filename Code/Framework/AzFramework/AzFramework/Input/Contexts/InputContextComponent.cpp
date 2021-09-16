@@ -7,6 +7,8 @@
  */
 
 #include <AzFramework/Input/Contexts/InputContextComponent.h>
+#include <AzFramework/Input/Mappings/InputMappingAnd.h>
+#include <AzFramework/Input/Mappings/InputMappingOr.h>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -22,9 +24,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputContextComponent::Reflect(AZ::ReflectContext* reflection)
+    void InputContextComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<InputContextComponent, AZ::Component>()
                 ->Version(0)
@@ -65,6 +67,10 @@ namespace AzFramework
                 ;
             }
         }
+
+        InputMapping::ConfigBase::Reflect(context);
+        InputMappingAnd::Config::Reflect(context);
+        InputMappingOr::Config::Reflect(context);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

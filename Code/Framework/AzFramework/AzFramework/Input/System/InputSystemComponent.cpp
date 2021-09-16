@@ -17,11 +17,6 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 
-#include <AzFramework/Input/Contexts/InputContextComponent.h>
-#include <AzFramework/Input/Mappings/InputMapping.h>
-#include <AzFramework/Input/Mappings/InputMappingAnd.h>
-#include <AzFramework/Input/Mappings/InputMappingOr.h>
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -153,11 +148,6 @@ namespace AzFramework
         InputDeviceMouse::Reflect(context);
         InputDeviceTouch::Reflect(context);
         InputDeviceVirtualKeyboard::Reflect(context);
-
-        InputContextComponent::Reflect(context);
-        InputMapping::ConfigBase::Reflect(context);
-        InputMappingAnd::Config::Reflect(context);
-        InputMappingOr::Config::Reflect(context);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
