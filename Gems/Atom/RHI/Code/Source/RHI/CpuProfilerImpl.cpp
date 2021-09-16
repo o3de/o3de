@@ -35,30 +35,6 @@ namespace AZ
             return Interface<CpuProfiler>::Get();
         }
 
-        // --- TimeRegion ---
-
-        TimeRegion::TimeRegion(const GroupRegionName& groupRegionName) :
-            CachedTimeRegion(groupRegionName)
-        {
-            if (CpuProfiler::Get())
-            {
-                CpuProfiler::Get()->BeginTimeRegion(*this);
-            }
-        }
-
-        TimeRegion::~TimeRegion()
-        {
-            EndRegion();
-        }
-
-        void TimeRegion::EndRegion()
-        {
-            if (CpuProfiler::Get())
-            {
-                CpuProfiler::Get()->EndTimeRegion();
-            }
-        }
-
         // --- CachedTimeRegion ---
 
         CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName)
@@ -100,6 +76,7 @@ namespace AZ
 
         void CpuProfilerImpl::Init()
         {
+            Interface<AZ::Debug::Profiler>::Register(this);
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
             SystemTickBus::Handler::BusConnect();
@@ -114,6 +91,7 @@ namespace AZ
             }
             // When this call is made, no more thread profiling calls can be performed anymore
             Interface<CpuProfiler>::Unregister(this);
+            Interface<AZ::Debug::Profiler>::Unregister(this);
 
             // Wait for the remaining threads that might still be processing its profiling calls
             AZStd::unique_lock<AZStd::shared_mutex> shutdownLock(m_shutdownMutex);
@@ -129,8 +107,10 @@ namespace AZ
             SystemTickBus::Handler::BusDisconnect();
         }
 
-        void CpuProfilerImpl::BeginTimeRegion(CachedTimeRegion& timeRegion)
+        void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)
         {
+            CachedTimeRegion timeRegion({budget->Name(), eventName});
+
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
             {
@@ -147,12 +127,13 @@ namespace AZ
             }
         }
 
-        void CpuProfilerImpl::EndTimeRegion()
+        void CpuProfilerImpl::EndRegion([[maybe_unused]] const AZ::Debug::Budget* budget)
         {
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
             {
-                if (m_enabled)
+                // guard against enabling mid-marker
+                if (m_enabled && ms_threadLocalStorage)
                 {
                     ms_threadLocalStorage->RegionStackPopBack();
                 }

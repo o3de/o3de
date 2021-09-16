@@ -53,18 +53,6 @@ namespace AZ
             AZStd::sys_time_t m_endTick = 0;
         };
 
-        //! Helper class used as a RAII-style mechanism for the macros to begin and end a region.
-        class TimeRegion : public CachedTimeRegion
-        {
-        public:
-            TimeRegion() = delete;
-            TimeRegion(const GroupRegionName& groupRegionName);
-            ~TimeRegion();
-
-            //! End region
-            void EndRegion();
-        };
-
         //! Interface class of the CpuProfiler
         class CpuProfiler
         {
@@ -80,12 +68,6 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(CpuProfiler);
 
             static CpuProfiler* Get();
-
-            //! Add a new time region
-            virtual void BeginTimeRegion(CachedTimeRegion& timeRegion) = 0;
-
-            //! Ends a time region
-            virtual void EndTimeRegion() = 0;
 
             //! Get the last frame's TimeRegionMap
             virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
@@ -111,9 +93,7 @@ namespace AZ
 //! provided statistics data.
 
 //! Supply a group and region to the time region
-#define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
-    const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(AZ_BUDGET_GETTER(groupName)()->Name(), regionName); \
-    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(AZ_JOIN(groupRegionName, __LINE__));
+#define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) AZ_PROFILE_SCOPE(groupName, regionName)
 
 // temporarily add remaining atom groups here
 AZ_DECLARE_BUDGET(AuxGeom);

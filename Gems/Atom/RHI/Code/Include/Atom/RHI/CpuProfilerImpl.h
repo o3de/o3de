@@ -85,7 +85,8 @@ namespace AZ
         //! forwards the request to profile a region to the appropriate thread. The user is able to request all
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
-            : public CpuProfiler
+            : public AZ::Debug::Profiler
+            , public CpuProfiler
             , public SystemTickBus::Handler
         {
             friend class CpuTimingLocalStorage;
@@ -107,9 +108,11 @@ namespace AZ
             // m_timeRegionMap so that the next frame has up-to-date profiling data.
             void OnSystemTick() final override;
 
+            //! AZ::Debug::Profiler overrides...
+            void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)  final override;
+            void EndRegion(const AZ::Debug::Budget* budget) final override;
+
             //! CpuProfiler overrides...
-            void BeginTimeRegion(CachedTimeRegion& timeRegion) final override;
-            void EndTimeRegion() final override;
             const TimeRegionMap& GetTimeRegionMap() const final override;
             bool BeginContinuousCapture() final override;
             bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) final override;
