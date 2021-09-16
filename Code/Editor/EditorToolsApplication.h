@@ -28,7 +28,7 @@ namespace EditorInternal
 
         void RegisterCoreComponents() override;
 
-        AZ::ComponentTypeList GetRequiredSystemComponents() const;
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
 
         void StartCommon(AZ::Entity* systemEntity) override;
 

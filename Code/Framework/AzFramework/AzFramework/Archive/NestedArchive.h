@@ -40,7 +40,7 @@ namespace AZ::IO
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;
         
-        auto GetRootFolderHandle() -> Handle;
+        auto GetRootFolderHandle() -> Handle override;
 
         // Adds a new file to the zip or update an existing one
         // adds a directory (creates several nested directories if needed)
@@ -66,26 +66,26 @@ namespace AZ::IO
         int RemoveDir(AZStd::string_view szRelativePath) override;
         
         // deletes all files from the archive
-        int RemoveAll();
+        int RemoveAll() override;
 
         // finds the file; you don't have to close the returned handle
-        Handle FindFile(AZStd::string_view szRelativePath);
+        Handle FindFile(AZStd::string_view szRelativePath) override;
 
         // returns the size of the file (unpacked) by the handle
-        uint64_t GetFileSize(Handle fileHandle);
+        uint64_t GetFileSize(Handle fileHandle) override;
 
         // reads the file into the preallocated buffer (must be at least the size of GetFileSize())
-        int ReadFile(Handle fileHandle, void* pBuffer);
+        int ReadFile(Handle fileHandle, void* pBuffer) override;
 
         // returns the full path to the archive file
-        const char* GetFullPath() const;
+        const char* GetFullPath() const override;
         ZipDir::Cache* GetCache();
 
-        uint32_t GetFlags() const;
-        bool SetFlags(uint32_t nFlagsToSet);
-        bool ResetFlags(uint32_t nFlagsToReset);
+        uint32_t GetFlags() const override;
+        bool SetFlags(uint32_t nFlagsToSet) override;
+        bool ResetFlags(uint32_t nFlagsToReset) override;
 
-        bool SetPackAccessible(bool bAccessible);
+        bool SetPackAccessible(bool bAccessible) override;
 
     protected:
         // returns the pointer to the relative file path to be passed

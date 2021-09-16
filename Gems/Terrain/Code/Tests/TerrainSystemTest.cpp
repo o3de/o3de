@@ -21,6 +21,8 @@ class TerrainSystemTest : public ::testing::Test
 {
 protected:
     AZ::ComponentApplication m_app;
+
+    AZStd::unique_ptr<AZ::Entity> m_entity;
     AZStd::unique_ptr<Terrain::TerrainSystem> m_terrainSystem;
 
     void SetUp() override

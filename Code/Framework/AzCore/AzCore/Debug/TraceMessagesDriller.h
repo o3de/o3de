@@ -28,21 +28,21 @@ namespace AZ
         protected:
             //////////////////////////////////////////////////////////////////////////
             // Driller
-            virtual const char* GroupName() const { return "SystemDrillers"; }
-            virtual const char* GetName() const { return "TraceMessagesDriller"; }
-            virtual const char* GetDescription() const { return "Handles all system messages like Assert, Exception, Error, Warning, Printf, etc."; }
-            virtual void Start(const Param* params = NULL, int numParams = 0);
-            virtual void Stop();
+            const char* GroupName() const override { return "SystemDrillers"; }
+            const char* GetName() const override { return "TraceMessagesDriller"; }
+            const char* GetDescription() const override { return "Handles all system messages like Assert, Exception, Error, Warning, Printf, etc."; }
+            void Start(const Param* params = NULL, int numParams = 0) override;
+            void Stop() override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // TraceMessagesDrillerBus
             /// Triggered when a AZ_Assert failed. This is terminating event! (the code will break, crash).
-            virtual void OnAssert(const char* message);
-            virtual void OnException(const char* message);
-            virtual void OnError(const char* window, const char* message);
-            virtual void OnWarning(const char* window, const char* message);
-            virtual void OnPrintf(const char* window, const char* message);
+            void OnAssert(const char* message) override;
+            void OnException(const char* message) override;
+            void OnError(const char* window, const char* message) override;
+            void OnWarning(const char* window, const char* message) override;
+            void OnPrintf(const char* window, const char* message) override;
             //////////////////////////////////////////////////////////////////////////
         };
     } // namespace Debug

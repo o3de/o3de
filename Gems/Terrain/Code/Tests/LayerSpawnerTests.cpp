@@ -21,6 +21,10 @@ using ::testing::NiceMock;
 using ::testing::AtLeast;
 using ::testing::_;
 
+using ::testing::NiceMock;
+using ::testing::AtLeast;
+using ::testing::_;
+
 class LayerSpawnerComponentTest
     : public ::testing::Test
 {

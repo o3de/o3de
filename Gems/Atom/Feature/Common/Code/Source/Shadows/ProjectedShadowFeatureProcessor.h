@@ -48,12 +48,13 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
-        void SetEsmExponent(ShadowId id, float exponent);
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
+
+        void SetEsmExponent(ShadowId id, float exponent);
 
     private:
 

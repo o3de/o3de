@@ -40,48 +40,48 @@ public:
     // Movie system.
     IMovieSystem* GetMovieSystem() const { return m_pMovieSystem; };
 
-    void SetName(const char* name);
-    const char* GetName() const;
-    uint32 GetId() const { return m_id; }
+    void SetName(const char* name) override;
+    const char* GetName() const override;
+    uint32 GetId() const override { return m_id; }
     void ResetId() override;
 
     float GetTime() const { return m_time; }
 
     void SetLegacySequenceObject(IAnimLegacySequenceObject* legacySequenceObject) override { m_legacySequenceObject = legacySequenceObject; }
-    virtual IAnimLegacySequenceObject* GetLegacySequenceObject() const override { return m_legacySequenceObject; }
+    IAnimLegacySequenceObject* GetLegacySequenceObject() const override { return m_legacySequenceObject; }
     void SetSequenceEntityId(const AZ::EntityId& sequenceEntityId) override;
     const AZ::EntityId& GetSequenceEntityId() const override { return m_sequenceEntityId; }
 
-    virtual void SetActiveDirector(IAnimNode* pDirectorNode);
-    virtual IAnimNode* GetActiveDirector() const;
+    void SetActiveDirector(IAnimNode* pDirectorNode) override;
+    IAnimNode* GetActiveDirector() const override;
 
-    virtual void SetFlags(int flags);
-    virtual int GetFlags() const;
-    virtual int GetCutSceneFlags(const bool localFlags = false) const;
+    void SetFlags(int flags) override;
+    int GetFlags() const override;
+    int GetCutSceneFlags(const bool localFlags = false) const override;
 
-    virtual void SetParentSequence(IAnimSequence* pParentSequence);
-    virtual const IAnimSequence* GetParentSequence() const;
-    virtual bool IsAncestorOf(const IAnimSequence* pSequence) const;
+    void SetParentSequence(IAnimSequence* pParentSequence) override;
+    const IAnimSequence* GetParentSequence() const override;
+    bool IsAncestorOf(const IAnimSequence* pSequence) const override;
 
-    void SetTimeRange(Range timeRange);
-    Range GetTimeRange() { return m_timeRange; };
+    void SetTimeRange(Range timeRange) override;
+    Range GetTimeRange() override { return m_timeRange; };
 
-    void AdjustKeysToTimeRange(const Range& timeRange);
+    void AdjustKeysToTimeRange(const Range& timeRange) override;
 
     //! Return number of animation nodes in sequence.
-    int GetNodeCount() const;
+    int GetNodeCount() const override;
     //! Get specified animation node.
-    IAnimNode* GetNode(int index) const;
+    IAnimNode* GetNode(int index) const override;
 
-    IAnimNode* FindNodeByName(const char* sNodeName, const IAnimNode* pParentDirector);
+    IAnimNode* FindNodeByName(const char* sNodeName, const IAnimNode* pParentDirector) override;
     IAnimNode* FindNodeById(int nNodeId);
-    virtual void ReorderNode(IAnimNode* node, IAnimNode* pPivotNode, bool next);
+    void ReorderNode(IAnimNode* node, IAnimNode* pPivotNode, bool next) override;
 
-    void Reset(bool bSeekToStart);
-    void ResetHard();
-    void Pause();
-    void Resume();
-    bool IsPaused() const;
+    void Reset(bool bSeekToStart) override;
+    void ResetHard() override;
+    void Pause() override;
+    void Resume() override;
+    bool IsPaused() const override;
 
     virtual void OnStart();
     virtual void OnStop();
@@ -90,49 +90,49 @@ public:
     void TimeChanged(float newTime) override;
 
     //! Add animation node to sequence.
-    bool AddNode(IAnimNode* node);
-    IAnimNode* CreateNode(AnimNodeType nodeType);
-    IAnimNode* CreateNode(XmlNodeRef node);
+    bool AddNode(IAnimNode* node) override;
+    IAnimNode* CreateNode(AnimNodeType nodeType) override;
+    IAnimNode* CreateNode(XmlNodeRef node) override;
     void RemoveNode(IAnimNode* node, bool removeChildRelationships=true) override;
     //! Add scene node to sequence.
-    void RemoveAll();
+    void RemoveAll() override;
 
-    virtual void Activate();
-    virtual bool IsActivated() const { return m_bActive; }
-    virtual void Deactivate();
+    void Activate() override;
+    bool IsActivated() const override { return m_bActive; }
+    void Deactivate() override;
 
-    virtual void PrecacheData(float startTime);
+    void PrecacheData(float startTime) override;
     void PrecacheStatic(const float startTime);
     void PrecacheDynamic(float time);
 
-    void StillUpdate();
-    void Animate(const SAnimContext& ec);
-    void Render();
+    void StillUpdate() override;
+    void Animate(const SAnimContext& ec) override;
+    void Render() override;
 
     void InitPostLoad() override;
 
-    void CopyNodes(XmlNodeRef& xmlNode, IAnimNode** pSelectedNodes, uint32 count);
-    void PasteNodes(const XmlNodeRef& xmlNode, IAnimNode* pParent);
+    void CopyNodes(XmlNodeRef& xmlNode, IAnimNode** pSelectedNodes, uint32 count) override;
+    void PasteNodes(const XmlNodeRef& xmlNode, IAnimNode* pParent) override;
 
     //! Add/remove track events in sequence
-    virtual bool AddTrackEvent(const char* szEvent);
-    virtual bool RemoveTrackEvent(const char* szEvent);
-    virtual bool RenameTrackEvent(const char* szEvent, const char* szNewEvent);
-    virtual bool MoveUpTrackEvent(const char* szEvent);
-    virtual bool MoveDownTrackEvent(const char* szEvent);
-    virtual void ClearTrackEvents();
+    bool AddTrackEvent(const char* szEvent) override;
+    bool RemoveTrackEvent(const char* szEvent) override;
+    bool RenameTrackEvent(const char* szEvent, const char* szNewEvent) override;
+    bool MoveUpTrackEvent(const char* szEvent) override;
+    bool MoveDownTrackEvent(const char* szEvent) override;
+    void ClearTrackEvents() override;
 
     //! Get the track events in the sequence
-    virtual int GetTrackEventsCount() const;
-    virtual char const* GetTrackEvent(int iIndex) const;
-    virtual IAnimStringTable* GetTrackEventStringTable() { return m_pEventStrings.get(); }
+    int GetTrackEventsCount() const override;
+    char const* GetTrackEvent(int iIndex) const override;
+    IAnimStringTable* GetTrackEventStringTable() override { return m_pEventStrings.get(); }
 
     //! Call to trigger a track event
-    virtual void TriggerTrackEvent(const char* event, const char* param = NULL);
+    void TriggerTrackEvent(const char* event, const char* param = NULL) override;
 
     //! Track event listener
-    virtual void AddTrackEventListener(ITrackEventListener* pListener);
-    virtual void RemoveTrackEventListener(ITrackEventListener* pListener);
+    void AddTrackEventListener(ITrackEventListener* pListener) override;
+    void RemoveTrackEventListener(ITrackEventListener* pListener) override;
 
     SequenceType GetSequenceType() const override { return m_sequenceType; }
 
