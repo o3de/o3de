@@ -34,6 +34,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             AZ::AssetProcessor
             Legacy::Editor
             AutomatedTesting.Assets
+            AutomatedTesting.GameLauncher
         COMPONENT
             LargeWorlds
     )
@@ -47,6 +48,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
            AZ::AssetProcessor
            Legacy::Editor
            AutomatedTesting.Assets
+           AutomatedTesting.GameLauncher
         COMPONENT
             LargeWorlds
     )
