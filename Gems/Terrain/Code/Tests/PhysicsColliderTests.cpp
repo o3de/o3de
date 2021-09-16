@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/MemoryComponent.h>
 
@@ -173,7 +174,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
 
-    EXPECT_EQ(heightScale, 1.0f / 256.0f);
+    EXPECT_NEAR(heightScale, 1.0f / 256.0f, 0.1f);
 
     ResetEntity();
 }
@@ -317,14 +318,14 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsI
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
-    max = 512.0f;
-    AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    float regionMax = 512.0f;
+    AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(regionMax));
 
     AZStd::vector<int16_t> heights;
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeights, dirtyRegion);
 
-    EXPECT_EQ(heights.size(), max * max);
+    EXPECT_EQ(heights.size(), regionMax * regionMax);
 
     ResetEntity();
 }
@@ -370,9 +371,9 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrec
     float aabbCenter = min + (max - min) / 2.0f;
     
     // The height returned by the terrain system(mockHeight) is absolute, the collider will return a relative value.
-    int16_t expectedHeight = aznumeric_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
+    int16_t expectedHeight = azlossy_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
 
-    EXPECT_TRUE(heights[0] == expectedHeight);
+    EXPECT_EQ(heights[0], expectedHeight);
 
     ResetEntity();
 }
