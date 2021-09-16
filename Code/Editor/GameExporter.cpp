@@ -432,25 +432,6 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
                     newFileNode->setAttr("src", handle.m_filename.data());
                     newFileNode->setAttr("dest", handle.m_filename.data());
                     newFileNode->setAttr("size", handle.m_fileDesc.nSize);
-
-                    unsigned char md5[16];
-                    AZStd::string filenameToHash = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
-                    filenameToHash += "/";
-                    filenameToHash += AZStd::string{ handle.m_filename.data(), handle.m_filename.size() };
-                    if (gEnv->pCryPak->ComputeMD5(filenameToHash.data(), md5))
-                    {
-                        char md5string[33];
-                        sprintf_s(md5string, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                            md5[0], md5[1], md5[2], md5[3],
-                            md5[4], md5[5], md5[6], md5[7],
-                            md5[8], md5[9], md5[10], md5[11],
-                            md5[12], md5[13], md5[14], md5[15]);
-                        newFileNode->setAttr("md5", md5string);
-                    }
-                    else
-                    {
-                        newFileNode->setAttr("md5", "");
-                    }
                 }
             }
         } while (handle = gEnv->pCryPak->FindNext(handle));

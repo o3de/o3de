@@ -68,7 +68,7 @@ namespace UnitTest
             return false;
         }
 
-        if (!archive->OpenPack(path, AZ::IO::IArchive::FLAGS_PATH_REAL))
+        if (!archive->OpenPack(path))
         {
             return false;
         }
