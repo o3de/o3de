@@ -11,14 +11,17 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/JSON/error/error.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/optional.h>
 
 namespace AZ::SceneAPI::SceneData
 {
+     // PrefabGroup
+
      PrefabGroup::PrefabGroup()
         : m_id(Uuid::CreateNull())
         , m_name()
     {
-         m_prefabDom.SetNull();
     }
 
     const AZStd::string& PrefabGroup::GetName() const
@@ -63,44 +66,17 @@ namespace AZ::SceneAPI::SceneData
 
     void PrefabGroup::SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom)
     {
-        m_prefabDom = AZStd::move(prefabDom);
-        m_prefabDomBuffer.clear();
+        m_prefabDomData = AZStd::make_shared<Prefab::PrefabDomData>();
+        m_prefabDomData->CopyValue(prefabDom);
     }
 
-    void PrefabGroup::SetPrefabDomBuffer(AZStd::string prefabDomBuffer)
+    AzToolsFramework::Prefab::PrefabDomConstReference PrefabGroup::GetPrefabDomRef() const
     {
-        m_prefabDomBuffer = AZStd::move(prefabDomBuffer);
-        m_prefabDom.SetNull();
-    }
-
-    const AzToolsFramework::Prefab::PrefabDom& PrefabGroup::GetPrefabDom() const
-    {
-        if (!m_prefabDom.HasParseError() && !m_prefabDom.IsNull())
+        if (m_prefabDomData)
         {
-            // DOM is ready
-            return m_prefabDom;
+            return m_prefabDomData->GetValue();
         }
-        else if (m_prefabDomBuffer.empty())
-        {
-            m_prefabDom.SetNull();
-            return m_prefabDom;
-        }
-
-        m_prefabDom.Parse<rapidjson::kParseCommentsFlag>(m_prefabDomBuffer.c_str());
-        if (m_prefabDom.HasParseError())
-        {
-            AZ_Warning(
-                "prefab",
-                false,
-                "JSON error during parsing at offset %zu: %s",
-                m_prefabDom.GetErrorOffset(),
-                rapidjson::GetParseError_En(m_prefabDom.GetParseError()));
-
-            m_prefabDom.SetNull();
-            return m_prefabDom;
-        }
-
-        return m_prefabDom;
+        return {};
     }
 
     void PrefabGroup::Reflect(ReflectContext* context)
@@ -117,19 +93,42 @@ namespace AZ::SceneAPI::SceneData
                 ->Field("nodeSelectionList", &PrefabGroup::m_nodeSelectionList)
                 ->Field("rules", &PrefabGroup::m_rules)
                 ->Field("id", &PrefabGroup::m_id)
-                ->Field("prefabDomBuffer", &PrefabGroup::m_prefabDomBuffer);
+                ->Field("prefabDomData", &PrefabGroup::m_prefabDomData);
         }
 
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
         if (behaviorContext)
         {
+            auto setPrefabDomData = [](PrefabGroup& self, const AZStd::string& json)
+            {
+                auto jsonOutcome = AzFramework::FileFunc::ReadJsonFromString(json);
+                if (jsonOutcome.IsSuccess())
+                {
+                    self.SetPrefabDom(AZStd::move(jsonOutcome.GetValue()));
+                    return true;
+                }
+                AZ_Error("prefab", false, "Set PrefabDom failed (%s)", jsonOutcome.GetError().c_str());
+                return false;
+            };
+
+            auto getPrefabDomData = [](const PrefabGroup& self) -> AZStd::string
+            {
+                if (self.GetPrefabDomRef().has_value() == false)
+                {
+                    return {};
+                }
+                AZStd::string buffer;
+                AzFramework::FileFunc::WriteJsonToString(self.GetPrefabDomRef().value(), buffer);
+                return buffer;
+            };
+
             behaviorContext->Class<PrefabGroup>()
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)
                 ->Attribute(Script::Attributes::Module, "prefab")
                 ->Property("name", BehaviorValueProperty(&PrefabGroup::m_name))
                 ->Property("id", BehaviorValueProperty(&PrefabGroup::m_id))
-                ->Property("prefabDomBuffer", BehaviorValueProperty(&PrefabGroup::m_prefabDomBuffer));
+                ->Property("prefabDomData", getPrefabDomData, setPrefabDomData);
         }
     }
 }
