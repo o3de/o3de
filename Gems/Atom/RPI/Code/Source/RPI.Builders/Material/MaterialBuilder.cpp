@@ -9,6 +9,7 @@
 #include "MaterialBuilder.h"
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -93,8 +94,12 @@ namespace AZ
                     {
                         AssetBuilderSDK::JobDependency jobDependency;
                         jobDependency.m_jobKey = jobKey;
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
+
+                        bool includeMaterialPropertyNames = true;
+                        RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
+                        jobDependency.m_type = includeMaterialPropertyNames ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
+
                         jobDependencies.push_back(jobDependency);
                     }
                 }

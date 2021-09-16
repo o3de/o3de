@@ -78,10 +78,7 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
-            // TODO: Use includeMaterialPropertyNames to break materialtype dependency on fbx files. Materialasset's dependency on materialtypeasset will need to be decoupled first
-            if (conversionEnabled && !materialTypePath.empty() /*&& !includeMaterialPropertyNames*/)
+            if (conversionEnabled && !materialTypePath.empty())
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
@@ -90,7 +87,10 @@ namespace AZ
                 jobDependency.m_jobKey = "Atom Material Builder";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+
+                bool includeMaterialPropertyNames = true;
+                RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
+                jobDependency.m_type = includeMaterialPropertyNames ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
 
                 jobDependencyList.push_back(jobDependency);
             }
