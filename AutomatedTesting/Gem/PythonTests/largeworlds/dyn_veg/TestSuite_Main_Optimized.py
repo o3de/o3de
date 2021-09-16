@@ -48,11 +48,11 @@ class TestAutomation(EditorTestSuite):
     class test_AssetWeightSelector_InstancesExpressBasedOnWeight(EditorParallelTest):
         from .EditorScripts import AssetWeightSelector_InstancesExpressBasedOnWeight as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(EditorParallelTest):
         from .EditorScripts import DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(EditorParallelTest):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
 
