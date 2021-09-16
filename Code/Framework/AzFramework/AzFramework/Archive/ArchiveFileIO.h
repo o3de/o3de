@@ -77,7 +77,7 @@ namespace AZ::IO
     protected:
         // we keep a list of file names ever opened so that we can easily return it.
         mutable AZStd::recursive_mutex m_operationGuard;
-        AZStd::unordered_map<IO::HandleType, AZStd::string> m_trackedFiles;
+        AZStd::unordered_map<IO::HandleType, AZ::IO::Path> m_trackedFiles;
         AZStd::fixed_vector<char, ArchiveFileIoMaxBuffersize> m_copyBuffer;
         IArchive* m_archive;
     };

@@ -497,8 +497,13 @@ namespace AZ::IO
         const auto fileIt = m_trackedFiles.find(fileHandle);
         if (fileIt != m_trackedFiles.end())
         {
-            AZ_Assert(filenameSize >= fileIt->second.length(), "Filename size %" PRIu64 " is larger than the size of the tracked file %s:%zu", fileIt->second.c_str(), fileIt->second.size());
-            azstrncpy(filename, filenameSize, fileIt->second.c_str(), fileIt->second.length());
+            const AZStd::string_view trackedFileView = fileIt->second.Native();
+            if (filenameSize <= trackedFileView.size())
+            {
+                return false;
+            }
+            size_t trackedFileViewLength = trackedFileView.copy(filename, trackedFileView.size());
+            filename[trackedFileViewLength] = '\0';
             return true;
         }
 
