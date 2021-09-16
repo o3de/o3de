@@ -30,7 +30,7 @@ file(INSTALL @CMAKE_BINARY_DIR@/bin/${sdk_launcher_config}/O3DE_SDK
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS
     USE_SOURCE_PERMISSIONS
 )
-file(INSTALL @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/O3DE_SDK_InstallPath.setreg
+file(INSTALL @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/O3DE_SDK_InstallPath.o3de_sdk.setreg
     DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS/Registry
 )
 

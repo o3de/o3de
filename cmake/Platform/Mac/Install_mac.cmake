@@ -29,7 +29,7 @@ set(installed_binaries_path_template [[
 # This will be used by the O3DE_SDK.app bundle to find the 
 string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
 file(GENERATE
-    OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/O3DE_SDK_InstallPath.setreg
+    OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/O3DE_SDK_InstallPath.o3de_sdk.setreg
     CONTENT "${configured_setreg_file}"
 )
 

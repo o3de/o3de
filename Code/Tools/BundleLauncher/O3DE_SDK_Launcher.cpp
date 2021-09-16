@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
     AZ::IO::FixedMaxPath processPath = AZ::Utils::GetExecutableDirectory();
     AZ::IO::FixedMaxPath enginePath = (processPath / "../Engine").LexicallyNormal();
     auto enginePathParam = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--engine-path="%s")", enginePath.c_str());
-    // Uses the fixed_vector deduction guide to determine the type is AZStd::fixed_vector<char*, 3>
-    AZStd::fixed_vector commandLineParams{ processPath.Native().data(), enginePathParam.data(), static_cast<char*>(nullptr) };
+    // Uses the fixed_vector deduction guide to determine the type is AZStd::fixed_vector<char*, 2>
+    AZStd::fixed_vector commandLineParams{ processPath.Native().data(), enginePathParam.data() };
 
 
-    
     // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
-    AZ::ComponentApplication application(2, commandLineParams.data());
+    AZ::ComponentApplication application(static_cast<int>(commandLineParams.size()), commandLineParams.data());
+    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*AZ::SettingsRegistry::Get(), "o3de_sdk");
     application.Create(AZ::ComponentApplication::Descriptor());
  
     AZ::IO::FixedMaxPath installedBinariesFolder;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     shellProcessLaunch.m_processExecutableString = AZStd::move(shellPath.Native());
     shellProcessLaunch.m_commandlineParameters = parameters;
     shellProcessLaunch.m_showWindow = true;
-    shellProcessLaunch.m_workingDirectory = enginePath.Native();
+    shellProcessLaunch.m_workingDirectory = enginePath.String();
     AZStd::unique_ptr<AzFramework::ProcessWatcher> shellProcess(AzFramework::ProcessWatcher::LaunchProcess(shellProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
     shellProcess->WaitForProcessToExit(120);
     shellProcess.reset();
