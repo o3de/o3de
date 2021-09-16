@@ -1421,7 +1421,10 @@ namespace EMotionFX
     // extract sorted active items
     void Recorder::ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, AZStd::vector<ExtractedNodeHistoryItem>* outItems, AZStd::vector<size_t>* outMap) const
     {
-        // clear the map array
+        // Clear the item array and map array 
+        outItems->clear();
+        outMap->clear();
+
         const size_t maxIndex = CalcMaxNodeHistoryTrackIndex(actorInstanceData);
         outItems->resize(maxIndex + 1);
         for (size_t i = 0; i <= maxIndex; ++i)
