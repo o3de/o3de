@@ -7,7 +7,7 @@
  */
 
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <Entity/EditorEntityUtilityComponent.h>
+#include <Entity/EntityUtilityComponent.h>
 
 #include <Prefab/PrefabTestComponent.h>
 #include <Prefab/PrefabTestDomUtils.h>
@@ -31,7 +31,7 @@ namespace UnitTest
         
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
             g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
@@ -59,7 +59,7 @@ namespace UnitTest
 
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
-            my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
             template_id = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
@@ -80,8 +80,8 @@ namespace UnitTest
 
         // Create another entity for comparison purposes
         AZ::EntityId entityId;
-        AzToolsFramework::EditorEntityUtilityBus::BroadcastResult(
-            entityId, &AzToolsFramework::EditorEntityUtilityBus::Events::CreateEditorReadyEntity, "test");
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            entityId, &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity, "test");
 
         AZ::Entity* testEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
 
