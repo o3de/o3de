@@ -97,7 +97,6 @@ namespace ImageProcessingAtom
         }
         else
         {
-            
             profile = isSrgb?ASTCENC_PRF_LDR_SRGB:ASTCENC_PRF_LDR;
         }
         return profile;
