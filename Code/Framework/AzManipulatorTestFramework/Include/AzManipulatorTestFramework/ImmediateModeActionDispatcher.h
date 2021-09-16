@@ -18,6 +18,7 @@ namespace AzManipulatorTestFramework
     class ImmediateModeActionDispatcher
         : public ActionDispatcher<ImmediateModeActionDispatcher>
         , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler
     {
         using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using KeyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers;
@@ -50,6 +51,9 @@ namespace AzManipulatorTestFramework
         // EditorModifierKeyRequestBus overrides ...
         KeyboardModifiers QueryKeyboardModifiers() override;
 
+        // EditorViewportTimeNowRequestBus overrides ...
+        std::chrono::milliseconds EditorViewportTimeNow() override;
+
     protected:
         // ActionDispatcher ...
         void SetSnapToGridImpl(bool enabled) override;
@@ -79,6 +83,8 @@ namespace AzManipulatorTestFramework
 
         mutable AZStd::unique_ptr<MouseInteractionEvent> m_event;
         ManipulatorViewportInteraction& m_viewportManipulatorInteraction;
+
+        std::chrono::milliseconds m_timeNow = std::chrono::milliseconds(0); //!< Current time that ticks up after each call to EditorViewportTimeNow.
     };
 
     template<typename ActualT, typename ExpectedT>
@@ -105,5 +111,13 @@ namespace AzManipulatorTestFramework
     inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::QueryKeyboardModifiers()
     {
         return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
+    }
+
+    inline std::chrono::milliseconds ImmediateModeActionDispatcher::EditorViewportTimeNow()
+    {
+        // step the time for each call to be greater than the minimum time
+        // required for a double click to register
+        m_timeNow += std::chrono::milliseconds(10000);
+        return m_timeNow;
     }
 } // namespace AzManipulatorTestFramework

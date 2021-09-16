@@ -253,10 +253,10 @@ namespace AzToolsFramework
                  mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
         }
 
-        static bool ManipulatorDitto(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool ManipulatorDitto(
+            const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
-            return mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
@@ -1054,6 +1054,15 @@ namespace AzToolsFramework
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
+
+        m_clickDetector.OverrideTimeNowFn(
+            []
+            {
+                std::chrono::milliseconds timeNow;
+                AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::BroadcastResult(
+                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Events::EditorViewportTimeNow);
+                return timeNow;
+            });
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1883,7 +1892,7 @@ namespace AzToolsFramework
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
-            if (Input::ManipulatorDitto(mouseInteraction))
+            if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
             {
                 PerformManipulatorDitto(entityIdUnderCursor);
                 return false;

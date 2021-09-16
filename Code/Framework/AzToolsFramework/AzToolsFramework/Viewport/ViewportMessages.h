@@ -282,6 +282,22 @@ namespace AzToolsFramework
             return keyboardModifiers;
         }
 
+        //!
+        class EditorViewportTimeNowRequests : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            //!
+            virtual std::chrono::milliseconds EditorViewportTimeNow() = 0;
+
+        protected:
+            ~EditorViewportTimeNowRequests() = default;
+        };
+
+        using EditorViewportTimeNowRequestBus = AZ::EBus<EditorViewportTimeNowRequests>;
+
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {

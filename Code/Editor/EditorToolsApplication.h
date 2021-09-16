@@ -19,6 +19,8 @@ namespace EditorInternal
     class EditorToolsApplication
         : public AzToolsFramework::ToolsApplication
         , public EditorToolsApplicationRequests::Bus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler
     {
     public:
         EditorToolsApplication(int* argc, char*** argv);
@@ -43,6 +45,12 @@ namespace EditorInternal
         // From AzToolsFramework::ToolsApplication
         void CreateReflectionManager() override;
         void Reflect(AZ::ReflectContext* context) override;
+
+        // EditorModifierKeyRequestBus overrides ...
+        AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
+
+        // EditorViewportTimeNowRequestBus overrides ...
+        std::chrono::milliseconds EditorViewportTimeNow() override;
 
     protected:
         // From EditorToolsApplicationRequests

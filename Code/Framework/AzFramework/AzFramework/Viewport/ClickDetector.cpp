@@ -9,8 +9,20 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzFramework
 {
+    ClickDetector::ClickDetector()
+    {
+        m_timeNowFn = []
+        {
+            auto now = std::chrono::steady_clock::now();
+            return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch();
+        };
+    }
+
     ClickDetector::ClickOutcome ClickDetector::DetectClick(const ClickEvent clickEvent, const ScreenVector& cursorDelta)
     {
         const auto previousDetectionState = m_detectionState;
@@ -26,11 +38,13 @@ namespace AzFramework
 
         if (clickEvent == ClickEvent::Down)
         {
-            const auto now = std::chrono::steady_clock::now();
+            const auto now = m_timeNowFn();
             if (m_tryBeginTime)
             {
-                const std::chrono::duration<float> diff = now - m_tryBeginTime.value();
-                if (diff.count() < m_doubleClickInterval)
+                using FloatingPointSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+
+                const auto diff = now - m_tryBeginTime.value();
+                if (FloatingPointSeconds(diff).count() < m_doubleClickInterval)
                 {
                     return ClickOutcome::Nil;
                 }
@@ -43,7 +57,8 @@ namespace AzFramework
         }
         else if (clickEvent == ClickEvent::Up)
         {
-            const auto clickOutcome = [detectionState = m_detectionState] {
+            const auto clickOutcome = [detectionState = m_detectionState]
+            {
                 if (detectionState == DetectionState::WaitingForMove)
                 {
                     return ClickOutcome::Click;
@@ -66,4 +81,12 @@ namespace AzFramework
 
         return ClickOutcome::Nil;
     }
+
+    void ClickDetector::OverrideTimeNowFn(AZStd::function<std::chrono::milliseconds()> timeNowFn)
+    {
+        m_timeNowFn = AZStd::move(timeNowFn);
+    }
 } // namespace AzFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
