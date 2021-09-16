@@ -11,60 +11,9 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <LmbrCentral/Shape/MockShapes.h>
 
 namespace UnitTest
 {
-    static const AZ::Uuid BoxShapeComponentTypeId = "{5EDF4B9E-0D3D-40B8-8C91-5142BCFC30A6}";
-
-    class MockBoxShapeComponent
-        : public AZ::Component
-    {
-    public:
-        AZ_COMPONENT(MockBoxShapeComponent, BoxShapeComponentTypeId)
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
-        {
-        }
-
-        void Activate() override
-        {
-        }
-
-        void Deactivate() override
-        {
-        }
-
-        bool ReadInConfig([[maybe_unused]] const AZ::ComponentConfig* baseConfig) override
-        {
-            return true;
-        }
-
-        bool WriteOutConfig([[maybe_unused]] AZ::ComponentConfig* outBaseConfig) const override
-        {
-            return true;
-        }
-
-    private:
-        static void GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC_CE("ShapeService"));
-            provided.push_back(AZ_CRC_CE("BoxShapeService"));
-            provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
-        }
-
-        static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-        }
-
-        static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-        }
-
-        static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-        {
-        }
-    };
 
     class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {

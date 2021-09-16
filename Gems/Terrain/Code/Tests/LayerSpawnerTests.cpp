@@ -16,6 +16,7 @@
 #include <AzTest/AzTest.h>
 
 #include <Terrain/MockTerrain.h>
+#include <MockAxisAlignedBoxShapeComponent.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;
@@ -33,7 +34,7 @@ protected:
 
     AZStd::unique_ptr<AZ::Entity> m_entity;
     Terrain::TerrainLayerSpawnerComponent* m_layerSpawnerComponent;
-    UnitTest::MockBoxShapeComponent* m_shapeComponent;
+    UnitTest::MockAxisAlignedBoxShapeComponent* m_shapeComponent;
     AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainSystemService>> m_terrainSystem;
 
     void SetUp() override
@@ -71,7 +72,7 @@ protected:
         m_layerSpawnerComponent = m_entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
         m_app.RegisterComponentDescriptor(m_layerSpawnerComponent->CreateDescriptor());
 
-        m_shapeComponent = m_entity->CreateComponent<UnitTest::MockBoxShapeComponent>();
+        m_shapeComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
         m_app.RegisterComponentDescriptor(m_shapeComponent->CreateDescriptor());
 
         ASSERT_TRUE(m_layerSpawnerComponent);

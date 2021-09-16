@@ -15,6 +15,7 @@
 #include <Components/TerrainLayerSpawnerComponent.h>
 
 #include <Terrain/MockTerrain.h>
+#include <MockAxisAlignedBoxShapeComponent.h>
 
 using ::testing::AtLeast;
 using ::testing::NiceMock;
@@ -162,7 +163,7 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
 
     // Create the base entity with a mock Box Shape and a Terrain Layer Spawner.
     auto entity = CreateEntity();
-    CreateComponent<UnitTest::MockBoxShapeComponent>(entity.get());
+    CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>(entity.get());
     CreateComponent<Terrain::TerrainLayerSpawnerComponent>(entity.get());
 
     // Set up the box shape to return a box from (0,0,5) to (10, 10, 15)
