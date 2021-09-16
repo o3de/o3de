@@ -36,17 +36,19 @@ namespace AzToolsFramework
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             AZ_Assert(settingsRegistry, "Settings registry is not set");
-            
+
             [[maybe_unused]] bool result =
                 settingsRegistry->Get(m_projectPathWithOsSeparator.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
             AZ_Warning("Prefab", result, "Couldn't retrieve project root path");
             m_projectPathWithSlashSeparator = AZ::IO::Path(m_projectPathWithOsSeparator.Native(), '/').MakePreferred();
 
             AZ::Interface<PrefabLoaderInterface>::Register(this);
+            m_scriptingPrefabLoader.Connect(this);
         }
 
         void PrefabLoader::UnregisterPrefabLoaderInterface()
         {
+            m_scriptingPrefabLoader.Disconnect();
             AZ::Interface<PrefabLoaderInterface>::Unregister(this);
         }
 
@@ -554,7 +556,7 @@ namespace AzToolsFramework
                 (pathStr.find_first_of(AZ_FILESYSTEM_INVALID_CHARACTERS) == AZStd::string::npos) &&
                 (pathStr.back() != '\\' && pathStr.back() != '/');
         }
-
+        
         AZ::IO::Path PrefabLoader::GetFullPath(AZ::IO::PathView path)
         {
             AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path).MakePreferred();

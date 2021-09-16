@@ -60,8 +60,7 @@ namespace AzToolsFramework
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, bool ShouldCreateLinks = true) = 0;
         };
-
-
+        
     } // namespace Prefab
 } // namespace AzToolsFramework
 
