@@ -54,7 +54,7 @@ namespace AzFramework
         // Try initialize the selected input device type and input channel name to something valid.
         if (m_inputDeviceType.empty())
         {
-            auto&& validInputDeviceTypes = GetValidInputDeviceTypes();
+            const AZStd::vector<AZStd::string> validInputDeviceTypes = GetValidInputDeviceTypes();
             if (!validInputDeviceTypes.empty())
             {
                 m_inputDeviceType = validInputDeviceTypes[0];
@@ -66,7 +66,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::Crc32 InputMapping::InputChannelNameFilteredByDeviceType::OnInputDeviceTypeSelected()
     {
-        auto&& validInputNames = GetValidInputChannelNamesBySelectedDevice();
+        const AZStd::vector<AZStd::string> validInputNames = GetValidInputChannelNamesBySelectedDevice();
         if (!validInputNames.empty())
         {
             m_inputChannelName = validInputNames[0];
@@ -81,7 +81,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZStd::vector<AZStd::string> InputMapping::InputChannelNameFilteredByDeviceType::GetValidInputDeviceTypes() const
+    AZStd::vector<AZStd::string> InputMapping::InputChannelNameFilteredByDeviceType::GetValidInputDeviceTypes() const
     {
         AZStd::set<AZStd::string> uniqueInputDeviceTypes;
         InputDeviceRequests::InputDeviceByIdMap availableInputDevicesById;
@@ -99,7 +99,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZStd::vector<AZStd::string> InputMapping::InputChannelNameFilteredByDeviceType::GetValidInputChannelNamesBySelectedDevice() const
+    AZStd::vector<AZStd::string> InputMapping::InputChannelNameFilteredByDeviceType::GetValidInputChannelNamesBySelectedDevice() const
     {
         AZStd::vector<AZStd::string> validInputChannelNames;
         InputDeviceId selectedDeviceId(m_inputDeviceType.c_str());

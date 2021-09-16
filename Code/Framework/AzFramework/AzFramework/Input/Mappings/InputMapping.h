@@ -76,12 +76,12 @@ namespace AzFramework
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the valid input device types for this input mapping.
             //! \return Valid input device types for this input mapping.
-            virtual const AZStd::vector<AZStd::string> GetValidInputDeviceTypes() const;
+            virtual AZStd::vector<AZStd::string> GetValidInputDeviceTypes() const;
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the valid input channel names for this input mapping given the selected device type.
             //! \return Valid input channel names for this input mapping given the selected device type.
-            virtual const AZStd::vector<AZStd::string> GetValidInputChannelNamesBySelectedDevice() const;
+            virtual AZStd::vector<AZStd::string> GetValidInputChannelNamesBySelectedDevice() const;
 
         private:
             ////////////////////////////////////////////////////////////////////////////////////////////
