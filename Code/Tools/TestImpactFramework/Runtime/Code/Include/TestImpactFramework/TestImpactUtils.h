@@ -104,6 +104,7 @@ namespace TestImpact
     //! User-friendly names for the client test result types.
     AZStd::string ClientTestResultAsString(Client::TestResult result);
 
+    //! User-friendly names for the suite types.
     SuiteType SuiteTypeFromString(const AZStd::string& suiteType);
 
     //! Returns the sequence report type for the specified string.
