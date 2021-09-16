@@ -320,6 +320,15 @@ namespace AzFramework
         //! @param optionalArgs Optional additional arguments, see BarrierOptionalArgs.
         virtual void Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) = 0;
 
+        //! Register a handler for OnSpawned events.
+        //! @param handler The handler to receive the event.
+        virtual void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>,
+            const AZStd::vector<AZ::Entity*>&, const void*>::Handler& handler) = 0;
+
+        //! Register a handler for OnDespawned events.
+        //! @param handler The handler to receive the event.
+        virtual void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>, const void*>::Handler& handler) = 0;
+
     protected:
         [[nodiscard]] virtual AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
         virtual void DestroyTicket(void* ticket) = 0;

@@ -69,6 +69,9 @@ namespace AzFramework
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
+        void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>, const AZStd::vector<AZ::Entity*>&, const void*>::Handler& handler) override;
+        void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>, const void*>::Handler& handler) override;
+
         //
         // The following function is thread safe but intended to be run from the main thread.
         //
@@ -224,6 +227,9 @@ namespace AzFramework
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
         //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
+
+        AZ::Event<AZ::Data::Asset<Spawnable>, const AZStd::vector<AZ::Entity*>&, const void*> m_onSpawnedEvent;
+        AZ::Event<AZ::Data::Asset<Spawnable>, const void*> m_onDespawnedEvent;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);
