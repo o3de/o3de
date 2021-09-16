@@ -159,8 +159,8 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
     // Verify that the presence of a TerrainLayerSpawner causes terrain to exist in (and *only* in) the box where the TerrainLayerSpawner
     // is defined.
 
-    // The terrain system should only query Heights and Normals from the TerrainAreaHeightRequest bus within the
-    // TerrainLayerSpawner region, and so those values should only get returned from GetHeight/GetNormal for queries inside that region.
+    // The terrain system should only query Heights from the TerrainAreaHeightRequest bus within the
+    // TerrainLayerSpawner region, and so those values should only get returned from GetHeight for queries inside that region.
 
     // Create the base entity with a mock Box Shape and a Terrain Layer Spawner.
     auto entity = CreateEntity();
@@ -208,25 +208,20 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
         {
             AZ::Vector3 position(x, y, 0.0f);
             bool heightQueryTerrainExists = false;
-            bool normalQueryTerrainExists = false;
             float height =
                 m_terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &heightQueryTerrainExists);
-            AZ::Vector3 normal =
-                m_terrainSystem->GetNormal(position, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &normalQueryTerrainExists);
             bool isHole = m_terrainSystem->GetIsHoleFromFloats(
                 position.GetX(), position.GetY(), AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
 
             if (spawnerBox.Contains(AZ::Vector3(position.GetX(), position.GetY(), spawnerBox.GetMin().GetZ())))
             {
                 EXPECT_TRUE(heightQueryTerrainExists);
-                EXPECT_TRUE(normalQueryTerrainExists);
                 EXPECT_FALSE(isHole);
                 EXPECT_EQ(height, spawnerHeight);
             }
             else
             {
                 EXPECT_FALSE(heightQueryTerrainExists);
-                EXPECT_FALSE(normalQueryTerrainExists);
                 EXPECT_TRUE(isHole);
             }
         }
