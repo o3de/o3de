@@ -28,7 +28,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Category, "Atom")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [TODO ATOM-2672][PostFX] need to create page for PostProcessing.
                         ;
@@ -48,6 +48,10 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Color Adjustment")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_colorGradingExposure, "Exposure", "Exposure Value")
+                            ->Attribute(Edit::Attributes::Min, AZStd::numeric_limits<float>::lowest())
+                            ->Attribute(Edit::Attributes::Max, AZStd::numeric_limits<float>::max())
+                            ->Attribute(Edit::Attributes::SoftMin, -20.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 20.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_colorGradingContrast, "Contrast", "Contrast Value")
                             ->Attribute(Edit::Attributes::Min, -100.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
@@ -61,6 +65,10 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, -100.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_colorGradingFilterIntensity, "Filter Intensity", "Filter Intensity Value")
+                            ->Attribute(Edit::Attributes::Min, AZStd::numeric_limits<float>::lowest())
+                            ->Attribute(Edit::Attributes::Max, AZStd::numeric_limits<float>::max())
+                            ->Attribute(Edit::Attributes::SoftMin, -1.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_colorGradingFilterMultiply, "Filter Multiply", "Filter Multiply Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 1.0f)
