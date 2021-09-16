@@ -912,4 +912,43 @@ namespace O3DE::ProjectManager
             return AZ::Success(AZStd::move(templates));
         }
     }
+
+    GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)
+    {
+        /* Placeholder Logic */
+        (void)path;
+        (void)pyEnginePath;
+
+        return GemRepoInfo();
+    }
+
+#define MOCK_GEM_REPO_INFO true
+
+    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> PythonBindings::GetAllGemRepoInfos(const QString& enginePath)
+    {
+        QVector<GemRepoInfo> gemRepos;
+
+#ifndef MOCK_GEM_REPO_INFO
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                for (auto path : m_manifest.attr("get_gems_repos")())
+                {
+                    gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
+                }
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+#else
+        (void)enginePath;
+
+        gemRepos.push_back(GemRepoInfo("JohnCreates", "John Smith", "", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true));
+        gemRepos.push_back(GemRepoInfo("JanesGems", "Jane Doe", "", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false));
+#endif // MOCK_GEM_REPO_INFO
+
+        std::sort(gemRepos.begin(), gemRepos.end());
+        return AZ::Success(AZStd::move(gemRepos));
+    }
 }

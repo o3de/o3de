@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#if !defined(Q_MOC_RUN)
+#include <QString>
+#include <QDateTime>
+#endif
+
+namespace O3DE::ProjectManager
+{
+    class GemRepoInfo
+    {
+    public:
+        GemRepoInfo() = default;
+        GemRepoInfo(const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isAdded);
+
+        bool IsValid() const;
+
+        bool operator<(const GemRepoInfo& gemRepoInfo) const;
+
+        QString m_path;
+        QString m_name = "Unknown Gem Repo Name";
+        QString m_creator = "Unknown Creator";
+        bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
+        QString m_summary = "No summary provided.";
+        QString m_directoryLink;
+        QString m_repoLink;
+        QDateTime m_lastUpdated;
+    };
+} // namespace O3DE::ProjectManager
