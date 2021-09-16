@@ -89,6 +89,12 @@ class DataLakeIntegration:
                 name=f'{self._stack.stack_name}-EventsDatabase'.lower()
             )
         )
+        events_database_output = core.CfnOutput(
+            self._stack,
+            id='EventDatabaseName',
+            description='Glue database for metrics events.',
+            export_name=f"{self._application_name}:EventsDatabase",
+            value=self._events_database.ref)
 
     def _create_events_table(self) -> None:
         """
