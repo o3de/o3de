@@ -125,7 +125,7 @@ namespace AZ
             if (m_shutdownMutex.try_lock_shared())
             {
                 // guard against enabling mid-marker
-                if (m_enabled && ms_threadLocalStorage)
+                if (m_enabled && ms_threadLocalStorage != nullptr)
                 {
                     ms_threadLocalStorage->RegionStackPopBack();
                 }

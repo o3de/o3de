@@ -571,20 +571,6 @@ namespace AZ
             }
         }
 
-        void DirectionalLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            if (count > Shadow::MaxPcfSamplingCount)
-            {
-                AZ_Warning(FeatureProcessorName, false, "Sampling count exceed the limit.");
-                count = Shadow::MaxPcfSamplingCount;
-            }
-            for (auto& it : m_shadowData)
-            {
-                it.second.GetData(handle.GetIndex()).m_predictionSampleCount = count;
-            }
-            m_shadowBufferNeedsUpdate = true;
-        }
-
         void DirectionalLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             if (count > Shadow::MaxPcfSamplingCount)
@@ -604,15 +590,6 @@ namespace AZ
             for (auto& it : m_shadowData)
             {
                 it.second.GetData(handle.GetIndex()).m_boundaryScale = boundaryWidth / 2.f;
-            }
-            m_shadowBufferNeedsUpdate = true;
-        }
-
-        void DirectionalLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            for (auto& it : m_shadowData)
-            {
-                it.second.GetData(handle.GetIndex()).m_pcfMethod = method;
             }
             m_shadowBufferNeedsUpdate = true;
         }

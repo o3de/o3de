@@ -329,19 +329,9 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
         }
         
-        void DiskLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
-        }
-        
         void DiskLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
-        }
-
-        void DiskLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
         void DiskLightFeatureProcessor::SetEsmExponent(LightHandle handle, float exponent)

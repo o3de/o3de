@@ -72,6 +72,7 @@ namespace JsonSerializationTests
             TupleSerializerTestsInternal::ConfigureFeatures(features);
         }
 
+        using JsonSerializerConformityTestDescriptor<AZStd::pair<int, double>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->Class<PairPlaceholder>()->Field("pair", &PairPlaceholder::m_pair);
@@ -126,6 +127,7 @@ namespace JsonSerializationTests
             TupleSerializerTestsInternal::ConfigureFeatures(features);
         }
 
+        using JsonSerializerConformityTestDescriptor<Tuple>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Tuple>();
@@ -344,6 +346,7 @@ namespace JsonSerializationTests
             features.m_enableNewInstanceTests = false;
         }
 
+        using JsonSerializerConformityTestDescriptor::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->Class<TupleClass>()
@@ -477,6 +480,7 @@ namespace JsonSerializationTests
             features.m_typeToInject = rapidjson::kNullType;
         }
 
+        using JsonSerializerConformityTestDescriptor<Tuple>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Tuple>();
@@ -535,6 +539,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             SimpleClass::Reflect(serializeContext, true);

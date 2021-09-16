@@ -298,19 +298,9 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
         }
 
-        void PointLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
-        }
-
         void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
-        }
-
-        void PointLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
         void PointLightFeatureProcessor::SetEsmExponent(LightHandle handle, float esmExponent)

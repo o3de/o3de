@@ -40,57 +40,57 @@ public:
     //! Set library name.
     virtual void SetName(const QString& name);
     //! Get library name.
-    const QString& GetName() const;
+    const QString& GetName() const override;
 
     //! Set new filename for this library.
     virtual bool SetFilename(const QString& filename, [[maybe_unused]] bool checkForUnique = true) { m_filename = filename.toLower(); return true; };
-    const QString& GetFilename() const { return m_filename; };
+    const QString& GetFilename() const override { return m_filename; };
 
-    virtual bool Save() = 0;
-    virtual bool Load(const QString& filename) = 0;
-    virtual void Serialize(XmlNodeRef& node, bool bLoading) = 0;
+    bool Save() override = 0;
+    bool Load(const QString& filename) override = 0;
+    void Serialize(XmlNodeRef& node, bool bLoading) override = 0;
 
     //! Mark library as modified.
-    void SetModified(bool bModified = true);
+    void SetModified(bool bModified = true) override;
     //! Check if library was modified.
-    bool IsModified() const { return m_bModified; };
+    bool IsModified() const override { return m_bModified; };
 
     //////////////////////////////////////////////////////////////////////////
     // Working with items.
     //////////////////////////////////////////////////////////////////////////
     //! Add a new prototype to library.
-    void AddItem(IDataBaseItem* item, bool bRegister = true);
+    void AddItem(IDataBaseItem* item, bool bRegister = true) override;
     //! Get number of known prototypes.
-    int GetItemCount() const { return static_cast<int>(m_items.size()); }
+    int GetItemCount() const override { return static_cast<int>(m_items.size()); }
     //! Get prototype by index.
-    IDataBaseItem* GetItem(int index);
+    IDataBaseItem* GetItem(int index) override;
 
     //! Delete item by pointer of item.
-    void RemoveItem(IDataBaseItem* item);
+    void RemoveItem(IDataBaseItem* item) override;
 
     //! Delete all items from library.
-    void RemoveAllItems();
+    void RemoveAllItems() override;
 
     //! Find library item by name.
     //! Using linear search.
-    IDataBaseItem* FindItem(const QString& name);
+    IDataBaseItem* FindItem(const QString& name) override;
 
     //! Check if this library is local level library.
-    bool IsLevelLibrary() const { return m_bLevelLib; };
+    bool IsLevelLibrary() const override { return m_bLevelLib; };
 
     //! Set library to be level library.
-    void SetLevelLibrary(bool bEnable) { m_bLevelLib = bEnable; };
+    void SetLevelLibrary(bool bEnable) override { m_bLevelLib = bEnable; };
 
     //////////////////////////////////////////////////////////////////////////
     //! Return manager for this library.
-    IBaseLibraryManager* GetManager();
+    IBaseLibraryManager* GetManager() override;
 
     // Saves the library with the main tag defined by the parameter name
     bool SaveLibrary(const char* name, bool saveEmptyLibrary = false);
 
     //CONFETTI BEGIN
     // Used to change the library item order
-    virtual void ChangeItemOrder(CBaseLibraryItem* item, unsigned int newLocation) override;
+    void ChangeItemOrder(CBaseLibraryItem* item, unsigned int newLocation) override;
     //CONFETTI END
 
 signals:

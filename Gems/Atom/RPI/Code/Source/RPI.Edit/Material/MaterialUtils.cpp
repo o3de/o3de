@@ -65,7 +65,7 @@ namespace AZ
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::AtomMaxFileSize);
+                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());

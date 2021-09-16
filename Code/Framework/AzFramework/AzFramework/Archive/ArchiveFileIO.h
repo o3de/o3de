@@ -65,7 +65,7 @@ namespace AZ::IO
         void SetAlias(const char* alias, const char* path) override;
         void ClearAlias(const char* alias) override;
         AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
-        bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const;
+        bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
         using FileIOBase::ConvertToAlias;
         const char* GetAlias(const char* alias) const override;
         bool ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const override;

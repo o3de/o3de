@@ -7,7 +7,10 @@
  */
 #pragma once
 
+#include <gmock/gmock.h>
+
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace UnitTest
@@ -62,44 +65,45 @@ namespace UnitTest
         }
     };
 
-    class MockTerrainSystem : private Terrain::TerrainSystemServiceRequestBus::Handler
+    class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
-        void Activate() override
+        MockTerrainSystemService()
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
         }
 
-        void Deactivate() override
+        ~MockTerrainSystemService()
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
-        {
-        }
+        MOCK_METHOD0(Activate, void());
+        MOCK_METHOD0(Deactivate, void());
 
-        void SetHeightQueryResolution([[maybe_unused]] AZ::Vector2 queryResolution) override
-        {
-        }
-
-        void RegisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_registerAreaCalledCount++;
-        }
-
-        void UnregisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_unregisterAreaCalledCount++;
-        }
-
-        void RefreshArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_refreshAreaCalledCount++;
-        }
-
-        int m_registerAreaCalledCount = 0;
-        int m_refreshAreaCalledCount = 0;
-        int m_unregisterAreaCalledCount = 0;
+        MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
     };
+
+    class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
+    {
+    public:
+        MockTerrainDataNotificationListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainDataNotificationListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(OnTerrainDataCreateBegin, void());
+        MOCK_METHOD0(OnTerrainDataCreateEnd, void());
+        MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
+        MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
+        MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
+    };
+
 }
