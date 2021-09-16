@@ -94,7 +94,7 @@ function(ly_install_target_override)
         ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE
-            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${LY_BUILD_PERMUTATION}/${ly_platform_install_target_TARGET}.cmake
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}.cmake
             CONTENT "${configured_template_file}"
         )
     endif()
@@ -128,7 +128,7 @@ function(ly_post_install_steps)
             continue()
         endif()
         
-        ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${LY_BUILD_PERMUTATION}/${target}.cmake)
+        ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
     endforeach()
 
     ly_install_run_code("
