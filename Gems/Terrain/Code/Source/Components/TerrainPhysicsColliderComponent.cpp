@@ -163,12 +163,12 @@ namespace Terrain
         minBounds = (minBounds - minDelta) * gridResolution3;
 
         maxBounds = AZ::Vector3(bounds.GetMax()) / gridResolution3;
-
-        float dx = fmodf(gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())), gridResolution.GetX());
-        float dy = fmodf(gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())), gridResolution.GetY());
-
-        const AZ::Vector3 maxDelta = AZ::Vector3(dx, dy, 0.0f);
-
+        const AZ::Vector3 maxDelta = AZ::Vector3
+        (
+            gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())),
+            gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())),
+            0.0f
+        );
         maxBounds = (maxBounds + maxDelta) * gridResolution3;
     }
 
@@ -198,7 +198,7 @@ namespace Terrain
         GetHeightfieldBounds(bounds, minBounds, maxBounds);
 
         int32_t gridWidth, gridHeight;
-        GetHeightfieldGridSizeInBounds(bounds, gridWidth, gridHeight);
+        GetHeightfieldGridSize(gridWidth, gridHeight);
 
         heights.clear();
         heights.reserve(gridWidth * gridHeight);
