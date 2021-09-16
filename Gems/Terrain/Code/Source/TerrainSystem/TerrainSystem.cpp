@@ -484,6 +484,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
                     AZ::Vector3 outPosition;
                     const AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler sampleFilter =
+                        AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::EXACT;
 
                     Terrain::TerrainAreaHeightRequestBus::Event(
                         areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
