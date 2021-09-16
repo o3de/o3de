@@ -40,9 +40,9 @@ namespace GraphCanvas
         ~ExtenderSlotComponent();
         
         // Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // SceneMemberNotifications

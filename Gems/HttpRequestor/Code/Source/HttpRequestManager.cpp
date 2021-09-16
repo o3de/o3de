@@ -35,7 +35,6 @@ namespace HttpRequestor
         desc.m_name = s_loggingName;
         desc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_runThread = true;
-        // Shutdown will be handled by the InitializationManager - no need to call in the destructor
         AWSNativeSDKInit::InitializationManager::InitAwsApi();
         auto function = AZStd::bind(&Manager::ThreadFunction, this);
         m_thread = AZStd::thread(function, &desc);
@@ -43,7 +42,7 @@ namespace HttpRequestor
 
     Manager::~Manager()
     {
-        // NativeSDK Shutdown does not need to be called here - will be taken care of by the InitializationManager
+        AWSNativeSDKInit::InitializationManager::Shutdown();
         m_runThread = false;
         m_requestConditionVar.notify_all();
         if (m_thread.joinable())

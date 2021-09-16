@@ -95,7 +95,7 @@ namespace EMStudio
         virtual bool CreateEMStudioActor(EMotionFX::Actor* actor) = 0;
 
         // SkeletonOutlinerNotificationBus
-        void ZoomToJoints(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<EMotionFX::Node*>& joints);
+        void ZoomToJoints(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<EMotionFX::Node*>& joints) override;
 
         // ActorNotificationBus
         void OnActorReady(EMotionFX::Actor* actor) override;
