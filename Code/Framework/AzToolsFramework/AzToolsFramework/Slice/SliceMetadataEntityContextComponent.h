@@ -76,10 +76,10 @@ namespace AzToolsFramework
         void ResetContext() override;
         void GetRequiredComponentTypes(AZ::ComponentTypeList& required) override;
         bool IsSliceMetadataEntity(const AZ::EntityId entityId) override;
-        AZ::Entity* GetMetadataEntity(const AZ::EntityId entityId);
+        AZ::Entity* GetMetadataEntity(const AZ::EntityId entityId) override;
         AZ::EntityId GetMetadataEntityIdFromEditorEntity(const AZ::EntityId editorEntityId) override;
         AZ::EntityId GetMetadataEntityIdFromSliceAddress(const AZ::SliceComponent::SliceInstanceAddress& address) override;
-        void AddMetadataEntityToContext(const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/, AZ::Entity& entity);
+        void AddMetadataEntityToContext(const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/, AZ::Entity& entity) override;
         //////////////////////////////////////////////////////////////////////////
 
 

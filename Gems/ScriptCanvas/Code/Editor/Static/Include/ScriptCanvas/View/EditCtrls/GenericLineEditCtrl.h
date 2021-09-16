@@ -59,7 +59,7 @@ namespace ScriptCanvasEditor
         void onChildLineEditValueChange(const QString& value);
 
     protected:
-        virtual void focusInEvent(QFocusEvent* e);
+        void focusInEvent(QFocusEvent* e) override;
 
     private:
         QLineEdit* m_pLineEdit;

@@ -257,6 +257,16 @@ namespace AZ
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_AttributesAndValues);
         }
+        
+        void EditorMaterialComponent::OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment)
+        {
+            // PSO-impacting property changes are allowed in the editor
+            // because the saved slice data can be analyzed to pre-compile the necessary PSOs.
+            if (materialAssignment.m_materialInstance)
+            {
+                materialAssignment.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+            }
+        }
 
         void EditorMaterialComponent::UpdateConfiguration(const MaterialComponentConfig& config)
         {
@@ -280,19 +290,19 @@ namespace AZ
                 {
                     continue;
                 }
+                
+                MaterialAssignment& materialAssignment = config.m_materials[materialSlot->m_id];
 
                 // Only material slots with a valid asset IDs or property overrides will be copied
                 // to minimize the amount of data stored in the controller and game component
                 if (materialSlot->m_materialAsset.GetId().IsValid())
                 {
-                    MaterialAssignment& materialAssignment = config.m_materials[materialSlot->m_id];
                     materialAssignment.m_materialAsset = materialSlot->m_materialAsset;
                     materialAssignment.m_propertyOverrides = materialSlot->m_propertyOverrides;
                     materialAssignment.m_matModUvOverrides = materialSlot->m_matModUvOverrides;
                 }
                 else if (!materialSlot->m_propertyOverrides.empty() || !materialSlot->m_matModUvOverrides.empty())
                 {
-                    MaterialAssignment& materialAssignment = config.m_materials[materialSlot->m_id];
                     materialAssignment.m_materialAsset = materialSlot->m_defaultMaterialAsset;
                     materialAssignment.m_propertyOverrides = materialSlot->m_propertyOverrides;
                     materialAssignment.m_matModUvOverrides = materialSlot->m_matModUvOverrides;

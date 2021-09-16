@@ -1155,6 +1155,23 @@ namespace Benchmark
 {
     class StorageDriveWindowsFixture : public benchmark::Fixture
     {
+        void internalTearDown()
+        {
+            using namespace AZ::IO;
+
+            AZStd::string temp;
+            m_absolutePath.swap(temp);
+
+            delete m_streamer;
+            m_streamer = nullptr;
+
+            SystemFile::Delete(TestFileName);
+
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
+            delete m_fileIO;
+            m_fileIO = nullptr;
+        }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
         constexpr static size_t FileSize = 64_mib;
@@ -1197,20 +1214,13 @@ namespace Benchmark
             }
         }
 
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void TearDown(const benchmark::State&) override
         {
-            using namespace AZ::IO;
-
-            AZStd::string temp;
-            m_absolutePath.swap(temp);
-
-            delete m_streamer;
-
-            SystemFile::Delete(TestFileName);
-            
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
-            delete m_fileIO;
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         void RepeatedlyReadFile(benchmark::State& state)
