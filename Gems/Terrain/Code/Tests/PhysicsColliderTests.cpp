@@ -207,7 +207,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorre
     ResetEntity();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorreectly)
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
 {
     CreateEntity();
 
@@ -236,7 +236,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorreectly)
     ResetEntity();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorreectly)
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
 {
     CreateEntity();
 
@@ -277,17 +277,59 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 
     m_entity->Activate();
 
+    float min = 0.0f;
+    float max = 1024.0f;
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
     AZStd::vector<int16_t> heights;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
-    EXPECT_TRUE(heights.size() != 0);
+    EXPECT_EQ(heights.size(), cols * rows);
    
     ResetEntity();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsInRegion)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
+
+    m_entity->Activate();
+
+    float min = 0.0f;
+    float max = 1024.0f;
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    max = 512.0f;
+    AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    AZStd::vector<int16_t> heights;
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeights, dirtyRegion);
+
+    EXPECT_EQ(heights.size(), max * max);
+
+    ResetEntity();
+}
+
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrectly)
 {
     CreateEntity();
 
@@ -302,9 +344,9 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
     m_entity->Activate();
 
     float min = 0.0f;
-    float max = 1023.2f;
+    float max = 256.0f;
 
-    float mockHeight = 10.0f;
+    float mockHeight = 32768.0f;
 
     m_terrainDataRequestListener->m_mockHeight = mockHeight;
 

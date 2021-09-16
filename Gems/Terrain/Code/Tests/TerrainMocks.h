@@ -157,16 +157,17 @@ namespace UnitTest
         MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
         MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
+        MOCK_CONST_METHOD3(GetHeight, float(AZ::Vector3, Sampler, bool*));
 
-        float GetHeight(
-            [[maybe_unused]] AZ::Vector3 position,
+        float GetHeightFromFloats(
+            [[maybe_unused]] float x,
+            [[maybe_unused]] float y,
             [[maybe_unused]] Sampler sampler = Sampler::BILINEAR,
             [[maybe_unused]] bool* terrainExistsPtr = nullptr) const override
         {
             return m_mockHeight;
         }
 
-        MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceWeight, AzFramework::SurfaceData::SurfaceTagWeight(AZ::Vector3, Sampler, bool*));
         MOCK_CONST_METHOD4(GetMaxSurfaceWeightFromFloats, AzFramework::SurfaceData::SurfaceTagWeight(float, float, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceName, const char*(AZ::Vector3, Sampler, bool*));
