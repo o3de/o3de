@@ -182,16 +182,7 @@ namespace AZ
                         continue;
                     }
 
-                    if (propertyPair.second.is<Data::AssetId>())
-                    {
-                        const auto& assetId = *AZStd::any_cast<Data::AssetId>(&propertyPair.second);
-                        Data::Asset<RPI::ImageAsset> imageAsset(assetId, azrtti_typeid<RPI::StreamingImageAsset>());
-                        materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue(imageAsset));
-                    }
-                    else
-                    {
-                        materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
-                    }
+                    materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
                 }
 
                 materialInstance->Compile();
