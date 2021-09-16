@@ -10,12 +10,54 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <rapidjson/document.h>
 
 namespace AzToolsFramework
 {
+    void ComponentDetails::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ComponentDetails>()
+            ->Field("TypeInfo", &ComponentDetails::m_typeInfo)
+            ->Field("BaseClasses", &ComponentDetails::m_baseClasses);
+
+            serializeContext->RegisterGenericType<AZStd::vector<ComponentDetails>>();
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ComponentDetails>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+            ->Property("TypeInfo", BehaviorValueProperty(&ComponentDetails::m_typeInfo))
+            ->Property("BaseClasses", BehaviorValueProperty(&ComponentDetails::m_baseClasses))
+            ->Method("__repr__", [](const ComponentDetails& obj)
+            {
+                std::ostringstream result;
+                bool first = true;
+
+                for (const auto& baseClass : obj.m_baseClasses)
+                {
+                    if (!first)
+                    {
+                        result << ", ";
+                    }
+
+                    first = false;
+                    result << baseClass.c_str();
+                }
+                
+                return AZStd::string::format("%s, Base Classes: <%s>", obj.m_typeInfo.c_str(), result.str().c_str());
+            })
+            ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString);
+        }
+    }
+
     AZ::EntityId EntityUtilityComponent::CreateEditorReadyEntity(const AZStd::string& entityName)
     {
         auto* newEntity = m_entityContext->CreateEntity(entityName.c_str());
@@ -32,6 +74,33 @@ namespace AzToolsFramework
         newEntity->Init();
 
         return newEntity->GetId();
+    }
+
+    AZ::TypeId GetComponentTypeIdFromName(const AZStd::string& typeName)
+    {
+        // Try to create a TypeId first.  We won't show any warnings if this fails as the input might be a class name instead
+        AZ::TypeId typeId = AZ::TypeId::CreateStringPermissive(typeName.data());
+
+        // If the typeId is null, try a lookup by class name
+        if (typeId.IsNull())
+        {
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            auto typeNameCrc = AZ::Crc32(typeName.data());
+            auto typeUuidList = serializeContext->FindClassId(typeNameCrc);
+
+            // TypeId is invalid or class name is invalid
+            if (typeUuidList.empty())
+            {
+                AZ_Error("EntityUtilityComponent", false, "Provided type %s is either an invalid TypeId or does not match any class names", typeName.c_str());
+                return AZ::TypeId::CreateNull();
+            }
+
+            typeId = typeUuidList[0];
+        }
+
+        return typeId;
     }
 
     AZ::Component* FindComponent(AZ::EntityId entityId, const AZ::TypeId& typeId, AZ::ComponentId componentId, bool createComponent = false)
@@ -76,32 +145,11 @@ namespace AzToolsFramework
 
     AzFramework::BehaviorComponentId EntityUtilityComponent::GetOrAddComponentByTypeName(AZ::EntityId entityId, const AZStd::string& typeName)
     {
-        AZ::TypeId typeId;
-        if (typeName[0] == '{')
+        AZ::TypeId typeId = GetComponentTypeIdFromName(typeName);
+
+        if (typeId.IsNull())
         {
-            typeId = AZ::TypeId::CreateStringPermissive(typeName.data(), AZ::TypeId::MaxStringBuffer, false);
-
-            if (typeId.IsNull())
-            {
-                AZ_Error("EntityUtilityComponent", false, "Invalid type id %s", typeName.c_str());
-                return AZ::InvalidComponentId;
-            }
-        }
-        else
-        {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            auto typeNameCrc = AZ::Crc32(typeName.data());
-            auto typeUuidList = serializeContext->FindClassId(typeNameCrc);
-
-            if (typeUuidList.empty())
-            {
-                AZ_Error("EntityUtilityComponent", false, "Failed to find ClassId for component type name %s", typeName.c_str());
-                return AZ::InvalidComponentId;
-            }
-
-            typeId = typeUuidList[0];
+            return AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
         }
 
         AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId, true);
@@ -147,8 +195,104 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != Processing::Halted;
     }
 
+    AZStd::string EntityUtilityComponent::GetComponentDefaultJson(const AZStd::string& typeName)
+    {
+        AZ::TypeId typeId = GetComponentTypeIdFromName(typeName);
+
+        if (typeId.IsNull())
+        {
+            // GetComponentTypeIdFromName already does error handling
+            return "";
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(typeId);
+
+        if (!classData)
+        {
+            AZ_Error("EntityUtilityComponent", false, "Failed to find ClassData for typeId %s (%s)", typeId.ToString<AZStd::string>().c_str(), typeName.c_str());
+            return "";
+        }
+
+        void* component = classData->m_factory->Create("Component");
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+        settings.m_keepDefaults = true;
+
+        auto resultCode = AZ::JsonSerialization::Store(document, document.GetAllocator(), component, nullptr, typeId, settings);
+
+        // Clean up the allocated component ASAP, we don't need it anymore
+        classData->m_factory->Destroy(component);
+
+        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("EntityUtilityComponent", false, "Failed to serialize component to json (%s): %s",
+                typeName.c_str(), resultCode.ToString(typeName).c_str())
+            return "";
+        }
+
+        AZStd::string jsonString;
+        AZ::Outcome<void, AZStd::string> outcome = AzFramework::FileFunc::WriteJsonToString(document, jsonString);
+
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error("EntityUtilityComponent", false, "Failed to write component json to string: %s", outcome.GetError().c_str());
+            return "";
+        }
+
+        return jsonString;
+    }
+
+    AZStd::vector<ComponentDetails> EntityUtilityComponent::FindMatchingComponents(const AZStd::string& searchTerm)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        if (m_typeInfo.empty())
+        {
+            serializeContext->EnumerateDerived<AZ::Component>(
+                [this, serializeContext](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/)
+                {
+                    auto& typeInfo = m_typeInfo.emplace_back(classData->m_typeId, classData->m_name, AZStd::vector<AZStd::string>{});
+
+                    serializeContext->EnumerateBase(
+                        [&typeInfo](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&)
+                        {
+                            if (classData)
+                            {
+                                AZStd::get<2>(typeInfo).emplace_back(classData->m_name);
+                            }
+                            return true;
+                        },
+                        classData->m_typeId);
+                    
+                    return true;
+                });
+        }
+        
+        AZStd::vector<ComponentDetails> matches;
+
+        for (const auto& [typeId, typeName, baseClasses] : m_typeInfo)
+        {
+            if (AZStd::wildcard_match(searchTerm, typeName))
+            {
+                ComponentDetails details;
+                details.m_typeInfo = AZStd::string::format("%s %s", typeId.ToString<AZStd::string>().c_str(), typeName.c_str());
+                details.m_baseClasses = baseClasses;
+                
+                matches.emplace_back(AZStd::move(details));
+            }
+        }
+
+        return matches;
+    }
+
     void EntityUtilityComponent::Reflect(AZ::ReflectContext* context)
     {
+        ComponentDetails::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EntityUtilityComponent, AZ::Component>();
@@ -165,7 +309,10 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Event("CreateEditorReadyEntity", &EntityUtilityBus::Events::CreateEditorReadyEntity)
                 ->Event("GetOrAddComponentByTypeName", &EntityUtilityBus::Events::GetOrAddComponentByTypeName)
-                ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity);
+                ->Event("UpdateComponentForEntity", &EntityUtilityBus::Events::UpdateComponentForEntity)
+                ->Event("FindMatchingComponents", &EntityUtilityBus::Events::FindMatchingComponents)
+                ->Event("GetComponentDefaultJson", &EntityUtilityBus::Events::GetComponentDefaultJson)
+            ;
         }
     }
 
