@@ -23,7 +23,7 @@ namespace ScriptCanvasEditor
     {
         Modifier::Modifier
             ( const ModifyConfiguration& modification
-            , AZStd::vector<AZ::Data::AssetInfo>&& assets
+            , WorkingAssets&& assets
             , AZStd::function<void()> onComplete)
             : m_state(State::GatheringDependencies)
             , m_config(modification)
@@ -38,8 +38,8 @@ namespace ScriptCanvasEditor
         const AZ::Data::AssetInfo& Modifier::GetCurrentAsset() const
         {
             return m_state == State::GatheringDependencies
-                ? m_assets[m_assetIndex]
-                : m_assets[m_dependencyOrderedAssetIndicies[m_assetIndex]];
+                ? m_assets[m_assetIndex].info
+                : m_assets[m_dependencyOrderedAssetIndicies[m_assetIndex]].info;
         }
 
         AZStd::unordered_set<size_t>& Modifier::GetOrCreateDependencyIndexSet()
@@ -183,6 +183,7 @@ namespace ScriptCanvasEditor
         {
             ModelNotificationsBus::Broadcast
                 ( &ModelNotificationsTraits::OnUpgradeModificationEnd, m_config, GetCurrentAsset(), m_result);
+            ModificationNotificationsBus::Handler::BusDisconnect();
             m_modifyState = ModifyState::Idle;
             ++m_assetIndex;
             m_result = {};
@@ -271,7 +272,7 @@ namespace ScriptCanvasEditor
 
                     for (size_t index = 0; index != m_assets.size(); ++index)
                     {
-                        m_assetInfoIndexById.insert({ m_assets[index].m_assetId.m_guid, index });
+                        m_assetInfoIndexById.insert({ m_assets[index].info.m_assetId.m_guid, index });
                     }
                 }
                 else

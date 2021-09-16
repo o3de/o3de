@@ -58,6 +58,7 @@ namespace ScriptCanvasEditor
             m_view->progressBar->setValue(0);
             m_view->progressBar->setVisible(false);
 
+            UpgradeNotificationsBus::Handler::BusConnect();
             ModelNotificationsBus::Handler::BusConnect();
         }
 
@@ -78,8 +79,8 @@ namespace ScriptCanvasEditor
 
             for (auto& entry : *logs)
             {
-                auto line = "\n" + entry;
-                textCursor.insertText(line.c_str());
+                textCursor.insertText("\n");
+                textCursor.insertText(entry.c_str());
             }
 
             scrollBar->setValue(scrollBar->maximum());
@@ -253,6 +254,7 @@ namespace ScriptCanvasEditor
             m_view->progressBar->setVisible(true);
             ++m_handledAssetCount;
             m_view->progressBar->setValue(m_handledAssetCount);
+            AddLogEntries();
         }
 
         void Controller::OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool skipped)
@@ -408,7 +410,7 @@ namespace ScriptCanvasEditor
 
         void Controller::OnUpgradeBegin
             ( const ModifyConfiguration& config
-            , [[maybe_unused]] const AZStd::vector<AZ::Data::AssetInfo>& assets)
+            , [[maybe_unused]] const WorkingAssets& assets)
         {
             for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
             {
@@ -447,6 +449,7 @@ namespace ScriptCanvasEditor
                 , result.m_failures.size()));
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
+            AddLogEntries();
         }
 
         void Controller::OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result)
@@ -472,11 +475,12 @@ namespace ScriptCanvasEditor
             m_view->progressBar->setVisible(true);
             ++m_handledAssetCount;
             m_view->progressBar->setValue(m_handledAssetCount);
+            AddLogEntries();
         }
 
         void Controller::OnUpgradeDependencySortBegin
             ( [[maybe_unused]] const ModifyConfiguration& config
-            , const AZStd::vector<AZ::Data::AssetInfo>& assets)
+            , const WorkingAssets& assets)
         {
             m_handledAssetCount = 0;
             m_view->progressBar->setVisible(true);
@@ -502,7 +506,7 @@ namespace ScriptCanvasEditor
 
         void Controller::OnUpgradeDependencySortEnd
             ( [[maybe_unused]] const ModifyConfiguration& config
-            , const AZStd::vector<AZ::Data::AssetInfo>& assets
+            , const WorkingAssets& assets
             , [[maybe_unused]] const AZStd::vector<size_t>& sortedOrder)
         {
             m_handledAssetCount = 0;
@@ -522,6 +526,7 @@ namespace ScriptCanvasEditor
             QString spinnerText = QStringLiteral("Upgrade in progress - gathering dependencies is complete");
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
+            AddLogEntries();
         }
 
         void Controller::SetRowBusy(int index)

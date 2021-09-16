@@ -43,6 +43,8 @@ namespace ScriptCanvasEditor
 
             Model();
 
+            const ModificationResults* GetResults() override;
+
             void Modify(const ModifyConfiguration& modification) override;
 
             void Scan(const ScanConfiguration& config) override;
@@ -63,6 +65,8 @@ namespace ScriptCanvasEditor
             AZStd::unique_ptr<Scanner> m_scanner;
             AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
             AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
+
+            ModificationResults m_modResults;
 
             void CacheSettings();
             void Idle();

@@ -61,10 +61,16 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
         }
 
+        const ModificationResults* Model::GetResults()
+        {
+            return !IsWorking() ? &m_modResults : nullptr;
+        }
+
         void Model::Idle()
         {
             m_state = State::Idle;
             m_keepEditorAlive.reset();
+            m_log.Deactivate();
         }
 
         bool Model::IsReadyToModify() const
@@ -95,7 +101,9 @@ namespace ScriptCanvasEditor
                 return;
             }
 
+            m_modResults = {};
             m_state = State::Modifying;
+            m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
             auto results = m_scanner->TakeResult();
             m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::move(results.m_unfiltered), [this](){ OnModificationComplete(); });
@@ -124,6 +132,7 @@ namespace ScriptCanvasEditor
             }
 
             m_state = State::Scanning;
+            m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
             m_scanner = AZStd::make_unique<Scanner>(config, [this](){ OnScanComplete(); });
         }

@@ -26,7 +26,7 @@ namespace ScriptCanvasEditor
 
             Modifier
                 ( const ModifyConfiguration& modification
-                , AZStd::vector<AZ::Data::AssetInfo>&& assets
+                , WorkingAssets&& assets
                 , AZStd::function<void()> onComplete);
 
             const ModificationResults& GetResult() const;
@@ -66,7 +66,7 @@ namespace ScriptCanvasEditor
             size_t m_assetIndex = 0;
             AZStd::function<void()> m_onComplete;
             // asset infos in scanned order
-            AZStd::vector<AZ::Data::AssetInfo> m_assets;
+            WorkingAssets m_assets;
             // dependency sorted order indices into the asset vector
             AZStd::vector<size_t> m_dependencyOrderedAssetIndicies;
             // dependency indices by asset info index (only exist if graphs have them)

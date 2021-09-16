@@ -6,37 +6,32 @@
  *
  */
 
+#include <QDateTime>
+#include <QDir>
 #include <QMessageBox>
 #include <QProcess>
-#include <QDir>
 #include <QScrollBar>
-#include <QDateTime>
 #include <QToolButton>
-
-#include "UpgradeHelper.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
-
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
-
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Settings.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ui_UpgradeHelper.h>
-
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 namespace ScriptCanvasEditor
 {
@@ -52,40 +47,47 @@ namespace ScriptCanvasEditor
         m_ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 
         int rows = 0;
-        auto& graphsToUpgrade = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade();
-        for (auto& assetId : graphsToUpgrade)
+        const VersionExplorer::ModificationResults* result = nullptr;
+        VersionExplorer::ModelRequestsBus::BroadcastResult(result, &VersionExplorer::ModelRequestsTraits::GetResults);
+
+        if (result && !result->m_failures.empty())
         {
-            auto assetInfo = ScriptCanvasEditor::AssetHelpers::GetAssetInfo(assetId);
 
-            m_ui->tableWidget->insertRow(rows);
+            for (auto& failedUpdate : result->m_failures)
+            {
+                auto& assetInfo = failedUpdate.assetInfo;
+                auto assetId = assetInfo.m_assetId;
 
-            connect(m_ui->closeButton, &QPushButton::pressed, this, &QDialog::accept);
-            connect(m_ui->tableWidget, &QTableWidget::itemDoubleClicked, this, [this, rows, assetId](QTableWidgetItem* item)
-                {
-                    if (item && item->data(Qt::UserRole).toInt() == rows)
+                m_ui->tableWidget->insertRow(rows);
+
+                connect(m_ui->closeButton, &QPushButton::pressed, this, &QDialog::accept);
+                connect(m_ui->tableWidget, &QTableWidget::itemDoubleClicked, this, [this, rows, assetId](QTableWidgetItem* item)
                     {
-                        OpenGraph(assetId);
+                        if (item && item->data(Qt::UserRole).toInt() == rows)
+                        {
+                            OpenGraph(assetId);
+                        }
                     }
-                }
-            );
+                );
 
-            auto openGraph = [this, assetId] {
-                OpenGraph(assetId);
-            };
+                auto openGraph = [this, assetId] {
+                    OpenGraph(assetId);
+                };
 
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
-            rowName->setData(Qt::UserRole, rows);
-            m_ui->tableWidget->setItem(rows, 0, rowName);
+                QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
+                rowName->setData(Qt::UserRole, rows);
+                m_ui->tableWidget->setItem(rows, 0, rowName);
 
-            QToolButton* rowGoToButton = new QToolButton(this);
-            rowGoToButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
-            rowGoToButton->setToolTip("Open Graph");
-            
-            connect(rowGoToButton, &QToolButton::clicked, openGraph);
+                QToolButton* rowGoToButton = new QToolButton(this);
+                rowGoToButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
+                rowGoToButton->setToolTip("Open Graph");
 
-            m_ui->tableWidget->setCellWidget(rows, 1, rowGoToButton);
+                connect(rowGoToButton, &QToolButton::clicked, openGraph);
 
-            ++rows;
+                m_ui->tableWidget->setCellWidget(rows, 1, rowGoToButton);
+
+                ++rows;
+            }
         }
     }
 

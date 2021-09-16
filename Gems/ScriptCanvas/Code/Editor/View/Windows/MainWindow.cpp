@@ -3435,18 +3435,18 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RunUpgradeTool()
     {
+        using namespace VersionExplorer;
         auto versionExplorer = aznew VersionExplorer::Controller(this);
         versionExplorer->exec();
 
-        // update and fix this
-        // Manual correction
-//         size_t assetsThatNeedManualInspection = AZ::Interface<IUpgradeRequests>::Get()->GetGraphsThatNeedManualUpgrade().size();
-//         // If there are graphs that need manual correction, show the helper
-//         if (assetsThatNeedManualInspection > 0)
-//         {
-//             UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
-//             upgradeHelper->show();
-//         }
+        const ModificationResults* result = nullptr;
+        ModelRequestsBus::BroadcastResult(result, &ModelRequestsTraits::GetResults);
+        if (result && !result->m_failures.empty())
+        {
+            // If there are graphs that need manual correction, show the helper
+            UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
+            upgradeHelper->show();
+        }
 
         delete versionExplorer;
     }

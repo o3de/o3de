@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
             AZ_CLASS_ALLOCATOR(Controller, AZ::SystemAllocator, 0);
 
             explicit Controller(QWidget* parent = nullptr);
-            
+
         private:
             static constexpr int ColumnAsset = 0;
             static constexpr int ColumnAction = 1;
@@ -61,7 +61,6 @@ namespace ScriptCanvasEditor
             int m_handledAssetCount = 0;
 
             void AddLogEntries();
-
             void OnButtonPressClose();
             void OnButtonPressScan();
             void OnButtonPressUpgrade();
@@ -78,15 +77,13 @@ namespace ScriptCanvasEditor
             void OnScannedGraphResult(const AZ::Data::AssetInfo& info);
 
             // for single operation UI updates, just check the assets size, or note it on the request
-            void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<AZ::Data::AssetInfo>& assets) override;
+            void OnUpgradeBegin(const ModifyConfiguration& config, const WorkingAssets& assets) override;
             void OnUpgradeComplete(const ModificationResults& results) override;
             void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) override;
-            void OnUpgradeDependencySortBegin
-                ( const ModifyConfiguration& config
-                , const AZStd::vector<AZ::Data::AssetInfo>& assets) override;
+            void OnUpgradeDependencySortBegin(const ModifyConfiguration& config, const WorkingAssets& assets) override;
             void OnUpgradeDependencySortEnd
                 ( const ModifyConfiguration& config
-                , const AZStd::vector<AZ::Data::AssetInfo>& assets
+                , const WorkingAssets& assets
                 , const AZStd::vector<size_t>& sortedOrder) override;
             void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) override;
             void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) override;

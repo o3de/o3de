@@ -215,20 +215,6 @@ namespace ScriptCanvasEditor
 
     using EditorLoggingComponentNotificationBus = AZ::EBus<EditorLoggingComponentNotifications>;
 
-    class IUpgradeRequests
-    {
-    public:
-        AZ_TYPE_INFO(IUpgradeRequests, "{D25318F2-4DDA-4E76-98CB-6D561BB6234D}");
-
-        using AssetList = AZStd::list<AZ::Data::AssetInfo>;
-       
-        virtual void ClearGraphsThatNeedUpgrade() = 0;
-        virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
-        virtual const AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() const = 0;
-        virtual bool IsUpgrading() = 0;
-        virtual void SetIsUpgrading(bool isUpgrading) = 0;
-    };
-
     class UpgradeNotifications
         : public AZ::EBusTraits
     {

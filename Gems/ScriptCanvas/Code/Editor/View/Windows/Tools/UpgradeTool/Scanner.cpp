@@ -45,7 +45,7 @@ namespace ScriptCanvasEditor
             else
             {
                 VE_LOG("Scanner: Included: %s ", GetCurrentAsset().m_relativePath.c_str());
-                m_result.m_unfiltered.push_back(GetCurrentAsset());
+                m_result.m_unfiltered.push_back({ asset, GetCurrentAsset() });
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, GetCurrentAsset());
             }
         }
