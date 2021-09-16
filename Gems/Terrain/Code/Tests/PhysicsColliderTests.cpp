@@ -178,6 +178,93 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     ResetEntity();
 }
 
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorrectly)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
+
+    CreateTerrainDataListener();
+
+    m_entity->Activate();
+
+    float min = 0.0f;
+    float max = 1024.0f;
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    EXPECT_EQ(cols, 1024);
+    EXPECT_EQ(rows, 1024);
+
+    ResetEntity();
+}
+
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorreectly)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
+
+    CreateTerrainDataListener();
+
+    m_entity->Activate();
+
+    float min = 0.1f;
+    float max = 1024.0f;
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    EXPECT_EQ(cols, 1024);
+    EXPECT_EQ(rows, 1024);
+
+    ResetEntity();
+}
+
+TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorreectly)
+{
+    CreateEntity();
+
+    AddHeightfieldListener();
+
+    AddPhysicsColliderAndShapeComponentToEntity();
+
+    CreateMockTerrainSystem();
+
+    CreateTerrainDataListener();
+
+    m_entity->Activate();
+
+    float min = 0.0f;
+    float max = 1023.5f;
+
+    m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    EXPECT_EQ(cols, 1024);
+    EXPECT_EQ(rows, 1024);
+
+    ResetEntity();
+}
+
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 {
     CreateEntity();
