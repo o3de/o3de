@@ -48,6 +48,6 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                   
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-windows                              TARGETS zlib                        PACKAGE_HASH 9afab1d67641ed8bef2fb38fc53942da47f2ab339d9e77d3d20704a48af2da0b)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 5c3d9fa491e488ccaf802304ad23b932268a2b2846e383f088779962af2bfa84)
-ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-windows                         TARGETS astc-encoder                PACKAGE_HASH bc33a7f3154e8f037a5d2996d1c33ecd81a7f9ad95d190048dc5b3cd449ffbdf)
+ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-windows                         TARGETS astc-encoder                PACKAGE_HASH 3addc6fc1a7eb0d6b7f3d530e962af967e6d92b3825ef485da243346357cf78e)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
