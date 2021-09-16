@@ -28,6 +28,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -52,6 +53,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -69,6 +71,7 @@ namespace GraphCanvas
         CreatePresetFromSelection(QObject* parent = nullptr);
         virtual ~CreatePresetFromSelection();
 
+        using ContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
         static ActionGroupId GetCreateConstructContextMenuActionGroupId()

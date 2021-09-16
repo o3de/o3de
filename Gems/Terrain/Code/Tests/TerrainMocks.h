@@ -7,11 +7,11 @@
  */
 #pragma once
 
+#include <gmock/gmock.h>
+
 #include <AzCore/Component/ComponentApplication.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <TerrainSystem/TerrainSystemBus.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace UnitTest
 {
@@ -19,7 +19,6 @@ namespace UnitTest
 
     class MockBoxShapeComponent
         : public AZ::Component
-        , private LmbrCentral::ShapeComponentRequestsBus::Handler
     {
     public:
         AZ_COMPONENT(MockBoxShapeComponent, BoxShapeComponentTypeId)
@@ -29,13 +28,10 @@ namespace UnitTest
 
         void Activate() override
         {
-            m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100.0f, -100.0f, -100.0f), AZ::Vector3(100.0f, 100.0f, 100.0f));
-            LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
         }
 
         void Deactivate() override
         {
-            LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
         bool ReadInConfig([[maybe_unused]] const AZ::ComponentConfig* baseConfig) override
@@ -46,11 +42,6 @@ namespace UnitTest
         bool WriteOutConfig([[maybe_unused]] AZ::ComponentConfig* outBaseConfig) const override
         {
             return true;
-        }
-
-        void SetAabbFromMinMax(const AZ::Vector3& min, const AZ::Vector3& max)
-        {
-            m_bounds = AZ::Aabb::CreateFromMinMax(min, max);
         }
 
     private:
@@ -72,174 +63,47 @@ namespace UnitTest
         static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
         }
-
-        //ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() override
-        {
-            return AZ_CRC("Box", 0x08a9483a);
-        }
-
-        AZ::Aabb GetEncompassingAabb() override
-        {
-            return m_bounds;
-        }
-
-        virtual void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
-        {
-            transform = AZ::Transform::Identity();
-            bounds.CreateFromMinMax(AZ::Vector3(-1.0f, -1.0f, -1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
-        }
-
-        virtual bool IsPointInside([[maybe_unused]] const AZ::Vector3& point)override
-        {
-            return true;
-        }
-
-        virtual float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) override
-        {
-            return 1.0f;
-        }
-
-        AZ::Aabb m_bounds;
     };
 
-    class MockTerrainSystem
-        : private Terrain::TerrainSystemServiceRequestBus::Handler
-        , private AzFramework::Terrain::TerrainDataRequestBus::Handler
+    class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
-
-        void Activate() override
+        MockTerrainSystemService()
         {
             Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
-            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
         }
 
-        void Deactivate() override
+        ~MockTerrainSystemService()
         {
-            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
             Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
         }
 
-        void SetMockHeight(const float height)
-        {
-            m_height = height;
-        }
+        MOCK_METHOD0(Activate, void());
+        MOCK_METHOD0(Deactivate, void());
 
-        void SetWorldBounds([[maybe_unused]] const AZ::Aabb& worldBounds) override
-        {
-        }
-
-        void SetHeightQueryResolution([[maybe_unused]] AZ::Vector2 queryResolution) override
-        {
-        }
-
-        void RegisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_registerAreaCalledCount++;
-        }
-
-        void UnregisterArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_unregisterAreaCalledCount++;
-        }
-
-        void RefreshArea([[maybe_unused]] AZ::EntityId areaId) override
-        {
-            m_refreshAreaCalledCount++;
-        }
-
-        // TerrainDataRequestBus
-        AZ::Vector2 GetTerrainGridResolution() const override
-        {
-            return AZ::Vector2(1.0f);
-        }
-
-        AZ::Aabb GetTerrainAabb() const override
-        {
-            return {};
-        }
-
-        float GetHeight(AZ::Vector3 /*position*/, Sampler /*sampler*/, bool* /* terrainExistsPtr*/) const override
-        {
-            return m_height;
-        }
-
-        float GetHeightFromFloats(float /*x*/, float /*y*/, Sampler /*sampler*/, bool* /*terrainExistsPtr*/) const override
-        {
-            return m_height;
-        }
-
-        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
-            AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
-        {
-            AzFramework::SurfaceData::SurfaceTagWeight weight;
-            weight.m_weight = 1.0f;
-            return weight;
-        }
-
-        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
-        {
-            AzFramework::SurfaceData::SurfaceTagWeight weight;
-            weight.m_weight = 1.0f;
-            return weight;
-        }
-
-        const char* GetMaxSurfaceName(AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
-        {
-            return {};
-        }
-
-        bool GetIsHoleFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/) const override
-        {
-            return {};
-        }
-
-        AZ::Vector3 GetNormal(AZ::Vector3 /*position*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
-        {
-            return {};
-        }
-
-        AZ::Vector3 GetNormalFromFloats(float /*x*/, float /*y*/, Sampler /*sampleFilter*/, bool* /*terrainExistsPtr*/) const override
-        {
-            return {};
-        }
-
-        int m_registerAreaCalledCount = 0;
-        int m_refreshAreaCalledCount = 0;
-        int m_unregisterAreaCalledCount = 0;
-
-        float m_height = 1.0f;
+        MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
     };
 
-    class MockHeightfieldProviderNotificationBusListener
-        : public AZ::Component
-        , private Physics::HeightfieldProviderNotificationBus::Handler
+    class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(MockHeightfieldProviderNotificationBusListener, "{277D39B9-F485-4259-84A4-78E97C687614}");
-
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
+        MockTerrainDataNotificationListener()
         {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         }
 
-        void Activate()
+        ~MockTerrainDataNotificationListener()
         {
-            Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(GetEntityId());
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         }
 
-        void Deactivate()
-        {
-            Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
-        }
-
-        void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) override
-        {
-            m_onHeightfieldDataChangedCalledCount++;
-        }
-
-        int m_onHeightfieldDataChangedCalledCount = 0;
-        int m_refreshHeightfieldCalledCount = 0;
+        MOCK_METHOD0(OnTerrainDataCreateBegin, void());
+        MOCK_METHOD0(OnTerrainDataCreateEnd, void());
+        MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
+        MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
+        MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
     };
-    
+
 }

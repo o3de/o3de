@@ -423,6 +423,8 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
+
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
             {
@@ -452,6 +454,8 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
+
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
             {
@@ -482,6 +486,7 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, AZ::s64 value) override
             {
                 EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, type);
@@ -517,6 +522,8 @@ namespace SettingsRegistryTests
                 EXPECT_TRUE(path.ends_with(valueName));
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
             {
                 EXPECT_TRUE(path.ends_with(valueName));

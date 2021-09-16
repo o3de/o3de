@@ -8,11 +8,14 @@
 
 #pragma once
 
+#include <Atom/RPI/Math.azsli>
 #include "GeneratedTransforms/LinearSrgb_To_AcesCg.azsli"
 #include "GeneratedTransforms/AcesCg_To_LinearSrgb.azsli"
 #include "GeneratedTransforms/LinearSrgb_To_Srgb.azsli"
 #include "GeneratedTransforms/Srgb_To_LinearSrgb.azsli"
 #include "GeneratedTransforms/Aces_To_AcesCg.azsli"
+#include "GeneratedTransforms/AcesCcToAcesCg.azsli"
+#include "GeneratedTransforms/AcesCgToAcesCc.azsli"
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
@@ -20,6 +23,7 @@ enum class ColorSpaceId
 {
     SRGB = 0,
     LinearSRGB,
+    ACEScc,
     ACEScg,
     ACES2065,
     XYZ,
@@ -51,15 +55,27 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
         color = AcesCg_To_LinearSrgb(color);
         color = LinearSrgb_To_Srgb(color);
     }
+    else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::LinearSRGB)
+    {
+        color = AcesCg_To_LinearSrgb(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::ACEScc)
+    {
+        color = AcesCgToAcesCc(color);
+    }
     else if (fromColorSpace == ColorSpaceId::ACES2065 && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = Aces_To_AcesCg(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::ACEScc && toColorSpace == ColorSpaceId::ACEScg)
+    {
+        color = AcesCcToAcesCg(color);
     }
     else
     {
         color = float3(1, 0, 1);
     }
-    
+
     return color;
 }
 
@@ -75,6 +91,7 @@ float CalculateLuminance(in float3 color, ColorSpaceId colorSpace)
             luminance = CalculateLuminance_AcesCg(color);
             break;
         case ColorSpaceId::SRGB:
+        case ColorSpaceId::ACEScc:
         case ColorSpaceId::ACES2065:
         case ColorSpaceId::XYZ:
         case ColorSpaceId::Invalid:
@@ -82,4 +99,30 @@ float CalculateLuminance(in float3 color, ColorSpaceId colorSpace)
     }
     
     return luminance;
+}
+
+float RotateHue(float hue, float low, float hi) 
+{
+    return (hue < low)
+            ? hue + hi
+            : (hue > hi)
+                ? hue - hi
+                : hue;
+}
+ 
+float3 RgbToHsv(float3 color)
+{
+    const float4 k = float4(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
+    const float4 p = lerp(float4(color.bg, k.wz), float4(color.gb, k.xy), step(color.b, color.g));
+    const float4 q = lerp(float4(p.xyw, color.r), float4(color.r, p.yzx), step(p.x, color.r));
+    const float d = q.x - min(q.w, q.y);
+    const float e = EPSILON;
+    return float3(abs(q.z + (q.w - q.y) / (6.0f * d + e)), d / (q.x + e), q.x);
+}
+
+float3 HsvToRgb(float3 color)
+{
+    const float4 k = float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
+    const float3 p = abs(frac(color.xxx + k.xyz) * 6.0f - k.www);
+    return color.z * lerp(k.xxx, saturate(p - k.xxx), color.y);
 }

@@ -16,7 +16,10 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
+
+AZ_PUSH_DISABLE_WARNING(4265, "-Wunknown-warning-option") // class has virtual functions, but its non-trivial destructor is not virtual; 
 #include <wrl.h>
+AZ_POP_DISABLE_WARNING
 
 #include <d3dx12.h>
 #include <d3dcommon.h>

@@ -252,7 +252,7 @@ namespace Terrain
                 bool terrainExists = true;
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, terrainExists);
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
 
                 Physics::HeightMaterialPoint point;
                 point.m_height = azlossy_cast<int16_t>((height - worldCenterZ) * m_heightScale);
@@ -265,7 +265,7 @@ namespace Terrain
     {
         AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+            gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         return gridResolution;
     }

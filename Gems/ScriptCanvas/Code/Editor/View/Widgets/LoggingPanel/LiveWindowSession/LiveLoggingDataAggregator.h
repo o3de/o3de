@@ -38,8 +38,8 @@ namespace ScriptCanvasEditor
         void OnCurrentTargetChanged() override;
         ////
 
-        bool CanCaptureData() const;
-        bool IsCapturingData() const;
+        bool CanCaptureData() const override;
+        bool IsCapturingData() const override;
 
         void StartCaptureData();
         void StopCaptureData();

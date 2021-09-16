@@ -62,11 +62,11 @@ namespace AzToolsFramework
 
             //////////////////////////////////////////////////////////////////////////
             // TraceMessagesBus
-            virtual bool OnAssert(const char* message);
-            virtual bool OnException(const char* message);
-            virtual bool OnError(const char* window, const char* message);
-            virtual bool OnWarning(const char* window, const char* message);
-            virtual bool OnPrintf(const char* window, const char* message);
+            bool OnAssert(const char* message) override;
+            bool OnException(const char* message) override;
+            bool OnError(const char* window, const char* message) override;
+            bool OnWarning(const char* window, const char* message) override;
+            bool OnPrintf(const char* window, const char* message) override;
             //////////////////////////////////////////////////////////////////////////
 
             /// Log a message received from the TraceMessageBus

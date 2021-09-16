@@ -31,6 +31,11 @@ class AZCoreLogSink
     : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
+    ~AZCoreLogSink()
+    {
+        Disconnect();
+    }
+
     inline static void Connect()
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
