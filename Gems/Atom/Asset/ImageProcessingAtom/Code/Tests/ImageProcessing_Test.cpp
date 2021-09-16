@@ -63,7 +63,7 @@
 
 //Enable generate image files for result of some tests.
 //This is slow and only useful for debugging. This should be disabled for unit test
-#define DEBUG_OUTPUT_IMAGES
+//#define DEBUG_OUTPUT_IMAGES
 
 //There are some test functions in this test which are DISABLED. They were mainly for programming tests.
 //It's only recommended to enable them for programming test purpose.
