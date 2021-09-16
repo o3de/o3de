@@ -95,7 +95,10 @@ namespace Terrain
         void GetNormalSynchronous(float x, float y, AZ::Vector3& normal);
 
         void RefreshMinMaxHeights();
-        float GetHeight(float x, float y);
+        float GetGradientValue(float x, float y);
+        float ConvertGradientValueToHeight(float gradientValue);
+        float GetHeight(float x, float y, AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter);
+        void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& delta);
 
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };
