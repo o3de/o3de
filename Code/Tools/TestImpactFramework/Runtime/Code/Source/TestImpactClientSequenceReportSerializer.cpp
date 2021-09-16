@@ -423,7 +423,7 @@ namespace TestImpact
         {
             // Type
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Type]);
-            writer.String(SequenceReportTypeAsString(sequenceReport.GetType()).c_str());
+            writer.String(SequenceReportTypeAsString(sequenceReport.ReportType).c_str());
 
             // Test target timeout
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TestTargetTimeout]);
@@ -640,7 +640,7 @@ namespace TestImpact
         testRuns.reserve(serialTestRuns.GetArray().Size());
         for (const auto& testRun : serialTestRuns.GetArray())
         {
-            testRuns.emplace_back(TestRunType(DeserializeTestRunBase(testRun)));
+            testRuns.emplace_back(DeserializeTestRunBase(testRun));
         }
 
         return testRuns;
@@ -653,8 +653,8 @@ namespace TestImpact
         testRuns.reserve(serialCompletedTestRuns.GetArray().Size());
         for (const auto& testRun : serialCompletedTestRuns.GetArray())
         {
-            testRuns.emplace_back(CompletedTestRunType(
-                DeserializeTestRunBase(testRun), DeserializeTests(testRun[SequenceReportFields::Keys[SequenceReportFields::Tests]])));
+            testRuns.emplace_back(
+                DeserializeTestRunBase(testRun), DeserializeTests(testRun[SequenceReportFields::Keys[SequenceReportFields::Tests]]));
         }
 
         return testRuns;
