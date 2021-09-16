@@ -628,18 +628,16 @@ namespace AzFramework
         if (request.m_requestId == ticket->m_currentRequestId)
         {
             AZStd::vector<AZ::Entity*>& spawnedEntities = ticket->m_spawnedEntities;
-            AZStd::vector<AZ::Entity*>::size_type entityIndex = 0;
-            for (entityIndex = 0; entityIndex < spawnedEntities.size(); entityIndex++)
+            for (auto entityIterator = spawnedEntities.begin(); entityIterator != spawnedEntities.end(); ++entityIterator)
             {
-                if (spawnedEntities[entityIndex]->GetId() == request.m_entityId)
+                if ((*entityIterator)->GetId() == request.m_entityId)
                 {
-                    spawnedEntities.erase(spawnedEntities.begin() + entityIndex);
-                    ticket->m_spawnedEntityIndices.erase(ticket->m_spawnedEntityIndices.begin() + entityIndex);
-                    ticket->m_currentRequestId++;
+                    AZStd::iter_swap(entityIterator, spawnedEntities.rbegin());
+                    spawnedEntities.pop_back();
                     return true;
                 }
             }
-            return false; 
+            return true; 
         }
         else
         {
