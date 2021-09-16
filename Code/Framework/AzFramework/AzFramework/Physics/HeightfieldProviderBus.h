@@ -63,38 +63,38 @@ namespace Physics
     public:
         /// Returns the distance between each height in the map.
         /// @return Vector containing Column Spacing, Rows Spacing.
-        virtual AZ::Vector2 GetHeightfieldGridSpacing() = 0;
+        virtual AZ::Vector2 GetHeightfieldGridSpacing() const = 0;
 
         /// Returns the height field gridsize.
         /// @param numColumns contains the size of the grid in the x direction.
         /// @param numRows contains the size of the grid in the y direction.
-        virtual void GetHeightfieldGridSize(int32_t& nulColumns, int32_t& numRows) = 0;
+        virtual void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const = 0;
       
         /// Returns the list of materials used by the height field.
         /// @param materialList contains a vector of all materials.
-        virtual void GetMaterialList(AZStd::vector<MaterialId>& materialList) = 0;
+        virtual void GetMaterialList(AZStd::vector<MaterialId>& materialList) const = 0;
 
         /// Returns the list of heights used by the height field.
-        /// @param heights contains the rows*columns vector of the heights.
-        virtual void GetHeights(AZStd::vector<int16_t>& heights) = 0;
+        /// @return the rows*columns vector of the heights.
+        virtual AZStd::vector<int16_t> GetHeights() const = 0;
 
         /// Returns the list of heights and materials used by the height field.
         /// @param heights contains the rows*columns vector of the heights and materials.
-        virtual void GetHeightsAndMaterials(AZStd::vector<HeightMaterialPoint>& heights) = 0;
+        virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
 
         /// Returns the scale used by the height field.
-        /// @param heightScale contains the scale of the height values returned by GetHeights.
-        virtual void GetScale(float& heightScale) = 0;
+        /// @return heightScale contains the scale of the height values returned by GetHeights.
+        virtual float GetScale() const = 0;
 
         /// Updates values in the height field.
         /// @param dirtyRegion contains the axis aligned bounding box that will be updated.
         /// @param heights contains all the new heights for the height field.
-        virtual void UpdateHeights(const AZ::Aabb& dirtyRegion, AZStd::vector<int16_t>& heights) = 0;
+        virtual AZStd::vector<int16_t> UpdateHeights(const AZ::Aabb& dirtyRegion) const = 0;
 
         /// Updates values in the height field.
         /// @param dirtyRegion contains the axis aligned bounding box that will be updated.
         /// @param heights contains all the new heights and materials for the height field.
-        virtual void UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion, AZStd::vector<HeightMaterialPoint>& heights) = 0;
+        virtual AZStd::vector<HeightMaterialPoint> UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;
@@ -115,5 +115,4 @@ namespace Physics
     };
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
-
 } // namespace Physics
