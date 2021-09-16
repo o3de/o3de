@@ -181,12 +181,6 @@ namespace TestImpact
 
             virtual ~SequenceReportBase() = default;
 
-            //! Returns the identifying type for this sequence report.
-            SequenceReportType GetType() const
-            {
-                return ReportType;
-            }
-
             //! Returns the maximum concurrency for this sequence.
             size_t GetMaxConcurrency() const
             {
