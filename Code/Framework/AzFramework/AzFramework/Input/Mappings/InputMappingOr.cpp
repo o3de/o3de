@@ -45,30 +45,30 @@ namespace AzFramework
     {
         if (m_outputInputChannelName.empty())
         {
-            AZ_Warning("InputMappingOr::Config", false, "Cannot create input mapping with empty name.");
+            AZ_Error("InputMappingOr::Config", false, "Cannot create input mapping with empty name.");
             return nullptr;
         }
 
         if (InputChannelRequests::FindInputChannel(InputChannelId(m_outputInputChannelName.c_str())))
         {
-            AZ_Warning("InputMappingOr::Config", false,
-                       "Cannot create input mapping '%s' with non-unique name.", m_outputInputChannelName.c_str());
+            AZ_Error("InputMappingOr::Config", false,
+                     "Cannot create input mapping '%s' with non-unique name.", m_outputInputChannelName.c_str());
             return nullptr;
         }
 
         if (m_sourceInputChannelNames.empty())
         {
-            AZ_Warning("InputMappingOr::Config", false,
-                       "Cannot create input mapping '%s' with no source inputs.", m_outputInputChannelName.c_str());
+            AZ_Error("InputMappingOr::Config", false,
+                     "Cannot create input mapping '%s' with no source inputs.", m_outputInputChannelName.c_str());
             return nullptr;
         }
 
         const InputChannelId outputInputChannelId(m_outputInputChannelName.c_str());
         AZStd::shared_ptr<InputMappingOr> inputMapping = AZStd::make_shared<InputMappingOr>(outputInputChannelId,
                                                                                             inputContext);
-        for (const InputChannelNameFilteredByDeviceType& soureInputChannelName : m_sourceInputChannelNames)
+        for (const InputChannelNameFilteredByDeviceType& sourceInputChannelName : m_sourceInputChannelNames)
         {
-            const InputChannelId sourceInputChannelId(soureInputChannelName.GetInputChannelName().c_str());
+            const InputChannelId sourceInputChannelId(sourceInputChannelName.GetInputChannelName().c_str());
             inputMapping->AddSourceInput(sourceInputChannelId);
         }
         return inputMapping;

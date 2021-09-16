@@ -131,21 +131,21 @@ namespace AzFramework
     {
         if (m_uniqueName.empty())
         {
-            AZ_Warning("InputContextComponent", false, "Cannot create input context with empty name.");
+            AZ_Error("InputContextComponent", false, "Cannot create input context with empty name.");
             return;
         }
 
         if (InputDeviceRequests::FindInputDevice(InputDeviceId(m_uniqueName.c_str())))
         {
-            AZ_Warning("InputContextComponent", false,
-                       "Cannot create input context '%s' with non-unique name.", m_uniqueName.c_str());
+            AZ_Error("InputContextComponent", false,
+                     "Cannot create input context '%s' with non-unique name.", m_uniqueName.c_str());
             return;
         }
 
         if (m_inputMappings.empty())
         {
-            AZ_Warning("InputContextComponent", false,
-                       "Cannot create input context '%s' with no input mappings.", m_uniqueName.c_str());
+            AZ_Error("InputContextComponent", false,
+                     "Cannot create input context '%s' with no input mappings.", m_uniqueName.c_str());
             return;
         }
 

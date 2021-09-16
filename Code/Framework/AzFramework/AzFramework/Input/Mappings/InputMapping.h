@@ -86,8 +86,8 @@ namespace AzFramework
         private:
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Variables
-            AZStd::string m_inputDeviceType = "";   //!< The currently selected input device type.
-            AZStd::string m_inputChannelName = "";  //!< The currently selected input channel name.
+            AZStd::string m_inputDeviceType;    //!< The currently selected input device type.
+            AZStd::string m_inputChannelName;   //!< The currently selected input channel name.
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
