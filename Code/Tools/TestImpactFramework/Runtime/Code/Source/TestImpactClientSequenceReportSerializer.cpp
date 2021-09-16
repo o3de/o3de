@@ -423,7 +423,7 @@ namespace TestImpact
         {
             // Type
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Type]);
-            writer.String(SequenceReportTypeAsString(sequenceReport.ReportType).c_str());
+            writer.String(SequenceReportTypeAsString(sequenceReport::ReportType).c_str());
 
             // Test target timeout
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TestTargetTimeout]);
