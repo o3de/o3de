@@ -13,6 +13,7 @@
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ::SceneAPI::SceneData
 {

@@ -10,13 +10,13 @@
 #include <PrefabGroup/IPrefabGroup.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <PrefabGroup/PrefabGroupBehavior.h>
-#include <PrefabGroup/ProceduralPrefabAsset.h>
 #include <AzTest/Utils.h>
 #include <Tests/AssetSystemMocks.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
+#include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
