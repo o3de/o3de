@@ -13,6 +13,7 @@
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainHeightGradientListComponent.h>
 
 #include <Terrain/MockTerrain.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
@@ -178,19 +179,19 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> terrainAreaHeightRequests(entity->GetId());
     ON_CALL(terrainAreaHeightRequests, GetHeight)
         .WillByDefault(
-            [spawnerHeight](const AZ::Vector3& inPosition, AZ::Vector3& outPosition,
-                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+            [spawnerHeight](const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists)
             {
                 outPosition = inPosition;
                 outPosition.SetZ(spawnerHeight);
+                terrainExists = true;
             });
     ON_CALL(terrainAreaHeightRequests, GetNormal)
         .WillByDefault(
             [spawnerNormal](
-                [[maybe_unused]] const AZ::Vector3& inPosition, AZ::Vector3& outNormal,
-                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+                [[maybe_unused]] const AZ::Vector3& inPosition, AZ::Vector3& outNormal, bool& terrainExists)
             {
                 outNormal = spawnerNormal;
+                terrainExists = true;
             });
 
     ActivateEntity(entity.get());
@@ -241,3 +242,4 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
         }
     }
 }
+

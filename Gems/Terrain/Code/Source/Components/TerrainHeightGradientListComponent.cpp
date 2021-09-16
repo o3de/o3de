@@ -142,11 +142,15 @@ namespace Terrain
         return false;
     }
 
-    float TerrainHeightGradientListComponent::GetGradientValue(float x, float y)
+    void TerrainHeightGradientListComponent::GetHeight(
+        const AZ::Vector3& inPosition,
+        AZ::Vector3& outPosition,
+        bool& terrainExists)
     {
+        terrainExists = true;
         float maxSample = 0.0f;
 
-        GradientSignal::GradientSampleParams params(AZ::Vector3(x, y, 0.0f));
+        GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
 
         // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
         // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a value
@@ -156,101 +160,13 @@ namespace Terrain
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
             float sample = 0.0f;
-            GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+            GradientSignal::GradientRequestBus::EventResult(
+                sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
             maxSample = AZ::GetMax(maxSample, sample);
         }
 
-        return maxSample;
-    }
-
-    float TerrainHeightGradientListComponent::ConvertGradientValueToHeight(float gradientValue)
-    {
-        const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), gradientValue);
-        return AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight);
-    }
-
-    float TerrainHeightGradientListComponent::GetHeight(float x, float y, AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
-    {
-        float gradientValue = 0.0f;
-
-        switch (sampleFilter)
-        {
-        // Get the value at the requested location, using the terrain grid to bilinear filter between sample grid points.
-        case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
-            {
-                AZ::Vector2 delta;
-                AZ::Vector2 pos0;
-                ClampPosition(x, y, pos0, delta);
-
-                const AZ::Vector2 pos1 = pos0 + m_cachedHeightQueryResolution;
-                const float gradientX0Y0 = GetGradientValue(pos0.GetX(), pos0.GetY());
-                const float gradientX1Y0 = GetGradientValue(pos1.GetX(), pos0.GetY());
-                const float gradientX0Y1 = GetGradientValue(pos0.GetX(), pos1.GetY());
-                const float gradientX1Y1 = GetGradientValue(pos1.GetX(), pos1.GetY());
-                const float gradientXY0 = AZ::Lerp(gradientX0Y0, gradientX1Y0, delta.GetX());
-                const float gradientXY1 = AZ::Lerp(gradientX0Y1, gradientX1Y1, delta.GetX());
-                gradientValue = AZ::Lerp(gradientXY0, gradientXY1, delta.GetY());
-            }
-            break;
-
-        //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
-        case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
-            {
-                AZ::Vector2 delta;
-                AZ::Vector2 clampedPosition;
-                ClampPosition(x, y, clampedPosition, delta);
-
-                gradientValue = GetGradientValue(clampedPosition.GetX(), clampedPosition.GetY());
-            }
-            break;
-
-        //! Directly get the value at the location, regardless of terrain sample grid density.
-        case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
-            [[fallthrough]];
-        default:
-            gradientValue = GetGradientValue(x, y);
-            break;
-        }
-
-        return ConvertGradientValueToHeight(gradientValue);
-    }
-
-    void TerrainHeightGradientListComponent::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& delta)
-    {
-        AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / m_cachedHeightQueryResolution;
-        delta = AZ::Vector2(
-            normalizedPosition.GetX() - floor(normalizedPosition.GetX()), normalizedPosition.GetY() - floor(normalizedPosition.GetY()));
-
-        outPosition = (normalizedPosition - delta) * m_cachedHeightQueryResolution;
-    }
-
-    void TerrainHeightGradientListComponent::GetHeight(
-        const AZ::Vector3& inPosition,
-        AZ::Vector3& outPosition,
-        AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter = AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT)
-    {
-        outPosition.SetZ(GetHeight(inPosition.GetX(), inPosition.GetY(), sampleFilter));
-    }
-
-    void TerrainHeightGradientListComponent::GetNormal(
-        const AZ::Vector3& inPosition,
-        AZ::Vector3& outNormal,
-        AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter = AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT)
-    {
-        const float x = inPosition.GetX();
-        const float y = inPosition.GetY();
-
-        if ((x >= m_cachedShapeBounds.GetMin().GetX()) && (x <= m_cachedShapeBounds.GetMax().GetX()) &&
-            (y >= m_cachedShapeBounds.GetMin().GetY()) && (y <= m_cachedShapeBounds.GetMax().GetY()))
-        {
-            AZ::Vector2 fRange = (m_cachedHeightQueryResolution / 2.0f) + AZ::Vector2(0.05f);
-
-            AZ::Vector3 v1(x - fRange.GetX(), y - fRange.GetY(), GetHeight(x - fRange.GetX(), y - fRange.GetY(), sampleFilter));
-            AZ::Vector3 v2(x - fRange.GetX(), y + fRange.GetY(), GetHeight(x - fRange.GetX(), y + fRange.GetY(), sampleFilter));
-            AZ::Vector3 v3(x + fRange.GetX(), y - fRange.GetY(), GetHeight(x + fRange.GetX(), y - fRange.GetY(), sampleFilter));
-            AZ::Vector3 v4(x + fRange.GetX(), y + fRange.GetY(), GetHeight(x + fRange.GetX(), y + fRange.GetY(), sampleFilter));
-            outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
-        }
+        const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
+        outPosition.SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
     }
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()

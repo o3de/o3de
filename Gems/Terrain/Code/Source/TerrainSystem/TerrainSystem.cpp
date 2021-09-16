@@ -152,27 +152,59 @@ AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
     return m_currentSettings.m_heightQueryResolution;
 }
 
+void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& delta) const
+{
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / m_currentSettings.m_heightQueryResolution;
+    delta = AZ::Vector2(
+        normalizedPosition.GetX() - floor(normalizedPosition.GetX()), normalizedPosition.GetY() - floor(normalizedPosition.GetY()));
+
+    outPosition = (normalizedPosition - delta) * m_currentSettings.m_heightQueryResolution;
+}
+
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     bool terrainExists = false;
-
-    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
-    AZ::Vector3 outPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
+    float height = m_currentSettings.m_worldBounds.GetMin().GetZ();
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    switch (sampler)
     {
-        inPosition.SetZ(areaBounds.GetMin().GetZ());
-        if (areaBounds.Contains(inPosition))
+    // Get the value at the requested location, using the terrain grid to bilinear filter between sample grid points.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
         {
-            Terrain::TerrainAreaHeightRequestBus::Event(
-                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampler);
+            AZ::Vector2 delta;
+            AZ::Vector2 pos0;
+            ClampPosition(x, y, pos0, delta);
 
-            terrainExists = true;
-
-            break;
+            const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
+            const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
+            const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
+            const float heightX0Y1 = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), terrainExists);
+            const float heightX1Y1 = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), terrainExists);
+            const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, delta.GetX());
+            const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, delta.GetX());
+            height = AZ::Lerp(heightXY0, heightXY1, delta.GetY());
         }
+        break;
+
+    //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+        {
+            AZ::Vector2 delta;
+            AZ::Vector2 clampedPosition;
+            ClampPosition(x, y, clampedPosition, delta);
+
+            height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
+        }
+        break;
+
+    //! Directly get the value at the location, regardless of terrain sample grid density.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+        [[fallthrough]];
+    default:
+        height = GetTerrainAreaHeight(x, y, terrainExists);
+        break;
     }
 
     if (terrainExistsPtr)
@@ -181,7 +213,30 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     }
 
     return AZ::GetClamp(
-        outPosition.GetZ(), m_currentSettings.m_worldBounds.GetMin().GetZ(), m_currentSettings.m_worldBounds.GetMax().GetZ());
+        height, m_currentSettings.m_worldBounds.GetMin().GetZ(), m_currentSettings.m_worldBounds.GetMax().GetZ());
+}
+
+float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists) const
+{
+    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
+    float height = m_currentSettings.m_worldBounds.GetMin().GetZ();
+
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    {
+        inPosition.SetZ(areaBounds.GetMin().GetZ());
+        if (areaBounds.Contains(inPosition))
+        {
+            AZ::Vector3 outPosition;
+            Terrain::TerrainAreaHeightRequestBus::Event(
+                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, terrainExists);
+            height = outPosition.GetZ();
+            break;
+        }
+    }
+
+    return height;
 }
 
 float TerrainSystem::GetHeight(AZ::Vector3 position, Sampler sampler, bool* terrainExistsPtr) const
@@ -203,24 +258,24 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 
 AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    bool terrainExists = false;
-
-    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
-    AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
-
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    for (auto& [areaId, areaBounds] : m_registeredAreas)
-    {
-        inPosition.SetZ(areaBounds.GetMin().GetZ());
-        if (areaBounds.Contains(inPosition))
-        {
-            Terrain::TerrainAreaHeightRequestBus::Event(
-                areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetNormal, inPosition, outNormal, sampler);
-            terrainExists = true;
-            break;
-        }
-    }
+    bool terrainExists = false;
+
+    AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
+
+    const AZ::Vector2 range = (m_currentSettings.m_heightQueryResolution / 2.0f);
+    const AZ::Vector2 left (x - range.GetX(), y);
+    const AZ::Vector2 right(x + range.GetX(), y);
+    const AZ::Vector2 up   (x, y - range.GetY());
+    const AZ::Vector2 down (x, y + range.GetY());
+
+    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists));
+    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists));
+    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists));
+    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists));
+
+    outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
 
     if (terrainExistsPtr)
     {
@@ -469,31 +524,15 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         {
             for (uint32_t x = 0; x < width; x++)
             {
-                // Find the first terrain layer that covers this position. This will be the highest priority, so others can be ignored.
-                for (auto& [areaId, areaBounds] : m_registeredAreas)
-                {
-                    AZ::Vector3 inPosition(
-                        (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
-                        (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
-                        areaBounds.GetMin().GetZ());
+                bool terrainExists;
+                float terrainHeight = GetTerrainAreaHeight(
+                    (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
+                    (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
+                    terrainExists);
 
-                    if (!areaBounds.Contains(inPosition))
-                    {
-                        continue;
-                    }
-
-                    AZ::Vector3 outPosition;
-                    const AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler sampleFilter =
-                        AzFramework::Terrain::TerrainDataRequestBus::Events::Sampler::EXACT;
-
-                    Terrain::TerrainAreaHeightRequestBus::Event(
-                        areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
-
-                    pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
-                        m_currentSettings.m_worldBounds.GetExtents().GetZ();
-
-                    break;
-                }
+                pixels[(y * width) + x] =
+                    (terrainHeight - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
+                    m_currentSettings.m_worldBounds.GetExtents().GetZ();
             }
         }
         

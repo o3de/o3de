@@ -72,12 +72,8 @@ namespace UnitTest
         MOCK_METHOD3(GetHeight, void(
             const AZ::Vector3& inPosition,
             AZ::Vector3& outPosition,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter));
+            bool& terrainExists));
 
-        MOCK_METHOD3(GetNormal, void(
-                const AZ::Vector3& inPosition,
-                AZ::Vector3& outNormal,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
