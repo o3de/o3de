@@ -219,7 +219,7 @@ namespace AZ::IO
         // Summary:
         //   Returns true if given archivepath is installed to HDD
         //   If no file path is given it will return true if whole application is installed to HDD
-        virtual bool IsInstalledToHDD(AZStd::string_view acFilePath = 0) const = 0;
+        virtual bool IsInstalledToHDD(AZStd::string_view acFilePath = {}) const = 0;
 
         // after this call, the archive file will be searched for files when they aren't on the OS file system
         // Arguments:

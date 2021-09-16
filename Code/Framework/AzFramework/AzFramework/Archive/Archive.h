@@ -195,7 +195,7 @@ namespace AZ::IO
         bool Init(AZStd::string_view szBasePath) override;
         void Release() override;
 
-        bool IsInstalledToHDD(AZStd::string_view acFilePath = 0) const override;
+        bool IsInstalledToHDD(AZStd::string_view acFilePath = {}) const override;
 
         // [LYN-2376] Remove 'addLevels' parameter once legacy slice support is removed
         bool OpenPack(AZStd::string_view pName, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;

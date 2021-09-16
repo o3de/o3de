@@ -897,7 +897,7 @@ namespace UnitTest
     // It's a legacy function and the actual intended behavior is unknown, so these are black box unit tests.
     TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullString_ReturnsSuccess)
     {
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(nullptr);
+        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath({});
         EXPECT_TRUE(conversionResult);
         EXPECT_TRUE(conversionResult->empty());
     }
@@ -914,7 +914,7 @@ namespace UnitTest
     TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliasToLookFor_ReturnsSource)
     {
         AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), nullptr);
+        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), {});
         EXPECT_TRUE(conversionResult);
         EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
     }
@@ -922,7 +922,7 @@ namespace UnitTest
     TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliasToReplaceWith_ReturnsSource)
     {
         AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), "@SomeAlias", nullptr);
+        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), "@SomeAlias", {});
         EXPECT_TRUE(conversionResult);
         EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
     }
@@ -930,7 +930,7 @@ namespace UnitTest
     TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliases_ReturnsSource)
     {
         AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), nullptr, nullptr);
+        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), {}, {});
         EXPECT_TRUE(conversionResult);
         EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
     }
