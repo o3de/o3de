@@ -3,11 +3,11 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-import azlmbr.materialeditor will fail with a ModuleNotFound error when using this script with Editor.exe
-This is because azlmbr.materialeditor only binds to MaterialEditor.exe and not Editor.exe
-You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 """
+
+# import azlmbr.materialeditor will fail with a ModuleNotFound error when using this script with Editor.exe
+# This is because azlmbr.materialeditor only binds to MaterialEditor.exe and not Editor.exe
+# You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 
 import os
 import sys
