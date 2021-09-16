@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <Prefab/PrefabSystemScriptingHandler.h>
 
 namespace AZ
 {
@@ -50,7 +51,6 @@ namespace AzToolsFramework
         class PrefabSystemComponent
             : public AZ::Component
             , private PrefabSystemComponentInterface
-            , private PrefabSystemComponentBus::Handler
             , private AZ::SystemTickBus::Handler
         {
         public:
@@ -202,9 +202,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 bool ShouldCreateLinks = true) override;
-
-            TemplateId CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entities, const AZStd::string& filePath, bool shouldCreateLinks) override;
-
+            
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
             /**
@@ -226,7 +224,7 @@ namespace AzToolsFramework
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
-
+            
             /**
              * Updates all the linked Instances corresponding to the linkIds in the provided queue.
              * Queue gets populated with more linkId lists as linked instances are updated. Updating stops when the queue is empty.
@@ -376,6 +374,8 @@ namespace AzToolsFramework
 
             // Handler of the public Prefab requests
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
+
+            PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

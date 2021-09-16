@@ -14,7 +14,6 @@
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/EBus/EBus.h>
 
 namespace AzToolsFramework
 {
@@ -61,23 +60,6 @@ namespace AzToolsFramework
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, bool ShouldCreateLinks = true) = 0;
         };
-
-        struct PrefabSystemComponentBehaviorContextInterface
-        {
-            AZ_RTTI(PrefabSystemComponentBehaviorContextInterface, "{A23B4EF8-339A-4FD2-A3F9-FA12D0878F7C}");
-
-            virtual TemplateId CreatePrefabTemplate(
-                const AZStd::vector<AZ::EntityId>& entities, const AZStd::string& filePath, bool shouldCreateLinks) = 0;
-        };
-
-        struct PrefabSystemComponentEbusTraits : AZ::EBusTraits
-        {
-            using MutexType = AZ::NullMutex;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        };
-        
-        using PrefabSystemComponentBus = AZ::EBus<PrefabSystemComponentBehaviorContextInterface, PrefabSystemComponentEbusTraits>;
         
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -636,6 +636,9 @@ set(FILES
     Prefab/PrefabSystemComponent.h
     Prefab/PrefabSystemComponent.cpp
     Prefab/PrefabSystemComponentInterface.h
+    Prefab/PrefabSystemScriptingBus.h
+    Prefab/PrefabSystemScriptingHandler.h
+    Prefab/PrefabSystemScriptingHandler.cpp
     Prefab/Instance/Instance.h
     Prefab/Instance/Instance.cpp
     Prefab/Instance/InstanceSerializer.h

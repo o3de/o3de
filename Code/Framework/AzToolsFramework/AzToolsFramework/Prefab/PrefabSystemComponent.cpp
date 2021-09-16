@@ -30,26 +30,26 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::Activate()
         {
-            PrefabSystemComponentBus::Handler::BusConnect();
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
             m_prefabLoader.RegisterPrefabLoaderInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
             m_prefabPublicRequestHandler.Connect();
+            m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
+            m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
-            PrefabSystemComponentBus::Handler::BusDisconnect();
         }
 
         void PrefabSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -59,6 +59,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabSystemScriptingHandler::Reflect(context);
 
             if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -67,12 +68,6 @@ namespace AzToolsFramework
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<PrefabSystemComponentBus>("PrefabSystemComponentBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
-                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("CreatePrefab", &PrefabSystemComponentBus::Events::CreatePrefabTemplate)
-                ;
 
                 behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -157,34 +152,6 @@ namespace AzToolsFramework
             return newInstance;
         }
         
-        TemplateId PrefabSystemComponent::CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath, bool shouldCreateLinks)
-        {
-            AZStd::vector<AZ::Entity*> entities;
-
-            for (const auto& entityId : entityIds)
-            {
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-
-                AZ_Warning("PrefabSystemComponent", entity, "EntityId %s was not found and will not be added to the prefab", entityId.ToString().c_str());
-
-                if (entity)
-                {
-                    entities.push_back(entity);
-                }
-            }
-            
-            auto prefab = CreatePrefab(entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), nullptr, shouldCreateLinks);
-
-            if (!prefab)
-            {
-                AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());
-                return InvalidTemplateId;
-            }
-
-            return prefab->GetTemplateId();
-        }
-
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
             UpdatePrefabInstances(templateId, instanceToExclude);

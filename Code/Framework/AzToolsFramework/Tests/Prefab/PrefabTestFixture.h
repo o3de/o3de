@@ -32,7 +32,6 @@ namespace UnitTest
     {
     public:
         PrefabTestToolsApplication(AZStd::string appName);
-        PrefabTestToolsApplication(AZStd::string applicationName, int argc, char** argv);
 
         // Make sure our prefab tests always run with prefabs enabled
         bool IsPrefabSystemEnabled() const override;

@@ -34,7 +34,7 @@ namespace UnitTest
             my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
-            g_globalTemplateId = PrefabSystemComponentBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
             )LUA");
 
         EXPECT_NE(g_globalTemplateId, TemplateId{});
@@ -62,7 +62,7 @@ namespace UnitTest
             my_id = EditorEntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
-            template_id = PrefabSystemComponentBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            template_id = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
             my_result = PrefabLoaderScriptingBus.Broadcast.SaveTemplateToString(template_id)
 
             if my_result:IsSuccess() then
