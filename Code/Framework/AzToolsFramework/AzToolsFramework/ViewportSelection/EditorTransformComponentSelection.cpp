@@ -77,13 +77,6 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
-    AZ_CVAR(
-        bool,
-        ed_viewportStickySelect,
-        true,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "Sticky select implies a single click will not change selection with an entity already selected");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const TogglePivotTitleRightClick = "Toggle pivot";
@@ -1790,7 +1783,8 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const AzFramework::CameraState cameraState = GetCameraState(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+        const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
+        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
@@ -1835,7 +1829,11 @@ namespace AzToolsFramework
             return true;
         }
 
-        if (ed_viewportStickySelect)
+        bool stickySelect = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            stickySelect, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::StickySelectEnabled);
+
+        if (stickySelect)
         {
             // double click to deselect all
             if (Input::DeselectAll(mouseInteraction))
@@ -1891,7 +1889,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (ed_viewportStickySelect)
+            if (stickySelect)
             {
                 return false;
             }
@@ -1900,7 +1898,7 @@ namespace AzToolsFramework
         // standard toggle selection
         if (Input::IndividualSelect(clickOutcome))
         {
-            if (!ed_viewportStickySelect)
+            if (!stickySelect)
             {
                 ChangeSelectedEntity(entityIdUnderCursor);
             }
