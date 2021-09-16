@@ -16,4 +16,5 @@ set_target_properties(O3DE_SDK PROPERTIES
 ly_target_link_libraries(O3DE_SDK
     PRIVATE
         AZ::AzCore
-        AZ::AzFramework)
+        AZ::AzFramework
+)

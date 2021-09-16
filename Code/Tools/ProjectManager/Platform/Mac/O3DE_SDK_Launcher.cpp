@@ -19,20 +19,17 @@ int main(int argc, char* argv[])
 {
     // We need to pass in the engine path since we won't be able to find it by searching upwards.
     // We can't use any containers that use our custom allocator till after the call to ComponentApplication::Create()
-    char enginePathParam[AZ_MAX_PATH_LEN];
-    char processPathStr[AZ_MAX_PATH_LEN];
-    uint32_t pathLen = AZ_MAX_PATH_LEN;
-    _NSGetExecutablePath(processPathStr, &pathLen);
-    snprintf(enginePathParam, AZ_MAX_PATH_LEN, "--engine-path=%s/../Engine", processPathStr);
+    AZ::IO::FixedMaxPath processPath = AZ::Utils::GetExecutableDirectory();
+    AZ::IO::FixedMaxPath enginePath = (processPath / "../Engine").LexicallyNormal();
+    auto enginePathParam = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--engine-path="%s")", enginePath.c_str());
+    // Uses the fixed_vector deduction guide to determine the type is AZStd::fixed_vector<char*, 3>
+    AZStd::fixed_vector commandLineParams{ processPath.Native().data(), enginePathParam.data(), static_cast<char*>(nullptr) };
 
-    char *commandLineParams[AZ_MAX_PATH_LEN] = {processPathStr, enginePathParam, nullptr};
+
     
     // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
-    AZ::ComponentApplication application(2, commandLineParams);
+    AZ::ComponentApplication application(2, commandLineParams.data());
     application.Create(AZ::ComponentApplication::Descriptor());
-
-    AZ::IO::FixedMaxPath processPath = AZ::IO::PathView(AZ::Utils::GetExecutableDirectory());
-    AZ::IO::FixedMaxPath enginePath = processPath/".."/"Engine";
  
     AZ::IO::FixedMaxPath installedBinariesFolder;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -42,20 +39,18 @@ int main(int argc, char* argv[])
             installedBinariesFolder = enginePath / installedBinariesFolder;
         }
     }
+
+    AZ::IO::FixedMaxPath shellPath = "/bin/sh";
+    AZStd::string parameters = AZStd::string::format("-c \"export LY_CMAKE_PATH=/usr/local/bin && \"%s/python/get_python.sh\"\"", enginePath.c_str());
+    AzFramework::ProcessLauncher::ProcessLaunchInfo shellProcessLaunch;
+    shellProcessLaunch.m_processExecutableString = AZStd::move(shellPath.Native());
+    shellProcessLaunch.m_commandlineParameters = parameters;
+    shellProcessLaunch.m_showWindow = true;
+    shellProcessLaunch.m_workingDirectory = AZStd::string::format("%s", enginePath.c_str());
+    AZStd::unique_ptr<AzFramework::ProcessWatcher> shellProcess(AzFramework::ProcessWatcher::LaunchProcess(shellProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
+    shellProcess->WaitForProcessToExit(120);
+    shellProcess.reset();
     
-    // Install python packages that are required before launching ProjectManager.
-    AZ::IO::FixedMaxPath pythonPath = enginePath/"python"/"runtime"/"python-3.7.10-rev1-darwin"/"Python.framework"/"Versions"/"3.7"/"bin"/"python3";
-    AZStd::string parameters = AZStd::string::format("\"-s\" \"-m\" \"pip\" \"install\" \"-r\" \"%s/python/requirements.txt\" \"--disable-pip-version-check\" \"--no-warn-script-location\"", enginePath.c_str());
-    AzFramework::ProcessLauncher::ProcessLaunchInfo pythonProcessLaunch;
-    pythonProcessLaunch.m_processExecutableString = AZStd::move(pythonPath.Native());
-    pythonProcessLaunch.m_commandlineParameters = parameters;
-    pythonProcessLaunch.m_showWindow = true;
-    AZStd::unique_ptr<AzFramework::ProcessWatcher> pythonProcess(AzFramework::ProcessWatcher::LaunchProcess(pythonProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
-    pythonProcess->WaitForProcessToExit(60);
-    pythonProcessLaunch.m_commandlineParameters = AZStd::string::format("\"-s\" \"-m\" \"pip\" \"install\" \"-e\" \"%s/scripts/o3de\" \"--no-deps\" \"--disable-pip-version-check\" \"--no-warn-script-location\"", enginePath.c_str());
-    pythonProcess.reset(AzFramework::ProcessWatcher::LaunchProcess(pythonProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
-    pythonProcess->WaitForProcessToExit(60);
-    pythonProcess.reset();
     AZ::IO::FixedMaxPath projectManagerPath = installedBinariesFolder/"o3de.app"/"Contents"/"MacOS"/"o3de";
     AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
     processLaunchInfo.m_processExecutableString = AZStd::move(projectManagerPath.Native());
