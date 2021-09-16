@@ -34,16 +34,6 @@ def remove_test_slice(request, workspace, project):
 
 
 @pytest.fixture
-def remove_test_level(request, workspace, project):
-    file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", "tmp_level")], True, True)
-
-    def teardown():
-        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", "tmp_level")], True, True)
-
-    request.addfinalizer(teardown)
-
-
-@pytest.fixture
 def remote_console_instance(request):
     console = RemoteConsole()
 
@@ -55,7 +45,7 @@ def remote_console_instance(request):
     return console
 
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
@@ -216,7 +206,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["tmp_level"])
 class TestAutomationE2E(TestAutomationBase):
@@ -274,6 +264,7 @@ class TestAutomationE2E(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4170")
     def test_LayerBlender_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
