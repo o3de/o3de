@@ -17,6 +17,10 @@
 
 #include <TerrainMocks.h>
 
+using ::testing::NiceMock;
+using ::testing::AtLeast;
+using ::testing::_;
+
 class PhysicsColliderComponentTest
     : public ::testing::Test
 {
@@ -27,8 +31,9 @@ protected:
     Terrain::TerrainPhysicsColliderComponent* m_colliderComponent;
     UnitTest::MockBoxShapeComponent* m_shapeComponent;
     UnitTest::MockHeightfieldProviderNotificationBusListener* m_heightfieldBusListener;
-    AZStd::unique_ptr<UnitTest::MockTerrainSystem> m_terrainSystem;
-
+    AZStd::unique_ptr<UnitTest::MockTerrainSystemService> m_terrainSystem;
+    AZStd::unique_ptr<UnitTest::MockTerrainDataRequestsListener> m_terrainDataRequestListener;
+    
     void SetUp() override
     {
         AZ::ComponentApplication::Descriptor appDesc;
@@ -44,6 +49,11 @@ protected:
         if (m_terrainSystem)
         {
             m_terrainSystem->Deactivate();
+        }
+
+        if (m_terrainDataRequestListener)
+        {
+            m_terrainDataRequestListener->Deactivate();
         }
         m_app.Destroy();
     }
@@ -83,8 +93,14 @@ protected:
 
     void CreateMockTerrainSystem()
     {
-        m_terrainSystem = AZStd::make_unique<UnitTest::MockTerrainSystem>();
+        m_terrainSystem = AZStd::make_unique<UnitTest::MockTerrainSystemService>();
         m_terrainSystem->Activate();
+    }
+
+    void CreateTerrainDataListener()
+    {
+        m_terrainDataRequestListener = AZStd::make_unique<UnitTest::MockTerrainDataRequestsListener>();
+        m_terrainDataRequestListener->Activate();
     }
 
     void ResetEntity()
@@ -115,10 +131,10 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeig
 
     m_entity->Activate();
 
+    EXPECT_CALL(*m_heightfieldBusListener, OnHeightfieldDataChanged(_)).Times(1);
+
     AZ::TransformNotificationBus::Event(
         m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
-
-    EXPECT_EQ(1, m_heightfieldBusListener->m_onHeightfieldDataChangedCalledCount);
 
     ResetEntity();
 }
@@ -133,11 +149,11 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
 
     m_entity->Activate();
 
-   LmbrCentral::ShapeComponentNotificationsBus::Event(
+    EXPECT_CALL(*m_heightfieldBusListener, OnHeightfieldDataChanged(_)).Times(1);
+
+    LmbrCentral::ShapeComponentNotificationsBus::Event(
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
         LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
-
-    EXPECT_EQ(1, m_heightfieldBusListener->m_onHeightfieldDataChangedCalledCount);
 
     ResetEntity();
 }
@@ -194,16 +210,22 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeights)
 
     CreateMockTerrainSystem();
 
+    CreateTerrainDataListener();
+
     m_entity->Activate();
 
-    float min = 100;
-    float max = 200;
+    float min = 0.0f;
+    float max = 1023.2f;
 
     float mockHeight = 10.0f;
 
-    m_terrainSystem->SetMockHeight(mockHeight);
+    m_terrainDataRequestListener->m_mockHeight = mockHeight;
 
     m_shapeComponent->SetAabbFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+
+    int32_t cols, rows;
+    Physics::HeightfieldProviderRequestsBus::Event(
+        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
     AZStd::vector<int16_t> heights;
 
