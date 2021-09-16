@@ -203,8 +203,7 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit HeightfieldShapeConfiguration(
-            const AZ::Vector3& boxDimensions = AZ::Vector3::CreateOne(), AZ::EntityId entityId = AZ::EntityId());
+        explicit HeightfieldShapeConfiguration(AZ::EntityId entityId = AZ::EntityId());
         HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration&);
         HeightfieldShapeConfiguration& operator=(const HeightfieldShapeConfiguration&);
         ~HeightfieldShapeConfiguration();

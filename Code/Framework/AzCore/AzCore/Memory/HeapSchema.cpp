@@ -244,6 +244,11 @@ namespace AZ
         return maxChunk;
     }
 
+    auto HeapSchema::GetMaxContiguousAllocationSize() const -> size_type
+    {
+        return MAX_REQUEST;
+    }
+
     AZ_FORCE_INLINE HeapSchema::size_type
     HeapSchema::ChunckSize(pointer_type ptr)
     {

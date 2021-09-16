@@ -72,7 +72,7 @@ protected: // member functions
     // ~AZ::Component
 
     // UiLayoutControllerInterface
-    unsigned int GetPriority() const;
+    unsigned int GetPriority() const override;
     // ~UiLayoutControllerInterface
 
     AZ_DISABLE_COPY_MOVE(UiLayoutFitterComponent);

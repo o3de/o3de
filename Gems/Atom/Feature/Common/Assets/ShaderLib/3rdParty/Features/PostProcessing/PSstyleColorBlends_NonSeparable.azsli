@@ -1,0 +1,177 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/*
+------------------------------------------------------------------------------
+ Public Domain
+------------------------------------------------------------------------------
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+
+Source: https://www.ryanjuckett.com/photoshop-blend-modes-in-hlsl/
+*/
+//******************************************************************************
+//******************************************************************************
+float Color_GetLuminosity(float3 c)
+{
+    return 0.3*c.r + 0.59*c.g + 0.11*c.b;
+}
+
+//******************************************************************************
+//******************************************************************************
+float3 Color_SetLuminosity(float3 c, float lum)
+{
+    float d = lum - Color_GetLuminosity(c);
+    c.rgb += float3(d,d,d);
+
+    // clip back into legal range
+    lum = Color_GetLuminosity(c);
+    float cMin = min(c.r, min(c.g, c.b));
+    float cMax = max(c.r, max(c.g, c.b));
+
+    if(cMin < 0)
+        c = lerp(float3(lum,lum,lum), c, lum / (lum - cMin));
+
+    if(cMax > 1)
+        c = lerp(float3(lum,lum,lum), c, (1 - lum) / (cMax - lum));
+
+    return c;
+}
+
+//******************************************************************************
+//******************************************************************************
+float Color_GetSaturation(float3 c)
+{
+    return max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
+}
+
+//******************************************************************************
+// Set saturation if color components are sorted in ascending order.
+//******************************************************************************
+float3 Color_SetSaturation_MinMidMax(float3 cSorted, float s)
+{
+    if(cSorted.z > cSorted.x)
+    {
+        cSorted.y = (((cSorted.y - cSorted.x) * s) / (cSorted.z - cSorted.x));
+        cSorted.z = s;
+    }
+    else
+    {
+        cSorted.y = 0;
+        cSorted.z = 0;
+    }
+
+    cSorted.x = 0;
+
+    return cSorted;
+}
+
+//******************************************************************************
+//******************************************************************************
+float3 Color_SetSaturation(float3 c, float s)
+{
+    if (c.r <= c.g && c.r <= c.b)
+    {
+        if (c.g <= c.b)
+            c.rgb = Color_SetSaturation_MinMidMax(c.rgb, s);
+        else
+            c.rbg = Color_SetSaturation_MinMidMax(c.rbg, s);
+    }
+    else if (c.g <= c.r && c.g <= c.b)
+    {
+        if (c.r <= c.b)
+            c.grb = Color_SetSaturation_MinMidMax(c.grb, s);
+        else
+            c.gbr = Color_SetSaturation_MinMidMax(c.gbr, s);
+    }
+    else
+    {
+        if (c.r <= c.g)
+            c.brg = Color_SetSaturation_MinMidMax(c.brg, s);
+        else
+            c.bgr = Color_SetSaturation_MinMidMax(c.bgr, s);
+    }
+    
+    return c;
+}
+
+//******************************************************************************
+// Creates a color with the hue of the blend color and the saturation and
+// luminosity of the base color.
+//******************************************************************************
+float3 BlendMode_Hue(float3 base, float3 blend)
+{
+    return Color_SetLuminosity(Color_SetSaturation(blend, Color_GetSaturation(base)), Color_GetLuminosity(base));
+}
+
+//******************************************************************************
+// Creates a color with the saturation of the blend color and the hue and
+// luminosity of the base color. 
+//******************************************************************************
+float3 BlendMode_Saturation(float3 base, float3 blend)
+{
+    return Color_SetLuminosity(Color_SetSaturation(base, Color_GetSaturation(blend)), Color_GetLuminosity(base));
+}
+
+//******************************************************************************
+// Creates a color with the hue and saturation of the blend color and the 
+// luminosity of the base color.
+//******************************************************************************
+float3 BlendMode_Color(float3 base, float3 blend)
+{
+    return Color_SetLuminosity(blend, Color_GetLuminosity(base));
+}
+
+//******************************************************************************
+// Creates a color with the luminosity of the blend color and the hue and 
+// saturation of the base color. 
+//******************************************************************************
+float3 BlendMode_Luminosity(float3 base, float3 blend)
+{
+    return Color_SetLuminosity(base, Color_GetLuminosity(blend));
+}
+
+//******************************************************************************
+// Compares the total of all channel values for the blend and base color and 
+// displays the lower value color.
+//******************************************************************************
+float3 BlendMode_DarkerColor(float3 base, float3 blend)
+{
+    return Color_GetLuminosity(base) <= Color_GetLuminosity(blend) ? base : blend;
+}
+
+//******************************************************************************
+// Compares the total of all channel values for the blend and base color and 
+// displays the higher value color. 
+//******************************************************************************
+float3 BlendMode_LighterColor(float3 base, float3 blend)
+{
+    return Color_GetLuminosity(base) > Color_GetLuminosity(blend) ? base : blend;
+}

@@ -52,12 +52,13 @@ namespace AzManipulatorTestFramework
 
     protected:
         // ActionDispatcher ...
-        void EnableSnapToGridImpl() override;
-        void DisableSnapToGridImpl() override;
+        void SetSnapToGridImpl(bool enabled) override;
+        void SetStickySelectImpl(bool enabled) override;
         void GridSizeImpl(float size) override;
         void CameraStateImpl(const AzFramework::CameraState& cameraState) override;
         void MouseLButtonDownImpl() override;
         void MouseLButtonUpImpl() override;
+        void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
         void KeyboardModifierUpImpl(const KeyboardModifier& keyModifier) override;

@@ -20,6 +20,7 @@
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>    // for aznumeric_cast
 
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_AboutDialog.h>
@@ -46,8 +47,13 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #94D2FF; }");
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
-    m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg")),
+        screen(),
+        QSize(m_enforcedWidth, m_enforcedHeight),
+        Qt::IgnoreAspectRatio,
+        Qt::SmoothTransformation
+    );
 
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));

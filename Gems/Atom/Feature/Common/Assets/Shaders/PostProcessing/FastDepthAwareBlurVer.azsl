@@ -55,7 +55,7 @@ int GetLdsIndex(int2 ldsPosition)
 
 // --- Common file start ---
 
-// #include <Atom/Features/PostProcessing/FastDepthAwareBlurCommon.azsli>
+// include <Atom/Features/PostProcessing/FastDepthAwareBlurCommon.azsli> ('#' symbol before 'include' was removed on purpose to avoid parsing this azsli file during ShaderAssetBuilder::CreateJobs)
 // This include fails with the asset processor when generating the .shader for this file
 // Everything below this is copy pasted from FastDepthAwareBlurCommon.azsli up until the
 // "Common file end" marker below

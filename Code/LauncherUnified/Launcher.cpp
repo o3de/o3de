@@ -232,12 +232,16 @@ namespace
         // our frame time to be managed by AzGameFramework::GameApplication
         // instead, which probably isn't going to happen anytime soon given
         // how many things depend on the ITimer interface).
-        bool continueRunning = true;
         ISystem* system = gEnv ? gEnv->pSystem : nullptr;
-        while (continueRunning)
+        while (!gameApplication.WasExitMainLoopRequested())
         {
             // Pump the system event loop
             gameApplication.PumpSystemEventLoopUntilEmpty();
+
+            if (gameApplication.WasExitMainLoopRequested())
+            {
+                break;
+            }
 
             // Update the AzFramework system tick bus
             gameApplication.TickSystem();
@@ -256,9 +260,6 @@ namespace
             {
                 system->UpdatePostTickBus();
             }
-
-            // Check for quit requests
-            continueRunning = !gameApplication.WasExitMainLoopRequested() && continueRunning;
         }
     }
 }

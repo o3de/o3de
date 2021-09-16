@@ -196,6 +196,8 @@ namespace AzToolsFramework
             virtual float ManipulatorLineBoundWidth() const = 0;
             //! Returns the current circle (torus) bound width for manipulators.
             virtual float ManipulatorCircleBoundWidth() const = 0;
+            //! Returns if sticky select is enabled or not.
+            virtual bool StickySelectEnabled() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;

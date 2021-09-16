@@ -77,68 +77,62 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
-    AZ_CVAR(
-        bool,
-        ed_viewportStickySelect,
-        true,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "Sticky select implies a single click will not change selection with an entity already selected");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
-    static const char* const s_togglePivotTitleRightClick = "Toggle pivot";
-    static const char* const s_togglePivotTitleEditMenu = "Toggle Pivot Location";
-    static const char* const s_togglePivotDesc = "Toggle pivot location";
-    static const char* const s_manipulatorUndoRedoName = "Manipulator Adjustment";
-    static const char* const s_lockSelectionTitle = "Lock Selection";
-    static const char* const s_lockSelectionDesc = "Lock the selected entities so that they can't be selected in the viewport";
-    static const char* const s_hideSelectionTitle = "Hide Selection";
-    static const char* const s_hideSelectionDesc = "Hide the selected entities so that they don't appear in the viewport";
-    static const char* const s_unlockAllTitle = "Unlock All Entities";
-    static const char* const s_unlockAllDesc = "Unlock all entities the level";
-    static const char* const s_showAllTitle = "Show All";
-    static const char* const s_showAllDesc = "Show all entities so that they appear in the viewport";
-    static const char* const s_selectAllTitle = "Select All";
-    static const char* const s_selectAllDesc = "Select all entities";
-    static const char* const s_invertSelectionTitle = "Invert Selection";
-    static const char* const s_invertSelectionDesc = "Invert the current entity selection";
-    static const char* const s_duplicateTitle = "Duplicate";
-    static const char* const s_duplicateDesc = "Duplicate selected entities";
-    static const char* const s_deleteTitle = "Delete";
-    static const char* const s_deleteDesc = "Delete selected entities";
-    static const char* const s_resetEntityTransformTitle = "Reset Entity Transform";
-    static const char* const s_resetEntityTransformDesc = "Reset transform based on manipulator mode";
-    static const char* const s_resetManipulatorTitle = "Reset Manipulator";
-    static const char* const s_resetManipulatorDesc = "Reset the manipulator to recenter it on the selected entity";
-    static const char* const s_resetTransformLocalTitle = "Reset Transform (Local)";
-    static const char* const s_resetTransformLocalDesc = "Reset transform to local space";
-    static const char* const s_resetTransformWorldTitle = "Reset Transform (World)";
-    static const char* const s_resetTransformWorldDesc = "Reset transform to world space";
+    static const char* const TogglePivotTitleRightClick = "Toggle pivot";
+    static const char* const TogglePivotTitleEditMenu = "Toggle Pivot Location";
+    static const char* const TogglePivotDesc = "Toggle pivot location";
+    static const char* const ManipulatorUndoRedoName = "Manipulator Adjustment";
+    static const char* const LockSelectionTitle = "Lock Selection";
+    static const char* const LockSelectionDesc = "Lock the selected entities so that they can't be selected in the viewport";
+    static const char* const HideSelectionTitle = "Hide Selection";
+    static const char* const HideSelectionDesc = "Hide the selected entities so that they don't appear in the viewport";
+    static const char* const UnlockAllTitle = "Unlock All Entities";
+    static const char* const UnlockAllDesc = "Unlock all entities the level";
+    static const char* const ShowAllTitle = "Show All";
+    static const char* const ShowAllDesc = "Show all entities so that they appear in the viewport";
+    static const char* const SelectAllTitle = "Select All";
+    static const char* const SelectAllDesc = "Select all entities";
+    static const char* const InvertSelectionTitle = "Invert Selection";
+    static const char* const InvertSelectionDesc = "Invert the current entity selection";
+    static const char* const DuplicateTitle = "Duplicate";
+    static const char* const DuplicateDesc = "Duplicate selected entities";
+    static const char* const DeleteTitle = "Delete";
+    static const char* const DeleteDesc = "Delete selected entities";
+    static const char* const ResetEntityTransformTitle = "Reset Entity Transform";
+    static const char* const ResetEntityTransformDesc = "Reset transform based on manipulator mode";
+    static const char* const ResetManipulatorTitle = "Reset Manipulator";
+    static const char* const ResetManipulatorDesc = "Reset the manipulator to recenter it on the selected entity";
+    static const char* const ResetTransformLocalTitle = "Reset Transform (Local)";
+    static const char* const ResetTransformLocalDesc = "Reset transform to local space";
+    static const char* const ResetTransformWorldTitle = "Reset Transform (World)";
+    static const char* const ResetTransformWorldDesc = "Reset transform to world space";
 
-    static const char* const s_entityBoxSelectUndoRedoDesc = "Box Select Entities";
-    static const char* const s_entityDeselectUndoRedoDesc = "Deselect Entity";
-    static const char* const s_entitiesDeselectUndoRedoDesc = "Deselect Entities";
-    static const char* const s_entitySelectUndoRedoDesc = "Select Entity";
-    static const char* const s_dittoManipulatorUndoRedoDesc = "Ditto Manipulator";
-    static const char* const s_resetManipulatorTranslationUndoRedoDesc = "Reset Manipulator Translation";
-    static const char* const s_resetManipulatorOrientationUndoRedoDesc = "Reset Manipulator Orientation";
-    static const char* const s_dittoEntityOrientationIndividualUndoRedoDesc = "Ditto orientation individual";
-    static const char* const s_dittoEntityOrientationGroupUndoRedoDesc = "Ditto orientation group";
-    static const char* const s_resetTranslationToParentUndoRedoDesc = "Reset translation to parent";
-    static const char* const s_resetOrientationToParentUndoRedoDesc = "Reset orientation to parent";
-    static const char* const s_dittoTranslationGroupUndoRedoDesc = "Ditto translation group";
-    static const char* const s_dittoTranslationIndividualUndoRedoDesc = "Ditto translation individual";
-    static const char* const s_dittoScaleIndividualWorldUndoRedoDesc = "Ditto scale individual world";
-    static const char* const s_dittoScaleIndividualLocalUndoRedoDesc = "Ditto scale individual local";
-    static const char* const s_snapToWorldGridUndoRedoDesc = "Snap to world grid";
-    static const char* const s_showAllEntitiesUndoRedoDesc = s_showAllTitle;
-    static const char* const s_lockSelectionUndoRedoDesc = s_lockSelectionTitle;
-    static const char* const s_hideSelectionUndoRedoDesc = s_hideSelectionTitle;
-    static const char* const s_unlockAllUndoRedoDesc = s_unlockAllTitle;
-    static const char* const s_selectAllEntitiesUndoRedoDesc = s_selectAllTitle;
-    static const char* const s_invertSelectionUndoRedoDesc = s_invertSelectionTitle;
-    static const char* const s_duplicateUndoRedoDesc = s_duplicateTitle;
-    static const char* const s_deleteUndoRedoDesc = s_deleteTitle;
+    static const char* const EntityBoxSelectUndoRedoDesc = "Box Select Entities";
+    static const char* const EntityDeselectUndoRedoDesc = "Deselect Entity";
+    static const char* const EntitiesDeselectUndoRedoDesc = "Deselect Entities";
+    static const char* const ChangeEntitySelectionUndoRedoDesc = "Change Selected Entity";
+    static const char* const EntitySelectUndoRedoDesc = "Select Entity";
+    static const char* const DittoManipulatorUndoRedoDesc = "Ditto Manipulator";
+    static const char* const ResetManipulatorTranslationUndoRedoDesc = "Reset Manipulator Translation";
+    static const char* const ResetManipulatorOrientationUndoRedoDesc = "Reset Manipulator Orientation";
+    static const char* const DittoEntityOrientationIndividualUndoRedoDesc = "Ditto orientation individual";
+    static const char* const DittoEntityOrientationGroupUndoRedoDesc = "Ditto orientation group";
+    static const char* const ResetTranslationToParentUndoRedoDesc = "Reset translation to parent";
+    static const char* const ResetOrientationToParentUndoRedoDesc = "Reset orientation to parent";
+    static const char* const DittoTranslationGroupUndoRedoDesc = "Ditto translation group";
+    static const char* const DittoTranslationIndividualUndoRedoDesc = "Ditto translation individual";
+    static const char* const DittoScaleIndividualWorldUndoRedoDesc = "Ditto scale individual world";
+    static const char* const DittoScaleIndividualLocalUndoRedoDesc = "Ditto scale individual local";
+    static const char* const SnapToWorldGridUndoRedoDesc = "Snap to world grid";
+    static const char* const ShowAllEntitiesUndoRedoDesc = ShowAllTitle;
+    static const char* const LockSelectionUndoRedoDesc = LockSelectionTitle;
+    static const char* const HideSelectionUndoRedoDesc = HideSelectionTitle;
+    static const char* const UnlockAllUndoRedoDesc = UnlockAllTitle;
+    static const char* const SelectAllEntitiesUndoRedoDesc = SelectAllTitle;
+    static const char* const InvertSelectionUndoRedoDesc = InvertSelectionTitle;
+    static const char* const DuplicateUndoRedoDesc = DuplicateTitle;
+    static const char* const DeleteUndoRedoDesc = DeleteTitle;
 
     static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode";
     static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode";
@@ -148,14 +142,14 @@ namespace AzToolsFramework
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
     static const char* const SnappingClusterSnapToWorldTooltip = "Snap selected entities to the world space grid";
 
-    static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
-    static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
-    static const AZ::Color s_fadedZAxisColor = AZ::Color(AZ::u8(120), AZ::u8(120), AZ::u8(180), AZ::u8(255));
+    static const AZ::Color FadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
+    static const AZ::Color FadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
+    static const AZ::Color FadedZAxisColor = AZ::Color(AZ::u8(120), AZ::u8(120), AZ::u8(180), AZ::u8(255));
 
-    static const AZ::Color s_pickedOrientationColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
-    static const AZ::Color s_selectedEntityAabbColor = AZ::Color(0.6f, 0.6f, 0.6f, 0.4f);
+    static const AZ::Color PickedOrientationColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
+    static const AZ::Color SelectedEntityAabbColor = AZ::Color(0.6f, 0.6f, 0.6f, 0.4f);
 
-    static const float s_pivotSize = 0.075f; // the size of the pivot (box) to render when selected
+    static const float PivotSize = 0.075f; // the size of the pivot (box) to render when selected
 
     // data passed to manipulators when processing mouse interactions
     // m_entityIds should be sorted based on the entity hierarchy
@@ -1107,7 +1101,7 @@ namespace AzToolsFramework
             {
                 // begin selection undo/redo command
                 entityBoxSelectData->m_boxSelectSelectionCommand =
-                    AZStd::make_unique<SelectionCommand>(EntityIdList(), s_entityBoxSelectUndoRedoDesc);
+                    AZStd::make_unique<SelectionCommand>(EntityIdList(), EntityBoxSelectUndoRedoDesc);
                 // grab currently selected entities
                 entityBoxSelectData->m_selectedEntityIdsBeforeBoxSelect = m_selectedEntityIds;
             });
@@ -1131,7 +1125,7 @@ namespace AzToolsFramework
                 if (!entityBoxSelectData->m_potentialDeselectedEntityIds.empty() ||
                     !entityBoxSelectData->m_potentialSelectedEntityIds.empty())
                 {
-                    ScopedUndoBatch undoBatch(s_entityBoxSelectUndoRedoDesc);
+                    ScopedUndoBatch undoBatch(EntityBoxSelectUndoRedoDesc);
 
                     // restore manipulator overrides when undoing
                     if (m_entityIdManipulators.m_manipulators && m_selectedEntityIds.empty())
@@ -1174,7 +1168,7 @@ namespace AzToolsFramework
                 }
 
                 debugDisplay.DepthTestOff();
-                debugDisplay.SetColor(s_selectedEntityAabbColor);
+                debugDisplay.SetColor(SelectedEntityAabbColor);
 
                 for (AZ::EntityId entityId : entityBoxSelectData->m_potentialSelectedEntityIds)
                 {
@@ -1222,7 +1216,7 @@ namespace AzToolsFramework
         {
             // check here if translation or orientation override are set
             m_manipulatorMoveCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
         }
     }
 
@@ -1696,7 +1690,7 @@ namespace AzToolsFramework
 
         if (!UndoRedoOperationInProgress())
         {
-            ScopedUndoBatch undoBatch(s_entitiesDeselectUndoRedoDesc);
+            ScopedUndoBatch undoBatch(EntitiesDeselectUndoRedoDesc);
 
             // restore manipulator overrides when undoing
             if (m_entityIdManipulators.m_manipulators)
@@ -1706,7 +1700,7 @@ namespace AzToolsFramework
 
             // select must happen after to ensure in the undo/redo step the selection command
             // happens before the manipulator command
-            auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_entitiesDeselectUndoRedoDesc);
+            auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), EntitiesDeselectUndoRedoDesc);
             selectionCommand->SetParent(undoBatch.GetUndoBatch());
             selectionCommand.release();
         }
@@ -1732,7 +1726,7 @@ namespace AzToolsFramework
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
-                    ScopedUndoBatch undoBatch(s_entityDeselectUndoRedoDesc);
+                    ScopedUndoBatch undoBatch(EntityDeselectUndoRedoDesc);
 
                     // store manipulator state when removing last entity from selection
                     if (m_entityIdManipulators.m_manipulators && nextEntityIds.empty())
@@ -1740,7 +1734,7 @@ namespace AzToolsFramework
                         CreateEntityManipulatorDeselectCommand(undoBatch);
                     }
 
-                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_entityDeselectUndoRedoDesc);
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, EntityDeselectUndoRedoDesc);
                     selectionCommand->SetParent(undoBatch.GetUndoBatch());
                     selectionCommand.release();
 
@@ -1755,8 +1749,8 @@ namespace AzToolsFramework
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
-                    ScopedUndoBatch undoBatch(s_entitySelectUndoRedoDesc);
-                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_entitySelectUndoRedoDesc);
+                    ScopedUndoBatch undoBatch(EntitySelectUndoRedoDesc);
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, EntitySelectUndoRedoDesc);
                     selectionCommand->SetParent(undoBatch.GetUndoBatch());
                     selectionCommand.release();
 
@@ -1770,13 +1764,27 @@ namespace AzToolsFramework
         return false;
     }
 
+    void EditorTransformComponentSelection::ChangeSelectedEntity(const AZ::EntityId entityId)
+    {
+        AZ_Assert(
+            !UndoRedoOperationInProgress(),
+            "ChangeSelectedEntity called from undo/redo operation - this is unexpected and not currently supported");
+
+        // ensure deselect/select is tracked as an atomic undo/redo operation
+        ScopedUndoBatch undoBatch(ChangeEntitySelectionUndoRedoDesc);
+
+        DeselectEntities();
+        SelectDeselect(entityId);
+    }
+
     bool EditorTransformComponentSelection::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         CheckDirtyEntityIds();
 
-        const AzFramework::CameraState cameraState = GetCameraState(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+        const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
+        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
@@ -1793,7 +1801,7 @@ namespace AzToolsFramework
                 const AZ::Transform& worldFromLocal = m_entityDataCache->GetVisibleEntityTransform(*entityIndex);
                 const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
                 const AZ::Vector3 scaledSize =
-                    AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
+                    AZ::Vector3(PivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
 
                 if (AabbIntersectMouseRay(
                         mouseInteraction.m_mouseInteraction,
@@ -1821,200 +1829,241 @@ namespace AzToolsFramework
             return true;
         }
 
-        // double click to deselect all
-        if (Input::DeselectAll(mouseInteraction))
+        bool stickySelect = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            stickySelect, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::StickySelectEnabled);
+
+        if (stickySelect)
         {
-            // note: even if m_selectedEntityIds is technically empty, we
-            // may still have an entity selected that was clicked in the
-            // entity outliner - we still want to make sure the deselect all
-            // action clears the selection
-            DeselectEntities();
-            return false;
+            // double click to deselect all
+            if (Input::DeselectAll(mouseInteraction))
+            {
+                // note: even if m_selectedEntityIds is technically empty, we
+                // may still have an entity selected that was clicked in the
+                // entity outliner - we still want to make sure the deselect all
+                // action clears the selection
+                DeselectEntities();
+                return false;
+            }
+        }
+
+        // select/deselect (add/remove) entities with ctrl held
+        if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
+        {
+            if (SelectDeselect(entityIdUnderCursor))
+            {
+                if (m_selectedEntityIds.empty())
+                {
+                    m_pivotOverrideFrame.Reset();
+                }
+
+                return false;
+            }
         }
 
         if (!m_selectedEntityIds.empty())
         {
-            // select/deselect (add/remove) entities with ctrl held
-            if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
-            {
-                if (SelectDeselect(entityIdUnderCursor))
-                {
-                    if (m_selectedEntityIds.empty())
-                    {
-                        m_pivotOverrideFrame.Reset();
-                    }
-
-                    return false;
-                }
-            }
-
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
-            if (Input::GroupDitto(mouseInteraction))
+            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
-                if (entityIdUnderCursor.IsValid())
-                {
-                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                    switch (m_mode)
-                    {
-                    case Mode::Rotation:
-                        CopyOrientationToSelectedEntitiesGroup(QuaternionFromTransformNoScaling(worldFromLocal));
-                        break;
-                    case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
-                        break;
-                    case Mode::Translation:
-                        CopyTranslationToSelectedEntitiesGroup(worldFromLocal.GetTranslation());
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                    }
-
-                    return false;
-                }
+                return false;
             }
 
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
-            if (Input::IndividualDitto(mouseInteraction))
+            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
-                if (entityIdUnderCursor.IsValid())
-                {
-                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                    switch (m_mode)
-                    {
-                    case Mode::Rotation:
-                        CopyOrientationToSelectedEntitiesIndividual(QuaternionFromTransformNoScaling(worldFromLocal));
-                        break;
-                    case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
-                        break;
-                    case Mode::Translation:
-                        CopyTranslationToSelectedEntitiesIndividual(worldFromLocal.GetTranslation());
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                    }
-
-                    return false;
-                }
+                return false;
             }
 
             // try snapping to the terrain (if in Translation mode) and entity wasn't picked
             if (Input::SnapTerrain(mouseInteraction))
             {
-                for (AZ::EntityId entityId : m_selectedEntityIds)
-                {
-                    ScopedUndoBatch::MarkEntityDirty(entityId);
-                }
-
-                if (m_mode == Mode::Translation)
-                {
-                    const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
-
-                    // handle modifier alternatives
-                    if (Input::IndividualDitto(mouseInteraction))
-                    {
-                        CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
-                    }
-                    else if (Input::GroupDitto(mouseInteraction))
-                    {
-                        CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
-                    }
-                }
-                else if (m_mode == Mode::Rotation)
-                {
-                    // handle modifier alternatives
-                    if (Input::IndividualDitto(mouseInteraction))
-                    {
-                        CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
-                    }
-                    else if (Input::GroupDitto(mouseInteraction))
-                    {
-                        CopyOrientationToSelectedEntitiesGroup(AZ::Quaternion::CreateIdentity());
-                    }
-                }
-
+                PerformSnapToTerrain(mouseInteraction);
                 return false;
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
             if (Input::ManipulatorDitto(mouseInteraction))
             {
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    ScopedUndoBatch undoBatch(s_dittoManipulatorUndoRedoDesc);
-
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
-
-                    if (entityIdUnderCursor.IsValid())
-                    {
-                        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                        AZ::TransformBus::EventResult(worldFromLocal, entityIdUnderCursor, &AZ::TransformBus::Events::GetWorldTM);
-
-                        // set orientation/translation to match picked entity
-                        switch (m_mode)
-                        {
-                        case Mode::Rotation:
-                            OverrideManipulatorOrientation(QuaternionFromTransformNoScaling(worldFromLocal));
-                            break;
-                        case Mode::Translation:
-                            OverrideManipulatorTranslation(worldFromLocal.GetTranslation());
-                            break;
-                        case Mode::Scale:
-                            // do nothing
-                            break;
-                        default:
-                            break;
-                        }
-
-                        // only update pivot override when in translation or rotation mode
-                        switch (m_mode)
-                        {
-                        case Mode::Rotation:
-                            m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Orientation;
-                            [[fallthrough]];
-                        case Mode::Translation:
-                            m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Translation;
-                            m_pivotOverrideFrame.m_pickedEntityIdOverride = entityIdUnderCursor;
-                            break;
-                        case Mode::Scale:
-                            // do nothing
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        // match the same behavior as if we pressed Ctrl+R to reset the manipulator
-                        DelegateClearManipulatorOverride();
-                    }
-
-                    manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
-                        BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
-                        m_entityIdManipulators.m_manipulators->GetLocalTransform(), entityIdUnderCursor));
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
+                PerformManipulatorDitto(entityIdUnderCursor);
+                return false;
             }
 
-            return false;
+            if (stickySelect)
+            {
+                return false;
+            }
         }
 
         // standard toggle selection
         if (Input::IndividualSelect(clickOutcome))
         {
-            SelectDeselect(entityIdUnderCursor);
+            if (!stickySelect)
+            {
+                ChangeSelectedEntity(entityIdUnderCursor);
+            }
+            else
+            {
+                SelectDeselect(entityIdUnderCursor);
+            }
         }
 
         return false;
+    }
+
+    bool EditorTransformComponentSelection::PerformGroupDitto(const AZ::EntityId entityId)
+    {
+        if (entityId.IsValid())
+        {
+            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+            switch (m_mode)
+            {
+            case Mode::Rotation:
+                CopyOrientationToSelectedEntitiesGroup(QuaternionFromTransformNoScaling(worldFromLocal));
+                break;
+            case Mode::Scale:
+                CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
+                break;
+            case Mode::Translation:
+                CopyTranslationToSelectedEntitiesGroup(worldFromLocal.GetTranslation());
+                break;
+            default:
+                // do nothing
+                break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool EditorTransformComponentSelection::PerformIndividualDitto(const AZ::EntityId entityId)
+    {
+        if (entityId.IsValid())
+        {
+            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+            switch (m_mode)
+            {
+            case Mode::Rotation:
+                CopyOrientationToSelectedEntitiesIndividual(QuaternionFromTransformNoScaling(worldFromLocal));
+                break;
+            case Mode::Scale:
+                CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
+                break;
+            case Mode::Translation:
+                CopyTranslationToSelectedEntitiesIndividual(worldFromLocal.GetTranslation());
+                break;
+            default:
+                // do nothing
+                break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void EditorTransformComponentSelection::PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        for (AZ::EntityId entityId : m_selectedEntityIds)
+        {
+            ScopedUndoBatch::MarkEntityDirty(entityId);
+        }
+
+        if (m_mode == Mode::Translation)
+        {
+            const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
+
+            // handle modifier alternatives
+            if (Input::IndividualDitto(mouseInteraction))
+            {
+                CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
+            }
+            else if (Input::GroupDitto(mouseInteraction))
+            {
+                CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
+            }
+        }
+        else if (m_mode == Mode::Rotation)
+        {
+            // handle modifier alternatives
+            if (Input::IndividualDitto(mouseInteraction))
+            {
+                CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
+            }
+            else if (Input::GroupDitto(mouseInteraction))
+            {
+                CopyOrientationToSelectedEntitiesGroup(AZ::Quaternion::CreateIdentity());
+            }
+        }
+    }
+
+    void EditorTransformComponentSelection::PerformManipulatorDitto(const AZ::EntityId entityId)
+    {
+        if (m_entityIdManipulators.m_manipulators)
+        {
+            ScopedUndoBatch undoBatch(DittoManipulatorUndoRedoDesc);
+
+            auto manipulatorCommand =
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
+
+            if (entityId.IsValid())
+            {
+                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+                // set orientation/translation to match picked entity
+                switch (m_mode)
+                {
+                case Mode::Rotation:
+                    OverrideManipulatorOrientation(QuaternionFromTransformNoScaling(worldFromLocal));
+                    break;
+                case Mode::Translation:
+                    OverrideManipulatorTranslation(worldFromLocal.GetTranslation());
+                    break;
+                case Mode::Scale:
+                    // do nothing
+                    break;
+                default:
+                    break;
+                }
+
+                // only update pivot override when in translation or rotation mode
+                switch (m_mode)
+                {
+                case Mode::Rotation:
+                    m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Orientation;
+                    [[fallthrough]];
+                case Mode::Translation:
+                    m_pivotOverrideFrame.m_pickTypes |= OptionalFrame::PickType::Translation;
+                    m_pivotOverrideFrame.m_pickedEntityIdOverride = entityId;
+                    break;
+                case Mode::Scale:
+                    // do nothing
+                    break;
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                // match the same behavior as if we pressed Ctrl+R to reset the manipulator
+                DelegateClearManipulatorOverride();
+            }
+
+            manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
+                BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
+                m_entityIdManipulators.m_manipulators->GetLocalTransform(), entityId));
+
+            manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
+            manipulatorCommand.release();
+        }
     }
 
     template<typename T>
@@ -2088,7 +2137,7 @@ namespace AzToolsFramework
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-            ScopedUndoBatch undoBatch(s_lockSelectionUndoRedoDesc);
+            ScopedUndoBatch undoBatch(LockSelectionUndoRedoDesc);
 
             if (m_entityIdManipulators.m_manipulators)
             {
@@ -2108,7 +2157,7 @@ namespace AzToolsFramework
 
         // lock selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, LockSelectionTitle, LockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(true);
@@ -2116,7 +2165,7 @@ namespace AzToolsFramework
 
         // unlock selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, LockSelectionTitle, LockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(false);
@@ -2126,7 +2175,7 @@ namespace AzToolsFramework
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-            ScopedUndoBatch undoBatch(s_hideSelectionUndoRedoDesc);
+            ScopedUndoBatch undoBatch(HideSelectionUndoRedoDesc);
 
             if (m_entityIdManipulators.m_manipulators)
             {
@@ -2146,7 +2195,7 @@ namespace AzToolsFramework
 
         // hide selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, HideSelectionTitle, HideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
@@ -2154,7 +2203,7 @@ namespace AzToolsFramework
 
         // show selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, HideSelectionTitle, HideSelectionDesc,
             [showHide]()
             {
                 showHide(true);
@@ -2162,12 +2211,12 @@ namespace AzToolsFramework
 
         // unlock all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, s_unlockAllTitle, s_unlockAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, UnlockAllTitle, UnlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-                ScopedUndoBatch undoBatch(s_unlockAllUndoRedoDesc);
+                ScopedUndoBatch undoBatch(UnlockAllUndoRedoDesc);
 
                 EnumerateEditorEntities(
                     [](AZ::EntityId entityId)
@@ -2179,12 +2228,12 @@ namespace AzToolsFramework
 
         // show all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, s_showAllTitle, s_showAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, ShowAllTitle, ShowAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-                ScopedUndoBatch undoBatch(s_showAllEntitiesUndoRedoDesc);
+                ScopedUndoBatch undoBatch(ShowAllEntitiesUndoRedoDesc);
 
                 EnumerateEditorEntities(
                     [](AZ::EntityId entityId)
@@ -2196,17 +2245,17 @@ namespace AzToolsFramework
 
         // select all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, s_selectAllTitle, s_selectAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, SelectAllTitle, SelectAllDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-                ScopedUndoBatch undoBatch(s_selectAllEntitiesUndoRedoDesc);
+                ScopedUndoBatch undoBatch(SelectAllEntitiesUndoRedoDesc);
 
                 if (m_entityIdManipulators.m_manipulators)
                 {
                     auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
                     // note, nothing will change that the manipulatorCommand needs to keep track
                     // for after so no need to call SetManipulatorAfter
@@ -2226,7 +2275,7 @@ namespace AzToolsFramework
 
                 auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_selectAllEntitiesUndoRedoDesc);
+                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, SelectAllEntitiesUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
 
@@ -2236,17 +2285,17 @@ namespace AzToolsFramework
 
         // invert current selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, InvertSelectionTitle, InvertSelectionDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-                ScopedUndoBatch undoBatch(s_invertSelectionUndoRedoDesc);
+                ScopedUndoBatch undoBatch(InvertSelectionUndoRedoDesc);
 
                 if (m_entityIdManipulators.m_manipulators)
                 {
                     auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
                     // note, nothing will change that the manipulatorCommand needs to keep track
                     // for after so no need to call SetManipulatorAfter
@@ -2273,7 +2322,7 @@ namespace AzToolsFramework
 
                 auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
 
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_invertSelectionUndoRedoDesc);
+                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, InvertSelectionUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
 
@@ -2283,7 +2332,7 @@ namespace AzToolsFramework
 
         // duplicate selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, s_duplicateTitle, s_duplicateDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, DuplicateTitle, DuplicateDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -2295,8 +2344,8 @@ namespace AzToolsFramework
                     QApplication::focusWidget()->clearFocus();
                 }
 
-                ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
+                ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
+                auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), DuplicateUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
 
@@ -2308,12 +2357,12 @@ namespace AzToolsFramework
 
         // delete selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, s_deleteTitle, s_deleteDesc,
+            m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, DeleteTitle, DeleteDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-                ScopedUndoBatch undoBatch(s_deleteUndoRedoDesc);
+                ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
 
                 CreateEntityManipulatorDeselectCommand(undoBatch);
 
@@ -2332,14 +2381,14 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
+            m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, TogglePivotTitleEditMenu, TogglePivotDesc,
             [this]()
             {
                 ToggleCenterPivotSelection();
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_R) }, EditReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
+            m_actions, { QKeySequence(Qt::Key_R) }, EditReset, ResetEntityTransformTitle, ResetEntityTransformDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2357,11 +2406,11 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, ResetManipulatorTitle, ResetManipulatorDesc,
             AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
 
         AddAction(
-            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, EditResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
+            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, EditResetLocal, ResetTransformLocalTitle, ResetTransformLocalDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2379,7 +2428,7 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, EditResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
+            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, EditResetWorld, ResetTransformWorldTitle, ResetTransformWorldDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2388,7 +2437,7 @@ namespace AzToolsFramework
                     {
                         // begin an undo batch so operations inside CopyOrientation... and
                         // DelegateClear... are grouped into a single undo/redo
-                        ScopedUndoBatch undoBatch{ s_resetTransformWorldTitle };
+                        ScopedUndoBatch undoBatch{ ResetTransformWorldTitle };
                         CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
                         ClearManipulatorOrientationOverride();
                     }
@@ -2642,7 +2691,7 @@ namespace AzToolsFramework
 
         const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
 
-        ScopedUndoBatch undoBatch(s_snapToWorldGridUndoRedoDesc);
+        ScopedUndoBatch undoBatch(SnapToWorldGridUndoRedoDesc);
         for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
             ScopedUndoBatch::MarkEntityDirty(entityId);
@@ -2827,10 +2876,10 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch(s_resetManipulatorTranslationUndoRedoDesc);
+            ScopedUndoBatch undoBatch(ResetManipulatorTranslationUndoRedoDesc);
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             m_pivotOverrideFrame.ResetPickedTranslation();
             m_pivotOverrideFrame.m_pickedEntityIdOverride.SetInvalid();
@@ -2853,10 +2902,10 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch{ s_resetManipulatorOrientationUndoRedoDesc };
+            ScopedUndoBatch undoBatch{ ResetManipulatorOrientationUndoRedoDesc };
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             m_pivotOverrideFrame.ResetPickedOrientation();
             m_pivotOverrideFrame.m_pickedEntityIdOverride.SetInvalid();
@@ -2918,13 +2967,13 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch(s_dittoTranslationGroupUndoRedoDesc);
+            ScopedUndoBatch undoBatch(DittoTranslationGroupUndoRedoDesc);
 
             // store previous translation manipulator position
             const AZ::Vector3 previousPivotTranslation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             // refresh the transform pivot override if it's set
             if (m_pivotOverrideFrame.m_translationOverride)
@@ -2974,10 +3023,10 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch(s_dittoTranslationIndividualUndoRedoDesc);
+            ScopedUndoBatch undoBatch(DittoTranslationIndividualUndoRedoDesc);
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             // refresh the transform pivot override if it's set
             if (m_pivotOverrideFrame.m_translationOverride)
@@ -3012,7 +3061,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        ScopedUndoBatch undoBatch(s_dittoScaleIndividualWorldUndoRedoDesc);
+        ScopedUndoBatch undoBatch(DittoScaleIndividualWorldUndoRedoDesc);
 
         ManipulatorEntityIds manipulatorEntityIds;
         BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds.m_entityIds);
@@ -3046,7 +3095,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        ScopedUndoBatch undoBatch(s_dittoScaleIndividualLocalUndoRedoDesc);
+        ScopedUndoBatch undoBatch(DittoScaleIndividualLocalUndoRedoDesc);
 
         ManipulatorEntityIds manipulatorEntityIds;
         BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds.m_entityIds);
@@ -3067,10 +3116,10 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch{ s_dittoEntityOrientationIndividualUndoRedoDesc };
+            ScopedUndoBatch undoBatch{ DittoEntityOrientationIndividualUndoRedoDesc };
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             ManipulatorEntityIds manipulatorEntityIds;
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds.m_entityIds);
@@ -3105,10 +3154,10 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch(s_dittoEntityOrientationGroupUndoRedoDesc);
+            ScopedUndoBatch undoBatch(DittoEntityOrientationGroupUndoRedoDesc);
 
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             ManipulatorEntityIds manipulatorEntityIds;
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds.m_entityIds);
@@ -3151,7 +3200,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        ScopedUndoBatch undoBatch(s_resetOrientationToParentUndoRedoDesc);
+        ScopedUndoBatch undoBatch(ResetOrientationToParentUndoRedoDesc);
         for (const auto& entityIdLookup : m_entityIdManipulators.m_lookups)
         {
             ScopedUndoBatch::MarkEntityDirty(entityIdLookup.first);
@@ -3172,7 +3221,7 @@ namespace AzToolsFramework
 
         if (m_entityIdManipulators.m_manipulators)
         {
-            ScopedUndoBatch undoBatch(s_resetTranslationToParentUndoRedoDesc);
+            ScopedUndoBatch undoBatch(ResetTranslationToParentUndoRedoDesc);
 
             ManipulatorEntityIds manipulatorEntityIds;
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds.m_entityIds);
@@ -3208,7 +3257,7 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
         QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
-        QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
+        QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
         QObject::connect(
             action, &QAction::triggered, action,
             [this]()
@@ -3286,15 +3335,15 @@ namespace AzToolsFramework
                 : 1.0f;
         };
 
-        display.SetColor(s_fadedXAxisColor);
+        display.SetColor(FadedXAxisColor);
         display.DrawLine(
             transform.GetTranslation(),
             transform.GetTranslation() + transform.GetBasisX().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisX()));
-        display.SetColor(s_fadedYAxisColor);
+        display.SetColor(FadedYAxisColor);
         display.DrawLine(
             transform.GetTranslation(),
             transform.GetTranslation() + transform.GetBasisY().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisY()));
-        display.SetColor(s_fadedZAxisColor);
+        display.SetColor(FadedZAxisColor);
         display.DrawLine(
             transform.GetTranslation(),
             transform.GetTranslation() + transform.GetBasisZ().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisZ()));
@@ -3373,11 +3422,11 @@ namespace AzToolsFramework
                     CalculatePivotTranslation(m_pivotOverrideFrame.m_pickedEntityIdOverride, m_pivotMode));
 
                 const float scaledSize =
-                    s_pivotSize * CalculateScreenToWorldMultiplier(pickedEntityWorldTransform.GetTranslation(), cameraState);
+                    PivotSize * CalculateScreenToWorldMultiplier(pickedEntityWorldTransform.GetTranslation(), cameraState);
 
                 debugDisplay.DepthWriteOff();
                 debugDisplay.DepthTestOff();
-                debugDisplay.SetColor(s_pickedOrientationColor);
+                debugDisplay.SetColor(PickedOrientationColor);
 
                 debugDisplay.DrawWireSphere(pickedEntityWorldTransform.GetTranslation(), scaledSize);
 
@@ -3419,7 +3468,7 @@ namespace AzToolsFramework
                     const AZ::Vector3 boxPosition = worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
 
                     const AZ::Vector3 scaledSize =
-                        AZ::Vector3(s_pivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
+                        AZ::Vector3(PivotSize) * CalculateScreenToWorldMultiplier(worldFromLocal.GetTranslation(), cameraState);
 
                     const AZ::Color hiddenNormal[] = { AzFramework::ViewportColors::SelectedColor,
                                                        AzFramework::ViewportColors::HiddenColor };
@@ -3665,7 +3714,7 @@ namespace AzToolsFramework
         if (m_entityIdManipulators.m_manipulators)
         {
             auto manipulatorCommand =
-                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+                AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State());
 

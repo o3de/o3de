@@ -31,8 +31,8 @@ namespace ScriptCanvasEditor
         SceneMemberMappingComponent(const AZ::EntityId& sourceId);
         ~SceneMemberMappingComponent() = default;
 
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
 
         // SceneMemberMappingConfigurationRequestBus
         void ConfigureMapping(const AZ::EntityId& scriptCanvasMemberId) override;
@@ -68,8 +68,8 @@ namespace ScriptCanvasEditor
         SlotMappingComponent(const AZ::EntityId& sourceId);
         ~SlotMappingComponent() = default;
         
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         
         // GraphCanvas::NodeNotificationBus
         void OnAddedToScene(const AZ::EntityId&) override;

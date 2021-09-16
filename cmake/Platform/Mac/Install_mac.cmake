@@ -54,19 +54,19 @@ function(ly_install_target_override)
     install(
         TARGETS ${ly_platform_install_target_TARGET}
         ARCHIVE
-            DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>
+            DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         LIBRARY
-            DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_SUBDIR}
+            DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${ly_platform_install_target_LIBRARY_SUBDIR}
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         RUNTIME
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         BUNDLE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         RESOURCE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}/
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
