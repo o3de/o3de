@@ -192,7 +192,7 @@ namespace AZ
     
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "SwapChain::RequestDrawable");
+            AZ_PROFILE_FUNCTION(RHI);
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])

@@ -163,7 +163,7 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "BufferPool::OrphanBuffer");
+            AZ_PROFILE_FUNCTION(RHI);
             return OrphanBufferInternal(buffer);
         }
 

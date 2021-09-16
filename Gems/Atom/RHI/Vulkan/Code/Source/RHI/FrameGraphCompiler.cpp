@@ -45,7 +45,7 @@ namespace AZ
 
         RHI::MessageOutcome FrameGraphCompiler::CompileInternal(const RHI::FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameGraphCompiler: CompileInternal(Vulkan)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(Vulkan)");
 
             AZ_Assert(request.m_frameGraph, "FrameGraph is null.");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
@@ -89,7 +89,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceBarriers(const RHI::FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RHI, "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
 
              for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
              {

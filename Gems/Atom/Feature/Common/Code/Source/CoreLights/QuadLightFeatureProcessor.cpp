@@ -107,7 +107,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "QuadLightFeatureProcessor: Simulate");
+            AZ_PROFILE_FUNCTION(RPI);
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -119,7 +119,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "QuadLightFeatureProcessor: Render");
+            AZ_PROFILE_FUNCTION(RPI);
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

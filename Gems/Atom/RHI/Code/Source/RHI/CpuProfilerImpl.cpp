@@ -14,14 +14,6 @@
 #include <AzCore/Debug/Timer.h>
 #include <Atom/RHI/RHIUtils.h>
 
-// temporarily add remaining atom groups here
-AZ_DEFINE_BUDGET(AuxGeom);
-AZ_DEFINE_BUDGET(DirectionalLightFeatureProcessor);
-AZ_DEFINE_BUDGET(DX12);
-AZ_DEFINE_BUDGET(Pass);
-AZ_DEFINE_BUDGET(ReflectionProbe);
-AZ_DEFINE_BUDGET(SkinnedMesh);
-
 namespace AZ
 {
     namespace RHI

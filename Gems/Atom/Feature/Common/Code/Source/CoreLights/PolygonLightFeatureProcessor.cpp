@@ -132,7 +132,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
     {
-        AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "PolygonLightFeatureProcessor: Simulate");
+        AZ_PROFILE_FUNCTION(RPI);
         AZ_UNUSED(packet);
 
         if (m_deviceBufferNeedsUpdate)
@@ -153,7 +153,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Render(const PolygonLightFeatureProcessor::RenderPacket& packet)
     {
-        AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "PolygonLightFeatureProcessor: Render");
+        AZ_PROFILE_FUNCTION(RPI);
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {

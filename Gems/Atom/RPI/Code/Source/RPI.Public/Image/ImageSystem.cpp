@@ -173,7 +173,7 @@ namespace AZ
 
         void ImageSystem::Update()
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "ImageSystem: Update");
+            AZ_PROFILE_FUNCTION(RPI);
 
             AZStd::lock_guard<AZStd::mutex> lock(m_activeStreamingPoolMutex);
             for (StreamingImagePool* imagePool : m_activeStreamingPools)

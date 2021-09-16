@@ -233,7 +233,7 @@ namespace AZ
 
         void RPISystem::OnSystemTick()
         {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "RPISystem: OnSystemTick");
+            AZ_PROFILE_FUNCTION(RPI);
 
             // Image system update is using system tick but not game tick so it can stream images in background even game is pausing
             m_imageSystem.Update();
@@ -245,7 +245,7 @@ namespace AZ
             {
                 return;
             }
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "RPISystem: SimulationTick");
+            AZ_PROFILE_FUNCTION(RPI);
 
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
@@ -274,7 +274,6 @@ namespace AZ
             }
 
             AZ_PROFILE_FUNCTION(RPI);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
             m_querySystem.Update();
@@ -301,7 +300,7 @@ namespace AZ
                 });
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION(RPI, "RPISystem: FrameEnd");
+                AZ_PROFILE_SCOPE(RPI, "RPISystem: FrameEnd");
                 m_dynamicDraw.FrameEnd();
                 m_passSystem.FrameEnd();
 

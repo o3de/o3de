@@ -88,17 +88,3 @@ namespace AZ
 
     } // namespace RPI
 } // namespace AZ
-
-//! Utility functions for timing a section of code and writing the timing (in cycles) to a new, named time region inside the
-//! provided statistics data.
-
-//! Supply a group and region to the time region
-#define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) AZ_PROFILE_SCOPE(groupName, regionName)
-
-// temporarily add remaining atom groups here
-AZ_DECLARE_BUDGET(AuxGeom);
-AZ_DECLARE_BUDGET(DirectionalLightFeatureProcessor);
-AZ_DECLARE_BUDGET(DX12);
-AZ_DECLARE_BUDGET(Pass);
-AZ_DECLARE_BUDGET(ReflectionProbe);
-AZ_DECLARE_BUDGET(SkinnedMesh);

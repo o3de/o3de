@@ -155,7 +155,6 @@ namespace AZ
         void ReflectionProbeFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION(ReflectionProbe, "ReflectionProbeFeatureProcessor: Simulate");
 
             // update pipeline states
             if (m_needUpdatePipelineStates)
@@ -194,7 +193,6 @@ namespace AZ
             if (m_probeSortRequired)
             {
                 AZ_PROFILE_SCOPE(AzRender, "Sort reflection probes");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION(ReflectionProbe, "ReflectionProbeFeatureProcessor: Sort reflection probes");
 
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<ReflectionProbe> const& probe1, AZStd::shared_ptr<ReflectionProbe> const& probe2) -> bool
