@@ -126,7 +126,7 @@ namespace TestImpact
         class SequenceReportBase
         {
         public:
-            static constexpr SequenceReportType m_type = Type;
+            static constexpr SequenceReportType ReportType = Type;
             using PolicyState = PolicyStateType;
 
             //! Constructs the report for a sequence of selected tests.
@@ -139,41 +139,43 @@ namespace TestImpact
             //! @param selectedTestRunReport The report for the set of selected test runs.
             SequenceReportBase(
                 size_t maxConcurrency,
-                const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-                const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-                const PolicyStateType& policyState,
+                AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+                AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+                PolicyStateType policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTestRuns,
-                TestRunReport&& selectedTestRunReport)
+                TestRunSelection selectedTestRuns,
+                TestRunReport selectedTestRunReport)
                 : m_maxConcurrency(maxConcurrency)
-                , m_testTargetTimeout(testTargetTimeout)
-                , m_globalTimeout(globalTimeout)
-                , m_policyState(policyState)
+                , m_testTargetTimeout(AZStd::move(testTargetTimeout))
+                , m_globalTimeout(AZStd::move(globalTimeout))
+                , m_policyState(AZStd::move(policyState))
                 , m_suite(suiteType)
-                , m_selectedTestRuns(selectedTestRuns)
+                , m_selectedTestRuns(AZStd::move(selectedTestRuns))
                 , m_selectedTestRunReport(AZStd::move(selectedTestRunReport))
             {
             }
 
             SequenceReportBase(SequenceReportBase&& report)
-                : m_maxConcurrency(AZStd::move(report.m_maxConcurrency))
-                , m_testTargetTimeout(AZStd::move(report.m_testTargetTimeout))
-                , m_globalTimeout(AZStd::move(report.m_globalTimeout))
-                , m_policyState(AZStd::move(report.m_policyState))
-                , m_suite(AZStd::move(report.m_suite))
-                , m_selectedTestRuns(AZStd::move(report.m_selectedTestRuns))
-                , m_selectedTestRunReport(AZStd::move(report.m_selectedTestRunReport))
+                : SequenceReportBase(
+                    AZStd::move(report.m_maxConcurrency),
+                    AZStd::move(report.m_testTargetTimeout),
+                    AZStd::move(report.m_globalTimeout),
+                    AZStd::move(report.m_policyState),
+                    AZStd::move(report.m_suite),
+                    AZStd::move(report.m_selectedTestRuns),
+                    AZStd::move(report.m_selectedTestRunReport))
             {
             }
 
             SequenceReportBase(const SequenceReportBase& report)
-                : m_maxConcurrency(report.m_maxConcurrency)
-                , m_testTargetTimeout(report.m_testTargetTimeout)
-                , m_globalTimeout(report.m_globalTimeout)
-                , m_policyState(report.m_policyState)
-                , m_suite(report.m_suite)
-                , m_selectedTestRuns(report.m_selectedTestRuns)
-                , m_selectedTestRunReport(report.m_selectedTestRunReport)
+                : SequenceReportBase(
+                    report.m_maxConcurrency,
+                    report.m_testTargetTimeout,
+                    report.m_globalTimeout,
+                    report.m_policyState,
+                    report.m_suite,
+                    report.m_selectedTestRuns,
+                    report.m_selectedTestRunReport)
             {
             }
 
@@ -182,7 +184,7 @@ namespace TestImpact
             //! Returns the identifying type for this sequence report.
             SequenceReportType GetType() const
             {
-                return m_type;
+                return ReportType;
             }
 
             //! Returns the maximum concurrency for this sequence.
@@ -349,16 +351,15 @@ namespace TestImpact
             //! @param draftedTestRunReport The report for the set of drafted test runs.
             DraftingSequenceReportBase(
                 size_t maxConcurrency,
-                const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-                const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-                const PolicyStateType& policyState,
+                AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+                AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+                PolicyStateType policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTestRuns,
-                const AZStd::vector<AZStd::string>& draftedTestRuns,
+                TestRunSelection selectedTestRuns,
+                AZStd::vector<AZStd::string> draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport)
-                : SequenceReportBase<PolicyStateType> (
-                    type,
+                : SequenceReportBase<Type, PolicyStateType>(
                     maxConcurrency,
                     testTargetTimeout,
                     globalTimeout,
@@ -366,17 +367,17 @@ namespace TestImpact
                     suiteType,
                     selectedTestRuns,
                     AZStd::move(selectedTestRunReport))
-                , m_draftedTestRuns(draftedTestRuns)
+                , m_draftedTestRuns(AZStd::move(draftedTestRuns))
                 , m_draftedTestRunReport(AZStd::move(draftedTestRunReport))
             {
             }
 
             DraftingSequenceReportBase(
-                SequenceReportBase&& report,
-                const AZStd::vector<AZStd::string>& draftedTestRuns,
+                SequenceReportBase<Type, PolicyStateType>&& report,
+                AZStd::vector<AZStd::string> draftedTestRuns,
                 TestRunReport&& draftedTestRunReport)
-                : SequenceReportBase(AZStd::move(report))
-                , m_draftedTestRuns(draftedTestRuns)
+                : SequenceReportBase<Type, PolicyStateType>(AZStd::move(report))
+                , m_draftedTestRuns(AZStd::move(draftedTestRuns))
                 , m_draftedTestRunReport(AZStd::move(draftedTestRunReport))
             {
             }
@@ -470,17 +471,17 @@ namespace TestImpact
             //! @param draftedTestRunReport The report for the set of drafted test runs.
             ImpactAnalysisSequenceReport(
                 size_t maxConcurrency,
-                const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-                const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-                const ImpactAnalysisSequencePolicyState& policyState,
+                AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+                AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+                ImpactAnalysisSequencePolicyState policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTestRuns,
-                const AZStd::vector<AZStd::string>& discardedTestRuns,
-                const AZStd::vector<AZStd::string>& draftedTestRuns,
+                TestRunSelection selectedTestRuns,
+                AZStd::vector<AZStd::string> discardedTestRuns,
+                AZStd::vector<AZStd::string> draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
-            ImpactAnalysisSequenceReport(DraftingSequenceReportBase&& report, const AZStd::vector<AZStd::string>& discardedTestRuns);
+            ImpactAnalysisSequenceReport(DraftingSequenceReportBase&& report, AZStd::vector<AZStd::string> discardedTestRuns);
 
             //! Returns the test runs discarded from running in the sequence.
             const AZStd::vector<AZStd::string>& GetDiscardedTestRuns() const;
@@ -507,19 +508,19 @@ namespace TestImpact
             //! @param draftedTestRunReport The report for the set of drafted test runs.
             SafeImpactAnalysisSequenceReport(
                 size_t maxConcurrency,
-                const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-                const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-                const SafeImpactAnalysisSequencePolicyState& policyState,
+                AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+                AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+                SafeImpactAnalysisSequencePolicyState policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTestRuns,
-                const TestRunSelection& discardedTestRuns,
-                const AZStd::vector<AZStd::string>& draftedTestRuns,
+                TestRunSelection selectedTestRuns,
+                TestRunSelection discardedTestRuns,
+                AZStd::vector<AZStd::string> draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& discardedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
             SafeImpactAnalysisSequenceReport(
-                DraftingSequenceReportBase&& report, const TestRunSelection& discardedTestRuns, TestRunReport&& discardedTestRunReport);
+                DraftingSequenceReportBase&& report, TestRunSelection discardedTestRuns, TestRunReport&& discardedTestRunReport);
 
             // SequenceReport overrides ...
             AZStd::chrono::milliseconds GetDuration() const override;
