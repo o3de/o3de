@@ -161,6 +161,21 @@ class TestAtomEditorComponentsMain(object):
             "Display Mapper_test: Entity deleted: True",
             "Display Mapper_test: UNDO entity deletion works: True",
             "Display Mapper_test: REDO entity deletion works: True",
+            # Reflection Probe Component
+            "Reflection Probe Entity successfully created",
+            "Reflection Probe_test: Component added to the entity: True",
+            "Reflection Probe_test: Component removed after UNDO: True",
+            "Reflection Probe_test: Component added after REDO: True",
+            "Reflection Probe_test: Entered game mode: True",
+            "Reflection Probe_test: Exit game mode: True",
+            "Reflection Probe_test: Entity disabled initially: True",
+            "Reflection Probe_test: Entity enabled after adding required components: True",
+            "Reflection Probe_test: Cubemap is generated: True",
+            "Reflection Probe_test: Entity is hidden: True",
+            "Reflection Probe_test: Entity is shown: True",
+            "Reflection Probe_test: Entity deleted: True",
+            "Reflection Probe_test: UNDO entity deletion works: True",
+            "Reflection Probe_test: REDO entity deletion works: True",
         ]
 
         unexpected_lines = [

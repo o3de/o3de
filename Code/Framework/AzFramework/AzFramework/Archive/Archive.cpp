@@ -1654,7 +1654,7 @@ namespace AZ::IO
         AZStd::unique_lock lock(m_archiveMutex);
         if (pArchive)
         {
-            AZ_TracePrintf("Archive", "Closing Archive file: %.*s", AZ_STRING_ARG(pArchive->GetFullPath().Native()));
+            AZ_TracePrintf("Archive", "Closing Archive file: %.*s\n", AZ_STRING_ARG(pArchive->GetFullPath().Native()));
         }
         ArchiveArray::iterator it;
         if (m_arrArchives.size() < 16)

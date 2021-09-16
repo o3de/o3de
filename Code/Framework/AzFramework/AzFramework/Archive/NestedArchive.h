@@ -40,7 +40,7 @@ namespace AZ::IO
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;
         
-        auto GetRootFolderHandle() -> Handle;
+        auto GetRootFolderHandle() -> Handle override;
 
         // Adds a new file to the zip or update an existing one
         // adds a directory (creates several nested directories if needed)
