@@ -220,23 +220,5 @@ namespace UnitTest
         }
 
         MOCK_METHOD1(OnHeightfieldDataChanged, void(const AZ::Aabb&));
-
-    private:
-        /*static void GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-
-        }
-
-        static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-        }
-
-        static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-        }
-
-        static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-        {
-        }*/
     };
 } // namespace UnitTest
