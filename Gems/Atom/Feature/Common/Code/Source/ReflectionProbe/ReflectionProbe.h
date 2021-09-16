@@ -56,12 +56,11 @@ namespace AZ
             RHI::DrawListTag m_renderInnerDrawListTag;
 
             RHI::ShaderInputConstantIndex m_modelToWorldStencilConstantIndex;
+            RHI::ShaderInputConstantIndex m_modelToWorldInverseStencilConstantIndex;
             RHI::ShaderInputConstantIndex m_modelToWorldRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_aabbPosRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_outerAabbMinRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_outerAabbMaxRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_innerAabbMinRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_innerAabbMaxRenderConstantIndex;
+            RHI::ShaderInputConstantIndex m_modelToWorldInverseRenderConstantIndex;
+            RHI::ShaderInputConstantIndex m_outerObbHalfLengthsRenderConstantIndex;
+            RHI::ShaderInputConstantIndex m_innerObbHalfLengthsRenderConstantIndex;
             RHI::ShaderInputConstantIndex m_useParallaxCorrectionRenderConstantIndex;
             RHI::ShaderInputImageIndex m_reflectionCubeMapRenderImageIndex;
         };
@@ -78,6 +77,7 @@ namespace AZ
             void Simulate(uint32_t probeIndex);
 
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
+            const AZ::Transform& GetTransform() const { return m_transform; }
             void SetTransform(const AZ::Transform& transform);
 
             const AZ::Vector3& GetOuterExtents() const { return m_outerExtents; }
@@ -86,8 +86,8 @@ namespace AZ
             const AZ::Vector3& GetInnerExtents() const { return m_innerExtents; }
             void SetInnerExtents(const AZ::Vector3& innerExtents);
 
-            const Aabb& GetOuterAabbWs() const { return m_outerAabbWs; }
-            const Aabb& GetInnerAabbWs() const { return m_innerAabbWs; }
+            const Obb& GetOuterObbWs() const { return m_outerObbWs; }
+            const Obb& GetInnerObbWs() const { return m_innerObbWs; }
 
             const Data::Instance<RPI::Image>& GetCubeMapImage() const { return m_cubeMapImage; }
             void SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath);
@@ -133,9 +133,9 @@ namespace AZ
             AZ::Vector3 m_outerExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
             AZ::Vector3 m_innerExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
 
-            // probe volume AABBs (world space), built from position and extents
-            Aabb m_outerAabbWs;
-            Aabb m_innerAabbWs;
+            // probe volume OBBs (world space), built from position and extents
+            Obb m_outerObbWs;
+            Obb m_innerObbWs;
 
             // cubemap
             Data::Instance<RPI::Image> m_cubeMapImage;

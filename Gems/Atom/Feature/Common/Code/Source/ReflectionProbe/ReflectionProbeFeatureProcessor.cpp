@@ -92,6 +92,10 @@ namespace AZ
             m_reflectionRenderData.m_modelToWorldStencilConstantIndex = stencilSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
             AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldStencilConstantIndex.IsValid(), "Failed to find stencil shader input constant [%s]", modelToWorldConstantName.GetCStr());
 
+            Name modelToWorldInverseConstantName = Name("m_modelToWorldInverse");
+            m_reflectionRenderData.m_modelToWorldInverseStencilConstantIndex = stencilSrgLayout->FindShaderInputConstantIndex(modelToWorldInverseConstantName);
+            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldInverseStencilConstantIndex.IsValid(), "Failed to find stencil shader input constant [%s]", modelToWorldInverseConstantName.GetCStr());
+
             // cache probe render shader indices
             // Note: the outer and inner render shaders use the same Srg
             Data::Instance<RPI::ShaderResourceGroup> renderReflectionSrg = RPI::ShaderResourceGroup::Create(
@@ -104,25 +108,16 @@ namespace AZ
             m_reflectionRenderData.m_modelToWorldRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
             AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldConstantName.GetCStr());
 
-            Name aabbPosConstantName = Name("m_aabbPos");
-            m_reflectionRenderData.m_aabbPosRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(aabbPosConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_aabbPosRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", aabbPosConstantName.GetCStr());
+            m_reflectionRenderData.m_modelToWorldInverseRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldInverseConstantName);
+            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldInverseConstantName.GetCStr());
 
-            Name outerAabbMinConstantName = Name("m_outerAabbMin");
-            m_reflectionRenderData.m_outerAabbMinRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(outerAabbMinConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_outerAabbMinRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", outerAabbMinConstantName.GetCStr());
+            Name outerObbHalfLengthsConstantName = Name("m_outerObbHalfLengths");
+            m_reflectionRenderData.m_outerObbHalfLengthsRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(outerObbHalfLengthsConstantName);
+            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_outerObbHalfLengthsRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", outerObbHalfLengthsConstantName.GetCStr());
 
-            Name outerAabbMaxConstantName = Name("m_outerAabbMax");
-            m_reflectionRenderData.m_outerAabbMaxRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(outerAabbMaxConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_outerAabbMaxRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", outerAabbMaxConstantName.GetCStr());
-
-            Name innerAabbMinConstantName = Name("m_innerAabbMin");
-            m_reflectionRenderData.m_innerAabbMinRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(innerAabbMinConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_innerAabbMinRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", innerAabbMinConstantName.GetCStr());
-
-            Name innerAabbMaxConstantName = Name("m_innerAabbMax");
-            m_reflectionRenderData.m_innerAabbMaxRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(innerAabbMaxConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_innerAabbMaxRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", innerAabbMaxConstantName.GetCStr());
+            Name innerObbHalfLengthsConstantName = Name("m_innerObbHalfLengths");
+            m_reflectionRenderData.m_innerObbHalfLengthsRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(innerObbHalfLengthsConstantName);
+            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_innerObbHalfLengthsRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", innerObbHalfLengthsConstantName.GetCStr());
 
             Name useParallaxCorrectionConstantName = Name("m_useParallaxCorrection");
             m_reflectionRenderData.m_useParallaxCorrectionRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(useParallaxCorrectionConstantName);
@@ -199,10 +194,11 @@ namespace AZ
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<ReflectionProbe> const& probe1, AZStd::shared_ptr<ReflectionProbe> const& probe2) -> bool
                 {
-                    const Aabb& aabb1 = probe1->GetInnerAabbWs();
-                    const Aabb& aabb2 = probe2->GetInnerAabbWs();
-                    float size1 = aabb1.GetXExtent() * aabb1.GetZExtent() * aabb1.GetYExtent();
-                    float size2 = aabb2.GetXExtent() * aabb2.GetZExtent() * aabb2.GetYExtent();
+                    const Obb& obb1 = probe1->GetInnerObbWs();
+                    const Obb& obb2 = probe2->GetInnerObbWs();
+                    float size1 = obb1.GetHalfLengthX() * obb1.GetHalfLengthZ() * obb1.GetHalfLengthY();
+                    float size2 = obb2.GetHalfLengthX() * obb2.GetHalfLengthZ() * obb2.GetHalfLengthY();
+
                     return (size1 > size2);
                 };
 
@@ -347,7 +343,7 @@ namespace AZ
             // simple AABB check to find the reflection probes that contain the position
             for (auto& reflectionProbe : m_reflectionProbes)
             {
-                if (reflectionProbe->GetOuterAabbWs().Contains(position)
+                if (reflectionProbe->GetOuterObbWs().Contains(position)
                     && reflectionProbe->GetCubeMapImage()
                     && reflectionProbe->GetCubeMapImage()->IsInitialized())
                 {

@@ -212,6 +212,9 @@ namespace AZ
 
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::Quaternion rotationQuaternion = AZ::Quaternion::CreateIdentity();
+            AZ::TransformBus::EventResult(rotationQuaternion, GetEntityId(), &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+            AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotationQuaternion);
 
             float scale = 1.0f;
             AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalUniformScale);
@@ -224,9 +227,7 @@ namespace AZ
             AZ::Vector3 innerExtents(configuration.m_innerWidth, configuration.m_innerLength, configuration.m_innerHeight);
             innerExtents *= scale;
 
-            AZ::Vector3 innerMin(position.GetX() - innerExtents.GetX() / 2, position.GetY() - innerExtents.GetY() / 2, position.GetZ() - innerExtents.GetZ() / 2);
-            AZ::Vector3 innerMax(position.GetX() + innerExtents.GetX() / 2, position.GetY() + innerExtents.GetY() / 2, position.GetZ() + innerExtents.GetZ() / 2);
-            debugDisplay.DrawWireBox(innerMin, innerMax);
+            debugDisplay.DrawWireOBB(position, rotationMatrix.GetBasisX(), rotationMatrix.GetBasisY(), rotationMatrix.GetBasisZ(), innerExtents / 2.0f);
         }
 
         AZ::Aabb EditorReflectionProbeComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
