@@ -52,14 +52,14 @@ namespace ImageProcessingAtom
         }
         
         auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(uncompressedfmt);
-        if (formatInfo->eSampleType == ESampleType::eSampleType_Half)
+        switch (formatInfo->eSampleType)
         {
+        case ESampleType::eSampleType_Half:
             return ePixelFormat_R16G16B16A16F;
-        }
-        else if (formatInfo->eSampleType == ESampleType::eSampleType_Float)
-        {
+        case ESampleType::eSampleType_Float:
             return ePixelFormat_R32G32B32A32F;
         }
+
         return ePixelFormat_R8G8B8A8;
     }
 
@@ -107,21 +107,22 @@ namespace ImageProcessingAtom
     {        
         auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
         astcenc_type dataType = ASTCENC_TYPE_U8;
-        if (formatInfo->eSampleType == ESampleType::eSampleType_Half)
+
+        switch (formatInfo->eSampleType)
         {
-            dataType = ASTCENC_TYPE_F16;
-        }
-        else if (formatInfo->eSampleType == ESampleType::eSampleType_Float)
-        {
-            dataType = ASTCENC_TYPE_F32;
-        }
-        else if (formatInfo->eSampleType == ESampleType::eSampleType_Uint8)
-        {
+        case ESampleType::eSampleType_Uint8:
             dataType = ASTCENC_TYPE_U8;
-        }
-        else
-        {
+            break;
+        case ESampleType::eSampleType_Half:
+            dataType = ASTCENC_TYPE_F16;
+            break;
+        case ESampleType::eSampleType_Float:
+            dataType = ASTCENC_TYPE_F32;
+            break;
+        default:
+            dataType = ASTCENC_TYPE_U8;
             AZ_Assert(false, "Unsupport uncompressed format %s", formatInfo->szName);
+            break;
         }
 
         return dataType;
@@ -154,7 +155,7 @@ namespace ImageProcessingAtom
         }
 
         astcenc_swizzle swizzle {ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, compressOption->discardAlpha? ASTCENC_SWZ_1:ASTCENC_SWZ_A};
-        unsigned int flags = 0;
+        AZ::u32 flags = 0;
         if (srcImage->HasImageFlags(EIF_RenormalizedTexture))
         {
             ImageToProcess imageToProcess(srcImage);
@@ -180,8 +181,8 @@ namespace ImageProcessingAtom
 
         // Create a context based on the configuration
         astcenc_context* context;
-        unsigned int blockCount = ((srcImage->GetWidth(0)+ dstFormatInfo->blockWidth-1)/dstFormatInfo->blockWidth) * ((srcImage->GetHeight(0) + dstFormatInfo->blockHeight-1)/dstFormatInfo->blockHeight);
-        unsigned int threadCount = AZStd::min(AZStd::thread::hardware_concurrency(), blockCount);
+        AZ::u32 blockCount = ((srcImage->GetWidth(0)+ dstFormatInfo->blockWidth-1)/dstFormatInfo->blockWidth) * ((srcImage->GetHeight(0) + dstFormatInfo->blockHeight-1)/dstFormatInfo->blockHeight);
+        AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency(), blockCount);
         status = astcenc_context_alloc(&config, threadCount, &context);
         AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec context alloc failed: %s\n", astcenc_get_error_string(status));
 
@@ -199,7 +200,7 @@ namespace ImageProcessingAtom
             image.data_type = dataType;
                         
             AZ::u8* srcMem;
-            uint32 srcPitch;
+            AZ::u32 srcPitch;
             srcImage->GetImagePointer(mip, srcMem, srcPitch);
             image.data = reinterpret_cast<void**>(&srcMem);
                         
@@ -210,7 +211,7 @@ namespace ImageProcessingAtom
 
             // Create jobs for each compression thread
             auto completionJob = aznew AZ::JobCompletion();
-            for (unsigned int threadIdx = 0; threadIdx < threadCount; threadIdx++)
+            for (AZ::u32 threadIdx = 0; threadIdx < threadCount; threadIdx++)
             {
                 const auto jobLambda = [&status, context, &image, &swizzle, dstMem, dataSize, threadIdx]()
                 {
@@ -222,8 +223,8 @@ namespace ImageProcessingAtom
                 };
 
                 AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
-                    simulationJob->SetDependent(completionJob);
-                    simulationJob->Start();
+                simulationJob->SetDependent(completionJob);
+                simulationJob->Start();
             }
 
             if (completionJob)
@@ -269,14 +270,14 @@ namespace ImageProcessingAtom
         astcenc_config config;
         astcenc_error status;
         astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), fmtDst);
-        unsigned int flags = ASTCENC_FLG_DECOMPRESS_ONLY;
+        AZ::u32 flags = ASTCENC_FLG_DECOMPRESS_ONLY;
         status = astcenc_config_init(profile, srcFormatInfo->blockWidth, srcFormatInfo->blockHeight, 1, quality, flags, &config);
 
         //ASTCENC_FLG_MAP_NORMAL
         AZ_Assert( status == ASTCENC_SUCCESS, "astcenc_config_init failed: %s\n", astcenc_get_error_string(status));
 
         // Create a context based on the configuration
-        const unsigned int threadCount = 1; // Decompress function doesn't support multiple threads
+        const AZ::u32 threadCount = 1; // Decompress function doesn't support multiple threads
         astcenc_context* context;
         status = astcenc_context_alloc(&config, threadCount, &context);
         AZ_Assert( status == ASTCENC_SUCCESS, "astcenc_context_alloc failed: %s\n", astcenc_get_error_string(status));
@@ -295,7 +296,7 @@ namespace ImageProcessingAtom
             image.data_type = dataType;
                         
             AZ::u8* srcMem;
-            uint32 srcPitch;
+            AZ::u32 srcPitch;
             srcImage->GetImagePointer(mip, srcMem, srcPitch);
             AZ::u32 srcDataSize = srcImage->GetMipBufSize(mip);
                         
