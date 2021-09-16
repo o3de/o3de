@@ -153,6 +153,7 @@ namespace Multiplayer
         {
         public:
             OrphanedEntityRpcs(EntityReplicationManager& replicationManager);
+            virtual ~OrphanedEntityRpcs() = default;
             void Update();
             bool DispatchOrphanedRpcs(EntityReplicator& entityReplicator);
             void AddOrphanedRpc(NetEntityId entityId, NetworkEntityRpcMessage& entityRpcMessage);

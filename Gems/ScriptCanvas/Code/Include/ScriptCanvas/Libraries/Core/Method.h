@@ -107,7 +107,7 @@ namespace ScriptCanvas
 
                 SlotId GetBusSlotId() const;
 
-                void OnDeserialize();
+                void OnDeserialize() override;
 
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();

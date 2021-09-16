@@ -102,7 +102,7 @@ protected:
     void AddFavorites(const AZStd::vector<const AZ::SerializeContext::ClassData*>& classDataContainer) override;
     //////////////////////////////////////////////////////////////////////////
 
-    void rowsInserted(const QModelIndex& parent, int start, int end);
+    void rowsInserted(const QModelIndex& parent, int start, int end) override;
 
     // Context menu handlers
     void ShowContextMenu(const QPoint&);

@@ -2185,7 +2185,7 @@ namespace AZ::IO
         AZStd::unique_lock lock(m_archiveMutex);
         if (pArchive)
         {
-            AZ_TracePrintf("Archive", "Closing Archive file: %s", pArchive->GetFullPath());
+            AZ_TracePrintf("Archive", "Closing Archive file: %s\n", pArchive->GetFullPath());
         }
         ArchiveArray::iterator it;
         if (m_arrArchives.size() < 16)

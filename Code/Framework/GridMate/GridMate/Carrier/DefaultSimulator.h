@@ -23,21 +23,21 @@ namespace GridMate
         friend class CarrierThread;
 
         /// Called from Carrier, so simulator can use the low level driver directly.
-        virtual void BindDriver(Driver* driver);
+        void BindDriver(Driver* driver) override;
         /// Called from Carrier when driver can no longer be used(ie. will be destroyed)
-        virtual void UnbindDriver();
+        void UnbindDriver() override;
         /// Called when Carrier has established a new connection.
-        virtual void OnConnect(const AZStd::intrusive_ptr<DriverAddress>& address);
+        void OnConnect(const AZStd::intrusive_ptr<DriverAddress>& address) override;
         /// Called when Carrier has lost a connection.
-        virtual void OnDisconnect(const AZStd::intrusive_ptr<DriverAddress>& address);
+        void OnDisconnect(const AZStd::intrusive_ptr<DriverAddress>& address) override;
         /// Called when Carrier has send a package.
-        virtual bool OnSend(const AZStd::intrusive_ptr<DriverAddress>& to, const void* data, unsigned int dataSize);
+        bool OnSend(const AZStd::intrusive_ptr<DriverAddress>& to, const void* data, unsigned int dataSize) override;
         /// Called when Carrier receives package receive.
-        virtual bool OnReceive(const AZStd::intrusive_ptr<DriverAddress>& from, const void* data, unsigned int dataSize);
+        bool OnReceive(const AZStd::intrusive_ptr<DriverAddress>& from, const void* data, unsigned int dataSize) override;
         /// Called from Carrier when no more data has arrived and you can supply you data (with latency, out of order, etc.
-        virtual unsigned int ReceiveDataFrom(AZStd::intrusive_ptr<DriverAddress>& from, char* data, unsigned int maxDataSize);
+        unsigned int ReceiveDataFrom(AZStd::intrusive_ptr<DriverAddress>& from, char* data, unsigned int maxDataSize) override;
 
-        virtual void Update();
+        void Update() override;
     public:
         GM_CLASS_ALLOCATOR(DefaultSimulator);
 
