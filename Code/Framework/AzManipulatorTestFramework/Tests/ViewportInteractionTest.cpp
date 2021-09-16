@@ -48,7 +48,7 @@ namespace UnitTest
     {
         bool snapping = false;
 
-        m_viewportInteraction->EnableGridSnaping();
+        m_viewportInteraction->SetGridSnapping(true);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
             &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
@@ -60,7 +60,7 @@ namespace UnitTest
     {
         bool snapping = true;
 
-        m_viewportInteraction->DisableGridSnaping();
+        m_viewportInteraction->SetGridSnapping(false);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
             &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
@@ -75,7 +75,7 @@ namespace UnitTest
 
         m_viewportInteraction->SetGridSize(expectedGridSize);
 
-        m_viewportInteraction->DisableGridSnaping();
+        m_viewportInteraction->SetGridSnapping(false);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             gridSize, m_viewportInteraction->GetViewportId(),
             &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
@@ -87,7 +87,7 @@ namespace UnitTest
     {
         bool snapping = false;
 
-        m_viewportInteraction->EnableAngularSnaping();
+        m_viewportInteraction->SetAngularSnapping(true);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
             &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
@@ -99,7 +99,7 @@ namespace UnitTest
     {
         bool snapping = true;
 
-        m_viewportInteraction->DisableAngularSnaping();
+        m_viewportInteraction->SetAngularSnapping(false);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
             &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);

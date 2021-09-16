@@ -47,6 +47,9 @@ namespace SandboxEditor
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
 
+    SANDBOX_API bool StickySelectEnabled();
+    SANDBOX_API void SetStickySelectEnabled(bool enabled);
+
     SANDBOX_API float ManipulatorLineBoundWidth();
     SANDBOX_API void SetManipulatorLineBoundWidth(float lineBoundWidth);
 
