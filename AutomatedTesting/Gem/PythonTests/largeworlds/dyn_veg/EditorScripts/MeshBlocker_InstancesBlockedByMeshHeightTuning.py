@@ -23,7 +23,7 @@ def MeshBlocker_InstancesBlockedByMeshHeightTuning():
     Vegetation is blocked only around the trunk of the tree, while it still plants under the areas covered by branches.
 
     Test Steps:
-     1) Opem a level
+     1) Open a level
      2) Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
      3) Create surface entity
      4) Create blocker entity with sphere mesh

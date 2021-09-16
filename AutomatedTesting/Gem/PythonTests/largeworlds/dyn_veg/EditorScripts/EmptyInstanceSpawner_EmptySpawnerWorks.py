@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 class BehaviorContextTests:
     spawner_initialized = (
-        "Successfully initialized a Dynamic Slice Instance Spawner",
-        "Failed to initialize a Dynamic Slice Instance Spawner"
+        "Successfully initialized an Empty Instance Spawner",
+        "Failed to initialize an Empty Instance Spawner"
     )
     desc_spawnertype_sets_spawner = (
         "Setting spawnerType sets spawner too",
