@@ -17,7 +17,7 @@ import azlmbr.vegetation as vegetation
 import azlmbr.areasystem as areasystem
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.engroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 
 

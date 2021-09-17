@@ -87,7 +87,7 @@ namespace PythonBindingsExample
     TEST_F(PythonBindingsExampleTest, Application_ImportAzLmbrPaths_Works)
     {
         ApplicationParameters params;
-        params.m_pythonStatement = "import azlmbr.paths; print (azlmbr.paths.engroot); print (azlmbr.paths.devroot)";
+        params.m_pythonStatement = "import azlmbr.paths; print (azlmbr.paths.engroot)";
         EXPECT_TRUE(s_application->RunWithParameters(params));
     }
 

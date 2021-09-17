@@ -16,7 +16,7 @@ import sys
 import os.path
 import filecmp
 
-g_devroot = azlmbr.paths.devroot
+g_devroot = azlmbr.paths.engroot
 sys.path.append(os.path.join(g_devroot, 'Tests', 'Atom', 'Automated'))
 
 g_materialTestFolder = os.path.join(g_devroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')

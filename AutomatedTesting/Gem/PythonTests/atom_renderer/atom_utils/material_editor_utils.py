@@ -211,7 +211,7 @@ class Timeout:
         return time.time() > self.die_after
 
 
-screenshotsFolder = os.path.join(azlmbr.paths.devroot, "AtomTest", "Cache" "pc", "Screenshots")
+screenshotsFolder = os.path.join(azlmbr.paths.engroot, "AtomTest", "Cache" "pc", "Screenshots")
 
 
 class ScreenshotHelper:

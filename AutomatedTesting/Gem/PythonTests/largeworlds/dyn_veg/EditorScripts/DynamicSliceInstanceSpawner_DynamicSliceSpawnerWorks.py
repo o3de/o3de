@@ -13,7 +13,7 @@ import azlmbr.bus as bus
 import azlmbr.math as math
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.engroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg

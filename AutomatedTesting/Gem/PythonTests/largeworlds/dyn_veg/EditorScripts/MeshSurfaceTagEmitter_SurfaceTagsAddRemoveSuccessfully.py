@@ -13,7 +13,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.surface_data as surface_data
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.engroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 

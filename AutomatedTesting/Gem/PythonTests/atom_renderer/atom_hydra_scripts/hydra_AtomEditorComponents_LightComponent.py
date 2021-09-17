@@ -16,7 +16,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.legacy.general as general
 
-sys.path.append(os.path.join(azlmbr.paths.devassets, "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES

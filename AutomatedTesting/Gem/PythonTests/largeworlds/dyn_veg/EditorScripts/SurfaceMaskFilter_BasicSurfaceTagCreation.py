@@ -10,7 +10,7 @@ import sys
 
 import azlmbr.surface_data as surface_data
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.engroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 

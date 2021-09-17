@@ -199,12 +199,10 @@ namespace EditorPythonBindings
                 }
             });
 
-            RegisterAliasIfExists(pathsModule, "@engroot@", "devroot");
             RegisterAliasIfExists(pathsModule, "@engroot@", "engroot");
-            RegisterAliasIfExists(pathsModule, "@projectproductassets@", "assets");
-            RegisterAliasIfExists(pathsModule, "@projectroot@", "devassets");
+            RegisterAliasIfExists(pathsModule, "@projectproductassets@", "projectproductassets");
+            RegisterAliasIfExists(pathsModule, "@projectroot@", "projectroot");
             RegisterAliasIfExists(pathsModule, "@log@", "log");
-            RegisterAliasIfExists(pathsModule, "@projectproductassets@", "root");
 
             const char* executableFolder = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);

@@ -17,7 +17,7 @@ import azlmbr.legacy.general as general
 import azlmbr.editor as editor
 import azlmbr.render as render
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.engroot, "AutomatedTesting", "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.utils import TestHelper

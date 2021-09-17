@@ -20,7 +20,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.legacy.general as general
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.engroot, "AutomatedTesting", "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from atom_renderer.atom_utils import atom_component_helper, atom_constants, screenshot_utils
