@@ -26,7 +26,7 @@ using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::Return;
 
-class PhysicsColliderComponentTest
+class TerrainPhysicsColliderComponentTest
     : public ::testing::Test
 {
 protected:
@@ -77,7 +77,7 @@ protected:
     }
 };
 
-TEST_F(PhysicsColliderComponentTest, ActivateEntityActivateSuccess)
+TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
 {
     // Check that the entity activates with a collider and the required shape attached.
     CreateEntity();
@@ -89,7 +89,7 @@ TEST_F(PhysicsColliderComponentTest, ActivateEntityActivateSuccess)
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeightfieldBus)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChangedNotifiesHeightfieldBus)
 {
     // Check that the HeightfieldBus is notified when the transform of the entity changes.
     CreateEntity();
@@ -108,7 +108,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeig
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfieldBus)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNotifiesHeightfieldBus)
 {
     // Check that the Heightfield bus is notified when the shape component changes.
     CreateEntity();
@@ -128,7 +128,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderHeightScaleReturnsCorrectly)
 {
     // Check that the default scale is as expected.
     CreateEntity();
@@ -151,7 +151,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorrectly)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAlignedRowBoundsCorrectly)
 {
     // Check that the heightfield grid size is correct when the shape bounds match the grid resolution.
     CreateEntity();
@@ -183,7 +183,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorre
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoundsCorrectly)
 {
     // Check that the heightfield grid is correctly expanded if the minimum value of the bounds needs expanding
     // to correctly encompass it.
@@ -216,7 +216,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoundsCorrectly)
 {
     // Check that the heightfield grid is correctly expanded if the maximum value of the bounds needs expanding
     // to correctly encompass it.
@@ -249,9 +249,9 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsReturnsHeights)
 {
-    // Check that the PhysicsCollider returns a heightfield of the expected size.
+    // Check that the TerrainPhysicsCollider returns a heightfield of the expected size.
     CreateEntity();
 
     AddHeightfieldListener();
@@ -287,9 +287,9 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsInRegion)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsReturnsHeightsInRegion)
 {
-    // Check that the PhysicsCollider returns a heightfield of the correct size when asked for a subregion.
+    // Check that the TerrainPhysicsCollider returns a heightfield of the correct size when asked for a subregion.
     CreateEntity();
 
     AddHeightfieldListener();
@@ -325,9 +325,9 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsI
     m_entity->Reset();
 }
 
-TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrectly)
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativeHeightsCorrectly)
 {
-    // Check that the values stored in the heightfield returned by the PhysicsCollider are correct.
+    // Check that the values stored in the heightfield returned by the TerrainPhysicsCollider are correct.
     CreateEntity();
 
     AddHeightfieldListener();
