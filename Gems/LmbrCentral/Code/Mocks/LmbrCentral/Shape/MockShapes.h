@@ -15,7 +15,8 @@
 
 namespace UnitTest
 {
-    class MockBoxShapeComponentRequests : public LmbrCentral::BoxShapeComponentRequestsBus::Handler
+    class MockBoxShapeComponentRequests
+        : public LmbrCentral::BoxShapeComponentRequestsBus::Handler
     {
     public:
         MockBoxShapeComponentRequests(AZ::EntityId entityId)
@@ -33,7 +34,8 @@ namespace UnitTest
         MOCK_METHOD1(SetBoxDimensions, void(const AZ::Vector3& newDimensions));
     };
 
-    class MockShapeComponentRequests : public LmbrCentral::ShapeComponentRequestsBus::Handler
+    class MockShapeComponentRequests
+        : public LmbrCentral::ShapeComponentRequestsBus::Handler
     {
     public:
         MockShapeComponentRequests(AZ::EntityId entityId)
@@ -51,8 +53,8 @@ namespace UnitTest
         MOCK_METHOD2(GetTransformAndLocalBounds, void(AZ::Transform& transform, AZ::Aabb& bounds));
         MOCK_METHOD1(IsPointInside, bool(const AZ::Vector3& point));
         MOCK_METHOD1(DistanceSquaredFromPoint, float(const AZ::Vector3& point));
-        MOCK_METHOD1(GenerateRandomPointInside, AZ::Vector3(AZ::RandomDistributionType /*randomDistribution*/));
-        MOCK_METHOD3(IntersectRay, bool(const AZ::Vector3& /*src*/, const AZ::Vector3& /*dir*/, float& /*distance*/));
+        MOCK_METHOD1(GenerateRandomPointInside, AZ::Vector3(AZ::RandomDistributionType randomDistribution));
+        MOCK_METHOD3(IntersectRay, bool(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance));
     };
 }
 

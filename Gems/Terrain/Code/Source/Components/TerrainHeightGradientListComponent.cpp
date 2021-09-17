@@ -147,8 +147,8 @@ namespace Terrain
         AZ::Vector3& outPosition,
         bool& terrainExists)
     {
-        terrainExists = true;
         float maxSample = 0.0f;
+        terrainExists = false;
 
         GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
 
@@ -159,6 +159,10 @@ namespace Terrain
         // make this list a prioritized list from top to bottom for any points that overlap.
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
+            // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for terrain
+            // to *not* exist at a specific point.
+            terrainExists = true;
+
             float sample = 0.0f;
             GradientSignal::GradientRequestBus::EventResult(
                 sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
