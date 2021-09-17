@@ -6,29 +6,26 @@
  *
  */
 
-#include <AzFramework/API/ApplicationAPI_Platform.h>
-#include <AzFramework/Application/Application.h>
-#include "Application_Linux_xcb.h"
+#include <AzFramework/XcbApplication.h>
+#include <AzFramework/XcbEventHandler.h>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class LinuxXcbConnectionManagerImpl
-        : public LinuxXcbConnectionManagerBus::Handler
+    class XcbConnectionManagerImpl
+        : public XcbConnectionManagerBus::Handler
     {
     public:
-        LinuxXcbConnectionManagerImpl()
+        XcbConnectionManagerImpl()
         {
             m_xcbConnection = xcb_connect(nullptr, nullptr);
-            AZ_Error("ApplicationLinux", m_xcbConnection != nullptr, "Unable to connect to X11 Server.");
-            LinuxXcbConnectionManagerBus::Handler::BusConnect();
+            AZ_Error("Application", m_xcbConnection != nullptr, "Unable to connect to X11 Server.");
+            XcbConnectionManagerBus::Handler::BusConnect();
         }
 
-        ~LinuxXcbConnectionManagerImpl()
+        ~XcbConnectionManagerImpl() override
         {
-            LinuxXcbConnectionManagerBus::Handler::BusDisconnect();
+            XcbConnectionManagerBus::Handler::BusDisconnect();
             xcb_disconnect(m_xcbConnection);   
         }
 
@@ -42,53 +39,51 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    ApplicationLinux_xcb::ApplicationLinux_xcb()
+    XcbApplication::XcbApplication()
     {
         LinuxLifecycleEvents::Bus::Handler::BusConnect();
-        m_xcbConnectionManager = AZStd::make_unique<LinuxXcbConnectionManagerImpl>();
-        if (LinuxXcbConnectionManagerInterface::Get() == nullptr)
+        m_xcbConnectionManager = AZStd::make_unique<XcbConnectionManagerImpl>();
+        if (XcbConnectionManagerInterface::Get() == nullptr)
         {
-            LinuxXcbConnectionManagerInterface::Register(m_xcbConnectionManager.get());
+            XcbConnectionManagerInterface::Register(m_xcbConnectionManager.get());
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    ApplicationLinux_xcb::~ApplicationLinux_xcb()
+    XcbApplication::~XcbApplication()
     {
-        if (LinuxXcbConnectionManagerInterface::Get() == m_xcbConnectionManager.get())
+        if (XcbConnectionManagerInterface::Get() == m_xcbConnectionManager.get())
         {
-            LinuxXcbConnectionManagerInterface::Unregister(m_xcbConnectionManager.get());
+            XcbConnectionManagerInterface::Unregister(m_xcbConnectionManager.get());
         }
         m_xcbConnectionManager.reset();
         LinuxLifecycleEvents::Bus::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void ApplicationLinux_xcb::PumpSystemEventLoopOnce()
+    void XcbApplication::PumpSystemEventLoopOnce()
     {
         if (xcb_connection_t* xcbConnection = m_xcbConnectionManager->GetXcbConnection())
         {
             if (xcb_generic_event_t* event = xcb_poll_for_event(xcbConnection))
             {
-                LinuxXcbEventHandlerBus::Broadcast(&LinuxXcbEventHandlerBus::Events::HandleXcbEvent, event);
+                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event);
                 free(event);
             }
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void ApplicationLinux_xcb::PumpSystemEventLoopUntilEmpty()
+    void XcbApplication::PumpSystemEventLoopUntilEmpty()
     {
         if (xcb_connection_t* xcbConnection = m_xcbConnectionManager->GetXcbConnection())
         {
             while (xcb_generic_event_t* event = xcb_poll_for_event(xcbConnection))
             {
-                LinuxXcbEventHandlerBus::Broadcast(&LinuxXcbEventHandlerBus::Events::HandleXcbEvent, event);
+                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event);
                 free(event);
             }
         }
     }
-
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB        
 
 } // namespace AzFramework

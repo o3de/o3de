@@ -6,14 +6,16 @@
  *
  */
 
-#include "NativeWindow_Linux_xcb.h"
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbNativeWindow.h>
+#endif
 
 namespace AzFramework
 {
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        return aznew NativeWindowImpl_Linux_xcb();
+        return aznew XcbNativeWindow();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         #error "Linux Window Manager Wayland not supported."
         return nullptr;
@@ -22,5 +24,4 @@ namespace AzFramework
         return nullptr;
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
-
 } // namespace AzFramework

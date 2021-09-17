@@ -6,20 +6,16 @@
  *
  */
 
-#include <AzFramework/Application/Application.h>
-
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-#include <AzFramework/XcbApplication.h>
+#include <AzFramework/XcbInputDeviceKeyboard.h>
 #endif
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
+    InputDeviceKeyboard::Implementation* InputDeviceKeyboard::Implementation::Create(InputDeviceKeyboard& inputDevice)
     {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        return aznew XcbApplication();
+        return aznew XcbInputDeviceKeyboard(inputDevice);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         #error "Linux Window Manager Wayland not supported."
         return nullptr;
@@ -28,5 +24,4 @@ namespace AzFramework
         return nullptr;
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
-
 } // namespace AzFramework
