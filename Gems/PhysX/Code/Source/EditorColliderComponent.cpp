@@ -795,7 +795,7 @@ namespace PhysX
             }
 
             //We check if the shapes are triangle meshes, if any mesh is a triangle mesh we activate the warning.
-            bool shapeIsTrinagleMeshes = false;
+            bool shapeIsTriangleMesh = false;
 
             for (const auto& shape : shapes)
             {
@@ -805,12 +805,12 @@ namespace PhysX
                     entityRigidbody->GetRigidBody() &&
                     entityRigidbody->GetRigidBody()->IsKinematic() == false)
                 {
-                    shapeIsTrinagleMeshes = true;
+                    shapeIsTriangleMesh = true;
                     break;
                 }
             }
 
-            if (shapeIsTrinagleMeshes)
+            if (shapeIsTriangleMesh)
             {
                 m_componentWarnings.clear();
 
