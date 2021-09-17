@@ -1,10 +1,8 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that creates an entity, attaches the Light component to it for test verifications.
-The test verifies that each light type option is available and can be selected without errors.
 """
 
 import os

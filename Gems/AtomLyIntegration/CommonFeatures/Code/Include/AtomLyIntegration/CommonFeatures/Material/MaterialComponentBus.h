@@ -23,6 +23,10 @@ namespace AZ
             virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
             //! Get material assignment id matching lod and label substring
             virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
+            //! Get default material asset
+            virtual AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
+            //! Get material slot label
+            virtual AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const = 0;
             //! Set material overrides
             virtual void SetMaterialOverrides(const MaterialAssignmentMap& materials) = 0;
             //! Get material overrides
@@ -38,7 +42,7 @@ namespace AZ
             //! Set material override
             virtual void SetMaterialOverride(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) = 0;
             //! Get material override
-            virtual const AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const = 0;
+            virtual AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const = 0;
             //! Clear material override
             virtual void ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId) = 0;
             //! Set a material property override value wrapped by an AZStd::any
@@ -95,8 +99,16 @@ namespace AZ
             virtual void ClearPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) = 0;
             //! Clear all property overrides
             virtual void ClearAllPropertyOverrides() = 0;
+            //! Set Property overrides for a specific material assignment
+            virtual void SetPropertyOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const MaterialPropertyOverrideMap& propertyOverrides) = 0;
             //! Get Property overrides for a specific material assignment
             virtual MaterialPropertyOverrideMap GetPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) const = 0;
+            //! Set Model UV overrides for a specific material assignment
+            virtual void SetModelUvOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) = 0;
+            //! Get Model UV overrides for a specific material assignment
+            virtual AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const = 0;
         };
         using MaterialComponentRequestBus = EBus<MaterialComponentRequests>;
 
@@ -106,8 +118,8 @@ namespace AZ
         {
         public:
 
-            //! This message is sent every time a material property is updated.
-            virtual void OnMaterialsEdited([[maybe_unused]] const MaterialAssignmentMap& materials) {}
+            //! This message is sent every time a material or property update affects UI.
+            virtual void OnMaterialsEdited() {}
 
             //! This message is sent when one or more material property changes have been applied, at most once per frame.
             virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials) {}
