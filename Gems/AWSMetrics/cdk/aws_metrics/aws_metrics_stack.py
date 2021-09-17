@@ -53,6 +53,7 @@ class AWSMetricsStack(core.Stack):
         self._batch_processing = BatchProcessing(
             self,
             input_stream_arn=self._data_ingestion.input_stream_arn,
+            application_name=application_name,
             analytics_bucket_arn=self._data_lake_integration.analytics_bucket_arn,
             events_database_name=self._data_lake_integration.events_database_name,
             events_table_name=self._data_lake_integration.events_table_name
@@ -60,6 +61,7 @@ class AWSMetricsStack(core.Stack):
 
         self._batch_analytics = BatchAnalytics(
             self,
+            application_name=application_name,
             analytics_bucket_name=self._data_lake_integration.analytics_bucket_name,
             events_database_name=self._data_lake_integration.events_database_name,
             events_table_name=self._data_lake_integration.events_table_name
