@@ -489,34 +489,25 @@ namespace AZ
                 }
             }
 
-            char rootedPathBuffer[AZ_MAX_PATH_LEN] = {0};
+            AZ::IO::FixedMaxPath rootedPathBuffer;
             const char* rootedPath = path;
             // if the path does not begin with an alias, then it is assumed to begin with @projectproductassets@
             if (path[0] != '@')
             {
                 if (GetAlias("@projectproductassets@"))
                 {
-                    const int rootLength = 9;// strlen("@projectproductassets@/")
-                    azstrncpy(rootedPathBuffer, AZ_MAX_PATH_LEN, "@projectproductassets@/", rootLength);
-                    size_t pathLen = strlen(path);
-                    size_t rootedPathBufferlength = rootLength + pathLen + 1;// +1 for null terminator
-                    if (rootedPathBufferlength > resolvedPathSize)
-                    {
-                        AZ_Assert(rootedPathBufferlength < resolvedPathSize, "Constructed path length is wrong:%s", rootedPathBuffer);//path constructed is wrong
-                        size_t remainingSize = resolvedPathSize - rootLength - 1;// - 1 for null terminator
-                        azstrncpy(rootedPathBuffer + rootLength, AZ_MAX_PATH_LEN, path, remainingSize);
-                        rootedPathBuffer[resolvedPathSize - 1] = '\0';
-                    }
-                    else
-                    {
-                        azstrncpy(rootedPathBuffer + rootLength, AZ_MAX_PATH_LEN - rootLength, path, pathLen + 1);
-                    }
+                    rootedPathBuffer = "@projectproductassets@";
+                    rootedPathBuffer /= path;
                 }
                 else
                 {
-                    ConvertToAbsolutePath(path, rootedPathBuffer, AZ_MAX_PATH_LEN);
+                    if (ConvertToAbsolutePath(path, rootedPathBuffer.Native().data(), rootedPathBuffer.Native().capacity()))
+                    {
+                        // Recalculate the internal string length
+                        rootedPathBuffer.Native().resize_no_construct(AZStd::char_traits<char>::length(rootedPathBuffer.Native().data()));
+                    }
                 }
-                rootedPath = rootedPathBuffer;
+                rootedPath = rootedPathBuffer.c_str();
             }
 
             if (ResolveAliases(rootedPath, resolvedPath, resolvedPathSize))
@@ -665,7 +656,9 @@ namespace AZ
                                                                      : string_view_pair{};
 
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
-            AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");
+            AZ_Assert(path != resolvedPath, "ResolveAliases does not support inplace update of the path");
+            AZ_Assert(resolvedPathSize >= requiredResolvedPathSize, "Resolved path size %llu not large enough. It needs to be %zu",
+                resolvedPathSize, requiredResolvedPathSize);
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
             // is too small to copy the source into.
             if (path == resolvedPath || (resolvedPathSize < requiredResolvedPathSize))
