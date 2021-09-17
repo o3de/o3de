@@ -55,12 +55,12 @@ protected:
     void CreateEntity()
     {
         m_entity = AZStd::make_unique<AZ::Entity>();
-        m_entity->Init();
-
         ASSERT_TRUE(m_entity);
+
+        m_entity->Init();
     }
 
-    void AddPhysicsColliderAndShapeComponentToEntity()
+    void AddTerrainPhysicsColliderAndShapeComponentToEntity()
     {
         m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
         m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
@@ -75,24 +75,18 @@ protected:
 
         ASSERT_TRUE(m_heightfieldBusListener);
     }
-
-    void ResetEntity()
-    {
-        m_entity->Deactivate();
-        m_entity->Reset();
-    }
 };
 
 TEST_F(PhysicsColliderComponentTest, ActivateEntityActivateSuccess)
 {
     // Check that the entity activates with a collider and the required shape attached.
     CreateEntity();
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
      
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeightfieldBus)
@@ -102,7 +96,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeig
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
@@ -111,7 +105,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderTransformChangedNotifiesHeig
     AZ::TransformNotificationBus::Event(
         m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfieldBus)
@@ -121,7 +115,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
@@ -131,7 +125,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderShapeChangedNotifiesHeightfi
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
         LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
@@ -141,7 +135,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
@@ -150,9 +144,11 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderHeightScaleReturnsCorrectly)
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
 
-    EXPECT_NEAR(heightScale, 1.0f / 256.0f, 0.1f);
+    const float expectedScale = 1.0f / 256.0f;
+    const float nearTolerance = 0.01f;
+    EXPECT_NEAR(heightScale, expectedScale, nearTolerance);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorrectly)
@@ -162,15 +158,15 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorre
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.0f;
-    float max = 1024.0f;
+    const float boundsMin = 0.0f;
+    const float boundsMax = 1024.0f;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -184,7 +180,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsAlignedRowBoundsCorre
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
@@ -195,15 +191,15 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.1f;
-    float max = 1024.0f;
+    const float boundsMin = 0.1f;
+    const float boundsMax = 1024.0f;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -217,7 +213,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMinBoundsCorrectly)
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
@@ -228,15 +224,15 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.0f;
-    float max = 1023.5f;
+    const float boundsMin = 0.0f;
+    const float boundsMax = 1023.5f;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -250,7 +246,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderExpandsMaxBoundsCorrectly)
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
@@ -260,15 +256,15 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.0f;
-    float max = 1024.0f;
+    const float boundsMin = 0.0f;
+    const float boundsMax = 1024.0f;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -284,9 +280,11 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderGetHeightsReturnsHeights)
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
+    const int expectedHeightsSize = 1024 * 1024;
     EXPECT_EQ(heights.size(), cols * rows);
+    EXPECT_EQ(heights.size(), expectedHeightsSize);
    
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsInRegion)
@@ -296,15 +294,15 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsI
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.0f;
-    float max = 1024.0f;
+    const float boundsMin = 0.0f;
+    const float boundsMax = 1024.0f;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -315,8 +313,8 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsI
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
-    float regionMax = 512.0f;
-    AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(regionMax));
+    const float regionMax = 512.0f;
+    const AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(regionMax));
 
     AZStd::vector<int16_t> heights;
     Physics::HeightfieldProviderRequestsBus::EventResult(
@@ -324,7 +322,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderUpdateHeightsReturnsHeightsI
 
     EXPECT_EQ(heights.size(), regionMax * regionMax);
 
-    ResetEntity();
+    m_entity->Reset();
 }
 
 TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrectly)
@@ -334,14 +332,14 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrec
 
     AddHeightfieldListener();
 
-    AddPhysicsColliderAndShapeComponentToEntity();
+    AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    float min = 0.0f;
-    float max = 256.0f;
+    const float boundsMin = 0.0f;
+    const float boundsMax = 256;
 
-    float mockHeight = 32768.0f;
+    const float mockHeight = 32768.0f;
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
 
     NiceMock<UnitTest::MockTerrainDataRequestsListener> terrainListener;
@@ -349,7 +347,7 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrec
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(max));
+    AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     int32_t cols, rows;
@@ -360,19 +358,10 @@ TEST_F(PhysicsColliderComponentTest, PhysicsColliderReturnsRelativeHeightsCorrec
 
     Physics::HeightfieldProviderRequestsBus::EventResult(heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
-    ASSERT_TRUE(heights.size() != 0);
+    ASSERT_FALSE(heights.empty());
 
-    float heightScale = 0.0f;
-
-    Physics::HeightfieldProviderRequestsBus::EventResult(
-        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
-
-    float aabbCenter = min + (max - min) / 2.0f;
-    
-    // The height returned by the terrain system(mockHeight) is absolute, the collider will return a relative value.
-    int16_t expectedHeight = azlossy_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
-
+    const int16_t expectedHeight = 127;
     EXPECT_EQ(heights[0], expectedHeight);
 
-    ResetEntity();
+    m_entity->Reset();
 }

@@ -44,14 +44,12 @@ namespace UnitTest
         MOCK_CONST_METHOD4(GetNormalFromFloats, AZ::Vector3(float, float, Sampler, bool*));
     };
 
-    static const AZ::Uuid MockHeightfieldProviderNotificationBusListenerTypeId = "{2A89ED68-5937-4876-A073-FB6C8AF3D379}";
-
     class MockHeightfieldProviderNotificationBusListener
         : public AZ::Component
         , private Physics::HeightfieldProviderNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(MockHeightfieldProviderNotificationBusListener, MockHeightfieldProviderNotificationBusListenerTypeId)
+        AZ_COMPONENT(MockHeightfieldProviderNotificationBusListener, "{2A89ED68-5937-4876-A073-FB6C8AF3D379}")
         static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
         {
         }
