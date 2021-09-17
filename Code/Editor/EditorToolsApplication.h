@@ -7,7 +7,9 @@
  */
 
 #pragma once
+
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include "Core/EditorMetricsPlainTextNameRegistration.h"
 #include "EditorToolsApplicationAPI.h"
