@@ -593,7 +593,7 @@ namespace AzFramework
             
             DebugMessage("StartThread: Starting %s", thread.m_desc.m_name);
             thread.m_join = false;
-            thread.m_thread = AZStd::thread(thread.m_main, &thread.m_desc);
+            thread.m_thread = AZStd::thread(thread.m_desc, thread.m_main);
         }
 
         void AssetProcessorConnection::JoinThread(ThreadState& thread, AZStd::condition_variable* wakeUpCondition /* = nullptr */)

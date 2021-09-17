@@ -347,7 +347,7 @@ namespace BarrierInput
     {
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "BarrierInputClientThread";
-        m_threadHandle = AZStd::thread(AZStd::bind(&BarrierClient::Run, this), &threadDesc);
+        m_threadHandle = AZStd::thread(threadDesc, AZStd::bind(&BarrierClient::Run, this));
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////

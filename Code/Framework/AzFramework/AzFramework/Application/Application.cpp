@@ -542,14 +542,16 @@ namespace AzFramework
         newThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         newThreadDesc.m_name = newThreadName;
         AZStd::binary_semaphore binarySemaphore;
-        AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
-        {
-            AZ_PROFILE_SCOPE(AzFramework,
-                "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
+        AZStd::thread newThread(
+            newThreadDesc,
+            [&workForNewThread, &binarySemaphore, &newThreadName]
+            {
+                AZ_PROFILE_SCOPE(AzFramework,
+                    "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
-            workForNewThread();
-            binarySemaphore.release();
-        }, &newThreadDesc);
+                workForNewThread();
+                binarySemaphore.release();
+            });
         while (!binarySemaphore.try_acquire_for(eventPumpFrequency))
         {
             PumpSystemEventLoopUntilEmpty();

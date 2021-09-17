@@ -42,7 +42,7 @@ namespace AZ
                 m_isWorkQueueEmpty = true;
                 
                 AZStd::thread_desc threadDesc{ GetName().GetCStr() };
-                m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+                m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             }
             return resultCode;
         }

@@ -37,7 +37,7 @@ namespace HttpRequestor
         m_runThread = true;
         AWSNativeSDKInit::InitializationManager::InitAwsApi();
         auto function = AZStd::bind(&Manager::ThreadFunction, this);
-        m_thread = AZStd::thread(function, &desc);
+        m_thread = AZStd::thread(desc, function);
     }
 
     Manager::~Manager()

@@ -366,10 +366,10 @@ namespace UnitTest
 
         void test_move_on_construction()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
             AZStd::thread::id the_id;
             AZStd::thread x;
-            x = AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id), desc1);
+            x = AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id));
             AZStd::thread::id x_id = x.get_id();
             x.join();
             AZ_TEST_ASSERT(the_id == x_id);
@@ -377,8 +377,8 @@ namespace UnitTest
 
         AZStd::thread make_thread(AZStd::thread::id* the_id)
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
-            return AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id), desc1);
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            return AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id));
         }
 
         void test_move_from_function_return()
@@ -512,7 +512,7 @@ namespace UnitTest
 
         void run()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : nullptr;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
 
             // We need to have at least one processor
             AZ_TEST_ASSERT(AZStd::thread::hardware_concurrency() >= 1);
@@ -563,15 +563,15 @@ namespace UnitTest
             {
                 MfTest x;
                 AZStd::function<void ()> func = AZStd::bind(&MfTest::f0, &x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::f0, AZStd::ref(x));
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, &x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, AZStd::ref(x));
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
 
                 //// 1
                 //thread( AZStd::bind(&MfTest::f1, &x, 1) , desc1).join();

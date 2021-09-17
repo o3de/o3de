@@ -203,12 +203,12 @@ namespace AZ
                 }
                 m_active.store(true, AZStd::memory_order_release);
 
-                m_thread = AZStd::thread{ [this, &initSemaphore]
+                m_thread = AZStd::thread{ desc,
+                                          [this, &initSemaphore]
                                           {
                                               initSemaphore.release();
                                               Run();
-                                          },
-                                          &desc };
+                                          } };
             }
 
             void Join()

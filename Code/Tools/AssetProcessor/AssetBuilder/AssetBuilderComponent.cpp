@@ -411,7 +411,7 @@ bool AssetBuilderComponent::RunInResidentMode()
         m_running = true;
 
         m_jobThreadDesc.m_name = "Builder Job Thread";
-        m_jobThread = AZStd::thread(AZStd::bind(&AssetBuilderComponent::JobThread, this), &m_jobThreadDesc);
+        m_jobThread = AZStd::thread(m_jobThreadDesc, AZStd::bind(&AssetBuilderComponent::JobThread, this));
 
         AzFramework::EngineConnectionEvents::Bus::Handler::BusConnect(); // Listen for disconnects
 

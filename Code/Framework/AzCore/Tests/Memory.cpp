@@ -151,7 +151,7 @@ namespace UnitTest
                     AZStd::thread m_threads[m_maxNumThreads];
                     for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                     {
-                        m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                        m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                         // give some time offset to the threads so we can test alloc and dealloc at the same time.
                         //AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                     }
@@ -286,7 +286,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                     // give some time offset to the threads so we can test alloc and dealloc at the same time.
                     AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                 }
@@ -724,7 +724,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -743,12 +743,12 @@ namespace UnitTest
 
                 for (unsigned int i = m_maxNumThreads/2; i <m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
