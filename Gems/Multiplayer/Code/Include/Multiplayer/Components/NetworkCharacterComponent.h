@@ -19,6 +19,8 @@ namespace Physics
 
 namespace Multiplayer
 {
+    //! NetworkCharacterComponent
+    //! Provides multiplayer support for game-play player characters.
     class NetworkCharacterComponent
         : public NetworkCharacterComponentBase
         , private PhysX::CharacterGameplayRequestBus::Handler
@@ -37,7 +39,8 @@ namespace Multiplayer
             incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
         }
 
-        void OnInit() override;
+        // AZ::Component
+        void OnInit() override {}
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
@@ -46,7 +49,7 @@ namespace Multiplayer
         void OnSyncRewind();
 
         // CharacterGameplayRequestBus
-       bool IsOnGround() const override;
+        bool IsOnGround() const override;
         float GetGravityMultiplier() const override { return {}; }
         void SetGravityMultiplier([[maybe_unused]] float gravityMultiplier) override {}
         AZ::Vector3 GetFallingVelocity() const override { return {}; }
@@ -57,15 +60,23 @@ namespace Multiplayer
         AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
     };
 
+    //! NetworkCharacterComponentController
+    //! This is the network controller for NetworkCharacterComponent.
+    //! Class provides the ability to move characters in physical space while keeping the network in-sync.
     class NetworkCharacterComponentController
         : public NetworkCharacterComponentControllerBase
     {
     public:
         NetworkCharacterComponentController(NetworkCharacterComponent& parent);
 
+        // NetworkCharacterComponentControllerBase
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
+        //! TryMoveWithVelocity
+        //! Will move this character entity kinematically through physical world while also ensuring the network stays in-sync.
+        //! Velocity will be applied over delta-time to determine the movement amount.
+        //! Returns this entity's world-space position after the move.
         AZ::Vector3 TryMoveWithVelocity(const AZ::Vector3& velocity, float deltaTime);
     };
 }

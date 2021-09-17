@@ -97,12 +97,6 @@ namespace Multiplayer
     NetworkCharacterComponent::NetworkCharacterComponent()
         : m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
     {
-        ;
-    }
-
-    void NetworkCharacterComponent::OnInit()
-    {
-        ;
     }
 
     void NetworkCharacterComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
