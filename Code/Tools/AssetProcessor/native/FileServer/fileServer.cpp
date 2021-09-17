@@ -974,11 +974,6 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
         folders.push_back("@log@");
         untestedFolders.push_back("@log@");
     }
-    if (fileIO->IsDirectory("@projectproductassets@"))
-    {
-        folders.push_back("@projectproductassets@");
-        untestedFolders.push_back("@projectproductassets@");
-    }
 
     AZ::IO::Result res = ResultCode::Success;
 
