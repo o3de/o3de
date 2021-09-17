@@ -194,8 +194,6 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
     m_terrainSystem->Activate();
     AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
 
-    AZ::Aabb worldBounds = m_terrainSystem->GetTerrainAabb();
-
     // Create a box that's twice as big as the layer spawner box.  Loop through it and verify that points within the layer box contain
     // terrain and the expected height & normal values, and points outside the layer box don't contain terrain.
     const AZ::Aabb encompassingBox =
