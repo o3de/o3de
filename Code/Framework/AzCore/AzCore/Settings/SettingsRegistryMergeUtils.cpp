@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/TextStreamWriters.h>
@@ -388,8 +390,36 @@ namespace AZ::SettingsRegistryMergeUtils
         const ConfigParserSettings& configParserSettings)
     {
         auto configPath = FindEngineRoot(registry) / filePath;
-        IO::SystemFile configFile;
-        if (!configFile.Open(configPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
+        IO::FileReader configFile;
+        bool configFileOpened{};
+        switch (configParserSettings.m_fileReaderClass)
+        {
+        case ConfigParserSettings::FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile:
+        {
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            configFileOpened = configFile.Open(fileIo, configPath.c_str());
+            break;
+        }
+        case ConfigParserSettings::FileReaderClass::UseSystemFileOnly:
+        {
+            configFileOpened = configFile.Open(nullptr, configPath.c_str());
+            break;
+        }
+        case ConfigParserSettings::FileReaderClass::UseFileIOOnly:
+        {
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            if (fileIo == nullptr)
+            {
+                return false;
+            }
+            configFileOpened = configFile.Open(fileIo, configPath.c_str());
+            break;
+        }
+        default:
+            AZ_Error("SettingsRegistryMergeUtils", false, "An Invalid FileReaderClass enum value has been supplied");
+            return false;
+        }
+        if (!configFileOpened)
         {
             AZ_Warning("SettingsRegistryMergeUtils", false, R"(Unable to open file "%s")", configPath.c_str());
             return false;
@@ -480,7 +510,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 AZ_Error("SettingsRegistryMergeUtils", false,
                     R"(The config file "%s" contains a line which is longer than the max line length of %zu.)" "\n"
                     R"(Parsing will halt. The line content so far is:)" "\n"
-                    R"("%.*s")" "\n", configFile.Name(), configBuffer.max_size(),
+                    R"("%.*s")" "\n", configPath.c_str(), configBuffer.max_size(),
                     aznumeric_cast<int>(configBuffer.size()), configBuffer.data());
                 configFileParsed = false;
                 break;

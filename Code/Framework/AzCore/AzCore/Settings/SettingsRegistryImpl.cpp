@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/NativeUI//NativeUIRequests.h>
@@ -1116,118 +1117,6 @@ namespace AZ
         }
     }
 
-    //! Structure which encapsulates Commands to either the FileIOBase or SystemFile classes based on
-    //! the SettingsRegistry option to use FileIO
-    struct SettingsRegistryFileReader
-    {
-        using FileHandleType = AZStd::variant<AZStd::monostate, AZ::IO::SystemFile, AZ::IO::HandleType>;
-
-        SettingsRegistryFileReader() = default;
-        SettingsRegistryFileReader(bool useFileIo, const char* filePath)
-        {
-            Open(useFileIo, filePath);
-        }
-
-        ~SettingsRegistryFileReader()
-        {
-            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
-            {
-                if (AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
-                {
-                    fileIo->Close(*fileHandle);
-                }
-            }
-        }
-
-        bool Open(bool useFileIo, const char* filePath)
-        {
-            Close();
-            if (AZ::IO::FileIOBase* fileIo = useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr; fileIo != nullptr)
-            {
-                AZ::IO::HandleType fileHandle;
-                if (fileIo->Open(filePath, IO::OpenMode::ModeRead, fileHandle))
-                {
-                    m_file = fileHandle;
-                    return true;
-                }
-            }
-            else
-            {
-                AZ::IO::SystemFile file;
-                if (file.Open(filePath, IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
-                {
-                    m_file = AZStd::move(file);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        bool IsOpen() const
-        {
-            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
-            {
-                return *fileHandle != AZ::IO::InvalidHandle;
-            }
-            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
-            {
-                return systemFile->IsOpen();
-            }
-
-            return false;
-        }
-
-        void Close()
-        {
-            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
-            {
-                if (AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
-                {
-                    fileIo->Close(*fileHandle);
-                }
-            }
-
-            m_file = AZStd::monostate{};
-        }
-
-        u64 Length() const
-        {
-            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
-            {
-                if (u64 fileSize{}; AZ::IO::FileIOBase::GetInstance()->Size(*fileHandle, fileSize))
-                {
-                    return fileSize;
-                }
-            }
-            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
-            {
-                return systemFile->Length();
-            }
-
-            return 0;
-        }
-
-        AZ::IO::SizeType Read(AZ::IO::SizeType byteSize, void* buffer)
-        {
-            if (auto fileHandle = AZStd::get_if<AZ::IO::HandleType>(&m_file); fileHandle != nullptr)
-            {
-                if (AZ::u64 bytesRead{}; AZ::IO::FileIOBase::GetInstance()->Read(*fileHandle, buffer, byteSize, false, &bytesRead))
-                {
-                    return bytesRead;
-                }
-            }
-            else if (auto systemFile = AZStd::get_if<AZ::IO::SystemFile>(&m_file); systemFile != nullptr)
-            {
-                return systemFile->Read(byteSize, buffer);
-            }
-
-            return 0;
-        }
-
-        FileHandleType m_file;
-    };
-
     bool SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>& scratchBuffer)
     {
@@ -1236,7 +1125,7 @@ namespace AZ
 
         Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
 
-        SettingsRegistryFileReader fileReader(m_useFileIo, path);
+        FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance(): nullptr, path);
         if (!fileReader.IsOpen())
         {
             AZ_Error("Settings Registry", false, R"(Unable to open registry file "%s".)", path);
