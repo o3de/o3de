@@ -26,8 +26,8 @@ public:
     UiCompoundSplineTrack(int nDims, EUiAnimValue inValueType, CUiAnimParamType subTrackParamTypes[MAX_SUBTRACKS]);
     UiCompoundSplineTrack();
 
-    void add_ref() { ++m_refCount; }
-    void release()
+    void add_ref() override { ++m_refCount; }
+    void release() override
     {
         if (--m_refCount <= 0)
         {
@@ -35,107 +35,107 @@ public:
         }
     }
 
-    virtual int GetSubTrackCount() const { return m_nDimensions; };
-    virtual IUiAnimTrack* GetSubTrack(int nIndex) const;
+    int GetSubTrackCount() const override { return m_nDimensions; };
+    IUiAnimTrack* GetSubTrack(int nIndex) const override;
     AZStd::string GetSubTrackName(int nIndex) const override;
-    virtual void SetSubTrackName(int nIndex, const char* name);
+    void SetSubTrackName(int nIndex, const char* name) override;
 
-    virtual EUiAnimCurveType GetCurveType() { return eUiAnimCurveType_BezierFloat; };
-    virtual EUiAnimValue GetValueType() { return m_valueType; };
+    EUiAnimCurveType GetCurveType() override { return eUiAnimCurveType_BezierFloat; };
+    EUiAnimValue GetValueType() override { return m_valueType; };
 
-    virtual const CUiAnimParamType& GetParameterType() const { return m_nParamType; };
-    virtual void SetParameterType(CUiAnimParamType type) { m_nParamType = type; }
+    const CUiAnimParamType& GetParameterType() const override { return m_nParamType; };
+    void SetParameterType(CUiAnimParamType type) override { m_nParamType = type; }
 
-    virtual const UiAnimParamData& GetParamData() const { return m_componentParamData; }
-    virtual void SetParamData(const UiAnimParamData& param) { m_componentParamData = param; }
+    const UiAnimParamData& GetParamData() const override { return m_componentParamData; }
+    void SetParamData(const UiAnimParamData& param) override { m_componentParamData = param; }
 
-    virtual int GetNumKeys() const;
-    virtual void SetNumKeys([[maybe_unused]] int numKeys) { assert(0); };
-    virtual bool HasKeys() const;
-    virtual void RemoveKey(int num);
+    int GetNumKeys() const override;
+    void SetNumKeys([[maybe_unused]] int numKeys) override { assert(0); };
+    bool HasKeys() const override;
+    void RemoveKey(int num) override;
 
-    virtual void GetKeyInfo(int key, const char*& description, float& duration);
-    virtual int CreateKey([[maybe_unused]] float time) { assert(0); return 0; };
-    virtual int CloneKey([[maybe_unused]] int fromKey) { assert(0); return 0; };
-    virtual int CopyKey([[maybe_unused]] IUiAnimTrack* pFromTrack, [[maybe_unused]] int nFromKey) { assert(0); return 0; };
-    virtual void GetKey([[maybe_unused]] int index, [[maybe_unused]] IKey* key) const { assert(0); };
-    virtual float GetKeyTime(int index) const;
-    virtual int FindKey([[maybe_unused]] float time) { assert(0); return 0; };
-    virtual int GetKeyFlags([[maybe_unused]] int index) { assert(0); return 0; };
-    virtual void SetKey([[maybe_unused]] int index, [[maybe_unused]] IKey* key) { assert(0); };
-    virtual void SetKeyTime(int index, float time);
-    virtual void SetKeyFlags([[maybe_unused]] int index, [[maybe_unused]] int flags) { assert(0); };
-    virtual void SortKeys() { assert(0); };
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    int CreateKey([[maybe_unused]] float time) override { assert(0); return 0; };
+    int CloneKey([[maybe_unused]] int fromKey) override { assert(0); return 0; };
+    int CopyKey([[maybe_unused]] IUiAnimTrack* pFromTrack, [[maybe_unused]] int nFromKey) override { assert(0); return 0; };
+    void GetKey([[maybe_unused]] int index, [[maybe_unused]] IKey* key) const override { assert(0); };
+    float GetKeyTime(int index) const override;
+    int FindKey([[maybe_unused]] float time) override { assert(0); return 0; };
+    int GetKeyFlags([[maybe_unused]] int index) override { assert(0); return 0; };
+    void SetKey([[maybe_unused]] int index, [[maybe_unused]] IKey* key) override { assert(0); };
+    void SetKeyTime(int index, float time) override;
+    void SetKeyFlags([[maybe_unused]] int index, [[maybe_unused]] int flags) override { assert(0); };
+    void SortKeys() override { assert(0); };
 
-    virtual bool IsKeySelected(int key) const;
-    virtual void SelectKey(int key, bool select);
+    bool IsKeySelected(int key) const override;
+    void SelectKey(int key, bool select) override;
 
-    virtual int GetFlags() { return m_flags; };
-    virtual bool IsMasked([[maybe_unused]] const uint32 mask) const { return false; }
-    virtual void SetFlags(int flags) { m_flags = flags; };
+    int GetFlags() override { return m_flags; };
+    bool IsMasked([[maybe_unused]] const uint32 mask) const override { return false; }
+    void SetFlags(int flags) override { m_flags = flags; };
 
     //////////////////////////////////////////////////////////////////////////
     // Get track value at specified time.
     // Interpolates keys if needed.
     //////////////////////////////////////////////////////////////////////////
-    virtual void GetValue(float time, float& value);
-    virtual void GetValue(float time, Vec3& value);
-    virtual void GetValue(float time, Vec4& value);
-    virtual void GetValue(float time, Quat& value);
-    virtual void GetValue(float time, AZ::Vector2& value);
-    virtual void GetValue(float time, AZ::Vector3& value);
-    virtual void GetValue(float time, AZ::Vector4& value);
-    virtual void GetValue(float time, AZ::Color& value);
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) { assert(0); };
+    void GetValue(float time, float& value) override;
+    void GetValue(float time, Vec3& value) override;
+    void GetValue(float time, Vec4& value) override;
+    void GetValue(float time, Quat& value) override;
+    void GetValue(float time, AZ::Vector2& value) override;
+    void GetValue(float time, AZ::Vector3& value) override;
+    void GetValue(float time, AZ::Vector4& value) override;
+    void GetValue(float time, AZ::Color& value) override;
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); };
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
-    virtual void SetValue(float time, const float& value, bool bDefault = false);
-    virtual void SetValue(float time, const Vec3& value, bool bDefault = false);
-    void SetValue(float time, const Vec4& value, bool bDefault = false);
-    virtual void SetValue(float time, const Quat& value, bool bDefault = false);
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) { assert(0); };
-    virtual void SetValue(float time, const AZ::Vector2& value, bool bDefault = false);
-    virtual void SetValue(float time, const AZ::Vector3& value, bool bDefault = false);
-    virtual void SetValue(float time, const AZ::Vector4& value, bool bDefault = false);
-    virtual void SetValue(float time, const AZ::Color& value, bool bDefault = false);
+    void SetValue(float time, const float& value, bool bDefault = false) override;
+    void SetValue(float time, const Vec3& value, bool bDefault = false) override;
+    void SetValue(float time, const Vec4& value, bool bDefault = false) override;
+    void SetValue(float time, const Quat& value, bool bDefault = false) override;
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue(float time, const AZ::Vector2& value, bool bDefault = false) override;
+    void SetValue(float time, const AZ::Vector3& value, bool bDefault = false) override;
+    void SetValue(float time, const AZ::Vector4& value, bool bDefault = false) override;
+    void SetValue(float time, const AZ::Color& value, bool bDefault = false) override;
 
-    virtual void OffsetKeyPosition(const Vec3& value);
+    void OffsetKeyPosition(const Vec3& value) override;
 
-    virtual void SetTimeRange(const Range& timeRange);
+    void SetTimeRange(const Range& timeRange) override;
 
-    virtual bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true);
+    bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) override;
 
-    virtual bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0);
+    bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0) override;
 
-    virtual int NextKeyByTime(int key) const;
+    int NextKeyByTime(int key) const override;
 
     void SetSubTrackName(const int i, const AZStd::string& name) { assert (i < MAX_SUBTRACKS); m_subTrackNames[i] = name; }
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    virtual ColorB GetCustomColor() const
+    ColorB GetCustomColor() const override
     { return m_customColor; }
-    virtual void SetCustomColor(ColorB color)
+    void SetCustomColor(ColorB color) override
     {
         m_customColor = color;
         m_bCustomColorSet = true;
     }
-    virtual bool HasCustomColor() const
+    bool HasCustomColor() const override
     { return m_bCustomColorSet; }
-    virtual void ClearCustomColor()
+    void ClearCustomColor() override
     { m_bCustomColorSet = false; }
 #endif
 
-    virtual void GetKeyValueRange(float& fMin, float& fMax) const
+    void GetKeyValueRange(float& fMin, float& fMax) const override
     {
         if (GetSubTrackCount() > 0)
         {
             m_subTracks[0]->GetKeyValueRange(fMin, fMax);
         }
     };
-    virtual void SetKeyValueRange(float fMin, float fMax)
+    void SetKeyValueRange(float fMin, float fMax) override
     {
         for (int i = 0; i < m_nDimensions; ++i)
         {

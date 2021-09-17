@@ -65,7 +65,7 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // SystemRequestBus::Handler...
         void AddAsyncJob(AZStd::function<void()>&& jobFunc) override;
-        void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes);
+        void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) override;
         void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +110,7 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // IUpgradeRequests...
-        void ClearGraphsThatNeedUpgrade()
+        void ClearGraphsThatNeedUpgrade() override
         {
             m_assetsThatNeedManualUpgrade.clear();
         }

@@ -22,6 +22,21 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AssetProcessor
             AutomatedTesting.Assets
             Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::AtomRenderer_HydraTests_MainOptimized
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite_Optimized.py
+        TEST_SERIAL
+        TIMEOUT 600
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
     )
     ly_add_pytest(
         NAME AutomatedTesting::AtomRenderer_HydraTests_Sandbox
@@ -33,6 +48,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AssetProcessor
             AutomatedTesting.Assets
             Editor
+        COMPONENT
+            Atom
     )
     ly_add_pytest(
         NAME AutomatedTesting::AtomRenderer_HydraTests_GPUTests
@@ -41,6 +58,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SERIAL
         TIMEOUT 1200
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_GPUTests.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::AtomRenderer_HydraTests_ShaderBuildPipeline
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_ShaderBuildPipelineSuite.py
+        TEST_SERIAL
+        TIMEOUT 600
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets
