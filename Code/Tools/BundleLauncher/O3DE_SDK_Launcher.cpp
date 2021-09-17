@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
 
     // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
     AZ::ComponentApplication application(static_cast<int>(commandLineParams.size()), commandLineParams.data());
-    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*AZ::SettingsRegistry::Get(), "o3de_sdk");
     application.Create(AZ::ComponentApplication::Descriptor());
  
     AZ::IO::FixedMaxPath installedBinariesFolder;

@@ -29,7 +29,7 @@ set(installed_binaries_path_template [[
 # This will be used by the O3DE_SDK.app bundle to find the 
 string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
 file(GENERATE
-    OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/O3DE_SDK_InstallPath.o3de_sdk.setreg
+    OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/BinariesInstallPath.setreg
     CONTENT "${configured_setreg_file}"
 )
 
@@ -98,11 +98,6 @@ function(ly_install_target_override)
             CONTENT "${configured_template_file}"
         )
     endif()
-endfunction()
-
-#! ly_install_add_install_path_setreg: Adds the install path setreg file as a dependency
-function(ly_install_add_install_path_setreg NAME SETREG_FILE_PATH)
-    set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${SETREG_FILE_PATH}\nRegistry")
 endfunction()
 
 #! ly_install_code_function_override: Mac specific copy function to handle frameworks

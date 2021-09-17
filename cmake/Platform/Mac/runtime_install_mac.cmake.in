@@ -7,8 +7,13 @@
 #
 
 cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/@install_relative_binaries_path@/@runtime_output_filename@")
+cmake_path(GET file_path EXTENSION LAST_ONLY file_ext)
 
-if(@runtime_output_filename@ MATCHES ".app")
+if(file_ext STREQUAL .app)
+
+    file(INSTALL @CMAKE_BINARY_DIR@/runtime_install/$<CONFIG>/BinariesInstallPath.setreg
+        DESTINATION ${file_path}/Contents/MacOS/Registry
+    )
 
     if(EXISTS "${file_path}/Contents/Frameworks/Python.framework")
         codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")

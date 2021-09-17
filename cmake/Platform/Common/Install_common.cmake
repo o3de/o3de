@@ -531,7 +531,7 @@ endfunction()"
         # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
         # used to generate the solution.
         # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${LY_BUILD_PERMUTATION}")
+        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
         set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
