@@ -16,8 +16,8 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AWSMetrics
 {
@@ -39,10 +39,17 @@ namespace AWSMetrics
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-            const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
+            const AZ::IO::Path engineRoot = AZ::Test::GetEngineRootPath();
+            const auto productAssetPath = GetTestFolderPath() / "Cache";
+            const auto userPath = GetTestFolderPath() / "user";
+            m_localFileIO->CreatePath(productAssetPath.c_str());
+            m_localFileIO->CreatePath(userPath.c_str());
             m_localFileIO->SetAlias("@engroot@", engineRoot.c_str());
-            m_localFileIO->SetAlias("@projectproductassets@", engineRoot.c_str());
-            m_localFileIO->SetAlias("@user@", GetTestFolderPath().c_str());
+            m_localFileIO->SetAlias("@projectproductassets@", productAssetPath.c_str());
+            m_localFileIO->SetAlias("@user@", userPath.c_str());
+            // Copy engine.json to the cache
+            EXPECT_TRUE(m_localFileIO->Copy((engineRoot / "engine.json").c_str(), "engine.json"));
+
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -68,6 +75,13 @@ namespace AWSMetrics
             m_settingsRegistry.reset();
             m_serializeContext.reset();
             m_registrationContext.reset();
+
+            const auto productAssetPath = GetTestFolderPath() / "Cache";
+            const auto userPath = GetTestFolderPath() / "user";
+            // Clear the product asset cache alias to prevent cache write errors
+            m_localFileIO->ClearAlias("@projectproductassets@");
+            m_localFileIO->DestroyPath(userPath.c_str());
+            m_localFileIO->DestroyPath(productAssetPath.c_str());
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             delete m_localFileIO;
@@ -97,22 +111,22 @@ namespace AWSMetrics
         bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)
         {
             AZ::IO::HandleType fileHandle;
+            // Suppress errors about writing to product asset cache
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
             {
                 return false;
             }
 
             m_localFileIO->Write(fileHandle, content.c_str(), content.size());
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
             m_localFileIO->Close(fileHandle);
             return true;
         }
 
         AZStd::string GetDefaultTestFilePath()
         {
-            AZStd::string testFilePath = GetTestFolderPath();
-            AzFramework::StringFunc::Path::Join(testFilePath.c_str(), "Test.json", testFilePath);
-
-            return testFilePath;
+            return (GetTestFolderPath() / "Test.json").Native();
         }
 
         bool RemoveFile(const AZStd::string& filePath)
@@ -138,9 +152,10 @@ namespace AWSMetrics
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 
     private:
-        AZStd::string GetTestFolderPath()
+        AZ::IO::Path GetTestFolderPath()
         {
-            return AZ_TRAIT_TEST_ROOT_FOLDER;
+            AZStd::optional<AZ::IO::FixedMaxPath> testPathString = AZ::Utils::ConvertToAbsolutePath(AZ_TRAIT_TEST_ROOT_FOLDER);
+            return testPathString.has_value() ? AZ::IO::PathView(*testPathString) : AZ::IO::PathView{ AZ_TRAIT_TEST_ROOT_FOLDER };
         }
     };
 }
