@@ -484,7 +484,7 @@ namespace Multiplayer
 
         // The first entity in every spawnable is the root one 
         const AZ::Entity* rootEntity = *entities.begin();
-        if(!rootEntity)
+        if (!rootEntity)
         {
             AZ_Error("NetworkEntityManager", false,
                 "RequestNetSpawnableInstantiation: Root entity is null in the spawnable %s", rootSpawnable.GetHint().c_str());
@@ -492,7 +492,7 @@ namespace Multiplayer
         }
 
         const auto* holderComponent = rootEntity->FindComponent<NetworkSpawnableHolderComponent>();
-        if(!holderComponent)
+        if (!holderComponent)
         {
             // This spawnable doesn't have a corresponding network spawnable.
             return nullptr;
@@ -524,11 +524,11 @@ namespace Multiplayer
             bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
 
             for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
-                netEntityIndex < entitiesSize; netEntityIndex++)
+                netEntityIndex < entitiesSize; ++netEntityIndex)
             {
                 AZ::Entity* netEntity = *(entities.begin() + netEntityIndex);
 
-                if(shouldUpdateTransform)
+                if (shouldUpdateTransform)
                 {
                     AzFramework::TransformComponent* netEntityTransform =
                         netEntity->FindComponent<AzFramework::TransformComponent>();
@@ -582,7 +582,7 @@ namespace Multiplayer
         if (ShouldSpawnNetEntities())
         {
             AZStd::unique_ptr<AzFramework::EntitySpawnTicket> ticket = RequestNetSpawnableInstantiation(spawnable, entities);
-            if(ticket)
+            if (ticket)
             {
                 AZ::Data::AssetId spawnableAssetId = spawnable.GetId();
                 m_netSpawnableTickets[spawnTicket] = AZStd::move(ticket);
