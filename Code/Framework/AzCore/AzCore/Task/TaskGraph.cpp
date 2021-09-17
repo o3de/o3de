@@ -14,6 +14,15 @@ namespace AZ
 {
     using Internal::CompiledTaskGraph;
 
+    void TaskGraphEvent::Wait()
+    {
+        m_semaphore.acquire();
+        if (m_executor)
+        {
+            m_executor->ReactivateTaskWorker();
+        }
+    }
+
     void TaskToken::PrecedesInternal(TaskToken& comesAfter)
     {
         AZ_Assert(!m_parent.m_submitted, "Cannot mutate a TaskGraph that was previously submitted.");
@@ -71,7 +80,7 @@ namespace AZ
             m_compiledTaskGraph->m_tasks[i].Init();
         }
 
-        executor.Submit(*m_compiledTaskGraph);
+        executor.Submit(*m_compiledTaskGraph, waitEvent);
 
         if (m_retained)
         {

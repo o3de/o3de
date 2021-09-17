@@ -22,6 +22,7 @@ namespace AZ
     namespace Internal
     {
         class CompiledTaskGraph;
+        class TaskWorker;
     }
     class TaskExecutor;
     class TaskGraph;
@@ -70,9 +71,11 @@ namespace AZ
     private:
         friend class ::AZ::Internal::CompiledTaskGraph;
         friend class TaskGraph;
+        friend class TaskExecutor;
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
+        TaskExecutor* m_executor = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding

@@ -135,14 +135,14 @@ namespace AZ
                 if (reserve != head - 1)
                 {
                     // Try to reserve a slot
-                    if (status.reserve.compare_exchange_strong(reserve, reserve + 1))
+                    if (status.reserve.compare_exchange_weak(reserve, reserve + 1))
                     {
                         m_queues[priority][reserve] = task;
 
                         uint16_t expectedReserve = reserve;
 
                         // Increment the tail to advertise the new task
-                        while (!status.tail.compare_exchange_strong(expectedReserve, reserve + 1))
+                        while (!status.tail.compare_exchange_weak(expectedReserve, reserve + 1))
                         {
                             expectedReserve = reserve;
                         }
@@ -176,7 +176,7 @@ namespace AZ
                     else
                     {
                         Task* task = m_queues[priority][status.head];
-                        if (status.head.compare_exchange_strong(head, head + 1))
+                        if (status.head.compare_exchange_weak(head, head + 1))
                         {
                             return task;
                         }
@@ -190,25 +190,44 @@ namespace AZ
         class TaskWorker
         {
         public:
-            void Spawn(::AZ::TaskExecutor& executor, size_t id, AZStd::semaphore& initSemaphore, bool affinitize)
+            static thread_local TaskWorker* t_worker;
+
+            void Spawn(::AZ::TaskExecutor& executor, uint32_t id, AZStd::semaphore& initSemaphore, bool affinitize)
             {
                 m_executor = &executor;
 
-                AZStd::string threadName = AZStd::string::format("TaskWorker %zu", id);
+                AZStd::string threadName = AZStd::string::format("TaskWorker %u", id);
                 AZStd::thread_desc desc = {};
                 desc.m_name = threadName.c_str();
-//                if (affinitize)
-//                {
-//                    desc.m_cpuId = 1 << id;
-//                }
+                if (affinitize)
+                {
+                    desc.m_cpuId = 1 << id;
+                }
                 m_active.store(true, AZStd::memory_order_release);
 
                 m_thread = AZStd::thread{ [this, &initSemaphore]
                                           {
+                                              t_worker = this;
                                               initSemaphore.release();
                                               Run();
                                           },
                                           &desc };
+            }
+
+            // Threads that wait on a graph to complete are disqualified from receiving tasks until the wait finishes
+            void Disable()
+            {
+                m_enabled = false;
+            }
+
+            void Enable()
+            {
+                m_enabled = true;
+            }
+
+            bool Enabled() const
+            {
+                return m_enabled;
             }
 
             void Join()
@@ -230,6 +249,8 @@ namespace AZ
             }
 
         private:
+            friend class TaskExecutor;
+
             void Run()
             {
                 while (m_active)
@@ -272,11 +293,14 @@ namespace AZ
             AZStd::thread m_thread;
             AZStd::atomic<bool> m_active;
             AZStd::atomic<bool> m_busy;
+            AZStd::atomic<bool> m_enabled = true;
             AZStd::binary_semaphore m_semaphore;
 
             ::AZ::TaskExecutor* m_executor;
             TaskQueue m_queue;
         };
+
+        thread_local TaskWorker* TaskWorker::t_worker = nullptr;
     } // namespace Internal
 
     static EnvironmentVariable<TaskExecutor*> s_executor;
@@ -307,14 +331,12 @@ namespace AZ
 
         m_workers = reinterpret_cast<Internal::TaskWorker*>(azmalloc(m_threadCount * sizeof(Internal::TaskWorker)));
 
-        bool affinitize = m_threadCount == AZStd::thread::hardware_concurrency();
-
         AZStd::semaphore initSemaphore;
 
-        for (size_t i = 0; i != m_threadCount; ++i)
+        for (uint32_t i = 0; i != m_threadCount; ++i)
         {
             new (m_workers + i) Internal::TaskWorker{};
-            m_workers[i].Spawn(*this, i, initSemaphore, affinitize);
+            m_workers[i].Spawn(*this, i, initSemaphore, false);
         }
 
         for (size_t i = 0; i != m_threadCount; ++i)
@@ -334,9 +356,29 @@ namespace AZ
         azfree(m_workers);
     }
 
-    void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph)
+    Internal::TaskWorker* TaskExecutor::GetTaskWorker()
+    {
+        if (Internal::TaskWorker::t_worker && Internal::TaskWorker::t_worker->m_executor == this)
+        {
+            return Internal::TaskWorker::t_worker;
+        }
+        return nullptr;
+    }
+
+    void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph, TaskGraphEvent* event)
     {
         ++m_graphsRemaining;
+
+        // If we are submitting a graph we need to wait on from a task worker, this worker must be
+        // disqualified from enqueuing future tasks until the wait is complete (see implementation of
+        // TaskGraphEvent::Wait)
+        Internal::TaskWorker* worker = GetTaskWorker();
+        if (event && worker)
+        {
+            event->m_executor = this;
+            worker->Disable();
+        }
+
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : graph.Tasks())
         {
@@ -352,11 +394,24 @@ namespace AZ
         // TODO: Something more sophisticated is likely needed here.
         // First, we are completely ignoring affinity.
         // Second, some heuristics on core availability will help distribute work more effectively
-        m_workers[++m_lastSubmission % m_threadCount].Enqueue(&task);
+        uint32_t nextWorker = ++m_lastSubmission % m_threadCount;
+        while (!m_workers[nextWorker].Enabled())
+        {
+            // Graphs that are waiting for the completion of a task graph cannot enqueue tasks onto
+            // the thread issuing the wait.
+            nextWorker = ++m_lastSubmission % m_threadCount;
+        }
+
+        m_workers[nextWorker].Enqueue(&task);
     }
 
     void TaskExecutor::ReleaseGraph()
     {
         --m_graphsRemaining;
+    }
+
+    void TaskExecutor::ReactivateTaskWorker()
+    {
+        GetTaskWorker()->Enable();
     }
 } // namespace AZ

@@ -34,7 +34,7 @@ namespace AZ
         incompatible.push_back(AZ_CRC_CE("TaskExecutorService"));
     }
 
-    void TaskGraphSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
+    void TaskGraphSystemComponent::GetDependentServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 
