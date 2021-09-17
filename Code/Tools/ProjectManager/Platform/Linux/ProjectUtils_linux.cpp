@@ -7,14 +7,30 @@
 
 #include <ProjectUtils.h>
 
+#include <QProcess>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
-            // Compiler detection not supported on platform
-            return AZ::Success();
+            QStringList supportedClangCommands = { "clang-12", "clang-6" };
+
+            for (QString& supportClangCommand : supportedClangCommands)
+            {
+                QProcess whereProcess;
+                whereProcess.setProcessChannelMode(QProcess::MergedChannels);
+                whereProcess.start("which", QStringList { supportClangCommand });
+                if (whereProcess.waitForStarted() && whereProcess.waitForFinished())
+                {
+                    if (whereProcess.exitCode() == 0)
+                    {
+                        return AZ::Success(supportClangCommand);
+                    }
+                }
+            }
+            return AZ::Failure(QString("Unable to resolve clang. Make sure that clang-6.0 or clang-12 is installed."));
         }
         
     } // namespace ProjectUtils

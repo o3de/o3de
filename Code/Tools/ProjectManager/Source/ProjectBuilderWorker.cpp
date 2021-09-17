@@ -182,8 +182,7 @@ namespace O3DE::ProjectManager
         }
         auto cmakeBuildArguments = cmakeBuildArgumentsResult.GetValue();
 
-
-        m_buildProjectProcess->start(cmakeGenerateArguments.front(), cmakeGenerateArguments.mid(1));
+        m_buildProjectProcess->start(cmakeBuildArguments.front(), cmakeBuildArguments.mid(1));
         if (!m_buildProjectProcess->waitForStarted())
         {
             QString error = tr("Building project failed to start.");
@@ -228,7 +227,7 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (m_configProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit || m_configProjectProcess->exitCode() != 0)
+        if (m_buildProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit || m_buildProjectProcess->exitCode() != 0)
         {
             QString error = tr("Building project failed. See log for details.");
             QStringToAZTracePrint(error);
