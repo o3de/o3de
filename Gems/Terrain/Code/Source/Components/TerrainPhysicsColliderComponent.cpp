@@ -19,9 +19,6 @@
 
 namespace Terrain
 {
-    // Scale value used to convert from float heights to int16 values in the heightfield.
-    constexpr float DefaultHeightScale = 1.f / 256.f;
-
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -72,12 +69,10 @@ namespace Terrain
 
     TerrainPhysicsColliderComponent::TerrainPhysicsColliderComponent(const TerrainPhysicsColliderConfig& configuration)
         : m_configuration(configuration)
-        , m_heightScale(DefaultHeightScale)
     {
     }
 
     TerrainPhysicsColliderComponent::TerrainPhysicsColliderComponent()
-        : m_heightScale(DefaultHeightScale)
     {
 
     }
@@ -183,7 +178,7 @@ namespace Terrain
         numRows = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
     }
 
-    void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(const AZ::Aabb& bounds, AZStd::vector<int16_t>& heights) const
+    void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(const AZ::Aabb& bounds, AZStd::vector<float>& heights) const
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
@@ -215,7 +210,7 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
 
-                heights.emplace_back(azlossy_cast<int16_t>((height - worldCenterZ) * m_heightScale));
+                heights.emplace_back(height - worldCenterZ);
             }
         }
     }
@@ -255,7 +250,7 @@ namespace Terrain
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
 
                 Physics::HeightMaterialPoint point;
-                point.m_height = azlossy_cast<int16_t>((height - worldCenterZ) * m_heightScale);
+                point.m_height = height - worldCenterZ;
                 heightMaterials.emplace_back(point);
             }
         }
@@ -282,19 +277,19 @@ namespace Terrain
         GetHeightfieldGridSizeInBounds(worldSize, numColumns, numRows);
     }
 
-    void TerrainPhysicsColliderComponent::GetMaterialList([[maybe_unused]] AZStd::vector<Physics::MaterialId>& materialList) const
+    AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
     {
-
+        return AZStd::vector<Physics::MaterialId>();
     }
 
-    AZStd::vector<int16_t> TerrainPhysicsColliderComponent::GetHeights() const
+    AZStd::vector<float> TerrainPhysicsColliderComponent::GetHeights() const
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-        AZStd::vector<int16_t> heights; 
+        AZStd::vector<float> heights; 
         GenerateHeightsInBounds(worldSize, heights);
 
         return heights;
@@ -313,14 +308,9 @@ namespace Terrain
         return heightMaterials;
     }
 
-    float TerrainPhysicsColliderComponent::GetScale() const
+    AZStd::vector<float> TerrainPhysicsColliderComponent::UpdateHeights(const AZ::Aabb& dirtyRegion) const
     {
-        return m_heightScale;
-    }
-
-    AZStd::vector<int16_t> TerrainPhysicsColliderComponent::UpdateHeights(const AZ::Aabb& dirtyRegion) const
-    {
-        AZStd::vector<int16_t> heights;
+        AZStd::vector<float> heights;
         GenerateHeightsInBounds(dirtyRegion, heights);
 
         return heights;
