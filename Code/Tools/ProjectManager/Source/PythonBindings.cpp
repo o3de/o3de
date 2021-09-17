@@ -946,8 +946,6 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 #else
-        (void)enginePath;
-
         gemRepos.push_back(GemRepoInfo("JohnCreates", "John Smith", "", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true));
         gemRepos.push_back(GemRepoInfo("JanesGems", "Jane Doe", "", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false));
 #endif // MOCK_GEM_REPO_INFO
