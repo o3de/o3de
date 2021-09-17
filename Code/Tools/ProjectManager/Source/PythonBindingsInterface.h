@@ -161,10 +161,9 @@ namespace O3DE::ProjectManager
 
         /**
          * Get all available gem repo infos. Gathers all repos registered with the engine.
-         * @param enginePath The absolute path to the engine.
          * @return A list of gem repo infos.
          */
-        virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos(const QString& enginePath) = 0;
+        virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

@@ -30,12 +30,12 @@ namespace O3DE::ProjectManager
         ~GemRepoScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        void ReinitForEngine(const QString& enginePath);
+        void Reinit();
 
         GemRepoModel* GetGemRepoModel() const { return m_gemRepoModel; }
 
     private:
-        void FillModel(const QString& enginePath);
+        void FillModel();
 
         QTableWidget* m_gemRepoHeaderTable = nullptr;
         QHeaderView* m_gemRepoListHeader = nullptr;

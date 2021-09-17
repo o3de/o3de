@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
         // Gem Repos
-        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos(const QString& enginePath = {}) override;
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);

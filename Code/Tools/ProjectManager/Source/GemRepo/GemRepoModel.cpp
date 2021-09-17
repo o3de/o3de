@@ -32,32 +32,18 @@ namespace O3DE::ProjectManager
         item->setData(gemRepoInfo.m_name, RoleName);
         item->setData(gemRepoInfo.m_creator, RoleCreator);
         item->setData(gemRepoInfo.m_summary, RoleSummary);
-        item->setData(gemRepoInfo.m_isAdded, RoleIsAdded);
+        item->setData(gemRepoInfo.m_isEnabled, RoleIsEnabled);
         item->setData(gemRepoInfo.m_directoryLink, RoleDirectoryLink);
         item->setData(gemRepoInfo.m_repoLink, RoleRepoLink);
         item->setData(gemRepoInfo.m_lastUpdated, RoleLastUpdated);
         item->setData(gemRepoInfo.m_path, RolePath);
 
         appendRow(item);
-
-        const QModelIndex modelIndex = index(rowCount()-1, 0);
-        m_nameToIndexMap[gemRepoInfo.m_name] = modelIndex;
     }
 
     void GemRepoModel::Clear()
     {
         clear();
-    }
-
-    QModelIndex GemRepoModel::FindIndexByNameString(const QString& nameString) const
-    {
-        const auto iterator = m_nameToIndexMap.find(nameString);
-        if (iterator != m_nameToIndexMap.end())
-        {
-            return iterator.value();
-        }
-
-        return {};
     }
 
     QString GemRepoModel::GetName(const QModelIndex& modelIndex)
@@ -95,14 +81,14 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
-    bool GemRepoModel::IsAdded(const QModelIndex& modelIndex)
+    bool GemRepoModel::IsEnabled(const QModelIndex& modelIndex)
     {
-        return modelIndex.data(RoleIsAdded).toBool();
+        return modelIndex.data(RoleIsEnabled).toBool();
     }
 
-    void GemRepoModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
+    void GemRepoModel::SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled)
     {
-        model.setData(modelIndex, isAdded, RoleIsAdded);
+        model.setData(modelIndex, isEnabled, RoleIsEnabled);
     }
 
 } // namespace O3DE::ProjectManager

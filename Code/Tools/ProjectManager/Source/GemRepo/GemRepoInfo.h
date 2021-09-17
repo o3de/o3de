@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     {
     public:
         GemRepoInfo() = default;
-        GemRepoInfo(const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isAdded);
+        GemRepoInfo(const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isEnabled);
 
         bool IsValid() const;
 
@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
         QString m_path;
         QString m_name = "Unknown Gem Repo Name";
         QString m_creator = "Unknown Creator";
-        bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
+        bool m_isEnabled = false; //! Is the repo currently enabled for this engine?
         QString m_summary = "No summary provided.";
         QString m_directoryLink;
         QString m_repoLink;

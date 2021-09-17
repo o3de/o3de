@@ -105,21 +105,13 @@ namespace O3DE::ProjectManager
         hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemRepoInspector);
 
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
-        if (engineInfoResult.IsSuccess())
-        {
-            ReinitForEngine(engineInfoResult.GetValue().m_path);
-        }
-        else
-        {
-            QMessageBox::critical(this, tr("Unknown Engine"), tr("Could not determine path to current engine."));
-        }
+        Reinit();
     }
 
-    void GemRepoScreen::ReinitForEngine(const QString& enginePath)
+    void GemRepoScreen::Reinit()
     {
         m_gemRepoModel->clear();
-        FillModel(enginePath);
+        FillModel();
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
@@ -128,9 +120,9 @@ namespace O3DE::ProjectManager
             });
     }
 
-    void GemRepoScreen::FillModel(const QString& enginePath)
+    void GemRepoScreen::FillModel()
     {
-        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos(enginePath);
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
         if (allGemRepoInfosResult.IsSuccess())
         {
             // Add all available repos to the model
@@ -142,7 +134,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for %1.\n\nError:\n%2").arg(enginePath, allGemRepoInfosResult.GetError().c_str()));
+            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.\n\nError:\n%2").arg(allGemRepoInfosResult.GetError().c_str()));
         }
     }
 

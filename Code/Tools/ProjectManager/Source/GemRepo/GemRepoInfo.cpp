@@ -11,12 +11,12 @@
 namespace O3DE::ProjectManager
 {
     GemRepoInfo::GemRepoInfo(
-        const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isAdded = true)
+        const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isEnabled = true)
         : m_name(name)
         , m_creator(creator)
         , m_summary(summary)
         , m_lastUpdated(lastUpdated)
-        , m_isAdded(isAdded)
+        , m_isEnabled(isEnabled)
     {
     }
     

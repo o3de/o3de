@@ -922,9 +922,9 @@ namespace O3DE::ProjectManager
         return GemRepoInfo();
     }
 
-#define MOCK_GEM_REPO_INFO true
+//#define MOCK_GEM_REPO_INFO true
 
-    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> PythonBindings::GetAllGemRepoInfos(const QString& enginePath)
+    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> PythonBindings::GetAllGemRepoInfos()
     {
         QVector<GemRepoInfo> gemRepos;
 
@@ -932,10 +932,14 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                for (auto path : m_manifest.attr("get_gems_repos")())
+                /* Placeholder Logic, o3de scripts need method added
+                * 
+                for (auto path : m_manifest.attr("get_gem_repos")())
                 {
                     gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
                 }
+                *
+                */
             });
         if (!result.IsSuccess())
         {

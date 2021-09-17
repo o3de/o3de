@@ -140,8 +140,8 @@ namespace O3DE::ProjectManager
             auto keyEvent = static_cast<const QKeyEvent*>(event);
             if (keyEvent->key() == Qt::Key_Space)
             {
-                const bool isAdded = GemRepoModel::IsAdded(modelIndex);
-                GemRepoModel::SetIsAdded(*model, modelIndex, !isAdded);
+                const bool isAdded = GemRepoModel::IsEnabled(modelIndex);
+                GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
                 return true;
             }
         }
@@ -156,8 +156,8 @@ namespace O3DE::ProjectManager
 
             if (buttonRect.contains(mouseEvent->pos()))
             {
-                const bool isAdded = GemRepoModel::IsAdded(modelIndex);
-                GemRepoModel::SetIsAdded(*model, modelIndex, !isAdded);
+                const bool isAdded = GemRepoModel::IsEnabled(modelIndex);
+                GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
                 return true;
             }
         }
@@ -190,8 +190,8 @@ namespace O3DE::ProjectManager
         painter->save();
         QPoint circleCenter;
 
-        const bool isAdded = GemRepoModel::IsAdded(modelIndex);
-        if (isAdded)
+        const bool isEnabled = GemRepoModel::IsEnabled(modelIndex);
+        if (isEnabled)
         {
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);

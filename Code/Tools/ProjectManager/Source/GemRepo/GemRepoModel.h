@@ -29,8 +29,6 @@ namespace O3DE::ProjectManager
         void AddGemRepo(const GemRepoInfo& gemInfo);
         void Clear();
 
-        QModelIndex FindIndexByNameString(const QString& nameString) const;
-
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
         static QString GetSummary(const QModelIndex& modelIndex);
@@ -39,8 +37,8 @@ namespace O3DE::ProjectManager
         static QDateTime GetLastUpdated(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
 
-        static bool IsAdded(const QModelIndex& modelIndex);
-        static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
+        static bool IsEnabled(const QModelIndex& modelIndex);
+        static void SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled);
 
     private:
         enum UserRole
@@ -48,14 +46,13 @@ namespace O3DE::ProjectManager
             RoleName = Qt::UserRole,
             RoleCreator,
             RoleSummary,
-            RoleIsAdded,
+            RoleIsEnabled,
             RoleDirectoryLink,
             RoleRepoLink,
             RoleLastUpdated,
             RolePath
         };
 
-        QHash<QString, QModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
     };
 } // namespace O3DE::ProjectManager
