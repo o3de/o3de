@@ -16,7 +16,7 @@ import time
 import azlmbr.math as math
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.projrectroot, "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import atom_renderer.atom_utils.material_editor_utils as material_editor
 
@@ -112,7 +112,7 @@ def run():
     target_path_1 = os.path.join(azlmbr.paths.engroot, "AutomatedTesting", "Materials", NEW_MATERIAL_1)
     cache_file_name_1 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_1', '.material')
     cache_file_1 = f"{cache_file_name_1[0]}{CACHE_FILE_EXTENSION}"
-    target_path_1_cache = os.path.join(azlmbr.paths.projrectroot, "Cache", "pc", "materials", cache_file_1)
+    target_path_1_cache = os.path.join(azlmbr.paths.projectroot, "Cache", "pc", "materials", cache_file_1)
     material_editor.save_document_as_copy(document_id, target_path_1)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_1_cache), 4.0)
 
@@ -123,7 +123,7 @@ def run():
     target_path_2 = os.path.join(azlmbr.paths.engroot, "AutomatedTesting", "Materials", NEW_MATERIAL_2)
     cache_file_name_2 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_2', '.material')
     cache_file_2 = f"{cache_file_name_2[0]}{CACHE_FILE_EXTENSION}"
-    target_path_2_cache = os.path.join(azlmbr.paths.projrectroot, "Cache", "pc", "materials", cache_file_2)
+    target_path_2_cache = os.path.join(azlmbr.paths.projectroot, "Cache", "pc", "materials", cache_file_2)
     material_editor.save_document_as_child(document_id, target_path_2)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_2_cache), 4.0)
 
