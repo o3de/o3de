@@ -38,7 +38,7 @@ namespace EMotionFX
             AZ_CLASS_ALLOCATOR_DECL
 
             FeatureDatabase();
-            ~FeatureDatabase();
+            virtual ~FeatureDatabase();
 
             void RegisterFeature(Feature* frameData);
             const Feature* GetFeature(size_t index) const;

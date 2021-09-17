@@ -52,7 +52,7 @@ namespace EMotionFX
             };
 
             FrameDatabase();
-            ~FrameDatabase();
+            virtual ~FrameDatabase();
 
             // Main functions.
             AZStd::tuple<size_t, size_t> ImportFrames(Motion* motion, const FrameImportSettings& settings, bool mirrored); // Returns the number of imported frames and the number of discarded frames as second element.
