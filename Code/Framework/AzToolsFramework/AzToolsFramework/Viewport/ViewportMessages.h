@@ -196,6 +196,8 @@ namespace AzToolsFramework
             virtual float ManipulatorLineBoundWidth() const = 0;
             //! Returns the current circle (torus) bound width for manipulators.
             virtual float ManipulatorCircleBoundWidth() const = 0;
+            //! Returns if sticky select is enabled or not.
+            virtual bool StickySelectEnabled() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -221,24 +223,6 @@ namespace AzToolsFramework
 
         using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
 
-        //! Requests to freeze the Viewport Input
-        //! Added to prevent a bug with the legacy CryEngine Viewport code that would
-        //! keep doing raycast tests even when no level is loaded, causing a crash.
-        class ViewportFreezeRequests
-        {
-        public:
-            //! Return if Viewport Input is frozen
-            virtual bool IsViewportInputFrozen() = 0;
-            //! Sets the Viewport Input freeze state
-            virtual void FreezeViewportInput(bool freeze) = 0;
-
-        protected:
-            ~ViewportFreezeRequests() = default;
-        };
-
-        //! Type to inherit to implement ViewportFreezeRequests.
-        using ViewportFreezeRequestBus = AZ::EBus<ViewportFreezeRequests, ViewportEBusTraits>;
-
         //! Viewport requests that are only guaranteed to be serviced by the Main Editor viewport.
         class MainEditorViewportInteractionRequests
         {
@@ -254,11 +238,6 @@ namespace AzToolsFramework
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
             virtual QWidget* GetWidgetForViewportContextMenu() = 0;
-            //! Set the render context for the viewport.
-            virtual void BeginWidgetContext() = 0;
-            //! End the render context for the viewport.
-            //! Return to previous context before Begin was called.
-            virtual void EndWidgetContext() = 0;
 
         protected:
             ~MainEditorViewportInteractionRequests() = default;
@@ -280,6 +259,29 @@ namespace AzToolsFramework
 
         using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! An interface to query editor modifier keys.
+        class EditorModifierKeyRequests : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            //! Returns the current state of the keyboard modifier keys.
+            virtual KeyboardModifiers QueryKeyboardModifiers() = 0;
+
+        protected:
+            ~EditorModifierKeyRequests() = default;
+        };
+
+        using EditorModifierKeyRequestBus = AZ::EBus<EditorModifierKeyRequests>;
+
+        inline KeyboardModifiers QueryKeyboardModifiers()
+        {
+            KeyboardModifiers keyboardModifiers;
+            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+            return keyboardModifiers;
+        }
+
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
@@ -297,28 +299,6 @@ namespace AzToolsFramework
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
         using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportEBusTraits>;
-
-        //! A helper to wrap Begin/EndWidgetContext.
-        class WidgetContextGuard
-        {
-        public:
-            explicit WidgetContextGuard(const int viewportId)
-                : m_viewportId(viewportId)
-            {
-                MainEditorViewportInteractionRequestBus::Event(
-                    viewportId, &MainEditorViewportInteractionRequestBus::Events::BeginWidgetContext);
-            }
-
-            ~WidgetContextGuard()
-            {
-                MainEditorViewportInteractionRequestBus::Event(
-                    m_viewportId, &MainEditorViewportInteractionRequestBus::Events::EndWidgetContext);
-            }
-
-        private:
-            int m_viewportId; //!< The viewport id the widget context is being set on.
-        };
-
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.

@@ -14,12 +14,10 @@ set(FILES
     Include/AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h
     Include/AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h
     Include/AzManipulatorTestFramework/ImmediateModeActionDispatcher.h
-    Include/AzManipulatorTestFramework/RetainedModeActionDispatcher.h
     Include/AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h
     Source/ViewportInteraction.cpp
     Source/DirectManipulatorViewportInteraction.cpp
     Source/IndirectManipulatorViewportInteraction.cpp
     Source/ImmediateModeActionDispatcher.cpp
-    Source/RetainedModeActionDispatcher.cpp
     Source/AzManipulatorTestFrameworkUtils.cpp
 )

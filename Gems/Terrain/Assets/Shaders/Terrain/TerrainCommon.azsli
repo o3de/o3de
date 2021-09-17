@@ -11,16 +11,16 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     Texture2D<float> m_heightmapImage;
     
-    Sampler LinearSampler
+    Sampler PointSampler
     {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
     };
-    
+
     row_major float3x4 m_modelToWorld;
 
     struct TerrainData
@@ -57,8 +57,8 @@ float4x4 GetObject_WorldMatrix()
 
 float GetHeight(float2 origUv)
 {
-    float2 uv = clamp(origUv, 0.0f, 1.0f);
-    return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
+    float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
+    return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::PointSampler, uv, 0).r - 0.5f);
 }
 
 float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)

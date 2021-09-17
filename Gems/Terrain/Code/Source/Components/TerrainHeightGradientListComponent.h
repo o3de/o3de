@@ -64,8 +64,7 @@ namespace Terrain
         TerrainHeightGradientListComponent() = default;
         ~TerrainHeightGradientListComponent() = default;
 
-        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter) override;
-        void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter) override;
+        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -85,11 +84,7 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        ///////////////////////////////////////////
-        void GetNormalSynchronous(float x, float y, AZ::Vector3& normal);
-
         void RefreshMinMaxHeights();
-        float GetHeight(float x, float y);
 
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };

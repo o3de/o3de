@@ -86,6 +86,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/HDRColorGrading.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -137,8 +138,6 @@ set(FILES
     Passes/FastDepthAwareBlur.pass
     Passes/FastDepthAwareBlurHor.pass
     Passes/FastDepthAwareBlurVer.pass
-    Passes/FilterDepthHorizontal.pass
-    Passes/FilterDepthVertical.pass
     Passes/Forward.pass
     Passes/ForwardCheckerboard.pass
     Passes/ForwardMSAA.pass
@@ -146,6 +145,7 @@ set(FILES
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/ImGui.pass
+    Passes/KawaseShadowBlur.pass
     Passes/LightAdaptationParent.pass
     Passes/LightCulling.pass
     Passes/LightCullingHeatmap.pass
@@ -222,6 +222,8 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
@@ -287,9 +289,11 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli 
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
-    ShaderResourceGroups/SceneTimeSrg.azsli
     ShaderResourceGroups/ViewSrg.azsli
     ShaderResourceGroups/ViewSrgAll.azsli
     ShaderResourceGroups/CoreLights/SceneSrg.azsli
@@ -332,10 +336,6 @@ set(FILES
     Shaders/LightCulling/LightCullingTilePrepare.shader
     Shaders/LuxCore/RenderTexture.azsl
     Shaders/LuxCore/RenderTexture.shader
-    Shaders/Math/GaussianFilterFloatHorizontal.azsl
-    Shaders/Math/GaussianFilterFloatHorizontal.shader
-    Shaders/Math/GaussianFilterFloatVertical.azsl
-    Shaders/Math/GaussianFilterFloatVertical.shader
     Shaders/MorphTargets/MorphTargetCS.azsl
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli
@@ -398,6 +398,8 @@ set(FILES
     Shaders/PostProcessing/FastDepthAwareBlurVer.shader
     Shaders/PostProcessing/FullscreenCopy.azsl
     Shaders/PostProcessing/FullscreenCopy.shader
+    Shaders/PostProcessing/HDRColorGrading.azsl
+    Shaders/PostProcessing/HDRColorGrading.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl
@@ -458,6 +460,8 @@ set(FILES
     Shaders/ScreenSpace/DeferredFog.shader
     Shaders/Shadow/DepthExponentiation.azsl
     Shaders/Shadow/DepthExponentiation.shader
+    Shaders/Shadow/KawaseShadowBlur.azsl
+    Shaders/Shadow/KawaseShadowBlur.shader
     Shaders/Shadow/Shadowmap.azsl
     Shaders/Shadow/Shadowmap.shader
     Shaders/SkinnedMesh/LinearSkinningCS.azsl

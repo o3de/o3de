@@ -115,6 +115,16 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
+        NAME LmbrCentral.Mocks HEADERONLY
+        NAMESPACE Gem
+        FILES_CMAKE
+            lmbrcentral_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+    
+    ly_add_target(
         NAME LmbrCentral.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
@@ -131,6 +141,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzFramework
                 Gem::LmbrCentral.Static
+                Gem::LmbrCentral.Mocks
     )
     ly_add_googletest(
         NAME Gem::LmbrCentral.Tests

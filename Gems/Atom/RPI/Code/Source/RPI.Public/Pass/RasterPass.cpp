@@ -230,8 +230,6 @@ namespace AZ
 
         void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             RHI::CommandList* commandList = context.GetCommandList();
 
             const RHI::DrawListView drawListViewPartition = RHI::GetDrawListPartition(m_drawListView, context.GetCommandListIndex(), context.GetCommandListCount());

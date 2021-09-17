@@ -189,11 +189,6 @@ namespace AZ
             m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
         }
 
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
-        }
-
         void Device::EndFrameInternal()
         {
             AZ_TRACE_METHOD();

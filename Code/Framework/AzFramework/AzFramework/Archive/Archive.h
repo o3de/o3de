@@ -19,6 +19,7 @@
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/thread.h>
@@ -26,7 +27,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/std/string/osstring.h>
 
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Archive/ZipDirCache.h>
@@ -115,12 +115,12 @@ namespace AZ::IO
         struct PackDesc
         {
             AZ::IO::Path m_pathBindRoot; // the zip binding root
-            AZStd::string strFileName; // the zip file name (with path) - very useful for debugging so please don't remove
+            AZ::IO::Path m_strFileName; // the zip file name (with path) - very useful for debugging so please don't remove
 
             // [LYN-2376] Remove once legacy slice support is removed
             bool m_containsLevelPak = false; // indicates whether this archive has level.pak inside it or not  
 
-            const char* GetFullPath() const { return pZip->GetFilePath(); }
+            AZ::IO::PathView GetFullPath() const { return pZip->GetFilePath(); }
 
             AZStd::intrusive_ptr<INestedArchive> pArchive;
             ZipDir::CachePtr pZip;
@@ -129,10 +129,7 @@ namespace AZ::IO
 
         // ArchiveFindDataSet entire purpose is to keep a reference to the intrusive_ptr of ArchiveFindData
         // so that it doesn't go out of scope
-        using ArchiveFindDataSet = AZStd::set<AZStd::intrusive_ptr<AZ::IO::FindData>, AZ::OSStdAllocator>;
-
-        // given the source relative path, constructs the full path to the file according to the flags
-        const char* AdjustFileName(AZStd::string_view src, char* dst, size_t dstSize, uint32_t nFlags, bool skipMods = false) override;
+        using ArchiveFindDataSet = AZStd::set<AZStd::intrusive_ptr<AZ::IO::FindData>>;
 
 
         /**
@@ -154,29 +151,17 @@ namespace AZ::IO
         //! CompressionBus Handler implementation.
         void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override;
 
-        //! Processes an alias command line containing multiple aliases.
-        void ParseAliases(AZStd::string_view szCommandLine) override;
-        //! adds or removes an alias from the list - if bAdd set to false will remove it
-        void SetAlias(AZStd::string_view szName, AZStd::string_view szAlias, bool bAdd) override;
-        //! gets an alias from the list, if any exist.
-        //! if bReturnSame==true, it will return the input name if an alias doesn't exist. Otherwise returns nullptr
-        const char* GetAlias(AZStd::string_view szName, bool bReturnSame = true) override;
-
         // Set the localization folder
         void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) override;
         const char* GetLocalizationFolder() const override { return m_sLocalizationFolder.c_str(); }
         const char* GetLocalizationRoot() const override { return m_sLocalizationRoot.c_str(); }
 
-        // lock all the operations
-        void Lock() override;
-        void Unlock() override;
-
         // open the physical archive file - creates if it doesn't exist
         // returns nullptr if it's invalid or can't open the file
-        AZStd::intrusive_ptr<INestedArchive> OpenArchive(AZStd::string_view szPath, AZStd::string_view bindRoot = {}, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr) override;
+        AZStd::intrusive_ptr<INestedArchive> OpenArchive(AZStd::string_view szPath, AZStd::string_view bindRoot = {}, uint32_t nArchiveFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr) override;
 
         // returns the path to the archive in which the file was opened
-        const char* GetFileArchivePath(AZ::IO::HandleType fileHandle) override;
+        AZ::IO::PathView GetFileArchivePath(AZ::IO::HandleType fileHandle) override;
 
         //////////////////////////////////////////////////////////////////////////
 
@@ -192,40 +177,31 @@ namespace AZ::IO
         void RegisterFileAccessSink(IArchiveFileAccessSink* pSink) override;
         void UnregisterFileAccessSink(IArchiveFileAccessSink* pSink) override;
 
-        bool Init(AZStd::string_view szBasePath) override;
-        void Release() override;
-
-        bool IsInstalledToHDD(AZStd::string_view acFilePath = 0) const override;
-
         // [LYN-2376] Remove 'addLevels' parameter once legacy slice support is removed
-        bool OpenPack(AZStd::string_view pName, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
-        bool OpenPack(AZStd::string_view szBindRoot, AZStd::string_view pName, uint32_t nFlags = 0, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
+        bool OpenPack(AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
+        bool OpenPack(AZStd::string_view szBindRoot, AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) override;
         // after this call, the file will be unlocked and closed, and its contents won't be used to search for files
-        bool ClosePack(AZStd::string_view pName, uint32_t nFlags = 0) override;
-        bool OpenPacks(AZStd::string_view pWildcard, uint32_t nFlags = 0, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) override;
-        bool OpenPacks(AZStd::string_view szBindRoot, AZStd::string_view pWildcard, uint32_t nFlags = 0, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) override;
+        bool ClosePack(AZStd::string_view pName) override;
+        bool OpenPacks(AZStd::string_view pWildcard, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) override;
+        bool OpenPacks(AZStd::string_view szBindRoot, AZStd::string_view pWildcard, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) override;
 
         // closes pack files by the path and wildcard
-        bool ClosePacks(AZStd::string_view pWildcard, uint32_t nFlags = 0) override;
+        bool ClosePacks(AZStd::string_view pWildcard) override;
 
         //returns if a archive exists matching the wildcard
         bool FindPacks(AZStd::string_view pWildcardIn) override;
 
         // prevent access to specific archive files
-        bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard, uint32_t nFlags = 0) override;
-        bool SetPackAccessible(bool bAccessible, AZStd::string_view pName, uint32_t nFlags = 0) override;
+        bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard) override;
+        bool SetPackAccessible(bool bAccessible, AZStd::string_view pName) override;
 
         // returns the file modification time
         uint64_t GetModificationTime(AZ::IO::HandleType fileHandle) override;
 
-        bool LoadPakToMemory(AZStd::string_view pName, EInMemoryArchiveLocation nLoadArchiveToMemory, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pMemoryBlock = nullptr) override;
-        void LoadPaksToMemory(int nMaxArchiveSize, bool bLoadToMemory) override;
-
-        AZ::IO::HandleType FOpen(AZStd::string_view pName, const char* mode, uint32_t nPathFlags = 0) override;
-        size_t FReadRaw(void* data, size_t length, size_t elems, AZ::IO::HandleType handle) override;
-        size_t FReadRawAll(void* data, size_t nFileSize, AZ::IO::HandleType handle) override;
+        AZ::IO::HandleType FOpen(AZStd::string_view pName, const char* mode) override;
+        size_t FRead(void* data, size_t bytesToRead, AZ::IO::HandleType handle) override;
         void* FGetCachedFileData(AZ::IO::HandleType handle, size_t& nFileSize) override;
-        size_t FWrite(const void* data, size_t length, size_t elems, AZ::IO::HandleType handle) override;
+        size_t FWrite(const void* data, size_t bytesToWrite, AZ::IO::HandleType handle) override;
         size_t FSeek(AZ::IO::HandleType handle, uint64_t seek, int mode) override;
         uint64_t FTell(AZ::IO::HandleType handle) override;
         int FFlush(AZ::IO::HandleType handle) override;
@@ -234,9 +210,7 @@ namespace AZ::IO
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator fileIterator) override;
         bool FindClose(AZ::IO::ArchiveFileIterator fileIterator) override;
         int FEof(AZ::IO::HandleType handle) override;
-        char* FGets(char*, int, AZ::IO::HandleType) override;
-        int Getc(AZ::IO::HandleType) override;
-        int FPrintf(AZ::IO::HandleType handle, const char* format, ...) override;
+
         size_t FGetSize(AZ::IO::HandleType fileHandle) override;
         size_t FGetSize(AZStd::string_view sFilename, bool bAllowUseFileSystem = false) override;
         bool IsInPak(AZ::IO::HandleType handle) override;
@@ -247,9 +221,6 @@ namespace AZ::IO
         bool IsFileExist(AZStd::string_view sFilename, EFileSearchLocation fileLocation = eFileLocation_Any) override;
         bool IsFolder(AZStd::string_view sPath) override;
         IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) override;
-
-        // creates a directory
-        bool MakeDir(AZStd::string_view szPath, bool bGamePathMapping = false) override;
 
         // compresses the raw data into raw data. The buffer for compressed data itself with the heap passed. Uses method 8 (deflate)
         // returns one of the Z_* errors (Z_OK upon success)
@@ -275,22 +246,12 @@ namespace AZ::IO
         IResourceList* GetResourceList(ERecordFileOpenList eList) override;
         void SetResourceList(ERecordFileOpenList eList, IResourceList* pResourceList) override;
 
-        uint32_t ComputeCRC(AZStd::string_view szPath, uint32_t nFileOpenFlags = 0) override;
-        bool ComputeMD5(AZStd::string_view szPath, uint8_t* md5, uint32_t nFileOpenFlags = 0, bool useDirectFileAccess = false) override;
-
         void DisableRuntimeFileAccess(bool status) override
         {
-            m_disableRuntimeFileAccess[0] = status;
-            m_disableRuntimeFileAccess[1] = status;
+            m_disableRuntimeFileAccess = status;
         }
 
         bool DisableRuntimeFileAccess(bool status, AZStd::thread_id threadId) override;
-        bool CheckFileAccessDisabled(AZStd::string_view name, const char* mode) override;
-
-        void SetRenderThreadId(AZStd::thread_id renderThreadId) override
-        {
-            m_renderThreadId = renderThreadId;
-        }
 
         // gets the current archive priority
         ArchiveLocationPriority GetPakPriority() const override;
@@ -307,11 +268,11 @@ namespace AZ::IO
         // Return cached file data for entries inside archive file.
         CCachedFileDataPtr GetOpenedFileDataInZip(AZ::IO::HandleType file);
         ZipDir::FileEntry* FindPakFileEntry(AZStd::string_view szPath, uint32_t& nArchiveFlags,
-            ZipDir::CachePtr* pZip = {}, bool bSkipInMemoryArchives = {}) const;
+            ZipDir::CachePtr* pZip = {}) const;
     private:
 
-        bool OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view pName, uint32_t nArchiveFlags, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, bool addLevels = true);
-        bool OpenPacksCommon(AZStd::string_view szDir, AZStd::string_view pWildcardIn, uint32_t nArchiveFlags, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr, bool addLevels = true);
+        bool OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, bool addLevels = true);
+        bool OpenPacksCommon(AZStd::string_view szDir, AZStd::string_view pWildcardIn, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr, bool addLevels = true);
 
         ZipDir::FileEntry* FindPakFileEntry(AZStd::string_view szPath) const;
 
@@ -346,9 +307,6 @@ namespace AZ::IO
         AZStd::mutex m_cachedFileRawDataMutex;
         // For m_pCachedFileRawDataSet
         using RawDataCacheLockGuard = AZStd::scoped_lock<decltype(m_cachedFileRawDataMutex)>;
-        // The F* emulation functions critical section: protects all F* functions
-        // that don't have a chance to be called recursively (to avoid deadlocks)
-        AZStd::mutex m_csMain;
         mutable AZStd::shared_mutex m_archiveMutex;
         ArchiveArray m_arrArchives;
 
@@ -360,8 +318,6 @@ namespace AZ::IO
         //////////////////////////////////////////////////////////////////////////
 
         IArchive::ERecordFileOpenList m_eRecordFileOpenList = RFOM_Disabled;
-        using RecordedFilesSet = AZStd::set<AZ::OSString, AZ::IO::AZStdStringLessCaseInsensitive, AZ::OSStdAllocator>;
-        RecordedFilesSet m_recordedFilesSet;
 
         AZStd::intrusive_ptr<IResourceList> m_pEngineStartupResourceList;
 
@@ -372,28 +328,16 @@ namespace AZ::IO
         float m_fFileAccessTime{}; // Time used to perform file operations
         AZStd::vector<IArchiveFileAccessSink*, AZ::OSStdAllocator> m_FileAccessSinks; // useful for gathering file access statistics
 
-        bool m_disableRuntimeFileAccess[2]{};
+        bool m_disableRuntimeFileAccess{};
 
         //threads which we don't want to access files from during the game
         AZStd::thread_id m_mainThreadId{};
-        AZStd::thread_id m_renderThreadId{};
 
         AZStd::fixed_string<128> m_sLocalizationFolder;
         AZStd::fixed_string<128> m_sLocalizationRoot;
-
-        AZStd::set<uint32_t, AZStd::less<>, AZ::OSStdAllocator> m_filesCachedOnHDD;
 
         // [LYN-2376] Remove once legacy slice support is removed
         LevelPackOpenEvent m_levelOpenEvent;
         LevelPackCloseEvent m_levelCloseEvent;
     };
-}
-
-namespace AZ::IO::ArchiveInternal
-{
-    // Utility function to de-alias archive file opening and file-within-archive opening
-    // if the file specified was an absolute path but it points at one of the aliases, de-alias it and replace it with that alias.
-    // this works around problems where the level editor is in control but still mounts asset packs (ie, level.pak mounted as @assets@)
-    AZStd::optional<AZ::IO::FixedMaxPath> ConvertAbsolutePathToAliasedPath(AZStd::string_view sourcePath,
-        AZStd::string_view aliasToLookFor = "@devassets@", AZStd::string_view aliasToReplaceWith = "@assets@");
 }

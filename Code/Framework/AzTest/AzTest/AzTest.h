@@ -44,12 +44,12 @@ namespace AZ
             virtual ~ITestEnvironment()
             {}
 
-            void SetUp() override final
+            void SetUp() final
             {
                 SetupEnvironment();
             }
 
-            void TearDown() override final
+            void TearDown() final
             {
                 TeardownEnvironment();
             }
@@ -218,7 +218,7 @@ namespace AZ
         public:
             std::list<std::string> resultList;
             
-            void OnTestEnd(const ::testing::TestInfo& test_info)
+            void OnTestEnd(const ::testing::TestInfo& test_info) override
             {
                 std::string result;
                 if (test_info.result()->Failed())
@@ -233,7 +233,7 @@ namespace AZ
                 resultList.emplace_back(formattedResult);
             }
 
-            void OnTestProgramEnd(const ::testing::UnitTest& unit_test)
+            void OnTestProgramEnd(const ::testing::UnitTest& unit_test) override
             {
                 for (std::string testResults : resultList)
                 {

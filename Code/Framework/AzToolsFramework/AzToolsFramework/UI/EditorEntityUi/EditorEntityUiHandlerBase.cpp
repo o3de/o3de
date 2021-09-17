@@ -47,9 +47,9 @@ namespace AzToolsFramework
         return QString();
     }
 
-    QPixmap EditorEntityUiHandlerBase::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon EditorEntityUiHandlerBase::GenerateItemIcon(AZ::EntityId /*entityId*/) const
     {
-        return QPixmap();
+        return QIcon();
     }
 
     bool EditorEntityUiHandlerBase::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
