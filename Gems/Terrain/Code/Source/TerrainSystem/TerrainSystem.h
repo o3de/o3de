@@ -94,7 +94,7 @@ namespace Terrain
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
     private:
-        void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& delta) const;
+        void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;

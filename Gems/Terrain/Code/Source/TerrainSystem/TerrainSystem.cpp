@@ -152,13 +152,20 @@ AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
     return m_currentSettings.m_heightQueryResolution;
 }
 
-void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& delta) const
+void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
 {
+    // Given an input position, clamp the values to our terrain grid, where it will always go to the terrain grid point
+    // at a lower value, whether positive or negative.  Ex: 3.3 -> 3, -3.3 -> -4
+    // Also, return the normalized delta as a value of [0-1) describing what fraction of a grid point the value moved.
+
+    // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
+    // and fractional values are the amount in-between each grid point, in the range [0-1).
     AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / m_currentSettings.m_heightQueryResolution;
-    delta = AZ::Vector2(
+    normalizedDelta = AZ::Vector2(
         normalizedPosition.GetX() - floor(normalizedPosition.GetX()), normalizedPosition.GetY() - floor(normalizedPosition.GetY()));
 
-    outPosition = (normalizedPosition - delta) * m_currentSettings.m_heightQueryResolution;
+    // Remove the fractional part, then scale back down into world space.
+    outPosition = (normalizedPosition - normalizedDelta) * m_currentSettings.m_heightQueryResolution;
 }
 
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
@@ -173,27 +180,30 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     // Get the value at the requested location, using the terrain grid to bilinear filter between sample grid points.
     case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
         {
-            AZ::Vector2 delta;
+            // pos0 contains one corner of our grid square, pos1 contains the opposite corner, and normalizedDelta is the fractional
+            // amount the position exists between those corners.
+            // Ex: (3.3, 4.4) would have a pos0 of (3, 4), a pos1 of (4, 5), and a delta of (0.3, 0.4).
+            AZ::Vector2 normalizedDelta;
             AZ::Vector2 pos0;
-            ClampPosition(x, y, pos0, delta);
-
+            ClampPosition(x, y, pos0, normalizedDelta);
             const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
+
             const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
             const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
             const float heightX0Y1 = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), terrainExists);
             const float heightX1Y1 = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), terrainExists);
-            const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, delta.GetX());
-            const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, delta.GetX());
-            height = AZ::Lerp(heightXY0, heightXY1, delta.GetY());
+            const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
+            const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
+            height = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
         }
         break;
 
     //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
         {
-            AZ::Vector2 delta;
+            AZ::Vector2 normalizedDelta;
             AZ::Vector2 clampedPosition;
-            ClampPosition(x, y, clampedPosition, delta);
+            ClampPosition(x, y, clampedPosition, normalizedDelta);
 
             height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
         }
