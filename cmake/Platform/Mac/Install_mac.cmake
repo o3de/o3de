@@ -26,7 +26,9 @@ set(installed_binaries_path_template [[
 }]]
 )
 
-# This will be used by the O3DE_SDK.app bundle to find the 
+# This setreg file will be used by all of our installed app bundles to locate installed
+# runtime dependencies. It contains the path to binary install directory relative to 
+# the installed engine root.
 string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
 file(GENERATE
     OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/BinariesInstallPath.setreg
