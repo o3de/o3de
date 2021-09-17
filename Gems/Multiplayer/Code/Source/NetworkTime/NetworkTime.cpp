@@ -65,11 +65,6 @@ namespace Multiplayer
         return m_rewindingConnectionId;
     }
 
-    HostFrameId NetworkTime::GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
-    {
-        return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
-    }
-
     void NetworkTime::ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs)
     {
         AZ_Assert(!IsTimeRewound(), "Forcibly setting network time is unsupported under a rewound time scope");

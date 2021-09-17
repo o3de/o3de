@@ -52,12 +52,6 @@ namespace Multiplayer
         //! @return the ConnectionId of the connection requesting the rewind operation
         virtual AzNetworking::ConnectionId GetRewindingConnectionId() const = 0;
 
-        //! Get the controlling connection that may be currently altering global game time.
-        //! Note this abstraction is required at a relatively high level to allow for 'don't rewind the shooter' semantics
-        //! @param rewindConnectionId if this parameter matches the current rewindConnectionId, it will return the unaltered hostFrameId
-        //! @return the HostFrameId taking into account the provided rewinding connectionId
-        virtual HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const = 0;
-
         //! Forcibly sets the current network time to the provided frameId and game time in milliseconds.
         //! @param frameId the new HostFrameId to use
         //! @param timeMs the new HostTimeMs to use

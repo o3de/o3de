@@ -32,7 +32,6 @@ namespace Multiplayer
         AZ::TimeMs GetHostTimeMs() const override;
         float GetHostBlendFactor() const override;
         AzNetworking::ConnectionId GetRewindingConnectionId() const override;
-        HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const override;
         void ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs) override;
         void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId rewindConnectionId) override;
         void SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume) override;
