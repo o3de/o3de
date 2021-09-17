@@ -7,26 +7,24 @@
  */
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace IO
+    Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
     {
+        AZ::IO::FixedMaxPath resolvedSourcePath;
+        ResolvePath(resolvedSourcePath, sourceFilePath);
+        AZ::IO::FixedMaxPath resolvedDestPath;
+        ResolvePath(resolvedDestPath, destinationFilePath);
 
-        Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
-        {
-            char resolvedSourcePath[AZ_MAX_PATH_LEN];
-            ResolvePath(sourceFilePath, resolvedSourcePath, AZ_MAX_PATH_LEN);
-            char resolvedDestPath[AZ_MAX_PATH_LEN];
-            ResolvePath(destinationFilePath, resolvedDestPath, AZ_MAX_PATH_LEN);
+        AZStd::fixed_wstring<AZ::IO::MaxPathLength> resolvedSourcePathW;
+        AZStd::fixed_wstring<AZ::IO::MaxPathLength> resolvedDestPathW;
+        AZStd::to_wstring(resolvedSourcePathW, resolvedSourcePath.Native());
+        AZStd::to_wstring(resolvedDestPathW, resolvedDestPath.Native());
 
-            if (::CopyFileA(resolvedSourcePath, resolvedDestPath, false) == 0)
-            {
-                return ResultCode::Error;
-            }
-
-            return ResultCode::Success;
-        }
-    } // namespace IO
-}//namespace AZ
+        return ::CopyFileW(resolvedSourcePathW.c_str(), resolvedDestPathW.c_str(), false) != 0 ? ResultCode::Success : ResultCode::Error;
+    }
+}//namespace AZ::IO
