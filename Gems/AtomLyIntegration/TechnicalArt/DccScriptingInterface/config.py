@@ -85,33 +85,33 @@ _DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH).resolve()
 
 
 # -------------------------------------------------------------------------
-def init_ly_pyside(LY_DEV=None):
+def init_ly_pyside(O3DE_DEV=None):
     """sets access to lumberyards Qt dlls and PySide"""
 
-    LY_DEV = Path(LY_DEV).resolve()
-    if not LY_DEV.exists():
-        raise Exception('LY_DEV does NOT exist: {0}'.format(LY_DEV))
+    O3DE_DEV = Path(O3DE_DEV).resolve()
+    if not O3DE_DEV.exists():
+        raise Exception('O3DE_DEV does NOT exist: {0}'.format(O3DE_DEV))
     else:
         # to do: 'windows_vs2019' might change or be different locally
         # 'windows_vs2019' is defined as a str tag in constants
         # we may not yet have access to azpy.constants :(
         from azpy.constants import TAG_DIR_LY_BUILD
-        from azpy.constants import PATH_LY_BUILD_PATH
-        from azpy.constants import PATH_LY_BIN_PATH
+        from azpy.constants import PATH_O3DE_BUILD_PATH
+        from azpy.constants import PATH_O3DE_BIN_PATH
         # to do: pull some of these str and tags from constants
-        LY_BUILD_PATH = Path.joinpath(LY_DEV,
+        O3DE_BUILD_PATH = Path.joinpath(O3DE_DEV,
                                       TAG_DIR_LY_BUILD).resolve()
-        LY_BIN_PATH = Path.joinpath(LY_BUILD_PATH,
+        O3DE_BIN_PATH = Path.joinpath(O3DE_BUILD_PATH,
                                     'bin',
                                     'profile').resolve()
 
     # # allows to retreive from settings.QTFORPYTHON_PATH
     # from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
-    # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
+    # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(O3DE_DEV)).resolve()
     # os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
     # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
-    QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
+    QT_PLUGIN_PATH = Path.joinpath(O3DE_BIN_PATH,
                                    'EditorPlugins').resolve()
     os.environ["DYNACONF_QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
     os.environ['PATH'] = QT_PLUGIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
@@ -129,7 +129,7 @@ def init_ly_pyside(LY_DEV=None):
     if sys.platform.startswith('win'):
         # path = os.environ['PATH']
         # newPath = ''
-        # newPath += str(LY_BIN_PATH) + os.pathsep
+        # newPath += str(O3DE_BIN_PATH) + os.pathsep
         # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
         #                              'shiboken2').resolve()) + os.pathsep
         # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
@@ -163,7 +163,7 @@ def init_ly_pyside(LY_DEV=None):
     # have not done that yet as I really want to get legal approval and
     # add this to the QtForPython Gem
     # please pass this on the current code review
-    DCCSI_PYSIDE2_TOOLS = Path.joinpath(LY_DEV,
+    DCCSI_PYSIDE2_TOOLS = Path.joinpath(O3DE_DEV,
                                         'Gems',
                                         'AtomLyIntegration',
                                         'TechnicalArt',
@@ -208,21 +208,21 @@ settings = Dynaconf(
     settings_files=['settings.json', '.secrets.json'],
 )
 
-from azpy.constants import PATH_LY_BUILD_PATH
-from azpy.constants import PATH_LY_BIN_PATH
+from azpy.constants import PATH_O3DE_BUILD_PATH
+from azpy.constants import PATH_O3DE_BIN_PATH
 
 # global settings
 os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
 # search up to get \dev
-_LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
+_O3DE_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
                                                 check_stub='engine.json')
-os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
-_LY_PROJECT = azpy.config_utils.get_current_project()
-os.environ["DYNACONF_LY_PROJECT"] = str(_LY_PROJECT.resolve())
-_LY_PROJECT_PATH = Path(_LY_DEV, _LY_PROJECT)
-os.environ["DYNACONF_LY_PROJECT_PATH"] = str(_LY_PROJECT_PATH)
+os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
+_O3DE_PROJECT = azpy.config_utils.get_current_project()
+os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
+_O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
+os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
 os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
 _DCCSI_CONFIG_PATH = Path(_MODULE_PATH).resolve()
 os.environ["DYNACONF_DCCSI_CONFIG_PATH"] = str(_DCCSI_CONFIG_PATH)
@@ -232,25 +232,25 @@ os.environ["DYNACONF_DCCSI_PYTHON_LIB_PATH"] = str(_DCCSI_PYTHON_LIB_PATH)
 os.environ["DYNACONF_OS_FOLDER"] = azpy.config_utils.get_os()
 
 # we need to set up the Ly dev build \bin\path (for Qt dll access)
-_LY_BUILD_PATH = Path(PATH_LY_BUILD_PATH).resolve()
-os.environ["DYNACONF_LY_BUILD_PATH"] = str(_LY_BUILD_PATH)
-_LY_BIN_PATH = Path(PATH_LY_BIN_PATH).resolve()
-os.environ["DYNACONF_LY_BIN_PATH"] = str(_LY_BIN_PATH)
+_O3DE_BUILD_PATH = Path(PATH_O3DE_BUILD_PATH).resolve()
+os.environ["DYNACONF_O3DE_BUILD_PATH"] = str(_O3DE_BUILD_PATH)
+_O3DE_BIN_PATH = Path(PATH_O3DE_BIN_PATH).resolve()
+os.environ["DYNACONF_O3DE_BIN_PATH"] = str(_O3DE_BIN_PATH)
 
 # project cache log dir path
 from azpy.constants import ENVAR_DCCSI_LOG_PATH
 from azpy.constants import PATH_DCCSI_LOG_PATH
 _DCCSI_LOG_PATH = Path(os.getenv(ENVAR_DCCSI_LOG_PATH,
-                                 Path(PATH_DCCSI_LOG_PATH.format(LY_DEV=_LY_DEV,
-                                                                 LY_PROJECT=_LY_PROJECT))))
+                                 Path(PATH_DCCSI_LOG_PATH.format(O3DE_DEV=_O3DE_DEV,
+                                                                 O3DE_PROJECT=_O3DE_PROJECT))))
 os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH)
 
 # hard checks
-if not _LY_BIN_PATH.exists():
-    raise Exception('LY_BIN_PATH does NOT exist: {0}'.format(_LY_BIN_PATH))
+if not _O3DE_BIN_PATH.exists():
+    raise Exception('O3DE_BIN_PATH does NOT exist: {0}'.format(_O3DE_BIN_PATH))
 else:
     # adding to sys.path apparently doesn't work for .dll locations like Qt
-    os.environ['PATH'] = _LY_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
+    os.environ['PATH'] = _O3DE_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
 
 _LOGGER.info('Dynaconf config.py ... DONE')
 # -------------------------------------------------------------------------
@@ -263,7 +263,7 @@ def get_config_settings(setup_ly_pyside=False):
     from dynaconf import settings
 
     if setup_ly_pyside:
-        init_ly_pyside(settings.LY_DEV)
+        init_ly_pyside(settings.O3DE_DEV)
 
     settings.setenv()
     return settings
@@ -290,11 +290,11 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_LOGLEVEL: {}'.format(settings.DCCSI_LOGLEVEL))
 
     _LOGGER.info('OS_FOLDER: {}'.format(settings.OS_FOLDER))
-    _LOGGER.info('LY_PROJECT: {}'.format(settings.LY_PROJECT))
-    _LOGGER.info('LY_PROJECT_PATH: {}'.format(settings.LY_PROJECT_PATH))
-    _LOGGER.info('LY_DEV: {}'.format(settings.LY_DEV))
-    _LOGGER.info('LY_BUILD_PATH: {}'.format(settings.LY_BUILD_PATH))
-    _LOGGER.info('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
+    _LOGGER.info('O3DE_PROJECT: {}'.format(settings.O3DE_PROJECT))
+    _LOGGER.info('O3DE_PROJECT_PATH: {}'.format(settings.O3DE_PROJECT_PATH))
+    _LOGGER.info('O3DE_DEV: {}'.format(settings.O3DE_DEV))
+    _LOGGER.info('O3DE_BUILD_PATH: {}'.format(settings.O3DE_BUILD_PATH))
+    _LOGGER.info('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
 
     _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
 
@@ -310,13 +310,13 @@ if __name__ == '__main__':
     #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     #_LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
 
-    init_ly_pyside(settings.LY_DEV)  # init lumberyard Qt/PySide2
+    init_ly_pyside(settings.O3DE_DEV)  # init lumberyard Qt/PySide2
     # from dynaconf import settings # <-- no need to reimport
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
     #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-    _LOGGER.info('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
+    _LOGGER.info('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
     _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))

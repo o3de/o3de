@@ -69,7 +69,7 @@ from dynaconf import settings
 try:
     from PySide2.QtWidgets import QApplication
 except:
-    _dccsi_config.init_ly_pyside(settings.LY_DEV)  # init for standalone
+    _dccsi_config.init_ly_pyside(settings.O3DE_DEV)  # init for standalone
     # running in the editor if the QtForPython Gem is enabled
     # you should already have access and shouldn't need to set up
     
@@ -92,20 +92,20 @@ os.environ["PYSBS_DIR_PATH"] = str(_PYSBS_DIR_PATH)
 
 # standard paths we may use downstream
 # To Do: move these into a dynaconf config extension specific to this tool?
-from azpy.constants import ENVAR_LY_DEV
-_LY_DEV = Path(os.getenv(ENVAR_LY_DEV,
-                         settings.LY_DEV)).resolve()
+from azpy.constants import ENVAR_O3DE_DEV
+_O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV,
+                         settings.O3DE_DEV)).resolve()
 
-from azpy.constants import ENVAR_LY_PROJECT_PATH
-_LY_PROJECT_PATH = Path(os.getenv(ENVAR_LY_PROJECT_PATH,
-                                  settings.LY_PROJECT_PATH)).resolve()
+from azpy.constants import ENVAR_O3DE_PROJECT_PATH
+_O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH,
+                                  settings.O3DE_PROJECT_PATH)).resolve()
 
 from azpy.constants import ENVAR_DCCSI_SDK_PATH
 _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH,
                                  settings.DCCSIG_SDK_PATH)).resolve()
 
 # build some reuseable path parts for the substance builder
-_PROJECT_ASSETS_PATH = Path(_LY_PROJECT_PATH, 'Assets').resolve()
+_PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Assets').resolve()
 _PROJECT_MATERIALS_PATH = Path(_PROJECT_ASSETS_PATH, 'Materials').resolve()
 # -------------------------------------------------------------------------
 
@@ -116,8 +116,8 @@ _PROJECT_MATERIALS_PATH = Path(_PROJECT_ASSETS_PATH, 'Materials').resolve()
 if __name__ == "__main__":
     """Run this file as main"""
 
-    _LOGGER.info('_LY_DEV: {}'.format(_LY_DEV))
-    _LOGGER.info('_LY_PROJECT_PATH: {}'.format(_LY_PROJECT_PATH))
+    _LOGGER.info('_O3DE_DEV: {}'.format(_O3DE_DEV))
+    _LOGGER.info('_O3DE_PROJECT_PATH: {}'.format(_O3DE_PROJECT_PATH))
     _LOGGER.info('_DCCSI_SDK_PATH: {}'.format(_DCCSI_SDK_PATH))
     
     _LOGGER.info('_PYSBS_DIR_PATH: {}'.format(_PYSBS_DIR_PATH))

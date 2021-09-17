@@ -46,10 +46,10 @@ def get_stub_check_path(in_path=__file__, check_stub='engineroot.txt'):
 _MODULENAME = 'azpy.maya.utils.execute_wing_code'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
-_LY_DEV = get_stub_check_path()
-_LOGGER.info('_LY_DEV: {}'.format(_LY_DEV))
+_O3DE_DEV = get_stub_check_path()
+_LOGGER.info('_O3DE_DEV: {}'.format(_O3DE_DEV))
 
-_PROJ_CACHE = os.path.join(_LY_DEV, 'cache', 'DCCsi', 'wing')
+_PROJ_CACHE = os.path.join(_O3DE_DEV, 'cache', 'DCCsi', 'wing')
 _LOGGER.info('_PROJ_CACHE: {}'.format(_PROJ_CACHE))
 
 _LOCAL_HOST = socket.gethostbyname(socket.gethostname())

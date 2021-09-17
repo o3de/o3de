@@ -56,7 +56,7 @@ echo     WING_PROJ = %WING_PROJ%
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~ Launching %LY_PROJECT% project in WingIDE %WING_VERSION_MAJOR%.%WING_VERSION_MINOR% ...
+echo ~ Launching %O3DE_PROJECT% project in WingIDE %WING_VERSION_MAJOR%.%WING_VERSION_MINOR% ...
 echo _____________________________________________________________________
 echo.
 

@@ -175,14 +175,14 @@ try:
 except Exception as e:
     _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH]))
 
-_LY_PROJECT_PATH = None
+_O3DE_PROJECT_PATH = None
 try:
-    _LY_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]
+    _O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
 except Exception as e:
-    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]))
+    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]))
 
 # check some env var tags (fail if no, likely means no proper code access)
-_LY_DEV = _BASE_ENVVAR_DICT[ENVAR_LY_DEV]
+_O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
 _LY_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
 _LY_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
 _LY_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
@@ -270,18 +270,18 @@ def post_startup():
     install_fix_paths()    
 
     # set the project workspace
-    #_LY_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]
-    _project_workspace = os.path.join(_LY_PROJECT_PATH, TAG_MAYA_WORKSPACE)
+    #_O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
+    _project_workspace = os.path.join(_O3DE_PROJECT_PATH, TAG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
-            maya.cmds.workspace(_LY_PROJECT_PATH, openWorkspace=True)
+            maya.cmds.workspace(_O3DE_PROJECT_PATH, openWorkspace=True)
             _LOGGER.info('Loaded workspace file: {0}'.format(_project_workspace))
-            maya.cmds.workspace(_LY_PROJECT_PATH, update=True)
+            maya.cmds.workspace(_O3DE_PROJECT_PATH, update=True)
         except Exception as e:
             _LOGGER.error(e)
     else:
-        _LOGGER.warning('Workspace file not found: {1}'.format(_LY_PROJECT_PATH))
+        _LOGGER.warning('Workspace file not found: {1}'.format(_O3DE_PROJECT_PATH))
 
     # Set up Lumberyard, maya default setting
     from set_defaults import set_defaults

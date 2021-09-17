@@ -75,18 +75,18 @@ if _G_DEBUG:
 # to be continued...
 
 # get/set the project name
-_LY_DEV = os.getenv(constants.ENVAR_LY_DEV,
+_O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
                                                      check_stub='engine.json'))
 
 # get/set the project name
-_LY_PROJECT_NAME = os.getenv(constants.ENVAR_LY_PROJECT,
+_O3DE_PROJECT_NAME = os.getenv(constants.ENVAR_O3DE_PROJECT,
                             config_utils.get_current_project().name)
 
 # project cache log dir path
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
-                                 Path(_LY_DEV,
-                                      _LY_PROJECT_NAME,
+                                 Path(_O3DE_DEV,
+                                      _O3DE_PROJECT_NAME,
                                       'Cache',
                                      'pc', 'user', 'log', 'logs')))
 
@@ -218,9 +218,9 @@ if _G_DEBUG:
 
 # debug breadcrumbs to check this module and used paths
 _LOGGER.debug('MODULE_PATH: {}'.format(_MODULE_PATH))
-_LOGGER.debug('LY_DEV_PATH: {}'.format(_LY_DEV))
+_LOGGER.debug('O3DE_DEV_PATH: {}'.format(_O3DE_DEV))
 _LOGGER.debug('DCCSI_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('LY_PROJECT_TAG: {}'.format(_LY_PROJECT_NAME))
+_LOGGER.debug('O3DE_PROJECT_TAG: {}'.format(_O3DE_PROJECT_NAME))
 _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 
 

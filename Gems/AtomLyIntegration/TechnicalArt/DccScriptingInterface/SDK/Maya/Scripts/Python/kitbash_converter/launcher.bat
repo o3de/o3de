@@ -24,11 +24,11 @@ cd %~dp0
 SETLOCAL enableDelayedExpansion
 
 :: This maps up to the \Dev folder
-IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..\..\..\..\..\..)
+IF "%O3DE_REL_PATH%"=="" (set O3DE_REL_PATH=..\..\..\..\..\..\..\..\..)
 
 :: Change to root Lumberyard dev dir
-:: Don't use the LY_DEV so we can test that ENVAR!!!
-CD /d %DEV_REL_PATH%
+:: Don't use the O3DE_DEV so we can test that ENVAR!!!
+CD /d %O3DE_REL_PATH%
 set Rel_Dev=%CD%
 echo     Rel_Dev = %Rel_Dev%
 :: Restore original directory

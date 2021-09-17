@@ -16,7 +16,7 @@
 cd %~dp0
 PUSHD %~dp0
 
-for %%a in (.) do set LY_PROJECT=%%~na
+for %%a in (.) do set O3DE_PROJECT=%%~na
 
 echo.
 echo _____________________________________________________________________
@@ -25,27 +25,27 @@ echo ~    Setting up LY DSI PROJECT Environment ...
 echo _____________________________________________________________________
 echo.
 
-echo     LY_PROJECT = %LY_PROJECT%
+echo     O3DE_PROJECT = %O3DE_PROJECT%
 
 :: Put you project env vars and overrides here
 
 :: chanhe the relative path up to dev
-set DEV_REL_PATH=../../..
+set O3DE_REL_PATH=../../..
 set ABS_PATH=%~dp0
 
 :: Override the default maya version
 set MAYA_VERSION=2020
 echo     MAYA_VERSION = %MAYA_VERSION%
 
-set LY_PROJECT_PATH=%ABS_PATH%
-echo     LY_PROJECT_PATH = %LY_PROJECT_PATH%
+set O3DE_PROJECT_PATH=%ABS_PATH%
+echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
 
 :: Change to root Lumberyard dev dir
-CD /d %LY_PROJECT_PATH%\%DEV_REL_PATH%
-set LY_DEV=%CD%
-echo     LY_DEV = %LY_DEV%
+CD /d %O3DE_PROJECT_PATH%\%O3DE_REL_PATH%
+set O3DE_DEV=%CD%
+echo     O3DE_DEV = %O3DE_DEV%
 
-CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env.bat
+CALL %O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env.bat
 
 rem :: Constant Vars (Global)
 rem SET LYPY_GDEBUG=0

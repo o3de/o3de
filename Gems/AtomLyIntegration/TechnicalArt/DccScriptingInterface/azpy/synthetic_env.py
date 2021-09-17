@@ -40,9 +40,9 @@ Configures several useful environment config settings and paths,
     [key]               : [value]
 
     # this is the required base environment
-    LY_PROJECT          : name of project (project directory)
-    LY_DEV              : path to Lumberyard \dev root
-    LY_PROJECT_PATH     : path to project dir
+    O3DE_PROJECT          : name of project (project directory)
+    O3DE_DEV              : path to Lumberyard \dev root
+    O3DE_PROJECT_PATH     : path to project dir
     DCCSIG_PATH         : path to the DCCsi Gem root
     DCCSI_AZPY_PATH *   : path to azpy Python API (code)
     DCCSI_SDK_PATH      : path to associated (non-api code) DCC SDK
@@ -127,7 +127,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 _G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_PACKAGENAME = 'DCCsi.azpy.sunthetic_env'
+_PACKAGENAME = 'DCCsi.azpy.synthetic_env'
 
 _log_level = int(20)
 if _G_DEBUG:
@@ -262,7 +262,7 @@ def get_stub_check_path(in_path, check_stub='engineroot.txt'):
 
 # -------------------------------------------------------------------------
 # TO DO: Move to a util package or module
-def resolve_envar_path(envar='LY_DEV',
+def resolve_envar_path(envar='O3DE_DEV',
                        start_path=__file__,
                        check_stub='engineroot.txt',
                        dir_name='dev',
@@ -276,7 +276,7 @@ def resolve_envar_path(envar='LY_DEV',
 
     That is a pretty safe indicator that we found the right '\dev'
 
-    Second it checks if the env var 'LY_DEV' is set, use that instead!
+    Second it checks if the env var 'O3DE_DEV' is set, use that instead!
 
     """
 
@@ -360,14 +360,14 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
 
     # <ly>\dev Lumberyard ROOT PATH
     # someone decided to use this as a root stub (for similar reasons in C++?)
-    # STUB_LY_DEV = str('engineroot.txt')
+    # STUB_O3DE_DEV = str('engineroot.txt')
     #  I don't own \dev so I didn't want to check in anything new there
-    _LY_DEV = resolve_envar_path(ENVAR_LY_DEV,  # envar
+    _O3DE_DEV = resolve_envar_path(ENVAR_O3DE_DEV,  # envar
                                  _THIS_MODULE_PATH,  # search path
-                                 STUB_LY_DEV,  # stub
-                                 TAG_DIR_LY_DEV)  # dir
+                                 STUB_O3DE_DEV,  # stub
+                                 TAG_DIR_O3DE_DEV)  # dir
 
-    _SYNTH_ENV_DICT[ENVAR_LY_DEV] = _LY_DEV.as_posix()
+    _SYNTH_ENV_DICT[ENVAR_O3DE_DEV] = _O3DE_DEV.as_posix()
 
     # project name is a string, it should be project dir name
     # for siloed testing and a purely synthetc env (nothing previously set)
@@ -376,13 +376,13 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # for testing overrides of the default synthetic env
 
     # we can do two things here,
-    # first we can try to fetch from the env os.getenv('LY_PROJECT')
+    # first we can try to fetch from the env os.getenv('O3DE_PROJECT')
     # If comes back None, allows you to specify a default fallback
     # changed to just make the fallback what is set in boostrap
     # so now it's less of a fallnack and more correct if not
     # explicitly set
-    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT)
-    _SYNTH_ENV_DICT[ENVAR_LY_PROJECT] = _LY_PROJECT
+    _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT)
+    _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT] = _O3DE_PROJECT
     
     _LY_BUILD_DIR_NAME = os.getenv(ENVAR_LY_BUILD_DIR_NAME,
                                    TAG_DIR_LY_BUILD)
@@ -406,26 +406,26 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # so we guess based on how I set up the original dev environment
 
     # -- envar --
-    _LY_BUILD_PATH = Path(os.getenv(ENVAR_LY_BUILD_PATH,
-                                    PATH_LY_BUILD_PATH))
-    _SYNTH_ENV_DICT[ENVAR_LY_BUILD_PATH] = _LY_BUILD_PATH.as_posix()
+    _O3DE_BUILD_PATH = Path(os.getenv(ENVAR_O3DE_BUILD_PATH,
+                                    PATH_O3DE_BUILD_PATH))
+    _SYNTH_ENV_DICT[ENVAR_O3DE_BUILD_PATH] = _O3DE_BUILD_PATH.as_posix()
 
     # -- envar --
-    _LY_BIN_PATH = Path(os.getenv(ENVAR_LY_BIN_PATH,
-                                  PATH_LY_BIN_PATH))
+    _O3DE_BIN_PATH = Path(os.getenv(ENVAR_O3DE_BIN_PATH,
+                                  PATH_O3DE_BIN_PATH))
     # some of these need hard checks
-    if not _LY_BIN_PATH.exists():
-        raise Exception('LY_BIN_PATH does NOT exist: {0}'.format(_LY_BIN_PATH))
+    if not _O3DE_BIN_PATH.exists():
+        raise Exception('O3DE_BIN_PATH does NOT exist: {0}'.format(_O3DE_BIN_PATH))
     else:
-        _SYNTH_ENV_DICT[ENVAR_LY_BIN_PATH] = _LY_BIN_PATH.as_posix()
+        _SYNTH_ENV_DICT[ENVAR_O3DE_BIN_PATH] = _O3DE_BIN_PATH.as_posix()
         # adding to sys.path apparently doesn't work for .dll locations like Qt
-        os.environ['PATH'] = _LY_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
+        os.environ['PATH'] = _O3DE_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
 
     # -- envar --
     # if that stub marker doesn't exist assume DCCsi path (fallback 1)
-    _LY_PROJECT_PATH = Path(os.getenv(ENVAR_LY_PROJECT_PATH,
-                                      Path(_LY_DEV, _LY_PROJECT)))
-    _SYNTH_ENV_DICT[ENVAR_LY_PROJECT_PATH] = _LY_PROJECT_PATH.as_posix()
+    _O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH,
+                                      Path(_O3DE_DEV, _O3DE_PROJECT)))
+    _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT_PATH] = _O3DE_PROJECT_PATH.as_posix()
 
     # -- envar --
     _DCCSIG_PATH = resolve_envar_path(ENVAR_DCCSIG_PATH,  # envar
@@ -497,7 +497,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
 
   
     
-    QTFORPYTHON_PATH = Path.joinpath(LY_DEV,
+    QTFORPYTHON_PATH = Path.joinpath(O3DE_DEV,
                                      'Gems',
                                      'QtForPython',
                                      '3rdParty',
@@ -509,16 +509,16 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     sys.path.insert(1, str(QTFORPYTHON_PATH))
     site.addsitedir(str(QTFORPYTHON_PATH))
 
-    LY_BIN_PATH = Path.joinpath(LY_DEV,
+    O3DE_BIN_PATH = Path.joinpath(O3DE_DEV,
                                 'windows_vs2019',
                                 'bin',
                                 'profile').resolve()
-    os.environ["DYNACONF_LY_BIN_PATH"] = str(LY_BIN_PATH)
-    os.environ["LY_BIN_PATH"] = str(LY_BIN_PATH)
-    site.addsitedir(str(LY_BIN_PATH))
-    sys.path.insert(1, str(LY_BIN_PATH))
+    os.environ["DYNACONF_O3DE_BIN_PATH"] = str(O3DE_BIN_PATH)
+    os.environ["O3DE_BIN_PATH"] = str(O3DE_BIN_PATH)
+    site.addsitedir(str(O3DE_BIN_PATH))
+    sys.path.insert(1, str(O3DE_BIN_PATH))
 
-    QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
+    QT_PLUGIN_PATH = Path.joinpath(O3DE_BIN_PATH,
                                    'EditorPlugins').resolve()
     os.environ["DYNACONF_QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
     os.environ["QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
@@ -536,7 +536,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     if sys.platform.startswith('win'):
         path = os.environ['PATH']
         newPath = ''
-        newPath += str(LY_BIN_PATH) + os.pathsep
+        newPath += str(O3DE_BIN_PATH) + os.pathsep
         newPath += str(Path.joinpath(QTFORPYTHON_PATH,
                                      'shiboken2').resolve()) + os.pathsep
         newPath += str(Path.joinpath(QTFORPYTHON_PATH,

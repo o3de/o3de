@@ -24,7 +24,7 @@ import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 # ^ this is effectively an import and retreive of <dccsi>\config.py
 # init lumberyard Qy/PySide2 access
-_config.init_ly_pyside(settings.LY_DEV)
+_config.init_ly_pyside(settings.O3DE_DEV)
 
 # now we can import lumberyards PySide2
 import PySide2.QtCore as QtCore

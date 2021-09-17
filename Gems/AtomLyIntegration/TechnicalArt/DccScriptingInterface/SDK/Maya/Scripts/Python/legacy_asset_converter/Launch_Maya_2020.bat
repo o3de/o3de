@@ -41,7 +41,7 @@ echo ________________________________
 echo Launching Maya %MAYA_VERSION% for Lumberyard...
 
 :::: Set Maya native project acess to this project
-::set MAYA_PROJECT=%LY_PROJECT%
+::set MAYA_PROJECT=%O3DE_PROJECT%
 ::echo     MAYA_PROJECT = %MAYA_PROJECT%
 
 :: DX11 Viewport

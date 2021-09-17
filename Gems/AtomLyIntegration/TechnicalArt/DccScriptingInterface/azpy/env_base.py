@@ -65,11 +65,11 @@ _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _BASE_ENVVAR_DICT = OrderedDict()
 
 #  project tag
-_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT] = '${0}'.format(ENVAR_LY_PROJECT)
+_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT] = '${0}'.format(ENVAR_O3DE_PROJECT)
 
 #  paths
-_BASE_ENVVAR_DICT[ENVAR_LY_DEV] = Path('${0}'.format(ENVAR_LY_DEV))
-_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH] = Path('${0}'.format(ENVAR_LY_PROJECT_PATH))
+_BASE_ENVVAR_DICT[ENVAR_O3DE_DEV] = Path('${0}'.format(ENVAR_O3DE_DEV))
+_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH] = Path('${0}'.format(ENVAR_O3DE_PROJECT_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH] = Path('${0}'.format(ENVAR_DCCSIG_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH] = Path('${0}'.format(ENVAR_DCCSI_LOG_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH] = Path('${0}'.format(ENVAR_DCCSI_AZPY_PATH))
@@ -115,11 +115,11 @@ if __name__ == '__main__':
                      ensure_ascii=False), '\r')
 
     #  retreive a Path type key from the Box
-    foo = _BASE_ENVVAR_DICT[ENVAR_LY_DEV]
+    foo = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
     _LOGGER.info('~ foo is: {0}'.format(type(foo), foo))
 
     # simple tests
-    _ENV_TAG = 'LY_DEV'
+    _ENV_TAG = 'O3DE_DEV'
     foo = get_envar_default(_ENV_TAG)
     _LOGGER.info("~ Results of getVar on tag, '{0}':'{1}'\r".format(_ENV_TAG, foo))
 

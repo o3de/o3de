@@ -119,10 +119,10 @@ def get_stub_check_path(in_path=__file__, check_stub='engineroot.txt'):
 # -------------------------------------------------------------------------
 # globals
 
-_LY_DEV = get_stub_check_path()
-_LOGGER.info('_LY_DEV: {}'.format(_LY_DEV))
+_O3DE_DEV = get_stub_check_path()
+_LOGGER.info('_O3DE_DEV: {}'.format(_O3DE_DEV))
 
-_PROJ_CACHE = os.path.join(_LY_DEV, 'cache', 'DCCsi', 'wing')
+_PROJ_CACHE = os.path.join(_O3DE_DEV, 'cache', 'DCCsi', 'wing')
 _LOGGER.info('_PROJ_CACHE: {}'.format(_PROJ_CACHE))
 
 if not os.path.exists(_PROJ_CACHE):

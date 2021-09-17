@@ -99,11 +99,11 @@ if __name__ == '__main__':
     _LOGGER.info(f'DCCSI_DEV_MODE: {_settings.DCCSI_DEV_MODE}')
 
     _LOGGER.info(f'OS_FOLDER: {_settings.OS_FOLDER}')
-    _LOGGER.info(f'LY_PROJECT: {_settings.LY_PROJECT}')
-    _LOGGER.info(f'LY_PROJECT_PATH: {_settings.LY_PROJECT_PATH}')
-    _LOGGER.info(f'LY_DEV: {_settings.LY_DEV}')
-    _LOGGER.info(f'LY_BUILD_PATH: {_settings.LY_BUILD_PATH}')
-    _LOGGER.info(f'LY_BIN_PATH: {_settings.LY_BIN_PATH}')
+    _LOGGER.info(f'O3DE_PROJECT: {_settings.O3DE_PROJECT}')
+    _LOGGER.info(f'O3DE_PROJECT_PATH: {_settings.O3DE_PROJECT_PATH}')
+    _LOGGER.info(f'O3DE_DEV: {_settings.O3DE_DEV}')
+    _LOGGER.info(f'O3DE_BUILD_PATH: {_settings.O3DE_BUILD_PATH}')
+    _LOGGER.info(f'O3DE_BIN_PATH: {_settings.O3DE_BIN_PATH}')
     
     _LOGGER.info(f'DCCSIG_PATH: {_settings.DCCSIG_PATH}')
     _LOGGER.info(f'DCCSI_PYTHON_LIB_PATH: {_settings.DCCSI_PYTHON_LIB_PATH}')
@@ -118,7 +118,7 @@ if __name__ == '__main__':
             import PySide2
 
         _LOGGER.info(f'PySide2: {PySide2}')
-        _LOGGER.info(f'LY_BIN_PATH: {_settings.LY_BIN_PATH}')
+        _LOGGER.info(f'O3DE_BIN_PATH: {_settings.O3DE_BIN_PATH}')
         _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
         _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
         

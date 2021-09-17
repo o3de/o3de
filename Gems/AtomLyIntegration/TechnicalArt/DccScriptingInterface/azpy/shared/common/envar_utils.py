@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 
 # -------------------------------------------------------------------------
 '''
-Module: <DCCsi>\azpy\shared\common\config_utils.py
+Module: <DCCsi>\\azpy\\shared\\common\\config_utils.py
 
     A set of utility functions
 
@@ -65,7 +65,7 @@ def get_envar_default(envar, envar_default=None, envar_set=Box(ordered_box=True)
     Get from the system environment, or the module dictionary (a Box):
     like the test one in __main__ below,
         TEST_ENV_VALUES = Box(ordered_box=True)
-        TEST_ENV_VALUES[ENVAR_LY_PROJECT] = '${0}'.format(ENVAR_LY_PROJECT)
+        TEST_ENV_VALUES[ENVAR_O3DE_PROJECT] = '${0}'.format(ENVAR_O3DE_PROJECT)
 
     This dictionary provides a simple way to pack a default set into a
     structure and decouple the getter implementation.
@@ -88,7 +88,7 @@ def get_envar_default(envar, envar_default=None, envar_set=Box(ordered_box=True)
 
 
 # -- envar util ----------------------------------------------------------
-def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_LY_DEV)):
+def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
     """
     Set each environment variable if not alreay set with value.
     Must be safe, will not over-write existing.
@@ -98,8 +98,8 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_LY_DEV)):
         env_root = Path(env_root)
 
     if env_root.exists():
-        os.environ[ENVAR_LY_DEV] = env_root
-        envar_set[ENVAR_LY_DEV] = env_root
+        os.environ[ENVAR_O3DE_DEV] = env_root
+        envar_set[ENVAR_O3DE_DEV] = env_root
     else:
         raise ValueError("EnvVar Root is not valid: {0}".format(env_root))
 
@@ -191,8 +191,8 @@ if __name__ == '__main__':
     # it should be benign but leaving this comment here in case of funk
 
     # tes envars
-    TEST_ENV_VALUES[ENVAR_LY_PROJECT] = '${0}'.format(ENVAR_LY_PROJECT)
-    TEST_ENV_VALUES[ENVAR_LY_DEV] = Path('${0}'.format(ENVAR_LY_DEV))
+    TEST_ENV_VALUES[ENVAR_O3DE_PROJECT] = '${0}'.format(ENVAR_O3DE_PROJECT)
+    TEST_ENV_VALUES[ENVAR_O3DE_DEV] = Path('${0}'.format(ENVAR_O3DE_DEV))
 
     #  try to fetch and set the base values from the environment
     #  this makes sure all envars set, are resolved on import
@@ -204,7 +204,7 @@ if __name__ == '__main__':
                      ensure_ascii=False), '\r')
 
     # simple tests
-    _ENV_TAG = 'LY_DEV'
+    _ENV_TAG = 'O3DE_DEV'
     foo = get_envar_default(_ENV_TAG)
     _LOGGER.info("~ Results of getVar on tag, '{0}':'{1}'\r".format(_ENV_TAG, foo))
 
