@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+
+/* =============================================================
+   Push Buttons
+
+   Painting of the background and the frame of PushButtons
+   are done in code, in PushButton.cpp.
+
+   It's done there because the default Qt rendering, or at least
+   the Fusion style, which we use as our base style, doesn't
+   properly anti-alias and position the button bounding box
+   when we customize the background colors and styles here. Also,
+   there's literally no way to get the colors and styling info out
+   of the stylesheet.
+
+   Below is the configuration of the text colors for the
+   PushButtons and the font size, which can be done here in the
+   stylesheet.
+
+   Everything else can be configured via PushButton.ini
+   ============================================================= */
+
+QPushButton
+{
+    font-size: 12px;
+    color: white;
+    font-family: "Amazon Ember";
+}
+
+QPushButton:hover,
+QPushButton:pressed
+{
+    color: white;
+}
+
+QPushButton:disabled
+{
+    color: #C8C8C8;
+}
+
+QPushButton.Primary,
+QPushButton:default,
+QToolButton::menu-indicator,
+QToolButton.SmallIcon::menu-indicator
+{
+    color: white;
+}
+
+QPushButton.Primary:disabled,
+QPushButton:default:disabled,
+QToolButton.SmallIcon:disabled::menu-indicator
+{
+    color: #C8C8C8;
+}
+
+
+QPushButton::menu-indicator
+{
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+    left: -8px;
+    image: url("../builder/ui/stylesheets/img/triangle1.png")
+}
+
+QPushButton.SmallIcon
+{
+    margin: 0px;
+}
+

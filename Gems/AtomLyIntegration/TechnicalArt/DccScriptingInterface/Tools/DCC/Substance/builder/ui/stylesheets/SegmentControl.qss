@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+QTabWidget
+{
+}
+
+/* An empty ::pane rule removes the default pane style. */
+QTabWidget::pane
+{
+}
+
+QTabBar
+{
+    qproperty-drawBase: 0;
+    alignment: center;
+}
+
+QTabBar::tab
+{
+    background-color: #333333;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+
+    font-size: 12px;
+
+    height: 28px;
+
+    line-height: 24px;
+
+    margin-left: 0px;
+
+    min-width: 100px
+}
+
+QTabBar::tab::middle,
+QTabBar::tab::last
+{
+    margin-left: -1px;
+}
+
+QTabBar::tab:selected
+{
+    background-color: #222222;
+}
+
+QTabBar::tab:hover
+
+{
+    background-color: #444444;
+}

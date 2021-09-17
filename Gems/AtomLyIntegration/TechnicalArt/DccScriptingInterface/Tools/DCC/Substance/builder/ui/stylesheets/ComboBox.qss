@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/* NOTE: a number of QComboBox properties are defined in BaseStyleSheet.qss already, along with other text entry controls */
+
+/* ComboBox */
+
+QComboBox
+{
+    height: 16px;
+    padding-left: 8px;
+    margin: 4px;
+    font-size: 12px;
+}
+
+QComboBox:focus
+{
+    background-color: #FFFFFF;
+    margin: 2px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 4px;
+    border-color: #C09EFF;
+}
+
+QComboBox:disabled
+{
+    background-color: #777777;
+    color: #999999;
+}
+
+QComboBox::drop-down
+{
+    border-width: 0;
+}
+
+QComboBox::down-arrow
+{
+    image: url("../builder/ui/stylesheets/img/triangle3.png");
+}
+
+QComboBox::down-arrow:disabled
+{
+    image: url("../builder/ui/stylesheets/img/triangle1.png");
+}
+
+/* Popup */
+
+QComboBox QAbstractItemView
+{
+    background-color: #222222;
+    padding: 4px 0px 4px 0px;
+    border-radius: 2px;
+    outline: none; /* Disable focus rect */
+    show-decoration-selected: 1;
+}
+
+QComboBox QAbstractItemView::item
+{
+    color: #FFFFFF;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-right: 24px;
+    padding-left: 2px; /* There is already 22px from the check mark */
+
+    /* Without that the padding don't apply */
+    border: 0px solid transparent;
+}
+
+/*
+    This is needed as a result of using padding / border in ::item as
+    selection-background-color and selection-color are no more honored...
+*/
+QComboBox QAbstractItemView::item:selected
+{
+    background-color: #444444;
+    color: #FFFFFF;
+}
+
+QComboBox QAbstractItemView::item:disabled
+{
+    color: #555555;
+}
+
+QComboBox QAbstractItemView::separator
+{
+    height: 1px;
+    background: #444444;
+}
+
+QComboBox QAbstractItemView::indicator
+{
+    /* Keep in sync with the check mark image size */
+    width: 12px;
+    height: 9px;
+    image: none;
+}
+
+QComboBox QAbstractItemView::indicator:checked
+{
+    image: url(../builder/ui/stylesheets/img/menu-check.png);
+}

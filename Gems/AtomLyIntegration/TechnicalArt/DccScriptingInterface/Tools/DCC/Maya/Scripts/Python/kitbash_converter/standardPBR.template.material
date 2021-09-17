@@ -1,0 +1,89 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "general": {
+            "texcoord": 0
+        },
+        "occlusion": {
+            "diffuseFactor": 1.0,
+            "diffuseUseTexture": false,
+            "diffuseTextureMap": "",
+            "specularFactor": 1.0,
+            "specularUseTexture": false,
+            "specularTextureMap": ""
+        },
+        "baseColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "factor": 1.0,
+            "useTexture": true,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs.tif"
+        },
+        "emissive": {
+            "color": [ 
+                1.0, 
+                1.0, 
+                1.0 
+            ],
+            "enable": false,
+            "intensity": -5.0,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs.tif"
+        },
+        "metallic": {
+            "factor": 1.0,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "roughness": {
+            "factor": 1.0,
+            "useTexture": true,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs_spec.tif"
+        },
+        "specularF0": {
+            "factor": 0.5,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "normal": {
+            "factor": 1.0,
+            "useTexture": false,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs_ddn.tif"
+        },
+        "subsurfaceScattering": {
+            "enableSubsurfaceScattering": true,
+            "influenceMap": "EngineAssets/TextureMsg/DefaultNoUVs.tif",
+            "quality": 0.4,
+            "scatterDistance": 8,
+            "subsurfaceScatterFactor": 1
+        },
+        "opacity": {
+            "mode": "Opaque",
+            "alphaSource": "Packed",
+            "doubleSided": false,
+            "factor": 1.0,
+            "cutoutAlpha": false,
+            "cutoutThreshold": 0.5,
+            "useBaseColorTextureAlpha": false,
+            "textureMap": ""
+        },
+        "uv": {
+        	"center": [
+                0,
+                0
+            ],
+        	"offsetU": 0,
+            "offsetV": 0,
+            "rotateDegrees": 0,
+            "scale": 1.0,
+            "tileU": 1.0,
+            "tileV": 1.0
+        }
+    }
+}
+

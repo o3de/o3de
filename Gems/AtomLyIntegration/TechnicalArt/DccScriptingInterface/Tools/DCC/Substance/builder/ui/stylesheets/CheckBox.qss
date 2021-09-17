@@ -1,0 +1,102 @@
+
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+QCheckBox
+{
+    font-size: 12px;
+    line-height: 18px;
+    color: rgb(204, 204, 204);
+    outline: 0;
+}
+
+QCheckBox::indicator:!focus {
+    width: 14px;
+    height: 14px;
+    border: 1px solid white;
+    border-radius: 2px;
+    margin: 2px;
+}
+
+QCheckBox::indicator:focus {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgb(201, 170, 254);
+    border-radius: 4px;
+    margin: 0px;
+}
+
+QCheckBox::indicator:disabled {
+    border-color: rgb(128, 128, 128);
+}
+
+QCheckBox::indicator:indeterminate:!focus {
+    image: url(../builder/ui/stylesheets/img/UI20/combo-tristate.png);
+}
+
+QCheckBox::indicator:indeterminate:focus {
+    image: url(../builder/ui/stylesheets/img/UI20/combo-tristate-focus.png);
+}
+
+QCheckBox::indicator:checked:!focus {
+    image: url(../builder/ui/stylesheets/img/UI20/combo-checked.png);
+}
+
+QCheckBox::indicator:checked:focus {
+    image: url(../builder/ui/stylesheets/img/UI20/combo-checked-focus.png);
+}
+
+QCheckBox::indicator:checked:disabled {
+    image: url(../builder/ui/stylesheets/img/UI20/combo-checked-disabled.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator
+{
+    width: 32px;
+    height: 16px;
+    border-width: 0px;
+    margin: 2px;
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:Unchecked
+{
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-unchecked.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:disabled
+{
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-unchecked-disabled.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:Unchecked:focus
+{
+    width: 36px;
+    height: 20px;
+    border-width: 0px;
+    margin: 0px;
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-unchecked-focus.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:Checked
+{
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-checked.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:Checked:disabled
+{
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-checked-disabled.png);
+}
+
+QCheckBox[class="ToggleSwitch"]::indicator:Checked:focus
+{
+    width: 36px;
+    height: 20px;
+    border-width: 0px;
+    margin: 0px;
+    image: url(../builder/ui/stylesheets/img/UI20/toggle-checked-focus.png);
+}

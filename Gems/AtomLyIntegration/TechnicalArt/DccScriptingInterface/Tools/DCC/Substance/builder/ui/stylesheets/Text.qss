@@ -1,0 +1,88 @@
+
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+
+.secondaryText
+{
+    color: #BBBBBB;
+}
+
+.primaryText
+{
+    color: white;
+}
+
+.highlightedText
+{
+    color: #C9AAFE;
+}
+
+.blackText
+{
+    color: black;
+}
+
+/*
+    Qt supports the line-height field, but only for QTextEdit controls, not for QLabel.
+    Even then, the support isn't exactly what we want.
+    So instead, we apply margin-top and bottom appropriately to get the required spec.
+
+    To get the right line-height, we need to do:
+
+    margin-top: ((line-height - font-size) / 2) px;
+    margin-bottom: ((line-height - font-size) / 2) px;
+*/
+
+QLabel
+{
+    font-size: 12px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-family: "Amazon Ember";
+}
+
+.Headline
+{
+    font-family: "Amazon Ember Light";
+    font-size: 24px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.Title
+{
+    font-size: 18px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.Subtitle
+{
+    font-family: "Amazon Ember Light";
+    font-size: 16px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.Paragraph
+{
+    font-size: 12px;
+
+    /*
+       line-height doesn't work with multi-line text fields.
+       With single-line text fields, we can get close enough using the margin-top and margin-bottom. That doesn't
+       work for multi-line fields, because there's no inbetween line margins.
+    */
+
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+
+

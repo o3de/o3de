@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/* NOTE: a number of QLineEdit properties are defined in BaseStyleSheet.qss already, along with other text entry controls */
+
+QLineEdit
+{
+    height: 16px;
+    padding-left: 8px;
+    border-width: 2px;
+    border-style: solid;
+}
+
+QLineEdit[HasSearchAction=true] {
+    padding-left: 4px;
+}
+
+QLineEdit:focus
+{
+    background-color: #FFFFFF;
+}
+
+QLineEdit:disabled
+{
+    background-color: #777777;
+    color: #999999;
+}

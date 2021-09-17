@@ -1,0 +1,47 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "general": {
+            "texcoord": 0
+        },
+        "baseColor": {
+            "colorLinear": [ 1.0, 1.0, 1.0 ],
+            "factor": 1.0,
+            "useTexture": true,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs.tif"
+        },
+        "metallic": {
+            "factor": 0.0,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "roughness": {
+            "factor": 1.0,
+            "useTexture": true,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs_spec.tif"
+        },
+        "specularF0": {
+            "factor": 0.5,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "normal": {
+            "factor": 1.0,
+            "useTexture": true,
+            "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs_ddn.tif"
+        },
+        "opacity": {
+            "doubleSided": false,
+            "factor": 1.0,
+            "cutoutAlpha": false,
+            "cutoutThreshold": 0.5,
+            "useBaseColorTextureAlpha": false,
+            "useTexture": false,
+            "textureMap": ""
+        }
+    }
+}
+
