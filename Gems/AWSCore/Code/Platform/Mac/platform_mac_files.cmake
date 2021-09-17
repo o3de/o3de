@@ -7,5 +7,7 @@
 #
 
 set(FILES
+    AWSCore_Traits_Platform.h
+    AWSCore_Traits_Mac.h
     ../Common/GetCertsPath_Null.cpp
 )

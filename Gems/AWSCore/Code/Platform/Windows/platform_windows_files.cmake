@@ -7,5 +7,7 @@
 #
 
 set(FILES
-    GetCertsPath_Android.cpp
+    AWSCore_Traits_Platform.h
+    AWSCore_Traits_Windows.h
+    ../Common/GetCertsPath_Null.cpp
 )
