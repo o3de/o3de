@@ -30,7 +30,7 @@ namespace EMotionFX
             AZ_CLASS_ALLOCATOR_DECL
 
             KdTree() = default;
-            ~KdTree();
+            virtual ~KdTree();
 
             bool Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
             void Clear();

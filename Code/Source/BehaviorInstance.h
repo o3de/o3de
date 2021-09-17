@@ -59,7 +59,7 @@ namespace EMotionFX
                 Behavior* m_behavior = nullptr;
             };
 
-            ~BehaviorInstance();
+            virtual ~BehaviorInstance();
 
             void Init(const InitSettings& settings);
             void DebugDraw();
