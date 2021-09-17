@@ -360,8 +360,21 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
 
     ASSERT_FALSE(heights.empty());
 
-    const int16_t expectedHeight = 127;
+    float heightScale = 0.0f;
+
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
+
+    float aabbCenter = boundsMin + (boundsMax - boundsMin) / 2.0f;
+
+    // The expected height is the offset of the height from the centre of the bounding box multiplied by the scale value and then cast to an
+    // int16_t
+    int16_t expectedHeight = azlossy_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
+
     EXPECT_EQ(heights[0], expectedHeight);
+
+    const int16_t expectedHeightValue = 127;
+    EXPECT_EQ(heights[0], expectedHeightValue);
 
     m_entity->Reset();
 }
