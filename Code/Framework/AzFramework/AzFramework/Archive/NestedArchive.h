@@ -19,15 +19,15 @@ namespace AZ::IO
     {
         bool operator()(const INestedArchive* left, const INestedArchive* right) const
         {
-            return azstricmp(left->GetFullPath(), right->GetFullPath()) < 0;
+            return left->GetFullPath() < right->GetFullPath();
         }
         bool operator()(AZStd::string_view left, const INestedArchive* right) const
         {
-            return azstrnicmp(left.data(), right->GetFullPath(), left.size()) < 0;
+            return AZ::IO::PathView(left) < right->GetFullPath();
         }
         bool operator()(const INestedArchive* left, AZStd::string_view right) const
         {
-            return azstrnicmp(left->GetFullPath(), right.data(), right.size()) < 0;
+            return left->GetFullPath() < AZ::IO::PathView(right);
         }
     };
 
@@ -81,7 +81,7 @@ namespace AZ::IO
         int ReadFile(Handle fileHandle, void* pBuffer) override;
 
         // returns the full path to the archive file
-        const char* GetFullPath() const override;
+        AZ::IO::PathView GetFullPath() const override;
 
         uint32_t GetFlags() const override;
         bool SetFlags(uint32_t nFlagsToSet) override;
@@ -100,7 +100,7 @@ namespace AZ::IO
 
         ZipDir::CachePtr m_pCache;
         // the binding root may be empty string - in this case, the absolute path binding won't work
-        AZStd::string m_strBindRoot;
+        AZ::IO::Path m_strBindRoot;
         IArchive* m_archive{};
         uint32_t m_nFlags{};
     };

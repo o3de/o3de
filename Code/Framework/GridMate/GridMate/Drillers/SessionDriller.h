@@ -33,42 +33,42 @@ namespace GridMate
 
             //////////////////////////////////////////////////////////////////////////
             // Driller
-            virtual const char*  GroupName() const          { return "GridMate"; }
-            virtual const char*  GetName() const            { return "SessionDriller"; }
-            virtual const char*  GetDescription() const     { return "Drills GridSession, Search, etc."; }
-            virtual void         Start(const Param* params = NULL, int numParams = 0);
-            virtual void         Stop();
+            const char*  GroupName() const override          { return "GridMate"; }
+            const char*  GetName() const override            { return "SessionDriller"; }
+            const char*  GetDescription() const override     { return "Drills GridSession, Search, etc."; }
+            void         Start(const Param* params = NULL, int numParams = 0) override;
+            void         Stop() override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // Session Event Bus
             /// Callback that is called when the Session service is ready to process sessions.
-            virtual void OnSessionServiceReady();
+            void OnSessionServiceReady() override;
             //virtual OnCommucationChanged() = 0  Callback that notifies the title when a member's communication settings change.
             /// Callback that notifies the title when a game search query have completed.
-            virtual void OnGridSearchComplete(GridSearch* gridSearch);
+            void OnGridSearchComplete(GridSearch* gridSearch) override;
             /// Callback that notifies the title when a new member joins the game session.
-            virtual void OnMemberJoined(GridSession* session, GridMember* member);
+            void OnMemberJoined(GridSession* session, GridMember* member) override;
             /// Callback that notifies the title that a member is leaving the game session. member pointer is NOT valid after the callback returns.
-            virtual void OnMemberLeaving(GridSession* session, GridMember* member);
+            void OnMemberLeaving(GridSession* session, GridMember* member) override;
             // \todo a better way will be (after we solve migration) is to supply a reason to OnMemberLeaving... like the member was kicked.
             // this will require that we actually remove the replica at the same moment.
             /// Callback that host decided to kick a member. You will receive a OnMemberLeaving when the actual member leaves the session.
-            virtual void OnMemberKicked(GridSession* session, GridMember* member);
+            void OnMemberKicked(GridSession* session, GridMember* member) override;
             /// After this callback it is safe to access session features. If host session is fully operational if client wait for OnSessionJoined.
-            virtual void OnSessionCreated(GridSession* session);
+            void OnSessionCreated(GridSession* session) override;
             /// Called on client machines to indicate that we join successfully.
-            virtual void OnSessionJoined(GridSession* session);
+            void OnSessionJoined(GridSession* session) override;
             /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
-            virtual void OnSessionDelete(GridSession* session);
+            void OnSessionDelete(GridSession* session) override;
             /// Called when a session error occurs.
-            virtual void OnSessionError(GridSession* session, const AZStd::string& errorMsg);
+            void OnSessionError(GridSession* session, const AZStd::string& errorMsg) override;
             /// Called when the actual game(match) starts
-            virtual void OnSessionStart(GridSession* session);
+            void OnSessionStart(GridSession* session) override;
             /// Called when the actual game(match) ends
-            virtual void OnSessionEnd(GridSession* session);
+            void OnSessionEnd(GridSession* session) override;
             /// Called when we have our last chance to write statistics data for member in the session.
-            virtual void OnWriteStatistics(GridSession* session, GridMember* member, StatisticsData& data);
+            void OnWriteStatistics(GridSession* session, GridMember* member, StatisticsData& data) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

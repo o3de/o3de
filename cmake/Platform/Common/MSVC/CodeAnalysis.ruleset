@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="O3DE's CodeAnalysis Rule Set" Description=" " ToolsVersion="17.0">
+  <Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native">
+    <!-- We still have problems with macros from 3rdParty hitting this, so we issuing warnings instead of errors -->
+    <Rule Id="C26433" Action="Warning" />
+    <Rule Id="C26435" Action="Warning" />
+  </Rules>
+</RuleSet>

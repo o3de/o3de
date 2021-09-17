@@ -734,7 +734,7 @@ namespace AZ
             {
                 if (AZ::StringFunc::StartsWith(pathStrView, aliasKey))
                 {
-                    // Reduce of the size result result path by the size of the and add the resolved alias size
+                    // Add to the size of result path by the resolved alias length - the alias key length
                     AZStd::string_view postAliasView = pathStrView.substr(aliasKey.size());
                     size_t requiredFixedMaxPathSize = postAliasView.size();
                     requiredFixedMaxPathSize += aliasValue.size();

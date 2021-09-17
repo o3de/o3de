@@ -68,7 +68,7 @@ namespace AZ
                 const char* virtualType, bool inclusive, std::initializer_list<GraphType> graphTypes);
             ~FileSoftNameSetting() override = default;
 
-            bool IsVirtualType(const SceneAPI::Containers::Scene& scene, SceneAPI::Containers::SceneGraph::NodeIndex node) const;
+            bool IsVirtualType(const SceneAPI::Containers::Scene& scene, SceneAPI::Containers::SceneGraph::NodeIndex node) const override;
 
             static void Reflect(AZ::ReflectContext* context);
 

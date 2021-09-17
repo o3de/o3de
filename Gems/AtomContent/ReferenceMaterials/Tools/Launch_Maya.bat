@@ -22,22 +22,22 @@ echo ~ calling PROJ_Env.bat
 SETLOCAL enableDelayedExpansion
 
 :: PY version Major
-set DCCSI_PY_VERSION_MAJOR=2
+IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=2)
 echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
 
 :: PY version Major
-set DCCSI_PY_VERSION_MINOR=7
+IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
 echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 
 :: Maya Version
-set MAYA_VERSION=2020
-echo     MAYA_VERSION = %MAYA_VERSION%
+IF "%DCCSI_MAYA_VERSION%"=="" (set DCCSI_MAYA_VERSION=2020)
+echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
 
 :: if a local customEnv.bat exists, run it
 IF EXIST "%~dp0Project_Env.bat" CALL %~dp0Project_Env.bat
 
 echo ________________________________
-echo Launching Maya %MAYA_VERSION% for Lumberyard...
+echo Launching Maya %DCCSI_MAYA_VERSION% for Lumberyard...
 
 :::: Set Maya native project acess to this project
 ::set MAYA_PROJECT=%LY_PROJECT%

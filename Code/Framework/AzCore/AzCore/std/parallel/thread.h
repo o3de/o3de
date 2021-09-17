@@ -190,7 +190,7 @@ namespace AZStd
                 : m_f(AZStd::move(f)) {}
             thread_info_impl(Internal::thread_move_t<F> f)
                 : m_f(f) {}
-            virtual void execute() { m_f(); }
+            void execute() override { m_f(); }
         private:
             F m_f;
 
