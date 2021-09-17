@@ -16,7 +16,7 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
             QString programFilesPath = environment.value("ProgramFiles(x86)");
@@ -25,27 +25,31 @@ namespace O3DE::ProjectManager
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
-                QProcess vsWhereProcess;
-                vsWhereProcess.setProcessChannelMode(QProcess::MergedChannels);
+                QStringList vsWhereBaseArguments = QStringList { "-version",
+                                                                 "16.9.2",
+                                                                 "-latest",
+                                                                 "-requires",
+                                                                 "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
 
-                vsWhereProcess.start(
-                    vsWherePath,
-                    QStringList{
-                        "-version",
-                        "16.9.2",
-                        "-latest",
-                        "-requires",
-                        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                        "-property",
-                        "isComplete"
-                    });
+                QProcess vsWhereIsCompleteProcess;
+                vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
 
-                if (vsWhereProcess.waitForStarted() && vsWhereProcess.waitForFinished())
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "isComplete" });
+
+                if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
                 {
-                    QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
-                    if (vsWhereOutput.startsWith("1"))
+                    QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
+                    if (vsWhereIsCompleteOutput.startsWith("1"))
                     {
-                        return AZ::Success();
+                        QProcess vsWhereCompilerVersionProcess;
+                        vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
+                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "catalog_productDisplayVersion" });
+
+                        if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
+                        {
+                            QString vsWhereCompilerVersionOutput(vsWhereCompilerVersionProcess.readAllStandardOutput());
+                            return AZ::Success(vsWhereCompilerVersionOutput);
+                        }
                     }
                 }
             }

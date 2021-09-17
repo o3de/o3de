@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(QWidget* parent = nullptr);
-        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
     } // namespace ProjectUtils
