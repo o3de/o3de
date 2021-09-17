@@ -72,14 +72,7 @@ namespace EMotionFX
 
         setLayout(mainLayout);
 
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
-        QModelIndexList selectedModelIndices;
-        SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
-        if (selectedRowIndicesOutcome.IsSuccess())
-        {
-            selectedModelIndices = selectedRowIndicesOutcome.GetValue();
-        }
-        Reinit(selectedModelIndices);
+        Reinit();
 
         // Connect to the model.
         SkeletonModel* skeletonModel = nullptr;
@@ -92,9 +85,14 @@ namespace EMotionFX
         }
     }
 
-    void SkeletonModelJointWidget::Reinit(const QModelIndexList& selectedModelIndices)
+    void SkeletonModelJointWidget::Reinit()
     {
-        m_selectedModelIndices = selectedModelIndices;
+        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+        if (selectedRowIndicesOutcome.IsSuccess())
+        {
+            m_selectedModelIndices = selectedRowIndicesOutcome.GetValue();
+        }
 
         if (!EMStudio::GetManager()->GetIgnoreVisibility() && !isVisible())
         {
@@ -136,28 +134,22 @@ namespace EMotionFX
     void SkeletonModelJointWidget::showEvent(QShowEvent* event)
     {
         QWidget::showEvent(event);
-        Reinit(m_selectedModelIndices);
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
-        SkeletonModel* skeletonModel = nullptr;
-        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
-        if (skeletonModel)
-        {
-            const QModelIndexList selectedRows = skeletonModel->GetSelectionModel().selectedRows();
-            Reinit(selectedRows);
-        }
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnDataChanged([[maybe_unused]] const QModelIndex& topLeft, [[maybe_unused]] const QModelIndex& bottomRight, [[maybe_unused]] const QVector<int>& roles)
     {
-        Reinit(m_selectedModelIndices);
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnModelReset()
     {
-        Reinit(QModelIndexList());
+        Reinit();
     }
 
     Actor* SkeletonModelJointWidget::GetActor() const

@@ -33,7 +33,7 @@ namespace EMotionFX
 
         virtual void CreateGUI();
 
-        void Reinit(const QModelIndexList& selectedModelIndices);
+        void Reinit();
 
         void showEvent(QShowEvent* event) override;
 
