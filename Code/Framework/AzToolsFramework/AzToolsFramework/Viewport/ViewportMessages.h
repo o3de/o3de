@@ -282,21 +282,23 @@ namespace AzToolsFramework
             return keyboardModifiers;
         }
 
-        //!
-        class EditorViewportTimeNowRequests : public AZ::EBusTraits
+        //! An interface to deal with time requests relating to viewports.
+        //! @note The bus is global and not per viewport.
+        class EditorViewportInputTimeNowRequests : public AZ::EBusTraits
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-            //!
-            virtual std::chrono::milliseconds EditorViewportTimeNow() = 0;
+            //! Returns the current time in seconds.
+            //! This interface can be overridden for the purposes of testing to simplify viewport input requests.
+            virtual AZStd::chrono::milliseconds EditorViewportInputTimeNow() = 0;
 
         protected:
-            ~EditorViewportTimeNowRequests() = default;
+            ~EditorViewportInputTimeNowRequests() = default;
         };
 
-        using EditorViewportTimeNowRequestBus = AZ::EBus<EditorViewportTimeNowRequests>;
+        using EditorViewportInputTimeNowRequestBus = AZ::EBus<EditorViewportInputTimeNowRequests>;
 
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests

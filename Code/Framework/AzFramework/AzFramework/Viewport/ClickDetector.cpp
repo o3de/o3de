@@ -9,8 +9,7 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
+#include <AzCore/std/chrono/clocks.h>
 
 namespace AzFramework
 {
@@ -18,8 +17,8 @@ namespace AzFramework
     {
         m_timeNowFn = []
         {
-            auto now = std::chrono::steady_clock::now();
-            return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch();
+            const auto now = AZStd::chrono::high_resolution_clock::now();
+            return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
         };
     }
 
@@ -41,7 +40,7 @@ namespace AzFramework
             const auto now = m_timeNowFn();
             if (m_tryBeginTime)
             {
-                using FloatingPointSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+                using FloatingPointSeconds = AZStd::chrono::duration<float, AZStd::chrono::seconds::period>;
 
                 const auto diff = now - m_tryBeginTime.value();
                 if (FloatingPointSeconds(diff).count() < m_doubleClickInterval)
@@ -82,11 +81,8 @@ namespace AzFramework
         return ClickOutcome::Nil;
     }
 
-    void ClickDetector::OverrideTimeNowFn(AZStd::function<std::chrono::milliseconds()> timeNowFn)
+    void ClickDetector::OverrideTimeNowFn(AZStd::function<AZStd::chrono::milliseconds()> timeNowFn)
     {
         m_timeNowFn = AZStd::move(timeNowFn);
     }
 } // namespace AzFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

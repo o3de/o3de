@@ -20,7 +20,7 @@ namespace EditorInternal
         : public AzToolsFramework::ToolsApplication
         , public EditorToolsApplicationRequests::Bus::Handler
         , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
-        , public AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
     public:
         EditorToolsApplication(int* argc, char*** argv);
@@ -49,8 +49,8 @@ namespace EditorInternal
         // EditorModifierKeyRequestBus overrides ...
         AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
 
-        // EditorViewportTimeNowRequestBus overrides ...
-        std::chrono::milliseconds EditorViewportTimeNow() override;
+        // EditorViewportInputTimeNowRequestBus overrides ...
+        AZStd::chrono::milliseconds EditorViewportInputTimeNow() override;
 
     protected:
         // From EditorToolsApplicationRequests

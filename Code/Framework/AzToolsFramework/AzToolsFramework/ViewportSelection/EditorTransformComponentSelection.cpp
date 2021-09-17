@@ -1055,12 +1055,14 @@ namespace AzToolsFramework
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
 
+        // ensure the click detector uses the EditorViewportInputTimeNowRequests interface to retrieve elapsed time
+        // note: this is to facilitate overriding this functionality for purposes such as testing
         m_clickDetector.OverrideTimeNowFn(
             []
             {
-                std::chrono::milliseconds timeNow;
-                AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::BroadcastResult(
-                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Events::EditorViewportTimeNow);
+                AZStd::chrono::milliseconds timeNow;
+                AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::BroadcastResult(
+                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
                 return timeNow;
             });
     }

@@ -33,12 +33,12 @@ namespace AzManipulatorTestFramework
         : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
     {
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
-        AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusConnect();
     }
 
     ImmediateModeActionDispatcher::~ImmediateModeActionDispatcher()
     {
-        AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
     }
 

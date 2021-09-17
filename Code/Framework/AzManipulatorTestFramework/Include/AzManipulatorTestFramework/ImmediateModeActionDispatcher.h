@@ -18,7 +18,7 @@ namespace AzManipulatorTestFramework
     class ImmediateModeActionDispatcher
         : public ActionDispatcher<ImmediateModeActionDispatcher>
         , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
-        , public AzToolsFramework::ViewportInteraction::EditorViewportTimeNowRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
         using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using KeyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers;
@@ -51,8 +51,8 @@ namespace AzManipulatorTestFramework
         // EditorModifierKeyRequestBus overrides ...
         KeyboardModifiers QueryKeyboardModifiers() override;
 
-        // EditorViewportTimeNowRequestBus overrides ...
-        std::chrono::milliseconds EditorViewportTimeNow() override;
+        // EditorViewportInputTimeNowRequestBus overrides ...
+        AZStd::chrono::milliseconds EditorViewportInputTimeNow() override;
 
     protected:
         // ActionDispatcher ...
@@ -84,7 +84,8 @@ namespace AzManipulatorTestFramework
         mutable AZStd::unique_ptr<MouseInteractionEvent> m_event;
         ManipulatorViewportInteraction& m_viewportManipulatorInteraction;
 
-        std::chrono::milliseconds m_timeNow = std::chrono::milliseconds(0); //!< Current time that ticks up after each call to EditorViewportTimeNow.
+        //! Current time that ticks up after each call to EditorViewportInputTimeNow.
+        AZStd::chrono::milliseconds m_timeNow = AZStd::chrono::milliseconds(0);
     };
 
     template<typename ActualT, typename ExpectedT>
@@ -113,11 +114,12 @@ namespace AzManipulatorTestFramework
         return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
     }
 
-    inline std::chrono::milliseconds ImmediateModeActionDispatcher::EditorViewportTimeNow()
+    inline AZStd::chrono::milliseconds ImmediateModeActionDispatcher::EditorViewportInputTimeNow()
     {
-        // step the time for each call to be greater than the minimum time
-        // required for a double click to register
-        m_timeNow += std::chrono::milliseconds(10000);
+        // step the time for each call to be greater than the minimum time required for a double click to register
+        // note: the time increment is very high to ensure any potential system changes to settings such as double
+        // click interval will not be impacted
+        m_timeNow += AZStd::chrono::milliseconds(10000);
         return m_timeNow;
     }
 } // namespace AzManipulatorTestFramework

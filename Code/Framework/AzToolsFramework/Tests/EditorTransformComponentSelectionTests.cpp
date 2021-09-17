@@ -41,9 +41,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     std::ostream& operator<<(std::ostream& os, const EntityId entityId)
@@ -1022,79 +1019,45 @@ namespace UnitTest
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
     }
 
-    TEST_F(
-        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture,
-        StickyDittoManipulatorToOtherEntityChangesManipulatorAndDoesNotChangeSelection)
-    {
-        PositionEntities();
-        PositionCamera(m_cameraState);
-
-        AzToolsFramework::SelectEntity(m_entityId1);
-
-        // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
-
-        // single click select entity2
-        m_actionDispatcher->SetStickySelect(true)
-            ->CameraState(m_cameraState)
-            ->MousePosition(entity2ScreenPosition)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
-            ->MouseLButtonDown()
-            ->MouseLButtonUp();
-
-        // entity1 is still selected
-        using ::testing::UnorderedElementsAre;
-        auto selectedEntitiesAfter = SelectedEntities();
-        EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
-
-        AZStd::optional<AZ::Transform> manipulatorTransform;
-        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
-
-        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity2WorldTranslation));
-    }
-
-    TEST_F(
-        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture,
-        UnstickyDittoManipulatorToOtherEntityChangesManipulatorAndDoesNotChangeSelection)
-    {
-        PositionEntities();
-        PositionCamera(m_cameraState);
-
-        AzToolsFramework::SelectEntity(m_entityId1);
-
-        // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
-
-        // single click select entity2
-        m_actionDispatcher->SetStickySelect(false)
-            ->CameraState(m_cameraState)
-            ->MousePosition(entity2ScreenPosition)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
-            ->MouseLButtonDown()
-            ->MouseLButtonUp();
-
-        // entity1 is still selected
-        using ::testing::UnorderedElementsAre;
-        auto selectedEntitiesAfter = SelectedEntities();
-        EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
-
-        AZStd::optional<AZ::Transform> manipulatorTransform;
-        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
-
-        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity2WorldTranslation));
-    }
-
     class EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam
         : public EditorTransformComponentSelectionViewportPickingManipulatorTestFixture
         , public ::testing::WithParamInterface<bool>
     {
     };
+
+    TEST_P(
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam,
+        StickyAndUnstickyDittoManipulatorToOtherEntityChangesManipulatorAndDoesNotChangeSelection)
+    {
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        AzToolsFramework::SelectEntity(m_entityId1);
+
+        // calculate the position in screen space of the second entity
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+
+        // single click select entity2
+        m_actionDispatcher->SetStickySelect(GetParam())
+            ->CameraState(m_cameraState)
+            ->MousePosition(entity2ScreenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
+            ->MouseLButtonDown()
+            ->MouseLButtonUp();
+
+        // entity1 is still selected
+        using ::testing::UnorderedElementsAre;
+        auto selectedEntitiesAfter = SelectedEntities();
+        EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
+
+        AZStd::optional<AZ::Transform> manipulatorTransform;
+        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
+            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+
+        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity2WorldTranslation));
+    }
 
     TEST_P(
         EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam,
@@ -1153,10 +1116,7 @@ namespace UnitTest
         EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity1WorldTranslation));
     }
 
-    INSTANTIATE_TEST_CASE_P(
-        All,
-        EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam,
-        testing::Values(true, false));
+    INSTANTIATE_TEST_CASE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;
@@ -2318,6 +2278,3 @@ namespace UnitTest
     }
 
 } // namespace UnitTest
-
-#pragma optimize("", on)
-#pragma inline_depth()
