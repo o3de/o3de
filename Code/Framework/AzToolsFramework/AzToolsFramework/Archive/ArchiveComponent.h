@@ -21,21 +21,10 @@
 
 namespace AzToolsFramework
 {
-    enum class SevenZipExitCode : AZ::u32
-    {
-        NoError = 0,
-        Warning = 1,
-        FatalError = 2,
-        CommandLineError = 7,
-        NotEnoughMemory = 8,
-        UserStoppedProcess = 255
-    };
-
-    // the ArchiveComponent's job is to execute zip commands.
-    // it parses the status of zip commands and returns results.
+    // the ArchiveComponent's job is to create and manipulate zip archives.
     class ArchiveComponent
         : public AZ::Component
-        , private ArchiveCommands::Bus::Handler
+        , private ArchiveCommandsBus::Handler
     {
     public:
         AZ_COMPONENT(ArchiveComponent, "{A19EEA33-3736-447F-ACF7-DAA4B6A179AA}")
@@ -52,37 +41,35 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         //////////////////////////////////////////////////////////////////////////
-        // ArchiveCommands::Bus::Handler overrides
-        void CreateArchive(const AZStd::string& archivePath, const AZStd::string& dirToArchive, AZ::Uuid taskHandle, const ArchiveResponseOutputCallback& respCallback) override;
-        bool CreateArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& dirToArchive) override;
-        bool ExtractArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& destinationPath, bool extractWithRootDirectory) override;
-        void ExtractArchive(const AZStd::string& archivePath, const AZStd::string& destinationPath, AZ::Uuid taskHandle, const ArchiveResponseCallback& respCallback) override;
-        bool ExtractFileBlocking(const AZStd::string& archivePath, const AZStd::string& fileInArchive, const AZStd::string& destinationPath, bool overWrite) override;
-        bool ListFilesInArchiveBlocking(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& fileEntries) override;
-        bool AddFileToArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& fileToAdd) override;
-        bool AddFilesToArchiveBlocking(const AZStd::string& archivePath, const AZStd::string& workingDirectory, const AZStd::string& listFilePath) override;
-        void CancelTasks(AZ::Uuid taskHandle) override;
-        //////////////////////////////////////////////////////////////////////////
-        
-        // Launches the input zip exe as a background child process in a detached background thread, if the task handle is not null 
-        // otherwise launches input zip exe in the calling thread.
-        void LaunchZipExe(const AZStd::string& exePath, const AZStd::string& commandLineArgs, const ArchiveResponseOutputCallback& respCallback, AZ::Uuid taskHandle = AZ::Uuid::CreateNull(), const AZStd::string& workingDir = "", bool captureOutput = false);
+        // ArchiveCommandsBus::Handler overrides
+        std::future<bool> CreateArchive(
+            const AZStd::string& archivePath,
+            const AZStd::string& dirToArchive) override;
 
-        AZStd::string m_zipExePath;
-        AZStd::string m_unzipExePath;
+        std::future<bool> ExtractArchive(
+            const AZStd::string& archivePath,
+            const AZStd::string& destinationPath) override;
+
+        std::future<bool> ExtractFile(
+            const AZStd::string& archivePath,
+            const AZStd::string& fileInArchive,
+            const AZStd::string& destinationPath) override;
+
+        bool ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& outFileEntries) override;
+
+        std::future<bool> AddFileToArchive(
+            const AZStd::string& archivePath,
+            const AZStd::string& workingDirectory,
+            const AZStd::string& fileToAdd) override;
+
+        std::future<bool> AddFilesToArchive(
+            const AZStd::string& archivePath,
+            const AZStd::string& workingDirectory,
+            const AZStd::string& listFilePath) override;
+        //////////////////////////////////////////////////////////////////////////
 
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIO;
         AZ::IO::IArchive* m_archive = nullptr;
 
-        // Struct for tracking background threads/tasks
-        struct ThreadInfo
-        {
-            bool shouldStop = false;
-            AZStd::set<AZStd::thread::id> threads;
-        };
-
-        AZStd::mutex m_threadControlMutex; // Guards m_threadInfoMap
-        AZStd::condition_variable m_cv;
-        AZStd::unordered_map<AZ::Uuid, ThreadInfo> m_threadInfoMap;
     };
 } // namespace AzToolsFramework

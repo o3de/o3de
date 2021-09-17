@@ -155,35 +155,18 @@ namespace LevelBuilder
     {
         PopulateOptionalLevelDependencies(sourceRelativeFile, productPathDependencies);
 
-        AZStd::binary_semaphore extractionCompleteSemaphore;
-        auto extractResponseLambda = [&]([[maybe_unused]] bool success) {
-            AZStd::string levelsubfolder;
-            AzFramework::StringFunc::Path::Join(tempDirectory.c_str(), "level", levelsubfolder);
+        std::future<bool> extractResult;
+        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+            extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, levelPakFile, tempDirectory);
 
-            PopulateLevelSliceDependencies(levelsubfolder, productDependencies, productPathDependencies);
-            PopulateMissionDependencies(levelPakFile, levelsubfolder, productPathDependencies);
-            PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
+        [[maybe_unused]] bool result = extractResult.get();
 
-            extractionCompleteSemaphore.release();
-        };
+        AZStd::string levelsubfolder;
+        AZ::StringFunc::Path::Join(tempDirectory.c_str(), "level", levelsubfolder);
 
-        AZ::Uuid handle = AZ::Uuid::Create();
-        AzToolsFramework::ArchiveCommands::Bus::Broadcast(
-            &AzToolsFramework::ArchiveCommands::ExtractArchive,
-            levelPakFile,
-            tempDirectory,
-            handle,
-            extractResponseLambda);
-
-        const int archiveExtractSleepMS = 20;
-        bool extractionCompleted = false;
-        while (!extractionCompleted)
-        {
-            extractionCompleted = extractionCompleteSemaphore.try_acquire_for(AZStd::chrono::milliseconds(archiveExtractSleepMS));
-            // When the archive extraction is completed, the response lambda is queued on the the tick bus.
-            // This loop will keep executing queued events on the tickbus until the response unlocks the semaphore.
-            AZ::TickBus::ExecuteQueuedEvents();
-        }
+        PopulateLevelSliceDependencies(levelsubfolder, productDependencies, productPathDependencies);
+        PopulateMissionDependencies(levelPakFile, levelsubfolder, productPathDependencies);
+        PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
     }
 
     AZStd::string GetLastFolderFromPath(const AZStd::string& path)

@@ -101,9 +101,12 @@ namespace UnitTest
 
             bool CreateArchive()
             {
-                bool createResult{ false };
-                AzToolsFramework::ArchiveCommandsBus::BroadcastResult(createResult, &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchiveBlocking, GetArchivePath().toStdString().c_str(), GetArchiveFolder().toStdString().c_str());
-                return createResult;
+                std::future<bool> createResult;
+                AzToolsFramework::ArchiveCommandsBus::BroadcastResult(createResult,
+                    &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchive,
+                    GetArchivePath().toStdString().c_str(), GetArchiveFolder().toStdString().c_str());
+                bool result = createResult.get();
+                return result;
             }
 
             void SetUp() override
@@ -158,8 +161,11 @@ namespace UnitTest
 
             AZStd::vector<AZStd::string> fileList;
             bool listResult{ false };
-            AzToolsFramework::ArchiveCommandsBus::BroadcastResult(listResult, &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchiveBlocking, GetArchivePath().toStdString().c_str(), fileList);
+            AzToolsFramework::ArchiveCommandsBus::BroadcastResult(listResult,
+                &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchive,
+                GetArchivePath().toStdString().c_str(), fileList);
 
+            EXPECT_TRUE(listResult);
             EXPECT_EQ(fileList.size(), 6);
         }
 
