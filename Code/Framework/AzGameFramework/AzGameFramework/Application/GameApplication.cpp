@@ -9,12 +9,10 @@
 #include "GameApplication.h"
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/std/string/conversions.h>
-#include <GridMate/Drillers/CarrierDriller.h>
-#include <GridMate/Drillers/ReplicaDriller.h>
+#include <AzCore/Utils/Utils.h>
+
+#include <AzFramework/Archive/Archive.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
 namespace AzGameFramework
@@ -26,6 +24,28 @@ namespace AzGameFramework
     GameApplication::GameApplication(int argc, char** argv)
         : Application(&argc, &argv)
     {
+        // In the Launcher Applications the Settings Registry
+        // can read from the FileIOBase instance if available
+        m_settingsRegistry->SetUseFileIO(true);
+
+        // Attempt to mount the engine pak from the Executable Directory
+        // at the Assets alias, otherwise to attempting to mount the engine pak
+        // from the Cache folder
+        AZ::IO::FixedMaxPath enginePakPath = AZ::Utils::GetExecutableDirectory();
+        enginePakPath /= "Engine.pak";
+        if (m_archiveFileIO->Exists(enginePakPath.c_str()))
+        {
+            m_archive->OpenPack("@assets@", enginePakPath.Native());
+        }
+        else if (enginePakPath.clear(); m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        {
+            // fall back to checking if there is an Engine.pak in the Asset Cache
+            enginePakPath /= "Engine.pak";
+            if (m_archiveFileIO->Exists(enginePakPath.c_str()))
+            {
+                m_archive->OpenPack("@assets@", enginePakPath.Native());
+            }
+        }
     }
 
     GameApplication::~GameApplication()
@@ -50,10 +70,16 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 #endif
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM && (defined (AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD))
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+#endif
 
         // Used the lowercase the platform name since the bootstrap.game.<config>.<platform>.setreg is being loaded
         // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity

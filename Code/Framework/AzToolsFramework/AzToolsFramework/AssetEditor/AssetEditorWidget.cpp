@@ -102,7 +102,7 @@ namespace AzToolsFramework
             else
             {
                 AZStd::string error = AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
-                assetCheckoutAndSaveCallback(false, error, nullptr);
+                assetCheckoutAndSaveCallback(false, error, AZStd::string{});
             }
         }
 
@@ -721,7 +721,7 @@ namespace AzToolsFramework
             AZ::Data::AssetInfo assetInfo;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
             if (assetInfo.m_assetType == m_inMemoryAsset.GetType()
-                && strstr(m_expectedAddedAssetPath.c_str(), assetInfo.m_relativePath.c_str()) != 0)
+                && strstr(m_expectedAddedAssetPath.c_str(), assetInfo.m_relativePath.c_str()) != nullptr)
             {
                 m_expectedAddedAssetPath.clear();
                 m_recentlyAddedAssetPath = assetInfo.m_relativePath;

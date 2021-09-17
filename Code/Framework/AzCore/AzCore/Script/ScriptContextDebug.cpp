@@ -43,7 +43,7 @@ public:
         , m_numErrors(0)
     {
         using namespace AZStd::placeholders;
-        m_context->SetErrorHook(AZStd::bind(&ScriptErrorCatcher::ErrorCB, this, _1, _2, _3));
+        m_context->SetErrorHook([this](ScriptContext* a, ScriptContext::ErrorType b, const char* c) { ErrorCB(a,b,c); });
     }
     ~ScriptErrorCatcher()
     {
@@ -66,7 +66,7 @@ public:
 // [6/29/2012]
 //=========================================================================
 ScriptContextDebug::ScriptContextDebug(ScriptContext& scriptContext, bool isEnableStackRecord)
-    : m_luaDebug(NULL)
+    : m_luaDebug(nullptr)
     , m_currentStackLevel(-1)
     , m_stepStackLevel(-1)
     , m_isRecordCallstack(isEnableStackRecord)
@@ -104,7 +104,7 @@ void ScriptContextDebug::ConnectHook()
 //=========================================================================
 void ScriptContextDebug::DisconnectHook()
 {
-    lua_sethook(m_context.NativeContext(), 0, 0, 0);
+    lua_sethook(m_context.NativeContext(), nullptr, 0, 0);
 }
 
 //=========================================================================
@@ -149,7 +149,7 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
 
             lua_rawgeti(l, -2, AZ_LUA_CLASS_METATABLE_NAME_INDEX); // load class name
             AZ_Assert(lua_isstring(l, -1), "Internal scipt error: class without a classname at index %d", AZ_LUA_CLASS_METATABLE_NAME_INDEX);
-            
+
             if (!enumClass(lua_tostring(l, -1), behaviorClass->m_typeId, userData))
             {
                 lua_pop(l, 5);
@@ -199,7 +199,7 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
                         // for any non-built in methods
                         if (strncmp(name, "__", 2) != 0)
                         {
-                            const char* dbgParamInfo = NULL;
+                            const char* dbgParamInfo = nullptr;
 
                             // attempt to get the name
                             bool popDebugName = lua_getupvalue(l, -1, 2) != nullptr;
@@ -278,7 +278,7 @@ ScriptContextDebug::EnumRegisteredGlobals(EnumMethod enumMethod, EnumProperty en
             {
                 if (strncmp(name, "__", 2) != 0)
                 {
-                    const char* dbgParamInfo = NULL;
+                    const char* dbgParamInfo = nullptr;
                     lua_getupvalue(l, -1, 2);
                     if (lua_isstring(l, -1))
                     {
@@ -606,7 +606,7 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
     lua_pop(l, 1);
     //
     bool doBreak = false;
-    ScriptContextDebug::Breakpoint* bp = NULL;
+    ScriptContextDebug::Breakpoint* bp = nullptr;
     ScriptContextDebug::Breakpoint  localBreakPoint;
 
     lua_getinfo(l, "Sunl", ar);
@@ -735,7 +735,7 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
     {
         context->m_luaDebug = ar;
         context->m_breakCallback(context, bp);
-        context->m_luaDebug = NULL;
+        context->m_luaDebug = nullptr;
     }
 }
 
@@ -752,7 +752,7 @@ ScriptContextDebug::EnumLocals(EnumLocalCallback& cb)
         int local = 1;
         const char* name;
         ScriptDataContext dc;
-        while ((name = lua_getlocal(l, m_luaDebug, local)) != NULL)
+        while ((name = lua_getlocal(l, m_luaDebug, local)) != nullptr)
         {
             if (name[0] != '(') // skip temporary variables
             {
@@ -846,7 +846,7 @@ ScriptContextDebug::EnableBreakpoints(BreakpointCallback& cb)
 void
 ScriptContextDebug::DisableBreakpoints()
 {
-    m_breakCallback = NULL;
+    m_breakCallback = nullptr;
 }
 
 //=========================================================================
@@ -1079,7 +1079,7 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
     int valueTableIndex = -1;
     if (valueName[0] == '[')
     {
-        valueTableIndex = static_cast<int>(strtol(valueName + 1, NULL, 10));
+        valueTableIndex = static_cast<int>(strtol(valueName + 1, nullptr, 10));
     }
     if (strcmp(valueName, "__metatable__") == 0) // metatable are read only
     {
@@ -1114,7 +1114,7 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
     } break;
     case LUA_TNUMBER:
     {
-        lua_pushnumber(l, static_cast<lua_Number>(strtod(value.m_value.c_str(), NULL)));
+        lua_pushnumber(l, static_cast<lua_Number>(strtod(value.m_value.c_str(), nullptr)));
         if (localIndex != -1)
         {
             lua_setlocal(l, m_luaDebug, localIndex);
@@ -1256,7 +1256,7 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
                                 else
                                 {
                                     lua_pushvalue(l, -5);    // copy the user data (this pointer)
-                                    lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), NULL)));
+                                    lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), nullptr)));
                                     lua_call(l, 2, 0);   // call the setter
                                 }
                                 break;
@@ -1375,7 +1375,7 @@ ScriptContextDebug::GetValue(DebugValue& value)
     {
         int iLocal = 1;
         const char* localName;
-        while ((localName = lua_getlocal(l, m_luaDebug, iLocal)) != NULL)
+        while ((localName = lua_getlocal(l, m_luaDebug, iLocal)) != nullptr)
         {
             if (localName[0] != '(' && strcmp(name, localName) == 0)
             {
@@ -1460,7 +1460,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
     // create hierarchy from tokens
     const DebugValue* value = &sourceValue;
     DebugValue untokenizedValue;
-    
+
     if (tokens.size() > 1)
     {
         untokenizedValue.m_name = tokens[0];
@@ -1519,7 +1519,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
     {
         int iLocal = 1;
         const char* localName;
-        while ((localName = lua_getlocal(l, m_luaDebug, iLocal)) != NULL)
+        while ((localName = lua_getlocal(l, m_luaDebug, iLocal)) != nullptr)
         {
             lua_pop(l, 1);
             if (localName[0] != '(' && strcmp(name, localName) == 0)

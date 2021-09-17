@@ -13,6 +13,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -25,6 +26,11 @@
 
 namespace Terrain
 {
+    struct TerrainLayerPriorityComparator
+    {
+        bool operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const;
+    };
+
     class TerrainSystem
         : public AzFramework::Terrain::TerrainDataRequestBus::Handler
         , private Terrain::TerrainSystemServiceRequestBus::Handler
@@ -36,12 +42,6 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
-
-        void SetWorldMin(AZ::Vector3 worldOrigin) override;
-        void SetWorldMax(AZ::Vector3 worldBounds) override;
-        void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
-        void SetDebugWireframe(bool wireframeEnabled) override;
-
         void Activate() override;
         void Deactivate() override;
 
@@ -51,8 +51,12 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainGridResolution() const override;
+        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+
         AZ::Aabb GetTerrainAabb() const override;
+        void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
+
 
         //! Returns terrains height in meters at location x,y.
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
@@ -90,20 +94,19 @@ namespace Terrain
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
     private:
-        float GetHeightSynchronous(float x, float y) const;
-        AZ::Vector3 GetNormalSynchronous(float x, float y) const;
+        void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
+
+        float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
+        float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
+        AZ::Vector3  GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-        void SystemActivate();
-        void SystemDeactivate();
 
         struct TerrainSystemSettings
         {
             AZ::Aabb m_worldBounds;
             AZ::Vector2 m_heightQueryResolution{ 1.0f };
-            bool m_debugWireframeEnabled{ false };
             bool m_systemActive{ false };
         };
 
@@ -115,6 +118,6 @@ namespace Terrain
         AZ::Aabb m_dirtyRegion;
 
         mutable AZStd::shared_mutex m_areaMutex;
-        AZStd::unordered_map<AZ::EntityId, AZ::Aabb> m_registeredAreas;
+        AZStd::map<AZ::EntityId, AZ::Aabb, TerrainLayerPriorityComparator> m_registeredAreas;
     };
 } // namespace Terrain

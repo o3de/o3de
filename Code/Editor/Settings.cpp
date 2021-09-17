@@ -35,7 +35,6 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-#pragma comment(lib, "Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -83,7 +82,6 @@ private:
 
 namespace
 {
-
     class QtApplicationListener
         : public AzToolsFramework::EditorEvents::Bus::Handler
     {
@@ -100,20 +98,8 @@ namespace
             delete this;
         }
     };
-
 }
 
-//////////////////////////////////////////////////////////////////////////
-SGizmoSettings::SGizmoSettings()
-{
-    axisGizmoSize = 0.2f;
-    axisGizmoText = true;
-    axisGizmoMaxCount = 50;
-    helpersScale = 1.f;
-    tagpointScaleMulti = 0.5f;
-    rulerSphereScale = 0.5f;
-    rulerSphereTrans = 0.5f;
-}
 //////////////////////////////////////////////////////////////////////////
 SEditorSettings::SEditorSettings()
 {
@@ -185,7 +171,6 @@ SEditorSettings::SEditorSettings()
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
     bApplyConfigSpecInEditor = true;
-    useLowercasePaths = 0;
     showErrorDialogOnLoad = 1;
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
@@ -255,6 +240,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
+    levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
 void SEditorSettings::Connect()
@@ -565,18 +551,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    SaveValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    SaveValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    SaveValue("Settings", "HelpersScale", gizmo.helpersScale);
-    SaveValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    SaveValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    SaveValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
-
     SaveValue("Settings", "TextEditorScript", textEditorForScript);
     SaveValue("Settings", "TextEditorShaders", textEditorForShaders);
     SaveValue("Settings", "TextEditorBSpaces", textEditorForBspaces);
@@ -669,12 +643,20 @@ void SEditorSettings::Save()
     AzFramework::ApplicationRequests::Bus::Broadcast(
         &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
+
     SaveSettingsRegistryFile();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
+
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -769,18 +751,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    LoadValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    LoadValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    LoadValue("Settings", "HelpersScale", gizmo.helpersScale);
-    LoadValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    LoadValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    LoadValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
 
     LoadValue("Settings", "TextEditorScript", textEditorForScript);
     LoadValue("Settings", "TextEditorShaders", textEditorForShaders);
@@ -916,6 +886,7 @@ void SEditorSettings::Load()
 
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
+AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 
 void SEditorSettings::PostInitApply()
 {
@@ -927,7 +898,6 @@ void SEditorSettings::PostInitApply()
     // Create CVars.
     REGISTER_CVAR2("ed_highlightGeometry", &viewports.bHighlightMouseOverGeometry, viewports.bHighlightMouseOverGeometry, 0, "Highlight geometry when mouse over it");
     REGISTER_CVAR2("ed_showFrozenHelpers", &viewports.nShowFrozenHelpers, viewports.nShowFrozenHelpers, 0, "Show helpers of frozen objects");
-    REGISTER_CVAR2("ed_lowercasepaths", &useLowercasePaths, useLowercasePaths, 0, "generate paths in lowercase");
     gEnv->pConsole->RegisterInt("fe_fbx_savetempfile", 0, 0, "When importing an FBX file into Facial Editor, this will save out a conversion FSQ to the Animations/temp folder for trouble shooting");
 
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
@@ -1148,11 +1118,17 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_jsonPointerPrefix = "/Amazon/Preferences";
+    dumperSettings.m_includeFilter = [](AZStd::string_view path)
+    {
+        AZStd::string_view amazonPrefixPath("/Amazon/Preferences");
+        AZStd::string_view o3dePrefixPath("/O3DE/Preferences");
+        return amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
+            o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+    };
 
     AZStd::string stringBuffer;
     AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Preferences", stringStream, dumperSettings))
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
     {
         AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
             editorPreferencesFilePath.c_str());

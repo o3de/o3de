@@ -42,10 +42,10 @@ public: // types
 
         void UnitClamp()
         {
-            m_left = FClamp(m_left, 0.0f, 1.0f);
-            m_top = FClamp(m_top, 0.0f, 1.0f);
-            m_right = FClamp(m_right, 0.0f, 1.0f);
-            m_bottom = FClamp(m_bottom, 0.0f, 1.0f);
+            m_left = AZStd::clamp(m_left, 0.0f, 1.0f);
+            m_top = AZStd::clamp(m_top, 0.0f, 1.0f);
+            m_right = AZStd::clamp(m_right, 0.0f, 1.0f);
+            m_bottom = AZStd::clamp(m_bottom, 0.0f, 1.0f);
         }
 
         bool operator==(const Anchors& rhs) const

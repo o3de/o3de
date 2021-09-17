@@ -31,6 +31,8 @@ namespace AZ
             {
             }
 
+            ~AssetTreeNode() override = default;
+
             const AssetPrimaryInfo* GetAssetPrimaryInfo() const override
             {
                 return m_primaryinfo;
@@ -67,6 +69,8 @@ namespace AZ
         class AssetTree : public AssetTreeBase
         {
         public:
+            ~AssetTree() override = default;
+
             AssetTreeNodeBase& GetRoot() override
             {
                 return m_rootAssets;
@@ -99,6 +103,7 @@ namespace AZ
             AllocationTable(mutex_type& mutex) : m_mutex(mutex)
             {
             }
+            ~AllocationTable() override = default;
 
             AssetTreeNodeBase* FindAllocation(void* ptr) const override
             {

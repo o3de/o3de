@@ -578,15 +578,14 @@ namespace AZ
         {
             if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
-                Aabb aabb = m_meshFeatureProcessor->GetLocalAabb(m_meshHandle);
+                if (Aabb aabb = m_meshFeatureProcessor->GetLocalAabb(m_meshHandle); aabb.IsValid())
+                {
+                    aabb.MultiplyByScale(m_cachedNonUniformScale);
+                    return aabb;
+                }
+            }
 
-                aabb.MultiplyByScale(m_cachedNonUniformScale);
-                return aabb;
-            }
-            else
-            {
-                return Aabb::CreateNull();
-            }
+            return Aabb::CreateNull();
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(

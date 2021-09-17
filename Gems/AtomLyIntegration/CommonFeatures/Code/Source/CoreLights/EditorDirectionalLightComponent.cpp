@@ -141,14 +141,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 0.1f)
                             ->Attribute(Edit::Attributes::Suffix, " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSofteningBoundaryWidthDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
-                            "Sample count for prediction of whether the pixel is on the boundary. "
-                            "Specific to PCF and ESM+PCF.")
-                            ->Attribute(Edit::Attributes::Min, 4)
-                            ->Attribute(Edit::Attributes::Max, 16)
-                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsEsmDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is used only when the pixel is predicted as on the boundary. "
                             "Specific to PCF and ESM+PCF.")
@@ -157,16 +150,11 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_pcfMethod, "Pcf method",
-                            "Type of PCF to use.\n"
-                            "  Bicubic: a smooth, fixed-size kernel \n"
-                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
-                            ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
-                            ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
-                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
-                            ;
-
+                            Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
+                            "Shadow Receiver Plane Bias Enable",
+                            "This reduces shadow acne when using large pcf kernels.")
+                          ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                          ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
                 }
             }
 

@@ -417,7 +417,6 @@ namespace AZ
 
         void FrameScheduler::ExecuteContextInternal(FrameGraphExecuteGroup& group, uint32_t index)
         {
-            AZ_PROFILE_FUNCTION(RHI);
             FrameGraphExecuteContext* executeContext = group.BeginContext(index);
 
             {

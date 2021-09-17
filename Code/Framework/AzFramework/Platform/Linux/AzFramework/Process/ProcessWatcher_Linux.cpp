@@ -263,21 +263,29 @@ namespace AzFramework
         }
         commandAndArgs[commandTokens.size()] = nullptr;
 
+        AZStd::vector<AZStd::unique_ptr<char[]>> environmentVariablesManaged;
+        AZStd::vector<char*> environmentVariablesVector;
         char** environmentVariables = nullptr;
-        int numEnvironmentVars = 0;
         if (processLaunchInfo.m_environmentVariables)
         {
-            numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
-            // Adding one more as exec expects the array to have a nullptr as the last element
-            environmentVariables = new char*[numEnvironmentVars + 1];
-            for (int i = 0; i < numEnvironmentVars; i++)
+            for (const auto& envVarString : *processLaunchInfo.m_environmentVariables)
             {
-                const AZStd::string& envVarString = processLaunchInfo.m_environmentVariables->at(i);
-                environmentVariables[i] = new char[envVarString.size() + 1];
-                environmentVariables[i][0] = '\0';
-                azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
+                auto& environmentVariable = environmentVariablesManaged.emplace_back(AZStd::make_unique<char[]>(envVarString.size() + 1));
+                environmentVariable[0] = '\0';
+                azstrcat(environmentVariable.get(), envVarString.size() + 1, envVarString.c_str());
+                environmentVariablesVector.emplace_back(environmentVariable.get());
             }
-            environmentVariables[numEnvironmentVars] = NULL;
+            // Adding one more as exec expects the array to have a nullptr as the last element
+            environmentVariablesVector.emplace_back(nullptr);
+            environmentVariables = environmentVariablesVector.data();
+        }
+        else
+        {
+            // If no environment variables were specified, then use the current process's environment variables
+            // and pass it along for the execute .
+            extern char **environ;              // Defined in unistd.h
+            environmentVariables = ::environ;
+            AZ_Assert(environmentVariables, "Environment variables for current process not available\n");
         }
 
         pid_t child_pid = fork();
@@ -289,15 +297,6 @@ namespace AzFramework
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
-
-        if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }
 
         for (int i = 0; i < commandTokens.size(); i++)
         {
@@ -373,7 +372,7 @@ namespace AzFramework
         }
 
         bool isProcessDone = false;
-        time_t startTime = time(0);
+        time_t startTime = time(nullptr);
         time_t currentTime = startTime;
         AZ_Assert(currentTime != -1, "time(0) returned an invalid time");
         while (((currentTime - startTime) < waitTimeInSeconds) && !isProcessDone)
@@ -385,7 +384,7 @@ namespace AzFramework
                 m_pWatcherData->m_childProcessIsDone = true;
                 break;
             }
-            currentTime = time(0);
+            currentTime = time(nullptr);
         }
         //returns false if process is still running after time
         return isProcessDone;

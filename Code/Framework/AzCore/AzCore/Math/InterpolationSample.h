@@ -77,7 +77,7 @@ namespace AZ
         : public Sample<Vector3>
     {
     public:
-        Vector3 GetInterpolatedValue(TimeType time) override final
+        Vector3 GetInterpolatedValue(TimeType time) final
         {
             Vector3 interpolatedValue = m_previousValue;
             if (m_targetTimestamp != 0)
@@ -108,7 +108,7 @@ namespace AZ
         : public Sample<Quaternion>
     {
     public:
-        Quaternion GetInterpolatedValue(TimeType time) override final
+        Quaternion GetInterpolatedValue(TimeType time) final
         {
             Quaternion interpolatedValue = m_previousValue;
             if (m_targetTimestamp != 0)
@@ -144,7 +144,7 @@ namespace AZ
         : public Sample<Vector3>
     {
     public:
-        Vector3 GetInterpolatedValue(TimeType /*time*/) override final
+        Vector3 GetInterpolatedValue(TimeType /*time*/) final
         {
             return GetTargetValue();
         }
@@ -155,7 +155,7 @@ namespace AZ
         : public Sample<Quaternion>
     {
     public:
-        Quaternion GetInterpolatedValue(TimeType /*time*/) override final
+        Quaternion GetInterpolatedValue(TimeType /*time*/) final
         {
             return GetTargetValue();
         }

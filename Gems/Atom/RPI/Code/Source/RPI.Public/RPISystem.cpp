@@ -293,7 +293,7 @@ namespace AZ
                     // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
                     m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                    // Update View Srgs
+                    // Update Scene and View Srgs
                     for (auto& scenePtr : m_scenes)
                     {
                         scenePtr->UpdateSrgs();

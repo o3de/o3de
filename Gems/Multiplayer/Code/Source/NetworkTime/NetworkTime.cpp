@@ -84,6 +84,13 @@ namespace Multiplayer
 
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
     {
+        if (!IsTimeRewound())
+        {
+            // If we're not inside a rewind scope then reset any rewound state and exit
+            ClearRewoundEntities();
+            return;
+        }
+
         // Since the vis system doesn't support rewound queries, first query with an expanded volume to catch any fast moving entities
         const AZ::Aabb expandedVolume = rewindVolume.GetExpanded(AZ::Vector3(sv_RewindVolumeExtrudeDistance));
 

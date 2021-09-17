@@ -25,13 +25,11 @@ public:
     CLevelInfo() = default;
 
     // ILevelInfo
-    virtual const char* GetName() const { return m_levelName.c_str(); }
-    virtual const char* GetPath() const { return m_levelPath.c_str(); }
-    virtual const char* GetAssetName() const { return m_levelAssetName.c_str(); }
+    const char* GetName() const override { return m_levelName.c_str(); }
+    const char* GetPath() const override { return m_levelPath.c_str(); }
+    const char* GetAssetName() const override { return m_levelAssetName.c_str(); }
     // ~ILevelInfo
 
-
-    void GetMemoryUsage(ICrySizer*) const;
 
 private:
     bool ReadInfo();
@@ -64,9 +62,9 @@ public:
     CLevel() {}
     virtual ~CLevel() = default;
 
-    virtual void Release() { delete this; }
+    void Release() override { delete this; }
 
-    virtual ILevelInfo* GetLevelInfo() { return &m_levelInfo; }
+    ILevelInfo* GetLevelInfo() override { return &m_levelInfo; }
 
 private:
     CLevelInfo m_levelInfo;
@@ -79,42 +77,37 @@ public:
     CLevelSystem(ISystem* pSystem, const char* levelsFolder);
     virtual ~CLevelSystem();
 
-    void Release() { delete this; };
+    void Release() override { delete this; };
 
     // ILevelSystem
-    virtual void Rescan(const char* levelsFolder);
-    virtual int GetLevelCount();
-    virtual ILevelInfo* GetLevelInfo(int level);
-    virtual ILevelInfo* GetLevelInfo(const char* levelName);
+    void Rescan(const char* levelsFolder) override;
+    int GetLevelCount() override;
+    ILevelInfo* GetLevelInfo(int level) override;
+    ILevelInfo* GetLevelInfo(const char* levelName) override;
 
-    virtual void AddListener(ILevelSystemListener* pListener);
-    virtual void RemoveListener(ILevelSystemListener* pListener);
+    void AddListener(ILevelSystemListener* pListener) override;
+    void RemoveListener(ILevelSystemListener* pListener) override;
 
-    virtual bool LoadLevel(const char* levelName);
-    virtual void UnloadLevel();
-    virtual bool IsLevelLoaded() { return m_bLevelLoaded; }
+    bool LoadLevel(const char* levelName) override;
+    void UnloadLevel() override;
+    bool IsLevelLoaded() override { return m_bLevelLoaded; }
     const char* GetCurrentLevelName() const override
     {
         if (m_pCurrentLevel && m_pCurrentLevel->GetLevelInfo())
         {
             return m_pCurrentLevel->GetLevelInfo()->GetName();
         }
-        else
-        {
-            return "";
-        }
+        return "";
     }
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
-    virtual void SetLevelLoadFailed(bool loadFailed) { m_levelLoadFailed = loadFailed; }
-    virtual bool GetLevelLoadFailed() { return m_levelLoadFailed; }
+    void SetLevelLoadFailed(bool loadFailed) override { m_levelLoadFailed = loadFailed; }
+    bool GetLevelLoadFailed() override { return m_levelLoadFailed; }
 
     // Unsupported by legacy level system.
-    virtual AZ::Data::AssetType GetLevelAssetType() const { return {}; }
+    AZ::Data::AssetType GetLevelAssetType() const override { return {}; }
 
     // ~ILevelSystem
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
 private:
 

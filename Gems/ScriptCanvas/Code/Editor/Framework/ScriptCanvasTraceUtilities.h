@@ -128,15 +128,15 @@ namespace ScriptCanvasEditor
             }
         }
 
-        bool OnPreAssert(const char*, int, const char*, const char*) { return suppressPreAssert; }
-        bool OnAssert(const char*) { return suppressAssert; }
-        bool OnException(const char*) { return suppressException; }
-        bool OnPreError(const char*, const char*, int, const char*, const char*) { return suppressPreError; }
-        bool OnError(const char*, const char*) { return suppressError; }
-        bool OnPreWarning(const char*, const char*, int, const char*, const char*) { return suppressPreWarning; }
-        bool OnWarning(const char*, const char*) { return suppressWarning; }
-        bool OnPrintf(const char*, const char*) { return suppressPrintf; }
-        bool OnOutput(const char*, const char*) { return suppressAllOutput; }
+        bool OnPreAssert(const char*, int, const char*, const char*) override { return suppressPreAssert; }
+        bool OnAssert(const char*) override { return suppressAssert; }
+        bool OnException(const char*) override { return suppressException; }
+        bool OnPreError(const char*, const char*, int, const char*, const char*) override { return suppressPreError; }
+        bool OnError(const char*, const char*) override { return suppressError; }
+        bool OnPreWarning(const char*, const char*, int, const char*, const char*) override { return suppressPreWarning; }
+        bool OnWarning(const char*, const char*) override { return suppressWarning; }
+        bool OnPrintf(const char*, const char*) override { return suppressPrintf; }
+        bool OnOutput(const char*, const char*) override { return suppressAllOutput; }
 
         void SuppressPreAssert(bool suppress) override { suppressPreAssert = suppress; }
         void SuppressAssert(bool suppress)override { suppressAssert = suppress; }

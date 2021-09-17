@@ -389,7 +389,7 @@ namespace EMotionFX
         {
             QLabel* noColliders = new QLabel(
                 "To adjust the properties of the Simulated Object Colliders, "
-                "enable the PhysX gem via the Project Configurator");
+                "enable the PhysX gem via the Project Manager");
 
             colliderWidgetLayout->addWidget(noColliders);
         }

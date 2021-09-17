@@ -63,7 +63,7 @@ namespace ImageProcessingAtom
         StepAll
     };
 
-    const char ProcessStepNames[StepAll][64] =
+    [[maybe_unused]] const char ProcessStepNames[StepAll][64] =
     {
         "ValidateInput",
         "GenerateColorChart",
@@ -115,6 +115,11 @@ namespace ImageProcessingAtom
         {
             outProducts.push_back(path);
         }
+    }
+
+    const ImageConvertProcessDescriptor* ImageConvertProcess::GetInputDesc() const
+    {
+        return m_input.get();
     }
 
     ImageConvertProcess::ImageConvertProcess(AZStd::unique_ptr<ImageConvertProcessDescriptor>&& descriptor)
@@ -350,7 +355,7 @@ namespace ImageProcessingAtom
         // output conversion log
         if (m_isSucceed && m_isFinished)
         {
-            const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
+            [[maybe_unused]] const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
             if (m_input->m_isPreview)
             {
                 AZ_TracePrintf("Image Processing", "Image (%d bytes) converted in %f seconds\n", sizeTotal, m_processTime);
@@ -554,12 +559,6 @@ namespace ImageProcessingAtom
     // pixel format conversion
     bool ImageConvertProcess::ConvertPixelformat()
     {
-        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
-        {
-            m_image->Get()->Swizzle("rgb1");
-        }
-
         //set up compress option
         ICompressor::EQuality quality;
         if (m_input->m_isPreview)
@@ -574,7 +573,14 @@ namespace ImageProcessingAtom
         // set the compression options
         m_image->GetCompressOption().compressQuality = quality;
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
-        m_image->GetCompressOption().ispcDiscardAlpha = m_input->m_presetSetting.m_discardAlpha;
+        m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
+
+        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
+        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
+        {
+            m_image->GetCompressOption().discardAlpha = true;
+        }
+
         m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
 
         return true;
@@ -971,7 +977,7 @@ namespace ImageProcessingAtom
             IImageObjectPtr previewImageAlpha = imageToProcess2.Get();
 
             const uint32 imageMips = previewImage->GetMipCount();
-            const uint32 alphaMips = previewImageAlpha->GetMipCount();
+            [[maybe_unused]] const uint32 alphaMips = previewImageAlpha->GetMipCount();
 
             // Get count of bytes per pixel for both rgb and alpha images
             uint32 imagePixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_R8G8B8A8)->bitsPerBlock / 8;
@@ -983,7 +989,7 @@ namespace ImageProcessingAtom
             for (uint32 mipLevel = 0; mipLevel < imageMips; ++mipLevel)
             {
                 const uint32 pixelCount = previewImage->GetPixelCount(mipLevel);
-                const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
+                [[maybe_unused]] const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
 
                 AZ_Assert(pixelCount == alphaPixelCount, "Pixel count for image and alpha image at mip level %d is not equal!", mipLevel);
 

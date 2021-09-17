@@ -150,9 +150,7 @@ namespace AZ::IO::IStreamerTypes
 
     private:
         AZStd::atomic_int m_lockCounter{ 0 };
-#ifdef AZ_ENABLE_TRACING
         AZStd::atomic_int m_allocationCounter{ 0 };
-#endif
         AZ::IAllocatorAllocate& m_allocator;
     };
 

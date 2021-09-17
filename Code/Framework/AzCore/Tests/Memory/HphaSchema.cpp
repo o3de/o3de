@@ -120,17 +120,32 @@ namespace Benchmark
     class HphaSchemaBenchmarkFixture 
         : public ::benchmark::Fixture
     {
-    public:
-        void SetUp(const ::benchmark::State& state)
+        void internalSetUp()
         {
-            AZ_UNUSED(state);
             AZ::AllocatorInstance<HphaSchema_TestAllocator>::Create();
         }
 
-        void TearDown(const ::benchmark::State& state)
+        void internalTearDown()
         {
-            AZ_UNUSED(state);
             AZ::AllocatorInstance<HphaSchema_TestAllocator>::Destroy();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         static void BM_Allocations(benchmark::State& state, const AllocationSizeArray& allocationArray)

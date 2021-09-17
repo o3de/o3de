@@ -90,7 +90,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {0};
+            void* addresses[numAllocations] = {nullptr};
 
             IAllocatorAllocate& sysAlloc = AllocatorInstance<SystemAllocator>::Get();
 
@@ -242,7 +242,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // realloc test
-            address[0] = NULL;
+            address[0] = nullptr;
             static const unsigned int checkValue = 0x0badbabe;
             // create tree (non pool) allocation (we usually pool < 256 bytes)
             address[0] = sysAlloc.Allocate(2048, 16);
@@ -372,7 +372,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (i = 0; address[i] != 0; ++i)
+            for (i = 0; address[i] != nullptr; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -544,7 +544,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {0};
+            void* addresses[numAllocations] = {nullptr};
 
             IAllocatorAllocate& poolAlloc = AllocatorInstance<ThreadPoolAllocator>::Get();
 
@@ -665,7 +665,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (int i = 0; address[i] != 0; ++i)
+            for (int i = 0; address[i] != nullptr; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -820,7 +820,7 @@ namespace UnitTest
         AllocatorInstance<SystemAllocator>::Create(sysDesc);
 
         BestFitExternalMapAllocator::Descriptor desc;
-        desc.m_mapAllocator = NULL; // use the system allocator
+        desc.m_mapAllocator = nullptr; // use the system allocator
         desc.m_memoryBlockByteSize = 4 * 1024 * 1024;
         desc.m_memoryBlock = azmalloc(desc.m_memoryBlockByteSize, desc.m_memoryBlockAlignment);
 
@@ -1179,6 +1179,8 @@ namespace UnitTest
             size_type               Capacity() const override                             { return 1 * 1024 * 1024 * 1024; }
             /// Returns max allocation size if possible. If not returned value is 0
             size_type               GetMaxAllocationSize() const override                 { return 1 * 1024 * 1024 * 1024; }
+            /// Returns max allocation size of a single contiguous allocation
+            size_type               GetMaxContiguousAllocationSize() const override       { return 1 * 1024 * 1024 * 1024; }
             /// Returns a pointer to a sub-allocator or NULL.
             IAllocatorAllocate*     GetSubAllocator() override                            { return NULL; }
         };
