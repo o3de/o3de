@@ -172,6 +172,14 @@ namespace AtomToolsFramework
             // ignore these updates if the camera is being updated internally
             if (!m_updatingTransformInternally)
             {
+                if (m_storedCamera.has_value())
+                {
+                    // if an external change occurs ensure we update the stored reference frame is one is set
+                    RefreshReferenceFrame();
+                    return;
+                }
+
+                m_previousCamera = m_targetCamera;
                 UpdateCameraFromTransform(m_targetCamera, m_modularCameraViewportContext->GetCameraTransform());
                 m_camera = m_targetCamera;
             }
@@ -253,14 +261,15 @@ namespace AtomToolsFramework
             m_camera.m_lookAt = current.GetTranslation();
             m_targetCamera = m_camera;
 
-            if (animationTime >= 1.0f)
-            {
-                m_cameraMode = CameraMode::Control;
-            }
-
             m_cameraAnimation.m_time = AZ::GetClamp(animationTime + event.m_deltaTime.count(), 0.0f, 1.0f);
 
             m_modularCameraViewportContext->SetCameraTransform(current);
+
+            if (animationTime >= 1.0f)
+            {
+                m_cameraMode = CameraMode::Control;
+                RefreshReferenceFrame();
+            }
         }
 
         m_updatingTransformInternally = false;
@@ -280,7 +289,7 @@ namespace AtomToolsFramework
     void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
     {
         m_cameraMode = CameraMode::Animation;
-        m_cameraAnimation = CameraAnimation{ m_camera.Transform(), worldFromLocal, 0.0f };
+        m_cameraAnimation = CameraAnimation{ m_referenceFrameOverride * m_camera.Transform(), worldFromLocal, 0.0f };
         m_lookAtAfterInterpolation = worldFromLocal.GetTranslation() + worldFromLocal.GetBasisY() * lookAtDistance;
     }
 
@@ -289,13 +298,36 @@ namespace AtomToolsFramework
         return m_lookAtAfterInterpolation;
     }
 
-    void ModularViewportCameraControllerInstance::OverrideReferenceFrame(const AZ::Transform& worldFromLocal)
+    void ModularViewportCameraControllerInstance::SetReferenceFrame(const AZ::Transform& worldFromLocal)
     {
+        if (!m_storedCamera.has_value())
+        {
+            m_storedCamera = m_previousCamera;
+        }
+
         m_referenceFrameOverride = worldFromLocal;
-        m_camera.m_pitch = 0.0f;
-        m_camera.m_yaw = 0.0f;
-        m_camera.m_lookAt = AZ::Vector3::CreateZero();
-        m_camera.m_lookDist = 0.0f;
-        m_targetCamera = m_camera;
+        m_targetCamera.m_pitch = 0.0f;
+        m_targetCamera.m_yaw = 0.0f;
+        m_targetCamera.m_lookAt = AZ::Vector3::CreateZero();
+        m_targetCamera.m_lookDist = 0.0f;
+        m_camera = m_targetCamera;
+    }
+
+    void ModularViewportCameraControllerInstance::ClearReferenceFrame()
+    {
+        m_referenceFrameOverride = AZ::Transform::CreateIdentity();
+
+        if (m_storedCamera.has_value())
+        {
+            m_targetCamera = m_storedCamera.value();
+            m_camera = m_targetCamera;
+        }
+
+        m_storedCamera.reset();
+    }
+
+    void ModularViewportCameraControllerInstance::RefreshReferenceFrame()
+    {
+        m_referenceFrameOverride = m_modularCameraViewportContext->GetCameraTransform() * m_camera.Transform().GetInverse();
     }
 } // namespace AtomToolsFramework

@@ -116,11 +116,16 @@ namespace AtomToolsFramework
         // ModularViewportCameraControllerRequestBus overrides ...
         void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
         AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
-        void OverrideReferenceFrame(const AZ::Transform& worldFromLocal) override;
+        void SetReferenceFrame(const AZ::Transform& worldFromLocal) override;
+        void ClearReferenceFrame() override;
 
     private:
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        //! Update the reference frame after a change has been made to the camera
+        //! view without updating the internal camera via user input.
+        void RefreshReferenceFrame();
 
         //! The current mode the camera controller is in.
         enum class CameraMode
@@ -140,6 +145,8 @@ namespace AtomToolsFramework
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
         AzFramework::Camera m_targetCamera; //!< The target (next) camera state that m_camera is catching up to.
+        AzFramework::Camera m_previousCamera; //!< The state of the camera from the previous frame.
+        AZStd::optional<AzFramework::Camera> m_storedCamera; //!< A potentially stored camera for when a custom reference frame is set.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
         CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.

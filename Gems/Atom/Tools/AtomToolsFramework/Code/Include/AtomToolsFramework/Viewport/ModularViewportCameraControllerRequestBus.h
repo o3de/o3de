@@ -35,8 +35,11 @@ namespace AtomToolsFramework
         //! Look at point after an interpolation has finished and no translation has occurred.
         virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
 
-        //!
-        virtual void OverrideReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+        //! Set a new reference frame other than the identity for the camera controller.
+        virtual void SetReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+
+        //! Clear the current reference frame to restore the identity.
+        virtual void ClearReferenceFrame() = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;
