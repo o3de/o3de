@@ -203,10 +203,6 @@ namespace UnitTest
 
             const AZStd::string engroot = AZ::Test::GetEngineRootPath();
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engroot.c_str());
-
-            AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
-            assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetRoot.c_str());
         }
 
         void TearDown() override
