@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 
 namespace AzToolsFramework
@@ -22,10 +23,12 @@ namespace AzToolsFramework
         virtual ~ViewportEditorModeTrackerInterface() = default;
 
         //! Registers the specified editor mode as active for the specified viewport.
-        virtual void RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RegisterMode(
+            const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
        
         //! Unregisters the specified editor mode as active for the specified viewport.
-        virtual void UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+        virtual AZ::Outcome<void, AZStd::string> UnregisterMode(
+            const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
 
         //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.
         virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;

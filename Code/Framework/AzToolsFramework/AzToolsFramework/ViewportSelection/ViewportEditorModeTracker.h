@@ -26,10 +26,10 @@ namespace AzToolsFramework
         static constexpr AZ::u8 NumEditorModes = 4;
 
         //! Sets the specified mode as active.
-        void SetModeActive(ViewportEditorMode mode);
+        AZ::Outcome<void, AZStd::string> SetModeActive(ViewportEditorMode mode);
 
         // Sets the specified mode as inactive.
-        void SetModeInactive(ViewportEditorMode mode);
+        AZ::Outcome<void, AZStd::string> SetModeInactive(ViewportEditorMode mode);
 
         // ViewportEditorModesInterface ...
         bool IsModeActive(ViewportEditorMode mode) const override;
@@ -49,8 +49,8 @@ namespace AzToolsFramework
         void UnregisterInterface();
 
         // ViewportEditorModeTrackerInterface overrides ...
-        void RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
-        void UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
+        AZ::Outcome<void, AZStd::string> RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
+        AZ::Outcome<void, AZStd::string> UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
         size_t GetTrackedViewportCount() const override;
         bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
