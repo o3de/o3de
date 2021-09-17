@@ -145,7 +145,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto archive = m_archive->OpenArchive(archivePath, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to create archive file (%s)", archivePath.c_str());
@@ -178,14 +178,14 @@ namespace AzToolsFramework
 
                     thisSuccess = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                     AZ_Error(
-                        s_traceName, thisSuccess, "Error %d encountered while adding '%s' to archive '%s'", result, fileName.c_str(),
-                        archive->GetFullPath());
+                        s_traceName, thisSuccess, "Error %d encountered while adding '%s' to archive '%.*s'", result, fileName.c_str(),
+                        AZ_STRING_ARG(archive->GetFullPath().Native()));
                 }
                 else
                 {
                     AZ_Error(
-                        s_traceName, false, "Error encountered while reading '%s' to add to archive '%s'", fileName.c_str(),
-                        archive->GetFullPath());
+                        s_traceName, false, "Error encountered while reading '%s' to add to archive '%.*s'", fileName.c_str(),
+                        AZ_STRING_ARG(archive->GetFullPath().Native()));
                 }
 
                 success = (success && thisSuccess);
@@ -465,14 +465,14 @@ namespace AzToolsFramework
 
                 success = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                 AZ_Error(
-                    s_traceName, success, "Error %d encountered while adding '%s' to archive '%s'", result, fileToAdd.c_str(),
-                    archive->GetFullPath());
+                    s_traceName, success, "Error %d encountered while adding '%s' to archive '%.*s'", result, fileToAdd.c_str(),
+                    AZ_STRING_ARG(archive->GetFullPath().Native()));
             }
             else
             {
                 AZ_Error(
-                    s_traceName, false, "Error encountered while reading '%s' to add to archive '%s'", fileToAdd.c_str(),
-                    archive->GetFullPath());
+                    s_traceName, false, "Error encountered while reading '%s' to add to archive '%.*s'", fileToAdd.c_str(),
+                    AZ_STRING_ARG(archive->GetFullPath().Native()));
             }
 
             p.set_value(success);
@@ -548,8 +548,8 @@ namespace AzToolsFramework
                 else
                 {
                     AZ_Error(
-                        s_traceName, false, "Error encountered while reading '%.*s' to add to archive '%s'", AZ_STRING_ARG(filePathLine),
-                        archive->GetFullPath());
+                        s_traceName, false, "Error encountered while reading '%.*s' to add to archive '%.*s'", AZ_STRING_ARG(filePathLine),
+                        AZ_STRING_ARG(archive->GetFullPath().Native()));
                 }
             };
 
