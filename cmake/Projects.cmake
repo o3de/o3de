@@ -10,7 +10,7 @@
 
 include_guard()
 
-set(LY_PROJECTS "${LY_PROJECTS}" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
+set(LY_PROJECTS "" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
 
 #! ly_add_target_dependencies: adds module load dependencies for this target.
 #

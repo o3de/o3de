@@ -21,7 +21,7 @@
     <Page Name="Install">
         <Text X="38" Y="142" Width="-42" Height="34" FontId="0" DisablePrefix="yes">#(loc.InstallHeader)</Text>
 
-@WIX_THEME_INSTALL_LICENSE_ELEMENTS@
+<!--@WIX_THEME_INSTALL_LICENSE_ELEMENTS@-->
 
         <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
         <Button Name="OptionsButton" X="-190" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
@@ -33,11 +33,14 @@
     <Page Name="Options">
         <Text X="38" Y="142" Width="-42" Height="34" FontId="0" DisablePrefix="yes">#(loc.OptionsHeader)</Text>
 
-        <Text X="42" Y="202" Width="-42" Height="18" FontId="1" DisablePrefix="yes">#(loc.OptionsLocationLabel)</Text>
-        <Editbox Name="FolderEditbox" X="42" Y="231" Width="354" Height="21" TabStop="yes" FontId="1" FileSystemAutoComplete="yes" />
-        <Button Name="BrowseButton" X="406" Y="230" Width="80" Height="23" TabStop="yes" FontId="1">#(loc.OptionsBrowseButton)</Button>
-        <Text X="42" Y="262" Width="-42" Height="20" FontId="4" DisablePrefix="yes">#(loc.OptionsWarningTitle)</Text>
-        <Text X="42" Y="282" Width="-42" Height="54" FontId="1" DisablePrefix="yes">#(loc.OptionsWarning)</Text>
+        <Checkbox Name="DebugSDK" X="42" Y="190" Width="-42" Height="20">Include debug SDK</Checkbox>
+        <Checkbox Name="DebugSDK" X="42" Y="210" Width="-42" Height="20">Include release monolithic SDK</Checkbox>
+
+        <Text X="42" Y="240" Width="-42" Height="18" FontId="1" DisablePrefix="yes">#(loc.OptionsLocationLabel)</Text>
+        <Editbox Name="FolderEditbox" X="42" Y="260" Width="354" Height="21" TabStop="yes" FontId="1" FileSystemAutoComplete="yes" />
+        <Button Name="BrowseButton" X="406" Y="260" Width="80" Height="23" TabStop="yes" FontId="1">#(loc.OptionsBrowseButton)</Button>
+        <Text X="42" Y="285" Width="-42" Height="20" FontId="4" DisablePrefix="yes">#(loc.OptionsWarningTitle)</Text>
+        <Text X="42" Y="310" Width="-42" Height="54" FontId="1" DisablePrefix="yes">#(loc.OptionsWarning)</Text>
 
         <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
         <Button Name="OptionsOkButton" X="-106" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.OptionsOkButton)</Button>

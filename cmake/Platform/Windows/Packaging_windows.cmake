@@ -23,6 +23,7 @@ set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
 
 set(CPACK_GENERATOR WIX)
 
+set(CPACK_THREADS 0)
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
 set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
@@ -30,8 +31,8 @@ set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103
 # workaround for shortening the path cpack installs to by stripping the platform directory and forcing monolithic
 # mode to strip out component folders.  this unfortunately is the closest we can get to changing the install location
 # as CPACK_PACKAGING_INSTALL_PREFIX/CPACK_SET_DESTDIR isn't supported for the WiX generator
-set(CPACK_TOPLEVEL_TAG "")
-set(CPACK_MONOLITHIC_INSTALL ON)
+#set(CPACK_TOPLEVEL_TAG "")
+#set(CPACK_MONOLITHIC_INSTALL ON)
 
 # CPack will generate the WiX product/upgrade GUIDs further down the chain if they weren't supplied
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to

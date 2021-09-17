@@ -105,18 +105,24 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             RUNTIME_SUBDIR ${target_runtime_output_subdirectory}
         )
     else()
-        install(
-            TARGETS ${TARGET_NAME}
-            ARCHIVE
-                DESTINATION ${archive_output_directory}
-                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-            LIBRARY
-                DESTINATION ${library_output_directory}/${target_library_output_subdirectory}
-                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-            RUNTIME
-                DESTINATION ${runtime_output_directory}/${target_runtime_output_subdirectory}
-                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+            install(
+                TARGETS ${TARGET_NAME}
+                ARCHIVE
+                    DESTINATION ${archive_output_directory}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    CONFIGURATIONS ${conf}
+                LIBRARY
+                    DESTINATION ${library_output_directory}/${target_library_output_subdirectory}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    CONFIGURATIONS ${conf}
+                RUNTIME
+                    DESTINATION ${runtime_output_directory}/${target_runtime_output_subdirectory}
+                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    CONFIGURATIONS ${conf}
+            )
+        endforeach()
     endif()
 
     # CMakeLists.txt related files
@@ -499,12 +505,15 @@ function(ly_setup_runtime_dependencies)
     if(COMMAND ly_install_code_function_override)
         ly_install_code_function_override()
     else()
-        install(CODE
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+            install(CODE
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
+                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+            )
+        endforeach()
     endif()
 
     unset(runtime_commands)
@@ -543,9 +552,15 @@ endfunction()"
 
     list(REMOVE_DUPLICATES runtime_commands)
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
-    install(CODE "${runtime_commands_str}" 
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        install(CODE 
+"if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^(${conf})\$\")
+    ${runtime_commands_str}
+endif()" 
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+        )
+    endforeach()
 
 endfunction()
 
