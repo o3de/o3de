@@ -33,8 +33,6 @@
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, ed_viewportStickySelect);
-
     class EditorVisibleEntityDataCache;
 
     using EntityIdSet = AZStd::unordered_set<AZ::EntityId>; //!< Alias for unordered_set of EntityIds.

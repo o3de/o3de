@@ -11,59 +11,9 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace UnitTest
 {
-    static const AZ::Uuid BoxShapeComponentTypeId = "{5EDF4B9E-0D3D-40B8-8C91-5142BCFC30A6}";
-
-    class MockBoxShapeComponent
-        : public AZ::Component
-    {
-    public:
-        AZ_COMPONENT(MockBoxShapeComponent, BoxShapeComponentTypeId)
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
-        {
-        }
-
-        void Activate() override
-        {
-        }
-
-        void Deactivate() override
-        {
-        }
-
-        bool ReadInConfig([[maybe_unused]] const AZ::ComponentConfig* baseConfig) override
-        {
-            return true;
-        }
-
-        bool WriteOutConfig([[maybe_unused]] AZ::ComponentConfig* outBaseConfig) const override
-        {
-            return true;
-        }
-
-    private:
-        static void GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
-            provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
-        }
-
-        static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-        }
-
-        static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-        }
-
-        static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-        {
-        }
-    };
 
     class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
@@ -106,4 +56,40 @@ namespace UnitTest
         MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
     };
 
+    class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
+    {
+    public:
+        MockTerrainAreaHeightRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainAreaHeightRequests()
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD3(GetHeight, void(
+            const AZ::Vector3& inPosition,
+            AZ::Vector3& outPosition,
+            bool& terrainExists));
+
+    };
+
+    class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
+    {
+    public:
+        MockTerrainSpawnerRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainSpawnerRequests()
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
+        MOCK_METHOD0(GetUseGroundPlane, bool());
+    };
 }

@@ -235,8 +235,6 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
 
@@ -246,6 +244,8 @@ namespace AZ
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            InitFeaturesAndLimits(static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice()));
 
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;

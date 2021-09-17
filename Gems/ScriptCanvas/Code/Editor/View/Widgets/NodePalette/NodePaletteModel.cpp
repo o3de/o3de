@@ -1322,7 +1322,7 @@ namespace ScriptCanvasEditor
 
             if (seperator == AZStd::string_view::npos)
             {
-                categoryTrail = nullptr;
+                categoryTrail = {};
             }
             else
             {
