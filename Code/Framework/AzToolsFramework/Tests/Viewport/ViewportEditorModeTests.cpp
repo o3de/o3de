@@ -73,7 +73,7 @@ namespace UnitTest
         struct ReceivedEvents
         {
             bool m_onEnter = false;
-            bool m_onLeave = false;
+            bool m_onExit = false;
         };
 
         using EditModeTracker = AZStd::unordered_map<ViewportEditorMode, ReceivedEvents>;
@@ -106,7 +106,7 @@ namespace UnitTest
 
         virtual void OnEditorModeExit([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
         {
-            m_editorModes[mode].m_onLeave = true;
+            m_editorModes[mode].m_onExit = true;
         }
 
      private:
@@ -286,7 +286,7 @@ namespace UnitTest
         EXPECT_EQ(m_viewportEditorModeTracker.GetTrackedViewportCount(), 0);
     }
 
-    TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
+    TEST_F(ViewportEditorModeTrackerTestFixture, RegisteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
     {
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
@@ -295,7 +295,7 @@ namespace UnitTest
 
         // When a mode is activated for that viewport
         const auto editorMode = ViewportEditorMode::Default;
-        m_viewportEditorModeTracker.EnterMode({ viewportid }, editorMode);
+        m_viewportEditorModeTracker.RegisterMode({ viewportid }, editorMode);
         const auto* viewportEditorModeState = m_viewportEditorModeTracker.GetViewportEditorModes({ viewportid });
 
         // Expect that viewport to now be tracked
@@ -306,7 +306,7 @@ namespace UnitTest
         EXPECT_TRUE(viewportEditorModeState->IsModeActive(editorMode));
     }
 
-    TEST_F(ViewportEditorModeTrackerTestFixture, ExitingViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatIdButIssuesErrorMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, UnregisteringViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatIdButIssuesErrorMsg)
     {
         // Given a viewport not currently being tracked
         const ViewportId viewportid = 0;
@@ -316,8 +316,8 @@ namespace UnitTest
         // When a mode is deactivated for that viewport
         const auto editorMode = ViewportEditorMode::Default;
         UnitTest::ErrorHandler errorHandler(AZStd::string::format(
-            "Call to ExitMode for mode '%u' on id '%i' without precursor call to EnterMode", static_cast<AZ::u32>(editorMode), viewportid).c_str());
-        m_viewportEditorModeTracker.ExitMode({ viewportid }, editorMode);
+            "Call to UnregisterMode for mode '%u' on id '%i' without precursor call to RegisterMode", static_cast<AZ::u32>(editorMode), viewportid).c_str());
+        m_viewportEditorModeTracker.UnregisterMode({ viewportid }, editorMode);
 
         // Expect a warning to be issued due to no precursor activation of that mode
         EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
@@ -338,7 +338,7 @@ namespace UnitTest
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ viewportid }), nullptr);
     }
 
-    TEST_F(ViewportEditorModeTrackerTestFixture, EnteringViewportEditorModesForExistingIdInThatStateIssuesWarningMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, RegisteringViewportEditorModesForExistingIdInThatStateIssuesWarningMsg)
     {
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;
@@ -347,13 +347,13 @@ namespace UnitTest
 
         const auto editorMode = ViewportEditorMode::Default;
         const auto expectedWarning = AZStd::string::format(
-            "Duplicate call to EnterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(editorMode), viewportid);
+            "Duplicate call to RegisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(editorMode), viewportid);
 
         {
             UnitTest::ErrorHandler errorHandler(expectedWarning.c_str());
 
             // When the mode is activated for the viewport
-            m_viewportEditorModeTracker.EnterMode({ viewportid }, editorMode);
+            m_viewportEditorModeTracker.RegisterMode({ viewportid }, editorMode);
 
             // Expect no warning to be issued as there is no duplicate activation
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 0);
@@ -367,7 +367,7 @@ namespace UnitTest
         {
             // When the mode is activated again for the viewport
             UnitTest::ErrorHandler errorHandler(expectedWarning.c_str());
-            m_viewportEditorModeTracker.EnterMode({ viewportid }, editorMode);
+            m_viewportEditorModeTracker.RegisterMode({ viewportid }, editorMode);
 
             // Expect a warning to be issued for the duplicate activation
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
@@ -380,7 +380,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(ViewportEditorModeTrackerTestFixture, ExitingViewportEditorModesForExistingIdNotInThatStateIssuesWarningMsg)
+    TEST_F(ViewportEditorModeTrackerTestFixture, UnregisteringViewportEditorModesForExistingIdNotInThatStateIssuesWarningMsg)
     {
         // Given a viewport not currently tracked
         const ViewportId viewportid = 0;
@@ -389,14 +389,14 @@ namespace UnitTest
 
         const auto editorMode = ViewportEditorMode::Default;
         const auto expectedWarning =
-            AZStd::string::format("Duplicate call to ExitMode for mode '%u' on id '%i'", static_cast<AZ::u32>(editorMode), viewportid);
+            AZStd::string::format("Duplicate call to UnregisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(editorMode), viewportid);
 
         {
             UnitTest::ErrorHandler errorHandler(expectedWarning.c_str());
 
             // When the mode is activated and then deactivated for the viewport
-            m_viewportEditorModeTracker.EnterMode({ viewportid }, editorMode);
-            m_viewportEditorModeTracker.ExitMode({ viewportid }, editorMode);
+            m_viewportEditorModeTracker.RegisterMode({ viewportid }, editorMode);
+            m_viewportEditorModeTracker.UnregisterMode({ viewportid }, editorMode);
 
             // Expect no warning to be issued as there is no duplicate deactivation
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 0);
@@ -411,7 +411,7 @@ namespace UnitTest
             UnitTest::ErrorHandler errorHandler(expectedWarning.c_str());
 
             // When the mode is deactivated again for the viewport
-            m_viewportEditorModeTracker.ExitMode({ viewportid }, editorMode);
+            m_viewportEditorModeTracker.UnregisterMode({ viewportid }, editorMode);
 
             // Expect a warning to be issued for the duplicate deactivation
             EXPECT_EQ(errorHandler.GetExpectedWarningCount(), 1);
@@ -426,7 +426,7 @@ namespace UnitTest
 
     TEST_F(
         ViewportEditorModePublisherTestFixture,
-        EnteringViewportEditorModesForExistingIdPublishesOnViewportEditorModeEnterEventForAllSubscribers)
+        RegisteringViewportEditorModesForExistingIdPublishesOnViewportEditorModeRegisterEventForAllSubscribers)
     {
         // Given a set of subscribers tracking the editor modes for their exclusive viewport
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
@@ -440,7 +440,7 @@ namespace UnitTest
         {
             const ViewportId viewportId = mode;
             const ViewportEditorMode editorMode = static_cast<ViewportEditorMode>(mode);
-            m_viewportEditorModeTracker.EnterMode({ mode }, editorMode);
+            m_viewportEditorModeTracker.RegisterMode({ mode }, editorMode);
         }
 
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
@@ -453,13 +453,13 @@ namespace UnitTest
             const auto& expectedEditorModeSet = editorModes.find(editorMode);
             EXPECT_NE(expectedEditorModeSet, editorModes.end());
             EXPECT_TRUE(expectedEditorModeSet->second.m_onEnter);
-            EXPECT_FALSE(expectedEditorModeSet->second.m_onLeave);
+            EXPECT_FALSE(expectedEditorModeSet->second.m_onExit);
         }
     }
 
     TEST_F(
         ViewportEditorModePublisherTestFixture,
-        ExitingViewportEditorModesForExistingIdPublishesOnViewportEditorModeExitEventForAllSubscribers)
+        UnregisteringViewportEditorModesForExistingIdPublishesOnViewportEditorModeUnregisterEventForAllSubscribers)
     {
         // Given a set of subscribers tracking the editor modes for their exclusive viewport
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
@@ -472,8 +472,8 @@ namespace UnitTest
         {
             const ViewportId viewportId = mode;
             const ViewportEditorMode editorMode = static_cast<ViewportEditorMode>(mode);
-            m_viewportEditorModeTracker.EnterMode({ mode }, editorMode);
-            m_viewportEditorModeTracker.ExitMode({ mode }, editorMode);
+            m_viewportEditorModeTracker.RegisterMode({ mode }, editorMode);
+            m_viewportEditorModeTracker.UnregisterMode({ mode }, editorMode);
         }
 
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
@@ -486,7 +486,7 @@ namespace UnitTest
             const auto& expectedEditorModeSet = editorModes.find(editorMode);
             EXPECT_NE(expectedEditorModeSet, editorModes.end());
             EXPECT_TRUE(expectedEditorModeSet->second.m_onEnter);
-            EXPECT_TRUE(expectedEditorModeSet->second.m_onLeave);
+            EXPECT_TRUE(expectedEditorModeSet->second.m_onExit);
         }
     }
 } // namespace UnitTest

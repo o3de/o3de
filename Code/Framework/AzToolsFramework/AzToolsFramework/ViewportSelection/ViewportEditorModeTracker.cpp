@@ -59,19 +59,19 @@ namespace AzToolsFramework
         }
     }
 
-    void ViewportEditorModeTracker::EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+    void ViewportEditorModeTracker::RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         auto& editorModes = m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
         AZ_Warning(
                 ViewportEditorModeLogWindow, !editorModes.IsModeActive(mode),
                 AZStd::string::format(
-                    "Duplicate call to EnterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
+                    "Duplicate call to RegisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
         editorModes.SetModeActive(mode);
         ViewportEditorModeNotificationsBus::Event(
             viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeEnter, editorModes, mode);
     }
 
-    void ViewportEditorModeTracker::ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+    void ViewportEditorModeTracker::UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         ViewportEditorModes* editorModes = nullptr;
         if (m_viewportEditorModesMap.count(viewportEditorModeInfo.m_id))
@@ -80,12 +80,12 @@ namespace AzToolsFramework
             AZ_Warning(
                 ViewportEditorModeLogWindow, editorModes->IsModeActive(mode),
                 AZStd::string::format(
-                    "Duplicate call to ExitMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
+                    "Duplicate call to UnregisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id).c_str());
         }
         else
         {
             AZ_Warning(
-                ViewportEditorModeLogWindow, false, "Call to ExitMode for mode '%u' on id '%i' without precursor call to EnterMode",
+                ViewportEditorModeLogWindow, false, "Call to UnregisterMode for mode '%u' on id '%i' without precursor call to RegisterMode",
                 static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id);
 
             editorModes = &m_viewportEditorModesMap[viewportEditorModeInfo.m_id];

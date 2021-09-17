@@ -21,11 +21,11 @@ namespace AzToolsFramework
 
         virtual ~ViewportEditorModeTrackerInterface() = default;
 
-        //! Enters the specified editor mode for the specified viewport.
-        virtual void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+        //! Registers the specified editor mode as active for the specified viewport.
+        virtual void RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
        
-        //! Exits the specified editor mode for the specified viewport.
-        virtual void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+        //! Unregisters the specified editor mode as active for the specified viewport.
+        virtual void UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
 
         //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.
         virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;

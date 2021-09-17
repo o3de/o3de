@@ -48,9 +48,9 @@ namespace AzToolsFramework
         //! Unregisters this object with the AZ::Interface.
         void UnregisterInterface();
 
-        // ViewportEditorModeTrackerInterface ...
-        void EnterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
-        void ExitMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
+        // ViewportEditorModeTrackerInterface overrides ...
+        void RegisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
+        void UnregisterMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
         size_t GetTrackedViewportCount() const override;
         bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
