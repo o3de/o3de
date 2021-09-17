@@ -101,8 +101,6 @@ namespace AZ
 
         void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)
         {
-            CachedTimeRegion timeRegion({budget->Name(), eventName});
-
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
             {
@@ -112,6 +110,7 @@ namespace AZ
                     RegisterThreadStorage();
 
                     // Push it to the stack
+                    CachedTimeRegion timeRegion({budget->Name(), eventName});
                     ms_threadLocalStorage->RegionStackPushBack(timeRegion);
                 }
 
@@ -322,11 +321,11 @@ namespace AZ
             m_stackLevel--;
 
             // Add an entry to the cached region
-            AddCachedRegion(AZStd::move(back));
+            AddCachedRegion(back);
         }
 
         // Gets called when region ends and all data is set
-        void CpuTimingLocalStorage::AddCachedRegion(CachedTimeRegion&& timeRegionCached)
+        void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
         {
             if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName.m_regionName])
             {
@@ -352,7 +351,7 @@ namespace AZ
                     regionVec.push_back(cachedTimeRegion);
                     if (regionVec.size() >= TimeRegionStackSize)
                     {
-                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName.m_regionName] = true;
+                        m_hitSizeLimitMap.insert_or_assign(AZStd::move(regionName), true);
                     }
                 }
 

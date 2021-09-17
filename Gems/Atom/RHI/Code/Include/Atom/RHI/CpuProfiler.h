@@ -22,8 +22,8 @@ namespace AZ
         //! Structure that is used to cache a timed region into the thread's local storage.
         struct CachedTimeRegion
         {
-            //! Structure that the profiling macro utilizes to create statically initialized instance to create string
-            //! literals in static memory
+            //! Structure used internally for caching assumed global string pointers (ideally literals) to the marker group/region
+            //! NOTE: When used in a separate shared library, the library mustn't be unloaded before the CpuProfiler is shutdown.
             struct GroupRegionName
             {
                 GroupRegionName() = delete;
@@ -43,9 +43,6 @@ namespace AZ
             CachedTimeRegion(const GroupRegionName& groupRegionName);
             CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
-            //! Pointer to the GroupRegionName static instance.
-            //! NOTE: When used in a separate shared library, the library mustn't be unloaded before
-            //! the CpuProfiler is shutdown.
             GroupRegionName m_groupRegionName{nullptr, nullptr};
 
             uint16_t m_stackDepth = 0u;

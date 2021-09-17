@@ -49,7 +49,7 @@ namespace AZ
             void RegionStackPopBack();
 
             // Add a new cached time region. If the stack is empty, flush all entries to the cached map
-            void AddCachedRegion(CachedTimeRegion&& timeRegionCached);
+            void AddCachedRegion(const CachedTimeRegion& timeRegionCached);
 
             // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
             void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
