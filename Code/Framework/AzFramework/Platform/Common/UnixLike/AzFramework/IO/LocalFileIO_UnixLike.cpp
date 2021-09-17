@@ -66,7 +66,7 @@ namespace AZ
 
             if (dir != nullptr)
             {
-                // because the absolute path might actually be SHORTER than the alias ("D:/o3ee -> "@engroot@"), we need to
+                // because the absolute path might actually be SHORTER than the alias ("/home/<user>/o3de -> "@engroot@"), we need to
                 // use a static buffer here.
                 char tempBuffer[AZ_MAX_PATH_LEN];
 
