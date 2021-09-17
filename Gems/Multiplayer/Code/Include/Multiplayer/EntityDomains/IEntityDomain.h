@@ -21,6 +21,14 @@ namespace Multiplayer
 
         virtual ~IEntityDomain() = default;
 
+        //! For domains that operate on a region of space, this sets the area the domain is responsible for.
+        //! @param aabb the aabb associated with this entity domain
+        virtual void SetAabb(const AZ::Aabb& aabb) = 0;
+
+        //! Retrieves the aabb representing the domain area, an invalid aabb will be returned for non-spatial domains.
+        //! @return the aabb associated with this entity domain
+        virtual const AZ::Aabb& GetAabb() const = 0;
+
         //! Returns whether or not an entity should be owned by an entity manager.
         //! @param entityHandle the handle of the netbound entity to check
         //! @return false if this entity should not belong to the entity manger, true if it could be owned by the entity manager

@@ -28,6 +28,9 @@ set(FILES
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.inl
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
@@ -69,10 +72,7 @@ set(FILES
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicator.h
-    Source/NetworkEntity/EntityReplication/EntityReplicator.inl
     Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp
     Source/NetworkEntity/EntityReplication/PropertyPublisher.h
     Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp

@@ -388,16 +388,6 @@ namespace Multiplayer
         m_syncRewindEvent.Signal();
     }
 
-    void NetBindComponent::NotifyMigrationStart(ClientInputId migratedInputId)
-    {
-        m_entityMigrationStartEvent.Signal(migratedInputId);
-    }
-
-    void NetBindComponent::NotifyMigrationEnd()
-    {
-        m_entityMigrationEndEvent.Signal();
-    }
-
     void NetBindComponent::NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId)
     {
         m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
@@ -426,16 +416,6 @@ namespace Multiplayer
     void NetBindComponent::AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_syncRewindEvent);
-    }
-
-    void NetBindComponent::AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler)
-    {
-        eventHandler.Connect(m_entityMigrationStartEvent);
-    }
-
-    void NetBindComponent::AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler)
-    {
-        eventHandler.Connect(m_entityMigrationEndEvent);
     }
 
     void NetBindComponent::AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler)

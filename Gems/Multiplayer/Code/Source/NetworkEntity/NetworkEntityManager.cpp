@@ -48,6 +48,16 @@ namespace Multiplayer
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
     }
 
+    bool NetworkEntityManager::IsInitialized() const
+    {
+        return m_entityDomain != nullptr;
+    }
+
+    IEntityDomain* NetworkEntityManager::GetEntityDomain() const
+    {
+        return m_entityDomain.get();
+    }
+
     NetworkEntityTracker* NetworkEntityManager::GetNetworkEntityTracker()
     {
         return &m_networkEntityTracker;

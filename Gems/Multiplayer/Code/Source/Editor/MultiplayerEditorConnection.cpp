@@ -32,7 +32,7 @@ namespace Multiplayer
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
-        m_networkEditorInterface->SetTimeoutEnabled(false);
+        m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
         if (editorsv_isDedicated)
         {
             uint16_t editorServerPort = DefaultServerEditorPort;

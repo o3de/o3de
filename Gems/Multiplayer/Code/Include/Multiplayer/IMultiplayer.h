@@ -42,6 +42,8 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
+    using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
+    using ClientMigrationEndEvent = AZ::Event<>;
     using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -93,6 +95,14 @@ namespace Multiplayer
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
         //! @param reason The reason for terminating connections
         virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
+
+        //! Adds a ClientMigrationStartEvent Handler which is invoked at the start of a client migration
+        //! @param handler The ClientMigrationStartEvent Handler to add
+        virtual void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) = 0;
+
+        //! Adds a ClientMigrationEndEvent Handler which is invoked when a client completes migration
+        //! @param handler The ClientMigrationEndEvent Handler to add
+        virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
 
         //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
         //! @param handler The ClientDisconnectedEvent Handler to add

@@ -79,8 +79,6 @@ namespace Multiplayer
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
-    AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The default spawnable to use when a new player connects");
@@ -94,7 +92,6 @@ namespace Multiplayer
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
-
             serializeContext->Class<HostId>()
                 ->Version(1);
             serializeContext->Class<NetEntityId>()
@@ -173,7 +170,12 @@ namespace Multiplayer
             AZ::ConsoleInvokedFrom invokedFrom
         ) { OnConsoleCommandInvoked(command, args, flags, invokedFrom); })
     {
-        ;
+        AZ::Interface<IMultiplayer>::Register(this);
+    }
+
+    MultiplayerSystemComponent::~MultiplayerSystemComponent()
+    {
+        AZ::Interface<IMultiplayer>::Unregister(this);
     }
 
     void MultiplayerSystemComponent::Activate()
@@ -185,7 +187,6 @@ namespace Multiplayer
         {
             m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         }
-        AZ::Interface<IMultiplayer>::Register(this);
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
 
         //! Register our gems multiplayer components to assign NetComponentIds
@@ -195,7 +196,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Deactivate()
     {
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
-        AZ::Interface<IMultiplayer>::Unregister(this);
         m_consoleCommandHandler.Disconnect();
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MpNetworkInterfaceName));
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
@@ -459,7 +459,7 @@ namespace Multiplayer
             AzFramework::PlayerConnectionConfig config;
             config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
             config.m_playerSessionId = packet.GetTicket();
-            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
+            if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
             {
                 auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
                 m_networkInterface->GetConnectionSet().VisitConnections(visitor);
@@ -488,10 +488,8 @@ namespace Multiplayer
     )
     {
         m_didHandshake = true;
-
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
         return true;
@@ -606,7 +604,22 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::ClientMigration& packet
     )
     {
-        return false;
+        if (GetAgentType() != MultiplayerAgentType::Client)
+        {
+            // Only clients are allowed to migrate from one server to another
+            return false;
+        }
+
+        // Store the temporary user identifier so we can transmit it with our next Connect packet
+        // The new server will use this to reattach our set of autonomous entities
+
+        // Disconnect our existing server connection
+        auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::ClientMigrated, TerminationEndpoint::Local); };
+        m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+        AZLOG_INFO("Migrating to new server shard");
+        //m_clientMigrateStartEvent(packet.GetLastInputGameTimeMs());
+        m_networkInterface->Connect(packet.GetRemoteServerAddress());
+        return true;
     }
 
     ConnectResult MultiplayerSystemComponent::ValidateConnect
@@ -640,7 +653,7 @@ namespace Multiplayer
         else
         {
             AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            m_connAcquiredEvent.Signal(datum);
+            m_connectionAcquiredEvent.Signal(datum);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected
@@ -654,27 +667,14 @@ namespace Multiplayer
             }
             controlledEntity.Activate();
             
-            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
-            {
-                connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
-            }
-
+            connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
         else
         {
-            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
-            {
-                connection->SetUserData(new ClientToServerConnectionData(connection, *this, providerTicket));
-            }
-            else
-            {
-                reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(providerTicket);
-            }
-
+            connection->SetUserData(new ClientToServerConnectionData(connection, *this, providerTicket));
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
-            reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
             reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
     }
@@ -757,9 +757,11 @@ namespace Multiplayer
             {
                 m_initEvent.Signal(m_networkInterface);
 
-                //const AZ::Aabb worldBounds = AZ::Interface<IPhysics>.Get()->GetWorldBounds();
-                AZStd::unique_ptr<IEntityDomain> newDomain = AZStd::make_unique<FullOwnershipEntityDomain>();
-                m_networkEntityManager.Initialize(InvalidHostId, AZStd::move(newDomain));
+                if (!m_networkEntityManager.IsInitialized())
+                {
+                    // Set up a full ownership domain if we didn't construct a domain during the initialize event
+                    m_networkEntityManager.Initialize(InvalidHostId, AZStd::make_unique<FullOwnershipEntityDomain>());
+                }
             }
         }
         m_agentType = multiplayerType;
@@ -778,6 +780,16 @@ namespace Multiplayer
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
+    void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)
+    {
+        handler.Connect(m_clientMigrationStartEvent);
+    }
+
+    void MultiplayerSystemComponent::AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler)
+    {
+        handler.Connect(m_clientMigrationEndEvent);
+    }
+
     void MultiplayerSystemComponent::AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler)
     {
         handler.Connect(m_clientDisconnectedEvent);
@@ -785,7 +797,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
-        handler.Connect(m_connAcquiredEvent);
+        handler.Connect(m_connectionAcquiredEvent);
     }
 
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)

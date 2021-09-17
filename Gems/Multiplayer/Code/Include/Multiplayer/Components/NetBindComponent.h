@@ -32,8 +32,6 @@ namespace Multiplayer
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
     using EntitySyncRewindEvent = AZ::Event<>;
-    using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
-    using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
     using EntityPreRenderEvent = AZ::Event<float, float>;
     using EntityCorrectionEvent = AZ::Event<>;
@@ -115,8 +113,6 @@ namespace Multiplayer
         void MarkDirty();
         void NotifyLocalChanges();
         void NotifySyncRewindState();
-        void NotifyMigrationStart(ClientInputId migratedInputId);
-        void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
         void NotifyPreRender(float deltaTime, float blendFactor);
         void NotifyCorrection();
@@ -124,8 +120,6 @@ namespace Multiplayer
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
         void AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler);
-        void AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler);
-        void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
         void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
@@ -174,8 +168,6 @@ namespace Multiplayer
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;
         EntitySyncRewindEvent m_syncRewindEvent;
-        EntityMigrationStartEvent  m_entityMigrationStartEvent;
-        EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
         EntityPreRenderEvent  m_entityPreRenderEvent;
         EntityCorrectionEvent m_entityCorrectionEvent;

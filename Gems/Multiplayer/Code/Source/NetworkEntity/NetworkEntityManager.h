@@ -31,11 +31,11 @@ namespace Multiplayer
         NetworkEntityManager();
         ~NetworkEntityManager();
 
-        //! Only invoked for authoritative hosts
-        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain);
-
         //! INetworkEntityManager overrides.
         //! @{
+        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) override;
+        bool IsInitialized() const override;
+        IEntityDomain* GetEntityDomain() const override;
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;

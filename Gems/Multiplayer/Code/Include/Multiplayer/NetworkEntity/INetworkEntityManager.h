@@ -20,6 +20,7 @@ namespace Multiplayer
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
     class MultiplayerComponentRegistry;
+    class IEntityDomain;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
@@ -36,6 +37,19 @@ namespace Multiplayer
         using EntityList = AZStd::vector<NetworkEntityHandle>;
 
         virtual ~INetworkEntityManager() = default;
+
+        //! Configures the NetworkEntityManager to operate as an authoritative host.
+        //! @param hostId       the hostId of this NetworkEntityManager
+        //! @param entityDomain the entity domain used to determine which entities this manager has authority over
+        virtual void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
+
+        //! Returns whether or not the network entity manager has been initialized to host.
+        //! @return boolean true if this network entity manager has been intialized to host
+        virtual bool IsInitialized() const = 0;
+
+        //! Returns the entity domain associated with this network entity manager, this will be nullptr on clients.
+        //! @return boolean the entity domain for this network entity manager
+        virtual IEntityDomain* GetEntityDomain() const = 0;
 
         //! Returns the NetworkEntityTracker for this INetworkEntityManager instance.
         //! @return the NetworkEntityTracker for this INetworkEntityManager instance

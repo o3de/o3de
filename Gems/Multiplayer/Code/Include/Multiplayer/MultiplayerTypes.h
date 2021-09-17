@@ -105,9 +105,11 @@ namespace Multiplayer
 
     struct EntityMigrationMessage
     {
-        NetEntityId m_entityId;
+        NetEntityId m_netEntityId;
         PrefabEntityId m_prefabEntityId;
         AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
+        bool operator!=(const EntityMigrationMessage& rhs) const;
+        bool Serialize(AzNetworking::ISerializer& serializer);
     };
 
     inline PrefabEntityId::PrefabEntityId(AZ::Name name, uint32_t entityOffset)
@@ -131,6 +133,21 @@ namespace Multiplayer
     {
         serializer.Serialize(m_prefabName, "prefabName");
         serializer.Serialize(m_entityOffset, "entityOffset");
+        return serializer.IsValid();
+    }
+
+    inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const
+    {
+        return m_netEntityId        != rhs.m_netEntityId
+            || m_prefabEntityId     != rhs.m_prefabEntityId
+            || m_propertyUpdateData != rhs.m_propertyUpdateData;
+    }
+
+    inline bool EntityMigrationMessage::Serialize(AzNetworking::ISerializer& serializer)
+    {
+        serializer.Serialize(m_netEntityId, "netEntityId");
+        serializer.Serialize(m_prefabEntityId, "prefabEntityId");
+        serializer.Serialize(m_propertyUpdateData, "propertyUpdateData");
         return serializer.IsValid();
     }
 }

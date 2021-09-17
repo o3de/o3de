@@ -139,4 +139,4 @@ namespace Multiplayer
     };
 }
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.inl>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl>

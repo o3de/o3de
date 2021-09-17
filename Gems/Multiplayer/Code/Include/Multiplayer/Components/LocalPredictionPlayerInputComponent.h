@@ -83,8 +83,8 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 
-        EntityMigrationStartEvent::Handler m_migrateStartHandler;
-        EntityMigrationEndEvent::Handler m_migrateEndHandler;
+        ClientMigrationStartEvent::Handler m_migrateStartHandler;
+        ClientMigrationEndEvent::Handler m_migrateEndHandler;
 
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;

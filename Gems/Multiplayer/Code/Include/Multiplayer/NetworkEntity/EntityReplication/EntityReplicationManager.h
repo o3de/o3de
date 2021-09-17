@@ -35,7 +35,9 @@ namespace Multiplayer
 {
     class IEntityDomain;
     class EntityReplicator;
-    
+
+    using SendMigrateEntityEvent = AZ::Event<AzNetworking::IConnection&, const EntityMigrationMessage&>;
+
     //! @class EntityReplicationManager
     //! @brief Handles replication of relevant entities for one connection.
     class EntityReplicationManager final
@@ -80,6 +82,7 @@ namespace Multiplayer
         void AddDeferredRpcMessage(NetworkEntityRpcMessage& rpcMessage);
 
         void AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler);
+        void AddSendMigrateEntityEventHandler(SendMigrateEntityEvent::Handler& handler);
 
         bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
@@ -191,6 +194,7 @@ namespace Multiplayer
 
         AZ::Event<NetEntityId> m_autonomousEntityReplicatorCreated;
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
+        SendMigrateEntityEvent m_sendMigrateEntityEvent;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

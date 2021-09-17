@@ -6,8 +6,8 @@
  *
  */
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>

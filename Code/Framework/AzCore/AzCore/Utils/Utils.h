@@ -24,7 +24,7 @@ namespace AZ
     {
         //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
         //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
-        inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
+        inline constexpr size_t DefaultMaxFileSize = 5 * 1024 * 1024;
 
         //! Terminates the application without going through the shutdown procedure.
         //! This is used when due to abnormal circumstances the application can no

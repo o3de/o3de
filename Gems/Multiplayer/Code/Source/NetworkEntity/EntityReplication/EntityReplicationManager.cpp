@@ -6,8 +6,8 @@
  *
  */
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
@@ -442,6 +442,11 @@ namespace Multiplayer
     void EntityReplicationManager::AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler)
     {
         handler.Connect(m_autonomousEntityReplicatorCreated);
+    }
+
+    void EntityReplicationManager::AddSendMigrateEntityEventHandler(SendMigrateEntityEvent::Handler& handler)
+    {
+        handler.Connect(m_sendMigrateEntityEvent);
     }
 
     const EntityReplicator* EntityReplicationManager::GetEntityReplicator(NetEntityId netEntityId) const
@@ -1094,7 +1099,7 @@ namespace Multiplayer
 
             bool didSucceed = true;
             EntityMigrationMessage message;
-            message.m_entityId = replicator->GetEntityHandle().GetNetEntityId();
+            message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
             message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();
 
             if (localEnt->GetState() == AZ::Entity::State::Active)
@@ -1119,8 +1124,8 @@ namespace Multiplayer
                 message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
             }
             AZ_Assert(didSucceed, "Failed to migrate entity from server");
-            // TODO: Move this to an event
-            //m_connection.SendReliablePacket(message);
+
+            m_sendMigrateEntityEvent.Signal(m_connection, message);
             AZLOG(NET_RepDeletes, "Migration packet sent %u to remote manager id %d", netEntityId, aznumeric_cast<int32_t>(GetRemoteHostId()));
 
             // Immediately add a new replicator so that we catch RPC invocations, the remote side will make us a new one, and then remove us if needs be
@@ -1130,7 +1135,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message)
     {
-        EntityReplicator* replicator = GetEntityReplicator(message.m_entityId);
+        EntityReplicator* replicator = GetEntityReplicator(message.m_netEntityId);
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
@@ -1140,7 +1145,7 @@ namespace Multiplayer
                     invokingConnection, 
                     replicator,
                     AzNetworking::InvalidPacketId,
-                    message.m_entityId,
+                    message.m_netEntityId,
                     NetEntityRole::Server,
                     outputSerializer,
                     message.m_prefabEntityId
@@ -1154,7 +1159,7 @@ namespace Multiplayer
         // The HandlePropertyChangeMessage will have made a replicator if we didn't have one already
         if (!replicator)
         {
-            replicator = GetEntityReplicator(message.m_entityId);
+            replicator = GetEntityReplicator(message.m_netEntityId);
         }
         AZ_Assert(replicator, "Do not have replicator after handling migration message");
 
