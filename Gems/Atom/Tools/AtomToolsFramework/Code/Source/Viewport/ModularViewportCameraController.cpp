@@ -174,7 +174,7 @@ namespace AtomToolsFramework
             {
                 if (m_storedCamera.has_value())
                 {
-                    // if an external change occurs ensure we update the stored reference frame is one is set
+                    // if an external change occurs ensure we update the stored reference frame if one is set
                     RefreshReferenceFrame();
                     return;
                 }

@@ -28,15 +28,15 @@ namespace SandboxEditor
         //! Build a ModularViewportCameraController from the associated camera inputs.
         SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
-        // EditorCameraNotificationBus overrides ...
-        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
-
     private:
         //! Setup all internal camera inputs.
         void SetupCameras();
 
         // EditorModularViewportCameraComposerNotificationBus overrides ...
         void OnEditorModularViewportCameraComposerSettingsChanged() override;
+
+        // EditorCameraNotificationBus overrides ...
+        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
 
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_firstPersonPanCamera;

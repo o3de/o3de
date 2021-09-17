@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -20,7 +20,6 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
-#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
 namespace Camera
 {
@@ -175,7 +174,6 @@ namespace Camera
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
         }
-
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
