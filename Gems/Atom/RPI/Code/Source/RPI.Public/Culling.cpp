@@ -299,7 +299,7 @@ namespace AZ
             //work function
             void Process() override
             {
-                AZ_PROFILE_FUNCTION(RPI);
+                AZ_PROFILE_SCOPE(RPI, "AddObjectsToViewJob: Process");
 
                 const View::UsageFlags viewFlags = m_jobData->m_view->GetUsageFlags();
                 const RHI::DrawListMask drawListMask = m_jobData->m_view->GetDrawListMask();
@@ -645,7 +645,7 @@ namespace AZ
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
 #endif
 
             const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
@@ -725,7 +725,7 @@ namespace AZ
 
         void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
             m_cullDataConcurrencyCheck.soft_lock();
 
             m_debugCtx.ResetCullStats();

@@ -163,7 +163,7 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 

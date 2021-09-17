@@ -75,7 +75,7 @@ namespace AZ
 
         void GpuQuerySystem::Update()
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "GpuQuerySystem: Update");
             for (auto& queryPool : m_queryPoolArray)
             {
                 if (queryPool)

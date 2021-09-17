@@ -80,7 +80,7 @@ namespace AZ
 
         void AuxGeomFeatureProcessor::Render(const FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomFeatureProcessor: Render");
 
             // Get the scene data and switch buffers so that other threads can continue to queue requests
             AuxGeomBufferData* bufferData = static_cast<AuxGeomDrawQueue*>(m_sceneDrawQueue.get())->Commit();

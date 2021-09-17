@@ -486,7 +486,7 @@ namespace AZ::Render
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
-        AZ_PROFILE_FUNCTION(RPI);
+        AZ_PROFILE_SCOPE(RPI, "ProjectedShadowFeatureProcessor: Simulate");
 
         if (m_shadowmapPassNeedsUpdate)
         {
@@ -581,7 +581,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::Render(const ProjectedShadowFeatureProcessor::RenderPacket& packet)
     {
-        AZ_PROFILE_FUNCTION(RPI);
+        AZ_PROFILE_SCOPE(RPI, "ProjectedShadowFeatureProcessor: Render");
 
         if (!m_projectedShadowmapsPasses.empty())
         {

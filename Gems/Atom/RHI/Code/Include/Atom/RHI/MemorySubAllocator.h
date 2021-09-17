@@ -157,7 +157,7 @@ namespace AZ
         template <class Traits>
         void MemorySubAllocator<Traits>::GarbageCollect()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "MemorySubAllocator: GarbageCollect");
             for (PageContext& pageContext : m_pageContexts)
             {
                 pageContext.m_allocator.GarbageCollect();

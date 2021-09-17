@@ -42,7 +42,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             for (auto& commandQueue : m_commandQueues)
             {
@@ -78,7 +78,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (auto& commandQueue : m_commandQueues)
             {
                 commandQueue->WaitForIdle();

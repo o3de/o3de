@@ -121,7 +121,7 @@ namespace AZ
          */
         MessageOutcome FrameGraphCompiler::Compile(const FrameGraphCompileRequest& request)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: Compile");
 
             MessageOutcome outcome = ValidateCompileRequest(request);
             if (!outcome)
@@ -162,7 +162,7 @@ namespace AZ
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileQueueCentricScopeGraph");
 
             const bool disableAsyncQueues = CheckBitsAll(compileFlags, FrameSchedulerCompileFlags::DisableAsyncQueues);
             if (disableAsyncQueues)
@@ -480,7 +480,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileTransientAttachments");
 
             ExtendTransientAttachmentAsyncQueueLifetimes(frameGraph, compileFlags);
 
@@ -769,7 +769,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceViews");
 
             for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
             {

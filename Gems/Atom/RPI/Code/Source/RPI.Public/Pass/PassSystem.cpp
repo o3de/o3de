@@ -169,7 +169,7 @@ namespace AZ
         void PassSystem::RemovePasses()
         {
             m_state = PassSystemState::RemovingPasses;
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: RemovePasses");
 
             if (!m_removePassList.empty())
             {
@@ -189,7 +189,7 @@ namespace AZ
         void PassSystem::BuildPasses()
         {
             m_state = PassSystemState::BuildingPasses;
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: BuildPasses");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
 
@@ -238,7 +238,7 @@ namespace AZ
         void PassSystem::InitializePasses()
         {
             m_state = PassSystemState::InitializingPasses;
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: InitializePasses");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
 
@@ -275,7 +275,6 @@ namespace AZ
         void PassSystem::Validate()
         {
             m_state = PassSystemState::ValidatingPasses;
-            AZ_PROFILE_FUNCTION(RPI);
 
             if (PassValidation::IsEnabled())
             {
@@ -284,7 +283,7 @@ namespace AZ
                     return;
                 }
 
-                AZ_PROFILE_FUNCTION(RPI);
+                AZ_PROFILE_SCOPE(RPI, "PassSystem: Validate");
 
                 PassValidationResults validationResults;
                 m_rootPass->Validate(validationResults);
@@ -296,7 +295,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -305,7 +304,7 @@ namespace AZ
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: FrameUpdate");
 
             ResetFrameStatistics();
             ProcessQueuedChanges();
@@ -321,7 +320,7 @@ namespace AZ
 
         void PassSystem::FrameEnd()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "PassSystem: FrameEnd");
 
             m_state = PassSystemState::FrameEnd;
 

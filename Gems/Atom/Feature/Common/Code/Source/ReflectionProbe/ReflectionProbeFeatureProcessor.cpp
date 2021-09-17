@@ -154,7 +154,7 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "ReflectionProbeFeatureProcessor: Simulate");
 
             // update pipeline states
             if (m_needUpdatePipelineStates)

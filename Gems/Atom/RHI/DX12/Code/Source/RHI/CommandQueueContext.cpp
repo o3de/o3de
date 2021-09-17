@@ -101,7 +101,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
                 if (m_commandQueues[hardwareQueueIdx])
@@ -113,7 +113,7 @@ namespace AZ
 
         void CommandQueueContext::Begin()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: Begin");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Clearing Command Queue Timers");
@@ -131,7 +131,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 

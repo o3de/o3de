@@ -173,7 +173,7 @@ namespace AZ
         template <typename Traits>
         void ObjectCollector<Traits>::Collect(bool forceFlush)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "ObjectCollector: Collect");
             m_mutex.lock();
             if (m_pendingObjects.size())
             {

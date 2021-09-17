@@ -79,8 +79,8 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
+
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {

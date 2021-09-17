@@ -107,7 +107,7 @@ namespace AZ
 
         void DecalFeatureProcessor::Simulate(const RPI::FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -131,7 +131,7 @@ namespace AZ
 
         void DecalFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Render");
 
             AZStd::array_view<Data::Instance<RPI::Image>> baseMaps = GetImagesFromDecalData<1>();
             AZStd::array_view<Data::Instance<RPI::Image>> opacityMaps = GetImagesFromDecalData<2>();

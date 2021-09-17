@@ -50,7 +50,7 @@ namespace AZ
 
         void ImageBasedLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "ImageBasedLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             m_sceneSrg->SetImage(m_specularEnvMapIndex, m_specular);
