@@ -57,8 +57,8 @@ namespace Multiplayer
             blendTransform.SetTranslation(GetTranslation());
             blendTransform.SetUniformScale(GetScale());
 
-            const float blendFactor = GetNetworkTime()->GetHostBlendFactor();
-            if (!!AZ::IsClose(blendFactor, 1.0f))
+            const float blendFactor = GetMultiplayer()->GetCurrentBlendFactor();
+            if (!AZ::IsClose(blendFactor, 1.0f))
             {
                 AZ::Transform blendTransformPrevious;
                 blendTransformPrevious.SetRotation(GetRotationPrevious());
