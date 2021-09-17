@@ -63,7 +63,7 @@ namespace AZ
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
-                // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@devroot@"), we need to
+                // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@engroot@"), we need to
                 // use a static buffer here.
                 char tempBuffer[AZ_MAX_PATH_LEN];
                 do

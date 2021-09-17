@@ -56,7 +56,7 @@ namespace CrashHandler
         if (fileIO)
         {
             // If our devroot alias is available, use that
-            const char* devAlias = fileIO->GetAlias("@devroot@");
+            const char* devAlias = fileIO->GetAlias("@engroot@");
             if (devAlias)
             {
                 return devAlias;

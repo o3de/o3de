@@ -488,9 +488,9 @@ namespace EMotionFX
                 return;
             }
 
-            SetMediaRoot("@assets@");
-            // \todo Right now we're pointing at the @devassets@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
-            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
+            SetMediaRoot("@projectproductassets@");
+            // \todo Right now we're pointing at the @projectroot@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
+            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @projectproductassets@ cache, but write to the @projectroot@ data/metadata.
             EMotionFX::GetEMotionFX().InitAssetFolderPaths();
 
             // Register EMotionFX event handler

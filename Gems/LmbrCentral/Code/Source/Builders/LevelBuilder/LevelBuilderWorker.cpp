@@ -29,7 +29,7 @@
 namespace LevelBuilder
 {
     const char s_materialExtension[] = ".mtl";
-    const char s_audioControlFilesLevelPath[] = "@devassets@/libs/gameaudio/wwise/levels/%s";
+    const char s_audioControlFilesLevelPath[] = "@projectroot@/libs/gameaudio/wwise/levels/%s";
     const char s_audioControlFilter[] = "*.xml";
 
     AZ::u64 readXmlDataLength(AZ::IO::GenericStream* stream, int& charSize)

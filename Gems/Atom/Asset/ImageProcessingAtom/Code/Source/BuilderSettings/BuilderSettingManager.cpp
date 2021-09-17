@@ -244,7 +244,7 @@ namespace ImageProcessingAtom
         }
 
         AZ::IO::FixedMaxPath projectConfigFolder;
-        if (auto sourceGameRoot = fileIoBase->ResolvePath("@devassets@"); sourceGameRoot.has_value())
+        if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
         {
             projectConfigFolder = *sourceGameRoot;
             projectConfigFolder /= s_projectConfigRelativeFolder;

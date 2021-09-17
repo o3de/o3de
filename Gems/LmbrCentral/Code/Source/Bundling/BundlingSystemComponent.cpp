@@ -22,7 +22,7 @@
 
 namespace LmbrCentral
 {
-    const char bundleRoot[] = "@assets@";
+    const char bundleRoot[] = "@projectproductassets@";
 
     void BundlingSystemComponent::Activate()
     {
@@ -178,7 +178,7 @@ namespace LmbrCentral
 
         // Not already opened, new entry
         m_openedBundles[bundleName] = AZStd::make_unique<OpenBundleInfo>();
-        AZStd::shared_ptr<AzFramework::AssetRegistry> nextCatalog; // Not all bundles will have catalogs - some are legacy.  
+        AZStd::shared_ptr<AzFramework::AssetRegistry> nextCatalog; // Not all bundles will have catalogs - some are legacy.
         if (nextBundle == nullptr)
         {
             // Added to the end

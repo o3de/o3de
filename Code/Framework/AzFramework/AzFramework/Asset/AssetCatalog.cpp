@@ -725,7 +725,7 @@ namespace AzFramework
 
             if (!info.m_relativePath.empty())
             {
-                const char* devAssetRoot = fileIO->GetAlias("@devassets@");
+                const char* devAssetRoot = fileIO->GetAlias("@projectroot@");
                 if (devAssetRoot)
                 {
                     AZ::Data::AssetStreamInfo streamInfo;

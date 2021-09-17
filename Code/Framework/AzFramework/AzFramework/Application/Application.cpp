@@ -616,27 +616,19 @@ namespace AzFramework
 
             {
                 AZ::IO::FixedMaxPath pathAliases;
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
-                {
-                    fileIoBase->SetAlias("@projectcache@", pathAliases.c_str());
-                }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@assets@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
+                    fileIoBase->SetAlias("@projectproductassets@", pathAliases.c_str());
                 }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
                 {
                     fileIoBase->SetAlias("@engroot@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@devroot@", pathAliases.c_str()); // Deprecated - Use @engroot@
                 }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
                 {
-                    fileIoBase->SetAlias("@devassets@", pathAliases.c_str()); // Deprecated - Use @projectsourceassets@
                     fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
                     fileIoBase->SetAlias("@projectsourceassets@", (pathAliases / "Assets").c_str());
                 }

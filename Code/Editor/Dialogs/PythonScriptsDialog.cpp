@@ -91,7 +91,7 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
             {
                 AZ::IO::Path newSourcePath = jsonSourcePathPointer;
                 // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                // any relative path is underneath the @assets@ alias
+                // any relative path is underneath the @projectproductassets@ alias
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
                     AZ::IO::FixedMaxPath replacedAliasPath;

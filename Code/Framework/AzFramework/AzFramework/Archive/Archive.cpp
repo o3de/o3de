@@ -1121,7 +1121,7 @@ namespace AZ::IO
 
         if (AZ::IO::FixedMaxPath pathBindRoot; !AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, szBindRoot))
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, "@assets@");
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, "@projectproductassets@");
             desc.m_pathBindRoot = pathBindRoot.LexicallyNormal().String();
         }
         else
@@ -1794,9 +1794,9 @@ namespace AZ::IO
         if (m_eRecordFileOpenList != IArchive::RFOM_Disabled)
         {
             // we only want to record ASSET access
-            // assets are identified as files that are relative to the resolved @assets@ alias path
+            // assets are identified as files that are relative to the resolved @projectproductassets@ alias path
             auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
-            const char* aliasValue = fileIoBase->GetAlias("@assets@");
+            const char* aliasValue = fileIoBase->GetAlias("@projectproductassets@");
 
             if (AZ::IO::FixedMaxPath resolvedFilePath;
                 fileIoBase->ResolvePath(resolvedFilePath, szFilename)

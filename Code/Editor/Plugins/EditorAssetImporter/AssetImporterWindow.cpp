@@ -50,7 +50,7 @@ const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D
 void MakeUserFriendlySourceAssetPath(QString& out, const QString& sourcePath)
 {
     char devAssetsRoot[AZ_MAX_PATH_LEN] = { 0 };
-    if (!gEnv->pFileIO->ResolvePath("@devroot@", devAssetsRoot, AZ_MAX_PATH_LEN))
+    if (!gEnv->pFileIO->ResolvePath("@engroot@", devAssetsRoot, AZ_MAX_PATH_LEN))
     {
         out = sourcePath;
         return;

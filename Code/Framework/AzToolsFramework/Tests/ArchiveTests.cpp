@@ -111,13 +111,13 @@ namespace UnitTest
                 m_app.reset(aznew ToolsTestApplication("ArchiveTest"));
                 m_app->Start(AzFramework::Application::Descriptor());
                 // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-                // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+                // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                 // in the unit tests.
                 AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
-                    fileIoBase->SetAlias("@assets@", m_tempDir.GetDirectory());
+                    fileIoBase->SetAlias("@projectproductassets@", m_tempDir.GetDirectory());
                 }
             }
 
@@ -153,7 +153,7 @@ namespace UnitTest
         {
             EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
-            
+
             EXPECT_EQ(CreateArchive(), true);
 
             AZStd::vector<AZStd::string> fileList;

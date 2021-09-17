@@ -149,7 +149,7 @@ namespace EMotionFX
             // through this method. Once EMotionFX is integrated to the asset system this can go away.
             AZStd::string assetFilename;
             EBUS_EVENT_RESULT(assetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
-            const char* devAssetsPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+            const char* devAssetsPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
             if (devAssetsPath)
             {
                 AZStd::string assetSourcePath = devAssetsPath;
@@ -164,7 +164,7 @@ namespace EMotionFX
             {
                 if (GetEMotionFX().GetIsInEditorMode())
                 {
-                    AZ_Warning("EMotionFX", false, "Failed to retrieve asset source path with alias '@devassets@'. Cannot set absolute filename for '%s'", assetFilename.c_str());
+                    AZ_Warning("EMotionFX", false, "Failed to retrieve asset source path with alias '@projectroot@'. Cannot set absolute filename for '%s'", assetFilename.c_str());
                 }
                 assetData->m_emfxMotionSet->SetFilename(assetFilename.c_str());
             }

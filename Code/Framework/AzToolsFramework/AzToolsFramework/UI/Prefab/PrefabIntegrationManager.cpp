@@ -306,7 +306,7 @@ namespace AzToolsFramework
             // temporarily null after QFileDialogs close, which we need in order to
             // be able to parent our message dialogs properly
             QWidget* activeWindow = QApplication::activeWindow();
-            const AZStd::string prefabFilesPath = "@devassets@/Prefabs";
+            const AZStd::string prefabFilesPath = "@projectroot@/Prefabs";
 
             // Remove Level entity if it's part of the list
             

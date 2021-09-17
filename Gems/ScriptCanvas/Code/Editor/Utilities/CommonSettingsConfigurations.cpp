@@ -21,7 +21,7 @@ namespace ScriptCanvasEditor
         {
             if (AZ::IO::FileIOBase::GetInstance())
             {
-                resultValue = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+                resultValue = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
             }
         }
 

@@ -36,13 +36,12 @@ protected:
         m_app.Start(AZ::ComponentApplication::Descriptor());
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         m_workingDirectory = m_app.GetExecutableFolder();
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", m_workingDirectory);
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", m_workingDirectory);
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", m_workingDirectory);
     }
 
     void TearDown() override
@@ -78,7 +77,7 @@ protected:
     }
 
     void TestSuccessCase(const SceneAPI::Events::ExportProduct& exportProduct,
-        const AssetBuilderSDK::ProductPathDependency* expectedPathDependency = nullptr, 
+        const AssetBuilderSDK::ProductPathDependency* expectedPathDependency = nullptr,
         const AZ::Uuid* expectedProductDependency = nullptr)
     {
         AssetBuilderSDK::ProductPathDependencySet expectedPathDependencies;
@@ -86,13 +85,13 @@ protected:
         {
             expectedPathDependencies.emplace(*expectedPathDependency);
         }
-        
+
         AZStd::vector<AZ::Uuid> expectedProductDependencies;
         if (expectedProductDependency)
         {
             expectedProductDependencies.push_back(*expectedProductDependency);
         }
-        
+
         TestSuccessCase(exportProduct, expectedPathDependencies, expectedProductDependencies);
     }
 
@@ -121,7 +120,7 @@ TEST_F(SceneBuilderTests, SceneBuilderWorker_ExportProductDependencies_PathDepen
     const char* absolutePathToFile = "/some/test/file.mtl";
 #endif // AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
     AssetBuilderSDK::ProductPathDependency expectedPathDependency(absolutePathToFile, AssetBuilderSDK::ProductPathDependencyType::SourceFile);
-    
+
     SceneAPI::Events::ExportProduct product("testExportFile", AZ::Uuid::CreateRandom(), AZ::Data::AssetType::CreateNull(), u8(0), AZStd::nullopt);
     product.m_legacyPathDependencies.push_back(absolutePathToFile);
     TestSuccessCase(product, &expectedPathDependency);
@@ -133,7 +132,7 @@ TEST_F(SceneBuilderTests, SceneBuilderWorker_ExportProductDependencies_PathDepen
     const char* relativeDependencyPathToFile = "some/test/file.mtl";
 
     AssetBuilderSDK::ProductPathDependency expectedPathDependency(relativeDependencyPathToFile, AssetBuilderSDK::ProductPathDependencyType::ProductFile);
-    
+
     SceneAPI::Events::ExportProduct product("testExportFile", AZ::Uuid::CreateRandom(), AZ::Data::AssetType::CreateNull(), u8(0), AZStd::nullopt);
     product.m_legacyPathDependencies.push_back(relativeDependencyPathToFile);
 

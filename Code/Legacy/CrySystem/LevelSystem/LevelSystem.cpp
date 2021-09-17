@@ -306,7 +306,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
                 }
 
                 AZStd::string levelContainerPakPath;
-                AZ::StringFunc::Path::Join("@assets@", m_levelsFolder.c_str(), levelContainerPakPath);
+                AZ::StringFunc::Path::Join("@projectproductassets@", m_levelsFolder.c_str(), levelContainerPakPath);
                 if (subfolder && subfolder[0])
                 {
                     AZ::StringFunc::Path::Join(levelContainerPakPath.c_str(), subfolder, levelContainerPakPath);

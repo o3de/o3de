@@ -52,7 +52,7 @@ namespace UnitTest
             {
                 return false;
             }
-            
+
             AZ::Data::AssetInfo assetInfo;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, testAssetId);
             return assetInfo.m_relativePath == assetPath;
@@ -61,7 +61,7 @@ namespace UnitTest
 
     TEST_F(Integ_BundlingSystemComponentFixture, HasBundle_LoadBundles_Success)
     {
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
         const char testAssetPath[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
 
@@ -74,7 +74,7 @@ namespace UnitTest
 
     TEST_F(Integ_BundlingSystemComponentFixture, HasBundle_LoadBundlesCatalogChecks_Success)
     {
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
         // The Pak has a catalog describing the contents which should automatically update our central asset catalog
         const char testAssetPath[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
@@ -94,34 +94,34 @@ namespace UnitTest
 
     TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SingleUnloadCheckCatalog_Success)
     {
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
         // The Pak has a catalog describing the contents which should automatically update our central asset catalog
         const char testCSVAsset[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
         const char testCSVAssetPak[] = "test/bundle/staticdata.pak";
 
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/ping.pak 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/ping.pak
         const char testDDSAsset[] = "textures/test/ping.dds";
         const char testDDSAssetPak[] = "test/bundle/ping.pak";
 
         EXPECT_FALSE(TestAssetId(testCSVAsset));
         EXPECT_FALSE(TestAssetId(testDDSAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         EXPECT_FALSE(TestAssetId(testCSVAsset));
         EXPECT_TRUE(TestAssetId(testDDSAsset));
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testDDSAssetPak));
         EXPECT_FALSE(TestAssetId(testCSVAsset));
         EXPECT_FALSE(TestAssetId(testDDSAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testCSVAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testCSVAssetPak));
         EXPECT_TRUE(TestAssetId(testCSVAsset));
         EXPECT_FALSE(TestAssetId(testDDSAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         EXPECT_TRUE(TestAssetId(testCSVAsset));
         EXPECT_TRUE(TestAssetId(testDDSAsset));
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testDDSAssetPak));
         EXPECT_TRUE(TestAssetId(testCSVAsset));
         EXPECT_FALSE(TestAssetId(testDDSAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         EXPECT_TRUE(TestAssetId(testCSVAsset));
         EXPECT_TRUE(TestAssetId(testDDSAsset));
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testCSVAssetPak));
@@ -134,7 +134,7 @@ namespace UnitTest
 
     TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SingleLoadAndBundleMode_Success)
     {
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
         // The Pak has a catalog describing the contents which should automatically update our central asset catalog
         const char testCSVAsset[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
@@ -143,7 +143,7 @@ namespace UnitTest
         const char testMTLAssetPak[] = "test/TestMaterials.pak";
         EXPECT_FALSE(TestAssetId(testCSVAsset));
         EXPECT_FALSE(TestAssetId(testMTLAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testMTLAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testMTLAssetPak));
         EXPECT_FALSE(TestAssetId(testCSVAsset));
         EXPECT_TRUE(TestAssetId(testMTLAsset));
         LmbrCentral::BundlingSystemRequestBus::Broadcast(&LmbrCentral::BundlingSystemRequestBus::Events::LoadBundles, "test/bundle", ".pak");
@@ -159,35 +159,35 @@ namespace UnitTest
 
     TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_OpenClosePackCount_Match)
     {
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
         // The Pak has a catalog describing the contents which should automatically update our central asset catalog
         const char testCSVAsset[] = "staticdata/csv/bundlingsystemtestgameproperties.csv";
         const char testCSVAssetPak[] = "test/bundle/staticdata.pak";
 
-        // This asset lives only within LmbrCentral/Assets/Test/Bundle/ping.pak 
+        // This asset lives only within LmbrCentral/Assets/Test/Bundle/ping.pak
         const char testDDSAssetPak[] = "test/bundle/ping.pak";
 
         size_t bundleCount{ 0 };
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount,&LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 0);
         EXPECT_FALSE(TestAssetId(testCSVAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 1);
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 0);
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testCSVAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testCSVAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 1);
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 2);
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 1);
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 2);
         EXPECT_TRUE(gEnv->pCryPak->ClosePack(testCSVAssetPak));
@@ -208,7 +208,7 @@ namespace UnitTest
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 0);
         EXPECT_FALSE(TestAssetId(testDDSAsset_split));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 2);
         EXPECT_TRUE(TestAssetId(testDDSAsset_split));
@@ -217,7 +217,7 @@ namespace UnitTest
         EXPECT_EQ(bundleCount, 0);
         EXPECT_FALSE(TestAssetId(testDDSAsset_split));
 
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testDDSAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testDDSAssetPak));
         LmbrCentral::BundlingSystemRequestBus::BroadcastResult(bundleCount, &LmbrCentral::BundlingSystemRequestBus::Events::GetOpenedBundleCount);
         EXPECT_EQ(bundleCount, 2);
         EXPECT_TRUE(TestAssetId(testDDSAsset_split));
@@ -240,7 +240,7 @@ namespace UnitTest
 
         EXPECT_FALSE(TestAssetId(testGamePropertiesAsset));
         EXPECT_FALSE(TestAssetId(testUserRequestAsset));
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testGamePropertiesAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testGamePropertiesAssetPak));
         EXPECT_TRUE(TestAssetId(testGamePropertiesAsset));
         EXPECT_FALSE(TestAssetId(testUserRequestAsset));
         AZ::Data::AssetId testAssetId;
@@ -253,7 +253,7 @@ namespace UnitTest
         EXPECT_NE(assetInfo.m_sizeBytes, 0);
         AZ::u64 assetSize1 = assetInfo.m_sizeBytes;
 
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testUserRequestAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testUserRequestAssetPak));
         EXPECT_TRUE(TestAssetId(testGamePropertiesAsset));
         EXPECT_TRUE(TestAssetId(testUserRequestAsset));
 
@@ -271,13 +271,13 @@ namespace UnitTest
         EXPECT_FALSE(TestAssetId(testGamePropertiesAsset));
         EXPECT_FALSE(TestAssetId(testUserRequestAsset));
 
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testUserRequestAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testUserRequestAssetPak));
 
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, testAssetId);
         AZ::u64 assetSize3 = assetInfo.m_sizeBytes;
         EXPECT_EQ(assetSize3, assetSize2);
 
-        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@assets@", testGamePropertiesAssetPak));
+        EXPECT_TRUE(gEnv->pCryPak->OpenPack("@projectproductassets@", testGamePropertiesAssetPak));
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, testAssetId);
         AZ::u64 assetSize4 = assetInfo.m_sizeBytes;
         EXPECT_EQ(assetSize4, assetSize1);

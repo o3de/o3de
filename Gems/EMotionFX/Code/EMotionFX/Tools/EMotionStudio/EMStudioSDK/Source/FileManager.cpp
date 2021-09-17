@@ -72,13 +72,13 @@ namespace EMStudio
     {
         AZStd::string filename;
 
-        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetCachePath);
 
         AZStd::string relativePath;
         EBUS_EVENT_RESULT(relativePath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetCachePath.c_str(), relativePath.c_str(), filename);
-        
+
         return filename;
     }
 
@@ -243,7 +243,7 @@ namespace EMStudio
     void FileManager::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::TypeId sourceTypeId)
     {
         AZStd::string filename;
-        AZStd::string assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        AZStd::string assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), relativePath.c_str(), filename);
 
@@ -373,7 +373,7 @@ namespace EMStudio
                 const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(assetBrowserEntry);
 
                 filename.clear();
-                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
                 AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
                 AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), product->GetRelativePath().c_str(), filename);
 
@@ -395,7 +395,7 @@ namespace EMStudio
         {
             return AZStd::string();
         }
-     
+
         return filenames[0];
     }
 
@@ -435,12 +435,12 @@ namespace EMStudio
         AZStd::string result;
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                 "Actor <font color=green>successfully</font> saved");
         }
         else
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                 AZStd::string::format("Actor <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
         }
     }
@@ -574,12 +574,12 @@ namespace EMStudio
             AZStd::string result;
             if (GetCommandManager()->ExecuteCommand(command, result) == false)
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                     AZStd::string::format("MotionSet <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
             }
             else
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                     "MotionSet <font color=green>successfully</font> saved");
             }
         }
@@ -608,7 +608,7 @@ namespace EMStudio
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     AZStd::string FileManager::LoadAnimGraphFileDialog([[maybe_unused]] QWidget* parent)
     {
         GetManager()->SetAvoidRendering(true);
@@ -618,7 +618,7 @@ namespace EMStudio
         {
             return AZStd::string();
         }
-        
+
         return filenames[0];
     }
 

@@ -35,7 +35,7 @@ namespace AzGameFramework
         enginePakPath /= "Engine.pak";
         if (m_archiveFileIO->Exists(enginePakPath.c_str()))
         {
-            m_archive->OpenPack("@assets@", enginePakPath.Native());
+            m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
         }
         else if (enginePakPath.clear(); m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
@@ -43,7 +43,7 @@ namespace AzGameFramework
             enginePakPath /= "Engine.pak";
             if (m_archiveFileIO->Exists(enginePakPath.c_str()))
             {
-                m_archive->OpenPack("@assets@", enginePakPath.Native());
+                m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
             }
         }
     }

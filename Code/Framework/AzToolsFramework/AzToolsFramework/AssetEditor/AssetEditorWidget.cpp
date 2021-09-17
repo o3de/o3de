@@ -136,7 +136,7 @@ namespace AzToolsFramework
         AssetEditorWidgetUserSettings::AssetEditorWidgetUserSettings()
         {
             char assetRoot[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", assetRoot, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", assetRoot, AZ_MAX_PATH_LEN);
 
             m_lastSavePath = assetRoot;
         }

@@ -297,16 +297,16 @@ namespace EMotionFX
     INSTANTIATE_TEST_CASE_P(Integ_TestPoses, INTEG_PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
             ),
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
             )
         )
     );
@@ -314,10 +314,10 @@ namespace EMotionFX
     INSTANTIATE_TEST_CASE_P(Integ_TestPoseComparison, INTEG_TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@projectproductassets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
             )
         )
     );

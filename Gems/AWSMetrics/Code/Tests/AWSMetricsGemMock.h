@@ -34,14 +34,14 @@ namespace AWSMetrics
             // Set up the file IO and alias
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
             const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
-            m_localFileIO->SetAlias("@devroot@", engineRoot.c_str());
-            m_localFileIO->SetAlias("@root@", engineRoot.c_str());
+            m_localFileIO->SetAlias("@engroot@", engineRoot.c_str());
+            m_localFileIO->SetAlias("@projectproductassets@", engineRoot.c_str());
             m_localFileIO->SetAlias("@user@", GetTestFolderPath().c_str());
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();

@@ -372,7 +372,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         const char* logAlias = gEnv->pFileIO->GetAlias("@log@");
         if (!logAlias)
         {
-            logAlias = gEnv->pFileIO->GetAlias("@root@");
+            logAlias = gEnv->pFileIO->GetAlias("@projectproductassets@");
         }
         if (logAlias)
         {

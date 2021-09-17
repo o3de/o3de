@@ -168,6 +168,6 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStatePrimaryUserSelection::GetPrimaryUserSelectionCanvasAssetPath()
     {
-        return "@assets@/ui/canvases/defaultprimaryuserselectionscreen.uicanvas";
+        return "@projectproductassets@/ui/canvases/defaultprimaryuserselectionscreen.uicanvas";
     }
 }

@@ -318,7 +318,7 @@ namespace AZ
             }
 
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             // retrieve the source cubemap path from the configuration
             // we need to make sure to use the same source cubemap for each bake

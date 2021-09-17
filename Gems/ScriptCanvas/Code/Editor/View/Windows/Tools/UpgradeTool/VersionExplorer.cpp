@@ -304,7 +304,7 @@ namespace ScriptCanvasEditor
         QDateTime theTime = QDateTime::currentDateTime();
         QString subFolder = theTime.toString("yyyy-MM-dd [HH.mm.ss]");
 
-        AZStd::string backupPath = AZStd::string::format("@devroot@/ScriptCanvas_BACKUP/%s", subFolder.toUtf8().data());
+        AZStd::string backupPath = AZStd::string::format("@engroot@/ScriptCanvas_BACKUP/%s", subFolder.toUtf8().data());
         char backupPathCStr[AZ_MAX_PATH_LEN] = { 0 };
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(backupPath.c_str(), backupPathCStr, AZ_MAX_PATH_LEN);
         backupPath = backupPathCStr;
@@ -318,8 +318,8 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AZStd::string devRoot = "@devroot@";
-        AZStd::string devAssets = "@devassets@";
+        AZStd::string devRoot = "@engroot@";
+        AZStd::string devAssets = "@projectroot@";
 
         char devRootCStr[AZ_MAX_PATH_LEN] = { 0 };
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(devRoot.c_str(), devRootCStr, AZ_MAX_PATH_LEN);
@@ -816,7 +816,7 @@ namespace ScriptCanvasEditor
         }
 
         char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
-        AZStd::string path = AZStd::string::format("@devroot@/%s", asset.GetHint().c_str());
+        AZStd::string path = AZStd::string::format("@engroot@/%s", asset.GetHint().c_str());
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(path.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
         AZ::StringFunc::Path::GetFullPath(resolvedBuffer, path);
         AZ::StringFunc::Path::Normalize(path);

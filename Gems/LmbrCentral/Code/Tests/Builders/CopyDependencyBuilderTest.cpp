@@ -69,7 +69,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetRoot.c_str());
 
             SerializeContext* serializeContext;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationRequests::GetSerializeContext);
@@ -114,7 +114,7 @@ namespace UnitTest
         {
             AssetBuilderSDK::ProductPathDependencySet resolvedPaths;
             AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-        
+
             AssetBuilderSDK::ProcessJobRequest request;
             request.m_fullPath = GetFullPath(fileName);
             request.m_sourceFile = fileName;
@@ -428,7 +428,7 @@ namespace UnitTest
             "Fonts/fontexample-bolditalic.font"
         };
 
-        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily"; 
+        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily";
 
         FontBuilderWorker builderWorker;
 
@@ -445,7 +445,7 @@ namespace UnitTest
         AZStd::string fileName = "Fonts/FontExample.font";
 
         FontBuilderWorker builderWorker;
-    
+
         TestSuccessCase(&builderWorker, fileName, "Fonts/FontExample.ttf");
     }
 
@@ -667,7 +667,7 @@ namespace UnitTest
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/OptionalAttribute"));
 
         AZStd::vector<AssetBuilderSDK::ProductDependency> expectedProductDependencies;
-    
+
         TestSuccessCase(&builderWorker, fileName, expectedPaths, expectedProductDependencies);
     }
 
@@ -896,7 +896,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-        request.m_watchFolder = "@root@/../Gems/LmbrCentral/Code/";
+        request.m_watchFolder = "@projectproductassets@/../Gems/LmbrCentral/Code/";
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));

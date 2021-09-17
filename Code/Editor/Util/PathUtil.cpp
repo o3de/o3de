@@ -179,7 +179,7 @@ namespace Path
         EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
         return QString(engineRoot);
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     QString& ReplaceFilename(const QString& strFilepath, const QString& strFilename, QString& strOutputFilename, bool bCallCaselessPath)
     {
@@ -230,7 +230,7 @@ namespace Path
         {
             if ((gEnv) && (gEnv->pFileIO))
             {
-                resultValue = gEnv->pFileIO->GetAlias("@devassets@");
+                resultValue = gEnv->pFileIO->GetAlias("@projectroot@");
             }
         }
 
@@ -268,7 +268,7 @@ namespace Path
         {
             if ((gEnv) && (gEnv->pFileIO))
             {
-                resultValue = gEnv->pFileIO->GetAlias("@devassets@");
+                resultValue = gEnv->pFileIO->GetAlias("@projectroot@");
             }
         }
         if (!resultValue)
@@ -434,40 +434,40 @@ namespace Path
                 // the asset cache by moving files in via some other means or external process.
                 if (adjustedFilePath[0] != '@')
                 {
-                    const char* prefix = (adjustedFilePath[0] == '/' || adjustedFilePath[0] == '\\') ? "@devassets@" : "@devassets@/";
+                    const char* prefix = (adjustedFilePath[0] == '/' || adjustedFilePath[0] == '\\') ? "@projectroot@" : "@projectroot@/";
                     adjustedFilePath = prefix + adjustedFilePath;
                 }
 
                 char szAdjustedFile[AZ_MAX_PATH_LEN + PathUtil::maxAliasLength] = { 0 };
                 gEnv->pFileIO->ResolvePath(adjustedFilePath.c_str(), szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile));
 
-                if ((azstrnicmp(szAdjustedFile, "@devassets@", 11) == 0) && ((szAdjustedFile[11] == '/') || (szAdjustedFile[11] == '\\')))
+                if ((azstrnicmp(szAdjustedFile, "@projectroot@", 11) == 0) && ((szAdjustedFile[11] == '/') || (szAdjustedFile[11] == '\\')))
                 {
                     if (!gEnv->pCryPak->IsFileExist(szAdjustedFile))
                     {
                         AZStd::string newName(szAdjustedFile);
-                        AzFramework::StringFunc::Replace(newName, "@devassets@", "@devroot@/engine", false);
-                        
+                        AzFramework::StringFunc::Replace(newName, "@projectroot@", "@engroot@/engine", false);
+
                         if (gEnv->pCryPak->IsFileExist(newName.c_str()))
                         {
                             azstrcpy(szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile), newName.c_str());
                         }
                         else
                         {
-                            // getting tricky here, try @devroot@ alone, in case its 'editor'
-                            AzFramework::StringFunc::Replace(newName, "@devassets@", "@devroot@", false);
+                            // getting tricky here, try @engroot@ alone, in case its 'editor'
+                            AzFramework::StringFunc::Replace(newName, "@projectroot@", "@engroot@", false);
                             if (gEnv->pCryPak->IsFileExist(szAdjustedFile))
                             {
                                 azstrcpy(szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile), newName.c_str());
                             }
-                            // give up, best guess is just @devassets@
+                            // give up, best guess is just @projectroot@
                         }
                     }
                 }
 
                 // we should very rarely actually get to this point in the code.
 
-                // szAdjustedFile may contain an alias at this point. (@assets@/blah.whatever)
+                // szAdjustedFile may contain an alias at this point. (@projectproductassets@/blah.whatever)
                 // there is a case in which the loose asset exists only within a pak file for some reason
                 // this is not recommended but it is possible.in that case, we want to return the original szAdjustedFile
                 // without touching it or resolving it so that crypak can open it successfully.
@@ -478,7 +478,7 @@ namespace Path
                     {
                         // note that if we get here, then EITHER
                         // the file exists as a loose asset in the actual adjusted path
-                        // OR the file does not exist in the original passed-in aliased name (like '@assets@/whatever')
+                        // OR the file does not exist in the original passed-in aliased name (like '@projectproductassets@/whatever')
                         // in which case we may as well just resolve the path to a full path and return it.
                         assetFullPath = adjustedPath;
                         AzFramework::StringFunc::Path::Normalize(assetFullPath);

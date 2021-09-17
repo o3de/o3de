@@ -484,7 +484,7 @@ namespace LmbrCentral
         }
 
         // load the catalog from disk (supported over VFS).
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, LoadCatalog, AZStd::string::format("@assets@/%s", s_assetCatalogFilename).c_str());
+        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, LoadCatalog, AZStd::string::format("@projectproductassets@/%s", s_assetCatalogFilename).c_str());
     }
 
     void LmbrCentralSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)

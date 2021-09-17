@@ -673,7 +673,7 @@ namespace ScriptCanvasEditor
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
             if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(ScriptCanvas::AssetDescription::GetSuggestedSavePath<GraphAssetType>(), assetRootArray.data(), assetRootArray.size()))
             {
-                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @devassets@ path");
+                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
             }
 
             AZStd::string assetPath;

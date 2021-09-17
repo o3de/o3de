@@ -81,7 +81,6 @@ namespace UnitTest
             }
 
             m_fileIOHelper = AZStd::make_unique<FileIOHelper>();
-            m_fileIOHelper->m_fileIO.SetAlias("@devroot@", m_engineRoot.c_str());
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;

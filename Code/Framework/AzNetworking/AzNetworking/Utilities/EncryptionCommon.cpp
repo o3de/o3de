@@ -107,7 +107,7 @@ namespace AzNetworking
         if (AZ::IO::FileIOBase::GetInstance() != nullptr)
         {
             char buffer[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@assets@/", buffer, sizeof(buffer));
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectproductassets@/", buffer, sizeof(buffer));
             assetDir = AZStd::string(buffer);
         }
 

@@ -428,7 +428,7 @@ namespace EMStudio
                 continue;
             }
 
-            AzFramework::StringFunc::Replace(commands[i], "@assets@/", assetCacheFolder.c_str(), true /* case sensitive */);
+            AzFramework::StringFunc::Replace(commands[i], "@projectproductassets@/", assetCacheFolder.c_str(), true /* case sensitive */);
 
             // add the command to the command group
             commandGroup->AddCommandString(commands[i]);

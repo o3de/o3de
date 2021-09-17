@@ -357,7 +357,7 @@ namespace AzToolsFramework
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             if (fileIO)
             {
-                return fileIO->GetAlias("@devassets@");
+                return fileIO->GetAlias("@projectroot@");
             }
             return "";
         }
@@ -367,7 +367,7 @@ namespace AzToolsFramework
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             if (fileIO)
             {
-                return fileIO->GetAlias("@devroot@");
+                return fileIO->GetAlias("@engroot@");
             }
             return "";
         }
