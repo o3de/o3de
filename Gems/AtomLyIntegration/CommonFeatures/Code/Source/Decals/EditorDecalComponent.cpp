@@ -32,7 +32,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDecalComponent>(
-                        "Decal (Atom)", "The Decal component allows an entity to project a texture or material onto a mesh")
+                        "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Atom")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
