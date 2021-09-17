@@ -108,6 +108,8 @@ namespace AZ
             //! Ends the graph execution phase. Call this after all execution jobs have joined. This
             //! resets all state held by the executer.
             void End();
+            
+            void SubmitAllGroups();
 
         protected:
             FrameGraphExecuter() = default;
@@ -146,13 +148,13 @@ namespace AZ
 
             /// Called when graph execution ends.
             virtual void EndInternal() = 0;
+            
+            
 
             //////////////////////////////////////////////////////////////////////////
 
             JobPolicy m_jobPolicy = JobPolicy::Serial;
 
-            AZStd::mutex m_pendingContextGroupLock;
-            AZStd::queue<FrameGraphExecuteGroup*> m_pendingGroups;
             AZStd::vector<AZStd::unique_ptr<FrameGraphExecuteGroup>> m_groups;
 
             FrameGraphExecuterDescriptor m_descriptor;
@@ -164,7 +166,6 @@ namespace AZ
         {
             FrameGraphExecuteGroupType* group = aznew FrameGraphExecuteGroupType();
             m_groups.emplace_back(group);
-            m_pendingGroups.emplace(group);
             return group;
         }
     }

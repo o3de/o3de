@@ -135,14 +135,14 @@ namespace AZ
                 if (reserve != head - 1)
                 {
                     // Try to reserve a slot
-                    if (status.reserve.compare_exchange_weak(reserve, reserve + 1))
+                    if (status.reserve.compare_exchange_strong(reserve, reserve + 1))
                     {
                         m_queues[priority][reserve] = task;
 
                         uint16_t expectedReserve = reserve;
 
                         // Increment the tail to advertise the new task
-                        while (!status.tail.compare_exchange_weak(expectedReserve, reserve + 1))
+                        while (!status.tail.compare_exchange_strong(expectedReserve, reserve + 1))
                         {
                             expectedReserve = reserve;
                         }
@@ -176,7 +176,7 @@ namespace AZ
                     else
                     {
                         Task* task = m_queues[priority][status.head];
-                        if (status.head.compare_exchange_weak(head, head + 1))
+                        if (status.head.compare_exchange_strong(head, head + 1))
                         {
                             return task;
                         }
@@ -197,10 +197,10 @@ namespace AZ
                 AZStd::string threadName = AZStd::string::format("TaskWorker %zu", id);
                 AZStd::thread_desc desc = {};
                 desc.m_name = threadName.c_str();
-                if (affinitize)
-                {
-                    desc.m_cpuId = 1 << id;
-                }
+//                if (affinitize)
+//                {
+//                    desc.m_cpuId = 1 << id;
+//                }
                 m_active.store(true, AZStd::memory_order_release);
 
                 m_thread = AZStd::thread{ [this, &initSemaphore]
@@ -296,7 +296,7 @@ namespace AZ
     {
         AZ_Assert(!s_executor, "Attempting to set the global task executor more than once");
 
-        s_executor = AZ::Environment::CreateVariable<TaskExecutor*>("GlobalTaskExecutor");
+        s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName);
         s_executor.Set(executor);
     }
 

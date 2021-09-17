@@ -62,7 +62,6 @@ namespace AZ
         {
             if (IsInitialized())
             {
-                AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
@@ -77,7 +76,6 @@ namespace AZ
         void FrameGraphExecuter::End()
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: End");
-            AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
             m_groups.clear();
             EndInternal();
         }
@@ -96,12 +94,14 @@ namespace AZ
             AZ_Assert(group.IsComplete(), "Ending a context group before all child contexts have ended!");
             group.EndInternal();
             group.m_isSubmittable = true;
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_pendingContextGroupLock);
-            while (m_pendingGroups.size() && m_pendingGroups.front()->IsSubmittable())
+        }
+    
+        void FrameGraphExecuter::SubmitAllGroups()
+        {
+            for(auto& group : m_groups)
             {
-                ExecuteGroupInternal(*m_pendingGroups.front());
-                m_pendingGroups.pop();
+                AZ_Assert(group->IsSubmittable(), "Unsubmittable group found!");
+                ExecuteGroupInternal(*group);
             }
         }
     }

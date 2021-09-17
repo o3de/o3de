@@ -59,6 +59,11 @@ namespace AZ
         return { AddTask(descriptor, AZStd::forward<Lambdas>(lambdas))... };
     }
 
+    inline bool TaskGraph::IsEmpty()
+    {
+        return m_tasks.empty();
+    }
+
     inline void TaskGraph::Detach()
     {
         m_retained = false;

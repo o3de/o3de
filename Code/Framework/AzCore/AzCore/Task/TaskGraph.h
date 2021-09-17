@@ -89,6 +89,9 @@ namespace AZ
         // Reset the state of the task graph to begin recording tasks and edges again
         // NOTE: Graph must be in a "settled" state (cannot be in-flight)
         void Reset();
+        
+        // Returns false if 1 or more tasks have been added to the graph
+        bool IsEmpty();
 
         // Add a task to the graph, retrieiving a token that can be used to express dependencies
         // between tasks. The first argument specifies the TaskKind, used for tracking the task.

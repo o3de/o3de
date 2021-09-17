@@ -26,8 +26,9 @@
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Algorithms.h>
-#include <AzCore/Jobs/JobCompletion.h>
-#include <AzCore/Jobs/JobFunction.h>
+// #include <AzCore/Jobs/JobCompletion.h>
+// #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
@@ -258,21 +259,35 @@ namespace AZ
 
             if (m_compileRequest.m_jobPolicy == JobPolicy::Parallel)
             {
-                const auto compileGroupsBeginFunction = [](ShaderResourceGroupPool* srgPool)
-                {
-                    srgPool->CompileGroupsBegin();
-                };
-
-                resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsBeginFunction)>(compileGroupsBeginFunction);
-
                 // Iterate over each SRG pool and fork jobs to compile SRGs.
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
-                AZ::JobCompletion jobCompletion;
+                AZ::TaskGraph taskGraph;
+                AZStd::atomic_int32_t numCompileEndRemaining = 0;
+                AZStd::atomic_int32_t numCompileGroupsRemaining = 0;
 
-                const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
+                const auto compileIntervalsFunction = [compilesPerJob, &taskGraph, &numCompileEndRemaining, &numCompileGroupsRemaining](ShaderResourceGroupPool* srgPool)
                 {
+                    srgPool->CompileGroupsBegin();
                     const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
                     const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                    AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
+                    AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
+
+                    // mitigation
+//                    if (!compilesInPool)
+//                    {
+//                        srgPool->CompileGroupsEnd();
+//                        return;
+//                    }
+                    
+                    ++numCompileEndRemaining;
+                    auto srgCompileEndTask = taskGraph.AddTask(
+                        srgCompileEndDesc, 
+                        [srgPool, &numCompileEndRemaining]()
+                        {
+                            srgPool->CompileGroupsEnd();
+                            --numCompileEndRemaining;
+                        });
 
                     for (uint32_t i = 0; i < jobCount; ++i)
                     {
@@ -280,28 +295,29 @@ namespace AZ
                         interval.m_min = i * compilesPerJob;
                         interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
 
-                        const auto compileGroupsForIntervalLambda = [srgPool, interval]()
-                        {
+                        ++numCompileGroupsRemaining;
+                        auto compileTask = taskGraph.AddTask(
+                            srgCompileDesc,
+                            [srgPool, interval, &numCompileGroupsRemaining]()
+                            {
                             AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
-                            srgPool->CompileGroupsForInterval(interval);
-                        };
-
-                        AZ::Job* executeGroupJob = AZ::CreateJobFunction(AZStd::move(compileGroupsForIntervalLambda), true, nullptr);
-                        executeGroupJob->SetDependent(&jobCompletion);
-                        executeGroupJob->Start();
+                                srgPool->CompileGroupsForInterval(interval);
+                                --numCompileGroupsRemaining;
+                            });
+                            compileTask.Precedes(srgCompileEndTask);
                     }
                 };
 
                 resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
-
-                jobCompletion.StartAndWaitForCompletion();
-
-                const auto compileGroupsEndFunction = [](ShaderResourceGroupPool* srgPool)
+                if (!taskGraph.IsEmpty())
                 {
-                    srgPool->CompileGroupsEnd();
-                };
-
-                resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsEndFunction)>(compileGroupsEndFunction);
+                    [[maybe_unused]] int32_t startingNumCompileEndJobs = numCompileEndRemaining;
+                    [[maybe_unused]] int32_t startingNumCompileGroupsJobs = numCompileGroupsRemaining;
+                    // taskGraph.Detach();
+                    AZ::TaskGraphEvent finishedEvent;
+                    taskGraph.Submit(&finishedEvent);
+                    finishedEvent.Wait();
+                }
             }
             else
             {
@@ -427,7 +443,7 @@ namespace AZ
             group.EndContext(index);
         }
 
-        void FrameScheduler::ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex)
+        void FrameScheduler::ExecuteGroupInternal(AZ::TaskGraph* taskGraph, AZ::TaskToken* submitTaskToken, uint32_t groupIndex)
         {
             AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal");
 
@@ -440,7 +456,7 @@ namespace AZ
              * context.
              */
             const bool isSerialPolicy = executeGroup->GetJobPolicy() == JobPolicy::Serial;
-            const bool isSerialExecute = parentJob == nullptr || contextCount == 1 || isSerialPolicy;
+            const bool isSerialExecute = taskGraph == nullptr || contextCount == 1 || isSerialPolicy;
 
             if (isSerialExecute)
             {
@@ -448,25 +464,34 @@ namespace AZ
                 {
                     ExecuteContextInternal(*executeGroup, i);
                 }
-            }
+                m_frameGraphExecuter->EndGroup(groupIndex);
+           }
 
             // Spawns a job for each context in the group as a child of this job.
             else
             {
+                const static AZ::TaskDescriptor groupExecuteDesc{"FrameScheduler_ExecuteContext","Graphics"};
+                const static AZ::TaskDescriptor groupExecuteEndDesc{"FrameScheduler_ExecuteGroupEnd","Graphics"};
+
+                auto endGroupTask = taskGraph->AddTask( 
+                    groupExecuteEndDesc,
+                    [this, groupIndex]()
+                    {
+                        m_frameGraphExecuter->EndGroup(groupIndex);
+                    });
+                endGroupTask.Precedes(*submitTaskToken);
+
                 for (uint32_t i = 0; i < contextCount; ++i)
                 {
-                    const auto jobLambda = [this, executeGroup, i]()
-                    {
-                        ExecuteContextInternal(*executeGroup, i);
-                    };
-
-                    parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
+                    auto executeTask = taskGraph->AddTask(
+                        groupExecuteDesc,
+                        [this, executeGroup, i]()
+                        {
+                            ExecuteContextInternal(*executeGroup, i);
+                        });
+                    executeTask.Precedes(endGroupTask);
                 }
-
-                parentJob->WaitForChildren();
             }
-
-            m_frameGraphExecuter->EndGroup(groupIndex);
         }
 
         void FrameScheduler::Execute(JobPolicy overrideJobPolicy)
@@ -475,6 +500,11 @@ namespace AZ
 
             const uint32_t groupCount = m_frameGraphExecuter->GetGroupCount();
             const JobPolicy platformJobPolicy = m_frameGraphExecuter->GetJobPolicy();
+            
+            if (groupCount == 0)
+            {
+                return;
+            }
 
             /**
              * The scheduler itself can force serial execution even if the platform supports it (e.g. as a debugging flag).
@@ -485,27 +515,49 @@ namespace AZ
             {
                 for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
                 {
-                    ExecuteGroupInternal(nullptr, groupIndex);
+                    ExecuteGroupInternal(nullptr, nullptr, groupIndex);
                 }
+                m_frameGraphExecuter->SubmitAllGroups();
             }
 
             // Otherwise, fork a job for each group.
             else
             {
-                AZ::JobCompletion jobCompletion;
+                static const AZ::TaskDescriptor executeGroupTGDesc{"FrameScheduler_ExecuteGroupInternal", "Graphics"};
+                static const AZ::TaskDescriptor executeGroupSubmitTGDesc{"FrameScheduler_FrameGraphExecuterSubmitAllGroups", "Graphics"};
+                AZ::TaskGraph executeGroupTG; // This graph will generate the executeContextTG
+                AZ::TaskGraph executeContextTG; // has the FG Executer do the work
+                auto submitTask = executeContextTG.AddTask(
+                    executeGroupSubmitTGDesc,
+                    [this]
+                    {
+                        m_frameGraphExecuter->SubmitAllGroups();
+                    });
                 for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
                 {
-                    const auto jobLambda = [this, groupIndex](AZ::Job& owner)
-                    {
-                        ExecuteGroupInternal(&owner, groupIndex);
-                    };
-
-                    AZ::Job* executeGroupJob = AZ::CreateJobFunction(jobLambda, true, nullptr);
-                    executeGroupJob->SetDependent(&jobCompletion);
-                    executeGroupJob->Start();
+                    executeGroupTG.AddTask(
+                        executeGroupTGDesc,
+                        [this, &executeContextTG, &submitTask, groupIndex]()
+                        {
+                            ExecuteGroupInternal(&executeContextTG, &submitTask, groupIndex);
+                        });
                 }
 
-                jobCompletion.StartAndWaitForCompletion();
+                if (!executeGroupTG.IsEmpty()) // jobs to generate the executeContext jobs
+                {
+                    // executeGroupTG.Detach();
+                    AZ::TaskGraphEvent executeGroupFinishedEvent;
+                    executeGroupTG.Submit(&executeGroupFinishedEvent);
+                    executeGroupFinishedEvent.Wait();
+                    
+                    if (!executeContextTG.IsEmpty()) //ExecuteGroupInternal will generate zero jobs if there is only 1 group context
+                    {
+                        // executeContextTG.Detach();
+                        AZ::TaskGraphEvent executeContextFinishedEvent;
+                        executeContextTG.Submit(&executeContextFinishedEvent);
+                        executeContextFinishedEvent.Wait();
+                    }
+                }
             }
         }
 

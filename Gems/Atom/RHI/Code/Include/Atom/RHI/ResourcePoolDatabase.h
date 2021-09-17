@@ -10,6 +10,7 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
@@ -153,6 +154,22 @@ namespace AZ
         {
             AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
             AZStd::for_each(m_shaderResourceGroupPools.begin(), m_shaderResourceGroupPools.end(), predicate);
+//            AZ::TaskDescriptor srgPoolParrallelFor{"SrgPoolParallelFor", "Graphics"};
+//            AZ::TaskGraph taskGraph;
+//            for(auto& srgPool : m_shaderResourceGroupPools)
+//            {
+//                taskGraph.AddTask(
+//                    srgPoolParrallelFor,
+//                    [srgPool, predicate]()
+//                    {
+//                        predicate(srgPool);
+//                    }
+//                );
+//            }
+//            taskGraph.Detach();
+//            AZ::TaskGraphEvent finishedEvent;
+//            taskGraph.Submit(&finishedEvent);
+//            finishedEvent.Wait();
         }
 
         template <typename Predicate>
@@ -160,6 +177,22 @@ namespace AZ
         {
             AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
             AZStd::for_each(m_shaderResourceGroupPools.begin(), m_shaderResourceGroupPools.end(), predicate);
+//            AZ::TaskDescriptor srgPoolParrallelFor{"SrgPoolParallelFor", "Graphics"};
+//            AZ::TaskGraph taskGraph;
+//            for(auto& srgPool : m_shaderResourceGroupPools)
+//            {
+//                taskGraph.AddTask(
+//                    srgPoolParrallelFor,
+//                    [srgPool, predicate]()
+//                    {
+//                        predicate(srgPool);
+//                    }
+//                );
+//            }
+//            taskGraph.Detach();
+//            AZ::TaskGraphEvent finishedEvent;
+//            taskGraph.Submit(&finishedEvent);
+//            finishedEvent.Wait();
         }
 
         template <typename Predicate>
