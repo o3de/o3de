@@ -79,7 +79,7 @@ namespace AZ
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
-        void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
+        void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes)
         {
             if (!m_rayTracingEnabled)
             {
@@ -92,7 +92,7 @@ namespace AZ
             MeshMap::iterator itMesh = m_meshes.find(objectIndex);
             if (itMesh == m_meshes.end())
             {
-                m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ subMeshes }));
+                m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId, subMeshes }));
             }
             else
             {
@@ -102,9 +102,12 @@ namespace AZ
                 m_meshes[objectIndex].m_subMeshes = subMeshes;
             }
 
-            // create the BLAS buffers for each sub-mesh
+            // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
+            // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
             Mesh& mesh = m_meshes[objectIndex];
+            bool blasInstanceFound = false;
+
             for (auto& subMesh : mesh.m_subMeshes)
             {
                 RHI::RayTracingBlasDescriptor blasDescriptor;
@@ -115,11 +118,37 @@ namespace AZ
                         ->IndexBuffer(subMesh.m_indexBufferView)
                 ;
 
-                // create the BLAS object
-                subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                // search for an existing BLAS object for this model
+                RayTracingBlasMap::iterator itBlas = m_blasMap.find(assetId);
+                if (itBlas != m_blasMap.end())
+                {
+                    // re-use existing BLAS
+                    subMesh.m_blas = itBlas->second.m_blas;
+                    itBlas->second.m_count++;
 
-                // create the buffers from the descriptor
-                subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // keep track of the fact that we re-used a BLAS
+                    blasInstanceFound = true;
+                }
+                else
+                {
+                    AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
+
+                    // create the BLAS object
+                    subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+
+                    // create the buffers from the descriptor
+                    subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+
+                    // store the BLAS in the side list
+                    RayTracingBlasInstance blasInstance = { subMesh.m_blas, 1 };
+                    m_blasMap.insert({ assetId, blasInstance });
+                }
+            }
+
+            if (blasInstanceFound)
+            {
+                // set the mesh BLAS flag so we don't try to rebuild it in the RayTracingAccelerationStructurePass
+                mesh.m_blasBuilt = true;
             }
 
             // set initial transform
@@ -146,6 +175,17 @@ namespace AZ
                 m_subMeshCount -= aznumeric_cast<uint32_t>(itMesh->second.m_subMeshes.size());
                 m_meshes.erase(itMesh);
                 m_revision++;
+
+                // decrement the count from the BLAS instance, and check to see if we can remove it
+                RayTracingBlasMap::iterator itBlas = m_blasMap.find(itMesh->second.m_assetId);
+                if (itBlas != m_blasMap.end())
+                {
+                    itBlas->second.m_count--;
+                    if (itBlas->second.m_count == 0)
+                    {
+                        m_blasMap.erase(itBlas);
+                    }
+                }                
             }
 
             m_meshInfoBufferNeedsUpdate = true;
