@@ -66,7 +66,7 @@ namespace AtomToolsFramework
     }
 
     void InspectorWidget::AddGroup(
-        const AZStd::string& groupNameId,
+        const AZStd::string& groupName,
         const AZStd::string& groupDisplayName,
         const AZStd::string& groupDescription,
         QWidget* groupWidget)
@@ -76,31 +76,31 @@ namespace AtomToolsFramework
         groupHeader->setToolTip(groupDescription.c_str());
         m_ui->m_groupContentsLayout->addWidget(groupHeader);
 
-        groupWidget->setObjectName(groupNameId.c_str());
+        groupWidget->setObjectName(groupName.c_str());
         groupWidget->setParent(m_ui->m_groupContents);
         m_ui->m_groupContentsLayout->addWidget(groupWidget);
 
-        m_groups[groupNameId] = {groupHeader, groupWidget};
+        m_groups[groupName] = {groupHeader, groupWidget};
 
-        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupNameId](QMouseEvent* event) {
-            OnHeaderClicked(groupNameId, event);
+        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupName](QMouseEvent* event) {
+            OnHeaderClicked(groupName, event);
         });
-        connect(groupHeader, &InspectorGroupHeaderWidget::expanded, this, [this, groupNameId]() { OnGroupExpanded(groupNameId); });
-        connect(groupHeader, &InspectorGroupHeaderWidget::collapsed, this, [this, groupNameId]() { OnGroupCollapsed(groupNameId); });
+        connect(groupHeader, &InspectorGroupHeaderWidget::expanded, this, [this, groupName]() { OnGroupExpanded(groupName); });
+        connect(groupHeader, &InspectorGroupHeaderWidget::collapsed, this, [this, groupName]() { OnGroupCollapsed(groupName); });
 
-        if (ShouldGroupAutoExpanded(groupNameId))
+        if (ShouldGroupAutoExpanded(groupName))
         {
-            ExpandGroup(groupNameId);
+            ExpandGroup(groupName);
         }
         else
         {
-            CollapseGroup(groupNameId);
+            CollapseGroup(groupName);
         }
     }
     
-    void InspectorWidget::SetGroupVisible(const AZStd::string& groupNameId, bool visible)
+    void InspectorWidget::SetGroupVisible(const AZStd::string& groupName, bool visible)
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         if (groupItr != m_groups.end())
         {
             groupItr->second.m_header->setVisible(visible);
@@ -108,29 +108,29 @@ namespace AtomToolsFramework
         }
     }
     
-    bool InspectorWidget::IsGroupVisible(const AZStd::string& groupNameId) const
+    bool InspectorWidget::IsGroupVisible(const AZStd::string& groupName) const
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         return groupItr != m_groups.end() ? groupItr->second.m_header->isVisible() : false;
     }
     
-    bool InspectorWidget::IsGroupHidden(const AZStd::string& groupNameId) const
+    bool InspectorWidget::IsGroupHidden(const AZStd::string& groupName) const
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         return groupItr != m_groups.end() ? groupItr->second.m_header->isHidden() : false;
     }
 
-    void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
+    void InspectorWidget::RefreshGroup(const AZStd::string& groupName)
     {
-        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupName.c_str()))
         {
             groupWidget->Refresh();
         }
     }
 
-    void InspectorWidget::RebuildGroup(const AZStd::string& groupNameId)
+    void InspectorWidget::RebuildGroup(const AZStd::string& groupName)
     {
-        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupName.c_str()))
         {
             groupWidget->Rebuild();
         }
@@ -152,9 +152,9 @@ namespace AtomToolsFramework
         }
     }
 
-    void InspectorWidget::ExpandGroup(const AZStd::string& groupNameId)
+    void InspectorWidget::ExpandGroup(const AZStd::string& groupName)
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         if (groupItr != m_groups.end())
         {
             groupItr->second.m_header->SetExpanded(true);
@@ -162,9 +162,9 @@ namespace AtomToolsFramework
         }
     }
 
-    void InspectorWidget::CollapseGroup(const AZStd::string& groupNameId)
+    void InspectorWidget::CollapseGroup(const AZStd::string& groupName)
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         if (groupItr != m_groups.end())
         {
             groupItr->second.m_header->SetExpanded(false);
@@ -172,9 +172,9 @@ namespace AtomToolsFramework
         }
     }
 
-    bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupNameId) const
+    bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupName) const
     {
-        auto groupItr = m_groups.find(groupNameId);
+        auto groupItr = m_groups.find(groupName);
         return groupItr != m_groups.end() ? groupItr->second.m_header->IsExpanded() : false;
     }
 
@@ -196,33 +196,33 @@ namespace AtomToolsFramework
         }
     }
 
-    bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
     {
-        AZ_UNUSED(groupNameId);
+        AZ_UNUSED(groupName);
         return true;
     }
 
-    void InspectorWidget::OnGroupExpanded(const AZStd::string& groupNameId)
+    void InspectorWidget::OnGroupExpanded(const AZStd::string& groupName)
     {
-        AZ_UNUSED(groupNameId);
+        AZ_UNUSED(groupName);
     }
 
-    void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupNameId)
+    void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupName)
     {
-        AZ_UNUSED(groupNameId);
+        AZ_UNUSED(groupName);
     }
 
-    void InspectorWidget::OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event)
+    void InspectorWidget::OnHeaderClicked(const AZStd::string& groupName, QMouseEvent* event)
     {
         if (event->button() == Qt::MouseButton::LeftButton)
         {
-            if (!IsGroupExpanded(groupNameId))
+            if (!IsGroupExpanded(groupName))
             {
-                ExpandGroup(groupNameId);
+                ExpandGroup(groupName);
             }
             else
             {
-                CollapseGroup(groupNameId);
+                CollapseGroup(groupName);
             }
             return;
         }
@@ -230,8 +230,8 @@ namespace AtomToolsFramework
         if (event->button() == Qt::MouseButton::RightButton)
         {
             QMenu menu;
-            menu.addAction("Expand", [this, groupNameId]() { ExpandGroup(groupNameId); })->setEnabled(!IsGroupExpanded(groupNameId));
-            menu.addAction("Collapse", [this, groupNameId]() { CollapseGroup(groupNameId); })->setEnabled(IsGroupExpanded(groupNameId));
+            menu.addAction("Expand", [this, groupName]() { ExpandGroup(groupName); })->setEnabled(!IsGroupExpanded(groupName));
+            menu.addAction("Collapse", [this, groupName]() { CollapseGroup(groupName); })->setEnabled(IsGroupExpanded(groupName));
             menu.addAction("Expand All", [this]() { ExpandAll(); });
             menu.addAction("Collapse All", [this]() { CollapseAll(); });
             menu.exec(event->globalPos());

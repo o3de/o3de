@@ -70,8 +70,8 @@ namespace AZ
 
             virtual ~Material();
 
-            //! Finds the material property index from the material property name
-            MaterialPropertyIndex FindPropertyIndex(const Name& name) const;
+            //! Finds the material property index from the material property ID
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId) const;
 
             //! Sets the value of a material property. The template data type must match the property's data type.
             //! @return true if property value was changed

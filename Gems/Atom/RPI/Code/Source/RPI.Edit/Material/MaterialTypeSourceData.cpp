@@ -52,7 +52,8 @@ namespace AZ
                 serializeContext->Class<PropertyConnection>()
                     ->Version(1)
                     ->Field("type", &PropertyConnection::m_type)
-                    ->Field("id", &PropertyConnection::m_nameId)
+                    ->Field("id", &PropertyConnection::m_fieldName) // The old reflection, replaced by "name"
+                    ->Field("name", &PropertyConnection::m_fieldName)
                     ->Field("shaderIndex", &PropertyConnection::m_shaderIndex)
                     ;
 
@@ -60,7 +61,8 @@ namespace AZ
 
                 serializeContext->Class<GroupDefinition>()
                     ->Version(1)
-                    ->Field("id", &GroupDefinition::m_nameId)
+                    ->Field("id", &GroupDefinition::m_name) // The old reflection, replaced by "name"
+                    ->Field("name", &GroupDefinition::m_name)
                     ->Field("displayName", &GroupDefinition::m_displayName)
                     ->Field("description", &GroupDefinition::m_description)
                     ;
@@ -96,9 +98,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view nameId, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex)
             : m_type(type)
-            , m_nameId(nameId)
+            , m_fieldName(fieldName)
             , m_shaderIndex(shaderIndex)
         {
         }
@@ -107,11 +109,11 @@ namespace AZ
         const float MaterialTypeSourceData::PropertyDefinition::DefaultMax = std::numeric_limits<float>::max();
         const float MaterialTypeSourceData::PropertyDefinition::DefaultStep = 0.1f;
 
-        const MaterialTypeSourceData::GroupDefinition* MaterialTypeSourceData::FindGroup(AZStd::string_view groupNameId) const
+        const MaterialTypeSourceData::GroupDefinition* MaterialTypeSourceData::FindGroup(AZStd::string_view groupName) const
         {
             for (const GroupDefinition& group : m_propertyLayout.m_groups)
             {
-                if (group.m_nameId == groupNameId)
+                if (group.m_name == groupName)
                 {
                     return &group;
                 }
@@ -120,9 +122,9 @@ namespace AZ
             return nullptr;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupNameId, AZStd::string_view propertyNameId) const
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
         {
-            auto groupIter = m_propertyLayout.m_properties.find(groupNameId);
+            auto groupIter = m_propertyLayout.m_properties.find(groupName);
             if (groupIter == m_propertyLayout.m_properties.end())
             {
                 return nullptr;
@@ -130,7 +132,7 @@ namespace AZ
 
             for (const PropertyDefinition& property : groupIter->second)
             {
-                if (property.m_nameId == propertyNameId)
+                if (property.m_name == propertyName)
                 {
                     return &property;
                 }
@@ -169,24 +171,24 @@ namespace AZ
             AZStd::unordered_set<AZStd::string> foundGroups;
             for (const auto& groupDefinition : m_propertyLayout.m_groups)
             {
-                if (foundGroups.insert(groupDefinition.m_nameId).second)
+                if (foundGroups.insert(groupDefinition.m_name).second)
                 {
                     groupDefinitions.push_back(groupDefinition);
                 }
                 else
                 {
-                    AZ_Warning("Material source data", false, "Duplicate group '%s' found.", groupDefinition.m_nameId.c_str());
+                    AZ_Warning("Material source data", false, "Duplicate group '%s' found.", groupDefinition.m_name.c_str());
                 }
             }
 
             // Some groups are defined implicitly, in the "properties" section where a group name is used but not explicitly defined in the "groups" section.
             for (const auto& propertyListPair : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = propertyListPair.first;
-                if (foundGroups.insert(groupNameId).second)
+                const AZStd::string& groupName = propertyListPair.first;
+                if (foundGroups.insert(groupName).second)
                 {
                     MaterialTypeSourceData::GroupDefinition groupDefinition;
-                    groupDefinition.m_nameId = groupNameId;
+                    groupDefinition.m_name = groupName;
                     groupDefinitions.push_back(groupDefinition);
                 }
             }
@@ -203,12 +205,12 @@ namespace AZ
 
             for (const auto& propertyListPair : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = propertyListPair.first;
+                const AZStd::string& groupName = propertyListPair.first;
                 const auto& propertyList = propertyListPair.second;
                 for (const auto& propertyDefinition : propertyList)
                 {
-                    const AZStd::string& propertyNameId = propertyDefinition.m_nameId;
-                    if (!callback(groupNameId, propertyNameId, propertyDefinition))
+                    const AZStd::string& propertyName = propertyDefinition.m_name;
+                    if (!callback(groupName, propertyName, propertyDefinition))
                     {
                         return;
                     }
@@ -225,15 +227,15 @@ namespace AZ
 
             for (const auto& groupDefinition : GetGroupDefinitionsInDisplayOrder())
             {
-                const AZStd::string& groupNameId = groupDefinition.m_nameId;
-                const auto propertyListItr = m_propertyLayout.m_properties.find(groupNameId);
+                const AZStd::string& groupName = groupDefinition.m_name;
+                const auto propertyListItr = m_propertyLayout.m_properties.find(groupName);
                 if (propertyListItr != m_propertyLayout.m_properties.end())
                 {
                     const auto& propertyList = propertyListItr->second;
                     for (const auto& propertyDefinition : propertyList)
                     {
-                        const AZStd::string& propertyNameId = propertyDefinition.m_nameId;
-                        if (!callback(groupNameId, propertyNameId, propertyDefinition))
+                        const AZStd::string& propertyName = propertyDefinition.m_name;
+                        if (!callback(groupName, propertyName, propertyDefinition))
                         {
                             return;
                         }
@@ -249,7 +251,7 @@ namespace AZ
                 const uint32_t index = propertyValue.GetValue<uint32_t>();
                 if (index >= propertyDefinition.m_enumValues.size())
                 {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_nameId.c_str());
+                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
                     return false;
                 }
 
@@ -272,7 +274,7 @@ namespace AZ
                         imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
                     if (!result)
                     {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_nameId.c_str());
+                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
                         return false;
                     }
                 }
@@ -340,13 +342,13 @@ namespace AZ
 
             for (auto& groupIter : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = groupIter.first;
+                const AZStd::string& groupName = groupIter.first;
 
                 for (const PropertyDefinition& property : groupIter.second)
                 {
                     // Register the property...
 
-                    MaterialPropertyId propertyId{ groupNameId, property.m_nameId };
+                    MaterialPropertyId propertyId{ groupName, property.m_name };
 
                     if (!propertyId.IsValid())
                     {
@@ -366,16 +368,16 @@ namespace AZ
                         switch (output.m_type)
                         {
                         case MaterialPropertyOutputType::ShaderInput:
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(Name{ output.m_nameId.data() });
+                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(Name{ output.m_fieldName.data() });
                             break;
                         case MaterialPropertyOutputType::ShaderOption:
                             if (output.m_shaderIndex >= 0)
                             {
-                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(Name{ output.m_nameId.data() }, output.m_shaderIndex);
+                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(Name{ output.m_fieldName.data() }, output.m_shaderIndex);
                             }
                             else
                             {
-                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(Name{ output.m_nameId.data() });
+                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(Name{ output.m_fieldName.data() });
                             }
                             break;
                         case MaterialPropertyOutputType::Invalid:

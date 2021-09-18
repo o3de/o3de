@@ -81,7 +81,7 @@ namespace AZ
             {
                 AddGroupsBegin();
 
-                const AZStd::string groupNameId = "ModelUvMap";
+                const AZStd::string groupName = "ModelUvMap";
                 const AZStd::string groupDisplayName = "Material to Model UV Map";
                 const AZStd::string groupDescription = "Custom map that maps a UV name from the material to one from the model.";
 
@@ -96,8 +96,8 @@ namespace AZ
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInput).GetFullName();
-                    propertyConfig.m_nameId = shaderInput;
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput).GetFullName();
+                    propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
                     propertyConfig.m_description = shaderInput;
                     propertyConfig.m_defaultValue = 0u;
@@ -108,7 +108,7 @@ namespace AZ
                     m_group.m_properties.back().SetValue(AZStd::any(m_modelUvNameIndices[i]));
                 }
 
-                AddGroup(groupNameId, groupDisplayName, groupDescription,
+                AddGroup(groupName, groupDisplayName, groupDescription,
                     new AtomToolsFramework::InspectorPropertyGroupWidget(&m_group, nullptr, m_group.TYPEINFO_Uuid(), this));
 
                 AddGroupsEnd();
@@ -238,7 +238,7 @@ namespace AZ
 
                 ResetModelUvNameIndices();
 
-                const AZStd::string groupNameId = "ModelUvMap";
+                const AZStd::string groupName = "ModelUvMap";
 
                 size_t uvSize = m_materialUvNames.size();
                 for (size_t i = 0u; i < uvSize; ++i)
@@ -248,8 +248,8 @@ namespace AZ
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInput).GetFullName();
-                    propertyConfig.m_nameId = shaderInput;
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput).GetFullName();
+                    propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
                     propertyConfig.m_description = shaderInput;
                     propertyConfig.m_defaultValue = 0u;

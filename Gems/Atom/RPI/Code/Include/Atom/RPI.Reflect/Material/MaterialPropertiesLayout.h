@@ -35,7 +35,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(MaterialPropertiesLayout);
 
             size_t GetPropertyCount() const;
-            MaterialPropertyIndex FindPropertyIndex(const Name& propertyName) const;
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId) const;
             const MaterialPropertyDescriptor* GetPropertyDescriptor(MaterialPropertyIndex index) const;
 
         private:

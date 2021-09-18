@@ -89,14 +89,14 @@ namespace UnitTest
         }
     };
     
-    void AddPropertyGroup(MaterialSourceData& material, AZStd::string_view groupNameId)
+    void AddPropertyGroup(MaterialSourceData& material, AZStd::string_view groupName)
     {
-        material.m_properties.insert(groupNameId);
+        material.m_properties.insert(groupName);
     }
     
-    void AddProperty(MaterialSourceData& material, AZStd::string_view groupNameId, AZStd::string_view propertyNameId, const MaterialPropertyValue& anyValue)
+    void AddProperty(MaterialSourceData& material, AZStd::string_view groupName, AZStd::string_view propertyName, const MaterialPropertyValue& anyValue)
     {
-        material.m_properties[groupNameId][propertyNameId].m_value = anyValue;
+        material.m_properties[groupName][propertyName].m_value = anyValue;
     }
 
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_BasicProperties)
