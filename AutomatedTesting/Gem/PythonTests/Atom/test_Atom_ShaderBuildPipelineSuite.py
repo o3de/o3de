@@ -16,4 +16,4 @@ class TestShaderBuildPipelineMain(EditorTestSuite):
     """Holds tests for Shader Build Pipeline validation"""
 
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSingleTest):
-        from .atom_hydra_scripts import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
+        from .tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
