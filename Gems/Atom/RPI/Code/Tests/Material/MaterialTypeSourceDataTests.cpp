@@ -510,7 +510,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyBool";
+        propertySource.m_name = "MyBool";
         propertySource.m_displayName = "My Bool";
         propertySource.m_description = "This is a bool";
         propertySource.m_dataType = MaterialPropertyDataType::Bool;
@@ -536,7 +536,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyFloat";
+        propertySource.m_name = "MyFloat";
         propertySource.m_displayName = "My Float";
         propertySource.m_description = "This is a float";
         propertySource.m_min = 0.0f;
@@ -566,7 +566,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyImage";
+        propertySource.m_name = "MyImage";
         propertySource.m_displayName = "My Image";
         propertySource.m_description = "This is an image";
         propertySource.m_dataType = MaterialPropertyDataType::Image;
@@ -591,7 +591,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyInt";
+        propertySource.m_name = "MyInt";
         propertySource.m_displayName = "My Integer";
         propertySource.m_dataType = MaterialPropertyDataType::Int;
         propertySource.m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("o_foo"), 0});
@@ -614,7 +614,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyInt";
+        propertySource.m_name = "MyInt";
         propertySource.m_dataType = MaterialPropertyDataType::Int;
         propertySource.m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("DoesNotExist"), 0});
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
@@ -633,7 +633,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition propertySource;
         propertySource.m_dataType = MaterialPropertyDataType::Int;
 
-        propertySource.m_nameId = "a";
+        propertySource.m_name = "a";
         sourceData.m_propertyLayout.m_properties["not a valid name because it has spaces"].push_back(propertySource);
 
         // Expected errors:
@@ -654,7 +654,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition propertySource;
         propertySource.m_dataType = MaterialPropertyDataType::Int;
 
-        propertySource.m_nameId = "not a valid name because it has spaces";
+        propertySource.m_name = "not a valid name because it has spaces";
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
 
         // Expected errors:
@@ -674,7 +674,7 @@ namespace UnitTest
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
         propertySource.m_dataType = MaterialPropertyDataType::Int;
-        propertySource.m_nameId = "a";
+        propertySource.m_name = "a";
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
 
@@ -738,7 +738,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ "shaderC.shader" });
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyInt";
+        propertySource.m_name = "MyInt";
         propertySource.m_displayName = "Integer";
         propertySource.m_description = "Integer property that is connected to multiple shader settings";
         propertySource.m_dataType = MaterialPropertyDataType::Int;
@@ -797,7 +797,7 @@ namespace UnitTest
         MaterialTypeSourceData sourceData;
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "NonAliasFloat";
+        propertySource.m_name = "NonAliasFloat";
         propertySource.m_displayName = "Non-Alias Float";
         propertySource.m_description = "This float is processed by a functor, not with a direct alias";
         propertySource.m_dataType = MaterialPropertyDataType::Float;
@@ -842,13 +842,13 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "EnableSpecialPassA";
+        propertySource.m_name = "EnableSpecialPassA";
         propertySource.m_displayName = "Enable Special Pass";
         propertySource.m_description = "This is a bool to enable an extra shader/pass";
         propertySource.m_dataType = MaterialPropertyDataType::Bool;
         // Note that we don't fill propertySource.m_outputConnections because this is not a direct-connected property
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
-        propertySource.m_nameId = "EnableSpecialPassB";
+        propertySource.m_name = "EnableSpecialPassB";
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
 
         sourceData.m_materialFunctorSourceData.push_back(
@@ -902,7 +902,7 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
 
         MaterialTypeSourceData::PropertyDefinition propertySource;
-        propertySource.m_nameId = "MyProperty";
+        propertySource.m_name = "MyProperty";
         propertySource.m_dataType = MaterialPropertyDataType::Bool;
         // Note that we don't fill propertySource.m_outputConnections because this is not a direct-connected property
         sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
@@ -938,7 +938,7 @@ namespace UnitTest
         auto addProperty = [&sourceData](MaterialPropertyDataType dateType, const char* propertyName, const char* srgConstantName, const AZ::RPI::MaterialPropertyValue& value)
         {
             MaterialTypeSourceData::PropertyDefinition propertySource;
-            propertySource.m_nameId = propertyName;
+            propertySource.m_name = propertyName;
             propertySource.m_dataType = dateType;
             propertySource.m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string(srgConstantName) });
             propertySource.m_value = value;
@@ -982,12 +982,12 @@ namespace UnitTest
                     "version": 2,
                     "groups": [
                         {
-                            "id": "groupA",
+                            "name": "groupA",
                             "displayName": "Property Group A",
                             "description": "Description of property group A"
                         },
                         {
-                            "id": "groupB",
+                            "name": "groupB",
                             "displayName": "Property Group B",
                             "description": "Description of property group B"
                         }
@@ -995,12 +995,12 @@ namespace UnitTest
                     "properties": {
                         "groupA": [
                             {
-                                "id": "foo",
+                                "name": "foo",
                                 "type": "Bool",
                                 "defaultValue": true
                             },
                             {
-                                "id": "bar",
+                                "name": "bar",
                                 "type": "Image",
                                 "defaultValue": "Default.png",
                                 "visibility": "Hidden"
@@ -1008,12 +1008,12 @@ namespace UnitTest
                         ],
                         "groupB": [
                             {
-                                "id": "foo",
+                                "name": "foo",
                                 "type": "Float",
                                 "defaultValue": 0.5
                             },
                             {
-                                "id": "bar",
+                                "name": "bar",
                                 "type": "Color",
                                 "defaultValue": [0.5, 0.5, 0.5],
                                 "visibility": "Disabled"
@@ -1075,10 +1075,10 @@ namespace UnitTest
         EXPECT_EQ(material.m_propertyLayout.m_properties.size(), 2);
         EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"].size(), 2);
         EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"].size(), 2);
-        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_nameId, "foo");
-        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_nameId, "bar");
-        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_nameId, "foo");
-        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_nameId, "bar");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_name, "foo");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_name, "bar");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_name, "foo");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_name, "bar");
         EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_dataType, MaterialPropertyDataType::Bool);
         EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_dataType, MaterialPropertyDataType::Image);
         EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_dataType, MaterialPropertyDataType::Float);
@@ -1127,7 +1127,7 @@ namespace UnitTest
                         "version": 2,
                         "groups": [
                             {
-                                "id": "general",
+                                "name": "general",
                                 "displayName": "General",
                                 "description": ""
                             }
@@ -1135,12 +1135,12 @@ namespace UnitTest
                         "properties": {
                             "general": [
                                 {
-                                    "id": "absolute",
+                                    "name": "absolute",
                                     "type": "Image",
                                     "defaultValue": "%s"
                                 },
                                 {
-                                    "id": "relative",
+                                    "name": "relative",
                                     "type": "Image",
                                     "defaultValue": "%s"
                                 }

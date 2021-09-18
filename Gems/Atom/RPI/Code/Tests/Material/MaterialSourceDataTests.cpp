@@ -205,25 +205,25 @@ namespace UnitTest
             "    \"propertyLayout\": {                                           \n"
             "        \"version\": 1,                                             \n"
             "        \"groups\": [                                               \n"
-            "            { \"id\": \"groupA\" },                                 \n"
-            "            { \"id\": \"groupB\" },                                 \n"
-            "            { \"id\": \"groupC\" }                                  \n"
+            "            { \"name\": \"groupA\" },                               \n"
+            "            { \"name\": \"groupB\" },                               \n"
+            "            { \"name\": \"groupC\" }                                \n"
             "        ],                                                          \n"
             "        \"properties\": {                                           \n"
             "            \"groupA\": [                                           \n"
-            "                {\"id\": \"MyBool\", \"type\": \"bool\"},           \n"
-            "                {\"id\": \"MyInt\", \"type\": \"int\"},             \n"
-            "                {\"id\": \"MyUInt\", \"type\": \"uint\"}            \n"
+            "                {\"name\": \"MyBool\", \"type\": \"bool\"},         \n"
+            "                {\"name\": \"MyInt\", \"type\": \"int\"},           \n"
+            "                {\"name\": \"MyUInt\", \"type\": \"uint\"}          \n"
             "            ],                                                      \n"
             "            \"groupB\": [                                           \n"
-            "                {\"id\": \"MyFloat\", \"type\": \"float\"},         \n"
-            "                {\"id\": \"MyFloat2\", \"type\": \"vector2\"},      \n"
-            "                {\"id\": \"MyFloat3\", \"type\": \"vector3\"}       \n"
+            "                {\"name\": \"MyFloat\", \"type\": \"float\"},       \n"
+            "                {\"name\": \"MyFloat2\", \"type\": \"vector2\"},    \n"
+            "                {\"name\": \"MyFloat3\", \"type\": \"vector3\"}     \n"
             "            ],                                                      \n"
             "            \"groupC\": [                                           \n"
-            "                {\"id\": \"MyFloat4\", \"type\": \"vector4\"},      \n"
-            "                {\"id\": \"MyColor\", \"type\": \"color\"},         \n"
-            "                {\"id\": \"MyImage\", \"type\": \"image\"}          \n"
+            "                {\"name\": \"MyFloat4\", \"type\": \"vector4\"},    \n"
+            "                {\"name\": \"MyColor\", \"type\": \"color\"},       \n"
+            "                {\"name\": \"MyImage\", \"type\": \"image\"}        \n"
             "            ]                                                       \n"
             "        }                                                           \n"
             "    }                                                               \n"
@@ -271,7 +271,7 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]
@@ -381,7 +381,7 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]
@@ -427,7 +427,7 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]

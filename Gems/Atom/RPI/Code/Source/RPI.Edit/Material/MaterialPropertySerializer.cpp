@@ -27,7 +27,6 @@ namespace AZ
         {
             namespace Field
             {
-                static constexpr const char id[] = "id"; // legacy field, replaced by "name"
                 static constexpr const char name[] = "name";
                 static constexpr const char displayName[] = "displayName";
                 static constexpr const char description[] = "description";
@@ -47,7 +46,6 @@ namespace AZ
 
             static const AZStd::string_view AcceptedFields[] =
             {
-                Field::id,
                 Field::name,
                 Field::displayName,
                 Field::description,
@@ -220,10 +218,7 @@ namespace AZ
                 }
             }
 
-            // Field::id is the legacy field, replaced by Field::name. If both are present, Field::name will take priority.
-            result.Combine(ContinueLoadingFromJsonObjectField(&property->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::id, context)); 
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::name, context));
-
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_displayName, azrtti_typeid<AZStd::string>(), inputValue, Field::displayName, context));
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_description, azrtti_typeid<AZStd::string>(), inputValue, Field::description, context));
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_dataType, azrtti_typeid<MaterialPropertyDataType>(), inputValue, Field::type, context));
