@@ -7,8 +7,5 @@
 #
 
 set(FILES
-    Tests/TerrainTest.cpp
-    Tests/TerrainSystemTest.cpp
-    Tests/LayerSpawnerTests.cpp
-    Tests/MockAxisAlignedBoxShapeComponent.h
+    Mocks/Terrain/MockTerrain.h
 )
