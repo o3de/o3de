@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The In-App Purchases Gem provides functionality for in app purchases for iOS and Android.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["SDK", "Network"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "SDK",
+        "Network"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/sdk/in-app-purchases/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/sdk/in-app-purchases/",
+    "dependencies": []
 }
