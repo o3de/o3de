@@ -34,9 +34,9 @@ namespace AZ
             return m_materialPropertyDescriptors.size();
         }
 
-        MaterialPropertyIndex MaterialPropertiesLayout::FindPropertyIndex(const Name& propertyName) const
+        MaterialPropertyIndex MaterialPropertiesLayout::FindPropertyIndex(const Name& propertyId) const
         {
-            return m_materialPropertyIndexes.Find(propertyName);
+            return m_materialPropertyIndexes.Find(propertyId);
         }
 
         const MaterialPropertyDescriptor* MaterialPropertiesLayout::GetPropertyDescriptor(MaterialPropertyIndex index) const

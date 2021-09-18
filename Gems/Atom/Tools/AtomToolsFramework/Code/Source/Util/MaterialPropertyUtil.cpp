@@ -74,7 +74,7 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
         propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
-        propertyConfig.m_nameId = propertyDefinition.m_nameId;
+        propertyConfig.m_name = propertyDefinition.m_name;
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);
