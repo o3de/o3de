@@ -51,6 +51,7 @@ namespace AZ
             ShaderResourceGroup() = default;
 
             friend class ShaderResourceGroupPool;
+            friend class DescriptorContext;
 
             /// The current index into the compiled data array.
             uint32_t m_compiledDataIndex = 0;

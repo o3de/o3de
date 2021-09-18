@@ -139,6 +139,9 @@ namespace AZ
             //! Notifies after all objects currently in the platform release queue are released
             virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
+            //! Allows the back-ends to compact SRG related memory if applicable
+            virtual void CompactSRGMemory() {};
+
         protected:
             DeviceFeatures m_features;
             DeviceLimits m_limits;

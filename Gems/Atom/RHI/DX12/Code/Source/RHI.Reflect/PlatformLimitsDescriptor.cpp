@@ -19,8 +19,10 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PlatformLimitsDescriptor, Base>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("DescriptorHeapLimits", &PlatformLimitsDescriptor::m_descriptorHeapLimits)
+                    ->Field("NumShaderVisibleCbvSrvUavStaticHandles", &PlatformLimitsDescriptor::m_numShaderVisibleCbvSrvUavStaticHandles)
+                    ->Field("AllowDescriptorHeapCompaction", &PlatformLimitsDescriptor::m_allowDescriptorHeapCompaction)
                     ->Field("FrameGraphExecuterData", &PlatformLimitsDescriptor::m_frameGraphExecuterData)
                     ;
             }

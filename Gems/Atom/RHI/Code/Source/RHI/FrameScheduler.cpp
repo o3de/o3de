@@ -318,6 +318,10 @@ namespace AZ
 
                 resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileAllLambda)>(compileAllLambda);
             }
+
+            //It is possible for certain back ends to run out of SRG memory (due to fragmentation) in which case
+            //we try to compact and re-compile SRGs.
+            m_device->CompactSRGMemory();
         }
 
         void FrameScheduler::BuildRayTracingShaderTables()

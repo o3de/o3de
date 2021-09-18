@@ -344,5 +344,17 @@ namespace AZ
                 handle = node.m_nextFree;
             }
         }
+
+        void FreeListAllocator::Clone(RHI::Allocator* newAllocator)
+        {
+            FreeListAllocator* newFreeLsitAllocator = static_cast<FreeListAllocator*>(newAllocator);
+            newFreeLsitAllocator->m_headHandle = m_headHandle;
+            newFreeLsitAllocator->m_nodeFreeList = m_nodeFreeList;
+            newFreeLsitAllocator->m_nodes = m_nodes;
+            newFreeLsitAllocator->m_allocations = m_allocations;
+            newFreeLsitAllocator->m_garbage = m_garbage;
+            newFreeLsitAllocator->m_garbageCollectCycle = m_garbageCollectCycle;
+            newFreeLsitAllocator->m_byteCountTotal = m_byteCountTotal;
+        }
     }
 }
