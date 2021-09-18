@@ -50,9 +50,8 @@ namespace AZ
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PropertyConnection>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("type", &PropertyConnection::m_type)
-                    ->Field("id", &PropertyConnection::m_fieldName) // The old reflection, replaced by "name"
                     ->Field("name", &PropertyConnection::m_fieldName)
                     ->Field("shaderIndex", &PropertyConnection::m_shaderIndex)
                     ;
@@ -60,8 +59,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
                 serializeContext->Class<GroupDefinition>()
-                    ->Version(1)
-                    ->Field("id", &GroupDefinition::m_name) // The old reflection, replaced by "name"
+                    ->Version(2)
                     ->Field("name", &GroupDefinition::m_name)
                     ->Field("displayName", &GroupDefinition::m_displayName)
                     ->Field("description", &GroupDefinition::m_description)
