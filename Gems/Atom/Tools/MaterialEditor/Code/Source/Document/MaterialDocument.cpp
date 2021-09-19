@@ -596,7 +596,7 @@ namespace MaterialEditor
 
             const MaterialPropertyId propertyId(groupName, propertyName);
 
-            const auto it = m_properties.find(propertyId.GetFullName());
+            const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
             {
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
@@ -604,7 +604,7 @@ namespace MaterialEditor
                 {
                     if (!m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyDefinition, propertyValue))
                     {
-                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetFullName().GetCStr(), m_absolutePath.c_str());
+                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
                         result = false;
                         return false;
                     }
@@ -774,7 +774,7 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
             // Assign id before conversion so it can be used in dynamic description
-            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName).GetCStr();
+            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName);
 
             const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
             const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -845,7 +845,7 @@ namespace MaterialEditor
 
             propertyConfig = {};
             propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-            propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
+            propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput);
             propertyConfig.m_name = shaderInput;
             propertyConfig.m_displayName = shaderInput;
             propertyConfig.m_groupName = "UV Sets";

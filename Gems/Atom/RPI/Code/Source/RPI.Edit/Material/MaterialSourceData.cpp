@@ -130,7 +130,7 @@ namespace AZ
                     }
                     else
                     {
-                        MaterialPropertyIndex propertyIndex = materialAssetCreator.m_materialPropertiesLayout->FindPropertyIndex(propertyId.GetFullName());
+                        MaterialPropertyIndex propertyIndex = materialAssetCreator.m_materialPropertiesLayout->FindPropertyIndex(propertyId);
                         if (propertyIndex.IsValid())
                         {
                             const MaterialPropertyDescriptor* propertyDescriptor = materialAssetCreator.m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex);
@@ -145,11 +145,11 @@ namespace AZ
                                     auto& imageAsset = imageAssetResult.GetValue();
                                     // Load referenced images when load material
                                     imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                                    materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
+                                    materialAssetCreator.SetPropertyValue(propertyId, imageAsset);
                                 }
                                 else
                                 {
-                                    materialAssetCreator.ReportError("Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(), property.second.m_value.GetValue<AZStd::string>().data());
+                                    materialAssetCreator.ReportError("Material property '%s': Could not find the image '%s'", propertyId.GetCStr(), property.second.m_value.GetValue<AZStd::string>().data());
                                 }
                             }
                             break;
@@ -163,18 +163,18 @@ namespace AZ
                                 }
                                 else
                                 {
-                                    materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), enumValue);
+                                    materialAssetCreator.SetPropertyValue(propertyId, enumValue);
                                 }
                             }
                             break;
                             default:
-                                materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), property.second.m_value);
+                                materialAssetCreator.SetPropertyValue(propertyId, property.second.m_value);
                                 break;
                             }
                         }
                         else
                         {
-                            materialAssetCreator.ReportWarning("Can not find property id '%s' in MaterialPropertyLayout", propertyId.GetFullName().GetStringView().data());
+                            materialAssetCreator.ReportWarning("Can not find property id '%s' in MaterialPropertyLayout", propertyId.GetCStr());
                         }
                     }
                 }
