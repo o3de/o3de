@@ -116,7 +116,7 @@ namespace AZ
                 editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition){
                     const AZ::RPI::MaterialPropertyId propertyId(groupName, propertyName);
                     const AZ::RPI::MaterialPropertyIndex propertyIndex =
-                        editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId.GetFullName());
+                        editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
 
                     AZ::RPI::MaterialPropertyValue propertyValue =
                         editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
@@ -128,7 +128,7 @@ namespace AZ
                     }
 
                     // Check for and apply any property overrides before saving property values
-                    auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId.GetFullName());
+                    auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId);
                     if (propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
                     {
                         propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);

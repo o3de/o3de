@@ -400,7 +400,7 @@ namespace AZ
                         continue;
                     }
 
-                    materialTypeAssetCreator.BeginMaterialProperty(propertyId.GetFullName(), property.m_dataType);
+                    materialTypeAssetCreator.BeginMaterialProperty(propertyId, property.m_dataType);
 
                     if (property.m_dataType == MaterialPropertyDataType::Enum)
                     {
@@ -454,18 +454,18 @@ namespace AZ
                             if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
                                 materialTypeAssetCreator.ReportError(
-                                    "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                    "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                     property.m_value.GetValue<AZStd::string>().data());
                             }
                             else
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
+                                materialTypeAssetCreator.SetPropertyValue(propertyId, imageAsset);
                             }
                         }
                         break;
                         case MaterialPropertyDataType::Enum:
                         {
-                            MaterialPropertyIndex propertyIndex = materialTypeAssetCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId.GetFullName());
+                            MaterialPropertyIndex propertyIndex = materialTypeAssetCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
                             const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAssetCreator.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
                             AZ::Name enumName = AZ::Name(property.m_value.GetValue<AZStd::string>());
@@ -476,12 +476,12 @@ namespace AZ
                             }
                             else
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), enumValue);
+                                materialTypeAssetCreator.SetPropertyValue(propertyId, enumValue);
                             }
                         }
                         break;
                         default:
-                            materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), property.m_value);
+                            materialTypeAssetCreator.SetPropertyValue(propertyId, property.m_value);
                             break;
                         }
                     }
