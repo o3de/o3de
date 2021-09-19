@@ -58,9 +58,6 @@ namespace AZ
             // controller configuration then those values will be assigned to the editor component slots.
             void UpdateMaterialSlots();
 
-            // Clears all values related to the material component and regenerates the editor slots
-            AZ::u32 ResetMaterialSlots();
-
             // Opens the source material export dialog and updates editor material slots based on
             // selected actions
             AZ::u32 OpenMaterialExporter();
@@ -82,10 +79,6 @@ namespace AZ
             // Evaluate if materials can be edited
             bool IsEditingAllowed() const;
 
-            template<typename ComponentType, typename ContainerType>
-            static void BuildMaterialSlotMap(ComponentType& component, ContainerType& materialSlots);
-            AZStd::unordered_map<MaterialAssignmentId, EditorMaterialComponentSlot*> GetMaterialSlots();
-            AZStd::unordered_map<MaterialAssignmentId, const EditorMaterialComponentSlot*> GetMaterialSlots() const;
             AZStd::string GetLabelForLod(int lodIndex) const;
 
             AZStd::string m_message;

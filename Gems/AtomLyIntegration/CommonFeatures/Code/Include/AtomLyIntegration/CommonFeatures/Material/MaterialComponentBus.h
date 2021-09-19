@@ -33,6 +33,16 @@ namespace AZ
             virtual const MaterialAssignmentMap& GetMaterialOverrides() const = 0;
             //! Clear all material overrides
             virtual void ClearAllMaterialOverrides() = 0;
+            //! Clear non-lod material override
+            virtual void ClearModelMaterialOverrides() = 0;
+            //! Clear lod material override
+            virtual void ClearLodMaterialOverrides() = 0;
+            //! Clear residual materials that don't correspond to the associated model
+            virtual void ClearIncompatibleMaterialOverrides() = 0;
+            //! Clear materials that reference missing assets
+            virtual void ClearInvalidMaterialOverrides() = 0;
+            //! Repair materials that reference missing assets by assigning the default asset
+            virtual void RepairInvalidMaterialOverrides() = 0;
             //! Set default material override
             virtual void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) = 0;
             //! Get default material override
