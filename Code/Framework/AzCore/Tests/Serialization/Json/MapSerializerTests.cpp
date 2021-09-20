@@ -44,6 +44,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = false;
         }
 
+        using JsonSerializerConformityTestDescriptor<Map>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Map>();
@@ -247,6 +248,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using MapBaseTestDescription<T<SimpleClass*, SimpleClass*>, Serializer>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);

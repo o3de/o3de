@@ -79,6 +79,8 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
         GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
             : m_settingsRegistry(settingsRegistry)
         {}
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
             AZStd::string_view value) override
         {

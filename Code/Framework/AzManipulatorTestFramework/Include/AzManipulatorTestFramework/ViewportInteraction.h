@@ -29,18 +29,17 @@ namespace AzManipulatorTestFramework
         // ViewportInteractionInterface overrides ...
         void SetCameraState(const AzFramework::CameraState& cameraState) override;
         AzFramework::DebugDisplayRequests& GetDebugDisplay() override;
-        void EnableGridSnaping() override;
-        void DisableGridSnaping() override;
-        void EnableAngularSnaping() override;
-        void DisableAngularSnaping() override;
+        void SetGridSnapping(bool enabled) override;
+        void SetAngularSnapping(bool enabled) override;
         void SetGridSize(float size) override;
         void SetAngularStep(float step) override;
         int GetViewportId() const override;
         void UpdateVisibility() override;
+        void SetStickySelect(bool enabled) override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;
-        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
+        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
         AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
         AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
@@ -54,6 +53,7 @@ namespace AzManipulatorTestFramework
         float AngleStep() const override;
         float ManipulatorLineBoundWidth() const override;
         float ManipulatorCircleBoundWidth() const override;
+        bool StickySelectEnabled() const override;
 
         // EditorEntityViewportInteractionRequestBus overrides ...
         void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
@@ -65,6 +65,7 @@ namespace AzManipulatorTestFramework
         AzFramework::CameraState m_cameraState;
         bool m_gridSnapping = false;
         bool m_angularSnapping = false;
+        bool m_stickySelect = true;
         float m_gridSize = 1.0f;
         float m_angularStep = 0.0f;
     };

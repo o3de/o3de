@@ -21,7 +21,7 @@ namespace TestImpact
     {
         namespace SequenceReportFields
         {
-            // Keys for pertinent JSON node and attribute names
+            // Keys for pertinent Json node and attribute names
             constexpr const char* Keys[] =
             {
                 "name",
@@ -417,13 +417,13 @@ namespace TestImpact
             writer.String(DynamicDependencyMapPolicyAsString(policyState.m_dynamicDependencyMap).c_str());
         }
 
-        template<typename PolicyStateType>
+        template<typename SequenceReportBaseType>
         void SerializeSequenceReportBaseMembers(
-            const Client::SequenceReportBase<PolicyStateType>& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            const SequenceReportBaseType& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             // Type
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Type]);
-            writer.String(SequenceReportTypeAsString(sequenceReport.GetType()).c_str());
+            writer.String(SequenceReportTypeAsString(sequenceReport.ReportType).c_str());
 
             // Test target timeout
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TestTargetTimeout]);
@@ -510,9 +510,9 @@ namespace TestImpact
             writer.Uint64(sequenceReport.GetTotalNumDisabledTests());
         }
 
-        template<typename PolicyStateType>
+        template<typename DraftingSequenceReportBaseType>
         void SerializeDraftingSequenceReportMembers(
-            const Client::DraftingSequenceReportBase<PolicyStateType>& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            const DraftingSequenceReportBaseType& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             SerializeSequenceReportBaseMembers(sequenceReport, writer);
 
@@ -602,5 +602,255 @@ namespace TestImpact
         writer.EndObject();
 
         return stringBuffer.GetString();
+    }
+
+    AZStd::chrono::high_resolution_clock::time_point TimePointFromMsInt64(AZ::s64 ms)
+    {
+        return AZStd::chrono::high_resolution_clock::time_point(AZStd::chrono::milliseconds(ms));
+    }
+
+    AZStd::vector<Client::Test> DeserializeTests(const rapidjson::Value& serialTests)
+    {
+        AZStd::vector<Client::Test> tests;
+        tests.reserve(serialTests[SequenceReportFields::Keys[SequenceReportFields::Tests]].GetArray().Size());
+        for (const auto& test : serialTests[SequenceReportFields::Keys[SequenceReportFields::Tests]].GetArray())
+        {
+            const AZStd::string name = test[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString();
+            const auto result = TestResultFromString(test[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString());
+            tests.emplace_back(name, result);
+        }
+
+        return tests;
+    }
+
+    Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
+    {
+        return Client::TestRunBase(
+            serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
+            serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
+            TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
+            AZStd::chrono::milliseconds(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Duration]].GetInt64()),
+            TestRunResultFromString(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()));
+    }
+
+    template<typename TestRunType>
+    AZStd::vector<TestRunType> DeserializeTestRuns(const rapidjson::Value& serialTestRuns)
+    {
+        AZStd::vector<TestRunType> testRuns;
+        testRuns.reserve(serialTestRuns.GetArray().Size());
+        for (const auto& testRun : serialTestRuns.GetArray())
+        {
+            testRuns.emplace_back(DeserializeTestRunBase(testRun));
+        }
+
+        return testRuns;
+    }
+
+    template<typename CompletedTestRunType>
+    AZStd::vector<CompletedTestRunType> DeserializeCompletedTestRuns(const rapidjson::Value& serialCompletedTestRuns)
+    {
+        AZStd::vector<CompletedTestRunType> testRuns;
+        testRuns.reserve(serialCompletedTestRuns.GetArray().Size());
+        for (const auto& testRun : serialCompletedTestRuns.GetArray())
+        {
+            testRuns.emplace_back(
+                DeserializeTestRunBase(testRun), DeserializeTests(testRun[SequenceReportFields::Keys[SequenceReportFields::Tests]]));
+        }
+
+        return testRuns;
+    }
+
+    Client::TestRunReport DeserializeTestRunReport(const rapidjson::Value& serialTestRunReport)
+    {
+        return Client::TestRunReport(
+            TestSequenceResultFromString(serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()),
+            TimePointFromMsInt64(serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
+            AZStd::chrono::milliseconds(serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::Duration]].GetInt64()),
+            DeserializeCompletedTestRuns<Client::PassingTestRun>(
+                serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::PassingTestRuns]]),
+            DeserializeCompletedTestRuns<Client::FailingTestRun>(
+                serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::FailingTestRuns]]),
+            DeserializeTestRuns<Client::TestRunWithExecutionFailure>(
+                serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::ExecutionFailureTestRuns]]),
+            DeserializeTestRuns<Client::TimedOutTestRun>(
+                serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::TimedOutTestRuns]]),
+            DeserializeTestRuns<Client::UnexecutedTestRun>(
+                serialTestRunReport[SequenceReportFields::Keys[SequenceReportFields::UnexecutedTestRuns]]));
+    }
+
+    Client::TestRunSelection DeserializeTestSelection(const rapidjson::Value& serialTestRunSelection)
+    {
+        const auto extractTestTargetNames = [](const rapidjson::Value& serialTestTargets)
+        {
+            AZStd::vector<AZStd::string> testTargets;
+            testTargets.reserve(serialTestTargets.GetArray().Size());
+            for (const auto& testTarget : serialTestTargets.GetArray())
+            {
+                testTargets.emplace_back(testTarget.GetString());
+            }
+
+            return testTargets;
+        };
+
+        return Client::TestRunSelection(
+            extractTestTargetNames(serialTestRunSelection[SequenceReportFields::Keys[SequenceReportFields::IncludedTestRuns]]),
+            extractTestTargetNames(serialTestRunSelection[SequenceReportFields::Keys[SequenceReportFields::ExcludedTestRuns]]));
+    }
+
+    PolicyStateBase DeserializePolicyStateBaseMembers(const rapidjson::Value& serialPolicyState)
+    {
+        return
+        {
+            ExecutionFailurePolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::ExecutionFailure]].GetString()),
+            FailedTestCoveragePolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::CoverageFailure]].GetString()),
+            TestFailurePolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::TestFailure]].GetString()),
+            IntegrityFailurePolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::IntegrityFailure]].GetString()),
+            TestShardingPolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::TestSharding]].GetString()),
+            TargetOutputCapturePolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::TargetOutputCapture]].GetString())
+        };
+    }
+
+    SequencePolicyState DeserializePolicyStateMembers(const rapidjson::Value& serialPolicyState)
+    {
+        return { DeserializePolicyStateBaseMembers(serialPolicyState) };
+    }
+
+    SafeImpactAnalysisSequencePolicyState DeserializeSafeImpactAnalysisPolicyStateMembers(const rapidjson::Value& serialPolicyState)
+    {
+        return
+        {
+            DeserializePolicyStateBaseMembers(serialPolicyState),
+            TestPrioritizationPolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::TestPrioritization]].GetString())
+        };
+    }
+
+    ImpactAnalysisSequencePolicyState DeserializeImpactAnalysisSequencePolicyStateMembers(const rapidjson::Value& serialPolicyState)
+    {
+        return
+        {
+            DeserializePolicyStateBaseMembers(serialPolicyState),
+            TestPrioritizationPolicyFromString(serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::TestPrioritization]].GetString()),
+            DynamicDependencyMapPolicyFromString(
+                serialPolicyState[SequenceReportFields::Keys[SequenceReportFields::DynamicDependencyMap]].GetString())
+        };
+    }
+
+    template<typename PolicyStateType>
+    PolicyStateType DeserializePolicyStateType(const rapidjson::Value& serialPolicyStateType)
+    {
+        if constexpr (AZStd::is_same_v<PolicyStateType, SequencePolicyState>)
+        {
+            return DeserializePolicyStateMembers(serialPolicyStateType);
+        }
+        else if constexpr (AZStd::is_same_v<PolicyStateType, SafeImpactAnalysisSequencePolicyState>)
+        {
+            return DeserializeSafeImpactAnalysisPolicyStateMembers(serialPolicyStateType);
+        }
+        else if constexpr (AZStd::is_same_v<PolicyStateType, ImpactAnalysisSequencePolicyState>)
+        {
+            return DeserializeImpactAnalysisSequencePolicyStateMembers(serialPolicyStateType);
+        }
+        else
+        {
+            static_assert(false, "Template paramater must be a valid policy state type");
+        }
+    }
+
+    template<typename SequenceReportBaseType>
+    SequenceReportBaseType DeserialiseSequenceReportBase(const rapidjson::Value& serialSequenceReportBase)
+    {
+        const auto type = SequenceReportTypeFromString(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Type]].GetString());
+        AZ_TestImpact_Eval(
+            type == SequenceReportBaseType::ReportType,
+            SequenceReportException, AZStd::string::format(
+                "The JSON sequence report type '%s' does not match the constructed report type",
+                serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Type]].GetString()));
+
+        const auto testTargetTimeout =
+            serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::TestTargetTimeout]].GetUint64();
+        const auto globalTimeout =
+            serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::GlobalTimeout]].GetUint64();
+
+        return SequenceReportBaseType(
+            serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::MaxConcurrency]].GetUint64(),
+            testTargetTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ testTargetTimeout } : AZStd::nullopt,
+            globalTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ globalTimeout } : AZStd::nullopt,
+            DeserializePolicyStateType<SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
+            SuiteTypeFromString(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Suite]].GetString()),
+            DeserializeTestSelection(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRuns]]),
+            DeserializeTestRunReport(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRunReport]]));
+    }
+
+    template<typename DerivedDraftingSequenceReportType>
+    Client::DraftingSequenceReportBase<DerivedDraftingSequenceReportType::ReportType, typename DerivedDraftingSequenceReportType::PolicyState>
+        DeserializeDraftingSequenceReportBase(const rapidjson::Value& serialDraftingSequenceReportBase)
+    {
+        AZStd::vector<AZStd::string> draftingTestRuns;
+        draftingTestRuns.reserve(
+            serialDraftingSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::DraftedTestRuns]].GetArray().Size());
+        for (const auto& testRun :
+             serialDraftingSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::DraftedTestRuns]].GetArray())
+        {
+            draftingTestRuns.emplace_back(testRun.GetString());
+        }
+
+        using SequenceBase =
+            Client::SequenceReportBase<DerivedDraftingSequenceReportType::ReportType, typename DerivedDraftingSequenceReportType::PolicyState>;
+        using DraftingSequenceBase =
+            Client::DraftingSequenceReportBase<DerivedDraftingSequenceReportType::ReportType, typename DerivedDraftingSequenceReportType::PolicyState>;
+
+        return DraftingSequenceBase(
+            DeserialiseSequenceReportBase<SequenceBase>(serialDraftingSequenceReportBase),
+            AZStd::move(draftingTestRuns),
+            DeserializeTestRunReport(serialDraftingSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::DraftedTestRunReport]]));
+    }
+
+    rapidjson::Document OpenSequenceReportJson(const AZStd::string& sequenceReportJson)
+    {
+        rapidjson::Document doc;
+
+        if (doc.Parse<0>(sequenceReportJson.c_str()).HasParseError())
+        {
+            throw SequenceReportException("Could not parse sequence report data");
+        }
+
+        return doc;
+    }
+
+    Client::RegularSequenceReport DeserializeRegularSequenceReport(const AZStd::string& sequenceReportJson)
+    {
+        const auto doc = OpenSequenceReportJson(sequenceReportJson);
+        return DeserialiseSequenceReportBase<Client::RegularSequenceReport>(doc);
+    }
+
+    Client::SeedSequenceReport DeserializeSeedSequenceReport(const AZStd::string& sequenceReportJson)
+    {
+        const auto doc = OpenSequenceReportJson(sequenceReportJson);
+        return DeserialiseSequenceReportBase<Client::SeedSequenceReport>(doc);
+    }
+
+    Client::ImpactAnalysisSequenceReport DeserializeImpactAnalysisSequenceReport(const AZStd::string& sequenceReportJson)
+    {
+        const auto doc = OpenSequenceReportJson(sequenceReportJson);
+
+        AZStd::vector<AZStd::string> discardedTestRuns;
+        discardedTestRuns.reserve(doc[SequenceReportFields::Keys[SequenceReportFields::DiscardedTestRuns]].GetArray().Size());
+        for (const auto& testRun : doc[SequenceReportFields::Keys[SequenceReportFields::DiscardedTestRuns]].GetArray())
+        {
+            discardedTestRuns.emplace_back(testRun.GetString());
+        }
+
+        return Client::ImpactAnalysisSequenceReport(
+            DeserializeDraftingSequenceReportBase<Client::ImpactAnalysisSequenceReport>(doc), AZStd::move(discardedTestRuns));
+    }
+
+    Client::SafeImpactAnalysisSequenceReport DeserializeSafeImpactAnalysisSequenceReport(const AZStd::string& sequenceReportJson)
+    {
+        const auto doc = OpenSequenceReportJson(sequenceReportJson);
+
+        return Client::SafeImpactAnalysisSequenceReport(
+            DeserializeDraftingSequenceReportBase<Client::SafeImpactAnalysisSequenceReport>(doc),
+            DeserializeTestSelection(doc[SequenceReportFields::Keys[SequenceReportFields::DiscardedTestRuns]]),
+            DeserializeTestRunReport(doc[SequenceReportFields::Keys[SequenceReportFields::DiscardedTestRunReport]]));
     }
 } // namespace TestImpact

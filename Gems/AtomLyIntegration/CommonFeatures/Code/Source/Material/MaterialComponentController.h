@@ -47,6 +47,8 @@ namespace AZ
             //! MaterialComponentRequestBus overrides...
             MaterialAssignmentMap GetOriginalMaterialAssignments() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
+            AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialOverrides() const override;
             void ClearAllMaterialOverrides() override;
@@ -54,7 +56,7 @@ namespace AZ
             const AZ::Data::AssetId GetDefaultMaterialOverride() const override;
             void ClearDefaultMaterialOverride() override;
             void SetMaterialOverride(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) override;
-            const AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const override;
+            AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const override;
             void ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId) override;
 
             void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) override;
@@ -86,7 +88,12 @@ namespace AZ
             void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) override;
             void ClearPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) override;
             void ClearAllPropertyOverrides() override;
+            void SetPropertyOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const MaterialPropertyOverrideMap& propertyOverrides) override;
             MaterialPropertyOverrideMap GetPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
+            void SetModelUvOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) override;
+            AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
 
         private:
 
