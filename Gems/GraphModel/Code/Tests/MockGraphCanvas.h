@@ -137,8 +137,8 @@ namespace MockGraphCanvasServices
         ~MockExtenderSlotComponent() = default;
 
         // Component overrides ...
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // ExtenderSlotComponent overrides ...
@@ -177,7 +177,7 @@ namespace MockGraphCanvasServices
         void SetTooltip(const AZStd::string& tooltip) override;
         void SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip) override;
         const AZStd::string GetTooltip() const override;
-        void SetShowInOutliner(bool showInOutliner);
+        void SetShowInOutliner(bool showInOutliner) override;
         bool ShowInOutliner() const override;
         void AddSlot(const AZ::EntityId& slotId) override;
         void RemoveSlot(const AZ::EntityId& slotId) override;

@@ -1069,6 +1069,7 @@ namespace AZ {
         /// returns allocation size for the pointer if it belongs to the allocator. result is undefined if the pointer doesn't belong to the allocator.
         size_t  AllocationSize(void* ptr);
         size_t  GetMaxAllocationSize() const;
+        size_t  GetMaxContiguousAllocationSize() const;
         size_t  GetUnAllocatedMemory(bool isPrint) const;
 
         void*   SystemAlloc(size_t size, size_t align);
@@ -2301,6 +2302,11 @@ namespace AZ {
         return maxSize;
     }
 
+    size_t HpAllocator::GetMaxContiguousAllocationSize() const
+    {
+        return AZ_CORE_MAX_ALLOCATOR_SIZE;
+    }
+
     //=========================================================================
     // GetUnAllocatedMemory
     // [9/30/2013]
@@ -2675,6 +2681,11 @@ namespace AZ {
     HphaSchema::GetMaxAllocationSize() const
     {
         return m_allocator->GetMaxAllocationSize();
+    }
+
+    auto HphaSchema::GetMaxContiguousAllocationSize() const -> size_type
+    {
+        return m_allocator->GetMaxContiguousAllocationSize();
     }
 
     //=========================================================================

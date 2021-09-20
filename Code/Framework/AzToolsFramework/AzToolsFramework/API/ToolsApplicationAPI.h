@@ -414,6 +414,9 @@ namespace AzToolsFramework
         //! Gets an existing entity id from a known id.
         virtual AZ::EntityId GetExistingEntity(AZ::u64 id) = 0;
 
+        //! Returns if an entity with the given id exists
+        virtual bool EntityExists(AZ::EntityId id) = 0;
+
         /*!
          * Delete all currently-selected entities.
          */

@@ -69,7 +69,7 @@ namespace AzFramework
         // EntityContext
         AZ::Entity* CreateEntity(const char* name) override;
         void OnRootEntityReloaded() override;
-        void OnContextEntitiesAdded(const EntityList& entities);
+        void OnContextEntitiesAdded(const EntityList& entities) override;
         void OnContextReset() override;
         bool ValidateEntitiesAreValidForContext(const EntityList& entities) override;
         //////////////////////////////////////////////////////////////////////////

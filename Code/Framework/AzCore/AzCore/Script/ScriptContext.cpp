@@ -2306,7 +2306,7 @@ LUA_API const Node* lua_getDummyNode()
                 else // even references are stored by value as we need to convert from lua native type, i.e. there is not real reference for NativeTypes (numbers, strings, etc.)
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && sizeof(T) > tempAllocator.get_max_size())
+                    if (backupAllocator != nullptr && sizeof(T) > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
                         value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
                         usedBackupAlloc = true;
@@ -2340,7 +2340,7 @@ LUA_API const Node* lua_getDummyNode()
                 else // it's a value type
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && valueClass->m_size > tempAllocator.get_max_size())
+                    if (backupAllocator != nullptr && valueClass->m_size > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
                         value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment, 0);
                         usedBackupAlloc = true;

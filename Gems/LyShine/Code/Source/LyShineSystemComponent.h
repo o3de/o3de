@@ -65,7 +65,7 @@ namespace LyShine
         // UiSystemBus interface implementation
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
-        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
+        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ namespace LyShine
 
         // CrySystemEventBus ///////////////////////////////////////////////////////
         void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
 
         void BroadcastCursorImagePathname();

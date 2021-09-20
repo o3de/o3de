@@ -33,6 +33,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
@@ -41,7 +42,14 @@
 #include <AzCore/Console/IConsole.h>
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
+static void OnFrameRateLimitChanged(const float& fpsLimit)
+{
+    AZ::Render::Bootstrap::RequestBus::Broadcast(
+        &AZ::Render::Bootstrap::RequestBus::Events::SetFrameRateLimit, fpsLimit);
+}
+
 AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
+AZ_CVAR(float, r_fps_limit, 0, OnFrameRateLimitChanged, AZ::ConsoleFunctorFlags::Null, "The maximum framerate to render at, or 0 for unlimited");
 
 namespace AZ
 {
@@ -296,6 +304,11 @@ namespace AZ
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
+                // Make sure non-msaa super variant is used for non-msaa pipeline
+                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
+                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
                     RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDescriptor, *viewportContext->GetWindowContext().get());
@@ -342,6 +355,22 @@ namespace AZ
                 return true;
             }
 
+            float BootstrapSystemComponent::GetFrameRateLimit() const
+            {
+                return r_fps_limit;
+            }
+
+            void BootstrapSystemComponent::SetFrameRateLimit(float fpsLimit)
+            {
+                r_fps_limit = fpsLimit;
+                if (m_viewportContext)
+                {
+                    m_viewportContext->SetFpsLimit(r_fps_limit);
+                }
+                Render::Bootstrap::NotificationBus::Broadcast(
+                    &Render::Bootstrap::NotificationBus::Events::OnFrameRateLimitChanged, fpsLimit);
+            }
+
             void BootstrapSystemComponent::CreateDefaultRenderPipeline()
             {
                 EnsureDefaultRenderPipelineInstalledForScene(m_defaultScene, m_viewportContext);
@@ -363,7 +392,7 @@ namespace AZ
                     // Unbind m_defaultScene to the GameEntityContext's AzFramework::Scene
                     if (m_defaultFrameworkScene)
                     {
-                        m_defaultFrameworkScene->UnsetSubsystem<RPI::Scene>();
+                        m_defaultFrameworkScene->UnsetSubsystem(m_defaultScene);
                     }
 
                     m_defaultScene = nullptr;
@@ -381,23 +410,11 @@ namespace AZ
             }
 
             void BootstrapSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
-            {
-                // Temp: When running in the launcher without the legacy renderer
-                // we need to call RenderTick on the viewport context each frame.
-                if (m_viewportContext)
-                {
-                    AZ::ApplicationTypeQuery appType;
-                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                    if (appType.IsGame())
-                    {
-                        m_viewportContext->RenderTick();
-                    }
-                }
-            }
+            {            }
 
             int BootstrapSystemComponent::GetTickOrder()
             {
-                return TICK_LAST;
+                return TICK_PRE_RENDER;
             }
 
             void BootstrapSystemComponent::OnWindowClosed()

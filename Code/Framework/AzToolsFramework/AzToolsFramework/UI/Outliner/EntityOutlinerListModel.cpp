@@ -280,17 +280,17 @@ namespace AzToolsFramework
     QVariant EntityOutlinerListModel::GetEntityIcon(const AZ::EntityId& id) const
     {
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(id);
-        QPixmap pixmap;
+        QIcon icon;
 
         // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
-            pixmap = entityUiHandler->GenerateItemIcon(id);
+            icon = entityUiHandler->GenerateItemIcon(id);
         }
 
-        if (!pixmap.isNull())
+        if (!icon.isNull())
         {
-            return QIcon(pixmap);
+            return icon;
         }
 
         // If no icon was returned by the handler, use the default one.
@@ -299,7 +299,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Editor_Only.svg")));
+            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -308,10 +308,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Not_Active.svg")));
+            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
         }
 
-        return QIcon(QPixmap(QString(":/Icons/Entity.svg")));
+        return QIcon(QString(":/Icons/Entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const

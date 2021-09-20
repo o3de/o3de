@@ -1135,7 +1135,6 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     {
         // if we're saving to a new folder, we need to copy the old folder tree.
         auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-        pIPak->Lock();
 
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
@@ -1199,7 +1198,6 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
             QFile(filePath).setPermissions(QFile::ReadOther | QFile::WriteOther);
         });
 
-        pIPak->Unlock();
     }
 
     // Save level to XML archive.
@@ -1813,8 +1811,8 @@ bool CCryEditDoc::BackupBeforeSave(bool force)
     QString subFolder = theTime.toString("yyyy-MM-dd [HH.mm.ss]");
 
     QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-    QString backupPath = saveBackupPath + "/" + subFolder + "/";
-    gEnv->pCryPak->MakeDir(backupPath.toUtf8().data());
+    QString backupPath = saveBackupPath + "/" + subFolder;
+    AZ::IO::FileIOBase::GetDirectInstance()->CreatePath(backupPath.toUtf8().data());
 
     QString sourcePath = QString::fromUtf8(resolvedLevelPath) + "/";
 
@@ -2028,7 +2026,7 @@ const char* CCryEditDoc::GetTemporaryLevelName() const
 void CCryEditDoc::DeleteTemporaryLevel()
 {
     QString tempLevelPath = (Path::GetEditingGameDataFolder() + "/Levels/" + GetTemporaryLevelName()).c_str();
-    GetIEditor()->GetSystem()->GetIPak()->ClosePacks(tempLevelPath.toUtf8().data(), AZ::IO::IArchive::EPathResolutionRules::FLAGS_ADD_TRAILING_SLASH);
+    GetIEditor()->GetSystem()->GetIPak()->ClosePacks(tempLevelPath.toUtf8().data());
     CFileUtil::Deltree(tempLevelPath.toUtf8().data(), true);
 }
 

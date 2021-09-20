@@ -115,6 +115,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::Atom_Feature_Common.Builders
             Gem::Atom_RPI.Builders
             Gem::GradientSignal.Builders
     )

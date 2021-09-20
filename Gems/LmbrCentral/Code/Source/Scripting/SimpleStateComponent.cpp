@@ -29,7 +29,7 @@ namespace LmbrCentral
         AZ_EBUS_BEHAVIOR_BINDER(BehaviorSimpleStateComponentNotificationBusHandler, "{F935125C-AE4E-48C1-BB60-24A0559BC4D2}", AZ::SystemAllocator,
             OnStateChanged);
 
-        void OnStateChanged(const char* oldState, const char* newState)
+        void OnStateChanged(const char* oldState, const char* newState) override
         {
             Call(FN_OnStateChanged, oldState, newState);
         }
