@@ -35,5 +35,8 @@
         <file>Backgrounds/DefaultBackground.jpg</file>
         <file>Backgrounds/FtueBackground.jpg</file>
         <file>FeatureTagClose.svg</file>
+        <file>Refresh.svg</file>
+        <file>Edit.svg</file>
+        <file>Delete.svg</file>
     </qresource>
 </RCC>

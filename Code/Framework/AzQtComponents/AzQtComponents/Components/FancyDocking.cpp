@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -1614,14 +1615,16 @@ namespace AzQtComponents
             }
 
             // Handle snapping to the screen edges/other floating windows while dragging
-            QScreen* screen = Utilities::ScreenAtPoint(globalPos);
+            QScreen* screen = QApplication::screenAt(globalPos);
 
-            AdjustForSnapping(placeholder, screen);
+            if (screen)
+            {
+                AdjustForSnapping(placeholder, screen);
+                m_state.setPlaceholder(placeholder, screen);
 
-            m_state.setPlaceholder(placeholder, screen);
-
-            m_ghostWidget->Enable();
-            RepaintFloatingIndicators();
+                m_ghostWidget->Enable();
+                RepaintFloatingIndicators();
+            }
         }
 
         return m_dropZoneState.dragging();
@@ -2458,6 +2461,18 @@ namespace AzQtComponents
             if (m_state.snappedSide & SnapBottom)
             {
                 placeholderRect.translate(0, -margins.bottom());
+            }
+
+            // Also adjust the placeholderRect by the relative dpi change from the original screen, since setGeometry uses the screen's
+            // virtualGeometry!
+            QScreen* fromScreen = dock->screen();
+            QScreen* toScreen = Utilities::ScreenAtPoint(placeholderRect.topLeft());
+
+            if (fromScreen != toScreen)
+            {
+                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
+                placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
+                placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
             }
 
             // Place the floating dock widget

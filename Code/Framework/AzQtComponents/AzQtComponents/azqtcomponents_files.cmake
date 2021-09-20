@@ -276,6 +276,8 @@ set(FILES
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h
     Utilities/MouseHider.h
+    Utilities/PixmapScaleUtilities.cpp
+    Utilities/PixmapScaleUtilities.h
     Utilities/QtPluginPaths.cpp
     Utilities/QtPluginPaths.h
     Utilities/QtWindowUtilities.cpp

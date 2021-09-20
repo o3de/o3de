@@ -41,9 +41,6 @@ namespace AZ
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             #error "Linux Window Manager Wayland not supported."
             return RHI::ResultCode::Unimplemented;
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB
-            #error "Linux Window Manager XLIB not supported."
-            return RHI::ResultCode::Unimplemented;
 #else
             #error "Linux Window Manager not recognized."
             return RHI::ResultCode::Unimplemented;

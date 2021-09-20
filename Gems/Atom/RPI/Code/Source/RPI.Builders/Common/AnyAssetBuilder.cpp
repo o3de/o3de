@@ -30,7 +30,7 @@ namespace AZ
     {
         namespace
         {
-            const char* AnyAssetBuilderName = "AnyAssetBuilder";
+            [[maybe_unused]] const char* AnyAssetBuilderName = "AnyAssetBuilder";
             const char* AnyAssetBuilderJobKey = "Any Asset Builder";
             const char* AnyAssetBuilderDefaultExtension = "azasset";
             const char* AnyAssetSourceExtensions[] =

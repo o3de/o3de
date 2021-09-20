@@ -26,6 +26,19 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/Prefabs/SaveAllPrefabs";
+
+        void PrefabLoader::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Enum<SaveAllPrefabsPreference>()
+                    ->Value("Ask every time", SaveAllPrefabsPreference::AskEveryTime)
+                    ->Value("Save all", SaveAllPrefabsPreference::SaveAll)
+                    ->Value("Save none", SaveAllPrefabsPreference::SaveNone);
+            }
+        }
+
         void PrefabLoader::RegisterPrefabLoaderInterface()
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -655,6 +668,24 @@ namespace AzToolsFramework
             }
 
             return finalPath;
+        }
+
+        SaveAllPrefabsPreference PrefabLoader::GetSaveAllPrefabsPreference() const
+        {
+            SaveAllPrefabsPreference saveAllPrefabsPreference = SaveAllPrefabsPreference::AskEveryTime;
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->GetObject(saveAllPrefabsPreference, s_saveAllPrefabsKey);
+            }
+            return saveAllPrefabsPreference;
+        }
+
+        void PrefabLoader::SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference)
+        {
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->SetObject(s_saveAllPrefabsKey, saveAllPrefabsPreference);
+            }
         }
 
         AZ::IO::Path PrefabLoaderInterface::GeneratePath()

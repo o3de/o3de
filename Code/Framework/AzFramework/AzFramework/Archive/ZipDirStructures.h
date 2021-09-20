@@ -119,8 +119,6 @@ namespace AZ::IO::ZipDir
         const char* m_szDescription;
     };
 
-#define THROW_ZIPDIR_ERROR(ZD_ERR, DESC) AZ_Warning("Archive", false, DESC)
-
     // possible initialization methods
     enum InitMethodEnum
     {
@@ -156,8 +154,6 @@ namespace AZ::IO::ZipDir
     int64_t FTell(CZipFile* zipFile);
 
     int FEof(CZipFile* zipFile);
-
-    uint32_t FileNameHash(AZStd::string_view filename);
 
 
     //////////////////////////////////////////////////////////////////////////

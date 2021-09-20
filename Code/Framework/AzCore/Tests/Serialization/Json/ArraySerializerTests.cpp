@@ -35,6 +35,7 @@ namespace JsonSerializationTests
             features.m_fixedSizeArray = true;
         }
 
+        using JsonSerializerConformityTestDescriptor<T>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<T>();
@@ -243,6 +244,7 @@ namespace JsonSerializationTests
             ])";
         }
 
+        using ArraySerializerTestDescriptionBase<AZStd::array<BaseClass2*, 4>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             Base::Reflect(context);
@@ -299,6 +301,7 @@ namespace JsonSerializationTests
         AZ::JsonArraySerializer m_serializer;
 
     public:
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Array>();

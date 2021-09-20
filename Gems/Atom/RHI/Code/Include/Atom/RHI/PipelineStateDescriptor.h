@@ -44,7 +44,7 @@ namespace AZ
             /// Returns the hash of the pipeline state descriptor contents.
             virtual HashValue64 GetHash() const = 0;
 
-            virtual bool operator == (const PipelineStateDescriptor& rhs) const;
+            bool operator == (const PipelineStateDescriptor& rhs) const;
 
             /// The pipeline layout describing the shader resource bindings.
             ConstPtr<PipelineLayoutDescriptor> m_pipelineLayoutDescriptor = nullptr;
@@ -77,8 +77,7 @@ namespace AZ
             /// Computes the hash value for this descriptor.
             HashValue64 GetHash() const override;
 
-
-            virtual bool operator == (const PipelineStateDescriptorForDispatch& rhs) const;
+            bool operator == (const PipelineStateDescriptorForDispatch& rhs) const;
 
             /// The compute function containing byte code to compile.
             ConstPtr<ShaderStageFunction> m_computeFunction;
@@ -102,7 +101,7 @@ namespace AZ
             /// Computes the hash value for this descriptor.
             HashValue64 GetHash() const override;
 
-            virtual bool operator == (const PipelineStateDescriptorForDraw& rhs) const;
+            bool operator == (const PipelineStateDescriptorForDraw& rhs) const;
 
             /// [Required] The vertex function to compile.
             ConstPtr<ShaderStageFunction> m_vertexFunction;
@@ -135,7 +134,7 @@ namespace AZ
             //! Computes the hash value for this descriptor.
             HashValue64 GetHash() const override;
 
-            virtual bool operator == (const PipelineStateDescriptorForRayTracing& rhs) const;
+            bool operator == (const PipelineStateDescriptorForRayTracing& rhs) const;
 
             // The ray tracing shader byte code
             ConstPtr<ShaderStageFunction> m_rayTracingFunction;

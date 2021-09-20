@@ -78,7 +78,7 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)
@@ -104,7 +104,6 @@ namespace Terrain
     {
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-        TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
         TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
@@ -114,7 +113,6 @@ namespace Terrain
     {
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
-        TerrainAreaRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         
@@ -159,11 +157,6 @@ namespace Terrain
     bool TerrainLayerSpawnerComponent::GetUseGroundPlane()
     {
         return m_configuration.m_useGroundPlane;
-    }
-
-    void TerrainLayerSpawnerComponent::RegisterArea()
-    {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::RefreshArea()

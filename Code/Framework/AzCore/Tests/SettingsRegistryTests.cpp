@@ -423,6 +423,8 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
+
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
             {
@@ -452,6 +454,8 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
+
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
             {
@@ -482,6 +486,7 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, AZ::s64 value) override
             {
                 EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, type);
@@ -517,6 +522,8 @@ namespace SettingsRegistryTests
                 EXPECT_TRUE(path.ends_with(valueName));
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
             {
                 EXPECT_TRUE(path.ends_with(valueName));
@@ -1510,7 +1517,7 @@ namespace SettingsRegistryTests
 
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1552,7 +1559,7 @@ namespace SettingsRegistryTests
 
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special", nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(6, counter);
 
@@ -1591,7 +1598,7 @@ namespace SettingsRegistryTests
         
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1632,7 +1639,7 @@ namespace SettingsRegistryTests
 
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
 
@@ -1665,7 +1672,7 @@ namespace SettingsRegistryTests
 
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special", nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(1, counter);
 
@@ -1715,7 +1722,7 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_EmptyFolder_ReportsSuccessButNothingAdded)
     {
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
         EXPECT_TRUE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0")); // Folder and specialization settings.
@@ -1727,7 +1734,7 @@ namespace SettingsRegistryTests
         constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, 'a');
         
         AZ_TEST_START_TRACE_SUPPRESSION;
-        bool result = m_registry->MergeSettingsFolder(path, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(path, { "editor", "test" }, {});
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
@@ -1744,7 +1751,7 @@ namespace SettingsRegistryTests
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
-        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
+        bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {});
         EXPECT_GT(::UnitTest::TestRunner::Instance().StopAssertTests(), 0);
         EXPECT_FALSE(result);
 

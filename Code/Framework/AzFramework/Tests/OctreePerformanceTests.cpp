@@ -20,8 +20,7 @@ namespace Benchmark
     class BM_Octree
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             // Create the SystemAllocator if not available
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
@@ -72,7 +71,7 @@ namespace Benchmark
             });
         }
 
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_octreeSystemComponent->DestroyVisibilityScene(m_visScene);
             delete m_octreeSystemComponent;
@@ -89,6 +88,25 @@ namespace Benchmark
             {
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         void InsertEntries(uint32_t entryCount)

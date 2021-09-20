@@ -80,7 +80,7 @@ namespace EMotionFX
         void OnPasteJointLimits();
 
     private:
-        bool PhysXGemAvailable() const;
+        bool IsPhysXGemAvailable() const;
 
         RagdollNodeWidget*          m_nodeWidget;
 

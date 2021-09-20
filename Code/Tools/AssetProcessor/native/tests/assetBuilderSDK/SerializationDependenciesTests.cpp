@@ -95,7 +95,7 @@ namespace SerializationDependencyTests
             // Use an arbitrary ID for the asset type.
             return AZ::Data::AssetType("{03FD33E2-DA2F-4021-A266-0DC9714FF84D}");
         }
-        virtual const char* GetFileFilter() const
+        const char* GetFileFilter() const override
         {
             return nullptr;
         }

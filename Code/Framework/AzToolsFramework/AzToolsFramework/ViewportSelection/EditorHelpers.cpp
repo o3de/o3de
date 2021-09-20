@@ -11,6 +11,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
@@ -118,10 +119,6 @@ namespace AzToolsFramework
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
 
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
-
         const bool helpersVisible = HelpersVisible();
 
         // selecting new entities
@@ -145,7 +142,7 @@ namespace AzToolsFramework
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
                     // selecting based on 2d icon - should only do it when visible and not selected
-                    const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                    const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(entityPosition, cameraState);
 
                     const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
                     const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);

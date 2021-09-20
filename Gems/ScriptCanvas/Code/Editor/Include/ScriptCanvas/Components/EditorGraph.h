@@ -230,7 +230,12 @@ namespace ScriptCanvasEditor
 
         /////
         EditorGraphUpgradeMachine m_upgradeSM;
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        enum UpgradeRequest
+        {
+            IfOutOfDate,
+            Forced
+        };
+        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -243,8 +248,8 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
 
-        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData();
-        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData);
+        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData() override;
+        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData) override;
 
         NodeIdPair CreateCustomNode(const AZ::Uuid& typeId, const AZ::Vector2& position) override;
 
@@ -320,7 +325,7 @@ namespace ScriptCanvasEditor
         }
 
     protected:
-        void PostRestore(const UndoData& restoredData);
+        void PostRestore(const UndoData& restoredData) override;
 
         void UnregisterToast(const GraphCanvas::ToastId& toastId);
 

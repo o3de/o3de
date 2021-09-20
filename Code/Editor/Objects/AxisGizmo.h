@@ -35,21 +35,21 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Ovverides from CGizmo
     //////////////////////////////////////////////////////////////////////////
-    virtual void GetWorldBounds(AABB& bbox);
-    virtual void Display(DisplayContext& dc);
-    virtual bool HitTest(HitContext& hc);
-    virtual const Matrix34& GetMatrix() const;
+    void GetWorldBounds(AABB& bbox) override;
+    void Display(DisplayContext& dc) override;
+    bool HitTest(HitContext& hc) override;
+    const Matrix34& GetMatrix() const override;
     //////////////////////////////////////////////////////////////////////////
 
 
     //////////////////////////////////////////////////////////////////////////
     // ITransformManipulator implementation.
     //////////////////////////////////////////////////////////////////////////
-    virtual Matrix34 GetTransformation(RefCoordSys coordSys, IDisplayViewport* view = nullptr) const;
-    virtual void SetTransformation(RefCoordSys coordSys, const Matrix34& tm);
-    virtual bool HitTestManipulator(HitContext& hc);
-    virtual bool MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, int nFlags);
-    virtual void SetAlwaysUseLocal(bool on)
+    Matrix34 GetTransformation(RefCoordSys coordSys, IDisplayViewport* view = nullptr) const override;
+    void SetTransformation(RefCoordSys coordSys, const Matrix34& tm) override;
+    bool HitTestManipulator(HitContext& hc) override;
+    bool MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, int nFlags) override;
+    void SetAlwaysUseLocal(bool on) override
     { m_bAlwaysUseLocal = on; }
     //////////////////////////////////////////////////////////////////////////
 

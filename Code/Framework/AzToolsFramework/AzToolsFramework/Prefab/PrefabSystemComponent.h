@@ -102,6 +102,13 @@ namespace AzToolsFramework
             TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
 
             /**
+             * Updates relative filepath location of a prefab (in case of SaveAs operation).
+             * @param templateId An id of a Template to change filepath of.
+             * @param filePath new relative path of the Template.
+             */
+            void UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath) override;
+
+            /**
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */
@@ -182,6 +189,12 @@ namespace AzToolsFramework
              * @param dirty The new value of the dirty flag.
              */
             void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
+
+            bool AreDirtyTemplatesPresent(TemplateId rootTemplateId) override;
+
+            void SaveAllDirtyTemplates(TemplateId rootTemplateId) override;
+
+            AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId rootTemplateId) override;
 
             //////////////////////////////////////////////////////////////////////////
 
@@ -334,6 +347,9 @@ namespace AzToolsFramework
              * @return bool on whether the operation succeeded.
              */
             bool RemoveLinkFromTargetTemplate(const LinkId& linkId, const Link& link);
+
+            // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
+            void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
