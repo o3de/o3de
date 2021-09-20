@@ -140,7 +140,7 @@ ENVAR_O3DE_PROJECT_PATH = str('O3DE_PROJECT_PATH')
 ENVAR_O3DE_DEV = str('O3DE_DEV')
 ENVAR_DCCSIG_PATH = str('DCCSIG_PATH')
 ENVAR_DCCSI_AZPY_PATH = str('DCCSI_AZPY_PATH')
-ENVAR_DCCSI_SDK_PATH = str('DCCSI_SDK_PATH')
+ENVAR_DCCSI_TOOLS_PATH = str('DCCSI_TOOLS_PATH')
 ENVAR_LY_BUILD_DIR_NAME = str('LY_BUILD_DIR_NAME')
 
 ENVAR_O3DE_BUILD_PATH = str('O3DE_BUILD_PATH')
@@ -196,7 +196,7 @@ TAG_MAYA_WORKSPACE = 'workspace.mel'
 PATH_O3DE_DEV = str(return_stub_dir(STUB_O3DE_DEV))
 PATH_DCCSIG_PATH = str(return_stub_dir(STUB_LY_ROOT_DCCSI))
 PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_LY_DCCSI_AZPY))
-PATH_DCCSI_SDK_PATH = str('{0}\\{1}'.format(PATH_DCCSIG_PATH, TAG_DIR_DCCSI_SDK))
+PATH_DCCSI_TOOLS_PATH = str('{0}\\{1}'.format(PATH_DCCSIG_PATH, TAG_DIR_DCCSI_SDK))
 
 # logging into the cache
 PATH_DCCSI_LOG_PATH = str('{O3DE_DEV}\\Cache\\{O3DE_PROJECT}\\pc\\user\\log\\logs')
@@ -324,7 +324,7 @@ if __name__ == '__main__':
     _stash_dict['O3DE_DEV'] = Path(PATH_O3DE_DEV)
     _stash_dict['DCCSIG_PATH'] = Path(PATH_DCCSIG_PATH)
     _stash_dict['DCCSI_AZPY_PATH'] = Path(PATH_DCCSI_AZPY_PATH)
-    _stash_dict['DCCSI_SDK_PATH'] = Path(PATH_DCCSI_SDK_PATH)
+    _stash_dict['DCCSI_TOOLS_PATH'] = Path(PATH_DCCSI_TOOLS_PATH)
     _stash_dict['DCCSI_PYTHON_PATH'] = Path(PATH_DCCSI_PYTHON_PATH)
     _stash_dict['DCCSI_PY_BASE'] = Path(PATH_DCCSI_PY_BASE)
     _stash_dict['DCCSI_PYTHON_LIB_PATH'] = Path(PATH_DCCSI_PYTHON_LIB_PATH)

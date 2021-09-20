@@ -31,7 +31,7 @@ echo.
 
 : Substance Designer
 :: maya sdk path
-set DCCSI_SUBSTANCE_PATH=%DCCSI_SDK_PATH%\Substance
+set DCCSI_SUBSTANCE_PATH=%DCCSI_TOOLS_PATH%\Substance
 echo     DCCSI_SUBSTANCE_PATH = %DCCSI_SUBSTANCE_PATH%
 :: https://docs.substance3d.com/sddoc/project-preferences-107118596.html#ProjectPreferences-ConfigurationFile
 :: Path to .exe, "C:\Program Files\Allegorithmic\Substance Designer\Substance Designer.exe"

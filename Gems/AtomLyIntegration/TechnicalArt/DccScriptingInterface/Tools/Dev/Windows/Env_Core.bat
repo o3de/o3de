@@ -70,13 +70,13 @@ IF "%O3DE_PROJECT_NAME%"=="" (
         )
 echo     O3DE_PROJECT_NAME = %O3DE_PROJECT_NAME%
 
-:: if not defined we just use the DCCsi path as stand-in
-IF "%O3DE_PROJECT%"=="" (set O3DE_PROJECT=%CD%)
-echo     O3DE_PROJECT = %O3DE_PROJECT%
-
 :: set up the default project path (dccsi)
 :: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\..\
+:: if not defined we just use the DCCsi path as stand-in
+IF "%O3DE_PROJECT%"=="" (set O3DE_PROJECT=%CD%)
+echo     O3DE_PROJECT = %O3DE_PROJECT%
+:: To Do: remove one of these 
 IF "%O3DE_PROJECT_PATH%"=="" (set O3DE_PROJECT_PATH=%CD%)
 echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
 
@@ -102,8 +102,8 @@ echo     DCCSIG_PATH = %DCCSIG_PATH%
 CD /D %DCCSIG_PATH%
 
 :: per-dcc sdk path
-set DCCSI_SDK_PATH=%DCCSIG_PATH%\SDK
-echo     DCCSI_SDK_PATH = %DCCSI_SDK_PATH%
+set DCCSI_TOOLS_PATH=%DCCSIG_PATH%\Tools
+echo     DCCSI_TOOLS_PATH = %DCCSI_TOOLS_PATH%
 
 :: temp log location specific to this gem
 set DCCSI_LOG_PATH=%DCCSIG_PATH%\.temp\logs

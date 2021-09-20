@@ -22,7 +22,7 @@ import re
 # our framework for dcc tools need to run in apps like Maya that may still be
 # on py27 so we need to import and use after some boostrapping
 
-# -------------------------------------------------------------------+------
+# --------------------------------------------------------------------------
 #os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
 
@@ -51,7 +51,7 @@ _LOG_LEVEL = int(20)
 if _DCCSI_GDEBUG:
     _LOG_LEVEL = int(10)
 _LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                 log_to_file=False,
+                                 log_to_file=_DCCSI_GDEBUG,
                                  default_log_level=_LOG_LEVEL)
 _LOGGER.info('Starting up: {}.'.format({_PACKAGENAME}))
 _LOGGER.info('site.addsitedir({})'.format(_DCCSIG_PATH))

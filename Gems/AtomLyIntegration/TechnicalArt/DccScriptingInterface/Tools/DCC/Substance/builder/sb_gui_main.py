@@ -132,8 +132,8 @@ _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT, None)
 from azpy.constants import ENVAR_O3DE_PROJECT_PATH
 _O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH, None)).resolve()
 
-from azpy.constants import ENVAR_DCCSI_SDK_PATH
-_DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH, None)).resolve()
+from azpy.constants import ENVAR_DCCSI_TOOLS_PATH
+_DCCSI_TOOLS_PATH = Path(os.getenv(ENVAR_DCCSI_TOOLS_PATH, None)).resolve()
 
 # build some reuseable path parts
 _PROJECT_ASSET_PATH = Path(_O3DE_PROJECT_PATH).resolve()
@@ -148,7 +148,7 @@ _SUB_LIBRARY_PATH = Path(_GEM_SUBSOURCELIBRARY, 'Assets', 'SubstanceSource', 'Li
 # To Do: figure out a proper way to scrap the gem registry from project
 
 # path to watcher script
-_WATCHER_SCRIPT_PATH = Path(_DCCSI_SDK_PATH, 'substance', 'builder', 'watchdog', '__init__.py').resolve()
+_WATCHER_SCRIPT_PATH = Path(_DCCSI_TOOLS_PATH, 'substance', 'builder', 'watchdog', '__init__.py').resolve()
 
 _TEX_RNDR_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
 _MAT_OUTPUT_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()

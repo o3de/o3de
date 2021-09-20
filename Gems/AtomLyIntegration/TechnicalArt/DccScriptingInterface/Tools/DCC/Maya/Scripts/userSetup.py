@@ -20,7 +20,7 @@ For now the proper way to initiate Maya boostrapping the DCCsi, is to use
 the provided env and launcher bat files.
 
 If you are developing for the DCCsi you can use this launcher to start Maya:
-DccScriptingInterface\Launchers\Windows\Launch_Maya_2020.bat"
+DccScriptingInterface\\Launchers\\Windows\\Launch_Maya_2020.bat"
 
 To Do: ATOM-5861
 """
@@ -169,11 +169,11 @@ _LOGGER.info('_MODULENAME: {}'.format(_MODULENAME))
 # -------------------------------------------------------------------------
 # check some env var tags (fail if no, likely means no proper code access)
 _STR_ERROR_ENVAR = "Envar 'key' does not exist in base_env: {0}"
-_DCCSI_SDK_PATH = None
+_DCCSI_TOOLS_PATH = None
 try:
-    _DCCSI_SDK_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH]
+    _DCCSI_TOOLS_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_TOOLS_PATH]
 except Exception as e:
-    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH]))
+    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_DCCSI_TOOLS_PATH]))
 
 _O3DE_PROJECT_PATH = None
 try:
@@ -213,8 +213,8 @@ def startup():
     # get known paths
     _KNOWN_PATHS = site._init_pathinfo()
 
-    if os.path.isdir(_DCCSI_SDK_PATH):
-        site.addsitedir(_DCCSI_SDK_PATH, _KNOWN_PATHS)
+    if os.path.isdir(_DCCSI_TOOLS_PATH):
+        site.addsitedir(_DCCSI_TOOLS_PATH, _KNOWN_PATHS)
         try:
             import azpy.test
             _LOGGER.info('SUCCESS, import azpy.test')

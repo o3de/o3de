@@ -45,7 +45,7 @@ Configures several useful environment config settings and paths,
     O3DE_PROJECT_PATH     : path to project dir
     DCCSIG_PATH         : path to the DCCsi Gem root
     DCCSI_AZPY_PATH *   : path to azpy Python API (code)
-    DCCSI_SDK_PATH      : path to associated (non-api code) DCC SDK
+    DCCSI_TOOLS_PATH      : path to associated (non-api code) DCC SDK
 
     # nice to haves in base env to define core support
     DCCSI_GDEBUG        : sets global debug prints
@@ -440,9 +440,9 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     _SYNTH_ENV_DICT[ENVAR_DCCSI_AZPY_PATH] = _AZPY_PATH.as_posix()
 
     # -- envar --
-    _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH,
+    _DCCSI_TOOLS_PATH = Path(os.getenv(ENVAR_DCCSI_TOOLS_PATH,
                                      Path(_DCCSIG_PATH, TAG_DIR_DCCSI_SDK)))
-    _SYNTH_ENV_DICT[ENVAR_DCCSI_SDK_PATH] = _DCCSI_SDK_PATH.as_posix()
+    _SYNTH_ENV_DICT[ENVAR_DCCSI_TOOLS_PATH] = _DCCSI_TOOLS_PATH.as_posix()
 
     # -- envar --
     # external dccsi site-packages

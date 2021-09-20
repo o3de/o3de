@@ -100,8 +100,8 @@ from azpy.constants import ENVAR_O3DE_PROJECT_PATH
 _O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH,
                                   settings.O3DE_PROJECT_PATH)).resolve()
 
-from azpy.constants import ENVAR_DCCSI_SDK_PATH
-_DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH,
+from azpy.constants import ENVAR_DCCSI_TOOLS_PATH
+_DCCSI_TOOLS_PATH = Path(os.getenv(ENVAR_DCCSI_TOOLS_PATH,
                                  settings.DCCSIG_SDK_PATH)).resolve()
 
 # build some reuseable path parts for the substance builder
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     _LOGGER.info('_O3DE_DEV: {}'.format(_O3DE_DEV))
     _LOGGER.info('_O3DE_PROJECT_PATH: {}'.format(_O3DE_PROJECT_PATH))
-    _LOGGER.info('_DCCSI_SDK_PATH: {}'.format(_DCCSI_SDK_PATH))
+    _LOGGER.info('_DCCSI_TOOLS_PATH: {}'.format(_DCCSI_TOOLS_PATH))
     
     _LOGGER.info('_PYSBS_DIR_PATH: {}'.format(_PYSBS_DIR_PATH))
     _LOGGER.info('_PROJECT_ASSETS_PATH: {}'.format(_PROJECT_ASSETS_PATH))
