@@ -59,6 +59,20 @@ namespace AZStd
 
 namespace AZ::Debug
 {
+    // interface for externally defined profiler systems
+    class Profiler
+    {
+    public:
+        AZ_RTTI(Profiler, "{3E5D6329-72D1-41BA-9158-68A349D1A4D5}");
+
+        Profiler() = default;
+        virtual ~Profiler() = default;
+
+        // support for the extra macro args (e.g. format strings) will come in a later PR
+        virtual void BeginRegion(const Budget* budget, const char* eventName) = 0;
+        virtual void EndRegion(const Budget* budget) = 0;
+    };
+
     class ProfileScope
     {
     public:

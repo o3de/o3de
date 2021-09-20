@@ -86,6 +86,7 @@ class TestLayerBlender(object):
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_area
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4170")
     def test_LayerBlender_E2E_Launcher(self, workspace, project, launcher, level, remote_console_instance,
                                        launcher_platform):
 
