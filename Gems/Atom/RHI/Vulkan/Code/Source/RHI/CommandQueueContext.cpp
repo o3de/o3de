@@ -42,7 +42,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             for (auto& commandQueue : m_commandQueues)
             {
@@ -55,7 +55,6 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait on Fences");
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueueContext: Wait on Fences");
 
                 FencesPerQueue& nextFences = m_frameFences[m_currentFrameIndex];
                 for (auto& fence : nextFences)
@@ -79,7 +78,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (auto& commandQueue : m_commandQueues)
             {
                 commandQueue->WaitForIdle();

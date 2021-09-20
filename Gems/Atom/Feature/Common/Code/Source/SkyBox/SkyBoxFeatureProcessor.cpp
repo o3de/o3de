@@ -105,7 +105,7 @@ namespace AZ
 
         void SkyBoxFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SkyBoxFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SkyBoxFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             m_sceneSrg->SetConstant(m_skyboxEnableIndex, m_enable);

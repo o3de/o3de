@@ -152,3 +152,20 @@ function(ly_install_run_code CODE)
     )
 
 endfunction()
+
+#! ly_install_run_script: specifies path to script to be added to the install process (will run at install time)
+#
+# \notes: 
+#  - refer to cmake's install(SCRIPT documentation for more information
+#
+function(ly_install_run_script SCRIPT)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
+
+    install(SCRIPT ${SCRIPT}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
+    )
+
+endfunction()
