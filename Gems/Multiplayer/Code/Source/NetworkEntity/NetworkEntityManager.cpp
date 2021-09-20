@@ -291,8 +291,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::RemoveEntities()
     {
-        //RewindableObjectState::ClearRewoundEntities();
-
         AZStd::vector<NetEntityId> removeList;
         removeList.swap(m_removeList);
         for (NetEntityId entityId : removeList)

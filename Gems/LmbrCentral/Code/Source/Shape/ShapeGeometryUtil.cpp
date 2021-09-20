@@ -152,17 +152,18 @@ namespace LmbrCentral
                 const AZ::Vector2 edgeAfter = next - curr;
 
                 const float triangleArea = Wedge(edgeBefore, edgeAfter);
+                const float tolerance = 0.001f;
                 const bool interiorVertex = triangleArea <= 0.0f;
 
-                // if triangle is not an 'ear', continue.
-                if (!interiorVertex)
+                // if triangle is not an 'ear' and we have other vertices, continue.
+                if (!interiorVertex && vertices.size() > 3)
                 {
                     continue;
                 }
 
-                // check no other vertices are inside the triangle formed
-                // by these three vertices, if so, continue to next vertex.
-                if (vertices.size() > 3)
+                // check if this is a large enough triangle, that there are no other vertices
+                // inside the triangle formed, otherwise, continue to next vertex.
+                if (vertices.size() > 3 && !AZ::IsClose(triangleArea, 0.f, tolerance))
                 {
                     bool pointInside = false;
                     for (size_t j = (nextIndex + 1) % vertices.size(); j != prevIndex; j = (j + 1) % vertices.size())

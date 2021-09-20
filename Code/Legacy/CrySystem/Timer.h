@@ -21,7 +21,7 @@ public:
     // constructor
     CTimer();
     // destructor
-    ~CTimer() {};
+    ~CTimer() = default;
 
     bool Init();
 
@@ -30,57 +30,57 @@ public:
     // TODO: Review m_time usage in System.cpp
     //       if it wants Game Time / UI Time or a new Render Time?
 
-    virtual void ResetTimer();
-    virtual void UpdateOnFrameStart();
-    virtual float GetCurrTime(ETimer which = ETIMER_GAME) const;
-    virtual CTimeValue GetAsyncTime() const;
-    virtual float GetAsyncCurTime(); // retrieve the actual wall clock time passed since the game started, in seconds
-    virtual float GetFrameTime(ETimer which = ETIMER_GAME) const;
-    virtual float GetRealFrameTime() const;
-    virtual float GetTimeScale() const;
-    virtual float GetTimeScale(uint32 channel) const;
-    virtual void SetTimeScale(float scale, uint32 channel = 0);
-    virtual void ClearTimeScales();
-    virtual void EnableTimer(bool bEnable);
-    virtual float GetFrameRate();
-    virtual float GetProfileFrameBlending(float* pfBlendTime = 0, int* piBlendMode = 0);
-    virtual void Serialize(TSerialize ser);
-    virtual bool IsTimerEnabled() const;
+    void ResetTimer() override;
+    void UpdateOnFrameStart() override;
+    float GetCurrTime(ETimer which = ETIMER_GAME) const override;
+    CTimeValue GetAsyncTime() const override;
+    float GetAsyncCurTime() override; // retrieve the actual wall clock time passed since the game started, in seconds
+    float GetFrameTime(ETimer which = ETIMER_GAME) const override;
+    float GetRealFrameTime() const override;
+    float GetTimeScale() const override;
+    float GetTimeScale(uint32 channel) const override;
+    void SetTimeScale(float scale, uint32 channel = 0) override;
+    void ClearTimeScales() override;
+    void EnableTimer(bool bEnable) override;
+    float GetFrameRate() override;
+    float GetProfileFrameBlending(float* pfBlendTime = nullptr, int* piBlendMode = nullptr) override;
+    void Serialize(TSerialize ser) override;
+    bool IsTimerEnabled() const override;
 
     //! try to pause/unpause a timer
     //  returns true if successfully paused/unpaused, false otherwise
-    virtual bool PauseTimer(ETimer which, bool bPause);
+    bool PauseTimer(ETimer which, bool bPause) override;
 
     //! determine if a timer is paused
     //  returns true if paused, false otherwise
-    virtual bool IsTimerPaused(ETimer which);
+    bool IsTimerPaused(ETimer which) override;
 
     //! try to set a timer
     //  return true if successful, false otherwise
-    virtual bool SetTimer(ETimer which, float timeInSeconds);
+    bool SetTimer(ETimer which, float timeInSeconds) override;
 
     //! make a tm struct from a time_t in UTC (like gmtime)
-    virtual void SecondsToDateUTC(time_t time, struct tm& outDateUTC);
+    void SecondsToDateUTC(time_t time, struct tm& outDateUTC) override;
 
     //! make a UTC time from a tm (like timegm, but not available on all platforms)
-    virtual time_t DateToSecondsUTC(struct tm& timePtr);
+    time_t DateToSecondsUTC(struct tm& timePtr) override;
 
     //! Convert from Tics to Seconds
-    virtual float TicksToSeconds(int64 ticks)
+    float TicksToSeconds(int64 ticks) override
     {
         return float((double)ticks * m_fSecsPerTick);
     }
 
     //! Get number of ticks per second
-    virtual int64 GetTicksPerSecond()
+    int64 GetTicksPerSecond() override
     {
         return m_lTicksPerSec;
     }
 
-    virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const { return m_CurrTime[(int)which]; }
-    virtual ITimer* CreateNewTimer();
+    const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const override { return m_CurrTime[(int)which]; }
+    ITimer* CreateNewTimer() override;
 
-    virtual void EnableFixedTimeMode(bool enable, float timeStep) override;
+    void EnableFixedTimeMode(bool enable, float timeStep) override;
 
 private: // ---------------------------------------------------------------------
 

@@ -82,7 +82,7 @@ namespace AZ
         FontFamilyPtr LoadFontFamily(const char* fontFamilyName) override;
         FontFamilyPtr GetFontFamily(const char* fontFamilyName) override;
         void AddCharsToFontTextures(FontFamilyPtr fontFamily, const char* chars, int glyphSizeX = ICryFont::defaultGlyphSizeX, int glyphSizeY = ICryFont::defaultGlyphSizeY) override;
-        AZStd::string GetLoadedFontNames() const;
+        AZStd::string GetLoadedFontNames() const override;
         void OnLanguageChanged() override;
         void ReloadAllFonts() override;
         //////////////////////////////////////////////////////////////////////////////////

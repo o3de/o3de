@@ -45,8 +45,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // ignore any entity that might activate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -68,8 +66,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // ignore any entity that might deactivate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -89,8 +85,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         if (const auto& localEntityBoundsUnions = instance.m_localEntityBoundsUnion; localEntityBoundsUnions.IsValid())
         {
             // note: worldEntityBounds will not be a 'tight-fit' Aabb but that of a transformed local aabb
@@ -155,8 +149,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnTransformUpdated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // update the world transform of the visibility bounds union
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
             instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())

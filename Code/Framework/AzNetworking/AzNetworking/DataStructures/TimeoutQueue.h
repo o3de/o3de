@@ -94,6 +94,7 @@ namespace AzNetworking
     class ITimeoutHandler
     {
     public:
+        virtual ~ITimeoutHandler() = default;
 
         //! Handler callback for timed out items.
         //! @param item containing registered timeout details

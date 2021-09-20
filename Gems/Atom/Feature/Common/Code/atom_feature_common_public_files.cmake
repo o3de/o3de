@@ -39,6 +39,7 @@ set(FILES
     Include/Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctions.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl
+    Include/Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl
     Include/Atom/Feature/ParamMacros/StartParamMembers.inl
     Include/Atom/Feature/ParamMacros/StartParamSerializeContext.inl

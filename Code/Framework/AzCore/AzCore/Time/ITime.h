@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/time.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ
 {
@@ -25,6 +26,13 @@ namespace AZ
 
     //! @class ITime
     //! @brief This is an AZ::Interface<> for managing time related operations.
+    //! AZ::ITime and associated types may not operate in realtime. These abstractions are to allow our application
+    //! simulation to operate both slower and faster than realtime in a well defined and user controllable manner
+    //! The rate at which time passes for AZ::ITime is controlled by the cvar t_scale
+    //!     t_scale == 0 means simulation time should halt
+    //! 0 < t_scale <  1 will cause time to pass slower than realtime, with t_scale 0.1 being roughly 1/10th realtime
+    //!     t_scale == 1 will cause time to pass at roughly realtime
+    //!     t_scale >  1 will cause time to pass faster than normal, with t_scale 10 being roughly 10x realtime
     class ITime
     {
     public:
@@ -88,6 +96,22 @@ namespace AZ
     inline float TimeUsToSeconds(TimeUs value)
     {
         return static_cast<float>(value) / 1000000.0f;
+    }
+
+    //! Converts from milliseconds to AZStd::chrono::time_point
+    inline auto TimeMsToChrono(TimeMs value)
+    {
+        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        auto chronoValue = AZStd::chrono::milliseconds(aznumeric_cast<int64_t>(value));
+        return epoch + chronoValue;
+    }
+
+    //! Converts from microseconds to AZStd::chrono::time_point
+    inline auto TimeUsToChrono(TimeUs value)
+    {
+        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        auto chronoValue = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(value));
+        return epoch + chronoValue;
     }
 } // namespace AZ
 

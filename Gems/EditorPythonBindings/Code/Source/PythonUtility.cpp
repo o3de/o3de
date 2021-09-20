@@ -13,6 +13,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <pybind11/embed.h>
@@ -276,7 +277,7 @@ namespace EditorPythonBindings
             }
             return false;
         }
-    
+
         bool AllocateBehaviorValueParameter(const AZ::BehaviorMethod* behaviorMethod, AZ::BehaviorValueParameter& result, Convert::StackVariableAllocator& stackVariableAllocator)
         {
             if (const AZ::BehaviorParameter* resultType = behaviorMethod->GetResult())
@@ -390,7 +391,7 @@ namespace EditorPythonBindings
                 cleanUp();
             }
         }
-        
+
         void StackVariableAllocator::StoreVariableDeleter(VariableDeleter&& deleter)
         {
             m_cleanUpItems.emplace_back(deleter);

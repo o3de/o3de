@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
-#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
-#include <Material/MaterialComponent.h>
 #include <Material/EditorMaterialComponentSlot.h>
+#include <Material/MaterialComponent.h>
 
 namespace AZ
 {
@@ -50,14 +50,7 @@ namespace AZ
             void OnMaterialAssignmentsChanged() override;
 
             //! MaterialComponentNotificationBus::Handler overrides...
-            void OnMaterialsEdited(const MaterialAssignmentMap& materials) override;
-
-            // Apply a material component configuration to the active controller
-            void UpdateConfiguration(const MaterialComponentConfig& config);
-
-            // Converts the editor components material slots to the material component
-            // configuration and updates the controller
-            void UpdateController();
+            void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
 
             // Regenerates the editor component material slots based on the material and
             // LOD mapping from the model or other consumer of materials.
@@ -100,8 +93,6 @@ namespace AZ
             EditorMaterialComponentSlotContainer m_materialSlots;
             EditorMaterialComponentSlotsByLodContainer m_materialSlotsByLod;
             bool m_materialSlotsByLodEnabled = false;
-
-            bool m_configurationChangeInProgress = false; // when true, model changes are ignored
 
             static const char* GenerateMaterialsButtonText;
             static const char* GenerateMaterialsToolTipText;

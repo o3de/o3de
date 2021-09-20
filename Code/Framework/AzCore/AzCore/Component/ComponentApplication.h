@@ -197,14 +197,14 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
-        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) override final;
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) override final;
-        void SignalEntityActivated(Entity* entity) override final;
-        void SignalEntityDeactivated(Entity* entity) override final;
+        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) final;
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) final;
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) final;
+        void SignalEntityActivated(Entity* entity) final;
+        void SignalEntityDeactivated(Entity* entity) final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;
@@ -369,7 +369,7 @@ namespace AZ
             }
         }
 
-        AZ::TimeUs                                  m_currentTime{ 0 };
+        AZStd::chrono::system_clock::time_point     m_currentTime{ AZStd::chrono::system_clock::time_point::max() };
         float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;

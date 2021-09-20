@@ -25,6 +25,7 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
+            using AZ::RPI::MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override;
 
         private:

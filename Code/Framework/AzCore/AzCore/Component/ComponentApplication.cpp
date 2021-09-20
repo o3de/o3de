@@ -74,6 +74,8 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 
+AZ_CVAR(float, g_simulation_tick_rate, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The rate at which the game simulation tick loop runs, or 0 for as fast as possible");
+
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
     if (arguments.empty())
@@ -653,6 +655,7 @@ namespace AZ
 
         ComponentApplicationBus::Handler::BusConnect();
 
+        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -1249,6 +1252,8 @@ namespace AZ
 
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
             {
                 // By default the auto load option is true
@@ -1365,45 +1370,44 @@ namespace AZ
 #endif
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
+        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        m_deltaTime = 0.0f;
+        if (now >= m_currentTime)
         {
-            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+            AZStd::chrono::duration<float> delta = now - m_currentTime;
+            m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
+        }
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+            TickBus::ExecuteQueuedEvents();
+        }
+        m_currentTime = now;
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+            EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
+        }
 
-            TimeUs now = GetElapsedTimeUs();
-            if (m_currentTime == TimeUs{ 0 })
-            {
-                m_currentTime = now;
-            }
+        // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
+        // sleeping if there's still time remaining.
+        if (g_simulation_tick_rate > 0.f)
+        {
+            now = AZStd::chrono::system_clock::now();
 
-            m_deltaTime = 0.0f;
+            // Work in microsecond durations here as that's the native measurement time for time_point
+            constexpr float microsecondsPerSecond = 1000.f * 1000.f;
+            const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
+            AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
 
-            if (now >= m_currentTime)
+            if (timeUntilNextTick.count() > 0)
             {
-                float delta = TimeUsToSeconds(now - m_currentTime);
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta;
-            }
-
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-                TickBus::ExecuteQueuedEvents();
-            }
-            m_currentTime = now;
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
-                auto chronoNow = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(now));
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(epoch + chronoNow));
+                AZStd::this_thread::sleep_for(timeUntilNextTick);
             }
         }
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::TickSystem()
     {
         AZ_PROFILE_SCOPE(System, "Component application tick");
@@ -1519,9 +1523,7 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
-        auto chronoCurrent = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(m_currentTime));
-        return ScriptTimePoint(epoch + chronoCurrent);
+        return ScriptTimePoint(m_currentTime);
     }
 
     //=========================================================================

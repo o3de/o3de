@@ -26,9 +26,6 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
-    RUNTIME_DEPENDENCIES
-        Gem::AWSCore
-        Gem::HttpRequestor
 )
 
 ly_add_target( 
@@ -48,17 +45,45 @@ ly_add_target(
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
-    RUNTIME_DEPENDENCIES
-        Gem::AWSCore
-        Gem::HttpRequestor
 )
 
 # Load the "Gem::AWSClientAuth" module in all types of applications.
-ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
-ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+ly_create_alias(
+    NAME AWSClientAuth.Servers
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Servers
+        Gem::HttpRequestor.Servers
+)
+
+ly_create_alias(
+    NAME AWSClientAuth.Clients
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Clients
+        Gem::HttpRequestor.Clients
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AWSClientAuth.Tools NAMESPACE Gem TARGETS Gem::AWSClientAuth)
-    ly_create_alias(NAME AWSClientAuth.Builders NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+    ly_create_alias(
+        NAME AWSClientAuth.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSClientAuth
+            Gem::AWSCore.Tools
+            Gem::HttpRequestor.Tools
+    )
+
+    ly_create_alias(
+        NAME AWSClientAuth.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSClientAuth
+            Gem::AWSCore.Builders
+            Gem::HttpRequestor.Builders
+    )
 endif()
 
 ################################################################################

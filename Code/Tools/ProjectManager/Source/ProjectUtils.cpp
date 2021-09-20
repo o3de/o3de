@@ -441,7 +441,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
+        bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
         {
             QFileInfo original(origFile);
             if (original.exists())
