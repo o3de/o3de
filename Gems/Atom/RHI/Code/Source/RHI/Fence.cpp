@@ -81,7 +81,7 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
 
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
             WaitOnCpuInternal();
             return ResultCode::Success;
         }
