@@ -47,15 +47,19 @@ namespace AZ
             const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
             if (!fp)
             {
-                return false;
+                return true;
             }
             PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
             if (!postProcessSettings)
             {
-                return false;
+                return true;
             }
             const SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-            return (ssaoSettings != nullptr) && ssaoSettings->GetEnabled();
+            if (!ssaoSettings)
+            {
+                return true;
+            }
+            return ssaoSettings->GetEnabled();
         }
 
         void SsaoParentPass::InitializeInternal()
