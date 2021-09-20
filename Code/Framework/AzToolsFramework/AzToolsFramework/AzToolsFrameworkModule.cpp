@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -69,6 +70,7 @@ namespace AzToolsFramework
             Components::EditorSelectionAccentSystemComponent::CreateDescriptor(),
             EditorEntityContextComponent::CreateDescriptor(),
             EditorEntityFixupComponent::CreateDescriptor(),
+            FocusModeFramework::FocusModeSystemComponent::CreateDescriptor(),
             SliceMetadataEntityContextComponent::CreateDescriptor(),
             SliceRequestComponent::CreateDescriptor(),
             Prefab::PrefabSystemComponent::CreateDescriptor(),
