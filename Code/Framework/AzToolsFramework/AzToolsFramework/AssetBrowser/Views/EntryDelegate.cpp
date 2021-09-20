@@ -291,10 +291,11 @@ namespace AzToolsFramework
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
                     break;
                 }
-                if (pixmap.load(absoluteIconPath.c_str()))
-                {
-                    m_branchIcons[static_cast<EntryBranchType>(branchType)] = pixmap;
-                }
+                bool pixmapLoadedSuccess = pixmap.load(absoluteIconPath.c_str()); 
+                AZ_Assert(pixmapLoadedSuccess, "Error loading Branch Icons in SearchEntryDelegate");
+
+                m_branchIcons[static_cast<EntryBranchType>(branchType)] = pixmap;
+
             }
         }
 
