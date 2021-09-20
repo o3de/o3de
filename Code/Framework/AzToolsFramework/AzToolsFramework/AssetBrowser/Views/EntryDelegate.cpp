@@ -9,7 +9,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
@@ -18,6 +17,7 @@
 #include <QApplication>
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
+#include <QAbstractItemView>
 #include <QPainter>
 AZ_POP_DISABLE_WARNING
 

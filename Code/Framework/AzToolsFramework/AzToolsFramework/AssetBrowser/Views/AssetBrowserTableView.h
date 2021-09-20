@@ -70,6 +70,7 @@ namespace AzToolsFramework
             QPointer<AssetBrowserTableModel> m_tableModel;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
+
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
         };
