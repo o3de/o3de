@@ -238,37 +238,37 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        //Get the indexes above and bellow our entry to see what type are they.
+                        //Get the indexes above and below our entry to see what type are they.
                         const QAbstractItemModel* viewModel = view->model();
 
-                        const QModelIndex indexBellow = viewModel->index(index.row() + 1, index.column());
+                        const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
                         const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
 
-                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBellow.data(AssetBrowserModel::Roles::EntryRole));
-                        auto bellowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
+                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
 
                         auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
-                        auto bellowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(bellowEntry);
+                        auto belowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(belowEntry);
 
                         // if current index is the last entry in the view
                         // or the index above it is a Source Entry and
-                        // the index bellow is invalid or is valid but it is also a source entry
+                        // the index below is invalid or is valid but it is also a source entry
                         // then the current index is the only child.
                         if (index.row() == viewModel->rowCount() - 1 ||
-                            (indexBellow.isValid() && aboveSourceEntry &&
-                             (!indexAbove.isValid() || (indexAbove.isValid() && bellowSourceEntry))))
+                            (indexBelow.isValid() && aboveSourceEntry &&
+                             (!indexAbove.isValid() || (indexAbove.isValid() && belowSourceEntry))))
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (indexBellow.isValid() && aboveSourceEntry) // The index above is a source entry
+                        else if (indexBelow.isValid() && aboveSourceEntry) // The index above is a source entry
                         {
                             DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw First child Icon
                         }
-                        else if (indexAbove.isValid() && bellowSourceEntry) // The index bellow is a source entry
+                        else if (indexAbove.isValid() && belowSourceEntry) // The index below is a source entry
                         {
                             DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw Last Child Icon
                         }
-                        else //the index above and bellow are also child entries
+                        else //the index above and below are also child entries
                         {
                             DrawBranchPixMap(EntryBranchType::Middle, painter, branchIconTopLeft, iconSize); // Draw Default child Icon.
                         }
