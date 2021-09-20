@@ -41,3 +41,6 @@ class TestAutomation(EditorTestSuite):
 
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+
+    class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
+        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
