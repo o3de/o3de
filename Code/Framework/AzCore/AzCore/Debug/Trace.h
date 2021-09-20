@@ -8,8 +8,7 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
-#define AZ_VA_HAS_ARGS(...) ""#__VA_ARGS__[0] != 0
-
+#include <AzCore/base.h>
 
 namespace AZ
 {
@@ -262,17 +261,18 @@ namespace AZ
     #define AZ_VerifyWarning(window, expression, ...) AZ_Warning(window, 0 != (expression), __VA_ARGS__)
 
 #else // !AZ_ENABLE_TRACING
-    #define AZ_Assert(expression, ...)
-    #define AZ_Error(window, expression, ...)
-    #define AZ_ErrorOnce(window, expression, ...)
-    #define AZ_Warning(window, expression, ...)
-    #define AZ_WarningOnce(window, expression, ...)
-    #define AZ_TracePrintf(window, ...)
-    #define AZ_TracePrintfOnce(window, ...)
 
-    #define AZ_Verify(expression, ...) (void)(expression)
-    #define AZ_VerifyError(window, expression, ...) (void)(expression)
-    #define AZ_VerifyWarning(window, expression, ...) (void)(expression)
+    #define AZ_Assert(...)               AZ_UNUSED(__VA_ARGS__);
+    #define AZ_Error(...)                AZ_UNUSED(__VA_ARGS__);
+    #define AZ_ErrorOnce(...)            AZ_UNUSED(__VA_ARGS__);
+    #define AZ_Warning(...)              AZ_UNUSED(__VA_ARGS__);
+    #define AZ_WarningOnce(...)          AZ_UNUSED(__VA_ARGS__);
+    #define AZ_TracePrintf(...)          AZ_UNUSED(__VA_ARGS__);
+    #define AZ_TracePrintfOnce(...)      AZ_UNUSED(__VA_ARGS__);
+
+    #define AZ_Verify(...)               AZ_UNUSED(__VA_ARGS__);
+    #define AZ_VerifyError(...)          AZ_UNUSED(__VA_ARGS__);
+    #define AZ_VerifyWarning(...)        AZ_UNUSED(__VA_ARGS__);
 
 #endif  // AZ_ENABLE_TRACING
 

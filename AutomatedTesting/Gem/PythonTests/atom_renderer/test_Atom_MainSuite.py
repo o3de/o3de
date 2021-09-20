@@ -161,6 +161,21 @@ class TestAtomEditorComponentsMain(object):
             "Display Mapper_test: Entity deleted: True",
             "Display Mapper_test: UNDO entity deletion works: True",
             "Display Mapper_test: REDO entity deletion works: True",
+            # Reflection Probe Component
+            "Reflection Probe Entity successfully created",
+            "Reflection Probe_test: Component added to the entity: True",
+            "Reflection Probe_test: Component removed after UNDO: True",
+            "Reflection Probe_test: Component added after REDO: True",
+            "Reflection Probe_test: Entered game mode: True",
+            "Reflection Probe_test: Exit game mode: True",
+            "Reflection Probe_test: Entity disabled initially: True",
+            "Reflection Probe_test: Entity enabled after adding required components: True",
+            "Reflection Probe_test: Cubemap is generated: True",
+            "Reflection Probe_test: Entity is hidden: True",
+            "Reflection Probe_test: Entity is shown: True",
+            "Reflection Probe_test: Entity deleted: True",
+            "Reflection Probe_test: UNDO entity deletion works: True",
+            "Reflection Probe_test: REDO entity deletion works: True",
         ]
 
         unexpected_lines = [
@@ -200,8 +215,6 @@ class TestAtomEditorComponentsMain(object):
             "Controller|Configuration|Shadows|Shadow filter method set to 1",  # PCF
             "Controller|Configuration|Shadows|Filtering sample count set to 4",
             "Controller|Configuration|Shadows|Filtering sample count set to 64",
-            "Controller|Configuration|Shadows|PCF method set to 0",
-            "Controller|Configuration|Shadows|PCF method set to 1",
             "Controller|Configuration|Shadows|Shadow filter method set to 2",  # ESM
             "Controller|Configuration|Shadows|ESM exponent set to 50.0",
             "Controller|Configuration|Shadows|ESM exponent set to 5000.0",

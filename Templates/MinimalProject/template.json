@@ -491,18 +491,6 @@
             "isOptional": false
         },
         {
-            "file": "Shaders/CommonVS.azsli",
-            "origin": "Shaders/CommonVS.azsli",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
-            "origin": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "autoexec.cfg",
             "origin": "autoexec.cfg",
             "isTemplated": false,

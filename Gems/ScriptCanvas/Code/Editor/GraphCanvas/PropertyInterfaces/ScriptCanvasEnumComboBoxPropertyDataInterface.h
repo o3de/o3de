@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
             return m_comboBoxModel.GetIndexForValue(dataValue);
         }
 
-        QString GetDisplayString() const
+        QString GetDisplayString() const override
         {
             int32_t dataValue = GetValue();
             return m_comboBoxModel.GetNameForValue(dataValue);

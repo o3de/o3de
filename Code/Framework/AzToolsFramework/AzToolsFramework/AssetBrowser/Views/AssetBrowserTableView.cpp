@@ -20,7 +20,7 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-#include <QMouseEvent>
+
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
@@ -28,16 +28,16 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
-            : QTableView(parent)
+            : AzQtComponents::TableView(parent)
             , m_delegate(new SearchEntryDelegate(this))
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
-            verticalHeader()->hide();
+            setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.
-            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+            header()->setDefaultAlignment(Qt::AlignLeft);
+            header()->setStyleSheet("QHeaderView { font-weight: bold; }");
 
             setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -45,7 +45,7 @@ namespace AzToolsFramework
             setSortingEnabled(false);
             setSelectionMode(QAbstractItemView::SingleSelection);
 
-            connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
+            connect(this, &AzQtComponents::TableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -62,11 +62,11 @@ namespace AzToolsFramework
             m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
-            QTableView::setModel(model);
+            AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 
-            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
         }
 
         void AssetBrowserTableView::SetName(const QString& name)
@@ -78,11 +78,6 @@ namespace AzToolsFramework
             {
                 OnAssetBrowserComponentReady();
             }
-        }
-
-        QModelIndex AssetBrowserTableView::GetHoveredIndex() const
-        {
-            return model()->index(m_hoveredRow, m_hoveredColumn);
         }
 
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
@@ -103,7 +98,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
-            QTableView::selectionChanged(selected, deselected);
+            AzQtComponents::TableView::selectionChanged(selected, deselected);
             Q_EMIT selectionChangedSignal(selected, deselected);
         }
 
@@ -120,7 +115,7 @@ namespace AzToolsFramework
                     selectionModel()->clear();
                 }
             }
-            QTableView::rowsAboutToBeRemoved(parent, start, end);
+            AzQtComponents::TableView::rowsAboutToBeRemoved(parent, start, end);
         }
 
         void AssetBrowserTableView::layoutChangedSlot(
@@ -151,26 +146,6 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
-        }
-
-        void AssetBrowserTableView::mouseMoveEvent(QMouseEvent* mouseEvent)
-        {
-            QTableView::mouseMoveEvent(mouseEvent);
-
-            QModelIndex hoveredIndex = indexAt(mouseEvent->pos());
-            int oldHeveredRow = m_hoveredRow;
-
-            m_hoveredRow = hoveredIndex.row();
-            m_hoveredColumn = hoveredIndex.column();
-
-            if (selectionBehavior() == SelectRows && oldHeveredRow != m_hoveredRow)
-            {
-                for (int i = 0; i < model()->columnCount(); ++i)
-                {
-                    //trigger an update of the indexes that are in the same row as the hovered index.
-                    update(model()->index(m_hoveredRow, i));
-                }
-            }
         }
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)

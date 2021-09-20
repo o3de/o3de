@@ -187,7 +187,7 @@ protected:
     int m_customFPS;
 
     void InitializeContext();
-    virtual void OnMovieEvent(IMovieListener::EMovieEvent event, IAnimSequence* pSequence);
+    void OnMovieEvent(IMovieListener::EMovieEvent event, IAnimSequence* pSequence) override;
 
     void CaptureItemStart();
 

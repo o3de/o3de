@@ -30,6 +30,7 @@
         <file alias="checkmark.svg">Notifications/checkmark.svg</file>
         <file alias="download.svg">Notifications/download.svg</file>
         <file alias="link.svg">Notifications/link.svg</file>
+        <file alias="warning.svg">Notifications/warning.svg</file>
     </qresource>
     <qresource prefix="/Outliner">
         <file alias="sort_a_to_z.svg">Outliner/sort_a_to_z.svg</file>

@@ -117,6 +117,11 @@ namespace ImageProcessingAtom
         }
     }
 
+    const ImageConvertProcessDescriptor* ImageConvertProcess::GetInputDesc() const
+    {
+        return m_input.get();
+    }
+
     ImageConvertProcess::ImageConvertProcess(AZStd::unique_ptr<ImageConvertProcessDescriptor>&& descriptor)
         : m_image(nullptr)
         , m_progressStep(0)
@@ -554,12 +559,6 @@ namespace ImageProcessingAtom
     // pixel format conversion
     bool ImageConvertProcess::ConvertPixelformat()
     {
-        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
-        {
-            m_image->Get()->Swizzle("rgb1");
-        }
-
         //set up compress option
         ICompressor::EQuality quality;
         if (m_input->m_isPreview)
@@ -574,7 +573,14 @@ namespace ImageProcessingAtom
         // set the compression options
         m_image->GetCompressOption().compressQuality = quality;
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
-        m_image->GetCompressOption().ispcDiscardAlpha = m_input->m_presetSetting.m_discardAlpha;
+        m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
+
+        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
+        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
+        {
+            m_image->GetCompressOption().discardAlpha = true;
+        }
+
         m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
 
         return true;
