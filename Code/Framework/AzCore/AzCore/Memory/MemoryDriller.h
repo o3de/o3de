@@ -38,24 +38,24 @@ namespace AZ
         protected:
             //////////////////////////////////////////////////////////////////////////
             // Driller
-            virtual const char*  GroupName() const          { return "SystemDrillers"; }
-            virtual const char*  GetName() const            { return "MemoryDriller"; }
-            virtual const char*  GetDescription() const     { return "Reports all allocators and memory allocations."; }
-            virtual void         Start(const Param* params = NULL, int numParams = 0);
-            virtual void         Stop();
+            const char*  GroupName() const override          { return "SystemDrillers"; }
+            const char*  GetName() const override            { return "MemoryDriller"; }
+            const char*  GetDescription() const override     { return "Reports all allocators and memory allocations."; }
+            void         Start(const Param* params = NULL, int numParams = 0) override;
+            void         Stop() override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // MemoryDrillerBus
-            virtual void RegisterAllocator(IAllocator* allocator);
-            virtual void UnregisterAllocator(IAllocator* allocator);
+            void RegisterAllocator(IAllocator* allocator) override;
+            void UnregisterAllocator(IAllocator* allocator) override;
 
-            virtual void RegisterAllocation(IAllocator* allocator, void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount);
-            virtual void UnregisterAllocation(IAllocator* allocator, void* address, size_t byteSize, size_t alignment, AllocationInfo* info);
-            virtual void ReallocateAllocation(IAllocator* allocator, void* prevAddress, void* newAddress, size_t newByteSize, size_t newAlignment);
-            virtual void ResizeAllocation(IAllocator* allocator, void* address, size_t newSize);
+            void RegisterAllocation(IAllocator* allocator, void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount) override;
+            void UnregisterAllocation(IAllocator* allocator, void* address, size_t byteSize, size_t alignment, AllocationInfo* info) override;
+            void ReallocateAllocation(IAllocator* allocator, void* prevAddress, void* newAddress, size_t newByteSize, size_t newAlignment) override;
+            void ResizeAllocation(IAllocator* allocator, void* address, size_t newSize) override;
 
-            virtual void DumpAllAllocations();
+            void DumpAllAllocations() override;
             //////////////////////////////////////////////////////////////////////////
 
             void RegisterAllocatorOutput(IAllocator* allocator);

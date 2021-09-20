@@ -17,7 +17,7 @@ namespace AzToolsFramework
         : public EditorEntityAPI
     {
     public:
-        ~EditorEntityManager();
+        virtual ~EditorEntityManager();
 
         void Start();
 

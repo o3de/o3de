@@ -35,6 +35,7 @@ class TestDistanceBetweenFilter(object):
     @pytest.mark.test_case_id("C4851066")
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_filter
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -56,6 +57,7 @@ class TestDistanceBetweenFilter(object):
     @pytest.mark.test_case_id("C4814458")
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_filter
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(self, request, editor, level,
                                                                             launcher_platform):
 

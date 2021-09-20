@@ -63,6 +63,7 @@ namespace AzToolsFramework
             PrefabDomValueConstReference GetInstancesValue() const;
 
             const AZ::IO::Path& GetFilePath() const;
+            void SetFilePath(const AZ::IO::PathView& path);
 
         private:
             // Container for keeping links representing the Template's nested instances.

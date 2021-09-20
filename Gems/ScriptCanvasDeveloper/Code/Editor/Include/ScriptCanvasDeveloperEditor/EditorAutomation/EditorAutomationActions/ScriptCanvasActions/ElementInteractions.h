@@ -32,7 +32,7 @@ namespace ScriptCanvasDeveloper
         bool IsMissingPrecondition() override;
         EditorAutomationAction* GenerateMissingPreconditionAction() override;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 
@@ -66,9 +66,9 @@ namespace ScriptCanvasDeveloper
         ActionReport GenerateReport() const override;
 
         // SceneNotificaitonBus
-        void OnNodeRemoved(const AZ::EntityId& nodeId);
+        void OnNodeRemoved(const AZ::EntityId& nodeId) override;
 
-        void OnConnectionRemoved(const AZ::EntityId& connectionId);
+        void OnConnectionRemoved(const AZ::EntityId& connectionId) override;
         ////
 
     protected:
@@ -98,7 +98,7 @@ namespace ScriptCanvasDeveloper
         MouseToNodePropertyEditorAction(GraphCanvas::SlotId slotId);
         ~MouseToNodePropertyEditorAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 

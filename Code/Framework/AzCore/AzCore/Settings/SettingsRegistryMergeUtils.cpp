@@ -78,6 +78,7 @@ namespace AZ::Internal
 
             struct EnginePathsVisitor : public AZ::SettingsRegistryInterface::Visitor
             {
+                using AZ::SettingsRegistryInterface::Visitor::Visit;
                 void Visit(
                     [[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
                     [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
@@ -109,12 +110,12 @@ namespace AZ::Internal
                     {
                         FixedValueString engineName;
                         settingsRegistry.Get(engineName, engineMonikerKey);
-                        AZ_Warning("SettingsRegistryMergeUtils",engineInfo.m_moniker == engineName,
+                        AZ_Warning("SettingsRegistryMergeUtils", engineInfo.m_moniker == engineName,
                             R"(The engine name key "%s" mapped to engine path "%s" within the global manifest of "%s")"
                             R"( does not match the "engine_name" field "%s" in the engine.json)" "\n"
                             "This engine should be re-registered.",
                             engineInfo.m_moniker.c_str(), engineInfo.m_path.c_str(), engineManifestPath.c_str(),
-                            engineName.c_str())
+                            engineName.c_str());
                         engineInfo.m_moniker = engineName;
                     }
                 }
@@ -355,6 +356,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 : m_settingsSpecialization{ specializations }
             {}
 
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
                 [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, bool value) override
             {
@@ -761,6 +763,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     return SettingsRegistryInterface::VisitResponse::Continue;
                 }
 
+                using AZ::SettingsRegistryInterface::Visitor::Visit;
                 void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, SettingsRegistryInterface::Type, AZStd::string_view value) override
                 {
                     if (processingSourcePathKey)
@@ -896,6 +899,7 @@ namespace AZ::SettingsRegistryMergeUtils
         struct CommandLineVisitor
             : AZ::SettingsRegistryInterface::Visitor
         {
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type
                 , AZStd::string_view value) override
             {

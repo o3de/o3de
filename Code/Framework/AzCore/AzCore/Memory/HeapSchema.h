@@ -48,17 +48,18 @@ namespace AZ
         HeapSchema(const Descriptor& desc);
         virtual ~HeapSchema();
 
-        virtual pointer_type    Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0);
-        virtual void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0);
-        virtual pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) { (void)ptr; (void)newSize; (void)newAlignment; return NULL; }
-        virtual size_type       Resize(pointer_type ptr, size_type newSize)                  { (void)ptr; (void)newSize; return 0; }
-        virtual size_type       AllocationSize(pointer_type ptr);
+        pointer_type    Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override { (void)ptr; (void)newSize; (void)newAlignment; return NULL; }
+        size_type       Resize(pointer_type ptr, size_type newSize) override                  { (void)ptr; (void)newSize; return 0; }
+        size_type       AllocationSize(pointer_type ptr) override;
 
-        virtual size_type       NumAllocatedBytes() const               { return m_used; }
-        virtual size_type       Capacity() const                        { return m_capacity; }
-        virtual size_type       GetMaxAllocationSize() const;
-        virtual IAllocatorAllocate* GetSubAllocator()                   { return m_subAllocator; }
-        virtual void GarbageCollect()                                   {}
+        size_type       NumAllocatedBytes() const override               { return m_used; }
+        size_type       Capacity() const override                        { return m_capacity; }
+        size_type       GetMaxAllocationSize() const override;
+        size_type       GetMaxContiguousAllocationSize() const override;
+        IAllocatorAllocate* GetSubAllocator() override                   { return m_subAllocator; }
+        void GarbageCollect() override                                   {}
 
     private:
         AZ_FORCE_INLINE size_type ChunckSize(pointer_type ptr);

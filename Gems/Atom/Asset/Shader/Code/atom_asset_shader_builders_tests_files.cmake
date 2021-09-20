@@ -11,4 +11,5 @@ set(FILES
     Tests/Common/ShaderBuilderTestFixture.cpp
     Tests/SupervariantCmdArgumentTests.cpp
     Tests/McppBinderTests.cpp
+    Tests/ShaderBuilderUtilityTests.cpp
 )

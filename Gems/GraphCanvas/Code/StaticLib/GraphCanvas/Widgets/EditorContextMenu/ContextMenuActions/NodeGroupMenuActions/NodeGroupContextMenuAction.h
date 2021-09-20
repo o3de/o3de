@@ -22,6 +22,7 @@ namespace GraphCanvas
         {
         }
 
+        using ContextMenuAction::RefreshAction;
         void RefreshAction(const GraphId& graphId, const AZ::EntityId& targetId) override
         {
             AZ_UNUSED(targetId);
