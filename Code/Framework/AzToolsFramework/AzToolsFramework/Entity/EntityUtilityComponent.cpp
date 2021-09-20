@@ -291,6 +291,11 @@ namespace AzToolsFramework
         return matches;
     }
 
+    void EntityUtilityComponent::ResetEntityContext()
+    {
+        m_entityContext->ResetContext();
+    }
+
     void EntityUtilityComponent::Reflect(AZ::ReflectContext* context)
     {
         ComponentDetails::Reflect(context);

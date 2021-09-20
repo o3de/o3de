@@ -18,6 +18,7 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
+#include <Entity/EntityUtilityComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -329,6 +330,8 @@ namespace AZ::SceneAPI::Behaviors
 
             EditorPythonConsoleNotificationHandler logger;
             m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+
+            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
 
             // attempt to load the manifest string back to a JSON-scene-manifest
             auto sceneManifestLoader = AZStd::make_unique<AZ::SceneAPI::Containers::SceneManifest>();
