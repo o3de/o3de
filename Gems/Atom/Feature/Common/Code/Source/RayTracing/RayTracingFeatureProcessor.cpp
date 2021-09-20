@@ -89,6 +89,9 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             uint32_t objectIndex = objectId.GetIndex();
 
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
             MeshMap::iterator itMesh = m_meshes.find(objectIndex);
             if (itMesh == m_meshes.end())
             {
@@ -168,6 +171,9 @@ namespace AZ
             {
                 return;
             }
+
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())

@@ -223,6 +223,9 @@ namespace AZ
             // cached TransformServiceFeatureProcessor
             TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
 
+            // mutex for the mesh and BLAS lists
+            AZStd::mutex m_mutex;
+
             // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
             struct MeshInfo
             {
