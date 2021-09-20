@@ -12,12 +12,10 @@
 #include <AzCore/EBus/Event.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Archive/ArchiveFindData.h>
 
@@ -106,66 +104,6 @@ namespace AZ::IO
     {
         AZ_RTTI(IArchive, "{764A2260-FF8A-4C86-B958-EBB0B69D9DFA}");
         using FileTime = uint64_t;
-        // Flags used in file path resolution rules
-        enum EPathResolutionRules
-        {
-            // If used, the source path will be treated as the destination path
-            // and no transformations will be done. Pass this flag when the path is to be the actual
-            // path on the disk/in the packs and doesn't need adjustment (or after it has come through adjustments already)
-            // if this is set, AdjustFileName will not map the input path into the folder (Ex: Shaders will not be converted to Game\Shaders)
-            FLAGS_PATH_REAL = 1 << 16,
-
-            // AdjustFileName will always copy the file path to the destination path:
-            // regardless of the returned value, szDestpath can be used
-            FLAGS_COPY_DEST_ALWAYS = 1 << 17,
-
-            // Adds trailing slash to the path
-            FLAGS_ADD_TRAILING_SLASH = 1L << 18,
-
-            // if this is set, AdjustFileName will not make relative paths into full paths
-            FLAGS_NO_FULL_PATH = 1 << 21,
-
-            // if this is set, AdjustFileName will redirect path to disc
-            FLAGS_REDIRECT_TO_DISC = 1 << 22,
-
-            // if this is set, AdjustFileName will not adjust path for writing files
-            FLAGS_FOR_WRITING = 1 << 23,
-
-            // if this is set, the archive would be stored in memory (gpu)
-            FLAGS_PAK_IN_MEMORY = 1 << 25,
-
-            // Store all file names as crc32 in a flat directory structure.
-            FLAGS_FILENAMES_AS_CRC32 = 1 << 26,
-
-            // if this is set, AdjustFileName will try to find the file under any mod paths we know about
-            FLAGS_CHECK_MOD_PATHS = 1 << 27,
-
-            // if this is set, AdjustFileName will always check the filesystem/disk and not check inside open archives
-            FLAGS_NEVER_IN_PAK = 1 << 28,
-
-            // returns existing file name from the local data or existing cache file name
-            // used by the resource compiler to pass the real file name
-            FLAGS_RESOLVE_TO_CACHE = 1 << 29,
-
-            // if this is set, the archive would be stored in memory (cpu)
-            FLAGS_PAK_IN_MEMORY_CPU = 1 << 30,
-
-            // if this is set, the level pak is inside another archive
-            FLAGS_LEVEL_PAK_INSIDE_PAK = 1 << 31,
-        };
-
-        // Used for widening FOpen functionality. They're ignored for the regular File System files.
-        enum EFOpenFlags
-        {
-            // If possible, will prevent the file from being read from memory.
-            FOPEN_HINT_DIRECT_OPERATION = 1,
-            // Will prevent a "missing file" warnings to be created.
-            FOPEN_HINT_QUIET = 1 << 1,
-            // File should be on disk
-            FOPEN_ONDISK = 1 << 2,
-            // Open is done by the streaming thread.
-            FOPEN_FORSTREAMING = 1 << 3,
-        };
 
         //
         enum ERecordFileOpenList
@@ -175,8 +113,6 @@ namespace AZ::IO
             RFOM_Level,                                 // during level loading till export2game -> resourcelist.txt, used to generate the list for level2level loading
             RFOM_NextLevel                          // used for level2level loading
         };
-        // the size of the buffer that receives the full path to the file
-        inline static constexpr size_t MaxPath = 1024;
 
         //file location enum used in isFileExist to control where the archive system looks for the file.
         enum EFileSearchLocation
@@ -205,63 +141,31 @@ namespace AZ::IO
 
         virtual ~IArchive() = default;
 
-        /**
-        * Deprecated: Use the AZ::IO::FileIOBase::ResolvePath function below that doesn't accept the nFlags or skipMods parameters
-        * given the source relative path, constructs the full path to the file according to the flags
-        * returns the pointer to the constructed path (can be either szSourcePath, or szDestPath, or NULL in case of error
-        */
-        // 
-        virtual const char* AdjustFileName(AZStd::string_view src, char* dst, size_t dstSize, uint32_t nFlags, bool skipMods = false) = 0;
-
-        virtual bool Init(AZStd::string_view szBasePath) = 0;
-        virtual void Release() = 0;
-
-        // Summary:
-        //   Returns true if given archivepath is installed to HDD
-        //   If no file path is given it will return true if whole application is installed to HDD
-        virtual bool IsInstalledToHDD(AZStd::string_view acFilePath = 0) const = 0;
-
         // after this call, the archive file will be searched for files when they aren't on the OS file system
         // Arguments:
         //   pName - must not be 0
-        virtual bool OpenPack(AZStd::string_view pName, uint32_t nFlags = FLAGS_PATH_REAL, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = {},
+        virtual bool OpenPack(AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = {},
             AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) = 0;
         // after this call, the archive file will be searched for files when they aren't on the OS file system
-        virtual bool OpenPack(AZStd::string_view pBindingRoot, AZStd::string_view pName, uint32_t nFlags = FLAGS_PATH_REAL,
+        virtual bool OpenPack(AZStd::string_view pBindingRoot, AZStd::string_view pName,
             AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = {}, AZ::IO::FixedMaxPathString* pFullPath = nullptr, bool addLevels = true) = 0;
         // after this call, the file will be unlocked and closed, and its contents won't be used to search for files
-        virtual bool ClosePack(AZStd::string_view pName, uint32_t nFlags = FLAGS_PATH_REAL) = 0;
+        virtual bool ClosePack(AZStd::string_view pName) = 0;
         // opens pack files by the path and wildcard
-        virtual bool OpenPacks(AZStd::string_view pWildcard, uint32_t nFlags = FLAGS_PATH_REAL, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) = 0;
+        virtual bool OpenPacks(AZStd::string_view pWildcard, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) = 0;
         // opens pack files by the path and wildcard
-        virtual bool OpenPacks(AZStd::string_view pBindingRoot, AZStd::string_view pWildcard, uint32_t nFlags = FLAGS_PATH_REAL,
+        virtual bool OpenPacks(AZStd::string_view pBindingRoot, AZStd::string_view pWildcard,
             AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr) = 0;
         // closes pack files by the path and wildcard
-        virtual bool ClosePacks(AZStd::string_view pWildcard, uint32_t nFlags = FLAGS_PATH_REAL) = 0;
+        virtual bool ClosePacks(AZStd::string_view pWildcard) = 0;
         //returns if a archive exists matching the wildcard
         virtual bool FindPacks(AZStd::string_view pWildcardIn) = 0;
 
         // Set access status of a archive files with a wildcard
-        virtual bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard, uint32_t nFlags = FLAGS_PATH_REAL) = 0;
+        virtual bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard) = 0;
 
         // Set access status of a pack file
-        virtual bool SetPackAccessible(bool bAccessible, AZStd::string_view pName, uint32_t nFlags = FLAGS_PATH_REAL) = 0;
-
-        // Load or unload archive file completely to memory.
-        virtual bool LoadPakToMemory(AZStd::string_view pName, EInMemoryArchiveLocation eLoadToMemory, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pMemoryBlock = nullptr) = 0;
-        virtual void LoadPaksToMemory(int nMaxArchiveSize, bool bLoadToMemory) = 0;
-
-        // Processes an alias command line containing multiple aliases.
-        virtual void ParseAliases(AZStd::string_view szCommandLine) = 0;
-        // adds or removes an alias from the list
-        virtual void SetAlias(AZStd::string_view szName, AZStd::string_view szAlias, bool bAdd) = 0;
-        // gets an alias from the list, if any exist.
-        // if bReturnSame==true, it will return the input name if an alias doesn't exist. Otherwise returns NULL
-        virtual const char* GetAlias(AZStd::string_view szName, bool bReturnSame = true) = 0;
-
-        // lock all the operations
-        virtual void Lock() = 0;
-        virtual void Unlock() = 0;
+        virtual bool SetPackAccessible(bool bAccessible, AZStd::string_view pName) = 0;
 
         // Set and Get the localization folder name (Languages, Localization, ...)
         virtual void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) = 0;
@@ -273,28 +177,19 @@ namespace AZ::IO
         // ex: AZ::IO::HandleType fileHandle = FOpen( "test.txt","rbx" );
         // mode x is a direct access mode, when used file reads will go directly into the low level file system without any internal data caching.
         // Text mode is not supported for files in Archives.
-        // for nFlags @see IArchive::EFOpenFlags
-        virtual AZ::IO::HandleType FOpen(AZStd::string_view pName, const char* mode, uint32_t nFlags = 0) = 0;
-
-        // Read raw data from file, no endian conversion.
-        virtual size_t FReadRaw(void* data, size_t length, size_t elems, AZ::IO::HandleType fileHandle) = 0;
-
-        // Read all file contents into the provided memory, nSizeOfFile must be the same as returned by GetFileSize(handle)
-        // Current seek pointer is ignored and reseted to 0.
-        // no endian conversion.
-        virtual size_t FReadRawAll(void* data, size_t nFileSize, AZ::IO::HandleType fileHandle) = 0;
+        virtual AZ::IO::HandleType FOpen(AZStd::string_view pName, const char* mode) = 0;
 
         // Get pointer to the internally cached, loaded data of the file.
         // WARNING! The returned pointer is only valid while the fileHandle has not been closed.
         virtual void* FGetCachedFileData(AZ::IO::HandleType fileHandle, size_t& nFileSize) = 0;
 
-        // Write file data, cannot be used for writing into the Archive.
-        // Use INestedArchive interface for writing into the archivefiles.
-        virtual size_t FWrite(const void* data, size_t length, size_t elems, AZ::IO::HandleType fileHandle) = 0;
+        // Read raw data from file, no endian conversion.
+        virtual size_t FRead(void* data, size_t bytesToRead, AZ::IO::HandleType fileHandle) = 0;
 
-        virtual int FPrintf(AZ::IO::HandleType fileHandle, const char* format, ...) = 0;
-        virtual char* FGets(char*, int, AZ::IO::HandleType) = 0;
-        virtual int Getc(AZ::IO::HandleType) = 0;
+        // Write file data, cannot be used for writing into the Archive.
+        // Use INestedArchive interface for writing into the archive files.
+        virtual size_t FWrite(const void* data, size_t bytesToWrite, AZ::IO::HandleType fileHandle) = 0;
+
         virtual size_t FGetSize(AZ::IO::HandleType fileHandle) = 0;
         virtual size_t FGetSize(AZStd::string_view pName, bool bAllowUseFileSystem = false) = 0;
         virtual bool IsInPak(AZ::IO::HandleType fileHandle) = 0;
@@ -318,7 +213,6 @@ namespace AZ::IO
         virtual AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign = 1) = 0;
 
         // Arguments:
-        //   nFlags is a combination of EPathResolutionRules flags.
         virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) = 0;
         virtual ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator handle) = 0;
         virtual bool FindClose(AZ::IO::ArchiveFileIterator handle) = 0;
@@ -334,9 +228,6 @@ namespace AZ::IO
 
         virtual IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) = 0;
 
-        // creates a directory
-        virtual bool MakeDir(AZStd::string_view szPath, bool bGamePathMapping = false) = 0;
-
         // open the physical archive file - creates if it doesn't exist
         // returns NULL if it's invalid or can't open the file
         // nFlags is a combination of flags from EArchiveFlags enum.
@@ -344,8 +235,8 @@ namespace AZ::IO
             AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr) = 0;
 
         // returns the path to the archive in which the file was opened
-        // returns NULL if the file is a physical file, and "" if the path to archive is unknown (shouldn't ever happen)
-        virtual const char* GetFileArchivePath(AZ::IO::HandleType fileHandle) = 0;
+        // returns empty path view if the file is a physical file
+        virtual AZ::IO::PathView GetFileArchivePath(AZ::IO::HandleType fileHandle) = 0;
 
         // compresses the raw data into raw data. The buffer for compressed data itself with the heap passed. Uses method 8 (deflate)
         // returns one of the Z_* errors (Z_OK upon success)
@@ -378,25 +269,7 @@ namespace AZ::IO
         // get the current mode, can be set by RecordFileOpen()
         virtual IArchive::ERecordFileOpenList GetRecordFileOpenList() = 0;
 
-        // computes CRC (zip compatible) for a file
-        // useful if a huge uncompressed file is generation in non continuous way
-        // good for big files - low memory overhead (1MB)
-        // Arguments:
-        //   szPath - must not be 0
-        // Returns:
-        //   error code
-        virtual uint32_t ComputeCRC(AZStd::string_view szPath, uint32_t nFileOpenFlags = 0) = 0;
-
-        // computes MD5 checksum for a file
-        // good for big files - low memory overhead (1MB)
-        // Arguments:
-        //   szPath - must not be 0
-        //   md5 - destination array of uint8_t [16]
-        // Returns:
-        //   true if success, false on failure
-        virtual bool ComputeMD5(AZStd::string_view szPath, uint8_t* md5, uint32_t nFileOpenFlags = 0, bool useDirectFileAccess = false) = 0;
-
-        // useful for gathering file access statistics, assert if it was inserted already but then it does not become insersted
+        // useful for gathering file access statistics, assert if it was inserted already but then it does not become inserted
         // Arguments:
         //   pSink - must not be 0
         virtual void RegisterFileAccessSink(IArchiveFileAccessSink* pSink) = 0;
@@ -408,8 +281,6 @@ namespace AZ::IO
         // When enabled, files accessed at runtime will be tracked
         virtual void DisableRuntimeFileAccess(bool status) = 0;
         virtual bool DisableRuntimeFileAccess(bool status, AZStd::thread_id threadId) = 0;
-        virtual bool CheckFileAccessDisabled(AZStd::string_view name, const char* mode) = 0;
-        virtual void SetRenderThreadId(AZStd::thread_id renderThreadId) = 0;
 
         // gets the current pak priority
         virtual ArchiveLocationPriority GetPakPriority() const = 0;
@@ -430,21 +301,6 @@ namespace AZ::IO
         // @param const AZStd::string_view - Name of the pak file that was closed
         using LevelPackCloseEvent = AZ::Event<AZStd::string_view>;
         virtual auto GetLevelPackCloseEvent()->LevelPackCloseEvent* = 0;
-
-        // Type-safe endian conversion read.
-        template<class T>
-        size_t FRead(T* data, size_t elems, AZ::IO::HandleType fileHandle, bool bSwapEndian = false)
-        {
-            size_t count = FReadRaw(data, sizeof(T), elems, fileHandle);
-            SwapEndian(data, count, bSwapEndian);
-            return count;
-        }
-        // Type-independent Write.
-        template<class T>
-        void FWrite(T* data, size_t elems, AZ::IO::HandleType fileHandle)
-        {
-            FWrite((void*)data, sizeof(T), elems, fileHandle);
-        }
 
         inline static constexpr IArchive::SignedFileSize FILE_NOT_PRESENT = -1;
     };

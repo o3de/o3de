@@ -7,7 +7,7 @@
 #
 
 # Based on the linux window manager trait, perform the appropriate additional build configurations
-# Only 'xcb', 'wayland', and 'xlib' are recognized
+# Only 'xcb' and 'wayland' are recognized
 if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 
     find_library(XCB_LIBRARY xcb)
@@ -22,10 +22,6 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")
 
     set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND)
-
-elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "xlib")
-
-    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB)
 
 else()
 

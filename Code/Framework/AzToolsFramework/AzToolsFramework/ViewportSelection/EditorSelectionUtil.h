@@ -39,9 +39,6 @@ namespace AzToolsFramework
     //! Calculate scale factor based on distance from camera
     float CalculateScreenToWorldMultiplier(const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState);
 
-    //! Map from world space to screen space.
-    AzFramework::ScreenPoint GetScreenPosition(int viewportId, const AZ::Vector3& worldTranslation);
-
     //! Given a mouse interaction, determine if the pick ray from its position
     //! in screen space intersected an aabb in world space.
     bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb);

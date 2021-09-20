@@ -131,7 +131,7 @@ namespace ScriptCanvasDeveloper
 
         QString m_nodeName;
 
-        AutomationStateModelId m_endpointId = nullptr;
+        AutomationStateModelId m_endpointId;
 
         AutomationStateModelId m_scenePointId;
         AutomationStateModelId m_nodeOutputId;

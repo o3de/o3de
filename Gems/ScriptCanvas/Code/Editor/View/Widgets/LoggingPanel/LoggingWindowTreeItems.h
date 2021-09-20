@@ -115,7 +115,7 @@ namespace ScriptCanvasEditor
 
     protected:
 
-        bool OnMatchesFilter([[maybe_unused]] const DebugLogFilter& treeFilter) { return true; }
+        bool OnMatchesFilter([[maybe_unused]] const DebugLogFilter& treeFilter) override { return true; }
 
         UpdatePolicy m_updatePolicy;
         QTimer m_additionTimer;

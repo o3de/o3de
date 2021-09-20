@@ -129,10 +129,6 @@ namespace AZ
 
             void RemoveRenderPipeline(const RenderPipelineId& pipelineId);
 
-            //! Set a callback function to set values for scene's srg.
-            //! The callback function is usually defined by the one who create the scene since it knows how the layout look like.
-            void SetShaderResourceGroupCallback(ShaderResourceGroupCallback callback);
-
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup() const;
 
@@ -166,9 +162,13 @@ namespace AZ
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
 
+            using PrepareSceneSrgEvent = AZ::Event<RPI::ShaderResourceGroup*>;
+            //! Connect a handler to listen to the event that the Scene is ready to update and compile its scene srg
+            //! User should use this event to update the part scene srg they know of
+            void ConnectEvent(PrepareSceneSrgEvent::Handler& handler);
+
         protected:
             // SceneFinder overrides...
-            Scene* FindSelf();
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
                         
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
@@ -183,7 +183,7 @@ namespace AZ
             // Function called when the current frame is finished rendering.
             void OnFrameEnd();
 
-            // Update and compile view srgs
+            // Update and compile scene and view srgs
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
 
@@ -200,6 +200,10 @@ namespace AZ
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);
 
+            // Send out event to PrepareSceneSrgEvent::Handlers so they can update scene srg as needed
+            // This happens in UpdateSrgs()
+            void PrepareSceneSrg();
+
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
 
@@ -215,9 +219,10 @@ namespace AZ
             AZ::RPI::FeatureProcessor::SimulatePacket m_simulatePacket;
             AZ::RPI::FeatureProcessor::RenderPacket m_renderPacket;
 
-            // Scene's srg and its set function
+            // Scene's srg
             Data::Instance<ShaderResourceGroup> m_srg;
-            ShaderResourceGroupCallback m_srgCallback;
+            // Event to for prepare scene srg
+            PrepareSceneSrgEvent m_prepareSrgEvent;
 
             // The uuid to identify this scene.
             SceneId m_id;
@@ -234,6 +239,8 @@ namespace AZ
 
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
+
+            float m_simulationTime;
         };
 
         // --- Template functions ---

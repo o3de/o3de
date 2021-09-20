@@ -114,8 +114,6 @@ namespace MaterialEditor
         AZ::Entity* m_iblEntity = nullptr;
         AZ::Render::SkyBoxFeatureProcessorInterface* m_skyboxFeatureProcessor = nullptr;
 
-        float m_simulateTime = 0;
-
         AZStd::shared_ptr<MaterialEditorViewportInputController> m_viewportController;
     };
 } // namespace MaterialEditor
