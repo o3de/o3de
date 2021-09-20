@@ -159,6 +159,42 @@ namespace Multiplayer
         );
     }
 
+    TEST_F(ServerSimpleHierarchyTests, Root_Deactivates_IsHierarchyEnabled_Is_False)
+    {
+        EXPECT_EQ(
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->IsHierarchyEnabled(),
+            true
+        );
+        
+        StopEntity(m_root->m_entity);
+        m_root->m_entity->Deactivate();
+
+        EXPECT_EQ(
+            m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->IsHierarchyEnabled(),
+            false
+        );
+
+        m_root->m_entity.reset();
+    }
+
+    TEST_F(ServerSimpleHierarchyTests, Child_Deactivates_IsHierarchyEnabled_Is_False)
+    {
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->IsHierarchyEnabled(),
+            true
+        );
+        
+        StopEntity(m_child->m_entity);
+        m_child->m_entity->Deactivate();
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->IsHierarchyEnabled(),
+            false
+        );
+
+        m_child->m_entity.reset();
+    }
+
     /*
      * Parent -> Child -> ChildOfChild
      */
