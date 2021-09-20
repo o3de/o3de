@@ -24,7 +24,7 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(
-                AZStd::string::format(ViewportEditorModeLogWindow, false, "Cannot activate mode %u, mode is not recognized", modeIndex));
+                AZStd::string::format(ViewportEditorModeLogWindow, "Cannot activate mode %u, mode is not recognized", modeIndex));
         }
     }
 
@@ -38,7 +38,7 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(
-                AZStd::string::format(ViewportEditorModeLogWindow, false, "Cannot deactivate mode %u, mode is not recognized", modeIndex));
+                AZStd::string::format(ViewportEditorModeLogWindow, "Cannot deactivate mode %u, mode is not recognized", modeIndex));
         }
     }
 
