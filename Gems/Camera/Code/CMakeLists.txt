@@ -61,6 +61,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCommon
                 AZ::AzToolsFramework
                 Gem::Camera.Static
+        RUNTIME_DEPENDENCIES
+            Legacy::EditorCommon
     )
 
     # tools and builders use the above module.

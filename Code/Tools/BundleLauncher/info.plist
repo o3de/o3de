@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>Editor</string>
+	<string>O3DE_SDK</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.O3DE.Editor</string>
+	<string>org.O3DE.O3DE_SDK</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>

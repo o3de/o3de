@@ -6,3 +6,6 @@
 #
 #
 
+set(FILES
+    O3DE_SDK_Launcher.cpp
+)
