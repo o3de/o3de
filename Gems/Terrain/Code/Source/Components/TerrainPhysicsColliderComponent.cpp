@@ -190,7 +190,7 @@ namespace Terrain
         GetHeightfieldBounds(bounds, minBounds, maxBounds);
 
         int32_t gridWidth, gridHeight;
-        GetHeightfieldGridSize(gridWidth, gridHeight);
+        GetHeightfieldGridSizeInBounds(bounds, gridWidth, gridHeight);
 
         heights.clear();
         heights.reserve(gridWidth * gridHeight);
