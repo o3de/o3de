@@ -39,3 +39,6 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "mac" CACHE STRING "Set the asset type for deploy
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
+
+# Only x86_64 is currently supported on Mac
+ly_set(CMAKE_OSX_ARCHITECTURES "x86_64")

@@ -22,7 +22,7 @@ namespace AZ
 
         ResultCode CommandQueue::Init(Device& device, const CommandQueueDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: Init");
 
 #if defined (AZ_RHI_ENABLE_VALIDATION)
             if (IsInitialized())
@@ -83,7 +83,7 @@ namespace AZ
 
         void CommandQueue::FlushCommands()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueue: FlushCommands");
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: FlushCommands");
             while (!m_isWorkQueueEmpty && !m_isQuitting)
             {
                 AZStd::this_thread::yield();

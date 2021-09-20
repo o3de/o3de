@@ -341,7 +341,7 @@ namespace AZ
 
         void DescriptorContext::GarbageCollect()
         {
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "DescriptorContext: GarbageCollect");
+            AZ_PROFILE_SCOPE(RHI, "DescriptorContext: GarbageCollect(DX12)");
             for (const auto& itr : m_platformLimitsDescriptor->m_descriptorHeapLimits)
             {
                 for (uint32_t shaderVisibleIdx = 0; shaderVisibleIdx < PlatformLimitsDescriptor::NumHeapFlags; ++shaderVisibleIdx)
