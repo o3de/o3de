@@ -11,6 +11,7 @@
 #include <AzCore/Memory/MemoryComponent.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/Physics/Mocks/MockHeightfieldProviderBus.h>
 
 #include <Components/TerrainPhysicsColliderComponent.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -19,7 +20,7 @@
 #include <AzTest/AzTest.h>
 
 #include <MockAxisAlignedBoxShapeComponent.h>
-#include <TerrainMocks.h>
+#include <Terrain/MockTerrain.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;
@@ -34,7 +35,6 @@ protected:
 
     AZStd::unique_ptr<AZ::Entity> m_entity;
     Terrain::TerrainPhysicsColliderComponent* m_colliderComponent;
-    AZStd::unique_ptr<NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener>> m_heightfieldBusListener;
     UnitTest::MockAxisAlignedBoxShapeComponent* m_boxComponent;
 
     void SetUp() override
@@ -68,13 +68,6 @@ protected:
         m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(Terrain::TerrainPhysicsColliderConfig());
         m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
     }
-
-    void AddHeightfieldListener()
-    {
-        m_heightfieldBusListener = AZStd::make_unique<NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener>>();
-
-        ASSERT_TRUE(m_heightfieldBusListener);
-    }
 };
 
 TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
@@ -94,13 +87,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChang
     // Check that the HeightfieldBus is notified when the transform of the entity changes.
     CreateEntity();
 
-    AddHeightfieldListener();
-
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    EXPECT_CALL(*m_heightfieldBusListener, OnHeightfieldDataChanged(_)).Times(1);
+    NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
 
     AZ::TransformNotificationBus::Event(
         m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
@@ -113,13 +105,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNo
     // Check that the Heightfield bus is notified when the shape component changes.
     CreateEntity();
 
-    AddHeightfieldListener();
-
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    EXPECT_CALL(*m_heightfieldBusListener, OnHeightfieldDataChanged(_)).Times(1);
+    NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
 
     LmbrCentral::ShapeComponentNotificationsBus::Event(
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
@@ -132,8 +123,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderHeightScaleRet
 {
     // Check that the default scale is as expected.
     CreateEntity();
-
-    AddHeightfieldListener();
 
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
@@ -156,8 +145,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     // Check that the heightfield grid size is correct when the shape bounds match the grid resolution.
     CreateEntity();
 
-    AddHeightfieldListener();
-
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
@@ -177,6 +164,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
+    // With the bounds set at 0-1024 and a resolution of 1.0, the heightfield grid should be 1024x1024.
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
@@ -188,8 +176,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     // Check that the heightfield grid is correctly expanded if the minimum value of the bounds needs expanding
     // to correctly encompass it.
     CreateEntity();
-
-    AddHeightfieldListener();
 
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
@@ -210,6 +196,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
+    // If the heightfield is not expanded to ensure it encompasses the shape bounds,
+    // the values returned would by 1023.
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
@@ -221,8 +209,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     // Check that the heightfield grid is correctly expanded if the maximum value of the bounds needs expanding
     // to correctly encompass it.
     CreateEntity();
-
-    AddHeightfieldListener();
 
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
@@ -243,6 +229,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
+    // If the heightfield is not expanded to ensure it encompasses the shape bounds,
+    // the values returned would by 1023.
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
@@ -253,8 +241,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 {
     // Check that the TerrainPhysicsCollider returns a heightfield of the expected size.
     CreateEntity();
-
-    AddHeightfieldListener();
 
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
@@ -292,8 +278,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsR
     // Check that the TerrainPhysicsCollider returns a heightfield of the correct size when asked for a subregion.
     CreateEntity();
 
-    AddHeightfieldListener();
-
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
@@ -330,14 +314,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     // Check that the values stored in the heightfield returned by the TerrainPhysicsCollider are correct.
     CreateEntity();
 
-    AddHeightfieldListener();
-
     AddTerrainPhysicsColliderAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    const float boundsMin = 0.0f;
-    const float boundsMax = 256;
+    const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
+    const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
 
     const float mockHeight = 32768.0f;
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
@@ -346,6 +328,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     ON_CALL(terrainListener, GetHeightFromFloats).WillByDefault(Return(mockHeight));
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
 
+    // Just return the bounds as setup. This is equivalent to the box being at the origin.
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
@@ -365,7 +348,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
 
-    float aabbCenter = boundsMin + (boundsMax - boundsMin) / 2.0f;
+    float aabbCenter = boundsMin.GetZ() + (boundsMax.GetZ() - boundsMin.GetZ()) / 2.0f;
 
     // The expected height is the offset of the height from the centre of the bounding box multiplied by the scale value and then cast to an
     // int16_t
@@ -373,7 +356,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
 
     EXPECT_EQ(heights[0], expectedHeight);
 
-    const int16_t expectedHeightValue = 127;
+    const int16_t expectedHeightValue = 64;
     EXPECT_EQ(heights[0], expectedHeightValue);
 
     m_entity->Reset();

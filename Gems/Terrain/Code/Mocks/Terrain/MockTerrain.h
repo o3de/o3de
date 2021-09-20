@@ -15,6 +15,80 @@
 
 namespace UnitTest
 {
+    class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
+    {
+    public:
+        MockTerrainSystemService()
+        {
+            Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainSystemService()
+        {
+            Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(Activate, void());
+        MOCK_METHOD0(Deactivate, void());
+
+        MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
+        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
+    };
+
+    class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
+    {
+    public:
+        MockTerrainDataNotificationListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainDataNotificationListener()
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(OnTerrainDataCreateBegin, void());
+        MOCK_METHOD0(OnTerrainDataCreateEnd, void());
+        MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
+        MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
+        MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
+    };
+
+    class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
+    {
+    public:
+        MockTerrainAreaHeightRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainAreaHeightRequests()
+        {
+            Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
+    };
+
+    class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
+    {
+    public:
+        MockTerrainSpawnerRequests(AZ::EntityId entityId)
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusConnect(entityId);
+        }
+
+        ~MockTerrainSpawnerRequests()
+        {
+            Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
+        MOCK_METHOD0(GetUseGroundPlane, bool());
+    };
+
     class MockTerrainDataRequestsListener : public AzFramework::Terrain::TerrainDataRequestBus::Handler
     {
     public:
@@ -42,46 +116,5 @@ namespace UnitTest
         MOCK_CONST_METHOD3(GetIsHoleFromFloats, bool(float, float, Sampler));
         MOCK_CONST_METHOD3(GetNormal, AZ::Vector3(AZ::Vector3, Sampler, bool*));
         MOCK_CONST_METHOD4(GetNormalFromFloats, AZ::Vector3(float, float, Sampler, bool*));
-    };
-
-    class MockHeightfieldProviderNotificationBusListener
-        : public AZ::Component
-        , private Physics::HeightfieldProviderNotificationBus::Handler
-    {
-    public:
-        AZ_COMPONENT(MockHeightfieldProviderNotificationBusListener, "{2A89ED68-5937-4876-A073-FB6C8AF3D379}")
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
-        {
-        }
-
-        void Activate() override
-        {
-        }
-
-        void Deactivate() override
-        {
-        }
-
-        bool ReadInConfig([[maybe_unused]] const AZ::ComponentConfig* baseConfig) override
-        {
-            return true;
-        }
-
-        bool WriteOutConfig([[maybe_unused]] AZ::ComponentConfig* outBaseConfig) const override
-        {
-            return true;
-        }
-
-        MockHeightfieldProviderNotificationBusListener()
-        {
-            Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(GetEntityId());
-        }
-
-        ~MockHeightfieldProviderNotificationBusListener()
-        {
-            Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD1(OnHeightfieldDataChanged, void(const AZ::Aabb&));
     };
 } // namespace UnitTest
