@@ -144,27 +144,24 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GetHeightfieldBounds(const AZ::Aabb& bounds, AZ::Vector3& minBounds, AZ::Vector3& maxBounds) const
     {
+        auto vector2Floor = [](const AZ::Vector2& in)
+        {
+            return AZ::Vector2(floor(in.GetX()), floor(in.GetY()));
+        };
+        auto vector2Ceil = [](const AZ::Vector2& in)
+        {
+            return AZ::Vector2(ceil(in.GetX()), ceil(in.GetY()));
+        };
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
-        const AZ::Vector3 gridResolution3 = AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 1.0f);
+        const AZ::Vector3 boundsMin = bounds.GetMin();
+        const AZ::Vector3 boundsMax = bounds.GetMax();
 
-        // Expand heightfield to contain aabb
-        minBounds = AZ::Vector3(bounds.GetMin()) / gridResolution3;
-        const AZ::Vector3 minDelta = AZ::Vector3
-        (
-            minBounds.GetX() - floor(minBounds.GetX()),
-            minBounds.GetY() - floor(minBounds.GetY()),
-            0.0f
-        );
-        minBounds = (minBounds - minDelta) * gridResolution3;
+        const AZ::Vector2 gridMinBoundLower = vector2Floor(AZ::Vector2(boundsMin) / gridResolution) * gridResolution;
+        const AZ::Vector2 gridMaxBoundUpper = vector2Ceil(AZ::Vector2(boundsMax) / gridResolution) * gridResolution;
 
-        maxBounds = AZ::Vector3(bounds.GetMax()) / gridResolution3;
-        const AZ::Vector3 maxDelta = AZ::Vector3
-        (
-            gridResolution.GetX() - (maxBounds.GetX() - floor(maxBounds.GetX())),
-            gridResolution.GetY() - (maxBounds.GetY() - floor(maxBounds.GetY())),
-            0.0f
-        );
-        maxBounds = (maxBounds + maxDelta) * gridResolution3;
+        minBounds = AZ::Vector3(gridMinBoundLower.GetX(), gridMinBoundLower.GetY(), boundsMin.GetZ());
+        maxBounds = AZ::Vector3(gridMaxBoundUpper.GetX(), gridMaxBoundUpper.GetY(), boundsMax.GetZ());
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSizeInBounds(const AZ::Aabb& bounds, int32_t& numColumns, int32_t& numRows) const
