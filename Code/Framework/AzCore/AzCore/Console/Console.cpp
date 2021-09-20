@@ -225,8 +225,11 @@ namespace AZ
 
         ConsoleCommandContainer commandSubset;
 
-        for (ConsoleFunctorBase* curr = m_head; curr != nullptr; curr = curr->m_next)
+        for (const auto& functor : m_commands)
         {
+            // Filter functors registered with the same name
+            ConsoleFunctorBase* curr = functor.second.front();
+
             if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
             {
                 // Filter functors marked as invisible
@@ -340,6 +343,11 @@ namespace AZ
             if (iter2 != iter->second.end())
             {
                 iter->second.erase(iter2);
+            }
+
+            if (iter->second.empty())
+            {
+                m_commands.erase(iter);
             }
         }
         functor->Unlink(m_head);
