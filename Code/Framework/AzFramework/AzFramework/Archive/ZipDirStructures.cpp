@@ -187,8 +187,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependentBlocks = ((pInput + nInputLen) <= pOutput) || (pInput >= (pOutput + nOutputLen));
-        if (bIndependentBlocks)
+        if ((pInput + nInputLen) <= pOutput || pInput >= (pOutput + nOutputLen))
         {
             pZStream->next_in = (Bytef*)pInput;
             pZStream->avail_in = aznumeric_cast<uint32_t>(nInputLen);
@@ -260,8 +259,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependentBlocks = ((pIn + nIn) <= stream.next_out) || (pIn >= (stream.next_out + stream.avail_out));
-        if (bIndependentBlocks)
+        if ((pIn + nIn) <= stream.next_out || pIn >= (stream.next_out + stream.avail_out))
         {
             stream.next_in = pIn;
             stream.avail_in = nIn;
