@@ -142,7 +142,6 @@ namespace AZ
                 Vector3 innerExtentsReduced = m_innerExtents - Vector3(0.1f, 0.1f, 0.1f);
                 Matrix3x4 modelToWorldStencil = Matrix3x4::CreateFromQuaternionAndTranslation(m_transform.GetRotation(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(innerExtentsReduced);
                 m_stencilSrg->SetConstant(m_reflectionRenderData->m_modelToWorldStencilConstantIndex, modelToWorldStencil);
-                m_stencilSrg->SetConstant(m_reflectionRenderData->m_modelToWorldInverseStencilConstantIndex, modelToWorldStencil.GetInverseFull());
                 m_stencilSrg->Compile();
 
                 Matrix3x4 modelToWorldInverse = Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();

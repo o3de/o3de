@@ -56,7 +56,6 @@ namespace AZ
             RHI::DrawListTag m_renderInnerDrawListTag;
 
             RHI::ShaderInputConstantIndex m_modelToWorldStencilConstantIndex;
-            RHI::ShaderInputConstantIndex m_modelToWorldInverseStencilConstantIndex;
             RHI::ShaderInputConstantIndex m_modelToWorldRenderConstantIndex;
             RHI::ShaderInputConstantIndex m_modelToWorldInverseRenderConstantIndex;
             RHI::ShaderInputConstantIndex m_outerObbHalfLengthsRenderConstantIndex;

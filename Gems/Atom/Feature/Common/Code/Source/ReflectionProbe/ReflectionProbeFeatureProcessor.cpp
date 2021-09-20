@@ -92,10 +92,6 @@ namespace AZ
             m_reflectionRenderData.m_modelToWorldStencilConstantIndex = stencilSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
             AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldStencilConstantIndex.IsValid(), "Failed to find stencil shader input constant [%s]", modelToWorldConstantName.GetCStr());
 
-            Name modelToWorldInverseConstantName = Name("m_modelToWorldInverse");
-            m_reflectionRenderData.m_modelToWorldInverseStencilConstantIndex = stencilSrgLayout->FindShaderInputConstantIndex(modelToWorldInverseConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldInverseStencilConstantIndex.IsValid(), "Failed to find stencil shader input constant [%s]", modelToWorldInverseConstantName.GetCStr());
-
             // cache probe render shader indices
             // Note: the outer and inner render shaders use the same Srg
             Data::Instance<RPI::ShaderResourceGroup> renderReflectionSrg = RPI::ShaderResourceGroup::Create(
@@ -108,6 +104,7 @@ namespace AZ
             m_reflectionRenderData.m_modelToWorldRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
             AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldConstantName.GetCStr());
 
+            Name modelToWorldInverseConstantName = Name("m_modelToWorldInverse");
             m_reflectionRenderData.m_modelToWorldInverseRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldInverseConstantName);
             AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldInverseConstantName.GetCStr());
 
