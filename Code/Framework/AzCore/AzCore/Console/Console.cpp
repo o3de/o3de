@@ -236,7 +236,12 @@ namespace AZ
             if (StringFunc::StartsWith(curr->m_name, command, false))
             {
                 AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
-                commandSubset.push_back(curr->m_name);
+
+                if (commandSubset.size() < MaxConsoleCommandPlusArgsLength)
+                {
+                    commandSubset.push_back(curr->m_name);
+                }
+
                 if (matches)
                 {
                     matches->push_back(curr->m_name);
