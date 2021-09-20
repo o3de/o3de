@@ -241,29 +241,20 @@ namespace AZ
             {
                 m_queue.Enqueue(task);
 
-                if (!m_busy.exchange(true))
-                {
-                    // The worker was idle prior to enqueueing the task, release the semaphore
-                    m_semaphore.release();
-                }
+                m_semaphore.release();
             }
 
         private:
-            friend class TaskExecutor;
-
             void Run()
             {
                 while (m_active)
                 {
-                    m_busy = false;
                     m_semaphore.acquire();
 
                     if (!m_active)
                     {
                         return;
                     }
-
-                    m_busy = true;
 
                     Task* task = m_queue.TryDequeue();
                     while (task)
@@ -292,12 +283,12 @@ namespace AZ
 
             AZStd::thread m_thread;
             AZStd::atomic<bool> m_active;
-            AZStd::atomic<bool> m_busy;
             AZStd::atomic<bool> m_enabled = true;
             AZStd::binary_semaphore m_semaphore;
 
             ::AZ::TaskExecutor* m_executor;
             TaskQueue m_queue;
+            friend class ::AZ::TaskExecutor;
         };
 
         thread_local TaskWorker* TaskWorker::t_worker = nullptr;
