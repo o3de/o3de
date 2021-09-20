@@ -11,8 +11,6 @@
 
 namespace AzToolsFramework
 {
-    static constexpr const char* ViewportEditorModeLogWindow = "ViewportEditorMode";
-
     AZ::Outcome<void, AZStd::string> ViewportEditorModes::ActivateMode(ViewportEditorMode mode)
     {
         if (const AZ::u32 modeIndex = static_cast<AZ::u32>(mode);
@@ -24,7 +22,7 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(
-                AZStd::string::format(ViewportEditorModeLogWindow, "Cannot activate mode %u, mode is not recognized", modeIndex));
+                AZStd::string::format("Cannot activate mode %u, mode is not recognized", modeIndex));
         }
     }
 
@@ -38,7 +36,7 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(
-                AZStd::string::format(ViewportEditorModeLogWindow, "Cannot deactivate mode %u, mode is not recognized", modeIndex));
+                AZStd::string::format("Cannot deactivate mode %u, mode is not recognized", modeIndex));
         }
     }
 
