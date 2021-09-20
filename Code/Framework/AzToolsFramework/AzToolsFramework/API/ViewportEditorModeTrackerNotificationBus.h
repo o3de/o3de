@@ -53,12 +53,12 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.
-        virtual void OnEditorModeActivate([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeActivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
 
         //! Notifies subscribers of the a given viewport to the deactivation of the specified editor mode.
-        virtual void OnEditorModeDeactivate([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeDeactivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
     };

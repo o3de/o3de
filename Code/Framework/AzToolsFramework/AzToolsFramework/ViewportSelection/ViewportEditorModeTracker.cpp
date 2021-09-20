@@ -80,7 +80,7 @@ namespace AzToolsFramework
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeActivate, editorModes, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeActivated, editorModes, mode);
 
         return AZ::Success();
     }
@@ -112,7 +112,7 @@ namespace AzToolsFramework
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeDeactivate, *editorModes, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeDeactivated, *editorModes, mode);
 
         if (modeWasActive)
         {

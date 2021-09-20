@@ -111,12 +111,12 @@ namespace UnitTest
             return m_editorModes;
         }
 
-        void OnEditorModeActivate([[maybe_unused]]const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
+        void OnEditorModeActivated([[maybe_unused]]const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
         {
             m_editorModes[mode].m_onEnter = true;
         }
 
-        virtual void OnEditorModeDeactivate([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
+        virtual void OnEditorModeDeactivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
         {
             m_editorModes[mode].m_onExit = true;
         }
