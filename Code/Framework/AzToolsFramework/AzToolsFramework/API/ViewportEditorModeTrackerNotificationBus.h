@@ -52,13 +52,13 @@ namespace AzToolsFramework
         using BusIdType = ViewportEditorModeInfo::IdType;
         //////////////////////////////////////////////////////////////////////////
 
-        //! Notifies subscribers of the a given viewport to the entering of the specified editor mode.
-        virtual void OnEditorModeEnter([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.
+        virtual void OnEditorModeActivate([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
 
-        //! Notifies subscribers of the a given viewport to the exiting of the specified editor mode.
-        virtual void OnEditorModeExit([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        //! Notifies subscribers of the a given viewport to the deactivation of the specified editor mode.
+        virtual void OnEditorModeDeactivate([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
     };

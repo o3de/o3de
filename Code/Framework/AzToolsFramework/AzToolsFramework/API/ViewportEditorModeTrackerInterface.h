@@ -22,12 +22,12 @@ namespace AzToolsFramework
 
         virtual ~ViewportEditorModeTrackerInterface() = default;
 
-        //! Registers the specified editor mode as active for the specified viewport.
-        virtual AZ::Outcome<void, AZStd::string> RegisterMode(
+        //! Activates the specified editor mode for the specified viewport.
+        virtual AZ::Outcome<void, AZStd::string> ActivateMode(
             const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
        
-        //! Unregisters the specified editor mode as active for the specified viewport.
-        virtual AZ::Outcome<void, AZStd::string> UnregisterMode(
+        //! Deactivates the specified editor mode for the specified viewport.
+        virtual AZ::Outcome<void, AZStd::string> DeactivateMode(
             const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
 
         //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.

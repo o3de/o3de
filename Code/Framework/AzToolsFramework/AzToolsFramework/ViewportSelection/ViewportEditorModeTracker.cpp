@@ -13,7 +13,7 @@ namespace AzToolsFramework
 {
     static constexpr const char* ViewportEditorModeLogWindow = "ViewportEditorMode";
 
-    AZ::Outcome<void, AZStd::string> ViewportEditorModes::SetModeActive(ViewportEditorMode mode)
+    AZ::Outcome<void, AZStd::string> ViewportEditorModes::ActivateMode(ViewportEditorMode mode)
     {
         if (const AZ::u32 modeIndex = static_cast<AZ::u32>(mode);
             modeIndex < NumEditorModes)
@@ -28,7 +28,7 @@ namespace AzToolsFramework
         }
     }
 
-    AZ::Outcome<void, AZStd::string> ViewportEditorModes::SetModeInactive(ViewportEditorMode mode)
+    AZ::Outcome<void, AZStd::string> ViewportEditorModes::DeactivateMode(ViewportEditorMode mode)
     {
         if (const AZ::u32 modeIndex = static_cast<AZ::u32>(mode); modeIndex < NumEditorModes)
         {
@@ -63,29 +63,29 @@ namespace AzToolsFramework
         }
     }
 
-    AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::RegisterMode(
+    AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::ActivateMode(
         const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         auto& editorModes = m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
         if (editorModes.IsModeActive(mode))
         {
             return AZ::Failure(AZStd::string::format(
-                "Duplicate call to RegisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                "Duplicate call to ActivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
         }
         
-        if (const auto result = editorModes.SetModeActive(mode);
+        if (const auto result = editorModes.ActivateMode(mode);
             !result.IsSuccess())
         {
             return result;
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeEnter, editorModes, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeActivate, editorModes, mode);
 
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::UnregisterMode(
+    AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::DeactivateMode(
         const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {
         ViewportEditorModes* editorModes = nullptr;
@@ -96,7 +96,7 @@ namespace AzToolsFramework
             if (!editorModes->IsModeActive(mode))
             {
                 return AZ::Failure(AZStd::string::format(
-                    "Duplicate call to UnregisterMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                    "Duplicate call to DeactivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
             }
         }
         else
@@ -105,14 +105,14 @@ namespace AzToolsFramework
             editorModes = &m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
         }
 
-        if(const auto result = editorModes->SetModeInactive(mode);
+        if(const auto result = editorModes->DeactivateMode(mode);
             !result.IsSuccess())
         {
             return result;
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeExit, *editorModes, mode);
+            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeDeactivate, *editorModes, mode);
 
         if (modeWasActive)
         {
@@ -121,7 +121,7 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(AZStd::string::format(
-                "Call to UnregisterMode for mode '%u' on id '%i' without precursor call to RegisterMode", static_cast<AZ::u32>(mode),
+                "Call to DeactivateMode for mode '%u' on id '%i' without precursor call to ActivateMode", static_cast<AZ::u32>(mode),
                 viewportEditorModeInfo.m_id));
         }
     }
