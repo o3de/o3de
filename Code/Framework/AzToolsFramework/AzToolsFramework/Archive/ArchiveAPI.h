@@ -33,35 +33,58 @@ namespace AzToolsFramework
         virtual ~ArchiveCommands() = default;
 
         //! Create an archive of the target directory (all files and subdirectories)
-        virtual std::future<bool> CreateArchive(
+        //! @param archivePath The path of the archive to create
+        //! @dirToArchive The directory to be added to the archive
+        //! @return Future (bool) which can obtain the success value of the operation
+        [[nodiscard]] virtual std::future<bool> CreateArchive(
             const AZStd::string& archivePath,
             const AZStd::string& dirToArchive) = 0;
 
-        //! Start an async task to extract an archive to the target directory
-        virtual std::future<bool> ExtractArchive(
+        //! Extract an archive to the target directory
+        //! @param archivePath The path of the archive to extract
+        //! @param destinationPath The directory where files will be extracted to
+        //! @return Future (bool) which can obtain the success value of the operation
+        [[nodiscard]] virtual std::future<bool> ExtractArchive(
             const AZStd::string& archivePath,
             const AZStd::string& destinationPath) = 0;
 
-        //! Extract a single file from the archive to the destination and block until finished.
-        //! Destination path should not be empty.
-        virtual std::future<bool> ExtractFile(
+        //! Extract a single file from the archive to the destination
+        //! Destination path should not be empty
+        //! @param archivePath The path of the archive to extract from
+        //! @param fileInArchive A path to a file, relative to root of archive
+        //! @param destinationPath The directory where file will be extracted to
+        //! @return Future (bool) which can obtain the success value of the operation
+        [[nodiscard]] virtual std::future<bool> ExtractFile(
             const AZStd::string& archivePath,
             const AZStd::string& fileInArchive,
             const AZStd::string& destinationPath) = 0;
 
-        //! Start a sync task to retrieve the list of files and their relative paths within an archive (recursively)
+        //! Retrieve the list of files contained in an archive (all files and subdirectories)
+        //! @param archivePath The path of the archive to list
+        //! @param outFileEntries An out parameter that will contain the file paths found
+        //! @return True if successful, false otherwise
         virtual bool ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& outFileEntries) = 0;
 
-        //! Start an async task to add a file to a preexisting archive. 
-        //! fileToAdd must be a relative path to the file from the working directory. The path to the file from the root of the archive will be the same as the relative path to the file on disk.
-        virtual std::future<bool> AddFileToArchive(
+        //! Add a file to an archive
+        //! The archive might not exist yet
+        //! The file path relative to the working directory will be replicated in the archive
+        //! @param archivePath The path of the archive to add to
+        //! @param workingDirectory A directory that will be the starting path of the file to be added
+        //! @param fileToAdd A path to the file relative to the working directory
+        //! @return Future (bool) which can obtain the success value of the operation
+        [[nodiscard]] virtual std::future<bool> AddFileToArchive(
             const AZStd::string& archivePath,
             const AZStd::string& workingDirectory,
             const AZStd::string& fileToAdd) = 0;
 
-        //! Start an async task to add files to an archive. 
-        //! File paths inside the list file must either be a relative path from the working directory or an absolute path.
-        virtual std::future<bool> AddFilesToArchive(
+        //! Add files to an archive provided from a file listing
+        //! The archive might not exist yet
+        //! File paths in the file list should be relative to root of the archive
+        //! @param archivePath The path of the archive to add to
+        //! @param workingDirectory A directory that will be the starting path of the list of files to add
+        //! @param listFilePath Full path to a text file that contains the list of files to add
+        //! @return Future (bool) which can obtain the success value of the operation
+        [[nodiscard]] virtual std::future<bool> AddFilesToArchive(
             const AZStd::string& archivePath,
             const AZStd::string& workingDirectory,
             const AZStd::string& listFilePath) = 0;

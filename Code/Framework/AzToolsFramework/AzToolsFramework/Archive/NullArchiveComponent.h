@@ -33,27 +33,27 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // ArchiveCommandsBus::Handler overrides
-        std::future<bool> CreateArchive(
+        [[nodiscard]] std::future<bool> CreateArchive(
             const AZStd::string& archivePath,
             const AZStd::string& dirToArchive) override;
 
-        std::future<bool> ExtractArchive(
+        [[nodiscard]] std::future<bool> ExtractArchive(
             const AZStd::string& archivePath,
             const AZStd::string& destinationPath) override;
 
-        std::future<bool> ExtractFile(
+        [[nodiscard]] std::future<bool> ExtractFile(
             const AZStd::string& archivePath,
             const AZStd::string& fileInArchive,
             const AZStd::string& destinationPath) override;
 
         bool ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& outFileEntries) override;
 
-        std::future<bool> AddFileToArchive(
+        [[nodiscard]] std::future<bool> AddFileToArchive(
             const AZStd::string& archivePath,
             const AZStd::string& workingDirectory,
             const AZStd::string& fileToAdd) override;
 
-        std::future<bool> AddFilesToArchive(
+        [[nodiscard]] std::future<bool> AddFilesToArchive(
             const AZStd::string& archivePath,
             const AZStd::string& workingDirectory,
             const AZStd::string& listFilePath) override;

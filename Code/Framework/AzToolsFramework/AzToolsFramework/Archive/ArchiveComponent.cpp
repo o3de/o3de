@@ -18,12 +18,13 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
-#include <future>
-#include <memory>
 
 namespace AzToolsFramework
 {
     const char s_traceName[] = "ArchiveComponent";
+    AZ::u32 s_compressionMethod = AZ::IO::INestedArchive::METHOD_COMPRESS;
+    AZ::s32 s_compressionLevel = AZ::IO::INestedArchive::LEVEL_NORMAL;
+    CompressionCodec::Codec s_compressionCodec = CompressionCodec::Codec::ZLIB;
 
     namespace ArchiveUtils
     {
@@ -105,7 +106,7 @@ namespace AzToolsFramework
         {
             serializeContext->Class<ArchiveComponent, AZ::Component>()
                 ->Version(2)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -114,7 +115,7 @@ namespace AzToolsFramework
                     "Archive", "Handles creation and extraction of zip archives.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ;
             }
         }
@@ -124,31 +125,20 @@ namespace AzToolsFramework
         const AZStd::string& archivePath,
         const AZStd::string& dirToArchive)
     {
+        if (!CheckParamsForCreate(archivePath, dirToArchive))
+        {
+            std::promise<bool> p;
+            p.set_value(false);
+            return AZStd::move(p.get_future());
+        }
+
         auto FnCreateArchive = [this, &archivePath, &dirToArchive](std::promise<bool>&& p) -> void
         {
-            p.set_value(false); // initial value
-
-            if (!m_localFileIO || !m_archive)
-            {
-                return;
-            }
-
-            if (m_localFileIO->Exists(archivePath.c_str()))
-            {
-                AZ_Error(s_traceName, false, "Archive file (%s) already exists, cannot create a new archive there!");
-                return;
-            }
-
-            if (!m_localFileIO->Exists(dirToArchive.c_str()) || !m_localFileIO->IsDirectory(dirToArchive.c_str()))
-            {
-                AZ_Error(s_traceName, false, "Directory to archive (%s) is not a directory or doesn't exist!", dirToArchive.c_str());
-                return;
-            }
-
             auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to create archive file (%s)", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -156,6 +146,7 @@ namespace AzToolsFramework
             if (!foundFiles.IsSuccess())
             {
                 AZ_Error(s_traceName, false, "Failed to find file listing under directory %d", dirToArchive.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -173,8 +164,8 @@ namespace AzToolsFramework
                 if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
-                        relativePath.Native(), fileBuffer.data(), fileBuffer.size(), AZ::IO::INestedArchive::METHOD_COMPRESS,
-                        AZ::IO::INestedArchive::LEVEL_DEFAULT, CompressionCodec::Codec::ZLIB);
+                        relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
+                        s_compressionLevel, s_compressionCodec);
 
                     thisSuccess = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                     AZ_Error(
@@ -195,7 +186,6 @@ namespace AzToolsFramework
         };
 
         // Async task...
-        //std::promise<bool> p(std::allocator_arg, AZStd::allocator{});
         std::promise<bool> p;
         std::future<bool> f = p.get_future();
 
@@ -203,6 +193,7 @@ namespace AzToolsFramework
         threadDesc.m_name = "Archive Task (Create)";
 
         AZStd::thread t(threadDesc, FnCreateArchive, AZStd::move(p));
+        t.detach();
         return AZStd::move(f);
     }
 
@@ -211,35 +202,20 @@ namespace AzToolsFramework
         const AZStd::string& archivePath,
         const AZStd::string& destinationPath)
     {
+        if (!CheckParamsForExtract(archivePath, destinationPath))
+        {
+            std::promise<bool> p;
+            p.set_value(false);
+            return AZStd::move(p.get_future());
+        }
+
         auto FnExtractArchive = [this, &archivePath, &destinationPath](std::promise<bool>&& p) -> void
         {
-            p.set_value(false); // initial value
-
-            auto fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-            if (!fileIO || !m_archive)
-            {
-                return;
-            }
-
-            if (!fileIO->Exists(archivePath.c_str()))
-            {
-                AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archivePath.c_str());
-                return;
-            }
-
-            if (!fileIO->Exists(destinationPath.c_str()))
-            {
-                if (!fileIO->CreatePath(destinationPath.c_str()))
-                {
-                    AZ_Error(s_traceName, false, "Failed to create destination directory '%s'", destinationPath.c_str());
-                    return;
-                }
-            }
-
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -247,6 +223,7 @@ namespace AzToolsFramework
             if (int result = archive->ListAllFiles(filesInArchive); result != AZ::IO::ZipDir::ZD_ERROR_SUCCESS)
             {
                 AZ_Error(s_traceName, false, "Failed to get list of files in archive '%s'", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -298,7 +275,6 @@ namespace AzToolsFramework
         };
 
         // Async task...
-        //std::promise<bool> p(std::allocator_arg, AZStd::allocator{});
         std::promise<bool> p;
         std::future<bool> f = p.get_future();
 
@@ -306,6 +282,7 @@ namespace AzToolsFramework
         threadDesc.m_name = "Archive Task (Extract)";
 
         AZStd::thread t(threadDesc, FnExtractArchive, AZStd::move(p));
+        t.detach();
         return AZStd::move(f);
     }
 
@@ -315,35 +292,20 @@ namespace AzToolsFramework
         const AZStd::string& fileInArchive,
         const AZStd::string& destinationPath)
     {
+        if (!CheckParamsForExtract(archivePath, destinationPath))
+        {
+            std::promise<bool> p;
+            p.set_value(false);
+            return AZStd::move(p.get_future());
+        }
+
         auto FnExtractFile = [this, &archivePath, &fileInArchive, &destinationPath](std::promise<bool>&& p) -> void
         {
-            p.set_value(false);
-
-            auto fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-            if (!fileIO || !m_archive)
-            {
-                return;
-            }
-
-            if (!fileIO->Exists(archivePath.c_str()))
-            {
-                AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archivePath.c_str());
-                return;
-            }
-
-            if (!fileIO->Exists(destinationPath.c_str()))
-            {
-                if (!fileIO->CreatePath(destinationPath.c_str()))
-                {
-                    AZ_Error(s_traceName, false, "Failed to create destination directory '%s'", destinationPath.c_str());
-                    return;
-                }
-            }
-
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to open archive file (%s)", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -351,6 +313,7 @@ namespace AzToolsFramework
             if (!fileHandle)
             {
                 AZ_Error(s_traceName, false, "File '%s' does not exist inside archive '%s'", fileInArchive.c_str(), archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -363,6 +326,7 @@ namespace AzToolsFramework
                 AZ_Error(
                     s_traceName, false, "Failed to read file '%s' in archive '%s' with error %d", fileInArchive.c_str(),
                     archivePath.c_str(), result);
+                p.set_value(false);
                 return;
             }
 
@@ -373,6 +337,7 @@ namespace AzToolsFramework
             if (!m_localFileIO->Open(destinationFile.c_str(), openMode, destFileHandle))
             {
                 AZ_Error(s_traceName, false, "Failed to open destination file '%s' for writing", destinationFile.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -387,7 +352,6 @@ namespace AzToolsFramework
         };
 
         // Async task...
-        //std::promise<bool> p(std::allocator_arg, AZStd::allocator{});
         std::promise<bool> p;
         std::future<bool> f = p.get_future();
 
@@ -395,19 +359,19 @@ namespace AzToolsFramework
         threadDesc.m_name = "Archive Task (Extract Single)";
 
         AZStd::thread t(threadDesc, FnExtractFile, AZStd::move(p));
+        t.detach();
         return AZStd::move(f);
     }
 
 
     bool ArchiveComponent::ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& outFileEntries)
     {
-        auto fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (!fileIO || !m_archive)
+        if (!m_localFileIO || !m_archive)
         {
             return false;
         }
 
-        if (!fileIO->Exists(archivePath.c_str()))
+        if (!m_localFileIO->Exists(archivePath.c_str()))
         {
             AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archivePath.c_str());
             return false;
@@ -430,27 +394,20 @@ namespace AzToolsFramework
         const AZStd::string& workingDirectory,
         const AZStd::string& fileToAdd)
     {
+        if (!CheckParamsForAdd(workingDirectory, fileToAdd))
+        {
+            std::promise<bool> p;
+            p.set_value(false);
+            return AZStd::move(p.get_future());
+        }
+
         auto FnAddFileToArchive = [this, &archivePath, &workingDirectory, &fileToAdd](std::promise<bool>&& p) -> void
         {
-            p.set_value(false); // initial value
-
-            if (!m_localFileIO || !m_archive)
-            {
-                return;
-            }
-
-            if (!m_localFileIO->Exists(workingDirectory.c_str()) || !m_localFileIO->IsDirectory(workingDirectory.c_str()))
-            {
-                AZ_Error(
-                    s_traceName, false, "Working directory for archive (%s) is not a directory or doesn't exist!",
-                    workingDirectory.c_str());
-                return;
-            }
-
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to open archive file (%s)", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -460,8 +417,8 @@ namespace AzToolsFramework
             if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
             {
                 int result = archive->UpdateFile(
-                    fileToAdd, fileBuffer.data(), fileBuffer.size(), AZ::IO::INestedArchive::METHOD_COMPRESS,
-                    AZ::IO::INestedArchive::LEVEL_DEFAULT, CompressionCodec::Codec::ZLIB);
+                    fileToAdd, fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
+                    s_compressionLevel, s_compressionCodec);
 
                 success = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                 AZ_Error(
@@ -479,7 +436,6 @@ namespace AzToolsFramework
         };
 
         // Async task...
-        //std::promise<bool> p(std::allocator_arg, AZStd::allocator{});
         std::promise<bool> p;
         std::future<bool> f = p.get_future();
 
@@ -487,6 +443,7 @@ namespace AzToolsFramework
         threadDesc.m_name = "Archive Task (Add Single)";
 
         AZStd::thread t(threadDesc, FnAddFileToArchive, AZStd::move(p));
+        t.detach();
         return AZStd::move(f);
     }
 
@@ -496,33 +453,20 @@ namespace AzToolsFramework
         const AZStd::string& workingDirectory,
         const AZStd::string& listFilePath)
     {
+        if (!CheckParamsForAdd(workingDirectory, listFilePath))
+        {
+            std::promise<bool> p;
+            p.set_value(false);
+            return AZStd::move(p.get_future());
+        }
+
         auto FnAddFilesToArchive = [this, &archivePath, &workingDirectory, &listFilePath](std::promise<bool>&& p) -> void
         {
-            p.set_value(false); // initial value
-
-            if (!m_localFileIO || !m_archive)
-            {
-                return;
-            }
-
-            if (!m_localFileIO->Exists(workingDirectory.c_str()) || !m_localFileIO->IsDirectory(workingDirectory.c_str()))
-            {
-                AZ_Error(
-                    s_traceName, false, "Working directory for archive (%s) is not a directory or doesn't exist!",
-                    workingDirectory.c_str());
-                return;
-            }
-
-            if (!m_localFileIO->Exists(listFilePath.c_str()) || m_localFileIO->IsDirectory(listFilePath.c_str()))
-            {
-                AZ_Error(s_traceName, false, "File list (%s) is a directory or doesn't exist!", listFilePath.c_str());
-                return;
-            }
-
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to create archive file (%s)", archivePath.c_str());
+                p.set_value(false);
                 return;
             }
 
@@ -536,8 +480,8 @@ namespace AzToolsFramework
                 if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
-                        filePathLine, fileBuffer.data(), fileBuffer.size(), AZ::IO::INestedArchive::METHOD_COMPRESS,
-                        AZ::IO::INestedArchive::LEVEL_NORMAL, CompressionCodec::Codec::ZLIB);
+                        filePathLine, fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
+                        s_compressionLevel, s_compressionCodec);
 
                     bool thisSuccess = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                     success = (success && thisSuccess);
@@ -559,7 +503,6 @@ namespace AzToolsFramework
         };
 
         // Async task...
-        //std::promise<bool> p(std::allocator_arg, AZStd::allocator{});
         std::promise<bool> p;
         std::future<bool> f = p.get_future();
 
@@ -567,7 +510,82 @@ namespace AzToolsFramework
         threadDesc.m_name = "Archive Task (Add)";
 
         AZStd::thread t(threadDesc, FnAddFilesToArchive, AZStd::move(p));
+        t.detach();
         return AZStd::move(f);
+    }
+
+
+    bool ArchiveComponent::CheckParamsForAdd(const AZStd::string& directory, const AZStd::string& file)
+    {
+        if (!m_localFileIO || !m_archive)
+        {
+            return false;
+        }
+
+        if (!m_localFileIO->Exists(directory.c_str()) || !m_localFileIO->IsDirectory(directory.c_str()))
+        {
+            AZ_Error(
+                s_traceName, false, "Working directory '%s' is not a directory or doesn't exist!", directory.c_str());
+            return false;
+        }
+
+        if (!file.empty())
+        {
+            if (!m_localFileIO->Exists(file.c_str()) || m_localFileIO->IsDirectory(file.c_str()))
+            {
+                AZ_Error(s_traceName, false, "File list '%s' is a directory or doesn't exist!", file.c_str());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool ArchiveComponent::CheckParamsForExtract(const AZStd::string& archive, const AZStd::string& directory)
+    {
+        if (!m_localFileIO || !m_archive)
+        {
+            return false;
+        }
+
+        if (!m_localFileIO->Exists(archive.c_str()))
+        {
+            AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archive.c_str());
+            return false;
+        }
+
+        if (!m_localFileIO->Exists(directory.c_str()))
+        {
+            if (!m_localFileIO->CreatePath(directory.c_str()))
+            {
+                AZ_Error(s_traceName, false, "Failed to create destination directory '%s'", directory.c_str());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool ArchiveComponent::CheckParamsForCreate(const AZStd::string& archive, const AZStd::string& directory)
+    {
+        if (!m_localFileIO || !m_archive)
+        {
+            return false;
+        }
+
+        if (m_localFileIO->Exists(archive.c_str()))
+        {
+            AZ_Error(s_traceName, false, "Archive file '%s' already exists, cannot create a new archive there!");
+            return false;
+        }
+
+        if (!m_localFileIO->Exists(directory.c_str()) || !m_localFileIO->IsDirectory(directory.c_str()))
+        {
+            AZ_Error(s_traceName, false, "Directory '%s' is not a directory or doesn't exist!", directory.c_str());
+            return false;
+        }
+
+        return true;
     }
 
 } // namespace AzToolsFramework
