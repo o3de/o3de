@@ -518,3 +518,82 @@ QProgressBar::chunk {
     font-size: 12px;
     font-weight: 600;
 }
+
+/************** Engine **************/
+
+#engineTab::tab-bar {
+    left: 60px;
+}
+
+#engineTabBar::tab {
+    height: 50px;
+    background-color: transparent;
+    font-weight: 400;
+    font-size: 18px;
+    min-width: 160px;
+}
+
+#engineTabBar::tab:selected {
+    border-bottom: 3px solid #94D2FF;
+    color: #94D2FF;
+    font-weight: 600;
+}
+#engineTabBar::tab:hover {
+    color: #94D2FF;
+    font-weight: 600;
+}
+#engineTabBar::tab:pressed {
+    color: #66bcfa;
+}
+
+#engineTopFrame {
+    background-color:#1E252F;
+}
+
+/************** Gem Repo **************/
+
+#gemRepoHeaderLabel {
+    font-size: 12px;
+}
+
+#gemRepoHeaderRefreshButton {
+    background-color: transparent;
+    qproperty-flat: true;
+    qproperty-iconSize: 14px;
+}
+
+#gemRepoHeaderAddButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+    qproperty-flat: true;
+    margin-right:30px;
+    min-width:120px;
+    max-width:120px;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+}
+#gemRepoHeaderAddButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#gemRepoHeaderAddButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#gemRepoHeaderTable {
+    background-color: transparent;
+    max-height: 30px;
+}
+
+#gemRepoListHeader {
+    background-color: transparent;
+}
+
+#gemRepoInspector {
+    background: #444444;
+}
