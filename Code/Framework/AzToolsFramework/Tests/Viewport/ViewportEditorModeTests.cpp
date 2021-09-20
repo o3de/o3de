@@ -446,7 +446,7 @@ namespace UnitTest
         {
             const ViewportId viewportId = mode;
             const ViewportEditorMode editorMode = static_cast<ViewportEditorMode>(mode);
-            m_viewportEditorModeTracker.ActivateMode({ mode }, editorMode);
+            m_viewportEditorModeTracker.ActivateMode({ viewportId }, editorMode);
         }
 
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
@@ -478,8 +478,8 @@ namespace UnitTest
         {
             const ViewportId viewportId = mode;
             const ViewportEditorMode editorMode = static_cast<ViewportEditorMode>(mode);
-            m_viewportEditorModeTracker.ActivateMode({ mode }, editorMode);
-            m_viewportEditorModeTracker.DeactivateMode({ mode }, editorMode);
+            m_viewportEditorModeTracker.ActivateMode({ viewportId }, editorMode);
+            m_viewportEditorModeTracker.DeactivateMode({ viewportId }, editorMode);
         }
 
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
