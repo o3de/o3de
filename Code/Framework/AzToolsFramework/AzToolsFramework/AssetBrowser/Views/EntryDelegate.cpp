@@ -165,35 +165,16 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                QStyleOptionViewItem optionCopy(option);
+                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
+                bool isSelected = (option.state & QStyle::State_Selected) != 0;
 
-                bool isEnabled = (optionCopy.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (optionCopy.state & QStyle::State_Selected) != 0;
-
-                optionCopy.state &= ~QStyle::State_HasFocus;
-
-                // Get the hovered index in order to highlight the whole row.
-                AssetBrowserTableView* view = qobject_cast<AssetBrowserTableView*>(optionCopy.styleObject);
-                QTableView::SelectionBehavior behavior = view->selectionBehavior();
-                QModelIndex hoveredIndex = view->GetHoveredIndex();
-                if (!isSelected && behavior != QTableView::SelectItems)
-                {
-                    if (behavior == QTableView::SelectRows && hoveredIndex.row() == index.row())
-                    {
-                        optionCopy.state |= QStyle::State_MouseOver;
-                    }
-                }
-
-                QStyle* style = optionCopy.widget ? optionCopy.widget->style() : QApplication::style();
+                QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
                 // draw the background
-                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &optionCopy, painter, optionCopy.widget);
+                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
 
                 // Draw main entry thumbnail.
-                QRect remainingRect(optionCopy.rect);
-                //remainingRect.adjust(
-                //    ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0,
-                //    0); // bump it rightwards to give some margin to the icon.
+                QRect remainingRect(option.rect);
 
                 QSize iconSize(m_iconSize, m_iconSize);
                 // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
@@ -217,7 +198,7 @@ namespace AzToolsFramework
                     branchIconTopLeft =QPoint((remainingRect.x() / 2) - 2, remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
                 }
 
-                QPalette actualPalette(optionCopy.palette);
+                QPalette actualPalette(option.palette);
 
 
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
@@ -239,6 +220,7 @@ namespace AzToolsFramework
                     else
                     {
                         //Get the indexes above and below our entry to see what type are they.
+                        QAbstractItemView* view = qobject_cast<QAbstractItemView*>(option.styleObject);
                         const QAbstractItemModel* viewModel = view->model();
 
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
@@ -282,7 +264,7 @@ namespace AzToolsFramework
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
                 style->drawItemText(
-                    painter, remainingRect, optionCopy.displayAlignment, actualPalette, isEnabled, displayString,
+                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, displayString,
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }
