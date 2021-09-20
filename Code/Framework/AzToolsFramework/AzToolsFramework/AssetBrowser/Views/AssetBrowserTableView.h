@@ -40,7 +40,6 @@ namespace AzToolsFramework
 
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);
-            QModelIndex GetHoveredIndex() const;
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 
@@ -55,8 +54,6 @@ namespace AzToolsFramework
             // AssetBrowserComponentNotificationBus
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
-        protected:
-            void mouseMoveEvent(QMouseEvent* mouseEvent) override;
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -73,8 +70,6 @@ namespace AzToolsFramework
             QPointer<AssetBrowserTableModel> m_tableModel;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
-            int m_hoveredRow = -1;
-            int m_hoveredColumn = -1;
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
         };
