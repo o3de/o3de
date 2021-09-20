@@ -76,7 +76,7 @@ namespace UnitTest
                 linearManipulator->SetLocalPosition(action.LocalPosition());
             });
 
-        m_actionDispatcher->EnableSnapToGrid()
+        m_actionDispatcher->SetSnapToGrid(true)
             ->GridSize(5.0f)
             ->CameraState(m_cameraState)
             ->MousePosition(initialPositionScreen)
@@ -114,7 +114,7 @@ namespace UnitTest
                 manipulator->SetLocalPosition(action.LocalPosition());
             });
 
-        actionDispatcher->EnableSnapToGrid()
+        actionDispatcher->SetSnapToGrid(true)
             ->GridSize(1.0f)
             ->CameraState(cameraState)
             ->MousePosition(initialPositionScreen)

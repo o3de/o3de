@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -64,7 +65,7 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // SystemRequestBus::Handler...
         void AddAsyncJob(AZStd::function<void()>&& jobFunc) override;
-        void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes);
+        void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) override;
         void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -109,6 +110,11 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // IUpgradeRequests...
+        void ClearGraphsThatNeedUpgrade() override
+        {
+            m_assetsThatNeedManualUpgrade.clear();
+        }
+
         IUpgradeRequests::AssetList& GetAssetsToUpgrade() override
         {
             return m_assetsToConvert;
@@ -122,7 +128,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() override
+        const AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() const override
         {
             return m_assetsThatNeedManualUpgrade;
         }

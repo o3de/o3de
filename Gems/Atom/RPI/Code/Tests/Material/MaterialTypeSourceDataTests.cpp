@@ -70,6 +70,7 @@ namespace UnitTest
                 }
             }
 
+            using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
@@ -110,6 +111,7 @@ namespace UnitTest
             AZStd::string m_floatPropertyInputId;
             AZStd::string m_float3ShaderSettingOutputId;
 
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
                 Ptr<Splat3Functor> functor = aznew Splat3Functor;
@@ -138,6 +140,7 @@ namespace UnitTest
                 }
             }
 
+            using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
@@ -174,6 +177,7 @@ namespace UnitTest
                 m_shaderIndex{shaderIndex}
             {}
 
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
                 Ptr<EnableShaderFunctor> functor = aznew EnableShaderFunctor;
@@ -200,6 +204,7 @@ namespace UnitTest
                 }
             }
 
+            using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
@@ -232,6 +237,7 @@ namespace UnitTest
                 return options;
             }
 
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor([[maybe_unused]] const RuntimeContext& context) const override
             {
                 Ptr<SetShaderOptionFunctor> functor = aznew SetShaderOptionFunctor;

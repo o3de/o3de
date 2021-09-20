@@ -425,6 +425,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
+                SetRayTracingEnabled(meshHandle, visible);
             }
         }
 
@@ -478,8 +479,6 @@ namespace AZ
             : m_modelAsset(modelAsset)
             , m_parent(parent)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             if (!m_modelAsset.GetId().IsValid())
             {
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
@@ -507,7 +506,6 @@ namespace AZ
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
@@ -579,8 +577,6 @@ namespace AZ
 
         void MeshDataInstance::Init(Data::Instance<RPI::Model> model)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
@@ -611,8 +607,6 @@ namespace AZ
 
         void MeshDataInstance::BuildDrawPacketList(size_t modelLodIndex)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
 
@@ -696,8 +690,13 @@ namespace AZ
 
         void MeshDataInstance::SetRayTracingData()
         {
+            if (!m_model)
+            {
+                return;
+            }
+
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (rayTracingFeatureProcessor == nullptr)
+            if (!rayTracingFeatureProcessor)
             {
                 return;
             }

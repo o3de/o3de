@@ -7,6 +7,7 @@
  */
 
 #include "TerrainDataRequestBus.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {
@@ -50,7 +51,8 @@ namespace AzFramework
                     ->Event("GetNormal", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormal)
                     ->Event("GetNormalFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormalFromFloats)
                     ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
-                    ->Event("GetTerrainGridResolution", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution)
+                    ->Event("GetTerrainHeightQueryResolution",
+                        &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution)
                     ;
 
             }

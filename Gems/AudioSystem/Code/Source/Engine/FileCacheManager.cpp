@@ -446,13 +446,13 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    AZStd::string displayString = AZStd::string::format("%s (%zu %s) [%zu]",
+                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, 
+                        "%s (%zu %s) [%zu]",
                         audioFileEntry->m_filePath.c_str(),
                         fileSize,
                         kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
 
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, displayString.c_str());
                     color[3] = originalAlpha;
                     positionY += entryStepSize;
                 }

@@ -13,9 +13,10 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 
+#include <AzQtComponents/Components/Widgets/TableView.h>
+
 #include <QModelIndex>
 #include <QPointer>
-#include <QTableView>
 #endif
 
 namespace AzToolsFramework
@@ -28,7 +29,7 @@ namespace AzToolsFramework
         class EntryDelegate;
 
         class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
-            : public QTableView
+            : public AzQtComponents::TableView
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
         {
@@ -53,7 +54,6 @@ namespace AzToolsFramework
             // AssetBrowserComponentNotificationBus
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
-
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();

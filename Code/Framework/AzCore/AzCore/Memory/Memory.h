@@ -839,12 +839,17 @@ namespace AZ
             return AZ::AllocatorInstance<Parent>::Get().GetMaxAllocationSize();
         }
 
+        size_type GetMaxContiguousAllocationSize() const override
+        {
+            return AZ::AllocatorInstance<Parent>::Get().GetMaxContiguousAllocationSize();
+        }
+
         size_type               GetUnAllocatedMemory(bool isPrint = false) const override
         {
             return AZ::AllocatorInstance<Parent>::Get().GetUnAllocatedMemory(isPrint);
         }
 
-        virtual IAllocatorAllocate*     GetSubAllocator() override
+        IAllocatorAllocate*     GetSubAllocator() override
         {
             return AZ::AllocatorInstance<Parent>::Get().GetSubAllocator();
         }
@@ -896,7 +901,7 @@ namespace AZ
         }
         AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
         AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
-        size_type                   get_max_size() const        { return AllocatorInstance<Allocator>::Get().GetMaxAllocationSize(); }
+        size_type                   max_size() const            { return AllocatorInstance<Allocator>::Get().GetMaxContiguousAllocationSize(); }
         size_type                   get_allocated_size() const  { return AllocatorInstance<Allocator>::Get().NumAllocatedBytes(); }
 
         AZ_FORCE_INLINE bool is_lock_free()                     { return AllocatorInstance<Allocator>::Get().is_lock_free(); }
@@ -954,7 +959,7 @@ namespace AZ
         }
         AZ_FORCE_INLINE const char* get_name() const { return m_name; }
         AZ_FORCE_INLINE void        set_name(const char* name) { m_name = name; }
-        size_type                   get_max_size() const { return m_allocator->GetMaxAllocationSize(); }
+        size_type                   max_size() const { return m_allocator->GetMaxContiguousAllocationSize(); }
         size_type                   get_allocated_size() const { return m_allocator->NumAllocatedBytes(); }
 
         AZ_FORCE_INLINE bool operator==(const AZStdIAllocator& rhs) const { return m_allocator == rhs.m_allocator; }
@@ -1006,7 +1011,7 @@ namespace AZ
         }
         constexpr const char* get_name() const { return m_name; }
         void set_name(const char* name) { m_name = name; }
-        size_type get_max_size() const { return m_allocatorFunctor().GetMaxAllocationSize(); }
+        size_type max_size() const { return m_allocatorFunctor().GetMaxContiguousAllocationSize(); }
         size_type get_allocated_size() const { return m_allocatorFunctor().NumAllocatedBytes(); }
 
         constexpr bool operator==(const AZStdFunctorAllocator& rhs) const { return m_allocatorFunctor == rhs.m_allocatorFunctor; }

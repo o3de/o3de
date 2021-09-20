@@ -216,9 +216,9 @@ namespace AZ
     class OverrunDetectionSchemaImpl
     {
     public:
-        typedef void*       pointer_type;
-        typedef size_t      size_type;
-        typedef ptrdiff_t   difference_type;
+        using pointer_type = void *;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
 
         OverrunDetectionSchemaImpl(const OverrunDetectionSchema::Descriptor& desc);
         ~OverrunDetectionSchemaImpl();
@@ -232,6 +232,7 @@ namespace AZ
         size_type NumAllocatedBytes() const;
         size_type Capacity() const;
         size_type GetMaxAllocationSize() const;
+        size_type GetMaxContiguousAllocationSize() const;
         IAllocatorAllocate* GetSubAllocator();
         void GarbageCollect();
 
@@ -241,8 +242,8 @@ namespace AZ
         Internal::AllocationRecord* CreateAllocationRecord(void* p, size_t size) const;
 
     private:
-        typedef AZStd::mutex mutex_type;
-        typedef AZStd::lock_guard<mutex_type> lock_type;
+        using mutex_type = AZStd::mutex;
+        using lock_type = AZStd::lock_guard<mutex_type>;
 
         AZStd::unique_ptr<OverrunDetectionSchema::PlatformAllocator> m_platformAllocator;
         mutex_type m_mutex;
@@ -674,6 +675,11 @@ AZ::OverrunDetectionSchema::size_type AZ::OverrunDetectionSchemaImpl::GetMaxAllo
     return 0;
 }
 
+auto AZ::OverrunDetectionSchemaImpl::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return 0;
+}
+
 AZ::IAllocatorAllocate* AZ::OverrunDetectionSchemaImpl::GetSubAllocator()
 {
     return nullptr;
@@ -797,6 +803,11 @@ AZ::OverrunDetectionSchema::size_type AZ::OverrunDetectionSchema::Capacity() con
 AZ::OverrunDetectionSchema::size_type AZ::OverrunDetectionSchema::GetMaxAllocationSize() const
 {
     return m_impl->GetMaxAllocationSize();
+}
+
+auto AZ::OverrunDetectionSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_impl->GetMaxContiguousAllocationSize();
 }
 
 AZ::IAllocatorAllocate* AZ::OverrunDetectionSchema::GetSubAllocator()

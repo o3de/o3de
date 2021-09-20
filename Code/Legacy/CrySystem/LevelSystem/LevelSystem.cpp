@@ -37,12 +37,6 @@ namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";
 
-void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_levelName);
-    pSizer->AddObject(m_levelPath);
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
@@ -56,12 +50,11 @@ bool CLevelInfo::OpenLevelPak()
         return false;
     }
 
-    AZStd::string levelpak(m_levelPath);
-    levelpak += "/level.pak";
-    AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(
-        levelpak.c_str(), m_isPak ? AZ::IO::IArchive::FLAGS_LEVEL_PAK_INSIDE_PAK : (unsigned)0, NULL, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str());
+    AZ::IO::Path levelPak(m_levelPath);
+    levelPak /= "level.pak";
+    AZ::IO::FixedMaxPathString fullLevelPakPath;
+    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
+    m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
     return bOk;
 }
 
@@ -80,7 +73,7 @@ void CLevelInfo::CloseLevelPak()
 
     if (!m_levelPakFullPath.empty())
     {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str(), AZ::IO::IArchive::FLAGS_PATH_REAL);
+        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str());
         m_levelPakFullPath.clear();
     }
 }
@@ -239,6 +232,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 //------------------------------------------------------------------------
 CLevelSystem::~CLevelSystem()
 {
+    UnloadLevel();
 }
 
 //------------------------------------------------------------------------
@@ -329,8 +323,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
     // Open all the available paks found in the levels folder
     for (auto iter = pakList.begin(); iter != pakList.end(); iter++)
     {
-        AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-        gEnv->pCryPak->OpenPack(iter->c_str(), (unsigned)0, nullptr, &fullLevelPakPath, false);
+        gEnv->pCryPak->OpenPack(iter->c_str(), nullptr, nullptr, false);
     }
 
     // Levels in bundles now take priority over levels outside of bundles.
@@ -824,17 +817,7 @@ void CLevelSystem::LogLoadingTime()
         sChain = " (Chained)";
     }
 
-    AZStd::string text;
-    text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-    gEnv->pLog->Log(text.c_str());
-}
-
-void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_levelInfos);
-    pSizer->AddObject(m_levelsFolder);
-    pSizer->AddObject(m_listeners);
+    gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
 }
 
 //////////////////////////////////////////////////////////////////////////

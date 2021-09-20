@@ -76,6 +76,7 @@
   </qresource>
   <qresource prefix="/Application">
     <file>res/o3de_editor.ico</file>
+    <file alias="o3de_application_reverse.svg">res/o3de_application_reverse.svg</file>
   </qresource>
   <qresource prefix="/Icons">
       <file alias="Eye.svg">res/Eye.svg</file>
@@ -152,6 +153,7 @@
     <file alias="error_report_error.svg">res/error_report_error.svg</file>
     <file alias="error_report_warning.svg">res/error_report_warning.svg</file>
     <file alias="error_report_comment.svg">res/error_report_comment.svg</file>
+    <file alias="error_report_helper.svg">res/error_report_helper.svg</file>
     <file>particles_tree_00.png</file>
     <file>particles_tree_01.png</file>
     <file>particles_tree_02.png</file>

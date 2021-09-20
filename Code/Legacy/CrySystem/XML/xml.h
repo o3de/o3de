@@ -34,7 +34,6 @@ public:
         }
     };
     virtual const char* AddString(const char* str) = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 private:
     int m_refCount;
 };
@@ -68,8 +67,6 @@ public:
 
     const char* getErrorString() const { return m_errorString; }
 
-    void GetMemoryUsage(ICrySizer* pSizer) const;
-
 private:
     int m_nRefCount;
     XmlString m_errorString;
@@ -87,8 +84,6 @@ struct XmlAttribute
 {
     const char* key;
     const char* value;
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{}
 
     bool operator<(const XmlAttribute& attr) const { return g_pXmlStrCmp(key, attr.key) < 0; }
     bool operator>(const XmlAttribute& attr) const { return g_pXmlStrCmp(key, attr.key) > 0; }
@@ -118,9 +113,6 @@ public:
     CXmlNode(const char* tag, bool bReuseStrings, bool bIsProcessingInstruction = false);
     //! Destructor.
     ~CXmlNode();
-
-    // collect allocated memory  informations
-    void GetMemoryUsage(ICrySizer* pSizer) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Custom new/delete with pool allocator.
@@ -211,6 +203,7 @@ public:
     bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle); // save in small memory chunks
 
     //! Set new XML Node attribute (or override attribute with same key).
+    using IXmlNode::setAttr;
     void setAttr(const char* key, const char* value);
     void setAttr(const char* key, int value);
     void setAttr(const char* key, unsigned int value);
@@ -219,11 +212,9 @@ public:
     void setAttr(const char* key, float value);
     void setAttr(const char* key, double value);
     void setAttr(const char* key, const Vec2& value);
-    void setAttr(const char* key, const Vec2d& value);
     void setAttr(const char* key, const Ang3& value);
     void setAttr(const char* key, const Vec3& value);
     void setAttr(const char* key, const Vec4& value);
-    void setAttr(const char* key, const Vec3d& value);
     void setAttr(const char* key, const Quat& value);
 
     //! Delete attrbute.
@@ -243,11 +234,9 @@ public:
     bool getAttr(const char* key, XmlString& value) const  {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
 
     bool getAttr(const char* key, Vec2& value) const;
-    bool getAttr(const char* key, Vec2d& value) const;
     bool getAttr(const char* key, Ang3& value) const;
     bool getAttr(const char* key, Vec3& value) const;
     bool getAttr(const char* key, Vec4& value) const;
-    bool getAttr(const char* key, Vec3d& value) const;
     bool getAttr(const char* key, Quat& value) const;
     bool getAttr(const char* key, ColorB& value) const;
 

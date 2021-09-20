@@ -3,11 +3,11 @@
 {% macro LowerFirst(text) %}{{ text[0] | lower}}{{ text[1:] }}{% endmacro %}
 {% macro DefineNetworkPropertyGet(ClassName, Property, Prefix = '') %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% else %}
+{%          else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% endif %}
+{%          endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
@@ -25,11 +25,11 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}AddEvent(AZ::Even
 
 {%          endif %}
 {%     elif Property.attrib['Container'] == 'Vector' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% else %}
+{%          else %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% endif %}
+{%          endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
@@ -68,7 +68,12 @@ const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
-
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
+const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Previous() const
+{
+    return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }}.GetPrevious();
+}
+{%          endif %}
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}AddEvent(AZ::Event<{{ Property.attrib['Type'] }}>::Handler& handler)
 {
@@ -1152,7 +1157,8 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% else %}
 {%      set ControllerBaseName = ControllerName %}
 {% endif %}
-{% set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{% set NetworkInputCount = AutoComponentMacros.GetNetworkInputCount(Component) | int %}
+{% set NetworkInputsExposedToScriptCount = AutoComponentMacros.GetNetworkInputsExposedToScriptCount(Component) | int %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "{{ includeFile }}"
@@ -1299,6 +1305,56 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {% if NetworkInputCount > 0 %}
+{% set ScriptableNetworkInputParamNames = [] %}
+{% call(netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{% set ScriptableNetworkInputParamNames = ScriptableNetworkInputParamNames.append(LowerFirst(netInput.attrib['Name'])) %}
+{% endcall %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
+    {{ ComponentName }}NetworkInput Construct{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
+    { 
+        return {{ ComponentName }}NetworkInput({{ ScriptableNetworkInputParamNames|join(', ') }});
+    }
+
+    {{ ComponentName }}NetworkInput::{{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }})
+    : {% for param_name in ScriptableNetworkInputParamNames %}m_{{ LowerFirst(param_name) }}({{ LowerFirst(param_name) }}){% if not loop.last %}, {% endif %}{% endfor -%}{}
+
+    void {{ ComponentName }}NetworkInput::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<{{ ComponentName }}NetworkInput>()
+                ->Version(1)
+                ;
+        }
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+{%                  set ScriptableNetInputNames = [] %}
+{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
+{%                  endcall %}
+                    ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in ScriptableNetInputNames %}{"{{ LowerFirst(param_name) }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
+
+{%                  for param_name in ScriptableNetInputNames %}
+                    ->Property("{{ param_name }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}))
+{%                  endfor %}
+            ;
+
+            behaviorContext->EBus<{{ ComponentName }}RequestBus>("{{ ComponentName }}BusHandler")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+                    ->Handler<{{ ComponentName }}BusHandler>()
+                ;
+        }
+    }
+{% endif %}
+
     Multiplayer::NetComponentId {{ ComponentName }}NetworkInput::GetNetComponentId() const
     {
         return {{ ComponentName }}NetworkInput::s_netComponentId;
@@ -1346,6 +1402,26 @@ namespace {{ Component.attrib['Namespace'] }}
         OnDeactivate(entityIsMigrating);
 {% endif %}
     }
+
+{% if NetworkInputsExposedToScriptCount > 0 %}
+    void {{ ControllerBaseName }}::CreateInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+        {{ ComponentName }}NetworkInput result;
+        {{ ComponentName }}RequestBus::EventResult(result, GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::CreateInput, deltaTime);
+
+        // Inputs for your own component always exist
+        {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
+{%      call(netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+        {{ LowerFirst(ComponentName) }}Input->m_{{ LowerFirst(netInput.attrib['Name']) }} = result.m_{{ LowerFirst(netInput.attrib['Name']) }};
+{%      endcall %}
+    }
+
+    void {{ ControllerBaseName }}::ProcessInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+        {{ ComponentName }}NetworkInput* {{ LowerFirst(ComponentName) }}Input = input.FindComponentInput<{{ ComponentName }}NetworkInput>();
+        {{ ComponentName }}RequestBus::Event(GetEntity()->GetId(), &{{ ComponentName }}RequestBus::Events::ProcessInput, {{ LowerFirst(ComponentName) }}Input, deltaTime);
+    }
+{% endif %}
 
     const {{ ComponentName }}& {{ ControllerBaseName }}::GetParent() const
     {
@@ -1399,6 +1475,9 @@ namespace {{ Component.attrib['Namespace'] }}
         }
         ReflectToEditContext(context);
         ReflectToBehaviorContext(context);
+{%      if NetworkInputsExposedToScriptCount > 0 %}
+        {{ ComponentName }}NetworkInput::Reflect(context);
+{%      endif %}
     }
 
     void {{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
@@ -1448,8 +1527,8 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
             {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
-            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) -}}
-                
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) }}
+
             // Reflect RPCs
             {{ ReflectRpcInvocations(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
             {{ ReflectRpcInvocations(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
@@ -1459,7 +1538,6 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ ReflectRpcEvents(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
             {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
             {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
-
             {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
             ;
         }
@@ -1476,6 +1554,11 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Required') %}
         required.push_back(AZ_CRC_CE("{{ ComponentService }}"));
 {% endcall %}
+{% if NetworkInputCount > 0 %}
+
+        // This component uses NetworkInputs so it requires a MultiplayerInputDriver service which is responsible for calling CreateInput and ProcessInput
+        required.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
+{% endif %}
     }
 
     void {{ ComponentBaseName }}::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -1503,7 +1586,6 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
     {{ ComponentBaseName }}::{{ ComponentBaseName }}() = default;
-
     {{ ComponentBaseName }}::~{{ ComponentBaseName }}() = default;
 
     void {{ ComponentBaseName }}::Init()

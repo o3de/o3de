@@ -112,7 +112,7 @@ inline bool Gestures::RecognizerPinch::OnDownEvent(const AZ::Vector2& screenPosi
     }
 
     m_currentPositions[pointerIndex] = screenPosition;
-    m_lastUpdateTimes[pointerIndex] = gEnv->pTimer->GetFrameStartTime().GetValue();
+    m_lastUpdateTimes[pointerIndex] = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
     if (m_lastUpdateTimes[0] != m_lastUpdateTimes[1])
     {
         // We need to wait until both touches have been updated this frame.

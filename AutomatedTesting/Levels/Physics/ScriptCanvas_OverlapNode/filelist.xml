@@ -1,0 +1,6 @@
+<download name="ScriptCanvas_OverlapNode" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39215" md5="4161ca067a49032c7700f096837fd54f"/>
+ </files>
+</download>

@@ -618,12 +618,6 @@ bool CBaseObject::SetPos(const Vec3& pos, int flags)
         StoreUndo("Position", true, flags);
     }
 
-    float terrainElevation = AzFramework::Terrain::TerrainDataRequests::GetDefaultTerrainHeight();
-    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainElevation
-        , &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats
-        , pos.x, pos.y, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, nullptr);
-    m_height = pos.z - terrainElevation;
-
     if (!bPositionDelegated)
     {
         m_pos = pos;
@@ -1275,14 +1269,6 @@ void CBaseObject::OnEvent(ObjectEvent event)
 {
     switch (event)
     {
-    case EVENT_KEEP_HEIGHT:
-    {
-        float h = m_height;
-        float newz = GetIEditor()->GetTerrainElevation(m_pos.x, m_pos.y) + m_height;
-        SetPos(Vec3(m_pos.x, m_pos.y, newz));
-        m_height = h;
-    }
-    break;
     case EVENT_CONFIG_SPEC_CHANGE:
         UpdateVisibility(!IsHidden());
         break;
@@ -2735,7 +2721,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
         return false;
     }
 
-    Matrix34A worldTM;
+    Matrix34 worldTM;
     IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
     if (!pStatObj)
     {
@@ -2743,7 +2729,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     }
 
     // transform decal into object space
-    Matrix34A worldTM_Inverted = worldTM.GetInverted();
+    Matrix34 worldTM_Inverted = worldTM.GetInverted();
     Matrix33 worldRot(worldTM_Inverted);
     worldRot.Transpose();
     // put hit direction into the object space

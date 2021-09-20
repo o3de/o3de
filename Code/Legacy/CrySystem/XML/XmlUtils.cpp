@@ -11,7 +11,6 @@
 #include <IXml.h>
 #include "xml.h"
 #include "XmlUtils.h"
-#include "ReadWriteXMLSink.h"
 
 #include "../SimpleStringPool.h"
 #include "SerializeXMLReader.h"
@@ -20,7 +19,6 @@
 #include "XMLBinaryWriter.h"
 #include "XMLBinaryReader.h"
 
-#include "XMLPatcher.h"
 #include <md5.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,23 +26,14 @@
 SXmlNodeStats* g_pCXmlNode_Stats = 0;
 #endif
 
-extern bool g_bEnableBinaryXmlLoading;
-
 //////////////////////////////////////////////////////////////////////////
 CXmlUtils::CXmlUtils(ISystem* pSystem)
 {
     m_pSystem = pSystem;
 
-    // create IReadWriteXMLSink object
-    m_pReadWriteXMLSink = new CReadWriteXMLSink();
 #ifdef CRY_COLLECT_XML_NODE_STATS
     g_pCXmlNode_Stats = new SXmlNodeStats();
 #endif
-    m_pStatsXmlNodePool = 0;
-#ifndef _RELEASE
-    m_statsThreadOwner = CryGetCurrentThreadId();
-#endif
-    m_pXMLPatcher = NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,8 +42,6 @@ CXmlUtils::~CXmlUtils()
 #ifdef CRY_COLLECT_XML_NODE_STATS
     delete g_pCXmlNode_Stats;
 #endif
-    SAFE_DELETE(m_pStatsXmlNodePool);
-    SAFE_DELETE(m_pXMLPatcher);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,21 +52,13 @@ IXmlParser* CXmlUtils::CreateXmlParser()
 }
 
 //////////////////////////////////////////////////////////////////////////
-XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings, bool bEnablePatching)
+XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    XmlParser parser(bReuseStrings);
-    XmlNodeRef node = parser.ParseFile(sFilename, true);
-
     // XmlParser is supposed to log warnings and errors (if any),
     // so we don't need to call parser.getErrorString(),
     // CryLog() etc here.
-
-    if (node && bEnablePatching && m_pXMLPatcher)
-    {
-        node = m_pXMLPatcher->ApplyXMLDataPatch(node, sFilename);
-    }
-
-    return node;
+    XmlParser parser(bReuseStrings);
+    return parser.ParseFile(sFilename, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,39 +79,16 @@ void GetMD5(const char* pSrcBuffer, int nSrcSize, char signatureMD5[16])
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CXmlUtils::HashXml(XmlNodeRef node)
-{
-    static char signature[16 * 2 + 1];
-    static char temp[16];
-    static const char* hex = "0123456789abcdef";
-    XmlString str = node->getXML();
-    GetMD5(str.data(), static_cast<int>(str.length()), temp);
-    for (int i = 0; i < 16; i++)
-    {
-        signature[2 * i + 0] = hex[((uint8)temp[i]) >> 4];
-        signature[2 * i + 1] = hex[((uint8)temp[i]) & 0xf];
-    }
-    signature[16 * 2] = 0;
-    return signature;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IReadWriteXMLSink* CXmlUtils::GetIReadWriteXMLSink()
-{
-    return m_pReadWriteXMLSink;
-}
-
-//////////////////////////////////////////////////////////////////////////
 class CXmlSerializer
     : public IXmlSerializer
 {
 public:
     CXmlSerializer()
         : m_nRefCount(0)
-        , m_pReaderImpl(NULL)
-        , m_pReaderSer(NULL)
-        , m_pWriterSer(NULL)
-        , m_pWriterImpl(NULL)
+        , m_pReaderImpl(nullptr)
+        , m_pReaderSer(nullptr)
+        , m_pWriterSer(nullptr)
+        , m_pWriterImpl(nullptr)
     {
     }
     ~CXmlSerializer()
@@ -148,8 +104,8 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddRef() { ++m_nRefCount; }
-    virtual void Release()
+    void AddRef() override { ++m_nRefCount; }
+    void Release() override
     {
         if (--m_nRefCount <= 0)
         {
@@ -157,14 +113,14 @@ public:
         }
     }
 
-    virtual ISerialize* GetWriter(XmlNodeRef& node)
+    ISerialize* GetWriter(XmlNodeRef& node) override
     {
         ClearAll();
         m_pWriterImpl = new CSerializeXMLWriterImpl(node);
         m_pWriterSer = new CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>(*m_pWriterImpl);
         return m_pWriterSer;
     }
-    virtual ISerialize* GetReader(XmlNodeRef& node)
+    ISerialize* GetReader(XmlNodeRef& node) override
     {
         ClearAll();
         m_pReaderImpl = new CSerializeXMLReaderImpl(node);
@@ -172,12 +128,6 @@ public:
         return m_pReaderSer;
     }
 
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->Add(*this);
-        pSizer->AddObject(m_pReaderImpl);
-        pSizer->AddObject(m_pWriterImpl);
-    }
     //////////////////////////////////////////////////////////////////////////
 private:
     int m_nRefCount;
@@ -192,62 +142,6 @@ private:
 IXmlSerializer* CXmlUtils::CreateXmlSerializer()
 {
     return new CXmlSerializer;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXmlUtils::GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer)
-{
-#ifdef CRY_COLLECT_XML_NODE_STATS
-    // yes, slow
-    std::vector<const CXmlNode*> rootNodes;
-    {
-        TXmlNodeSet::const_iterator iter = g_pCXmlNode_Stats->nodeSet.begin();
-        TXmlNodeSet::const_iterator iterEnd = g_pCXmlNode_Stats->nodeSet.end();
-        while (iter != iterEnd)
-        {
-            const CXmlNode* pNode = *iter;
-            if (pNode->getParent() == 0)
-            {
-                rootNodes.push_back(pNode);
-            }
-            ++iter;
-        }
-    }
-
-    // use the following to log to console
-#if 0
-    CryLogAlways("NumXMLRootNodes=%d NumXMLNodes=%d TotalAllocs=%d TotalFrees=%d",
-        rootNodes.size(), g_pCXmlNode_Stats->nodeSet.size(),
-        g_pCXmlNode_Stats->nAllocs, g_pCXmlNode_Stats->nFrees);
-#endif
-
-
-    // use the following to debug the nodes in the system
-#if 0
-    {
-        std::vector<const CXmlNode*>::const_iterator iter = rootNodes.begin();
-        std::vector<const CXmlNode*>::const_iterator iterEnd = rootNodes.end();
-        while (iter != iterEnd)
-        {
-            const CXmlNode* pNode = *iter;
-            CryLogAlways("Node 0x%p Tag='%s'", pNode, pNode->getTag());
-            ++iter;
-        }
-    }
-#endif
-
-    // only for debugging, add it as pseudo numbers to the CrySizer.
-    // shift it by 10, so we get the actual number
-    {
-        SIZER_COMPONENT_NAME(pSizer, "#NumTotalNodes");
-        pSizer->Add("#NumTotalNodes", g_pCXmlNode_Stats->nodeSet.size() << 10);
-    }
-
-    {
-        SIZER_COMPONENT_NAME(pSizer, "#NumRootNodes");
-        pSizer->Add("#NumRootNodes", rootNodes.size() << 10);
-    }
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -271,11 +165,11 @@ public:
         return m_fileHandle != AZ::IO::InvalidHandle;
     }
     ;
-    virtual void Write(const void* pData, size_t size)
+    void Write(const void* pData, size_t size) override
     {
         if (m_fileHandle != AZ::IO::InvalidHandle)
         {
-            gEnv->pCryPak->FWrite(pData, size, 1, m_fileHandle);
+            gEnv->pCryPak->FWrite(pData, size, m_fileHandle);
         }
     }
 private:
@@ -283,56 +177,19 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-bool CXmlUtils::SaveBinaryXmlFile(const char* filename, XmlNodeRef root)
-{
-    CXmlBinaryDataWriterFile fileSink(filename);
-    if (!fileSink.IsOk())
-    {
-        return false;
-    }
-    XMLBinary::CXMLBinaryWriter writer;
-    AZStd::string error;
-    return writer.WriteNode(&fileSink, root, false, 0, error);
-}
-
-//////////////////////////////////////////////////////////////////////////
-XmlNodeRef CXmlUtils::LoadBinaryXmlFile(const char* filename, bool bEnablePatching)
-{
-    XMLBinary::XMLBinaryReader reader;
-    XMLBinary::XMLBinaryReader::EResult result;
-    XmlNodeRef root = reader.LoadFromFile(filename, result);
-
-    if (result == XMLBinary::XMLBinaryReader::eResult_Success && bEnablePatching == true && m_pXMLPatcher != NULL)
-    {
-        root = m_pXMLPatcher->ApplyXMLDataPatch(root, filename);
-    }
-
-    return root;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CXmlUtils::EnableBinaryXmlLoading(bool bEnable)
-{
-    bool bPrev = g_bEnableBinaryXmlLoading;
-    g_bEnableBinaryXmlLoading = bEnable;
-    return bPrev;
-}
-
-//////////////////////////////////////////////////////////////////////////
 class CXmlTableReader
     : public IXmlTableReader
 {
 public:
     CXmlTableReader();
-    virtual ~CXmlTableReader();
+    ~CXmlTableReader() override;
 
-    virtual void Release();
+    void Release() override;
 
-    virtual bool Begin(XmlNodeRef rootNode);
-    virtual int  GetEstimatedRowCount();
-    virtual bool ReadRow(int& rowIndex);
-    virtual bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize);
-    float GetCurrentRowHeight() override;
+    bool Begin(XmlNodeRef rootNode) override;
+    int  GetEstimatedRowCount() override;
+    bool ReadRow(int& rowIndex) override;
+    bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize) override;
 
 private:
     bool m_bExcel;
@@ -341,7 +198,6 @@ private:
 
     XmlNodeRef m_rowNode;
 
-    float m_currentRowHeight;
     int m_rowNodeIndex;
     int m_row;
 
@@ -372,7 +228,7 @@ void CXmlTableReader::Release()
 //////////////////////////////////////////////////////////////////////////
 bool CXmlTableReader::Begin(XmlNodeRef rootNode)
 {
-    m_tableNode = 0;
+    m_tableNode = nullptr;
 
     if (!rootNode)
     {
@@ -391,11 +247,11 @@ bool CXmlTableReader::Begin(XmlNodeRef rootNode)
         m_tableNode = rootNode->findChild("Table");
     }
 
-    m_rowNode = 0;
+    m_rowNode = nullptr;
     m_rowNodeIndex = -1;
     m_row = -1;
 
-    return (m_tableNode != 0);
+    return (m_tableNode != nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -411,7 +267,6 @@ int CXmlTableReader::GetEstimatedRowCount()
 //////////////////////////////////////////////////////////////////////////
 bool CXmlTableReader::ReadRow(int& rowIndex)
 {
-    m_currentRowHeight = 0.0f;
     if (!m_tableNode)
     {
         return false;
@@ -441,7 +296,7 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
 
             if (!m_rowNode->isTag("Row"))
             {
-                m_rowNode = 0;
+                m_rowNode = nullptr;
                 continue;
             }
 
@@ -454,17 +309,11 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
                 if (index < m_row)
                 {
                     m_rowNodeIndex = rowNodeCount;
-                    m_rowNode = 0;
+                    m_rowNode = nullptr;
                     return false;
                 }
                 m_row = index;
             }
-            float height;
-            if (m_rowNode->getAttr("ss:Height", height))
-            {
-                m_currentRowHeight = height;
-            }
-
             rowIndex = m_row;
             return true;
         }
@@ -502,7 +351,7 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
 //////////////////////////////////////////////////////////////////////////
 bool CXmlTableReader::ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize)
 {
-    pContent = 0;
+    pContent = nullptr;
     contentSize = 0;
 
     if (!m_tableNode)
@@ -617,75 +466,8 @@ bool CXmlTableReader::ReadCell(int& columnIndex, const char*& pContent, size_t& 
     }
 }
 
-float CXmlTableReader::GetCurrentRowHeight()
-{
-    return m_currentRowHeight;
-}
 //////////////////////////////////////////////////////////////////////////
 IXmlTableReader* CXmlUtils::CreateXmlTableReader()
 {
     return new CXmlTableReader;
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Init xml stats nodes pool
-void CXmlUtils::InitStatsXmlNodePool(uint32 nPoolSize)
-{
-    CHECK_STATS_THREAD_OWNERSHIP();
-    if (0 == m_pStatsXmlNodePool)
-    {
-        // create special xml node pools for game statistics
-
-        const bool bReuseStrings = true;    // TODO parameterise?
-        m_pStatsXmlNodePool = new CXmlNodePool(nPoolSize, bReuseStrings);
-        assert(m_pStatsXmlNodePool);
-    }
-    else
-    {
-        CryLog("[CXmlNodePool]: Xml stats nodes pool already initialized");
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Creates new xml node for statistics.
-XmlNodeRef CXmlUtils::CreateStatsXmlNode(const char* sNodeName)
-{
-    CHECK_STATS_THREAD_OWNERSHIP();
-    if (0 == m_pStatsXmlNodePool)
-    {
-        CryLog("[CXmlNodePool]: Xml stats nodes pool isn't initialized. Perform default initialization.");
-        InitStatsXmlNodePool();
-    }
-    return m_pStatsXmlNodePool->GetXmlNode(sNodeName);
-}
-
-void CXmlUtils::SetStatsOwnerThread([[maybe_unused]] threadID threadId)
-{
-#ifndef _RELEASE
-    m_statsThreadOwner = threadId;
-#endif
-}
-
-void CXmlUtils::FlushStatsXmlNodePool()
-{
-    CHECK_STATS_THREAD_OWNERSHIP();
-    if (m_pStatsXmlNodePool)
-    {
-        if (m_pStatsXmlNodePool->empty())
-        {
-            SAFE_DELETE(m_pStatsXmlNodePool);
-        }
-    }
-}
-
-void CXmlUtils::SetXMLPatcher(XmlNodeRef* pPatcher)
-{
-    SAFE_DELETE(m_pXMLPatcher);
-
-    if (pPatcher != NULL)
-    {
-        m_pXMLPatcher = new CXMLPatcher(*pPatcher);
-    }
-}
-
-

@@ -313,7 +313,7 @@ namespace
     {
         if (strcmp(pMessage, "") != 0)
         {
-            CryLogAlways(pMessage);
+            CryLogAlways("%s", pMessage);
         }
     }
 
@@ -625,7 +625,7 @@ namespace
     }
 
     //////////////////////////////////////////////////////////////////////////
-    const char* PyGetPakFromFile(const char* filename)
+    AZ::IO::Path PyGetPakFromFile(const char* filename)
     {
         auto pIPak = GetIEditor()->GetSystem()->GetIPak();
         AZ::IO::HandleType fileHandle = pIPak->FOpen(filename, "rb");
@@ -633,8 +633,9 @@ namespace
         {
             throw std::logic_error("Invalid file name.");
         }
-        const char* pArchPath = pIPak->GetFileArchivePath(fileHandle);
+        AZ::IO::Path pArchPath = pIPak->GetFileArchivePath(fileHandle);
         pIPak->FClose(fileHandle);
+
         return pArchPath;
     }
 
@@ -1040,7 +1041,7 @@ namespace AzToolsFramework
         return PySetAxisConstraint(pConstrain);
     }
 
-    const char* PythonEditorComponent::GetPakFromFile(const char* filename)
+    AZ::IO::Path PythonEditorComponent::GetPakFromFile(const char* filename)
     {
         return PyGetPakFromFile(filename);
     }
@@ -1114,7 +1115,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_axis_constraint", PyGetAxisConstraint, nullptr, "Gets axis."));
             addLegacyGeneral(behaviorContext->Method("set_axis_constraint", PySetAxisConstraint, nullptr, "Sets axis."));
 
-            addLegacyGeneral(behaviorContext->Method("get_pak_from_file", PyGetPakFromFile, nullptr, "Finds a pak file name for a given file."));
+            addLegacyGeneral(behaviorContext->Method("get_pak_from_file", [](const char* filename) -> AZStd::string { return PyGetPakFromFile(filename).Native(); }, nullptr, "Finds a pak file name for a given file."));
 
             addLegacyGeneral(behaviorContext->Method("log", PyLog, nullptr, "Prints the message to the editor console window."));
 

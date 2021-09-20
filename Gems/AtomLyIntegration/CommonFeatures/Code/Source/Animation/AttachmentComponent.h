@@ -75,7 +75,7 @@ namespace AZ
 
             ////////////////////////////////////////////////////////////////////////
             // AttachmentComponentRequests
-            void Reattach(bool detachFirst);
+            void Reattach(bool detachFirst) override;
             void Attach(AZ::EntityId targetId, const char* targetBoneName, const AZ::Transform& offset) override;
             void Detach() override;
             void SetAttachmentOffset(const AZ::Transform& offset) override;

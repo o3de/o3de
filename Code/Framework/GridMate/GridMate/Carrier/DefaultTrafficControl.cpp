@@ -58,8 +58,8 @@ DefaultTrafficControl::~DefaultTrafficControl()
 void
 DefaultTrafficControl::OnConnect(TrafficControlConnectionId id, const AZStd::intrusive_ptr<DriverAddress>& address)
 {
-    AZ_Assert(id->m_trafficData == NULL, "We have already assigned traffic data to this connection!");
-    if (id->m_trafficData != NULL)
+    AZ_Assert(id->m_trafficData == nullptr, "We have already assigned traffic data to this connection!");
+    if (id->m_trafficData != nullptr)
     {
         return;
     }
@@ -100,7 +100,7 @@ void
 DefaultTrafficControl::OnDisconnect(TrafficControlConnectionId id)
 {
     ConnectionData* cd = reinterpret_cast<ConnectionData*>(id->m_trafficData);
-    id->m_trafficData = NULL;
+    id->m_trafficData = nullptr;
     bool isFound = false;
     for (ConnectionListType::iterator i = m_connections.begin(); i != m_connections.end(); ++i)
     {

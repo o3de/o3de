@@ -95,7 +95,7 @@ namespace GraphCanvas
         const EditorId& GetEditorId() const;
 
         // Child Overrides
-        virtual bool LessThan(const GraphCanvasTreeItem* graphItem) const;
+        bool LessThan(const GraphCanvasTreeItem* graphItem) const override;
         virtual QVariant OnData(const QModelIndex& index, int role) const;
         virtual Qt::ItemFlags OnFlags() const;
 

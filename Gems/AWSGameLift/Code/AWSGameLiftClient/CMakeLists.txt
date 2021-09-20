@@ -45,13 +45,26 @@ ly_add_target(
         PUBLIC
             Gem::AWSGameLift.Client.Static
     RUNTIME_DEPENDENCIES
-        Gem::AWSCore
+        Gem::AWSCore.Clients
 )
 
 # Load the "Gem::AWSGameLift" module in all types of applications.
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AWSGameLift.Tools NAMESPACE Gem TARGETS Gem::AWSGameLift.Clients)
-    ly_create_alias(NAME AWSGameLift.Builders NAMESPACE Gem TARGETS Gem::AWSGameLift.Clients)
+    ly_create_alias(
+        NAME AWSGameLift.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore.Tools
+            Gem::AWSGameLift.Clients
+    )
+
+    ly_create_alias(
+        NAME AWSGameLift.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore.Builders
+            Gem::AWSGameLift.Clients
+    )
 endif()
 
 ################################################################################

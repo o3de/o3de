@@ -21,7 +21,7 @@ add_subdirectory(assetpipeline)
 add_subdirectory(atom_renderer)
 
 ## Physics ##
-add_subdirectory(physics)
+add_subdirectory(Physics)
 
 ## ScriptCanvas ##
 add_subdirectory(scripting)

@@ -17,13 +17,10 @@ from pathlib import Path
 import logging as _logging
 
 # local imports
-from ColorGrading import env_bool
 from ColorGrading import initialize_logger
 from ColorGrading import DCCSI_GDEBUG
 from ColorGrading import DCCSI_DEV_MODE
-from ColorGrading import DCCSI_GDEBUGGER
 from ColorGrading import DCCSI_LOGLEVEL
-from ColorGrading import FRMT_LOG_LONG
 
 __all__ = ['start']
 
@@ -44,15 +41,21 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 # connect to the debugger
 if DCCSI_DEV_MODE:
-    APP_DATA_WING = Path('C:/Users/gallowj/AppData/Roaming/Wing Pro 7')
-    APP_DATA_WING.resolve()
-    site.addsitedir(pathlib.PureWindowsPath(APP_DATA_WING).as_posix())
-    import wingdbstub as debugger
-    try:
-        debugger.Ensure()
-        _LOGGER.info("Wing debugger attached")
-    except Exception as e:
-        _LOGGER.debug('Can not attach Wing debugger (running in IDE already?)')
+    from ColorGrading import DCCSI_WING_VERSION_MAJOR
+    from ColorGrading import get_datadir
+    APPDATA = get_datadir()  # os APPDATA
+    APPDATA_WING = Path(APPDATA, f"Wing Pro {DCCSI_WING_VERSION_MAJOR}").resolve()
+    if APPDATA_WING.exists():
+        site.addsitedir(pathlib.PureWindowsPath(APPDATA_WING).as_posix())
+        import wingdbstub as debugger
+        try:
+            debugger.Ensure()
+            _LOGGER.info("Wing debugger attached")
+        except Exception as e:
+            _LOGGER.debug('Can not attach Wing debugger (running in IDE already?)')
+    else:
+        _LOGGER.warning("Path envar doesn't exist: APPDATA_WING")
+        _LOGGER.info(f"Pattern: {APPDATA_WING}")
 # ------------------------------------------------------------------------
 
 
@@ -60,28 +63,16 @@ if DCCSI_DEV_MODE:
 def start():
     """set up access to OpenImageIO, within o3de or without"""
     # ------------------------------------------------------------------------
+    running_editor = None
     try:
         # running in o3de
         import azlmbr
-        
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV', Path(azlmbr.paths.engroot)))
-        os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
-        _LOGGER.debug(_O3DE_DEV)
-    
-        _O3DE_BIN_PATH = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
-    
-        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-        os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
-    
-        _LOGGER.debug(_O3DE_BIN)
-    
-        site.addsitedir(_O3DE_BIN)
+        running_editor = True
     
     except Exception as e:
         # running external, start this module from:
-        # "C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Tools\ColorGrading\cmdline\CMD_ColorGradinTools.bat"
-        pass
-    
+        # "C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Tools\ColorGrading\cmdline\CMD_ColorGradingTools.bat"
+
         try:
             _O3DE_DEV = Path(os.getenv('O3DE_DEV'))
             _O3DE_DEV = _O3DE_DEV.resolve()
@@ -102,15 +93,32 @@ def start():
         except EnvironmentError as e:
             _LOGGER.error('O3DE bin folder not set or found')
             raise e
-# ------------------------------------------------------------------------
+        
+        if running_editor:
+            _O3DE_DEV = Path(os.getenv('O3DE_DEV', Path(azlmbr.paths.engroot)))
+            os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
+            _LOGGER.debug(_O3DE_DEV)
+        
+            _O3DE_BIN_PATH = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
+        
+            _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
+            os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
+        
+            _LOGGER.debug(_O3DE_BIN)
+        
+            site.addsitedir(_O3DE_BIN)
 
-
-# ------------------------------------------------------------------------
-try:
-    import OpenImageIO as OpenImageIO
-except ImportError as e:
-    _LOGGER.error(f"invalid import: {e}")
-    sys.exit(1)
+    # test access to oiio
+    if os.name == 'nt':
+        try:
+            import OpenImageIO as oiio
+            return True
+        except ImportError as e:
+            _LOGGER.error(f"invalid import: {e}")
+            pass
+    else:
+        _LOGGER.info("Non-Windows platforms not yet supported...")
+        return False
 # ------------------------------------------------------------------------
 
 
@@ -120,4 +128,5 @@ except ImportError as e:
 if __name__ == '__main__':
     """Run this file as main"""
 
-    start()
+    oiio_exists = start()
+    _LOGGER.debug(f"Import OpenImageIO performed: {oiio_exists}")

@@ -32,6 +32,19 @@
 #include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
 
+// s should point to a buffer at least 65 chars long
+inline void BitsAlpha64(uint64 n, char* s)
+{
+    for (int i = 0; n != 0; n >>= 1, i++)
+    {
+        if (n & 1)
+        {
+            *s++ = i < 32 ? static_cast<char>(i + 'z' - 31) : static_cast<char>(i + 'Z' - 63);
+        }
+    }
+    *s++ = '\0';
+}
+
 static inline void AssertName([[maybe_unused]] const char* szName)
 {
 #ifdef _DEBUG
@@ -297,7 +310,7 @@ void CXConsole::Init(ISystem* pSystem)
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
 
-#if defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if defined(_RELEASE)
     static const int kDeactivateConsoleDefault = 1;
 #else
     static const int kDeactivateConsoleDefault = 0;
@@ -376,12 +389,12 @@ void CXConsole::LogChangeMessage(const char* name, const bool isConst, const boo
 
     if (allowChange)
     {
-        gEnv->pLog->LogWarning(logMessage.c_str());
+        gEnv->pLog->LogWarning("%s", logMessage.c_str());
         gEnv->pLog->LogWarning("Modifying marked variables will not be allowed in Release mode!");
     }
     else
     {
-        gEnv->pLog->LogError(logMessage.c_str());
+        gEnv->pLog->LogError("%s", logMessage.c_str());
     }
 }
 
@@ -568,35 +581,6 @@ ICVar* CXConsole::Register(const char* sName, int* src, int iValue, int nFlags, 
 
 
 //////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterCVarGroup(const char* szName, const char* szFileName)
-{
-    AssertName(szName);
-    assert(szFileName);
-
-    // suppress cvars not starting with sys_spec_ as
-    // cheaters might create cvars before we created ours
-    if (_strnicmp(szName, "sys_spec_", 9) != 0)
-    {
-        return 0;
-    }
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, szName, NULL);
-    if (pCVar)
-    {
-        AZ_Error("System", false, "CVar groups should only be registered once");
-        return pCVar;
-    }
-
-    CXConsoleVariableCVarGroup* pCVarGroup = new CXConsoleVariableCVarGroup(this, szName, szFileName, VF_COPYNAME);
-
-    pCVar = pCVarGroup;
-
-    RegisterVar(pCVar, CXConsoleVariableCVarGroup::OnCVarChangeFunc);
-
-    return pCVar;
-}
-
-//////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
     AssertName(sName);
@@ -620,7 +604,6 @@ ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFla
     return pCVar;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, const char** src, const char* defaultValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
@@ -643,7 +626,6 @@ ICVar* CXConsole::Register(const char* sName, const char** src, const char* defa
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::RegisterString(const char* sName, const char* sValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
@@ -704,30 +686,6 @@ ICVar* CXConsole::RegisterInt(const char* sName, int iValue, int nFlags, const c
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
-{
-    AssertName(sName);
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
-    if (pCVar)
-    {
-        gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterInt64(): variable [%s] is already registered", pCVar->GetName());
-#if LOG_CVAR_INFRACTIONS_CALLSTACK
-        gEnv->pSystem->debug_LogCallStack();
-#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
-        return pCVar;
-    }
-
-    pCVar = new CXConsoleVariableInt64(this, sName, iValue, nFlags, help);
-    RegisterVar(pCVar, pChangeFunc);
-    return pCVar;
-}
-
-
 
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::UnregisterVariable(const char* sVarName, [[maybe_unused]] bool bDelete)
@@ -2891,20 +2849,6 @@ int CXConsole::GetNumVisibleVars()
     return numVars;
 }
 
-void CXConsole::AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, ConsoleVariablesVector::const_iterator end, CCrc32& runningNameCrc32, CCrc32& runningNameValueCrc32)
-{
-    for (ConsoleVariablesVector::const_iterator it = begin; it <= end; ++it)
-    {
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        AZStd::string hashStr = it->first;
-
-        runningNameCrc32.Add(hashStr.c_str(), hashStr.length());
-        hashStr += it->second->GetDataProbeString();
-        runningNameValueCrc32.Add(hashStr.c_str(), hashStr.length());
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
@@ -3087,18 +3031,6 @@ inline size_t sizeOf (const AZStd::string& str)
 inline size_t sizeOf (const char* sz)
 {
     return sz ? strlen(sz) + 1 : 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::GetMemoryUsage (class ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_sInputBuffer);
-    pSizer->AddObject(m_sPrevTab);
-    pSizer->AddObject(m_dqConsoleBuffer);
-    pSizer->AddObject(m_dqHistory);
-    pSizer->AddObject(m_mapCommands);
-    pSizer->AddObject(m_mapBinds);
 }
 
 //////////////////////////////////////////////////////////////////////////

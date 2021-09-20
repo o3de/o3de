@@ -1,6 +1,0 @@
-<download name="C5689522_Physxterrain_AddPhysxterrainNoEditorCrash" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39327" md5="90a1c3a1431d1ab2e5d838f31659170a"/>
- </files>
-</download>

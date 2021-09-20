@@ -27,18 +27,17 @@ import numpy as np
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.exr_to_3dl_azasset'
 
-import ColorGrading.initialize
-ColorGrading.initialize.start()
-
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-try:
-    import OpenImageIO as oiio
-    pass
-except ImportError as e:
-    _LOGGER.error(f"invalid import: {e}")
-    sys.exit(1)
+import ColorGrading.initialize
+if ColorGrading.initialize.start():
+    try:
+        import OpenImageIO as oiio
+        pass
+    except ImportError as e:
+        _LOGGER.error(f"invalid import: {e}")
+        sys.exit(1)
 # ------------------------------------------------------------------------
 
 
@@ -114,7 +113,9 @@ if __name__ == '__main__':
     lut_intervals, lut_values = generate_lut_values(image_spec, image_buffer)
 
     write_3DL(args.o, image_spec.height, lut_intervals, lut_values)
-    write_azasset(args.o, image_spec.height, lut_intervals, lut_values)
+    
+    # write_azasset(file_path, lut_intervals, lut_values, azasset_json=AZASSET_LUT)
+    write_azasset(args.o, lut_intervals, lut_values)
 
     # example from command line
     # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr

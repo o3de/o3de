@@ -29,60 +29,60 @@ class CViewSystem
 {
 private:
 
-    typedef std::map<unsigned int, IView*> TViewMap;
-    typedef std::vector<unsigned int> TViewIdVector;
+    using TViewMap = std::map<unsigned int, IView*>;
+    using TViewIdVector = std::vector<unsigned int>;
 
 public:
 
     //IViewSystem
-    virtual IView* CreateView();
-    virtual unsigned int AddView(IView* pView) override;
-    virtual void RemoveView(IView* pView);
-    virtual void RemoveView(unsigned int viewId);
+    IView* CreateView() override;
+    unsigned int AddView(IView* pView) override;
+    void RemoveView(IView* pView) override;
+    void RemoveView(unsigned int viewId) override;
 
-    virtual void SetActiveView(IView* pView);
-    virtual void SetActiveView(unsigned int viewId);
+    void SetActiveView(IView* pView) override;
+    void SetActiveView(unsigned int viewId) override;
 
     //CameraSystemRequestBus
     AZ::EntityId GetActiveCamera() override { return m_activeViewId ? GetActiveView()->GetLinkedId() : AZ::EntityId(); }
 
     //utility functions
-    virtual IView* GetView(unsigned int viewId);
-    virtual IView* GetActiveView();
+    IView* GetView(unsigned int viewId) override;
+    IView* GetActiveView() override;
 
-    virtual unsigned int GetViewId(IView* pView);
-    virtual unsigned int GetActiveViewId();
+    unsigned int GetViewId(IView* pView) override;
+    unsigned int GetActiveViewId() override;
 
-    virtual void PostSerialize();
+    void PostSerialize() override;
 
-    virtual IView* GetViewByEntityId(const AZ::EntityId& id, bool forceCreate);
+    IView* GetViewByEntityId(const AZ::EntityId& id, bool forceCreate) override;
 
-    virtual float GetDefaultZNear() { return m_fDefaultCameraNearZ; };
-    virtual void SetBlendParams(float fBlendPosSpeed, float fBlendRotSpeed, bool performBlendOut) { m_fBlendInPosSpeed = fBlendPosSpeed; m_fBlendInRotSpeed = fBlendRotSpeed; m_bPerformBlendOut = performBlendOut; };
-    virtual void SetOverrideCameraRotation(bool bOverride, Quat rotation);
-    virtual bool IsPlayingCutScene() const
+    float GetDefaultZNear() override { return m_fDefaultCameraNearZ; };
+    void SetBlendParams(float fBlendPosSpeed, float fBlendRotSpeed, bool performBlendOut) override { m_fBlendInPosSpeed = fBlendPosSpeed; m_fBlendInRotSpeed = fBlendRotSpeed; m_bPerformBlendOut = performBlendOut; };
+    void SetOverrideCameraRotation(bool bOverride, Quat rotation) override;
+    bool IsPlayingCutScene() const override
     {
         return m_cutsceneCount > 0;
     }
-    virtual void SetDeferredViewSystemUpdate(bool const bDeferred){ m_useDeferredViewSystemUpdate = bDeferred; }
-    virtual bool UseDeferredViewSystemUpdate() const { return m_useDeferredViewSystemUpdate; }
-    virtual void SetControlAudioListeners(bool const bActive);
+    void SetDeferredViewSystemUpdate(bool const bDeferred) override{ m_useDeferredViewSystemUpdate = bDeferred; }
+    bool UseDeferredViewSystemUpdate() const override { return m_useDeferredViewSystemUpdate; }
+    void SetControlAudioListeners(bool const bActive) override;
     //~IViewSystem
 
     //IMovieUser
-    virtual void SetActiveCamera(const SCameraParams& Params);
-    virtual void BeginCutScene(IAnimSequence* pSeq, unsigned long dwFlags, bool bResetFX);
-    virtual void EndCutScene(IAnimSequence* pSeq, unsigned long dwFlags);
-    virtual void SendGlobalEvent(const char* pszEvent);
+    void SetActiveCamera(const SCameraParams& Params) override;
+    void BeginCutScene(IAnimSequence* pSeq, unsigned long dwFlags, bool bResetFX) override;
+    void EndCutScene(IAnimSequence* pSeq, unsigned long dwFlags) override;
+    void SendGlobalEvent(const char* pszEvent) override;
     //~IMovieUser
 
     // ILevelSystemListener
-    virtual void OnLevelNotFound([[maybe_unused]] const char* levelName) {};
-    virtual void OnLoadingStart([[maybe_unused]] const char* levelName);
-    virtual void OnLoadingComplete([[maybe_unused]] const char* levelName){};
-    virtual void OnLoadingError([[maybe_unused]] const char* levelName, [[maybe_unused]] const char* error){};
-    virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount){};
-    virtual void OnUnloadComplete([[maybe_unused]] const char* levelName);
+    void OnLevelNotFound([[maybe_unused]] const char* levelName) override {};
+    void OnLoadingStart([[maybe_unused]] const char* levelName) override;
+    void OnLoadingComplete([[maybe_unused]] const char* levelName) override{};
+    void OnLoadingError([[maybe_unused]] const char* levelName, [[maybe_unused]] const char* error) override{};
+    void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount) override{};
+    void OnUnloadComplete([[maybe_unused]] const char* levelName) override;
     //~ILevelSystemListener
 
     CViewSystem(ISystem* pSystem);
@@ -91,21 +91,19 @@ public:
     void Release() override { delete this; };
     void Update(float frameTime) override;
 
-    virtual void ForceUpdate(float elapsed) { Update(elapsed); }
+    void ForceUpdate(float elapsed) override { Update(elapsed); }
 
     //void RegisterViewClass(const char *name, IView *(*func)());
 
-    bool AddListener(IViewSystemListener* pListener)
+    bool AddListener(IViewSystemListener* pListener) override
     {
         return stl::push_back_unique(m_listeners, pListener);
     }
 
-    bool RemoveListener(IViewSystemListener* pListener)
+    bool RemoveListener(IViewSystemListener* pListener) override
     {
         return stl::find_and_erase(m_listeners, pListener);
     }
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
     void ClearAllViews();
 

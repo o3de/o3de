@@ -88,7 +88,6 @@ namespace ScriptCanvas
             private:
 
                 bool CreateEbus();
-                bool SetupHandler();
 
                 AZ::BehaviorEBusHandler* m_handler = nullptr;
                 AZ::BehaviorEBus* m_ebus = nullptr;

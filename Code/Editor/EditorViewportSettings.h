@@ -47,6 +47,15 @@ namespace SandboxEditor
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
 
+    SANDBOX_API bool StickySelectEnabled();
+    SANDBOX_API void SetStickySelectEnabled(bool enabled);
+
+    SANDBOX_API float ManipulatorLineBoundWidth();
+    SANDBOX_API void SetManipulatorLineBoundWidth(float lineBoundWidth);
+
+    SANDBOX_API float ManipulatorCircleBoundWidth();
+    SANDBOX_API void SetManipulatorCircleBoundWidth(float circleBoundWidth);
+
     SANDBOX_API float CameraTranslateSpeed();
     SANDBOX_API void SetCameraTranslateSpeed(float speed);
 

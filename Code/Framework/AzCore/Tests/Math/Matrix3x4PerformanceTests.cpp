@@ -21,8 +21,7 @@ namespace Benchmark
     class BM_MathMatrix3x4
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const::benchmark::State& state)
+        void internalSetUp()
         {
             m_testDataArray.resize(1000);
 
@@ -57,6 +56,15 @@ namespace Benchmark
                 }
                 return testData;
             });
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         struct TestData

@@ -6,6 +6,17 @@
 #
 #
 
+define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
+    BRIEF_DOCS "Defines a 3rdParty library as a system library"
+    FULL_DOCS [[
+        Property which is set on third party targets that should be considered
+        as provided by the system. Such targets are excluded from the runtime
+        dependencies considerations, and are not distributed as part of the
+        O3DE SDK package. Instead, users of the SDK are expected to install
+        such a third party library themselves.
+    ]]
+)
+
 # Do not overcomplicate searching for the 3rdParty path, if it is not easy to find,
 # the user should define it.
 
@@ -79,9 +90,10 @@ endfunction()
 #                             "fileA\nMy/Output/Subfolder/lib"
 #                             "fileB\nMy/Output/Subfolder/bin"
 #
+# \arg:SYSTEM           If specified, the library is considered a system library, and is not copied to the build output directory
 function(ly_add_external_target)
 
-    set(options)
+    set(options SYSTEM)
     set(oneValueArgs NAME VERSION 3RDPARTY_DIRECTORY PACKAGE 3RDPARTY_ROOT_DIRECTORY OUTPUT_SUBDIRECTORY)
     set(multiValueArgs HEADER_CHECK COMPILE_DEFINITIONS INCLUDE_DIRECTORIES BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES)
 
@@ -122,7 +134,11 @@ function(ly_add_external_target)
             set(BASE_PATH "${LY_3RDPARTY_PATH}/${ly_add_external_target_3RDPARTY_DIRECTORY}")
 
         else()
-            ly_install_external_target(${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY})
+            # only install external 3rdParty that are within the source tree
+            cmake_path(IS_PREFIX LY_ROOT_FOLDER ${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY} NORMALIZE is_in_source_tree)
+            if(is_in_source_tree)
+                ly_install_external_target(${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY})
+            endif()
             set(BASE_PATH "${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY}")
         endif()
 
@@ -296,6 +312,10 @@ function(ly_add_external_target)
             )
         endif()
 
+        if(ly_add_external_target_SYSTEM)
+            set_target_properties(3rdParty::${NAME_WITH_NAMESPACE} PROPERTIES LY_SYSTEM_LIBRARY TRUE)
+        endif()
+
     endif()
 
 endfunction()
@@ -305,21 +325,11 @@ endfunction()
 # \arg:3RDPARTY_ROOT_DIRECTORY custom 3rd party directory which needs to be installed
 function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
 
-    # Install the Find file to our <install_location>/cmake directory
-    install(FILES ${CMAKE_CURRENT_LIST_FILE}
-        DESTINATION cmake
+    # Install the Find file to our <install_location>/cmake/3rdParty directory
+    ly_install_files(FILES ${CMAKE_CURRENT_LIST_FILE}
+        DESTINATION cmake/3rdParty
     )
-
-    # We only want to install external targets that are part of our source tree
-    # Checking for relative path beginning with "../" also works when the path
-    # given is on another drive letter on windows(i.e., RELATIVE_PATH returns an absolute path)
-    file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${3RDPARTY_ROOT_DIRECTORY})
-    if (NOT ${rel_path} MATCHES "^../")
-        get_filename_component(rel_path ${rel_path} DIRECTORY)
-        install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY}
-            DESTINATION ${rel_path}
-        )
-    endif()
+    ly_install_directory(DIRECTORIES "${3RDPARTY_ROOT_DIRECTORY}")
 
 endfunction()
 

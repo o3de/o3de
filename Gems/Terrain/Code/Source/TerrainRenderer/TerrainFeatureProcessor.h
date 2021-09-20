@@ -47,25 +47,54 @@ namespace Terrain
         void Deactivate() override;
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
-        void UpdateTerrainData(AZ::EntityId areaId, const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
+        void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
                                uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
 
-        void RemoveTerrainData(AZ::EntityId areaId)
-        {
-            m_areaData.erase(areaId);
-        }
         void RemoveTerrainData()
         {
-            m_areaData.clear();
+            m_areaData = {};
         }
 
     private:
+
+        // System-level references to the shader, pipeline, and shader-related information
+        enum ShaderType 
+        {
+            Depth,
+            Forward,
+            Count,
+        };
+
+        struct ShaderState
+        {
+            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
+            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState;
+            AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
+
+            void Reset()
+            {
+                m_shader.reset();
+                m_pipelineState.reset();
+                m_pipelineStateDescriptor = {};
+            }
+        };
+
+        struct ShaderTerrainData // Must align with struct in Object Srg
+        {
+            AZStd::array<float, 2> m_uvMin;
+            AZStd::array<float, 2> m_uvMax;
+            AZStd::array<float, 2> m_uvStep;
+            float m_sampleSpacing;
+            float m_heightScale;
+        };
+
         // RPI::SceneNotificationBus overrides ...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void InitializeAtomStuff();
+        void ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail);
 
         void InitializeTerrainPatch();
 
@@ -81,20 +110,11 @@ namespace Terrain
         // System-level cached reference to the Atom RHI
         AZ::RHI::RHISystemInterface* m_rhiSystem = nullptr;
 
-        // System-level references to the shader, pipeline, and shader-related information
-        AZ::Data::Instance<AZ::RPI::Shader> m_shader{};
-        AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-        AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState = nullptr;
-        AZ::RHI::DrawListTag m_drawListTag;
-        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_perObjectSrgAsset;
+        AZStd::array<ShaderState, ShaderType::Count> m_shaderStates;
 
         AZ::RHI::ShaderInputImageIndex m_heightmapImageIndex;
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
-        AZ::RHI::ShaderInputConstantIndex m_heightScaleIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvMinIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvMaxIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvStepIndex;
-
+        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
 
         // Pos_float_2 + UV_float_2
         struct Vertex
@@ -122,24 +142,36 @@ namespace Terrain
         AZ::RHI::Ptr<AZ::RHI::Buffer> m_indexBuffer;
         AZ::RHI::Ptr<AZ::RHI::Buffer> m_vertexBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
-        AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax> m_vertexBufferViews;
+        AZ::RHI::StreamBufferView m_vertexBufferView;
 
         // Per-area data
         struct TerrainAreaData
         {
-            AZ::Transform m_transform;
-            AZ::Aabb m_terrainBounds;
-            float m_heightScale;
+            AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
+            AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
+            float m_heightScale{ 0.0f };
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
-            uint32_t m_heightmapImageWidth;
-            uint32_t m_heightmapImageHeight;
+            uint32_t m_heightmapImageWidth{ 0 };
+            uint32_t m_heightmapImageHeight{ 0 };
             bool m_propertiesDirty{ true };
+            float m_sampleSpacing{ 0.0f };
         };
 
-        AZStd::unordered_map<AZ::EntityId, TerrainAreaData> m_areaData;
+        TerrainAreaData m_areaData;
 
-        // These could either be per-area or system-level
-        AZStd::vector<AZStd::unique_ptr<const AZ::RHI::DrawPacket>> m_drawPackets;
-        AZStd::vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>> m_processSrgs;
+        struct SectorData
+        {
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::Aabb m_aabb;
+            AZStd::unique_ptr<const AZ::RHI::DrawPacket> m_drawPacket;
+
+            SectorData(const AZ::RHI::DrawPacket* drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
+                : m_srg(srg)
+                , m_aabb(aabb)
+                , m_drawPacket(drawPacket)
+            {}
+        };
+
+        AZStd::vector<SectorData> m_sectorData;
     };
 }
