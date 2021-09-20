@@ -364,9 +364,9 @@ namespace AZ
             EditorMaterialComponentExporter::ExportItemsContainer exportItems;
             exportItems.reserve(assetIdToSlotNameMap.size());
 
-            for (const auto& assetIdToSlotNamePair : assetIdToSlotNameMap)
+            for (const auto& [assetId, slotName] : assetIdToSlotNameMap)
             {
-                exportItems.emplace_back(assetIdToSlotNamePair.first, assetIdToSlotNamePair.second);
+                exportItems.emplace_back(assetId, slotName);
             }
 
             // Display the export dialog so that the user can configure how they want different materials to be exported

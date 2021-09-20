@@ -33,9 +33,9 @@ namespace AZ
             virtual const MaterialAssignmentMap& GetMaterialOverrides() const = 0;
             //! Clear all material overrides
             virtual void ClearAllMaterialOverrides() = 0;
-            //! Clear non-lod material override
+            //! Clear non-lod material overrides
             virtual void ClearModelMaterialOverrides() = 0;
-            //! Clear lod material override
+            //! Clear lod material overrides
             virtual void ClearLodMaterialOverrides() = 0;
             //! Clear residual materials that don't correspond to the associated model
             virtual void ClearIncompatibleMaterialOverrides() = 0;
