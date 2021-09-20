@@ -112,7 +112,10 @@ namespace AZ
             virtual const Descriptor& GetDescriptor() const = 0;
 
             //! Clone the current allocator to the new allocator passed in
-            virtual void Clone([[maybe_unused]]RHI::Allocator* newAllocator) {};
+            virtual void Clone([[maybe_unused]] RHI::Allocator* newAllocator)
+            {
+                AZ_Assert(false, "Not Implemented");
+            };
 
             //! Helper for converting agnostic VirtualAddress type to pointer type. Will convert
             //! VirtualAddress::Null to nullptr.

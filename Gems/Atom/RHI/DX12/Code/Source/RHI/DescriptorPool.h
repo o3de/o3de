@@ -25,6 +25,7 @@ namespace AZ
             DescriptorPool() = default;
             virtual ~DescriptorPool() = default;
 
+            //! Initialize the native heap as well as init the allocators tracking the memory for descriptor handles
             virtual void Init(
                 ID3D12DeviceX* device,
                 D3D12_DESCRIPTOR_HEAP_TYPE type,
@@ -34,23 +35,30 @@ namespace AZ
 
             ID3D12DescriptorHeap* GetPlatformHeap() const;
 
+            //! Allocate a Descriptor handles
             DescriptorHandle AllocateHandle(uint32_t count = 1);
+            //! Release a descriptor handle
             void ReleaseHandle(DescriptorHandle table);
+            //! Allocate a range contiguous handles (i.e Descriptor table)
             virtual DescriptorTable AllocateTable(uint32_t count = 1);
+            //! Release a range contiguous handles (i.e Descriptor table)
             virtual void ReleaseTable(DescriptorTable table);
+            //! Garbage collection for freed handles or tables
             virtual void GarbageCollect();
+            //Get native pointers from the heap
             virtual D3D12_CPU_DESCRIPTOR_HANDLE GetCpuPlatformHandleForTable(DescriptorTable handle) const;
             virtual D3D12_GPU_DESCRIPTOR_HANDLE GetGpuPlatformHandleForTable(DescriptorTable handle) const;
+            //Clear the tracking allocator
+            virtual void ClearAllocator();
+
+
             D3D12_CPU_DESCRIPTOR_HANDLE GetCpuPlatformHandle(DescriptorHandle handle) const;
             D3D12_GPU_DESCRIPTOR_HANDLE GetGpuPlatformHandle(DescriptorHandle handle) const;
 
+            //Clone the tracking allocator
             void CloneAllocator(RHI::Allocator* newAllocator);
-            RHI::Allocator* GetAllocator()
-            {
-                return m_allocator.get();
-            }
-            virtual void ClearAllocator();
-
+            RHI::Allocator* GetAllocator() const;
+            
          protected:
             D3D12_DESCRIPTOR_HEAP_DESC m_Desc;
             AZStd::mutex m_mutex;

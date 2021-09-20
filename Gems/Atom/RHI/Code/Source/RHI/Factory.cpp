@@ -28,6 +28,8 @@ static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
 static bool s_isPixGpuCaptureDllLoaded = false;
 #endif
 
+static bool s_isUsingWarp = false;
+
 namespace AZ
 {
     namespace RHI
@@ -55,6 +57,8 @@ namespace AZ
 
         Factory::Factory()
         {
+            AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
+            s_isUsingWarp = preferredUserAdapterName == "Microsoft Basic Render Driver";
 #if defined(USE_RENDERDOC)
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
@@ -196,6 +200,11 @@ namespace AZ
 #else
             return false;
 #endif
+        }
+
+        bool Factory::IsWarpEnabled()
+        {
+            return s_isUsingWarp;
         }
     }
 }

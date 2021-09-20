@@ -159,10 +159,15 @@ namespace AZ
 
         void DescriptorPool::ClearAllocator()
         {
+            AZ_Assert(m_GpuStart.ptr, "Clearing the allocator is only supported for the gpu visible heap as only this heap can be compacted");
             static_cast<RHI::FreeListAllocator*>(m_allocator.get())
                 ->Init(static_cast<RHI::FreeListAllocator*>(m_allocator.get())->GetDescriptor());
         }
 
+        RHI::Allocator* DescriptorPool::GetAllocator() const
+        {
+            return m_allocator.get();
+        }
 
         void DescriptorPoolShaderVisibleCbvSrvUav::Init(
             ID3D12DeviceX* device,
