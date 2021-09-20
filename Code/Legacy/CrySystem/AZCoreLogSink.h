@@ -46,6 +46,7 @@ public:
     {
         GetInstance().BusDisconnect();
         delete GetInstance().m_ignoredAsserts;
+        GetInstance().m_ignoredAsserts = nullptr;
     }
 
     static AZCoreLogSink& GetInstance()

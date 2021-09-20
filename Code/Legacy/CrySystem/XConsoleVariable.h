@@ -257,12 +257,12 @@ public:
     void Set(const char* s) override;
     void Set(float f) override
     {
-        stack_string s = stack_string::format("%g", f);
+        AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%g", f);
         Set(s.c_str());
     }
     void Set(int i) override
     {
-        stack_string s = stack_string::format("%d", i);
+        AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%d", i);
         Set(s.c_str());
     }
     int GetType() override { return CVAR_STRING; }

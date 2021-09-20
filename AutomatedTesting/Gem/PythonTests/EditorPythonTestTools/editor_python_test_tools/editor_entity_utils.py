@@ -20,6 +20,7 @@ import azlmbr.legacy.general as general
 # Helper file Imports
 from editor_python_test_tools.utils import Report
 
+
 class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
@@ -28,7 +29,6 @@ class EditorComponent:
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
-    # Methods
     def get_component_name(self) -> str:
         """
         Used to get name of component
@@ -86,6 +86,13 @@ class EditorComponent:
         assert (
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
+
+    def is_enabled(self):
+        """
+        Used to verify if the component is enabled.
+        :return: True if enabled, otherwise False.
+        """
+        return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
 
     @staticmethod
     def get_type_ids(component_names: list) -> list:
@@ -254,7 +261,7 @@ class EditorEntity:
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
         Used to get components of type component_name that already exists on Entity
-        :param component_name: Name to component to check
+        :param component_names: List of names of components to check
         :return: List of Entity Component objects of given component name
         """
         component_list = []
@@ -318,3 +325,39 @@ class EditorEntity:
         editor.EditorEntityAPIBus(bus.Event, "SetStartStatus", self.id, status_to_set)
         set_status = self.get_start_status()
         assert set_status == status_to_set, f"Failed to set start status of {desired_start_status} to {self.get_name}"
+
+    def delete(self) -> None:
+        """
+        Used to delete the Entity.
+        :return: None
+        """
+        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+
+    def set_visibility_state(self, is_visible: bool) -> None:
+        """
+        Sets the visibility state on the object to visible or not visible.
+        :param is_visible: True for making visible, False to make not visible.
+        :return: None
+        """
+        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", self.id, is_visible)
+
+    def exists(self) -> bool:
+        """
+        Used to verify if the Entity exists.
+        :return: True if the Entity exists, False otherwise.
+        """
+        return editor.ToolsApplicationRequestBus(bus.Broadcast, "EntityExists", self.id)
+
+    def is_hidden(self) -> bool:
+        """
+        Gets the "isHidden" value from the Entity.
+        :return: True if "isHidden" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsHidden", self.id)
+
+    def is_visible(self) -> bool:
+        """
+        Gets the "isVisible" value from the Entity.
+        :return: True if "isVisible" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
