@@ -6,9 +6,11 @@
  *
  */
 
+#include <sstream>
 #include <AzCore/JSON/rapidjson.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
@@ -154,7 +156,7 @@ namespace AzToolsFramework
 
         AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId, true);
 
-        return component ? component->GetId() : AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
+        return component ? AzFramework::BehaviorComponentId(component->GetId()) : AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
     }
 
     bool EntityUtilityComponent::UpdateComponentForEntity(AZ::EntityId entityId, AzFramework::BehaviorComponentId componentId, const AZStd::string& json)
@@ -234,7 +236,7 @@ namespace AzToolsFramework
         }
 
         AZStd::string jsonString;
-        AZ::Outcome<void, AZStd::string> outcome = AzFramework::FileFunc::WriteJsonToString(document, jsonString);
+        AZ::Outcome<void, AZStd::string> outcome = AZ::JsonSerializationUtils::WriteJsonString(document, jsonString);
 
         if (!outcome.IsSuccess())
         {
