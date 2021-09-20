@@ -150,17 +150,17 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
-            horizontalHeader()->setStretchLastSection(true);
+            header()->setStretchLastSection(true);
             UpdateSizeSlot(parentWidget()->width());
-            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
-            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
         }
 
         void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
         {
             setColumnWidth(0, aznumeric_cast<int>(newWidth * DefaultHeaderResizeProportion));
-            horizontalHeader()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
-            horizontalHeader()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
+            header()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
+            header()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
         }
 
 
