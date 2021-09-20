@@ -163,4 +163,16 @@ namespace AtomToolsFramework
         //! The current instance of the modular camera viewport context.
         AZStd::unique_ptr<ModularCameraViewportContext> m_modularCameraViewportContext;
     };
+
+    //! Placeholder implementation for ModularCameraViewportContext (useful for verifying the interface).
+    class PlaceholderModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
+    {
+    public:
+        AZ::Transform GetCameraTransform() const override;
+        void SetCameraTransform(const AZ::Transform& transform) override;
+        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override;
+
+    private:
+        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
+    };
 } // namespace AtomToolsFramework

@@ -254,4 +254,29 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
     )
+
+    ly_add_target(
+        NAME EditorLib.Camera.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Legacy
+        FILES_CMAKE
+            editor_lib_camera_test_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzTest
+                AZ::AzToolsFramework
+                AZ::AzTestShared
+                Legacy::EditorLib
+                Gem::Camera.Editor
+                Gem::AtomToolsFramework.Static
+        RUNTIME_DEPENDENCIES
+            Legacy::EditorLib
+    )
+
+    ly_add_googletest(
+        NAME Legacy::EditorLib.Camera.Tests
+    )
 endif()

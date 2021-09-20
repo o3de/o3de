@@ -330,4 +330,20 @@ namespace AtomToolsFramework
     {
         m_referenceFrameOverride = m_modularCameraViewportContext->GetCameraTransform() * m_camera.Transform().GetInverse();
     }
+
+    AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const
+    {
+        return m_cameraTransform;
+    }
+
+    void PlaceholderModularCameraViewportContextImpl::SetCameraTransform(const AZ::Transform& transform)
+    {
+        m_cameraTransform = transform;
+    }
+
+    void PlaceholderModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(
+        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&)
+    {
+        // noop
+    }
 } // namespace AtomToolsFramework
