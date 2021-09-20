@@ -39,7 +39,7 @@ namespace AzToolsFramework::Prefab
         void Initialize();
 
         // PrefabFocusInterface...
-        void FocusOnOwningPrefab(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId() override;
         InstanceOptionalReference GetFocusedPrefabInstance() override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) override;

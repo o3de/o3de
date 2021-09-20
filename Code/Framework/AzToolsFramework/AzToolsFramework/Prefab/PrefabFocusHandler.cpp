@@ -49,7 +49,7 @@ namespace AzToolsFramework::Prefab
         AZ::Interface<PrefabFocusInterface>::Register(this);
     }
 
-    void PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
         InstanceOptionalReference focusedInstance;
 
@@ -64,12 +64,15 @@ namespace AzToolsFramework::Prefab
 
         if (!focusedInstance.has_value())
         {
-            // TODO - ERROR
+            return AZ::Failure(AZStd::string(
+                "Prefab Focus Handler: Couldn't find owning instance of entityId provided."));
         }
 
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
         s_focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
+
+        return AZ::Success();
     }
     
     TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId()
@@ -86,16 +89,12 @@ namespace AzToolsFramework::Prefab
     {
         if (entityId == AZ::EntityId())
         {
-            // TODO - Warn?
             return false;
         }
 
         InstanceOptionalReference instance = s_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-        if (!instance.has_value())
-        {
-            // TODO - ERROR
-        }
+        AZ_Assert(instance.has_value(), "PrefabFocusHandler::IsOwningPrefabBeingFocused - Could not find owning Instance of queried entity.");
 
         return (&instance->get() == &m_focusedInstance->get());
     }
