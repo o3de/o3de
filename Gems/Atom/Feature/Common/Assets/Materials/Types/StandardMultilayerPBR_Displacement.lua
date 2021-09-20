@@ -138,7 +138,8 @@ function CalcOverallHeightRange(context)
         if(enableLayer3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
 
     else
-        heightMinMax = {0,0}
+        heightMinMax[0] = 0
+        heightMinMax[1] = 0
     end
 
     return heightMinMax
