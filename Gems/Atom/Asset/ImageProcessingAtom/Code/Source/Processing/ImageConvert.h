@@ -122,6 +122,8 @@ namespace ImageProcessingAtom
         // Get output JobProducts and append them to the outProducts vector.
         void GetAppendOutputProducts(AZStd::vector<AssetBuilderSDK::JobProduct>& outProducts);
 
+        const ImageConvertProcessDescriptor* GetInputDesc() const;
+
     private:
         //input image and settings
         AZStd::shared_ptr<ImageConvertProcessDescriptor> m_input;

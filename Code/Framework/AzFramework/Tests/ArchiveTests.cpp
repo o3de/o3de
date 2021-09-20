@@ -256,7 +256,7 @@ namespace UnitTest
             fileIo->CreatePath("@usercache@/levels/test");
 
             // setup test archive and file
-            AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             EXPECT_NE(nullptr, pArchive);
             EXPECT_EQ(0, pArchive->UpdateFile(fileInArchiveFile, dataString.data(), dataString.size(), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
             pArchive.reset();
@@ -291,7 +291,7 @@ namespace UnitTest
             archive->ClosePack(filePath.c_str());
             fileIo->Remove(filePath.c_str());
 
-            auto pArchive = archive->OpenArchive(filePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            auto pArchive = archive->OpenArchive(filePath.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             EXPECT_NE(nullptr, pArchive);
             pArchive.reset();
             archive->ClosePack(filePath.c_str());
@@ -478,7 +478,7 @@ namespace UnitTest
         bool found_mylevel_file{};
         bool found_mylevel_folder{};
 
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withMountPoint, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withMountPoint, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
         EXPECT_EQ(0, pArchive->UpdateFile("levelinfo.xml", dataString.data(), dataString.size(), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
         pArchive.reset();
@@ -629,7 +629,7 @@ namespace UnitTest
         normalFileHandle = InvalidHandle;
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
 
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(genericArchiveFileName, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(genericArchiveFileName, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
         EXPECT_EQ(0, pArchive->UpdateFile("testfile.xml", dataString, aznumeric_cast<uint32_t>(dataLen), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
         pArchive.reset();
@@ -773,7 +773,7 @@ namespace UnitTest
         fileIo->Remove(testArchivePath);
 
         // ------------ BASIC TEST:  Create and read Empty Archive ------------
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
 
         EXPECT_EQ(0, pArchive->UpdateFile("foundit.dat", const_cast<char*>("test"), 4, AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_BEST));
