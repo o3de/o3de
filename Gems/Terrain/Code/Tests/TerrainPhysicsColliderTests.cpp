@@ -119,27 +119,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNo
     m_entity->Reset();
 }
 
-TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderHeightScaleReturnsCorrectly)
-{
-    // Check that the default scale is as expected.
-    CreateEntity();
-
-    AddTerrainPhysicsColliderAndShapeComponentToEntity();
-
-    m_entity->Activate();
-
-    float heightScale = 0.0f;
-
-    Physics::HeightfieldProviderRequestsBus::EventResult(
-        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
-
-    const float expectedScale = 1.0f / 256.0f;
-    const float nearTolerance = 0.01f;
-    EXPECT_NEAR(heightScale, expectedScale, nearTolerance);
-
-    m_entity->Reset();
-}
-
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAlignedRowBoundsCorrectly)
 {
     // Check that the heightfield grid size is correct when the shape bounds match the grid resolution.
@@ -261,12 +240,14 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
-    AZStd::vector<int16_t> heights;
+    AZStd::vector<float> heights;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
     const int expectedHeightsSize = 1024 * 1024;
+    EXPECT_EQ(cols, 1024);
+    EXPECT_EQ(rows, 1024);
     EXPECT_EQ(heights.size(), cols * rows);
     EXPECT_EQ(heights.size(), expectedHeightsSize);
    
@@ -300,7 +281,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsR
     const float regionMax = 512.0f;
     const AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(regionMax));
 
-    AZStd::vector<int16_t> heights;
+    AZStd::vector<float> heights;
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeights, dirtyRegion);
 
@@ -337,27 +318,21 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
-    AZStd::vector<int16_t> heights;
+    AZStd::vector<float> heights;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
     ASSERT_FALSE(heights.empty());
 
-    float heightScale = 0.0f;
-
-    Physics::HeightfieldProviderRequestsBus::EventResult(
-        heightScale, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetScale);
-
     float aabbCenter = boundsMin.GetZ() + (boundsMax.GetZ() - boundsMin.GetZ()) / 2.0f;
 
-    // The expected height is the offset of the height from the centre of the bounding box multiplied by the scale value and then cast to an
-    // int16_t
-    int16_t expectedHeight = azlossy_cast<int16_t>((mockHeight - aabbCenter) * heightScale);
+    // The expected height is the offset of the height from the centre of the bounding box.
+    float expectedHeight = mockHeight - aabbCenter;
 
     EXPECT_EQ(heights[0], expectedHeight);
 
-    const int16_t expectedHeightValue = 64;
-    EXPECT_EQ(heights[0], expectedHeightValue);
+    const float expectedHeightValue = 16384.0f;
+    EXPECT_NEAR(heights[0], expectedHeightValue, 0.01f);
 
     m_entity->Reset();
 }
