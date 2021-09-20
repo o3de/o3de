@@ -41,9 +41,9 @@ namespace AzToolsFramework
         }
     }
 
-    QPixmap LevelRootUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon LevelRootUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
     {
-        return QPixmap(m_levelRootIconPath);
+        return QIcon(m_levelRootIconPath);
     }
 
     QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const

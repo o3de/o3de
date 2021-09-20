@@ -77,6 +77,9 @@ namespace AZ
             /// Sets the name of the ID3D12Resource.
             void SetName(const AZStd::string_view& name);
 
+            /// Sets the name of the ID3D12Resource.
+            void SetName(const AZStd::wstring_view& name);
+
         private:
             void Construct();
 

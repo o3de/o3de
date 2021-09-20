@@ -40,15 +40,11 @@ namespace AZStd
         return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Resize(ptr, newSize);
     }
 
-    //=========================================================================
-    // get_max_size
-    // [1/1/2008]
-    //=========================================================================
-    allocator::size_type
-    allocator::get_max_size() const
+    auto allocator::max_size() const -> size_type
     {
-        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetMaxAllocationSize();
+        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetMaxContiguousAllocationSize();
     }
+
     //=========================================================================
     // get_allocated_size
     // [1/1/2008]

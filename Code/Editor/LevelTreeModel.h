@@ -23,7 +23,7 @@ class LevelTreeModelFilter
     Q_OBJECT
 public:
     explicit LevelTreeModelFilter(QObject* parent = nullptr);
-    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     void setFilterText(const QString&);
     QVariant data(const QModelIndex& index, int role) const override;
 private:

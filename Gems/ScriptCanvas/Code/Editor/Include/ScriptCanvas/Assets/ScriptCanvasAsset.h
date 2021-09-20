@@ -81,8 +81,8 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Graph* GetScriptCanvasGraph() const;
         using Description = ScriptCanvasAssetDescription;
 
-        ScriptCanvas::ScriptCanvasData& GetScriptCanvasData();
-        const ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() const;
+        ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() override;
+        const ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() const override;
 
     };
 }

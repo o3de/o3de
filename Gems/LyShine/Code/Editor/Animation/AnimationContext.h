@@ -167,12 +167,12 @@ public:
     void UpdateTimeRange();
 
 private:
-    virtual void BeginUndoTransaction() override;
-    virtual void EndUndoTransaction() override;
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
 
-    virtual void OnSequenceRemoved(CUiAnimViewSequence* pSequence) override;
+    void OnSequenceRemoved(CUiAnimViewSequence* pSequence) override;
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     void AnimateActiveSequence();
 

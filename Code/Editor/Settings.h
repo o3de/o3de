@@ -18,6 +18,7 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
@@ -214,6 +215,11 @@ struct SSliceSettings
     bool dynamicByDefault;
 };
 
+struct SLevelSaveSettings
+{
+    AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
+};
+
 //////////////////////////////////////////////////////////////////////////
 struct SAssetBrowserSettings
 {
@@ -334,8 +340,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! how many save backups to keep
     int backupOnSaveMaxCount;
 
-    int useLowercasePaths;
-
     //////////////////////////////////////////////////////////////////////////
     // Autobackup.
     //////////////////////////////////////////////////////////////////////////
@@ -447,6 +451,8 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     const char* g_TemporaryLevelName;
 
     SSliceSettings sliceSettings;
+
+    SLevelSaveSettings levelSaveSettings;
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 

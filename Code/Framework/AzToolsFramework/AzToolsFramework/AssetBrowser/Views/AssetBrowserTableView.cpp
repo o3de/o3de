@@ -32,16 +32,16 @@ namespace AzToolsFramework
         const float DefaultHeaderResizeProportion = .5f;
 
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
-            : QTableView(parent)
+            : AzQtComponents::TableView(parent)
             , m_delegate(new EntryDelegate(this))
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
-            verticalHeader()->hide();
+            setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.
-            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+            header()->setDefaultAlignment(Qt::AlignLeft);
+            header()->setStyleSheet("QHeaderView { font-weight: bold; }");
 
             setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -49,7 +49,7 @@ namespace AzToolsFramework
             setSortingEnabled(false);
             setSelectionMode(QAbstractItemView::SingleSelection);
 
-            connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
+            connect(this, &AzQtComponents::TableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -66,8 +66,11 @@ namespace AzToolsFramework
             m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
-            QTableView::setModel(model);
+            AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
+
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
         }
 
         void AssetBrowserTableView::SetName(const QString& name)
@@ -99,7 +102,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
-            QTableView::selectionChanged(selected, deselected);
+            AzQtComponents::TableView::selectionChanged(selected, deselected);
             Q_EMIT selectionChangedSignal(selected, deselected);
         }
 
@@ -116,7 +119,7 @@ namespace AzToolsFramework
                     selectionModel()->clear();
                 }
             }
-            QTableView::rowsAboutToBeRemoved(parent, start, end);
+            AzQtComponents::TableView::rowsAboutToBeRemoved(parent, start, end);
         }
 
         void AssetBrowserTableView::layoutChangedSlot(
