@@ -154,6 +154,12 @@ namespace AzToolsFramework
             return m_iconSize;
         }
 
+        SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)
+            : EntryDelegate(parent)
+        {
+            LoadBranchPixMaps();
+        }
+
         void SearchEntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
@@ -281,29 +287,38 @@ namespace AzToolsFramework
             }
         }
 
+        void SearchEntryDelegate::LoadBranchPixMaps()
+        {
+            AZ::IO::BasicPath<AZ::IO::FixedMaxPathString> absoluteIconPath;
+            for (int branchType = EntryBranchType::First; branchType != EntryBranchType::Count; ++branchType)
+            {
+                QPixmap pixmap;
+                switch (branchType)
+                {
+                case AzToolsFramework::AssetBrowser::EntryBranchType::First:
+                    absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathFirst;
+                    break;
+                case AzToolsFramework::AssetBrowser::EntryBranchType::Middle:
+                    absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathMiddle;
+                    break;
+                case AzToolsFramework::AssetBrowser::EntryBranchType::Last:
+                    absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
+                    break;
+                case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
+                default:
+                    absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
+                    break;
+                }
+                pixmap.load(absoluteIconPath.c_str());
+                m_branchIcons[static_cast<EntryBranchType>(branchType)] = pixmap;
+            }
+        }
+
         void SearchEntryDelegate::DrawBranchPixMap(
             EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const
         {
-            QPixmap pixmap;
-            AZ::IO::BasicPath<AZ::IO::FixedMaxPathString> absoluteIconPath;
-            switch (branchType)
-            {
-            case AzToolsFramework::AssetBrowser::EntryBranchType::First:
-                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathFirst;
-                break;
-            case AzToolsFramework::AssetBrowser::EntryBranchType::Middle:
-                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathMiddle;
-                break;
-            case AzToolsFramework::AssetBrowser::EntryBranchType::Last:
-                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
-                break;
-            case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
-            default:
-                absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
-                break;
-            }
+            const QPixmap& pixmap = m_branchIcons[branchType];
 
-            pixmap.load(absoluteIconPath.c_str());
             pixmap.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             const QSize sizeDelta = size - pixmap.size();
             const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);

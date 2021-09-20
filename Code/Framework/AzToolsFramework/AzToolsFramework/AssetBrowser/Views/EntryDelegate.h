@@ -27,12 +27,13 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        enum class EntryBranchType
+        enum EntryBranchType
         {
             First,
             Middle,
             Last,
-            OneChild
+            OneChild,
+            Count
         };
 
         class AssetBrowserFilterModel;
@@ -67,14 +68,16 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            explicit SearchEntryDelegate(QWidget* parent = nullptr)
-                : EntryDelegate(parent)
-            {
-            }
+            explicit SearchEntryDelegate(QWidget* parent = nullptr);
+
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
         private:
+            void LoadBranchPixMaps();
             void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
+
+        private:
+            QMap<EntryBranchType, QPixmap> m_branchIcons;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
