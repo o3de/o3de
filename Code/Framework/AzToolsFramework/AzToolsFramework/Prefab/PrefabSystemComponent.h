@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapper.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
+#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
@@ -369,7 +370,7 @@ namespace AzToolsFramework
             // A counter for generating unique Link Ids.
             AZStd::atomic<LinkId> m_linkIdCounter = 0u;
 
-            // Used for finding the owning instance of an arbitrary entity
+            // Used for finding the owning instance of an arbitrary entity.
             InstanceEntityMapper m_instanceEntityMapper;
 
             // Used for finding the Instances owned by an arbitrary Template.
@@ -378,16 +379,19 @@ namespace AzToolsFramework
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
 
-            // Handler the public Prefab API used by UI and scripting
+            // Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
+
+            // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;
 
-            // Used for updating Templates when Instances are modified
+            // Used for updating Templates when Instances are modified.
             InstanceToTemplatePropagator m_instanceToTemplatePropagator;
 
-            // Handler of the public Prefab requests
+            // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
         };
     } // namespace Prefab
