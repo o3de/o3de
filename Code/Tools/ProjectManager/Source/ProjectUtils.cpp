@@ -507,5 +507,29 @@ namespace O3DE::ProjectManager
 
             return ProjectManagerScreen::Invalid;
         }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(const QString& cmd, const QStringList& arguments, const QProcessEnvironment& processEnv)
+        {
+            QProcess execProcess;
+            execProcess.setProcessEnvironment(processEnv);
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+            execProcess.start(cmd, arguments);
+            if (!execProcess.waitForStarted())
+            {
+                return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
+            }
+            constexpr int execTimeoutSecs = 30;
+            if (!execProcess.waitForFinished(execTimeoutSecs * 1000))
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(execTimeoutSecs));
+            }
+            int resultCode = execProcess.exitCode();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+            }
+            QString resultOutput = execProcess.readAllStandardOutput();
+            return AZ::Success(resultOutput);
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

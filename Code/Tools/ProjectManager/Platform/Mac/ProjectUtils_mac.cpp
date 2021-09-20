@@ -7,15 +7,46 @@
 
 #include <ProjectUtils.h>
 
+#include <QProcess>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
-            // Compiler detection not supported on platform
-            return AZ::Success();
-        }
-        
+            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
+            QString pathValue = currentEnvironment.value("PATH");
+            pathValue += ":/usr/local/bin";
+            currentEnvironment.insert("PATH", pathValue);
+
+            // Validate that we have cmake installed first
+            auto queryCmakeInstalled = ExecuteCommandResult("which",QStringList {"cmake"}, currentEnvironment);
+            if (!queryCmakeInstalled.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
+            }
+            QString cmakeInstalledPath = queryCmakeInstalled.GetValue().split("\n")[0];
+
+            // Query the version of the installed cmake
+            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList {"-version"}, currentEnvironment);
+            if (!queryCmakeVersionQuery.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
+            }
+            AZ_TracePrintf("Project Manager", "Cmake version %s detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
+
+            // Query for the version of xcodebuild (if installed)
+            auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild",QStringList {"-version"}, currentEnvironment);
+            if (!queryCmakeInstalled.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Unable to detect XCodeBuilder on this host."));
+            }
+            QString xcodeBuilderVersionNumber = queryXcodeBuildVersion.GetValue().split("\n")[0];
+            AZ_TracePrintf("Project Manager", "XcodeBuilder version %s detected.", xcodeBuilderVersionNumber.toUtf8().constData());
+
+
+            return AZ::Success(xcodeBuilderVersionNumber);
+        }       
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

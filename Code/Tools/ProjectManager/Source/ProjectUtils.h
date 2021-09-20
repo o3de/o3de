@@ -11,6 +11,8 @@
 #include <ProjectInfo.h>
 
 #include <QWidget>
+#include <QProcessEnvironment>
+
 #include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
@@ -31,5 +33,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(const QString& cmd, const QStringList& arguments, const QProcessEnvironment& processEnv);
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
