@@ -94,9 +94,7 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference instance = s_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-        AZ_Assert(instance.has_value(), "PrefabFocusHandler::IsOwningPrefabBeingFocused - Could not find owning Instance of queried entity.");
-
-        return (&instance->get() == &m_focusedInstance->get());
+        return instance.has_value() && (&instance->get() == &m_focusedInstance->get());
     }
 
 } // namespace AzToolsFramework::Prefab
