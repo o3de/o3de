@@ -231,7 +231,7 @@ namespace SurfaceData
 
     void SurfaceDataMeshComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_SCOPE(Entity, "SurfaceDataMeshComponent: UpdateMeshData");
 
         bool meshValidBeforeUpdate = false;
         bool meshValidAfterUpdate = false;

@@ -934,7 +934,7 @@ namespace Multiplayer
 
             for (NetBindComponent* netBindComponent : gatheredEntities)
             {
-                netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
+                netBindComponent->NotifyPreRender(deltaTime);
             }
         }
         else
@@ -946,7 +946,7 @@ namespace Multiplayer
                 NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
                 if (netBindComponent != nullptr)
                 {
-                    netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
+                    netBindComponent->NotifyPreRender(deltaTime);
                 }
             }
         }

@@ -203,15 +203,13 @@ namespace Multiplayer
             m_previousHostFrameId = time->GetHostFrameId();
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
-            time->AlterTime(frameId, timeMs, connectionId);
             m_previousBlendFactor = time->GetHostBlendFactor();
-            time->AlterBlendFactor(blendFactor);
+            time->AlterTime(frameId, timeMs, blendFactor, connectionId);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
-            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
-            time->AlterBlendFactor(m_previousBlendFactor);
+            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousBlendFactor, m_previousRewindConnectionId);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
