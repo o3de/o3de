@@ -31,7 +31,7 @@ def setup(launcher: pytest.fixture,
     Set up the resource mapping configuration and start the log monitor.
     :param launcher: Client launcher for running the test level.
     :param asset_processor: asset_processor fixture.
-    :return log monitor object, metrics file path and the metrics stack name.
+    :return log monitor object.
     """
     asset_processor.start()
     asset_processor.wait_for_idle()
@@ -73,12 +73,11 @@ def monitor_metrics_submission(log_monitor: pytest.fixture) -> None:
         f'unexpected_lines values: {unexpected_lines}')
 
 
-def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: pytest.fixture, stack_name: str) -> None:
+def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: pytest.fixture) -> None:
     """
     Verify that the metrics events are delivered to the S3 bucket and can be queried.
     :param aws_metrics_utils: aws_metrics_utils fixture.
     :param resource_mappings: resource_mappings fixture.
-    :param stack_name: name of the CloudFormation stack.
     """
     aws_metrics_utils.verify_s3_delivery(
         resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsBucketName')
@@ -89,23 +88,24 @@ def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: 
         resource_mappings.get_resource_name_id('AWSMetrics.EventsCrawlerName'))
 
     # Remove the events_json table if exists so that the sample query can create a table with the same name.
-    aws_metrics_utils.delete_table(f'{stack_name}-eventsdatabase', 'events_json')
-    aws_metrics_utils.run_named_queries(f'{stack_name}-AthenaWorkGroup')
+    aws_metrics_utils.delete_table(resource_mappings.get_resource_name_id('AWSMetrics.EventDatabaseName'), 'events_json')
+    aws_metrics_utils.run_named_queries(resource_mappings.get_resource_name_id('AWSMetrics.AthenaWorkGroupName'))
     logger.info('Query metrics from S3 successfully.')
 
 
-def verify_operational_metrics(aws_metrics_utils: pytest.fixture, stack_name: str, start_time: datetime) -> None:
+def verify_operational_metrics(aws_metrics_utils: pytest.fixture,
+                               resource_mappings: pytest.fixture, start_time: datetime) -> None:
     """
     Verify that operational health metrics are delivered to CloudWatch.
-    aws_metrics_utils: aws_metrics_utils fixture.
-    stack_name: name of the CloudFormation stack.
-    start_time: Time when the game launcher starts.
+    :param aws_metrics_utils: aws_metrics_utils fixture.
+    :param resource_mappings: resource_mappings fixture.
+    :param start_time: Time when the game launcher starts.
     """
     aws_metrics_utils.verify_cloud_watch_delivery(
         'AWS/Lambda',
         'Invocations',
         [{'Name': 'FunctionName',
-          'Value': f'{stack_name}-AnalyticsProcessingLambda'}],
+          'Value': resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsProcessingLambdaName')}],
         start_time)
     logger.info('AnalyticsProcessingLambda metrics are sent to CloudWatch.')
 
@@ -113,7 +113,7 @@ def verify_operational_metrics(aws_metrics_utils: pytest.fixture, stack_name: st
         'AWS/Lambda',
         'Invocations',
         [{'Name': 'FunctionName',
-          'Value': f'{stack_name}-EventsProcessingLambda'}],
+          'Value': resource_mappings.get_resource_name_id('AWSMetrics.EventProcessingLambdaName')}],
         start_time)
     logger.info('EventsProcessingLambda metrics are sent to CloudWatch.')
 
@@ -157,7 +157,6 @@ class TestAWSMetricsWindows(object):
                                           workspace: pytest.fixture,
                                           aws_utils: pytest.fixture,
                                           resource_mappings: pytest.fixture,
-                                          stacks: typing.List,
                                           aws_metrics_utils: pytest.fixture):
         """
         Verify that the metrics events are sent to CloudWatch and S3 for analytics.
@@ -189,10 +188,10 @@ class TestAWSMetricsWindows(object):
         operational_threads = list()
         operational_threads.append(
             AWSMetricsThread(target=query_metrics_from_s3,
-                             args=(aws_metrics_utils, resource_mappings, stacks[0])))
+                             args=(aws_metrics_utils, resource_mappings)))
         operational_threads.append(
             AWSMetricsThread(target=verify_operational_metrics,
-                             args=(aws_metrics_utils, stacks[0], start_time)))
+                             args=(aws_metrics_utils, resource_mappings, start_time)))
         operational_threads.append(
             AWSMetricsThread(target=update_kinesis_analytics_application_status,
                              args=(aws_metrics_utils, resource_mappings, False)))

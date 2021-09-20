@@ -285,13 +285,13 @@ namespace Terrain
 
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z00, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z01, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y1,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z10, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
 
                     sector.m_lineVertices.push_back(AZ::Vector3(x, y, z00));
                     sector.m_lineVertices.push_back(AZ::Vector3(x1, y, z10));
