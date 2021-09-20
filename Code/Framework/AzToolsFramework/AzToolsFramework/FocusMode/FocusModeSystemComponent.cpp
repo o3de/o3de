@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 
 namespace AzToolsFramework::FocusModeFramework
@@ -53,8 +54,7 @@ namespace AzToolsFramework::FocusModeFramework
     {
         m_focusRoot = entityId;
 
-        // TODO - If m_focusRoot != AZ::EntityId(), register focus mode
-        //        Else, unregister focus mode
+        // TODO - If m_focusRoot != AZ::EntityId(), activate focus mode via ViewportEditorModeTrackerInterface; else, deactivate focus mode
     }
 
     AZ::EntityId FocusModeSystemComponent::GetFocusRoot()
