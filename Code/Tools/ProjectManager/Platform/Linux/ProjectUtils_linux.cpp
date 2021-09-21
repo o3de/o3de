@@ -7,7 +7,7 @@
 
 #include <ProjectUtils.h>
 
-#include <QProcess>
+#include <QProcessEnvironment>
 
 namespace O3DE::ProjectManager
 {
@@ -15,19 +15,20 @@ namespace O3DE::ProjectManager
     {
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
-            QStringList supportedClangCommands = { "clang-12", "clang-6" };
-
-            for (QString& supportClangCommand : supportedClangCommands)
+            // Validate that cmake is installed and is in the command line
+            if (QProcess::execute("which", QStringList{ "cmake" }) != 0)
             {
-                QProcess whereProcess;
-                whereProcess.setProcessChannelMode(QProcess::MergedChannels);
-                whereProcess.start("which", QStringList { supportClangCommand });
-                if (whereProcess.waitForStarted() && whereProcess.waitForFinished())
+                return AZ::Failure(QString("Unable to resolve cmake in the command line. Make sure that cmake is installed."));
+            }
+
+            QStringList supportedClangCommands = { "clang-12", "clang-6" };
+            for (const QString& supportClangCommand : supportedClangCommands)
+            {
+
+                auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ supportClangCommand }, QProcessEnvironment::systemEnvironment());
+                if (whichClangResult.IsSuccess())
                 {
-                    if (whereProcess.exitCode() == 0)
-                    {
-                        return AZ::Success(supportClangCommand);
-                    }
+                    return AZ::Success(supportClangCommand);
                 }
             }
             return AZ::Failure(QString("Unable to resolve clang. Make sure that clang-6.0 or clang-12 is installed."));
