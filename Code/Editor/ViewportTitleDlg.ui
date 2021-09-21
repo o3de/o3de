@@ -42,21 +42,24 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QLabel" name="m_titleBtn">
+     <widget class="QToolButton" name="m_prefabFocusBackButton">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg</normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg
+         </iconset>
+       </property>
+       <property name="toolTip">
+         <string>Back</string>
+       </property>
+     </widget>
+   </item>   
+   <item>
+    <widget class="AzQtComponents::BreadCrumbs" name="m_prefabFocusPath">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>Static</string>
-     </property>
-     <property name="indent">
-      <number>11</number>
      </property>
     </widget>
    </item>
@@ -129,6 +132,12 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::BreadCrumbs</class>
+   <extends>QWidget</extends>
+   <header>AzQtComponents/Components/Widgets/Breadcrumbs.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>AzQtComponents::ButtonDivider</class>
    <extends>QWidget</extends>
