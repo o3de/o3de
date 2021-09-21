@@ -46,8 +46,6 @@ namespace AZ
 
         TICK_PRE_RENDER     = 750,     ///< Suggested tick handler position to update render-related data.
 
-        TICK_RENDER         = 800,     ///< Suggested tick handler position for rendering.
-
         TICK_DEFAULT        = 1000,    ///< Default tick handler position when the handler is constructed.
 
         TICK_UI             = 2000,    ///< Suggested tick handler position for UI components.

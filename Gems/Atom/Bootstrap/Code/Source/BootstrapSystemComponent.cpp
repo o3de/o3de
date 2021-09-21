@@ -42,14 +42,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
-static void OnFrameRateLimitChanged(const float& fpsLimit)
-{
-    AZ::Render::Bootstrap::RequestBus::Broadcast(
-        &AZ::Render::Bootstrap::RequestBus::Events::SetFrameRateLimit, fpsLimit);
-}
-
 AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
-AZ_CVAR(float, r_fps_limit, 0, OnFrameRateLimitChanged, AZ::ConsoleFunctorFlags::Null, "The maximum framerate to render at, or 0 for unlimited");
 
 namespace AZ
 {
@@ -358,22 +351,6 @@ namespace AZ
                 return true;
             }
 
-            float BootstrapSystemComponent::GetFrameRateLimit() const
-            {
-                return r_fps_limit;
-            }
-
-            void BootstrapSystemComponent::SetFrameRateLimit(float fpsLimit)
-            {
-                r_fps_limit = fpsLimit;
-                if (m_viewportContext)
-                {
-                    m_viewportContext->SetFpsLimit(r_fps_limit);
-                }
-                Render::Bootstrap::NotificationBus::Broadcast(
-                    &Render::Bootstrap::NotificationBus::Events::OnFrameRateLimitChanged, fpsLimit);
-            }
-
             void BootstrapSystemComponent::CreateDefaultRenderPipeline()
             {
                 EnsureDefaultRenderPipelineInstalledForScene(m_defaultScene, m_viewportContext);
@@ -413,11 +390,23 @@ namespace AZ
             }
 
             void BootstrapSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
-            {            }
+            {
+                // Temp: When running in the launcher without the legacy renderer
+                // we need to call RenderTick on the viewport context each frame.
+                if (m_viewportContext)
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    if (appType.IsGame())
+                    {
+                        m_viewportContext->RenderTick();
+                    }
+                }
+            }
 
             int BootstrapSystemComponent::GetTickOrder()
             {
-                return TICK_PRE_RENDER;
+                return TICK_LAST;
             }
 
             void BootstrapSystemComponent::OnWindowClosed()

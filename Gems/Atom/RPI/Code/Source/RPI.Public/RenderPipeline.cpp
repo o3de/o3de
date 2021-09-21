@@ -301,26 +301,6 @@ namespace AZ
             m_drawFilterMask = 0;
         }
 
-        void RenderPipeline::OnPrepareFrame()
-        {
-            m_lastRenderRequestTime = AZStd::chrono::system_clock::now();
-
-            // If we're attempting to render at a target interval, check to see if we're within
-            // 1ms of that interval, enabling rendering only if we are.
-            if (m_renderMode == RenderMode::RenderAtTargetRate)
-            {
-                constexpr AZStd::chrono::duration<float> updateThresholdMs(0.001f);
-                const bool shouldRender =
-                    m_lastRenderRequestTime - m_lastRenderStartTime + updateThresholdMs >= m_targetRefreshRate;
-                m_rootPass->SetEnabled(shouldRender);
-            }
-
-            if (NeedsRender())
-            {
-                m_prepareFrameEvent.Signal();
-            }
-        }
-
         void RenderPipeline::OnPassModified()
         {
             if (m_needsPassRecreate)
@@ -395,11 +375,11 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame()
+        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
         {
             AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
-            m_lastRenderStartTime = m_lastRenderRequestTime;
+            m_lastRenderStartTime = tick.m_currentGameTime;
 
             OnPassModified();
 
@@ -427,7 +407,6 @@ namespace AZ
             {
                 RemoveFromRenderTick();
             }
-            m_endFrameEvent.Signal();
         }
 
         void RenderPipeline::CollectPersistentViews(AZStd::map<ViewPtr, RHI::DrawListMask>& outViewMasks) const
@@ -510,13 +489,6 @@ namespace AZ
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
-        void RenderPipeline::AddToRenderTickAtInterval(AZStd::chrono::duration<float> renderInterval)
-        {
-            m_rootPass->SetEnabled(false);
-            m_renderMode = RenderMode::RenderAtTargetRate;
-            m_targetRefreshRate = renderInterval;
-        }
-
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
@@ -530,7 +502,7 @@ namespace AZ
         
         bool RenderPipeline::NeedsRender() const
         {
-            return m_rootPass->IsEnabled();
+            return m_renderMode != RenderMode::NoRender;
         }
 
         RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
@@ -541,16 +513,6 @@ namespace AZ
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
         {
             return m_drawFilterMask;
-        }
-
-        void RenderPipeline::ConnectPrepareFrameHandler(FrameNotificationEvent::Handler& handler)
-        {
-            handler.Connect(m_prepareFrameEvent);
-        }
-
-        void RenderPipeline::ConnectEndFrameHandler(FrameNotificationEvent::Handler& handler)
-        {
-            handler.Connect(m_endFrameEvent);
         }
 
         void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
