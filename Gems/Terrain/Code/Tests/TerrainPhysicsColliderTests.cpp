@@ -249,7 +249,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
     EXPECT_EQ(heights.size(), cols * rows);
-    EXPECT_EQ(heights.size(), expectedHeightsSize);
    
     m_entity->Reset();
 }
