@@ -55,6 +55,7 @@ namespace O3DE::ProjectManager
         return AZ::Success( QStringList { cmakeInstalledPath,
                                           "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
                                           "-S", m_projectInfo.m_path,
+                                          "-G", "Xcode",
                                           "-DLY_UNITY_BUILD=ON" } );
     }
 
