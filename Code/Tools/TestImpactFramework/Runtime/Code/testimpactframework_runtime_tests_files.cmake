@@ -30,6 +30,7 @@ Tests/TestEngine/TestImpactInstrumentedTestRunnerTest.cpp
 Tests/TestEngine/TestImpactTestCoverageTest.cpp
 Tests/TestEngine/TestImpactTestEngineTest.cpp
 Tests/TestEngine/TestImpactTestJobInfoGeneratorTest.cpp
+Tests/TestEngine/TestImpactPythonTestRunnerTest.cpp
 Tests/TestImpactRuntimeTestMain.cpp
 Tests/TestImpactExceptionTest.cpp
 Tests/TestImpactTestJobRunnerCommon.h

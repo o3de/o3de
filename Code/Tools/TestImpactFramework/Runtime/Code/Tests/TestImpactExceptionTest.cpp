@@ -48,9 +48,6 @@ namespace UnitTest
         {
             // Given an exception instantiated with a string in local scope
             throw(TestImpact::Exception(AZStd::string::format("%s", Message)));
-
-            // Do not expect this code to be reachable
-            FAIL();
         }
         catch (const TestImpact::Exception& e)
         {
@@ -70,9 +67,6 @@ namespace UnitTest
         {
             // Given an exception instantiated with a copy of the message string in local scope
             throw(TestImpact::Exception(AZStd::string::format("%s", Message).c_str()));
-
-            // Do not expect this code to be reachable
-            FAIL();
         }
         catch (const TestImpact::Exception& e)
         {

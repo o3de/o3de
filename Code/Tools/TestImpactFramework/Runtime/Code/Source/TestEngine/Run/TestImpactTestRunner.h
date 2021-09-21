@@ -9,22 +9,35 @@
 #pragma once
 
 #include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
-#include <TestEngine/Run/TestImpactTestRun.h>
 #include <TestEngine/Run/TestImpactTestRunJobData.h>
+
+
+
+
+
+
+#include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
 
 namespace TestImpact
 {
-    //! Runs a batch of test targets to determine the test passes/failures.
-    class TestRunner
-        : public TestJobRunner<TestRunJobData, TestRun>
+    template<typename TestRunType>
+    TestRunType TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
     {
-        using JobRunner = TestJobRunner<TestRunJobData, TestRun>;
+        static_assert(false, "Please specify a factory function for the test run type.");
+    };
+
+    //! Runs a batch of test targets to determine the test passes/failures.
+    template<typename TestRunType>
+    class TestRunner_
+        : public TestJobRunner<TestRunJobData, TestRunType>
+    {
+    protected:
+        // using JobRunner = TestJobRunner<TestRunJobData, TestRun>;
+        using JobRunner = TestJobRunner<TestRunJobData, TestRunType>;
+        using JobRunner::JobRunner;
 
     public:
-        //! Constructs a test runner with the specified parameters common to all job runs of this runner.
-        //! @param maxConcurrentRuns The maximum number of runs to be in flight at any given time.
-        explicit TestRunner(size_t maxConcurrentRuns);
-
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
         //! @param jobExceptionPolicy The test run job exception policy to be used for this run (use
@@ -33,10 +46,52 @@ namespace TestImpact
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight runs.
         //! @param clientCallback The optional client callback to be called whenever a run job changes state.
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> RunTests(
-            const AZStd::vector<JobInfo>& jobInfos,
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobRunner::Job>> RunTests(
+            const AZStd::vector<typename JobRunner::JobInfo>& jobInfos,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<ClientJobCallback> clientCallback);
+            AZStd::optional<typename JobRunner::ClientJobCallback> clientCallback)
+        {
+            const auto payloadGenerator = [](const typename JobRunner::JobDataMap& jobDataMap)
+            {
+                PayloadMap<JobRunner::Job> runs;
+                for (const auto& [jobId, jobData] : jobDataMap)
+                {
+                    const auto& [meta, jobInfo] = jobData;
+                    if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
+                    {
+                        try
+                        {
+                            runs[jobId] = TestRunFactory<TestRunType>(*jobInfo, meta);
+                        }
+                        catch (const Exception& e)
+                        {
+                            AZ_Printf("RunTests", AZStd::string::format("%s\n", e.what()).c_str());
+                            runs[jobId] = AZStd::nullopt;
+                        }
+                    }
+                }
+
+                return runs;
+            };
+
+            return JobRunner::ExecuteJobs(
+                jobInfos, payloadGenerator, StdOutputRouting::None, StdErrorRouting::None, runTimeout, runnerTimeout, clientCallback,
+                AZStd::nullopt);
+        }
+    };
+
+    template<>
+    inline TestRun TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
+    {
+        return TestRun(
+            GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())), jobMeta.m_duration.value());
+    };
+
+    class TestRunner
+        : public TestRunner_<TestRun>
+    {
+    public:
+        using TestRunner_<TestRun>::TestRunner_;
     };
 } // namespace TestImpact

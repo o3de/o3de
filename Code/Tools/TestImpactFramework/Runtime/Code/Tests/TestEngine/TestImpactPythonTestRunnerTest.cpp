@@ -6,10 +6,25 @@
  *
  */
 
-#include <AzTest/AzTest.h>
+#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
+
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/AzTest.h>
+
+namespace TestImpact::Py
+{
+    
+} // namespace TestImpact
 
 namespace UnitTest
 {
+    class PyTestRunnerFixture
+        : public AllocatorsTestFixture
+    {
+    };
 
+    TEST_F(PyTestRunnerFixture, Foo)
+    {
+
+    }
 }

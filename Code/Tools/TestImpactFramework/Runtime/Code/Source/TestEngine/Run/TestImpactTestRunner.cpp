@@ -17,12 +17,7 @@
 
 namespace TestImpact
 {
-    TestRunner::TestRunner(size_t maxConcurrentRuns)
-        : JobRunner(maxConcurrentRuns)
-    {
-    }
-
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestRunner::Job>> TestRunner::RunTests(
+    /*AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestRunner::Job>> TestRunner::RunTests(
         const AZStd::vector<JobInfo>& jobInfos,
         AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
@@ -60,5 +55,5 @@ namespace TestImpact
             runnerTimeout,
             clientCallback,
             AZStd::nullopt);
-    }
+    }*/
 } // namespace TestImpact
