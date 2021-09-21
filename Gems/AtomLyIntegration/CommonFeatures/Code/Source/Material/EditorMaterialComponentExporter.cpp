@@ -55,6 +55,10 @@ namespace AZ
 
             bool OpenExportDialog(ExportItemsContainer& exportItems)
             {
+                // Sort material entries so they are ordered by name in the table
+                AZStd::sort(exportItems.begin(), exportItems.end(),
+                    [](const auto& a, const auto& b) { return a.GetMaterialSlotName() < b.GetMaterialSlotName(); });
+
                 QWidget* activeWindow = nullptr;
                 AzToolsFramework::EditorWindowRequestBus::BroadcastResult(activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
 

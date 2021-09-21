@@ -109,7 +109,7 @@ namespace Multiplayer
 
     NetworkHitVolumesComponent::NetworkHitVolumesComponent()
         : m_syncRewindHandler([this]() { OnSyncRewind(); })
-        , m_preRenderHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
+        , m_preRenderHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform& worldTm) { OnTransformUpdate(worldTm); })
     {
         ;
@@ -135,7 +135,7 @@ namespace Multiplayer
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusDisconnect();
     }
 
-    void NetworkHitVolumesComponent::OnPreRender([[maybe_unused]] float deltaTime, [[maybe_unused]] float blendFactor)
+    void NetworkHitVolumesComponent::OnPreRender([[maybe_unused]] float deltaTime)
     {
         if (m_animatedHitVolumes.size() <= 0)
         {
