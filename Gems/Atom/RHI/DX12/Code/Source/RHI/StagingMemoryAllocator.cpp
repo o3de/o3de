@@ -55,7 +55,7 @@ namespace AZ
 
         void StagingMemoryAllocator::GarbageCollect()
         {
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "StagingMemoryAllocator: GarbageCollect");
+            AZ_PROFILE_SCOPE(RHI, "StagingMemoryAllocator: GarbageCollect(DX12)");
             m_mediumBlockAllocators.ForEach([](MemoryLinearSubAllocator& subAllocator)
             {
                 subAllocator.GarbageCollect();
