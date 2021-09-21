@@ -15,6 +15,24 @@
 
 namespace AzToolsFramework
 {
+    bool IsInFocusSubTree(AZ::EntityId entityId, AZ::EntityId focusRootId)
+    {
+        if (entityId == AZ::EntityId())
+        {
+            return false;
+        }
+
+        if (entityId == focusRootId)
+        {
+            return true;
+        }
+
+        AZ::EntityId parentId;
+        AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformInterface::GetParentId);
+
+        return IsInFocusSubTree(parentId, focusRootId);
+    }
+
     FocusModeSystemComponent::~FocusModeSystemComponent()
     {
         AZ::Interface<FocusModeInterface>::Unregister(this);
@@ -33,7 +51,7 @@ namespace AzToolsFramework
     {
     }
 
-    void FocusModeSystemComponent::Reflect(AZ::ReflectContext* /*context*/)
+    void FocusModeSystemComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
     {
     }
 
@@ -69,25 +87,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        return IsInFocusSubTree_helper(entityId, m_focusRoot);
-    }
-
-    bool FocusModeSystemComponent::IsInFocusSubTree_helper(AZ::EntityId entityId, AZ::EntityId focusRootId)
-    {
-        if (entityId == AZ::EntityId())
-        {
-            return false;
-        }
-
-        if (entityId == focusRootId)
-        {
-            return true;
-        }
-
-        AZ::EntityId parentId;
-        AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformInterface::GetParentId);
-
-        return IsInFocusSubTree_helper(parentId, focusRootId);
+        return AzToolsFramework::IsInFocusSubTree(entityId, m_focusRoot);
     }
 
 } // namespace AzToolsFramework

@@ -24,6 +24,7 @@ namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
 
+    //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
         : private PrefabFocusInterface
     {
@@ -34,7 +35,7 @@ namespace AzToolsFramework::Prefab
 
         void Initialize();
 
-        // PrefabFocusInterface...
+        // PrefabFocusInterface override ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId() override;
         InstanceOptionalReference GetFocusedPrefabInstance() override;
@@ -44,9 +45,9 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
 
-        static FocusModeInterface* s_focusModeInterface;
-        static InstanceEntityMapperInterface* s_instanceEntityMapperInterface;
-        static PrefabEditorEntityOwnershipInterface* s_prefabEditorEntityOwnershipInterface;
+        FocusModeInterface* m_focusModeInterface;
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+        PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface;
     };
 
 } // namespace AzToolsFramework::Prefab
