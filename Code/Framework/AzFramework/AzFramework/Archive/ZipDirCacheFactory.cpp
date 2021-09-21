@@ -553,7 +553,7 @@ namespace AZ::IO::ZipDir
 
     //////////////////////////////////////////////////////////////////////////
     // give the CDR File Header entry, reads the local file header to validate
-    // and determine where the actual file lies
+    // and determine where the actual file resides
     void CacheFactory::AddFileEntry(char* strFilePath, const ZipFile::CDRFileHeader* pFileHeader, const SExtraZipFileData& extra)
     {
         if (pFileHeader->lLocalHeaderOffset > m_CDREnd.lCDROffset)
@@ -600,8 +600,7 @@ namespace AZ::IO::ZipDir
         if (m_encryptedHeaders != ZipFile::HEADERS_NOT_ENCRYPTED)
         {
             // use CDR instead of local header
-            // The pak encryption tool asserts that there is no extra data at the end of the local file header, so don't add any extra data from the CDR header.
-            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + pFileHeader->nFileNameLength;
+            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + pFileHeader->nFileNameLength + pFileHeader->nExtraFieldLength;
         }
         else
         {
