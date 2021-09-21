@@ -477,6 +477,14 @@ namespace Multiplayer
         const AZ::Name netSpawnableName =
             AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnable.GetId());
 
+        if (netSpawnableName.IsEmpty())
+        {
+            AZ_Error("NetworkEntityManager", false,
+                "RequestNetSpawnableInstantiation: Requested spawnable %s doesn't exist in the NetworkSpawnableLibrary. Please make sure it is a network spawnable",
+                netSpawnable.GetHint().c_str());
+            return nullptr;
+        }
+
         // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
         optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
             (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
