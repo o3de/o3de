@@ -226,12 +226,19 @@ namespace O3DE::ProjectManager
         QVector<int> elementCounts;
         const int totalGems = m_gemModel->rowCount();
         const int selectedGemTotal = m_gemModel->TotalAddedGems();
+        const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
 
-        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Unselected));
+        elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Unselected));
         elementCounts.push_back(totalGems - selectedGemTotal);
 
-        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Selected));
+        elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Selected));
         elementCounts.push_back(selectedGemTotal);
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
+        elementCounts.push_back(totalGems - enabledGemTotal);
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Active));
+        elementCounts.push_back(enabledGemTotal);
 
         bool wasCollapsed = false;
         if (m_statusFilter)
@@ -253,48 +260,52 @@ namespace O3DE::ProjectManager
         m_statusFilter->deleteLater();
         m_statusFilter = filterWidget;
 
-        const GemSortFilterProxyModel::GemStatus currentFilterState = m_filterProxyModel->GetGemStatus();
+        const GemSortFilterProxyModel::GemSelected currentFilterState = m_filterProxyModel->GetGemSelected();
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
-        for (int statusFilterIndex = 0; statusFilterIndex < buttons.size(); ++statusFilterIndex)
+
+        // unselected/selected checkboxes 
+        buttons[0]->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Unselected); 
+        buttons[1]->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Selected); 
+
+        auto updateGemSelection = [=]([[maybe_unused]] bool checked)
         {
-            const GemSortFilterProxyModel::GemStatus gemStatus = static_cast<GemSortFilterProxyModel::GemStatus>(statusFilterIndex);
-            QAbstractButton* button = buttons[statusFilterIndex];
-
-            if (static_cast<GemSortFilterProxyModel::GemStatus>(statusFilterIndex) == currentFilterState)
+            if (buttons[0]->isChecked() && !buttons[1]->isChecked())
             {
-                button->setChecked(true);
+                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Unselected);
             }
+            else if (!buttons[0]->isChecked() && buttons[1]->isChecked())
+            {
+                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Selected);
+            }
+            else
+            {
+                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::NoFilter);
+            }
+        };
+        connect(buttons[0], &QAbstractButton::toggled, this, updateGemSelection);
+        connect(buttons[1], &QAbstractButton::toggled, this, updateGemSelection);
 
-            connect(
-                button, &QAbstractButton::toggled, this,
-                [=](bool checked)
-                {
-                    GemSortFilterProxyModel::GemStatus filterStatus = m_filterProxyModel->GetGemStatus();
-                    if (checked)
-                    {
-                        if (filterStatus == GemSortFilterProxyModel::GemStatus::NoFilter)
-                        {
-                            filterStatus = gemStatus;
-                        }
-                        else
-                        {
-                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
-                        }
-                    }
-                    else
-                    {
-                        if (filterStatus != gemStatus)
-                        {
-                            filterStatus = static_cast<GemSortFilterProxyModel::GemStatus>(!gemStatus);
-                        }
-                        else
-                        {
-                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
-                        }
-                    }
-                    m_filterProxyModel->SetGemStatus(filterStatus);
-                });
-        }
+        // inactive/active checkboxes 
+        buttons[2]->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive); 
+        buttons[3]->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active); 
+
+        auto updateGemActive = [=]([[maybe_unused]] bool checked)
+        {
+            if (buttons[2]->isChecked() && !buttons[3]->isChecked())
+            {
+                m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Inactive);
+            }
+            else if (!buttons[2]->isChecked() && buttons[3]->isChecked())
+            {
+                m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Active);
+            }
+            else
+            {
+                m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::NoFilter);
+            }
+        };
+        connect(buttons[2], &QAbstractButton::toggled, this, updateGemActive);
+        connect(buttons[3], &QAbstractButton::toggled, this, updateGemActive);
     }
 
     void GemFilterWidget::AddGemOriginFilter()
@@ -487,7 +498,7 @@ namespace O3DE::ProjectManager
             const QString& feature = elementNames[i];
             QAbstractButton* button = buttons[i];
 
-            // Adjust the proxy model and enable or disable the clicked feature used for filtering.
+            // Adjust the proxy model and enable the clicked feature used for filtering.
             connect(button, &QAbstractButton::toggled, this, [=](bool checked)
                 {
                     QSet<QString> features = m_filterProxyModel->GetFeatures();

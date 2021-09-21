@@ -8,9 +8,14 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
 #include <QEvent>
+#include <QAbstractItemView>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QHelpEvent>
+#include <QToolTip>
+#include <QHoverEvent>
 
 namespace O3DE::ProjectManager
 {
@@ -149,8 +154,7 @@ namespace O3DE::ProjectManager
                 return true;
             }
         }
-
-        if (event->type() == QEvent::MouseButtonPress)
+        else if (event->type() == QEvent::MouseButtonPress )
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -167,6 +171,82 @@ namespace O3DE::ProjectManager
         }
 
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
+    }
+
+    const GemModel* GetGemModel(const QAbstractItemModel* model)
+    {
+        const GemSortFilterProxyModel* proxyModel = qobject_cast<const GemSortFilterProxyModel*>(model);
+        if (proxyModel)
+        {
+            return proxyModel->GetSourceModel();
+        }
+        else
+        {
+            return qobject_cast<const GemModel*>(model);
+        }
+    }
+
+    QString GetGemNameList(const QVector<QModelIndex> modelIndices)
+    {
+        QString list;
+        for (int i = 0; i < modelIndices.size(); ++i)
+        {
+            if (!list.isEmpty())
+            {
+                if (i == modelIndices.size() - 1)
+                {
+                    list.append(" and ");
+                }
+                else
+                {
+                    list.append(", ");
+                }
+            }
+
+            list.append(GemModel::GetDisplayName(modelIndices[i]));
+        }
+
+        return list;
+    }
+
+    bool GemItemDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
+    {
+        if (event->type() == QEvent::ToolTip)
+        {
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+            if (buttonRect.contains(event->pos()))
+            {
+                if (!QToolTip::isVisible())
+                {
+                    if(GemModel::IsAddedDependency(index) && !GemModel::IsAdded(index))
+                    {
+                        const GemModel* gemModel = GetGemModel(index.model());
+                        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
+                        // we only want to display the gems that must be de-selected to automatically
+                        // disable this dependency, so don't include any that haven't been selected (added) 
+                        constexpr bool addedOnly = true;
+                        QVector<QModelIndex> dependents = gemModel->GatherDependentGems(index, addedOnly);
+                        QString nameList = GetGemNameList(dependents);
+                        if (!nameList.isEmpty())
+                        {
+                            QToolTip::showText(event->globalPos(), tr("This gem is a dependency of %1.\nTo disable this gem, first disable %1.").arg(nameList));
+                        }
+                    }
+                }
+                return true;
+            }
+            else if (QToolTip::isVisible())
+            {
+                QToolTip::hideText();
+                event->ignore();
+                return true;
+            }
+        }
+
+        return QStyledItemDelegate::helpEvent(event, view, option, index);
     }
 
     void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const

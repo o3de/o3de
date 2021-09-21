@@ -64,11 +64,11 @@ namespace O3DE::ProjectManager
         bool DoGemsToBeAddedHaveRequirements() const;
 
         QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex);
-        QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex);
+        QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
         QVector<QModelIndex> GatherGemsToBeAdded(bool includeDependencies = false) const;
         QVector<QModelIndex> GatherGemsToBeRemoved(bool includeDependencies = false) const;
 
-        int TotalAddedGems() const;
+        int TotalAddedGems(bool includeDependencies = false) const;
 
     private:
         void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);

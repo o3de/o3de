@@ -38,13 +38,21 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
 
-        QWidget* m_enabledWidget = nullptr;
-        QLabel* m_enabledLabel = nullptr;
-        TagContainerWidget* m_enabledTagContainer = nullptr;
+        QWidget* m_addedWidget = nullptr;
+        QLabel* m_addedLabel = nullptr;
+        TagContainerWidget* m_addedTagContainer = nullptr;
 
-        QWidget* m_disabledWidget = nullptr;
-        QLabel* m_disabledLabel = nullptr;
-        TagContainerWidget* m_disabledTagContainer = nullptr;
+        QWidget* m_removedWidget = nullptr;
+        QLabel* m_removedLabel = nullptr;
+        TagContainerWidget* m_removedTagContainer = nullptr;
+
+        QWidget* m_addedDependentWidget = nullptr;
+        QLabel* m_addedDependentLabel = nullptr;
+        TagContainerWidget* m_addedDependentTagContainer = nullptr;
+
+        QWidget* m_removedDependentWidget = nullptr;
+        QLabel* m_removedDependentLabel = nullptr;
+        TagContainerWidget* m_removedDependentTagContainer = nullptr;
 
         inline constexpr static int s_width = 240;
     };

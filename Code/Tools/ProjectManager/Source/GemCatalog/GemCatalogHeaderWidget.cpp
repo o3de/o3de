@@ -41,38 +41,38 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(closeButton);
         m_layout->addLayout(hLayout);
 
-        // enabled
+        // added
         {
-            m_enabledWidget = new QWidget();
-            m_enabledWidget->setFixedWidth(s_width);
-            m_layout->addWidget(m_enabledWidget);
+            m_addedWidget = new QWidget();
+            m_addedWidget->setFixedWidth(s_width);
+            m_layout->addWidget(m_addedWidget);
 
             QVBoxLayout* layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            m_enabledWidget->setLayout(layout);
+            m_addedWidget->setLayout(layout);
 
-            m_enabledLabel = new QLabel();
-            m_enabledLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
-            layout->addWidget(m_enabledLabel);
-            m_enabledTagContainer = new TagContainerWidget();
-            layout->addWidget(m_enabledTagContainer);
+            m_addedLabel = new QLabel();
+            m_addedLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
+            layout->addWidget(m_addedLabel);
+            m_addedTagContainer = new TagContainerWidget();
+            layout->addWidget(m_addedTagContainer);
         }
 
-        // disabled
+        // removed
         {
-            m_disabledWidget = new QWidget();
-            m_disabledWidget->setFixedWidth(s_width);
-            m_layout->addWidget(m_disabledWidget);
+            m_removedWidget = new QWidget();
+            m_removedWidget->setFixedWidth(s_width);
+            m_layout->addWidget(m_removedWidget);
 
             QVBoxLayout* layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            m_disabledWidget->setLayout(layout);
+            m_removedWidget->setLayout(layout);
 
-            m_disabledLabel = new QLabel();
-            m_disabledLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
-            layout->addWidget(m_disabledLabel);
-            m_disabledTagContainer = new TagContainerWidget();
-            layout->addWidget(m_disabledTagContainer);
+            m_removedLabel = new QLabel();
+            m_removedLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
+            layout->addWidget(m_removedLabel);
+            m_removedTagContainer = new TagContainerWidget();
+            layout->addWidget(m_removedTagContainer);
         }
 
         setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
@@ -89,25 +89,25 @@ namespace O3DE::ProjectManager
         const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
         if (toBeAdded.isEmpty())
         {
-            m_enabledWidget->hide();
+            m_addedWidget->hide();
         }
         else
         {
-            m_enabledTagContainer->Update(ConvertFromModelIndices(toBeAdded));
-            m_enabledLabel->setText(QString("%1 %2").arg(QString::number(toBeAdded.size()), tr("Gems to be enabled")));
-            m_enabledWidget->show();
+            m_addedTagContainer->Update(ConvertFromModelIndices(toBeAdded));
+            m_addedLabel->setText(QString("%1 %2").arg(QString::number(toBeAdded.size()), tr("Gems to be activated")));
+            m_addedWidget->show();
         }
 
         const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
         if (toBeRemoved.isEmpty())
         {
-            m_disabledWidget->hide();
+            m_removedWidget->hide();
         }
         else
         {
-            m_disabledTagContainer->Update(ConvertFromModelIndices(toBeRemoved));
-            m_disabledLabel->setText(QString("%1 %2").arg(QString::number(toBeRemoved.size()), tr("Gems to be disabled")));
-            m_disabledWidget->show();
+            m_removedTagContainer->Update(ConvertFromModelIndices(toBeRemoved));
+            m_removedLabel->setText(QString("%1 %2").arg(QString::number(toBeRemoved.size()), tr("Gems to be deactivated")));
+            m_removedWidget->show();
         }
     }
 
@@ -162,7 +162,7 @@ namespace O3DE::ProjectManager
 
                 m_dropDownButton->setVisible(!toBeAdded.isEmpty() || !toBeRemoved.isEmpty());
 
-                // Automatically close the overlay window in case there are no gems to be enabled or disabled anymore.
+                // Automatically close the overlay window in case there are no gems to be activated or deactivated anymore.
                 if (m_cartOverlay && toBeAdded.isEmpty() && toBeRemoved.isEmpty())
                 {
                     m_cartOverlay->deleteLater();

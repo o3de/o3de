@@ -29,7 +29,6 @@ namespace O3DE::ProjectManager
         ~GemItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
-        bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) override;
         QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
 
         // Colors
@@ -39,7 +38,7 @@ namespace O3DE::ProjectManager
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the gem item
         const QColor m_borderColor = QColor("#1E70EB");
         const QColor m_buttonEnabledColor = QColor("#00B931");
-        const QColor m_buttonImplicitlyEnabledColor = QColor("#777777");
+        const QColor m_buttonImplicitlyEnabledColor = QColor("#BCBCBE");
 
         // Item
         inline constexpr static int s_height = 105; // Gem item total height
@@ -66,6 +65,9 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagSpacing = 7;
 
     protected:
+        bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) override;
+        bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index) override;
+
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;

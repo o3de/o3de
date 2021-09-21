@@ -382,7 +382,7 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    QVector<QModelIndex> GemModel::GatherDependentGems(const QModelIndex& modelIndex)
+    QVector<QModelIndex> GemModel::GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly) const
     {
         QVector<QModelIndex> result;
         const QString& gemName = modelIndex.data(RoleName).toString();
@@ -390,7 +390,10 @@ namespace O3DE::ProjectManager
         {
             for (const QModelIndex& dependency : m_gemReverseDependencyMap[gemName])
             {
-                result.push_back(dependency);
+                if (!addedOnly || GemModel::IsAdded(dependency))
+                {
+                    result.push_back(dependency);
+                }
             }
         }
         return result;
@@ -424,13 +427,13 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    int GemModel::TotalAddedGems() const
+    int GemModel::TotalAddedGems(bool includeDependencies) const
     {
         int result = 0;
         for (int row = 0; row < rowCount(); ++row)
         {
             const QModelIndex modelIndex = index(row, 0);
-            if (IsAdded(modelIndex))
+            if (IsAdded(modelIndex) || (includeDependencies && IsAddedDependency(modelIndex)))
             {
                 ++result;
             }
