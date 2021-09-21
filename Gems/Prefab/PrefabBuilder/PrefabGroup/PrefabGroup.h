@@ -8,7 +8,7 @@
 #pragma once
 
 #include <PrefabGroup/IPrefabGroup.h>
-#include <PrefabGroup/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
