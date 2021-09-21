@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace Multiplayer
 {
@@ -37,5 +38,6 @@ namespace Multiplayer
 
     private:
         AZ::Data::Asset<AzFramework::Spawnable> m_networkSpawnableAsset{ AZ::Data::AssetLoadBehavior::PreLoad };
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> m_netSpawnableTicket;
     };
 } // namespace Multiplayer

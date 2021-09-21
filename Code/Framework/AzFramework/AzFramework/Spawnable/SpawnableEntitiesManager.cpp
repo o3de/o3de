@@ -146,16 +146,6 @@ namespace AzFramework
         QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>, const AZStd::vector<AZ::Entity*>&, const void*>::Handler& handler)
-    {
-        handler.Connect(m_onSpawnedEvent);
-    }
-
-    void SpawnableEntitiesManager::AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>, const void*>::Handler& handler)
-    {
-        handler.Connect(m_onDespawnedEvent);
-    }
-
     auto SpawnableEntitiesManager::ProcessQueue(CommandQueuePriority priority) -> CommandQueueStatus
     {
         CommandQueueStatus result = CommandQueueStatus::NoCommandsLeft;
@@ -359,8 +349,6 @@ namespace AzFramework
                         ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
             }
 
-            m_onSpawnedEvent.Signal(ticket.m_spawnable, ticket.m_spawnedEntities, &ticket);
-
             ticket.m_currentRequestId++;
             return true;
         }
@@ -441,8 +429,6 @@ namespace AzFramework
                     ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
             }
 
-            m_onSpawnedEvent.Signal(ticket.m_spawnable, ticket.m_spawnedEntities, &ticket);
-
             ticket.m_currentRequestId++;
             return true;
         }
@@ -474,8 +460,6 @@ namespace AzFramework
                 request.m_completionCallback(request.m_ticketId);
             }
 
-            m_onDespawnedEvent.Signal(ticket.m_spawnable, &ticket);
-
             ticket.m_currentRequestId++;
             return true;
         }
@@ -502,8 +486,6 @@ namespace AzFramework
                         &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, entity->GetId());
                 }
             }
-
-            m_onDespawnedEvent.Signal(ticket.m_spawnable, &ticket);
 
             // Rebuild the list of entities.
             ticket.m_spawnedEntities.clear();
@@ -561,8 +543,6 @@ namespace AzFramework
                 request.m_completionCallback(request.m_ticketId, SpawnableConstEntityContainerView(
                     ticket.m_spawnedEntities.begin(), ticket.m_spawnedEntities.end()));
             }
-
-            m_onSpawnedEvent.Signal(ticket.m_spawnable, ticket.m_spawnedEntities, &ticket);
 
             ticket.m_currentRequestId++;
 

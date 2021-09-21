@@ -30,14 +30,9 @@ namespace Multiplayer
         : m_networkEntityAuthorityTracker(*this)
         , m_removeEntitiesEvent([this] { RemoveEntities(); }, AZ::Name("NetworkEntityManager remove entities event"))
         , m_updateEntityDomainEvent([this] { UpdateEntityDomain(); }, AZ::Name("NetworkEntityManager update entity domain event"))
-        , m_onSpawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable, const AZStd::vector<AZ::Entity*>& entities, const void* spawnTicket) { this->OnSpawned(spawnable, entities, spawnTicket); })
-        , m_onDespawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable, const void* spawnTicket) { this->OnDespawned(spawnable, spawnTicket); })
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
-
-        AzFramework::SpawnableEntitiesInterface::Get()->AddOnSpawnedHandler(m_onSpawnedHandler);
-        AzFramework::SpawnableEntitiesInterface::Get()->AddOnDespawnedHandler(m_onDespawnedHandler);
     }
 
     NetworkEntityManager::~NetworkEntityManager()
@@ -473,52 +468,17 @@ namespace Multiplayer
     }
 
     AZStd::unique_ptr<AzFramework::EntitySpawnTicket> NetworkEntityManager::RequestNetSpawnableInstantiation(
-        const AZ::Data::Asset<AzFramework::Spawnable>& rootSpawnable, const AZStd::vector<AZ::Entity*>& entities)
+        const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform)
     {
-        if (entities.empty())
-        {
-            AZ_Error("NetworkEntityManager", false,
-                "RequestNetSpawnableInstantiation: No entities in the spawnable %s", rootSpawnable.GetHint().c_str());
-            return nullptr;
-        }
-
-        // The first entity in every spawnable is the root one 
-        const AZ::Entity* rootEntity = *entities.begin();
-        if (!rootEntity)
-        {
-            AZ_Error("NetworkEntityManager", false,
-                "RequestNetSpawnableInstantiation: Root entity is null in the spawnable %s", rootSpawnable.GetHint().c_str());
-            return nullptr;
-        }
-
-        const auto* holderComponent = rootEntity->FindComponent<NetworkSpawnableHolderComponent>();
-        if (!holderComponent)
-        {
-            // This spawnable doesn't have a corresponding network spawnable.
-            return nullptr;
-        }
-
-        AzFramework::TransformComponent* rootEntityTransform =
-            rootEntity->FindComponent<AzFramework::TransformComponent>();
-        if (!rootEntityTransform)
-        {
-            AZ_Error("NetworkEntityManager", false,
-                "RequestNetSpawnableInstantiation: Root entity has no transform in the spawnable %s", rootSpawnable.GetHint().c_str());
-            return nullptr;
-        }
-
-        // Retrieve the corresponding network spawnable asset
-        AZ::Data::Asset<AzFramework::Spawnable> netSpawnableAsset = holderComponent->GetNetworkSpawnableAsset();
-
         // Prepare the parameters for the spawning process
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
 
         const AZ::Name netSpawnableName =
-            AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnableAsset.GetId());
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnable.GetId());
 
         // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
-        optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = rootEntityTransform->GetWorldTM()]
+        optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
             (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
         {
             bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
@@ -546,7 +506,7 @@ namespace Multiplayer
         };
 
         // Spawn with the newly created ticket. This allows the calling code to manage the lifetime of the constructed entities
-        auto ticket = AZStd::make_unique<AzFramework::EntitySpawnTicket>(netSpawnableAsset);
+        auto ticket = AZStd::make_unique<AzFramework::EntitySpawnTicket>(netSpawnable);
         AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*ticket, AZStd::move(optionalArgs));
         return ticket;
     }
@@ -572,28 +532,6 @@ namespace Multiplayer
         {
             multiplayer->SendReadyForEntityUpdates(false);
         }
-
-        m_netSpawnableTickets.clear();
-    }
-
-    void NetworkEntityManager::OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable,
-        const AZStd::vector<AZ::Entity*>& entities, const void* spawnTicket)
-    {
-        if (ShouldSpawnNetEntities())
-        {
-            AZStd::unique_ptr<AzFramework::EntitySpawnTicket> ticket = RequestNetSpawnableInstantiation(spawnable, entities);
-            if (ticket)
-            {
-                AZ::Data::AssetId spawnableAssetId = spawnable.GetId();
-                m_netSpawnableTickets[spawnTicket] = AZStd::move(ticket);
-            }
-        }
-    }
-
-    void NetworkEntityManager::OnDespawned([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> spawnable,
-        const void* spawnTicket)
-    {
-        m_netSpawnableTickets.erase(spawnTicket);
     }
 
     void NetworkEntityManager::SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole)
@@ -610,13 +548,5 @@ namespace Multiplayer
             AZ_Error("NetworkEntityManager", false, "SetupNetEntity called for an entity with no NetBindComponent. Entity: %s",
                 netEntity->GetName().c_str());
         }
-    }
-
-    bool NetworkEntityManager::ShouldSpawnNetEntities() const
-    {
-        const auto agentType = GetMultiplayer()->GetAgentType();
-        const bool shouldSpawnNetEntities =
-            (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
-        return shouldSpawnNetEntities;
     }
 }

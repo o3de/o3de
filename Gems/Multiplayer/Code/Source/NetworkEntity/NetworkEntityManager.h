@@ -11,7 +11,6 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
@@ -61,6 +60,9 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) override;
 
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;
+
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
 
         uint32_t GetEntityCount() const override;
@@ -93,15 +95,6 @@ namespace Multiplayer
     private:
         void RemoveEntities();
         NetEntityId NextId();
-        bool ShouldSpawnNetEntities() const;
-        void OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable,
-            const AZStd::vector<AZ::Entity*>& entities, const void* spawnTicket);
-        void OnDespawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable, const void* spawnTicket);
-
-        // Note: This is an async function.
-        // The instantiated entities are not available immediately but will be constructed by the spawnable system
-        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
-            const AZ::Data::Asset<AzFramework::Spawnable>& rootSpawnable, const AZStd::vector<AZ::Entity*>& entities);
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
@@ -130,10 +123,5 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-
-        AZStd::unordered_map<const void*, AZStd::unique_ptr<AzFramework::EntitySpawnTicket>> m_netSpawnableTickets;
-
-        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>, const AZStd::vector<AZ::Entity*>&, const void*>::Handler m_onSpawnedHandler;
-        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>, const void*>::Handler m_onDespawnedHandler;
     };
 }
