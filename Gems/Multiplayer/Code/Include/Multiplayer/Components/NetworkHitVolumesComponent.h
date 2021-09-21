@@ -64,7 +64,7 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnPreRender(float deltaTime, float blendFactor);
+        void OnPreRender(float deltaTime);
         void OnTransformUpdate(const AZ::Transform& transform);
         void OnSyncRewind();
 
