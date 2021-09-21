@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ::Prefab
 {
@@ -137,7 +138,7 @@ namespace AZ::Prefab
         buffer.resize(stream->GetLoadedSize());
         stream->Read(stream->GetLoadedSize(), buffer.data());
 
-        auto jsonOutcome = AzFramework::FileFunc::ReadJsonFromString(buffer);
+        auto jsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(buffer);
         if (jsonOutcome.IsSuccess() == false)
         {
             AZ_Error("prefab", false, "Asset JSON failed to compile %s", jsonOutcome.GetError().c_str());
@@ -169,7 +170,7 @@ namespace AZ::Prefab
         rapidjson::Document prefabDoc;
         prefabDoc.CopyFrom(prefabData, prefabDoc.GetAllocator());
         AZStd::string stringJson;
-        auto stringOutcome = AzFramework::FileFunc::WriteJsonToString(prefabDoc, stringJson);
+        auto stringOutcome = AZ::JsonSerializationUtils::WriteJsonString(prefabDoc, stringJson);
         if (stringOutcome.IsSuccess() == false)
         {
             AZ_Error("prefab", false, "Could not write to JSON string %s", stringOutcome.GetError().c_str());
