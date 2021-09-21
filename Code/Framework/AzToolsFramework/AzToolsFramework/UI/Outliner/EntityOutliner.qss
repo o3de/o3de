@@ -21,7 +21,7 @@ AzToolsFramework--EntityOutlinerWidget QTreeView
 AzToolsFramework--EntityOutlinerWidget QTreeView::branch:hover
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:hover
 {
-    background: rgba(255, 255, 255, 30);
+    background: transparent;
 }
 
 AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
@@ -29,7 +29,7 @@ AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
 , AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected:active
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:selected:active
 {
-    background: rgba(255, 255, 255, 45);
+    background: transparent;
 }
 
 
