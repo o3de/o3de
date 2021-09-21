@@ -37,6 +37,7 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference GetFocusedPrefabInstance() override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) override;
         const AZ::IO::Path& GetPrefabFocusPath() override;
+        const int GetPrefabFocusPathLength() override;
 
         // EditorEntityContextNotificationBus...
         void OnEntityStreamLoadSuccess() override;

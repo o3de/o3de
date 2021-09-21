@@ -43,10 +43,12 @@ namespace AzToolsFramework::Prefab
         //! @return true if the entity belongs to the focused instance or one of its descendants, false otherwise.
         virtual bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) = 0;
 
-        //! Returns whether the entity belongs to the instance that is being focused on, or one of its descendants.
-        //! @param entityId The entityId of the queried entity.
-        //! @return true if the entity belongs to the focused instance or one of its descendants, false otherwise.
+        //! Returns the path from the root instance to the currently focused instance.
+        //! @return A path composed from the names of the container entities for the instance path.
         virtual const AZ::IO::Path& GetPrefabFocusPath() = 0;
+
+        //! Returns the size of the path to the currently focused instance.
+        virtual const int GetPrefabFocusPathLength() = 0;
     };
 
 } // namespace AzToolsFramework::Prefab

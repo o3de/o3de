@@ -133,6 +133,11 @@ namespace AzToolsFramework::Prefab
         return m_instanceFocusPath;
     }
 
+    const int PrefabFocusHandler::GetPrefabFocusPathLength()
+    {
+        return m_instanceFocusVector.size();
+    }
+
     void PrefabFocusHandler::OnEntityStreamLoadSuccess()
     {
         // Focus on the root prefab (AZ::EntityId() will default to it)
