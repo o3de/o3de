@@ -55,13 +55,13 @@ namespace AZ
             RHI::DrawListTag m_renderOuterDrawListTag;
             RHI::DrawListTag m_renderInnerDrawListTag;
 
-            RHI::ShaderInputConstantIndex m_modelToWorldStencilConstantIndex;
-            RHI::ShaderInputConstantIndex m_modelToWorldRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_modelToWorldInverseRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_outerObbHalfLengthsRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_innerObbHalfLengthsRenderConstantIndex;
-            RHI::ShaderInputConstantIndex m_useParallaxCorrectionRenderConstantIndex;
-            RHI::ShaderInputImageIndex m_reflectionCubeMapRenderImageIndex;
+            RHI::ShaderInputNameIndex m_modelToWorldStencilConstantIndex = "m_modelToWorld";
+            RHI::ShaderInputNameIndex m_modelToWorldRenderConstantIndex = "m_modelToWorld";
+            RHI::ShaderInputNameIndex m_modelToWorldInverseRenderConstantIndex = "m_modelToWorldInverse";
+            RHI::ShaderInputNameIndex m_outerObbHalfLengthsRenderConstantIndex = "m_outerObbHalfLengths";
+            RHI::ShaderInputNameIndex m_innerObbHalfLengthsRenderConstantIndex = "m_innerObbHalfLengths";
+            RHI::ShaderInputNameIndex m_useParallaxCorrectionRenderConstantIndex = "m_useParallaxCorrection";
+            RHI::ShaderInputNameIndex m_reflectionCubeMapRenderImageIndex = "m_reflectionCubeMap";
         };
 
         // ReflectionProbe manages all aspects of a single probe, including rendering, visualization, and cubemap generation

@@ -77,53 +77,6 @@ namespace AZ
                 m_reflectionRenderData.m_renderInnerSrgLayout,
                 m_reflectionRenderData.m_renderInnerDrawListTag);
 
-            // create ShaderResourceGroups here so we can get the layout and cache the indices
-            // Note: the SRGs are not needed beyond this method since each probe creates its own SRGs, we are just interested in the indices
-
-            // cache probe stencil shader indices 
-            Data::Instance<RPI::ShaderResourceGroup> stencilSrg = RPI::ShaderResourceGroup::Create(
-                m_reflectionRenderData.m_stencilShader->GetAsset(),
-                m_reflectionRenderData.m_stencilShader->GetSupervariantIndex(),
-                m_reflectionRenderData.m_stencilSrgLayout->GetName());
-            AZ_Error("ReflectionProbeFeatureProcessor", stencilSrg.get(), "Failed to create stencil back face shader resource group");
-
-            const RHI::ShaderResourceGroupLayout* stencilSrgLayout = stencilSrg->GetLayout();
-            Name modelToWorldConstantName = Name("m_modelToWorld");
-            m_reflectionRenderData.m_modelToWorldStencilConstantIndex = stencilSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldStencilConstantIndex.IsValid(), "Failed to find stencil shader input constant [%s]", modelToWorldConstantName.GetCStr());
-
-            // cache probe render shader indices
-            // Note: the outer and inner render shaders use the same Srg
-            Data::Instance<RPI::ShaderResourceGroup> renderReflectionSrg = RPI::ShaderResourceGroup::Create(
-                m_reflectionRenderData.m_renderOuterShader->GetAsset(),
-                m_reflectionRenderData.m_renderOuterShader->GetSupervariantIndex(),
-                m_reflectionRenderData.m_renderOuterSrgLayout->GetName());
-            AZ_Error("ReflectionProbeFeatureProcessor", renderReflectionSrg.get(), "Failed to create render reflection shader resource group");
-
-            const RHI::ShaderResourceGroupLayout* renderReflectionSrgLayout = renderReflectionSrg->GetLayout();
-            m_reflectionRenderData.m_modelToWorldRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldConstantName.GetCStr());
-
-            Name modelToWorldInverseConstantName = Name("m_modelToWorldInverse");
-            m_reflectionRenderData.m_modelToWorldInverseRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(modelToWorldInverseConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_modelToWorldRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", modelToWorldInverseConstantName.GetCStr());
-
-            Name outerObbHalfLengthsConstantName = Name("m_outerObbHalfLengths");
-            m_reflectionRenderData.m_outerObbHalfLengthsRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(outerObbHalfLengthsConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_outerObbHalfLengthsRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", outerObbHalfLengthsConstantName.GetCStr());
-
-            Name innerObbHalfLengthsConstantName = Name("m_innerObbHalfLengths");
-            m_reflectionRenderData.m_innerObbHalfLengthsRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(innerObbHalfLengthsConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_innerObbHalfLengthsRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", innerObbHalfLengthsConstantName.GetCStr());
-
-            Name useParallaxCorrectionConstantName = Name("m_useParallaxCorrection");
-            m_reflectionRenderData.m_useParallaxCorrectionRenderConstantIndex = renderReflectionSrgLayout->FindShaderInputConstantIndex(useParallaxCorrectionConstantName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_useParallaxCorrectionRenderConstantIndex.IsValid(), "Failed to find render shader input constant [%s]", useParallaxCorrectionConstantName.GetCStr());
-
-            Name reflectionCubeMapImageName = Name("m_reflectionCubeMap");
-            m_reflectionRenderData.m_reflectionCubeMapRenderImageIndex = renderReflectionSrgLayout->FindShaderInputImageIndex(reflectionCubeMapImageName);
-            AZ_Error("ReflectionProbeFeatureProcessor", m_reflectionRenderData.m_reflectionCubeMapRenderImageIndex.IsValid(), "Failed to find render shader input image [%s]", reflectionCubeMapImageName.GetCStr());
-
             EnableSceneNotification();
         }
 
