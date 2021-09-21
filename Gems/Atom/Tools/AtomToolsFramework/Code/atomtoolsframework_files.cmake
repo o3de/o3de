@@ -28,7 +28,6 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
-    Include/AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h

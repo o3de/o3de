@@ -23,8 +23,6 @@ namespace AZ::Render::Bootstrap
 
         virtual AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) = 0;
         virtual bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) = 0;
-        virtual float GetFrameRateLimit() const = 0;
-        virtual void SetFrameRateLimit(float fpsLimit) = 0;
 
     protected:
         ~Request() = default;

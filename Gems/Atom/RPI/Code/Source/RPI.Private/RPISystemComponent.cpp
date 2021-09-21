@@ -14,9 +14,6 @@
 #include <RPI.Private/RPISystemComponent.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
@@ -96,29 +93,20 @@ namespace AZ
             }
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void RPISystemComponent::Deactivate()
         {
-            AZ::TickBus::Handler::BusDisconnect();
+            AZ::SystemTickBus::Handler::BusDisconnect();
             m_rpiSystem.Shutdown();
         }
 
-        void RPISystemComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]ScriptTimePoint time)
+        void RPISystemComponent::OnSystemTick()
         {
-            if (deltaTime == 0.f)
-            {
-                return;
-            }
-
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
         }
 
-        int RPISystemComponent::GetTickOrder()
-        {
-            return AZ::ComponentTickBus::TICK_RENDER;
-        }
     } // namespace RPI
 } // namespace AZ

@@ -10,7 +10,6 @@
 
 #include <QWidget>
 #include <QElapsedTimer>
-#include <QPointer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Input/QtEventToAzInputManager.h>
@@ -22,8 +21,6 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/Bootstrap/BootstrapNotificationBus.h>
-#include <AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h>
 
 namespace AtomToolsFramework
 {
@@ -38,8 +35,6 @@ namespace AtomToolsFramework
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
         , protected AZ::TickBus::Handler
-        , protected AZ::Render::Bootstrap::NotificationBus::Handler
-        , protected AtomToolsFramework::RenderViewportWidgetNotificationBus::Handler
     {
     public:
         //! Creates a RenderViewportWidget.
@@ -126,7 +121,6 @@ namespace AtomToolsFramework
 
         // AZ::TickBus::Handler ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
 
         // QWidget ...
         void resizeEvent(QResizeEvent *event) override;
@@ -134,21 +128,9 @@ namespace AtomToolsFramework
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
-        void focusInEvent(QFocusEvent* event) override;
-
-        // AZ::Render::Bootstrap::NotificationBus::Handler ...
-        void OnFrameRateLimitChanged(float fpsLimit) override;
-
-        // AtomToolsFramework::RenderViewportWidgetNotificationBus::Handler ...
-        void OnInactiveViewportFrameRateChanged(float fpsLimit) override;
 
     private:
-        AzFramework::NativeWindowHandle GetNativeWindowHandle() const;
-        void UpdateFrameRate();
-
-        void SetScreen(QScreen* screen);
         void SendWindowResizeEvent();
-        void NotifyUpdateRefreshRate();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -169,11 +151,5 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
-        // Stores our current screen, used for tracking the current refresh rate.
-        QScreen* m_screen = nullptr;
-        // Stores the last RenderViewportWidget that has received user focus.
-        // This is used for optional framerate throtting for "inactive" viewports via the
-        // ed_inactive_viewport_fps_limit CVAR.
-        AZ::EnvironmentVariable<RenderViewportWidget*> m_lastFocusedViewport;
     };
 } //namespace AtomToolsFramework

@@ -56,8 +56,7 @@ namespace AZ
 
                 //////////////////////////////////////////////////////////////////////////
 
-                virtual void OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene){}
-                virtual void OnFrameRateLimitChanged([[maybe_unused]]float fpsLimit){}
+                virtual void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) = 0;
             };
             using NotificationBus = AZ::EBus<Notification>;
         } // namespace Bootstrap
