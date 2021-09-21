@@ -9,6 +9,7 @@
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
+#include <ProjectUtils.h>
 
 #include <QDir>
 #include <QFile>
@@ -116,7 +117,12 @@ namespace O3DE::ProjectManager
         // Show some kind of progress with very approximate estimates
         UpdateProgress(++m_progressEstimate);
 
-        QProcessEnvironment currentEnvironment = GetProcessEnvironment(engineInfo);
+        auto currentEnvironmentRequest = ProjectUtils::GetCommandLineProcessEnvironment();
+        if (!currentEnvironmentRequest.IsSuccess())
+        {
+            return AZ::Failure(currentEnvironmentRequest.GetError());
+        }
+        QProcessEnvironment currentEnvironment = currentEnvironmentRequest.GetValue();
 
         m_configProjectProcess = new QProcess(this);
         m_configProjectProcess->setProcessChannelMode(QProcess::MergedChannels);

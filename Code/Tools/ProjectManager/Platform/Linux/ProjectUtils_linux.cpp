@@ -13,25 +13,33 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
+        {
+            return AZ::Success(QProcessEnvironment(QProcessEnvironment::systemEnvironment()));
+        }
+
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             // Validate that cmake is installed and is in the command line
             if (QProcess::execute("which", QStringList{ "cmake" }) != 0)
             {
-                return AZ::Failure(QString("Unable to resolve cmake in the command line. Make sure that cmake is installed."));
+                return AZ::Failure(QObject::tr("CMake not found. \n\n"
+                    "Make sure that the minimum version of CMake is installed and available from the command prompt. "
+                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> for more information."));
             }
 
             QStringList supportedClangCommands = { "clang-12", "clang-6" };
             for (const QString& supportClangCommand : supportedClangCommands)
             {
-
                 auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ supportClangCommand }, QProcessEnvironment::systemEnvironment());
                 if (whichClangResult.IsSuccess())
                 {
                     return AZ::Success(supportClangCommand);
                 }
             }
-            return AZ::Failure(QString("Unable to resolve clang. Make sure that clang-6.0 or clang-12 is installed."));
+            return AZ::Failure(QObject::tr("Clang not found. \n\n"
+                "Make sure that the clang is installed and available from the command prompt. "
+                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> for more information."));
         }
         
     } // namespace ProjectUtils

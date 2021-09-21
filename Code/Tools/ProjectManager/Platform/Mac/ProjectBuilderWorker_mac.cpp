@@ -19,17 +19,18 @@
 
 namespace O3DE::ProjectManager
 {
-    QProcessEnvironment ProjectBuilderWorker::GetProcessEnvironment(const EngineInfo& engineInfo) const
-    {
-        QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
-        QString pathValue = currentEnvironment.value("PATH");
-        pathValue += ":/usr/local/bin";
-        currentEnvironment.insert("PATH", pathValue);
-        return currentEnvironment;
-    }
-
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
     {
+        // For Mac, we need to resolve the full path of cmake and use that in the process request. For
+        // some reason, 'which' will resolve the full path, but when you just specify cmake with the same
+        // environment, it is unable to resolve. To work around this, we will use 'which' to resolve the 
+        // full path and then use in as part of the command
+        auto environmentRequest = ProjectUtils::GetCommandLineProcessEnvironment();
+        AZ_Assert(environmentRequest.IsSuccess(), "Unable to request command line environment for mac");
+
+        auto currentEnvironment = environmentRequest.GetValue();
+
+
         // Query the cmake full path
         QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
         QString pathValue = currentEnvironment.value("PATH");
@@ -43,13 +44,10 @@ namespace O3DE::ProjectManager
         }
         QString cmakeInstalledPath = queryCmakeInstalled.GetValue().split("\n")[0];
 
-        QStringList cmakeGenerateArgumentList{ cmakeInstalledPath,
-                                               "-B",
-                                               QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                                               "-S", m_projectInfo.m_path,
-                                               "-DLY_UNITY_BUILD=ON"
-        };
-        return AZ::Success(cmakeGenerateArgumentList);
+        return AZ::Success( QStringList { cmakeInstalledPath,
+                                          "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                                          "-S", m_projectInfo.m_path,
+                                          "-DLY_UNITY_BUILD=ON" } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const

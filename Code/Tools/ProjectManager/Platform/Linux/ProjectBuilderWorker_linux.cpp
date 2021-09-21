@@ -21,20 +21,8 @@
 #include "EngineInfo.h"
 namespace O3DE::ProjectManager
 {
-    QProcessEnvironment ProjectBuilderWorker::GetProcessEnvironment(const EngineInfo& engineInfo) const
-    {
-        QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
-        return currentEnvironment;
-    }
-
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
     {
-        // Validate that cmake is installed and is in the command line
-        if (QProcess::execute("which", QStringList{ "cmake" }) != 0)
-        {
-            return AZ::Failure(QString("Unable to resolve cmake in the command line. Make sure that cmake is installed."));
-        }
-
         // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
         // otherwise default to the the default for Linux (Unix Makefiles)
         QString cmakeGenerator = (QProcess::execute("which", QStringList{ "ninja" }) == 0) ? "Ninja" : "Unix Makefiles";
@@ -48,31 +36,27 @@ namespace O3DE::ProjectManager
         }
         QString compilerOption = compilerOptionResult.GetValue();
 
-        QStringList cmakeGenerateArgumentList{ "cmake",
-                                               "-B",
-                                               QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                                               "-S", m_projectInfo.m_path,
-                                               "-G", cmakeGenerator,
-                                               QString("-DCMAKE_C_COMPILER=").append(compilerOption),
-                                               QString("-DCMAKE_CXX_COMPILER=").append(compilerOption),
-                                               QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
-                                               "-DCMAKE_BUILD_TYPE=profile",
-                                               "-DLY_UNITY_BUILD=ON"
-        };
-        return AZ::Success(cmakeGenerateArgumentList);
+        return AZ::Success( QStringList { "cmake",
+                                          "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                                          "-S", m_projectInfo.m_path,
+                                          "-G", cmakeGenerator,
+                                          QString("-DCMAKE_C_COMPILER=").append(compilerOption),
+                                          QString("-DCMAKE_CXX_COMPILER=").append(compilerOption),
+                                          QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
+                                          "-DCMAKE_BUILD_TYPE=profile",
+                                          "-DLY_UNITY_BUILD=ON"} );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        QStringList cmakeBuildCmd{ "cmake",
-                                   "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                                   "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" };
-        return AZ::Success(cmakeBuildCmd);
+        return QStringList { "cmake",
+                             "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                             "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" };
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
     {
-        QStringList killProcCmd{ "kill", "-9", pidToKill };
-        return AZ::Success(killProcCmd);
+        return QStringList { "kill", "-9", pidToKill };
     }
+
 } // namespace O3DE::ProjectManager

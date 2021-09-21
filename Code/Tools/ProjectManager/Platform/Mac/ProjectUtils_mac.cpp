@@ -13,6 +13,15 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
+        {
+            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
+            QString pathValue = currentEnvironment.value("PATH");
+            pathValue += ":/usr/local/bin";
+            currentEnvironment.insert("PATH", pathValue);
+            return currentEnvironment;
+        }
+
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());

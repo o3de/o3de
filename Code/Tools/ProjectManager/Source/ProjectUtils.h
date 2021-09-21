@@ -35,5 +35,8 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
 
         AZ::Outcome<QString, QString> ExecuteCommandResult(const QString& cmd, const QStringList& arguments, const QProcessEnvironment& processEnv);
+
+        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
