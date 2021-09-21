@@ -138,7 +138,13 @@ namespace AzToolsFramework
                         m_indexMap[row] = index;
                         m_rowMap[index] = row;
                         ++row;
-                        ++m_displayedItemsCounter;
+
+                        // We only want to increase the displayed counter if it is a parent (Source)
+                        // so we don't cut children entries.
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            ++m_displayedItemsCounter;
+                        }
                     }
 
                     if (model->hasChildren(index))
