@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Lib/Tests/test_EditorCamera.cpp
+    test_EditorCamera.cpp
 )

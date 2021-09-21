@@ -259,7 +259,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME EditorLib.Camera.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Legacy
         FILES_CMAKE
-            editor_lib_camera_test_files.cmake
+            Lib/Tests/Camera/editor_lib_camera_test_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
