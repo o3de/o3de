@@ -107,7 +107,7 @@ namespace AzToolsFramework
         AZ_Assert(m_editorEntityUiInterface != nullptr,
             "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
 
-        m_focusModeInterface = AZ::Interface<FocusModeFramework::FocusModeInterface>::Get();
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         AZ_Assert(
             m_focusModeInterface != nullptr,
             "EntityOutlinerListModel requires a FocusModeInterface instance on Initialize.");
