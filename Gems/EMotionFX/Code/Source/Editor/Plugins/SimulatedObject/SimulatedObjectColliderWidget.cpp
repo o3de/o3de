@@ -269,11 +269,6 @@ namespace EMotionFX
 
     void SimulatedObjectColliderWidget::OnRemoveCollider(size_t colliderIndex)
     {
-        if (GetNode() == nullptr)
-        {
-            Reinit();
-            return;
-        }
         CommandColliderHelpers::RemoveCollider(GetActor()->GetID(), GetNode()->GetNameString(), PhysicsSetup::SimulatedObjectCollider, colliderIndex);
     }
 
