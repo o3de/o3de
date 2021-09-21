@@ -42,6 +42,7 @@
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
+#include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -222,6 +223,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
             passSystem->AddPassCreator(Name("LightCullingTilePreparePass"), &LightCullingTilePreparePass::Create);
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
+            passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("SMAAEdgeDetectionPass"), &SMAAEdgeDetectionPass::Create);
