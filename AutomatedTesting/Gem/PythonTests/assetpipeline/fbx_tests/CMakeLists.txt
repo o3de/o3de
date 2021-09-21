@@ -13,15 +13,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
-            AZ::AssetProcessor 
+            AZ::AssetProcessor
     )
+    
 
     ly_add_pytest(
-	NAME AssetPipelineTests.PythonAssetBuilderTests
-	PATH ${CMAKE_CURRENT_LIST_DIR}/fbx_test/pythonassetbuildertests.py
-	TEST_SUITE sandbox
-	RUNTIME_DEPENDENCIES
-	    AZ::AssetProcessorBatch
+        NAME AssetPipelineTests.PythonAssetBuilderTests
+        PATH ${CMAKE_CURRENT_LIST_DIR}/fbx_test/pythonassetbuildertests.py
+        TEST_SUITE sandbox
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
             AZ::AssetProcessor
     )
     
