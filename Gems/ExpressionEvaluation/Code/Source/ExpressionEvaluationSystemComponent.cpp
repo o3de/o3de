@@ -37,12 +37,12 @@ namespace ExpressionEvaluation
 
             }
 
-            ExpressionParserId GetParserId() const
+            ExpressionParserId GetParserId() const override
             {
                 return InternalTypes::Interfaces::InternalParser;
             }
 
-            ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const
+            ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const override
             {
                 ParseResult result;
                 AZStd::smatch match;
@@ -69,7 +69,7 @@ namespace ExpressionEvaluation
                 return result;
             }
 
-            void EvaluateToken(const ElementInformation& parseResult, ExpressionResultStack& evaluationStack) const
+            void EvaluateToken(const ElementInformation& parseResult, ExpressionResultStack& evaluationStack) const override
             {
                 AZ_UNUSED(parseResult);
                 AZ_UNUSED(evaluationStack);

@@ -25,6 +25,8 @@ public:
     }
 
 public:
+    virtual ~CEditorMock() = default;
+
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());

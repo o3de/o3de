@@ -51,7 +51,7 @@ namespace GraphCanvas
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////
 
     private:
@@ -88,9 +88,9 @@ namespace GraphCanvas
         ExecutionSlotLayoutComponent();
         ~ExecutionSlotLayoutComponent() override = default;
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
 
     private:
         ExecutionSlotLayout* m_layout;

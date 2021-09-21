@@ -98,21 +98,21 @@ namespace AZ
 
             /// Return compressor type id.
             static AZ::u32      TypeId();
-            virtual AZ::u32     GetTypeId() const           { return TypeId(); }
+            AZ::u32     GetTypeId() const override           { return TypeId(); }
             /// Called when we open a stream to Read for the first time. Data contains the first. dataSize <= m_maxHeaderSize.
-            virtual bool        ReadHeaderAndData(CompressorStream* stream, AZ::u8* data, unsigned int dataSize);
+            bool        ReadHeaderAndData(CompressorStream* stream, AZ::u8* data, unsigned int dataSize) override;
             /// Called when we are about to start writing to a compressed stream.
-            virtual bool        WriteHeaderAndData(CompressorStream* stream);
+            bool        WriteHeaderAndData(CompressorStream* stream) override;
             /// Forwarded function from the Device when we from a compressed stream.
-            virtual SizeType    Read(CompressorStream* stream, SizeType byteSize, SizeType offset, void* buffer);
+            SizeType    Read(CompressorStream* stream, SizeType byteSize, SizeType offset, void* buffer) override;
             /// Forwarded function from the Device when we write to a compressed stream.
-            virtual SizeType    Write(CompressorStream* stream, SizeType byteSize, const void* data, SizeType offset = SizeType(-1));
+            SizeType    Write(CompressorStream* stream, SizeType byteSize, const void* data, SizeType offset = SizeType(-1)) override;
             /// Write a seek point.
-            virtual bool        WriteSeekPoint(CompressorStream* stream);
+            bool        WriteSeekPoint(CompressorStream* stream) override;
             /// Set auto seek point even dataSize bytes.
-            virtual bool        StartCompressor(CompressorStream* stream, int compressionLevel, SizeType autoSeekDataSize);
+            bool        StartCompressor(CompressorStream* stream, int compressionLevel, SizeType autoSeekDataSize) override;
             /// Called just before we close the stream. All compression data will be flushed and finalized. (You can't add data afterwards).
-            virtual bool        Close(CompressorStream* stream);
+            bool        Close(CompressorStream* stream) override;
 
         protected:
 

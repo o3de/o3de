@@ -196,7 +196,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket&)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DirectionalLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DirectionalLightFeatureProcessor: Simulate");
 
             if (m_shadowingLightHandle.IsValid())
             {
@@ -293,7 +293,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DirectionalLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "DirectionalLightFeatureProcessor: Render");
 
             if (m_shadowingLightHandle.IsValid())
             {
@@ -571,20 +571,6 @@ namespace AZ
             }
         }
 
-        void DirectionalLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            if (count > Shadow::MaxPcfSamplingCount)
-            {
-                AZ_Warning(FeatureProcessorName, false, "Sampling count exceed the limit.");
-                count = Shadow::MaxPcfSamplingCount;
-            }
-            for (auto& it : m_shadowData)
-            {
-                it.second.GetData(handle.GetIndex()).m_predictionSampleCount = count;
-            }
-            m_shadowBufferNeedsUpdate = true;
-        }
-
         void DirectionalLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             if (count > Shadow::MaxPcfSamplingCount)
@@ -604,15 +590,6 @@ namespace AZ
             for (auto& it : m_shadowData)
             {
                 it.second.GetData(handle.GetIndex()).m_boundaryScale = boundaryWidth / 2.f;
-            }
-            m_shadowBufferNeedsUpdate = true;
-        }
-
-        void DirectionalLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            for (auto& it : m_shadowData)
-            {
-                it.second.GetData(handle.GetIndex()).m_pcfMethod = method;
             }
             m_shadowBufferNeedsUpdate = true;
         }
@@ -1255,7 +1232,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
-            AZ_ATOM_PROFILE_FUNCTION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+            AZ_PROFILE_SCOPE(RPI, "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
 
             if (handle != m_shadowingLightHandle)
             {

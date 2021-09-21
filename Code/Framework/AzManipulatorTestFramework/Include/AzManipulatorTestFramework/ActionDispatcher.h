@@ -15,19 +15,19 @@
 
 namespace AzManipulatorTestFramework
 {
-    //! Base class for derived immediate and retained action dispatchers.
+    //! Base class for derived immediate action dispatchers.
     template<typename DerivedDispatcherT>
     class ActionDispatcher
     {
     public:
         virtual ~ActionDispatcher() = default;
 
-        //! Enable grid snapping.
-        DerivedDispatcherT* EnableSnapToGrid();
-        //! Disable grid snapping.
-        DerivedDispatcherT* DisableSnapToGrid();
+        //! Enable/disable grid snapping.
+        DerivedDispatcherT* SetSnapToGrid(bool enabled);
         //! Set the grid size.
         DerivedDispatcherT* GridSize(float size);
+        //! Enable/disable sticky select.
+        DerivedDispatcherT* SetStickySelect(bool enabled);
         //! Enable/disable action logging.
         DerivedDispatcherT* LogActions(bool logging);
         //! Output a trace debug message.
@@ -39,6 +39,8 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* MouseLButtonDown();
         //! Set the left mouse button up.
         DerivedDispatcherT* MouseLButtonUp();
+        //! Send a double click event.
+        DerivedDispatcherT* MouseLButtonDoubleClick();
         //! Set the keyboard modifier button down.
         DerivedDispatcherT* KeyboardModifierDown(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
         //! Set the keyboard modifier button up.
@@ -64,13 +66,14 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* EnterComponentMode();
 
     protected:
-        // Actions to be implemented by derived immediate and retained action dispatchers.
-        virtual void EnableSnapToGridImpl() = 0;
-        virtual void DisableSnapToGridImpl() = 0;
+        // Actions to be implemented by derived immediate action dispatcher.
+        virtual void SetSnapToGridImpl(bool enabled) = 0;
+        virtual void SetStickySelectImpl(bool enabled) = 0;
         virtual void GridSizeImpl(float size) = 0;
         virtual void CameraStateImpl(const AzFramework::CameraState& cameraState) = 0;
         virtual void MouseLButtonDownImpl() = 0;
         virtual void MouseLButtonUpImpl() = 0;
+        virtual void MouseLButtonDoubleClickImpl() = 0;
         virtual void MousePositionImpl(const AzFramework::ScreenPoint& position) = 0;
         virtual void KeyboardModifierDownImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
         virtual void KeyboardModifierUpImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
@@ -124,18 +127,18 @@ namespace AzManipulatorTestFramework
     }
 
     template<typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::EnableSnapToGrid()
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSnapToGrid(const bool enabled)
     {
-        Log("Enabling SnapToGrid");
-        EnableSnapToGridImpl();
+        Log("SnapToGrid %s", enabled ? "on" : "off");
+        SetSnapToGridImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
     template<typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::DisableSnapToGrid()
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetStickySelect(bool enabled)
     {
-        Log("Disabling SnapToGrid");
-        DisableSnapToGridImpl();
+        Log("StickySelect %s", enabled ? "on" : "off");
+        SetStickySelectImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
@@ -167,7 +170,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDown()
     {
-        Log("%s", "Mouse left button down");
+        Log("Mouse left button down");
         MouseLButtonDownImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
@@ -175,8 +178,16 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonUp()
     {
-        Log("%s", "Mouse left button up");
+        Log("Mouse left button up");
         MouseLButtonUpImpl();
+        return static_cast<DerivedDispatcherT*>(this);
+    }
+
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDoubleClick()
+    {
+        Log("Mouse left button double click");
+        MouseLButtonDoubleClickImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
 

@@ -744,11 +744,15 @@ void EditorViewportWidget::RenderAll()
     {
         namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
+        AztfVi::KeyboardModifiers keyboardModifiers;
+        AztfVi::EditorModifierKeyRequestBus::BroadcastResult(
+            keyboardModifiers, &AztfVi::EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
             *m_debugDisplay, GetCameraState(),
             BuildMouseInteractionInternal(
-                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), QueryKeyboardModifiers(),
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
     }
@@ -959,12 +963,13 @@ QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
 
 bool EditorViewportWidget::ShowingWorldSpace()
 {
-    return QueryKeyboardModifiers().Shift();
-}
+    namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
-AzToolsFramework::ViewportInteraction::KeyboardModifiers EditorViewportWidget::QueryKeyboardModifiers()
-{
-    return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+    AztfVi::KeyboardModifiers keyboardModifiers;
+    AztfVi::EditorModifierKeyRequestBus::BroadcastResult(
+        keyboardModifiers, &AztfVi::EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
+
+    return keyboardModifiers.Shift();
 }
 
 void EditorViewportWidget::SetViewportId(int id)
@@ -2518,6 +2523,11 @@ float EditorViewportSettings::ManipulatorLineBoundWidth() const
 float EditorViewportSettings::ManipulatorCircleBoundWidth() const
 {
     return SandboxEditor::ManipulatorCircleBoundWidth();
+}
+
+bool EditorViewportSettings::StickySelectEnabled() const
+{
+    return SandboxEditor::StickySelectEnabled();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

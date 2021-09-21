@@ -15,7 +15,16 @@ include_guard(GLOBAL)
 set(CMAKE_CONFIGURATION_TYPES "" CACHE STRING "" FORCE)
 
 # For the SDK case, we want to only define the confiuguration types that have been added to the SDK
-file(GLOB configuration_type_files "cmake/ConfigurationTypes_*.cmake")
+# We need to redeclare LY_BUILD_PERMUTATION because Configurations is one of the first things included by the
+# root CMakeLists.txt. Even LY_MONOLITHIC_GAME is declared after, but since is a passed cache variable, and
+# default is the same as undeclared, we can use it at this point.
+if(LY_MONOLITHIC_GAME)
+    set(LY_BUILD_PERMUTATION Monolithic)
+else()
+    set(LY_BUILD_PERMUTATION Default)
+endif()
+
+file(GLOB configuration_type_files "cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/ConfigurationTypes_*.cmake")
 foreach(configuration_type_file ${configuration_type_files})
     include(${configuration_type_file})
 endforeach()
