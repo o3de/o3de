@@ -14,6 +14,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -58,6 +59,23 @@ namespace AZ
 
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
+                serializeContext->Class<VersionUpdatesRenameOperationDefinition>()
+                    ->Version(1)
+                    ->Field("op", &VersionUpdatesRenameOperationDefinition::m_operation)
+                    ->Field("from", &VersionUpdatesRenameOperationDefinition::m_renameFrom)
+                    ->Field("to", &VersionUpdatesRenameOperationDefinition::m_renameTo)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdateActions>();
+
+                serializeContext->Class<VersionUpdateDefinition>()
+                    ->Version(1)
+                    ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
+                    ->Field("actions", &VersionUpdateDefinition::m_actions)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdates>();
+
                 serializeContext->Class<GroupDefinition>()
                     ->Version(1)
                     ->Field("id", &GroupDefinition::m_nameId)
@@ -86,8 +104,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("description", &MaterialTypeSourceData::m_description)
+                    ->Field("version", &MaterialTypeSourceData::m_version)
+                    ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
@@ -289,6 +309,19 @@ namespace AZ
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
+
+            // Set materialtype version and add each version update object into MaterialTypeAsset.
+            materialTypeAssetCreator.SetVersion(m_version);
+            for (const auto& versionUpdate : m_versionUpdates)
+            {
+                MaterialVersionUpdate materialVersionUpdate;
+                for (const auto& action : versionUpdate.m_actions)
+                {
+                    materialVersionUpdate.m_actions.push_back(
+                        MaterialVersionUpdate::Action("rename", { { "from", action.m_renameFrom }, { "to", action.m_renameTo } }));
+                }
+                materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
+            }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
             auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool

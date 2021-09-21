@@ -38,7 +38,7 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::End(Data::Asset<MaterialTypeAsset>& result)
         {
-            if (!ValidateIsReady() || !ValidateEndMaterialProperty())
+            if (!ValidateIsReady() || !ValidateEndMaterialProperty() || !ValidateMaterialVersion())
             {
                 return false; 
             }
@@ -100,6 +100,35 @@ namespace AZ
             }
         }
 
+        bool MaterialTypeAssetCreator::ValidateMaterialVersion()
+        {
+            AZStd::vector<AZStd::string> renamedPropertieNames;
+            const auto& materialVersionUpdate = m_asset->GetMaterialVersionUpdate(m_asset->m_version);
+            for (const auto& action : materialVersionUpdate.m_actions)
+            {
+                const auto it = action.m_argsMap.find("to");
+                if (it != action.m_argsMap.end())
+                {
+                    renamedPropertieNames.push_back(it->second);
+                }
+            }
+
+            for (const auto& propertyName : renamedPropertieNames)
+            {
+                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ propertyName });
+                if (!propertyIndex.IsValid())
+                {
+                    ReportError(AZStd::string::format(
+                            "Renamed property '%s' not found in material property layout. Check that the property name has been "
+                            "upgraded to the correct version",
+                            propertyName.c_str())
+                        .c_str());
+                    return false;
+                }
+            }
+            return true;
+        }
+
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId, const AZ::Name& shaderTag)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
@@ -121,6 +150,16 @@ namespace AZ
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag)
         {
             AddShader(shaderAsset, ShaderVariantId{}, shaderTag);
+        }
+
+        void MaterialTypeAssetCreator::SetVersion(uint32_t version)
+        {
+            m_asset->m_version = version;
+        }
+
+        void MaterialTypeAssetCreator::AddVersionUpdate(uint32_t toVersion, MaterialVersionUpdate materialVersionUpdate)
+        {
+            m_asset->m_materialVersionUpdateMap[toVersion] = materialVersionUpdate;
         }
 
         void MaterialTypeAssetCreator::ClaimShaderOptionOwnership(const Name& shaderOptionName)

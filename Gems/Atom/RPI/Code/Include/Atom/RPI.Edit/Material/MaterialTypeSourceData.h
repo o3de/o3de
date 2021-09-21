@@ -119,6 +119,29 @@ namespace AZ
 
             using PropertyList = AZStd::vector<PropertyDefinition>;
 
+            struct VersionUpdatesRenameOperationDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition, "{F2295489-E15A-46CC-929F-8D42DEDBCF14}");
+
+                AZStd::string m_operation;
+                
+                AZStd::string m_renameFrom;
+                AZStd::string m_renameTo;
+            };
+
+            // TODO: Support script operations. We will only be supporting rename for now.
+            using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
+
+            struct VersionUpdateDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdateDefinition, "{2C9D3B91-0585-4BC9-91D2-4CF0C71BC4B7}");
+
+                uint32_t m_toVersion;
+                VersionUpdateActions m_actions;
+            };
+
+            using VersionUpdates = AZStd::vector<VersionUpdateDefinition>;
+
             struct PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
@@ -134,6 +157,11 @@ namespace AZ
             };
 
             AZStd::string m_description;
+
+            //! Version 1 is the default and should not contain any version update.
+            uint32_t m_version = 1;
+
+            VersionUpdates m_versionUpdates;
 
             PropertyLayout m_propertyLayout;
 
