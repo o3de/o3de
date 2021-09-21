@@ -77,7 +77,7 @@ namespace AzToolsFramework
 
     void ArchiveComponent::Activate()
     {
-        m_localFileIO = AZStd::make_unique<AZ::IO::LocalFileIO>();
+        m_localFileIO = AZ::IO::FileIOBase::GetDirectInstance();
         if (m_localFileIO == nullptr)
         {
             AZ_Error(s_traceName, false, "Failed to create a LocalFileIO instance!");
@@ -96,8 +96,13 @@ namespace AzToolsFramework
     {
         ArchiveCommandsBus::Handler::BusDisconnect();
 
-        m_localFileIO.reset();
+        m_localFileIO = nullptr;
         m_archive = nullptr;
+
+        for (AZStd::thread& t : m_threads)
+        {
+            t.join();
+        }
     }
 
     void ArchiveComponent::Reflect(AZ::ReflectContext * context)
@@ -132,12 +137,12 @@ namespace AzToolsFramework
             return AZStd::move(p.get_future());
         }
 
-        auto FnCreateArchive = [this, &archivePath, &dirToArchive](std::promise<bool>&& p) -> void
+        auto FnCreateArchive = [this, archivePath, dirToArchive](std::promise<bool>&& p) -> void
         {
             auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             if (!archive)
             {
-                AZ_Error(s_traceName, false, "Failed to create archive file (%s)", archivePath.c_str());
+                AZ_Error(s_traceName, false, "Failed to create archive file '%s'", archivePath.c_str());
                 p.set_value(false);
                 return;
             }
@@ -145,7 +150,7 @@ namespace AzToolsFramework
             auto foundFiles = AzFramework::FileFunc::FindFilesInPath(dirToArchive, "*", true);
             if (!foundFiles.IsSuccess())
             {
-                AZ_Error(s_traceName, false, "Failed to find file listing under directory %d", dirToArchive.c_str());
+                AZ_Error(s_traceName, false, "Failed to find file listing under directory '%d'", dirToArchive.c_str());
                 p.set_value(false);
                 return;
             }
@@ -191,9 +196,7 @@ namespace AzToolsFramework
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Create)";
-
-        AZStd::thread t(threadDesc, FnCreateArchive, AZStd::move(p));
-        t.detach();
+        m_threads.emplace_back(threadDesc, FnCreateArchive, AZStd::move(p));
         return AZStd::move(f);
     }
 
@@ -209,7 +212,7 @@ namespace AzToolsFramework
             return AZStd::move(p.get_future());
         }
 
-        auto FnExtractArchive = [this, &archivePath, &destinationPath](std::promise<bool>&& p) -> void
+        auto FnExtractArchive = [this, archivePath, destinationPath](std::promise<bool>&& p) -> void
         {
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
@@ -280,9 +283,7 @@ namespace AzToolsFramework
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Extract)";
-
-        AZStd::thread t(threadDesc, FnExtractArchive, AZStd::move(p));
-        t.detach();
+        m_threads.emplace_back(threadDesc, FnExtractArchive, AZStd::move(p));
         return AZStd::move(f);
     }
 
@@ -299,12 +300,12 @@ namespace AzToolsFramework
             return AZStd::move(p.get_future());
         }
 
-        auto FnExtractFile = [this, &archivePath, &fileInArchive, &destinationPath](std::promise<bool>&& p) -> void
+        auto FnExtractFile = [this, archivePath, fileInArchive, destinationPath](std::promise<bool>&& p) -> void
         {
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
-                AZ_Error(s_traceName, false, "Failed to open archive file (%s)", archivePath.c_str());
+                AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
                 p.set_value(false);
                 return;
             }
@@ -357,9 +358,7 @@ namespace AzToolsFramework
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Extract Single)";
-
-        AZStd::thread t(threadDesc, FnExtractFile, AZStd::move(p));
-        t.detach();
+        m_threads.emplace_back(threadDesc, FnExtractFile, AZStd::move(p));
         return AZStd::move(f);
     }
 
@@ -377,10 +376,10 @@ namespace AzToolsFramework
             return false;
         }
 
-        auto archive = m_archive->OpenArchive(archivePath);
+        auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_READ_ONLY);
         if (!archive)
         {
-            AZ_Error(s_traceName, false, "Failed to open archive file (%s)", archivePath.c_str());
+            AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
             return false;
         }
 
@@ -401,23 +400,26 @@ namespace AzToolsFramework
             return AZStd::move(p.get_future());
         }
 
-        auto FnAddFileToArchive = [this, &archivePath, &workingDirectory, &fileToAdd](std::promise<bool>&& p) -> void
+        auto FnAddFileToArchive = [this, archivePath, workingDirectory, fileToAdd](std::promise<bool>&& p) -> void
         {
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
-                AZ_Error(s_traceName, false, "Failed to open archive file (%s)", archivePath.c_str());
+                AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
                 p.set_value(false);
                 return;
             }
 
-            AZStd::string fullPath = (AZ::IO::Path{ workingDirectory } / fileToAdd).c_str();
+            AZ::IO::Path workingPath{ workingDirectory };
+            AZ::IO::PathView relativePath = AZ::IO::PathView{ fileToAdd }.LexicallyRelative(workingPath);
+
+            AZStd::string fullPath = (workingPath / relativePath).c_str();
             AZStd::vector<char> fileBuffer;
             bool success = false;
             if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
             {
                 int result = archive->UpdateFile(
-                    fileToAdd, fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
+                    relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
                     s_compressionLevel, s_compressionCodec);
 
                 success = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
@@ -441,9 +443,7 @@ namespace AzToolsFramework
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Add Single)";
-
-        AZStd::thread t(threadDesc, FnAddFileToArchive, AZStd::move(p));
-        t.detach();
+        m_threads.emplace_back(threadDesc, FnAddFileToArchive, AZStd::move(p));
         return AZStd::move(f);
     }
 
@@ -460,12 +460,12 @@ namespace AzToolsFramework
             return AZStd::move(p.get_future());
         }
 
-        auto FnAddFilesToArchive = [this, &archivePath, &workingDirectory, &listFilePath](std::promise<bool>&& p) -> void
+        auto FnAddFilesToArchive = [this, archivePath, workingDirectory, listFilePath](std::promise<bool>&& p) -> void
         {
             auto archive = m_archive->OpenArchive(archivePath);
             if (!archive)
             {
-                AZ_Error(s_traceName, false, "Failed to create archive file (%s)", archivePath.c_str());
+                AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
                 p.set_value(false);
                 return;
             }
@@ -508,9 +508,7 @@ namespace AzToolsFramework
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Add)";
-
-        AZStd::thread t(threadDesc, FnAddFilesToArchive, AZStd::move(p));
-        t.detach();
+        m_threads.emplace_back(threadDesc, FnAddFilesToArchive, AZStd::move(p));
         return AZStd::move(f);
     }
 

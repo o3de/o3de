@@ -143,7 +143,9 @@ namespace UnitTest
             EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_EQ(createResult, true);
         }
@@ -156,7 +158,8 @@ namespace UnitTest
         {
             EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
-            
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(CreateArchive(), true);
 
             AZStd::vector<AZStd::string> fileList;
@@ -164,6 +167,7 @@ namespace UnitTest
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(listResult,
                 &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchive,
                 GetArchivePath().toStdString().c_str(), fileList);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(listResult);
             EXPECT_EQ(fileList.size(), 6);
@@ -178,8 +182,9 @@ namespace UnitTest
             QStringList fileList = CreateArchiveFileList();
 
             CreateArchiveFolder(GetArchiveFolderName(), fileList);
-
+            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_EQ(createResult, true);
 
@@ -200,7 +205,9 @@ namespace UnitTest
 
             CreateArchiveFolder(GetArchiveFolderName(), fileList);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_EQ(createResult, true);
 

@@ -10,13 +10,13 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/conditional_variable.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
 
 #include <AzFramework/Archive/IArchive.h>
-#include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 
 namespace AzToolsFramework
@@ -27,10 +27,13 @@ namespace AzToolsFramework
         , private ArchiveCommandsBus::Handler
     {
     public:
-        AZ_COMPONENT(ArchiveComponent, "{A19EEA33-3736-447F-ACF7-DAA4B6A179AA}")
+        AZ_COMPONENT(ArchiveComponent, "{A19EEA33-3736-447F-ACF7-DAA4B6A179AA}");
 
         ArchiveComponent() = default;
         ~ArchiveComponent() override = default;
+
+        ArchiveComponent(const ArchiveComponent&) = delete;
+        ArchiveComponent& operator=(const ArchiveComponent&) = delete;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component overrides
@@ -70,11 +73,13 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
     private:
-        AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIO;
+        AZ::IO::FileIOBase* m_localFileIO = nullptr;
         AZ::IO::IArchive* m_archive = nullptr;
+        AZStd::vector<AZStd::thread> m_threads;
 
         bool CheckParamsForAdd(const AZStd::string& directory, const AZStd::string& file);
         bool CheckParamsForExtract(const AZStd::string& archive, const AZStd::string& directory);
         bool CheckParamsForCreate(const AZStd::string& archive, const AZStd::string& directory);
     };
+
 } // namespace AzToolsFramework

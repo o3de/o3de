@@ -57,7 +57,7 @@ namespace AzToolsFramework
         //! Returns true if the file at filePath was successfully injected into the bundle at sourcePak
         static bool InjectFile(const AZStd::string& filePath, const AZStd::string& sourcePak, const char* workingDirectory);
 
-        //! Inject the files with relative filePaths which espect to the working directory into the bundle at sourcePak
+        //! Inject the files with relative filePaths with respect to the working directory into the bundle at sourcePak
         //! Returns true if the file at filePath was successfully injected into the bundle at sourcePak
         static bool InjectFiles(const AZStd::vector<AZStd::string>& fileEntries, const AZStd::string& sourcePak, const char* workingDirectory);
 

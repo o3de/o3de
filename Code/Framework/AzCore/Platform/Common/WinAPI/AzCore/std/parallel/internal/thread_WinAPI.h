@@ -18,7 +18,7 @@ extern "C"
     AZ_DLL_IMPORT unsigned long __stdcall GetCurrentThreadId(void);
 }
 
-#include <AzCore/std/function/invoke.h>
+#include <AzCore/std/tuple.h>
 
 namespace AZStd
 {
@@ -34,15 +34,15 @@ namespace AZStd
     // thread
     template<class F, class... Args, typename>
     thread::thread(F&& f, Args&&... args)
-        : thread({}, AZStd::forward<F>(f), AZStd::forward<Args>(args)...)
+        : thread(thread_desc{}, AZStd::forward<F>(f), AZStd::forward<Args>(args)...)
     {}
 
     template<class F, class... Args>
     thread::thread(const thread_desc& desc, F&& f, Args&&... args)
     {
-        auto threadfunc = [&f, &args...]()
+        auto threadfunc = [fn = AZStd::forward<F>(f), argsTuple = AZStd::make_tuple(AZStd::forward<Args>(args)...)]() mutable -> void
         {
-            AZStd::invoke(AZStd::decay_t<F>(AZStd::forward<F>(f)), AZStd::decay_t<Args>(AZStd::forward<Args>(args))...);
+            AZStd::apply(AZStd::move(fn), AZStd::move(argsTuple));
         };
         Internal::thread_info* ti = Internal::create_thread_info(AZStd::move(threadfunc));
         m_thread.m_handle = Internal::create_thread(&desc, ti, &m_thread.m_id);

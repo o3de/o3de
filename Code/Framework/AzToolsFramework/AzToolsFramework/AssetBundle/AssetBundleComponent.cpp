@@ -627,7 +627,11 @@ namespace AzToolsFramework
     
     bool AssetBundleComponent::InjectFile(const AZStd::string& filePath, const AZStd::string& sourcePak)
     {
-        return InjectFile(filePath, sourcePak, "");
+        // When no working directory is specified, assume that the file being injected goes into the root of the archive.
+        // The filePath should be an absolute path, making the workingDirectory be the path leading up to the file.
+        AZ::IO::Path fullFilePath{ filePath };
+        AZStd::string workingDir{ fullFilePath.RemoveFilename().Native() };
+        return InjectFile(filePath, sourcePak, workingDir.c_str());
     }
 
     bool AssetBundleComponent::InjectFiles(const AZStd::vector<AZStd::string>& fileEntries, const AZStd::string& sourcePak, const char* workingDirectory)
