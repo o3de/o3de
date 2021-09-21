@@ -83,5 +83,8 @@ namespace AzToolsFramework
 
         // TypeId, TypeName, Vector<BaseClassName>
         AZStd::vector<AZStd::tuple<AZ::TypeId, AZStd::string, AZStd::vector<AZStd::string>>> m_typeInfo;
+
+        // Keep track of the entities we create so they can be reset
+        AZStd::vector<AZ::EntityId> m_createdEntities;
     };
 }; // namespace AzToolsFramework

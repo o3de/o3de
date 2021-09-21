@@ -30,6 +30,7 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemScriptingBus implementation
             TemplateId CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) override;
+            void RemoveAllTemplates() override;
             //////////////////////////////////////////////////////////////////////////
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

@@ -29,6 +29,8 @@ namespace AzToolsFramework
 
             virtual TemplateId CreatePrefabTemplate(
                 const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) = 0;
+
+            virtual void RemoveAllTemplates() = 0;
         };
         
         using PrefabSystemScriptingBus = AZ::EBus<PrefabSystemScriptingEbusTraits>;
