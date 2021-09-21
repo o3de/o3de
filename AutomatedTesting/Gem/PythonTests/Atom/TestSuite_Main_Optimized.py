@@ -15,32 +15,32 @@ from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 class TestAutomation(EditorTestSuite):
 
     class AtomEditorComponents_DecalAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DecalAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_DecalAdded as test_module
 
     class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
 
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DirectionalLightAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_DirectionalLightAdded as test_module
 
     class AtomEditorComponents_ExposureControlAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_ExposureControlAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_ExposureControlAdded as test_module
 
     class AtomEditorComponents_GlobalSkylightIBLAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_GlobalSkylightIBLAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_GlobalSkylightIBLAdded as test_module
 
     class AtomEditorComponents_PhysicalSkyAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_PhysicalSkyAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_PhysicalSkyAdded as test_module
 
     class AtomEditorComponents_PostFXRadiusWeightModifierAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import (
+        from Atom.tests import (
             hydra_AtomEditorComponents_PostFXRadiusWeightModifierAdded as test_module)
 
     class AtomEditorComponents_LightAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_LightAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_LightAdded as test_module
 
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
-        from atom_renderer.atom_hydra_scripts import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+        from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
 
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
-        from .atom_hydra_scripts import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
+        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module

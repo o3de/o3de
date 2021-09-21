@@ -12,5 +12,5 @@
 
 float4 GetTest2Color(float4 color)
 {
-    return color * 0.5; 
+    return color * 0.5;
 }
