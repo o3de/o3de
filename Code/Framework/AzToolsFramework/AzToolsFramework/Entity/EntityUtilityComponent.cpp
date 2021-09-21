@@ -105,7 +105,7 @@ namespace AzToolsFramework
         return typeId;
     }
 
-    AZ::Component* FindComponent(AZ::EntityId entityId, const AZ::TypeId& typeId, AZ::ComponentId componentId, bool createComponent = false)
+    AZ::Component* FindComponentHelper(AZ::EntityId entityId, const AZ::TypeId& typeId, AZ::ComponentId componentId, bool createComponent = false)
     {
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
@@ -154,9 +154,10 @@ namespace AzToolsFramework
             return AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
         }
 
-        AZ::Component* component = FindComponent(entityId, typeId, AZ::InvalidComponentId, true);
+        AZ::Component* component = FindComponentHelper(entityId, typeId, AZ::InvalidComponentId, true);
 
-        return component ? AzFramework::BehaviorComponentId(component->GetId()) : AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
+        return component ? AzFramework::BehaviorComponentId(component->GetId()) : 
+            AzFramework::BehaviorComponentId(AZ::InvalidComponentId);
     }
 
     bool EntityUtilityComponent::UpdateComponentForEntity(AZ::EntityId entityId, AzFramework::BehaviorComponentId componentId, const AZStd::string& json)
@@ -167,7 +168,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        AZ::Component* component = FindComponent(entityId, AZ::TypeId::CreateNull(), componentId);
+        AZ::Component* component = FindComponentHelper(entityId, AZ::TypeId::CreateNull(), componentId);
 
         if (!component)
         {
