@@ -16,7 +16,7 @@
 #include <Viewport/MaterialViewportRenderer.h>
 #include <Viewport/MaterialViewportWidget.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknow    n-warning-option") // disable warnings spawned by QT
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWindow>
 #include "Viewport/ui_MaterialViewportWidget.h"
 AZ_POP_DISABLE_WARNING
