@@ -25,7 +25,6 @@ ly_add_target(
 ly_add_target(
     NAME Camera ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Camera.Gem
     FILES_CMAKE
         camera_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -45,8 +44,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME Camera.Editor GEM_MODULE
+
         NAMESPACE Gem
-        OUTPUT_NAME Camera.Editor.Gem
         FILES_CMAKE
             camera_editor_files.cmake
         COMPILE_DEFINITIONS
