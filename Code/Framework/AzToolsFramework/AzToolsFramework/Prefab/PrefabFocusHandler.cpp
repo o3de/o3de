@@ -14,7 +14,7 @@
 
 namespace AzToolsFramework::Prefab
 {
-    FocusModeFramework::FocusModeInterface* PrefabFocusHandler::s_focusModeInterface = nullptr;
+    FocusModeInterface* PrefabFocusHandler::s_focusModeInterface = nullptr;
     InstanceEntityMapperInterface* PrefabFocusHandler::s_instanceEntityMapperInterface = nullptr;
     PrefabEditorEntityOwnershipInterface* PrefabFocusHandler::s_prefabEditorEntityOwnershipInterface = nullptr;
 
@@ -25,7 +25,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::Initialize()
     {
-        s_focusModeInterface = AZ::Interface<FocusModeFramework::FocusModeInterface>::Get();
+        s_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         AZ_Assert(
             s_focusModeInterface,
             "Prefab - PrefabFocusHandler - "

@@ -249,7 +249,7 @@ namespace AzToolsFramework
         components.insert(components.end(), {
                 azrtti_typeid<EditorEntityContextComponent>(),
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
-                azrtti_typeid<FocusModeFramework::FocusModeSystemComponent>(),
+                azrtti_typeid<FocusModeSystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),

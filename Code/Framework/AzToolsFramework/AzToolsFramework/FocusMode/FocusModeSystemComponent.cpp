@@ -13,7 +13,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 
-namespace AzToolsFramework::FocusModeFramework
+namespace AzToolsFramework
 {
     FocusModeSystemComponent::~FocusModeSystemComponent()
     {
@@ -90,4 +90,4 @@ namespace AzToolsFramework::FocusModeFramework
         return IsInFocusSubTree_helper(parentId, focusRootId);
     }
 
-} // namespace AzToolsFramework::FocusModeFramework
+} // namespace AzToolsFramework

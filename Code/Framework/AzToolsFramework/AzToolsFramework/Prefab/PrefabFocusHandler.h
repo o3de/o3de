@@ -16,12 +16,8 @@
 
 namespace AzToolsFramework
 {
-    class PrefabEditorEntityOwnershipInterface;
-}
-
-namespace AzToolsFramework::FocusModeFramework
-{
     class FocusModeInterface;
+    class PrefabEditorEntityOwnershipInterface;
 }
 
 namespace AzToolsFramework::Prefab
@@ -48,7 +44,7 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
 
-        static FocusModeFramework::FocusModeInterface* s_focusModeInterface;
+        static FocusModeInterface* s_focusModeInterface;
         static InstanceEntityMapperInterface* s_instanceEntityMapperInterface;
         static PrefabEditorEntityOwnershipInterface* s_prefabEditorEntityOwnershipInterface;
     };

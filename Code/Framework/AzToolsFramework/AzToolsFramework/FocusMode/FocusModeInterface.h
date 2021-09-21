@@ -11,8 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-
-namespace AzToolsFramework::FocusModeFramework
+namespace AzToolsFramework
 {
     /*!
      * FocusModeInterface
@@ -37,4 +36,4 @@ namespace AzToolsFramework::FocusModeFramework
         virtual bool IsInFocusSubTree(AZ::EntityId entityId) = 0;
     };
 
-} // namespace AzToolsFramework::FocusModeFrameworkclassPrefabEditPublicInterface
+} // namespace AzToolsFramework

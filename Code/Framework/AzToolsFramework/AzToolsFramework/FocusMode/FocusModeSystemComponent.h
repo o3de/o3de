@@ -13,7 +13,7 @@
 
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 
-namespace AzToolsFramework::FocusModeFramework
+namespace AzToolsFramework
 {
     class FocusModeSystemComponent final
         : public AZ::Component
@@ -46,4 +46,4 @@ namespace AzToolsFramework::FocusModeFramework
         AZ::EntityId m_focusRoot;
     };
 
-} // namespace AzToolsFramework::FocusModeFramework
+} // namespace AzToolsFramework
