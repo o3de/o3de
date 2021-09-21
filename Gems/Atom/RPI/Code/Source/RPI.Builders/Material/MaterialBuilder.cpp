@@ -47,7 +47,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 108;
+            materialBuilderDescriptor.m_version = 108; // Set materialtype dependency to OrderOnce
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -223,8 +223,11 @@ namespace AZ
                         parentMaterialPath = materialTypePath;
                     }
 
-                    // If includeMaterialPropertyNames is true, then we need materials to depend on materialtype only once in order to get
-                    // the property names. After the initial processing, materials will no longer be dependent on materialtype files.
+                    // If includeMaterialPropertyNames is false, then a job dependency is needed so the material builder can validate MaterialAsset properties
+                    // against the MaterialTypeAsset at asset build time.
+                    // If includeMaterialPropertyNames is true, the material properties will be validated at runtime when the material is loaded, so the job dependency
+                    // is needed only for first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file
+                    // is edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
                     bool includeMaterialPropertyNames = true;
                     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                     {
