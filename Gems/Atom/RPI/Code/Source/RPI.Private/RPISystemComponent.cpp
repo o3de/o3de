@@ -14,10 +14,15 @@
 #include <RPI.Private/RPISystemComponent.h>
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #endif
@@ -84,24 +89,36 @@ namespace AZ
 
         void RPISystemComponent::Activate()
         {
-            // [GFX TODO] [ATOM-1436] this can be removed when setup and save system component's configure from projectConfigure.exe is fixed.
-            m_rpiDescriptor.m_rhiSystemDescriptor.m_drawListTags.push_back(AZ::Name("forward"));
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->GetObject(m_rpiDescriptor, "/O3DE/Atom/RPI/Initialization");
+            }
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
-            AZ::SystemTickBus::Handler::BusConnect();
+            AZ::TickBus::Handler::BusConnect();
         }
 
         void RPISystemComponent::Deactivate()
         {
-            AZ::SystemTickBus::Handler::BusDisconnect();
+            AZ::TickBus::Handler::BusDisconnect();
             m_rpiSystem.Shutdown();
         }
 
-        void RPISystemComponent::OnSystemTick()
+        void RPISystemComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]ScriptTimePoint time)
         {
+            if (deltaTime == 0.f)
+            {
+                return;
+            }
+
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
         }
 
+        int RPISystemComponent::GetTickOrder()
+        {
+            return AZ::ComponentTickBus::TICK_RENDER;
+        }
     } // namespace RPI
 } // namespace AZ

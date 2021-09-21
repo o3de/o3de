@@ -11,7 +11,7 @@
 #include <Common/JsonTestUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Common/TestUtils.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
@@ -21,14 +21,14 @@ namespace JsonSerializationTests
         public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>
     {
     public:
-        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
             AZ::RPI::MaterialPropertyDescriptor::Reflect(context.get());
             AZ::RPI::ReflectMaterialDynamicMetadata(context.get());
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
         }

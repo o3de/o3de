@@ -349,5 +349,5 @@ protected: // data
     AZStd::vector<UiParticle> m_particleContainer;
 
     AZ::u32 m_particleBufferSize                    = 0;
-    IRenderer::DynUiPrimitive m_cachedPrimitive;
+    DynUiPrimitive m_cachedPrimitive;
 };

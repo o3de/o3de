@@ -41,12 +41,12 @@ namespace UnitTest
             AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
 
             AZStd::allocator::pointer_type data = myalloc.allocate(100, 1);
-            AZ_TEST_ASSERT(data != 0);
+            AZ_TEST_ASSERT(data != nullptr);
 
             myalloc.deallocate(data, 100, 1);
 
             data = myalloc.allocate(50, 128);
-            AZ_TEST_ASSERT(data != 0);
+            AZ_TEST_ASSERT(data != nullptr);
 
             myalloc.deallocate(data, 50, 128);
 
@@ -122,8 +122,15 @@ namespace UnitTest
 
     TEST_F(AllocatorDefaultTest, AllocatorTraitsMaxSizeCompilesWithoutErrors)
     {
-        using AZStdAllocatorTraits = AZStd::allocator_traits<AZStd::allocator>;
-        AZStd::allocator testAllocator("trait allocator");
+        struct AllocatorWithGetMaxSize
+            : AZStd::allocator
+        {
+            using AZStd::allocator::allocator;
+            size_t get_max_size() { return max_size(); }
+        };
+
+        using AZStdAllocatorTraits = AZStd::allocator_traits<AllocatorWithGetMaxSize>;
+        AllocatorWithGetMaxSize testAllocator("trait allocator");
         typename AZStdAllocatorTraits::size_type maxSize = AZStdAllocatorTraits::max_size(testAllocator);
         EXPECT_EQ(testAllocator.get_max_size(), maxSize);
     }
@@ -149,32 +156,32 @@ namespace UnitTest
         myalloc.set_name(newName);
         AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
 
-        AZ_TEST_ASSERT(myalloc.get_max_size() == AZStd::size_t(bufferSize));
+        EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         buffer_alloc_type::pointer_type data = myalloc.allocate(100, 1);
-        AZ_TEST_ASSERT(data != 0);
-        AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 100);
+        AZ_TEST_ASSERT(data != nullptr);
+        EXPECT_EQ(bufferSize - 100, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
 
         myalloc.deallocate(data, 100, 1); // we can free the last allocation only
-        AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize);
+        EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         data = myalloc.allocate(100, 1);
         myalloc.allocate(3, 1);
         myalloc.deallocate(data); // can't free allocation which is not the last.
-        AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 103);
+        EXPECT_EQ(bufferSize - 103, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 103);
 
         myalloc.reset();
-        AZ_TEST_ASSERT(myalloc.get_max_size() == AZStd::size_t(bufferSize));
+        EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         data = myalloc.allocate(50, 64);
-        AZ_TEST_ASSERT(data != 0);
+        AZ_TEST_ASSERT(data != nullptr);
         AZ_TEST_ASSERT(((AZStd::size_t)data & 63) == 0);
-        AZ_TEST_ASSERT(myalloc.get_max_size() <= bufferSize - 50);
+        EXPECT_LE(myalloc.max_size() - myalloc.get_allocated_size(), bufferSize - 50);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() >= 50);
 
         buffer_alloc_type myalloc2;
@@ -194,28 +201,28 @@ namespace UnitTest
         myalloc.set_name(newName);
         AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
 
-        AZ_TEST_ASSERT(myalloc.get_max_size() == sizeof(int) * numNodes);
+        EXPECT_EQ(numNodes * sizeof(int), myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         int* data = reinterpret_cast<int*>(myalloc.allocate(sizeof(int), 1));
-        AZ_TEST_ASSERT(data != 0);
-        AZ_TEST_ASSERT(myalloc.get_max_size() == (numNodes - 1) * sizeof(int));
+        AZ_TEST_ASSERT(data != nullptr);
+        EXPECT_EQ((numNodes - 1) * sizeof(int), myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == sizeof(int));
 
         myalloc.deallocate(data, sizeof(int), 1);
-        AZ_TEST_ASSERT(myalloc.get_max_size() == sizeof(int) * numNodes);
+        EXPECT_EQ(numNodes * sizeof(int), myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         for (int i = 0; i < numNodes; ++i)
         {
             data = reinterpret_cast<int*>(myalloc.allocate(sizeof(int), 1));
-            AZ_TEST_ASSERT(data != 0);
-            AZ_TEST_ASSERT(myalloc.get_max_size() == (numNodes - (i + 1)) * sizeof(int));
+            AZ_TEST_ASSERT(data != nullptr);
+            EXPECT_EQ((numNodes - (i + 1)) * sizeof(int), myalloc.max_size() - myalloc.get_allocated_size());
             AZ_TEST_ASSERT(myalloc.get_allocated_size() == (i + 1) * sizeof(int));
         }
 
         myalloc.reset();
-        AZ_TEST_ASSERT(myalloc.get_max_size() == numNodes * sizeof(int));
+        EXPECT_EQ(numNodes * sizeof(int), myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         AZ_TEST_ASSERT(myalloc == myalloc);
@@ -231,9 +238,9 @@ namespace UnitTest
         aligned_int_node_pool_type myaligned_pool;
         aligned_int_type* aligned_data = reinterpret_cast<aligned_int_type*>(myaligned_pool.allocate(sizeof(aligned_int_type), dataAlignment));
 
-        AZ_TEST_ASSERT(aligned_data != 0);
+        AZ_TEST_ASSERT(aligned_data != nullptr);
         AZ_TEST_ASSERT(((AZStd::size_t)aligned_data & (dataAlignment - 1)) == 0);
-        AZ_TEST_ASSERT(myaligned_pool.get_max_size() == (numNodes - 1) * sizeof(aligned_int_type));
+        EXPECT_EQ((numNodes - 1) * sizeof(aligned_int_type), myaligned_pool.max_size() - myaligned_pool.get_allocated_size());
         AZ_TEST_ASSERT(myaligned_pool.get_allocated_size() == sizeof(aligned_int_type));
 
         myaligned_pool.deallocate(aligned_data, sizeof(aligned_int_type), dataAlignment); // Make sure we free what we have allocated.
@@ -267,33 +274,33 @@ namespace UnitTest
         AZ_TEST_ASSERT(ref_allocator2.get_allocator() == ref_allocator1.get_allocator());
 
         ref_allocator_type::pointer_type data1 = ref_allocator1.allocate(10, 1);
-        AZ_TEST_ASSERT(data1 != 0);
-        AZ_TEST_ASSERT(ref_allocator1.get_max_size() == bufferSize - 10);
+        AZ_TEST_ASSERT(data1 != nullptr);
+        EXPECT_EQ(bufferSize - 10, ref_allocator1.max_size() - ref_allocator1.get_allocated_size());
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() == 10);
-        AZ_TEST_ASSERT(shared_allocator.get_max_size() == bufferSize - 10);
+        EXPECT_EQ(bufferSize - 10, shared_allocator.max_size() - shared_allocator.get_allocated_size());
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() == 10);
 
         ref_allocator_type::pointer_type data2 = ref_allocator2.allocate(10, 1);
-        AZ_TEST_ASSERT(data2 != 0);
-        AZ_TEST_ASSERT(ref_allocator2.get_max_size() <= bufferSize - 20);
+        AZ_TEST_ASSERT(data2 != nullptr);
+        EXPECT_LE(ref_allocator2.max_size() - ref_allocator2.get_allocated_size(), bufferSize - 20);
         AZ_TEST_ASSERT(ref_allocator2.get_allocated_size() >= 20);
-        AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 20);
+        EXPECT_LE(shared_allocator.max_size() - shared_allocator.get_allocated_size(), bufferSize - 20);
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() >= 20);
 
         shared_allocator.reset();
 
         data1 = ref_allocator1.allocate(10, 32);
-        AZ_TEST_ASSERT(data1 != 0);
-        AZ_TEST_ASSERT(ref_allocator1.get_max_size() <= bufferSize - 10);
+        AZ_TEST_ASSERT(data1 != nullptr);
+        EXPECT_LE(ref_allocator1.max_size() - ref_allocator1.get_allocated_size(), bufferSize - 10);
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() >= 10);
-        AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 10);
+        EXPECT_LE(shared_allocator.max_size() - shared_allocator.get_allocated_size(), bufferSize - 10);
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() >= 10);
 
         data2 = ref_allocator2.allocate(10, 32);
-        AZ_TEST_ASSERT(data2 != 0);
-        AZ_TEST_ASSERT(ref_allocator1.get_max_size() <= bufferSize - 20);
+        AZ_TEST_ASSERT(data2 != nullptr);
+        EXPECT_LE(ref_allocator1.max_size() - ref_allocator1.get_allocated_size(), bufferSize - 20);
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() >= 20);
-        AZ_TEST_ASSERT(shared_allocator.get_max_size() <= bufferSize - 20);
+        EXPECT_LE(shared_allocator.max_size() - shared_allocator.get_allocated_size(), bufferSize - 20);
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() >= 20);
 
         AZ_TEST_ASSERT(ref_allocator1 == ref_allocator2);
@@ -312,31 +319,31 @@ namespace UnitTest
         myalloc.set_name(newName);
         AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
 
-        AZ_TEST_ASSERT(myalloc.get_max_size() == AZStd::size_t(bufferSize));
+        EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         stack_allocator::pointer_type data = myalloc.allocate(100, 1);
-        AZ_TEST_ASSERT(data != 0);
-        AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 100);
+        AZ_TEST_ASSERT(data != nullptr);
+        EXPECT_EQ(bufferSize - 100, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
 
         myalloc.deallocate(data, 100, 1); // this allocator doesn't free data
-        AZ_TEST_ASSERT(myalloc.get_max_size() == bufferSize - 100);
+        EXPECT_EQ(bufferSize - 100, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
 
         myalloc.reset();
-        AZ_TEST_ASSERT(myalloc.get_max_size() == AZStd::size_t(bufferSize));
+        EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
         data = myalloc.allocate(50, 64);
-        AZ_TEST_ASSERT(data != 0);
+        AZ_TEST_ASSERT(data != nullptr);
         AZ_TEST_ASSERT(((AZStd::size_t)data & 63) == 0);
-        AZ_TEST_ASSERT(myalloc.get_max_size() <= bufferSize - 50);
+        EXPECT_LE(myalloc.max_size() - myalloc.get_allocated_size(), bufferSize - 50);
         AZ_TEST_ASSERT(myalloc.get_allocated_size() >= 50);
 
         AZ_STACK_ALLOCATOR(myalloc2, 200); // test the macro declaration
 
-        AZ_TEST_ASSERT(myalloc2.get_max_size() == 200);
+        EXPECT_EQ(200, myalloc2.max_size() );
 
         AZ_TEST_ASSERT(myalloc == myalloc);
         AZ_TEST_ASSERT((myalloc2 != myalloc));

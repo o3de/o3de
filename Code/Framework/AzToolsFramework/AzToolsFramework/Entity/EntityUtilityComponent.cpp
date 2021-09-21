@@ -6,9 +6,11 @@
  *
  */
 
+#include <sstream>
 #include <AzCore/JSON/rapidjson.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
@@ -235,7 +237,7 @@ namespace AzToolsFramework
         }
 
         AZStd::string jsonString;
-        AZ::Outcome<void, AZStd::string> outcome = AzFramework::FileFunc::WriteJsonToString(document, jsonString);
+        AZ::Outcome<void, AZStd::string> outcome = AZ::JsonSerializationUtils::WriteJsonString(document, jsonString);
 
         if (!outcome.IsSuccess())
         {
@@ -301,7 +303,10 @@ namespace AzToolsFramework
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Constant("InvalidComponentId", BehaviorConstant(AZ::InvalidComponentId));
+            behaviorContext->ConstantProperty("InvalidComponentId", BehaviorConstant(AZ::InvalidComponentId))
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Entity")
+                ->Attribute(AZ::Script::Attributes::Module, "entity");
 
             behaviorContext->EBus<EntityUtilityBus>("EntityUtilityBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)

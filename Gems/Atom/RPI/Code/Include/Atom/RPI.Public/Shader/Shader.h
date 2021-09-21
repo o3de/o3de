@@ -18,7 +18,7 @@
 #include <Atom/RHI/PipelineLibrary.h>
 
 #include <AtomCore/Instance/InstanceData.h>
-
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -175,9 +175,6 @@ namespace AZ
             // And of course we don't need to handle OnShaderReinitialized because this *is* this Shader.
             ///////////////////////////////////////////////////////////////////
 
-            //! Returns the path to the pipeline library cache file.
-            AZStd::string GetPipelineLibraryPath() const;
-
             //! A strong reference to the shader asset.
             Data::Asset<ShaderAsset> m_asset;
 
@@ -206,6 +203,9 @@ namespace AZ
             
             //! DrawListTag associated with this shader.
             RHI::DrawListTag m_drawListTag;
+
+            //! PipelineLibrary file name
+            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
         };
     }
 }

@@ -1039,6 +1039,42 @@ namespace UnitTest
 
         drawListTagRegistry->ReleaseTag(tag);
     }
+    
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_PsoChangesNotAllowed_Error)
+    {
+        using namespace AZ::RPI;
+
+        const char* functorScript =
+            R"(
+                function GetMaterialPropertyDependencies()
+                    return {"general.MyBool"}
+                end
+
+                function GetShaderOptionDependencies()
+                    return {}
+                end
+
+                function Process(context)
+                    local boolValue = context:GetMaterialPropertyValue_bool("general.MyBool")
+                    if(boolValue) then
+                        context:GetShader(0):GetRenderStatesOverride():SetFillMode(FillMode_Wireframe)
+                    else
+                        context:GetShader(0):GetRenderStatesOverride():ClearFillMode()
+                    end
+                end
+            )";
+
+        TestMaterialData testData;
+        testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
+
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
+
+        ErrorMessageFinder errorMessageFinder;
+
+        errorMessageFinder.AddExpectedErrorMessage("not be changed at runtime because they impact Pipeline State Objects: general.MyBool");
+        EXPECT_TRUE(testData.GetMaterial()->Compile());
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_MultisampleCustomPositionCountIndex_Error)
     {
@@ -1067,6 +1103,7 @@ namespace UnitTest
         TestMaterialData testData;
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
 
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         ErrorMessageFinder errorMessageFinder;
@@ -1107,7 +1144,8 @@ namespace UnitTest
         errorMessageFinder.AddExpectedErrorMessage("ClearMultisampleCustomPosition(18,...) index is out of range. Must be less than 16.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
         errorMessageFinder.CheckExpectedErrorsFound();
-
+        
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         errorMessageFinder.AddExpectedErrorMessage("SetMultisampleCustomPosition(17,...) index is out of range. Must be less than 16.");
@@ -1146,7 +1184,8 @@ namespace UnitTest
         errorMessageFinder.AddExpectedErrorMessage("ClearBlendEnabled(10,...) index is out of range. Must be less than 8.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
         errorMessageFinder.CheckExpectedErrorsFound();
-
+        
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         errorMessageFinder.AddExpectedErrorMessage("SetBlendEnabled(9,...) index is out of range. Must be less than 8.");

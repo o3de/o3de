@@ -8,6 +8,8 @@
 
 #include "FrameCaptureSystemComponent.h"
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -17,7 +19,7 @@
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobCompletion.h>
 
@@ -33,7 +35,11 @@
 #include <AzCore/Console/Console.h>
 
 #if defined(OPEN_IMAGE_IO_ENABLED)
+// OpenImageIO/fmath.h(2271,5): error C4777: 'fprintf' : format string '%zd' requires an argument of type 'unsigned __int64', but variadic
+// argument 5 has type 'OpenImageIO_v2_1::span_strided<const float,-1>::index_type'
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
+AZ_POP_DISABLE_WARNING
 #endif
 
 namespace AZ
@@ -250,8 +256,18 @@ namespace AZ
             return AZStd::string(resolvedPath);
         }
 
+        bool FrameCaptureSystemComponent::CanCapture() const
+        {
+            return !AZ::RHI::IsNullRenderer();
+        }
+
         bool FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -297,6 +313,11 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -346,6 +367,11 @@ namespace AZ
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
             const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -392,6 +418,11 @@ namespace AZ
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
             , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back

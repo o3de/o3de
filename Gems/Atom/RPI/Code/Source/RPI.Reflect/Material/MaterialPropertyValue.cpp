@@ -109,11 +109,20 @@ namespace AZ
             {
                 result.m_value = AZStd::any_cast<Color>(value);
             }
+            else if (value.is<Data::AssetId>())
+            {
+                result.m_value = Data::Asset<RPI::ImageAsset>(
+                    AZStd::any_cast<Data::AssetId>(value), azrtti_typeid<RPI::StreamingImageAsset>());
+            }
+            else if (value.is<Data::Asset<Data::AssetData>>())
+            {
+                result.m_value = Data::Asset<RPI::ImageAsset>(
+                    AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetId(), azrtti_typeid<RPI::StreamingImageAsset>());
+            }
             else if (value.is<Data::Asset<StreamingImageAsset>>())
             {
                 result.m_value = Data::Asset<RPI::ImageAsset>(
-                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetId(),
-                    azrtti_typeid<RPI::StreamingImageAsset>());
+                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetId(), azrtti_typeid<RPI::StreamingImageAsset>());
             }
             else if (value.is<Data::Asset<ImageAsset>>())
             {
@@ -129,7 +138,8 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("MaterialPropertyValue", false, "Cannot convert any to variant. Type in any is: %s.",
+                AZ_Warning(
+                    "MaterialPropertyValue", false, "Cannot convert any to variant. Type in any is: %s.",
                     value.get_type_info().m_id.ToString<AZStd::string>().data());
             }
 
@@ -187,5 +197,5 @@ namespace AZ
 
             return result;
         }
-    }
-}
+    } // namespace RPI
+} // namespace AZ

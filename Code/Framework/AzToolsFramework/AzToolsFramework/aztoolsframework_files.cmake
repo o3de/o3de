@@ -483,6 +483,7 @@ set(FILES
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
     Viewport/ViewportMessages.h
+    Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
     ViewportUi/Button.h
@@ -661,6 +662,8 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Procedural/ProceduralPrefabAsset.h
+    Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h

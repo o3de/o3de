@@ -22,7 +22,6 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-
     AZ::Outcome<void, AZStd::string> IsExposable(const AZ::BehaviorMethod& method);
 
     Grammar::FunctionPrototype ToSignature(const AZ::BehaviorMethod& method);
@@ -31,7 +30,8 @@ namespace ScriptCanvas
     {
         namespace Core
         {
-            class Method : public Node
+            class Method
+                : public Node
             {
             public:
                 AZ_COMPONENT(Method, "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}", Node);
@@ -107,7 +107,11 @@ namespace ScriptCanvas
 
                 SlotId GetBusSlotId() const;
 
+                void OnDeserialize() override;
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
                 virtual bool IsMethodOverloaded() const { return false; }
 
@@ -180,7 +184,7 @@ namespace ScriptCanvas
                 AZStd::vector<SlotId> m_inputSlots;
                 AZStd::vector<SlotId> m_resultSlotIDs;
                 AZStd::recursive_mutex m_mutex; // post-serialization
-                bool m_warnOnMissingFunction = true;
+                bool m_warnOnMissingFunction = false;
                 Method(const Method&) = delete;
             };
 

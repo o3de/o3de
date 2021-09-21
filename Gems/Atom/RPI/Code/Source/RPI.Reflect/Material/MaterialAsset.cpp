@@ -20,6 +20,8 @@ namespace AZ
 {
     namespace RPI
     {
+        const char* MaterialAsset::s_debugTraceName = "MaterialAsset";
+
         const char* MaterialAsset::DisplayName = "MaterialAsset";
         const char* MaterialAsset::Group = "Material";
         const char* MaterialAsset::Extension = "azmaterial";
@@ -29,9 +31,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(9)
+                    ->Version(10)
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
+                    ->Field("propertyNames", &MaterialAsset::m_propertyNames)
                     ;
             }
         }
@@ -99,6 +102,11 @@ namespace AZ
 
         AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
         {
+            if (!m_propertyNames.empty() && m_isDirty)
+            {
+                const_cast<MaterialAsset*>(this)->RealignPropertyValuesAndNames();
+            }
+
             return m_propertyValues;
         }
 
@@ -146,6 +154,34 @@ namespace AZ
             }
         }
         
+        void MaterialAsset::RealignPropertyValuesAndNames()
+        {
+            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
+            AZStd::vector<MaterialPropertyValue> alignedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
+            for (size_t i = 0; i < m_propertyNames.size(); ++i)
+            {
+                const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(m_propertyNames[i]);
+                if (propertyIndex.IsValid())
+                {
+                    alignedPropertyValues[propertyIndex.GetIndex()] = m_propertyValues[i];
+                }
+                else
+                {
+                    AZ_Warning(s_debugTraceName, false, "Material property name \"%s\" is not found in the material properties layout and will not be used.", m_propertyNames[i].GetCStr());
+                }
+            }
+            m_propertyValues.swap(alignedPropertyValues);
+
+            const size_t propertyCount = propertyLayout->GetPropertyCount();
+            m_propertyNames.resize(propertyCount);
+            for (size_t i = 0; i < propertyCount; ++i)
+            {
+                m_propertyNames[i] = propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{ i })->GetName();
+            }
+
+            m_isDirty = false;
+        } 
+
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
             Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
@@ -156,6 +192,8 @@ namespace AZ
                 // MaterialTypeAsset, this will make sure the MaterialAsset gets update with latest one.
                 // This also covers the case where just the MaterialTypeAsset is reloaded and not the MaterialAsset.
                 m_materialTypeAsset = newMaterialTypeAsset;
+
+                m_isDirty = true;
 
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});

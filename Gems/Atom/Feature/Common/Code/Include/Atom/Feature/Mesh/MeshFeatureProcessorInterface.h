@@ -93,11 +93,11 @@ namespace AZ
             //! Sets the sort key for a given mesh handle.
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.
-            virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) = 0;
-            //! Sets an LOD override for a given mesh handle. This LOD will always be rendered instead being automatically determined.
-            virtual void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) = 0;
-            //! Gets the LOD override for a given mesh handle.
-            virtual RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) = 0;
+            virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const = 0;
+            //! Sets LOD mesh configurations to be used in the Mesh Feature Processor
+            virtual void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) = 0;
+            //! Gets the LOD mesh configurations being used in the Mesh Feature Processor
+            virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing

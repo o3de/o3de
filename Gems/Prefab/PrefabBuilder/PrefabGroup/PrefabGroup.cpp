@@ -11,8 +11,10 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/JSON/error/error.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ::SceneAPI::SceneData
 {
@@ -101,7 +103,7 @@ namespace AZ::SceneAPI::SceneData
         {
             auto setPrefabDomData = [](PrefabGroup& self, const AZStd::string& json)
             {
-                auto jsonOutcome = AzFramework::FileFunc::ReadJsonFromString(json);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonString(json);
                 if (jsonOutcome.IsSuccess())
                 {
                     self.SetPrefabDom(AZStd::move(jsonOutcome.GetValue()));
@@ -118,7 +120,7 @@ namespace AZ::SceneAPI::SceneData
                     return {};
                 }
                 AZStd::string buffer;
-                AzFramework::FileFunc::WriteJsonToString(self.GetPrefabDomRef().value(), buffer);
+                JsonSerializationUtils::WriteJsonString(self.GetPrefabDomRef().value(), buffer);
                 return buffer;
             };
 

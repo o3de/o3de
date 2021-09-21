@@ -15,26 +15,50 @@
 
 namespace UnitTest
 {
-    using PrefabScriptingTest = PrefabTestFixture;
-
     TemplateId g_globalTemplateId = {};
     AZStd::string g_globalPrefabString = "";
+
+    class PrefabScriptingTest : public PrefabTestFixture
+    {
+        void InitProperties() const
+        {
+            AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+
+            ASSERT_NE(componentApplicationRequests, nullptr);
+
+            auto behaviorContext = componentApplicationRequests->GetBehaviorContext();
+
+            ASSERT_NE(behaviorContext, nullptr);
+
+            behaviorContext->Property("g_globalTemplateId", BehaviorValueProperty(&g_globalTemplateId));
+            behaviorContext->Property("g_globalPrefabString", BehaviorValueProperty(&g_globalPrefabString));
+
+            g_globalTemplateId = TemplateId{};
+            g_globalPrefabString = AZStd::string{};
+        }
+
+        void SetUpEditorFixtureImpl() override
+        {
+            InitProperties();
+        }
+
+        void TearDownEditorFixtureImpl() override
+        {
+            g_globalPrefabString.set_capacity(0); // Free all memory
+        }
+    };
 
     TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-
-        behaviorContext->Property("g_globalTemplateId", BehaviorValueProperty(&g_globalTemplateId));
-
-        g_globalTemplateId = TemplateId{};
         
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
-            g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab")
             )LUA");
 
         EXPECT_NE(g_globalTemplateId, TemplateId{});
@@ -48,21 +72,60 @@ namespace UnitTest
         EXPECT_TRUE(templateRef);
     }
 
+    TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab_NoEntities)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
+        sc.BindTo(behaviorContext);
+        sc.Execute(R"LUA(
+            my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            entities = vector_EntityId()
+            g_globalTemplateId = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab")
+            )LUA");
+
+        EXPECT_NE(g_globalTemplateId, TemplateId{});
+
+        auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+
+        ASSERT_NE(prefabSystemComponentInterface, nullptr);
+
+        TemplateReference templateRef = prefabSystemComponentInterface->FindTemplate(g_globalTemplateId);
+
+        EXPECT_TRUE(templateRef);
+    }
+
+    TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab_NoPath)
+    {
+        AZ::ScriptContext sc;
+        auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
+        
+        sc.BindTo(behaviorContext);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        sc.Execute(R"LUA(
+            my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
+            entities = vector_EntityId()
+            template_id = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "")
+            )LUA");
+        /*
+        error: PrefabSystemComponent::CreateTemplateFromInstance - Attempted to create a prefab template from an instance without a source file path. Unable to proceed.
+        error: Failed to create a Template associated with file path  during CreatePrefab.
+        error: Failed to create prefab
+         */
+        AZ_TEST_STOP_TRACE_SUPPRESSION(3);
+    }
+
     TEST_F(PrefabScriptingTest, PrefabScripting_SaveToString)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-
-        behaviorContext->Property("g_globalPrefabString", BehaviorValueProperty(&g_globalPrefabString));
         
-        g_globalPrefabString = "";
-
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
             entities = vector_EntityId()
             entities:push_back(my_id)
-            template_id = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab", true)
+            template_id = PrefabSystemScriptingBus.Broadcast.CreatePrefab(entities, "test.prefab")
             my_result = PrefabLoaderScriptingBus.Broadcast.SaveTemplateToString(template_id)
 
             if my_result:IsSuccess() then

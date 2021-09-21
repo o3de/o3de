@@ -63,40 +63,40 @@ namespace GridMate
             typedef unordered_set<AZStd::string> AddressSetType;
 
             GridSessionHandshake(unsigned int handshakeTimeoutMS, const VersionType& version);
-            virtual ~GridSessionHandshake() {}
+            ~GridSessionHandshake() override {}
 
             //////////////////////////////////////////////////////////////////////////
             // Handshake
 
             /// Called from the system to write initial handshake data.
-            virtual void            OnInitiate(ConnectionID id, WriteBuffer& wb);
+            void            OnInitiate(ConnectionID id, WriteBuffer& wb) override;
             /**
             * Called when a system receives a handshake initiation from another system.
             * You can write a reply in the WriteBuffer.
             * return true if you accept this connection and false if you reject it.
             */
-            virtual HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb);
+            HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb) override;
             /**
             * If we already have a valid connection and we receive another connection request, the system will
             * call this function to verify the state of the connection.
             */
-            virtual bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb);
+            bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb) override;
             /**
             * Called when we receive Ack from the other system on our initial data \ref OnInitiate.
             * return true to accept the ack or false to reject the handshake.
             */
-            virtual bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; }  // we don't do any further filtering
+            bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; }  // we don't do any further filtering
             /**
             * Called when we receive Ack from the other system while we were connected. This callback is called
             * so we can just confirm that our connection is valid!
             */
-            virtual bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; } // we don't do any further filtering
+            bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; } // we don't do any further filtering
             /// Return true if you want to reject early reject a connection.
-            virtual bool            OnNewConnection(const AZStd::string& address);
+            bool            OnNewConnection(const AZStd::string& address) override;
             /// Called when we close a connection.
-            virtual void            OnDisconnect(ConnectionID id);
+            void            OnDisconnect(ConnectionID id) override;
             /// Return timeout in milliseconds of the handshake procedure.
-            virtual unsigned int    GetHandshakeTimeOutMS() const                   { return m_handshakeTimeOutMS; }
+            unsigned int    GetHandshakeTimeOutMS() const override                   { return m_handshakeTimeOutMS; }
             //////////////////////////////////////////////////////////////////////////
 
             void                    BanAddress(AZStd::string address);
@@ -1583,7 +1583,7 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
 
             // Bind member replica
             bool isAdded = AddMember(m_myMember);
-            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!")
+            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!");
             if (!isAdded)
             {
                 sm.Transition(SS_DELETE);

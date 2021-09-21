@@ -3,11 +3,11 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-import azlmbr.materialeditor will fail with a ModuleNotFound error when using this script with Editor.exe
-This is because azlmbr.materialeditor only binds to MaterialEditor.exe and not Editor.exe
-You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 """
+
+# import azlmbr.materialeditor will fail with a ModuleNotFound error when using this script with Editor.exe
+# This is because azlmbr.materialeditor only binds to MaterialEditor.exe and not Editor.exe
+# You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 
 import os
 import sys
@@ -33,6 +33,7 @@ MATERIAL_TYPE_PATH = os.path.join(
     azlmbr.paths.devroot, "Gems", "Atom", "Feature", "Common", "Assets",
     "Materials", "Types", "StandardPBR.materialtype",
 )
+CACHE_FILE_EXTENSION = ".azmaterial"
 
 
 def run():
@@ -67,6 +68,7 @@ def run():
     material_editor.save_document_as_child(document_id, target_path)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path), 2.0)
     print(f"New asset created: {os.path.exists(target_path)}")
+    time.sleep(2.0)
 
     # Verify if the newly created document is open
     new_document_id = material_editor.open_material(target_path)
@@ -101,22 +103,29 @@ def run():
     expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
     material_editor.set_property(document_id, property_name, expected_color)
     material_editor.save_document(document_id)
+    time.sleep(2.0)
 
     # 7) Test Case: Saving as a New Material
     # Assign new color to the material file and save the document as copy
     expected_color_1 = math.Color(0.5, 0.5, 0.5, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_1)
     target_path_1 = os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Materials", NEW_MATERIAL_1)
+    cache_file_name_1 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_1', '.material')
+    cache_file_1 = f"{cache_file_name_1[0]}{CACHE_FILE_EXTENSION}"
+    target_path_1_cache = os.path.join(azlmbr.paths.devassets, "Cache", "pc", "materials", cache_file_1)
     material_editor.save_document_as_copy(document_id, target_path_1)
-    time.sleep(2.0)
+    material_editor.wait_for_condition(lambda: os.path.exists(target_path_1_cache), 4.0)
 
     # 8) Test Case: Saving as a Child Material
     # Assign new color to the material file save the document as child
     expected_color_2 = math.Color(0.75, 0.75, 0.75, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_2)
     target_path_2 = os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Materials", NEW_MATERIAL_2)
+    cache_file_name_2 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_2', '.material')
+    cache_file_2 = f"{cache_file_name_2[0]}{CACHE_FILE_EXTENSION}"
+    target_path_2_cache = os.path.join(azlmbr.paths.devassets, "Cache", "pc", "materials", cache_file_2)
     material_editor.save_document_as_child(document_id, target_path_2)
-    time.sleep(2.0)
+    material_editor.wait_for_condition(lambda: os.path.exists(target_path_2_cache), 4.0)
 
     # Close/Reopen documents
     material_editor.close_all_documents()

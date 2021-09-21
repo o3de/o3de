@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/any.h>
 
 namespace AzToolsFramework
@@ -138,7 +139,7 @@ namespace AzToolsFramework
         /*
         * Finds a pak file name for a given file.
         */
-        virtual const char* GetPakFromFile(const char* filename) = 0;
+        virtual AZ::IO::Path GetPakFromFile(const char* filename) = 0;
 
         /*
         * Prints the message to the editor console window.

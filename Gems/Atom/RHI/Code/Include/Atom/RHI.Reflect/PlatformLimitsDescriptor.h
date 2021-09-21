@@ -68,7 +68,7 @@ namespace AZ
             HeapMemoryHintParameters m_usageHintParameters;
             HeapAllocationStrategy m_heapAllocationStrategy = HeapAllocationStrategy::MemoryHint;
 
-            void LoadPlatformLimitsDescriptor(const char* rhiName);
+            virtual void LoadPlatformLimitsDescriptor(const char* rhiName);
         };
 
         class PlatformLimits final

@@ -100,7 +100,7 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZ::OSString pathWithoutSlash = RemoveTrailingSlash(resolvedPath);
+            AZStd::string pathWithoutSlash = RemoveTrailingSlash(resolvedPath);
             bool isInAPK = AZ::Android::Utils::IsApkPath(pathWithoutSlash.c_str());
 
             if (isInAPK)
@@ -115,7 +115,7 @@ namespace AZ
                         // Skip over the current and parent directory paths
                         if (filenameView != "." && filenameView != ".." && NameMatchesFilter(name, filter))
                         {
-                            AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
+                            AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += name;
                             // if aliased, de-alias!
                             azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
@@ -150,7 +150,7 @@ namespace AZ
                         // Skip over the current and parent directory paths
                         if (filenameView != "." && filenameView != ".." && NameMatchesFilter(entry->d_name, filter))
                         {
-                            AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
+                            AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += entry->d_name;
                             // if aliased, de-alias!
                             azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
@@ -199,7 +199,7 @@ namespace AZ
             }
 
             // make directories from bottom to top.
-            AZ::OSString pathBuffer;
+            AZStd::string pathBuffer;
             size_t pathLength = strlen(resolvedPath);
             pathBuffer.reserve(pathLength);
             for (size_t pathPos = 0; pathPos < pathLength; ++pathPos)

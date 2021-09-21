@@ -31,6 +31,11 @@ class AZCoreLogSink
     : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
+    ~AZCoreLogSink()
+    {
+        Disconnect();
+    }
+
     inline static void Connect()
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
@@ -41,6 +46,7 @@ public:
     {
         GetInstance().BusDisconnect();
         delete GetInstance().m_ignoredAsserts;
+        GetInstance().m_ignoredAsserts = nullptr;
     }
 
     static AZCoreLogSink& GetInstance()
@@ -51,10 +57,10 @@ public:
 
     static bool IsCryLogReady()
     {
-        static bool hasSetCVar = false;
         bool ready = gEnv && gEnv->pSystem && gEnv->pLog;
 
 #ifdef _RELEASE
+        static bool hasSetCVar = false;
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well

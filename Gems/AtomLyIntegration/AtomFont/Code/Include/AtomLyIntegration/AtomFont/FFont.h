@@ -16,9 +16,6 @@
 #if !defined(USE_NULLFONT_ALWAYS)
 
 #include <vector>
-#include <CryCommon/Cry_Math.h>
-#include <CryCommon/Cry_Color.h>
-#include <CryCommon/VertexFormats.h>
 #include <CryCommon/IRenderer.h>
 #include "AtomFont.h"
 
@@ -104,20 +101,10 @@ namespace AZ
 
         struct FontRenderingPass
         {
-            ColorB m_color;
-            Vec2 m_posOffset;
-            int m_blendSrc;
-            int m_blendDest;
-
-            FontRenderingPass()
-                : m_color(255, 255, 255, 255)
-                , m_posOffset(0, 0)
-                , m_blendSrc(GS_BLSRC_SRCALPHA)
-                , m_blendDest(GS_BLDST_ONEMINUSSRCALPHA)
-            {
-            }
-
-            void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
+            ColorB m_color = {255, 255, 255, 255};
+            Vec2 m_posOffset = {0,0};
+            int m_blendSrc = GS_BLSRC_SRCALPHA;
+            int m_blendDest = GS_BLDST_ONEMINUSSRCALPHA;
         };
 
         struct FontEffect
@@ -141,8 +128,6 @@ namespace AZ
             {
                 m_passes.resize(0);
             }
-
-            void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
         };
 
         typedef std::vector<FontEffect> FontEffects;
@@ -179,7 +164,6 @@ namespace AZ
         Vec2 GetTextSize(const char* str, const bool asciiMultiLine, const TextDrawContext& ctx) override;
         size_t GetTextLength(const char* str, const bool asciiMultiLine) const override;
         void WrapText(AZStd::string& result, float maxWidth, const char* str, const TextDrawContext& ctx) override;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {};
         void GetGradientTextureCoord(float& minU, float& minV, float& maxU, float& maxV) const override;
         unsigned int GetEffectId(const char* effectName) const override;
         unsigned int GetNumEffects() const override;
@@ -299,7 +283,7 @@ namespace AZ
         FontTexture* m_fontTexture = nullptr;
 
         size_t m_fontBufferSize = 0;
-        unsigned char* m_fontBuffer = nullptr;
+        AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;

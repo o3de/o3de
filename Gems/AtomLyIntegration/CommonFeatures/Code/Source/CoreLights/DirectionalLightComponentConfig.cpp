@@ -21,7 +21,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DirectionalLightComponentConfig, ComponentConfig>()
-                    ->Version(7)
+                    ->Version(8)
                     ->Field("Color", &DirectionalLightComponentConfig::m_color)
                     ->Field("IntensityMode", &DirectionalLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
@@ -38,10 +38,8 @@ namespace AZ
                     ->Field("IsDebugColoringEnabled", &DirectionalLightComponentConfig::m_isDebugColoringEnabled)
                     ->Field("ShadowFilterMethod", &DirectionalLightComponentConfig::m_shadowFilterMethod)
                     ->Field("SofteningBoundaryWidth", &DirectionalLightComponentConfig::m_boundaryWidth)
-                    ->Field("PcfPredictionSampleCount", &DirectionalLightComponentConfig::m_predictionSampleCount)
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &DirectionalLightComponentConfig::m_pcfMethod)
-                ;
+                    ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled);
             }
         }
 
@@ -118,15 +116,9 @@ namespace AZ
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
-        bool DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled() const
+        bool DirectionalLightComponentConfig::IsEsmDisabled() const
         {
-            if (IsShadowPcfDisabled())
-            {
-                return true;
-            }
-
-            return m_pcfMethod != PcfMethod::BoundarySearch;
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
-
     } // namespace Render
 } // namespace AZ

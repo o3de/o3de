@@ -175,6 +175,12 @@
             "isOptional": false
         },
         {
+            "file": "Config/default_aws_resource_mappings.json",
+            "origin": "Config/default_aws_resource_mappings.json",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "EngineFinder.cmake",
             "origin": "EngineFinder.cmake",
             "isTemplated": false,
@@ -244,6 +250,12 @@
             "file": "Registry/assets_scan_folders.setreg",
             "origin": "Registry/assets_scan_folders.setreg",
             "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Registry/awscoreconfiguration.setreg",
+            "origin": "Registry/awscoreconfiguration.setreg",
+            "isTemplated": false,
             "isOptional": false
         },
         {
@@ -489,18 +501,6 @@
         {
             "file": "ShaderLib/viewsrg.srgi",
             "origin": "ShaderLib/viewsrg.srgi",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Shaders/CommonVS.azsli",
-            "origin": "Shaders/CommonVS.azsli",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
-            "origin": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
             "isTemplated": true,
             "isOptional": false
         },

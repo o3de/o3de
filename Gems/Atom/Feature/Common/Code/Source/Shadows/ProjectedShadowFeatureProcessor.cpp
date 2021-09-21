@@ -165,15 +165,6 @@ namespace AZ::Render
         m_filterParameterNeedsUpdate = true;
     }
     
-    void ProjectedShadowFeatureProcessor::SetPcfMethod(ShadowId id, PcfMethod method)
-    {
-        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetPcfMethod().");
-        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_pcfMethod = method;
-
-        m_deviceBufferNeedsUpdate = true;
-    }
-
     void ProjectedShadowFeatureProcessor::SetEsmExponent(ShadowId id, float exponent)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetEsmExponent().");
@@ -188,7 +179,7 @@ namespace AZ::Render
         
         ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_shadowFilterMethod = aznumeric_cast<uint16_t>(method);
+        shadowData.m_shadowFilterMethod = aznumeric_cast<uint32_t>(method);
 
         UpdateShadowView(shadowProperty);
         
@@ -205,19 +196,6 @@ namespace AZ::Render
         
         m_shadowmapPassNeedsUpdate = true;
         m_filterParameterNeedsUpdate = true;
-    }
-    
-    void ProjectedShadowFeatureProcessor::SetPredictionSampleCount(ShadowId id, uint16_t count)
-    {
-        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetPredictionSampleCount().");
-
-        AZ_Warning("ProjectedShadowFeatureProcessor", count <= Shadow::MaxPcfSamplingCount, "Sampling count exceed the limit.");
-        count = GetMin(count, Shadow::MaxPcfSamplingCount);
-        
-        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_predictionSampleCount = count;
-
-        m_deviceBufferNeedsUpdate = true;
     }
     
     void ProjectedShadowFeatureProcessor::SetFilteringSampleCount(ShadowId id, uint16_t count)
@@ -418,7 +396,6 @@ namespace AZ::Render
             }
             const FilterParameter& filter = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
             const float boundaryWidthAngle = shadow.m_boundaryScale * 2.0f;
-            constexpr float SmallAngle = 0.01f;
             const float fieldOfView = GetMax(shadowProperty.m_desc.m_fieldOfViewYRadians, MinimumFieldOfView);
             const float ratioToEntireWidth = boundaryWidthAngle / fieldOfView;
             const float widthInPixels = ratioToEntireWidth * filter.m_shadowmapSize;

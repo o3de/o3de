@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H
-#define CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
@@ -20,10 +17,7 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
-#include <IRenderer.h>
-#include <IRenderAuxGeom.h>
-#include <VectorSet.h>
-#include <CryName.h>
+#include <Cry_Camera.h>
 
 // forward declaration.
 struct IAnimTrack;
@@ -116,7 +110,7 @@ public:
     {
         *this = name;
     }
-   
+
     CAnimParamType(AnimParamType type)
     {
         *this = type;
@@ -258,8 +252,6 @@ struct SAnimContext
     // TODO: Mask should be stored with dynamic length
     uint32 trackMask;       //!< To update certain types of tracks only
     float startTime;        //!< The start time of this playing sequence
-
-    void Serialize(XmlNodeRef& xmlNode, bool loading);
 };
 
 /** Parameters for cut-scene cameras
@@ -378,7 +370,7 @@ struct IAnimTrack
     virtual int GetSubTrackCount() const = 0;
     // Retrieve pointer the specfied sub track.
     virtual IAnimTrack* GetSubTrack(int nIndex) const = 0;
-    virtual const char* GetSubTrackName(int nIndex) const = 0;
+    virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -625,7 +617,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        const char* name;           // parameter name.
+        AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
         AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.
@@ -738,7 +730,7 @@ public:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamName(const CAnimParamType& paramType) const = 0;
+    virtual AZStd::string GetParamName(const CAnimParamType& paramType) const = 0;
 
     // Description:
     //      Returns the params value type
@@ -838,7 +830,7 @@ public:
     // override this method to handle explicit setting of time
     virtual void TimeChanged([[maybe_unused]] float newTime) {};
 
-    // Compares all of the node's track values at the given time with the associated property value and 
+    // Compares all of the node's track values at the given time with the associated property value and
     //     sets a key at that time if they are different to match the latter
     // Returns the number of keys set
     virtual int SetKeysForChangedTrackValues([[maybe_unused]] float time) { return 0; };
@@ -894,7 +886,6 @@ struct ITrackEventListener
     //      event - Track event added
     //      pUserData - Data to accompany reason
     virtual void OnTrackEvent(IAnimSequence* sequence, int reason, const char* event, void* pUserData) = 0;
-    virtual void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{};
     // </interfuscator:shuffle>
 };
 
@@ -1155,8 +1146,6 @@ struct IMovieListener
     //! callback on movie events
     virtual void OnMovieEvent(EMovieEvent movieEvent, IAnimSequence* pAnimSequence) = 0;
     // </interfuscator:shuffle>
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{}
 };
 
 /** Movie System interface.
@@ -1309,7 +1298,7 @@ struct IMovieSystem
 
     // Disable Fixed Step cvars and return to previous settings
     virtual void DisableFixedStepForCapture() = 0;
- 
+
     // Signal the capturing start.
     virtual void StartCapture(const ICaptureKey& key, int frame) = 0;
 
@@ -1329,7 +1318,6 @@ struct IMovieSystem
     virtual bool IsRecording() const = 0;
 
     virtual void EnableCameraShake(bool bEnabled) = 0;
-    virtual bool IsCameraShakeEnabled() const = 0;
 
     // Pause any playing sequences.
     virtual void Pause() = 0;
@@ -1384,8 +1372,6 @@ struct IMovieSystem
     virtual void EnableBatchRenderMode(bool bOn) = 0;
     virtual bool IsInBatchRenderMode() const = 0;
 
-    virtual ILightAnimWrapper* CreateLightAnimWrapper(const char* name) const = 0;
-
     virtual void LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version) = 0;
     virtual void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) = 0;
 
@@ -1411,40 +1397,6 @@ struct IMovieSystem
     // </interfuscator:shuffle>
 };
 
-inline void SAnimContext::Serialize(XmlNodeRef& xmlNode, bool bLoading)
-{
-    if (bLoading)
-    {
-        XmlString name;
-        if (xmlNode->getAttr("sequence", name))
-        {
-            sequence = gEnv->pMovieSystem->FindLegacySequenceByName(name.c_str());
-        }
-        xmlNode->getAttr("dt", dt);
-        xmlNode->getAttr("fps", fps);
-        xmlNode->getAttr("time", time);
-        xmlNode->getAttr("bSingleFrame", singleFrame);
-        xmlNode->getAttr("bResetting", resetting);
-        xmlNode->getAttr("trackMask", trackMask);
-        xmlNode->getAttr("startTime", startTime);
-    }
-    else
-    {
-        if (sequence)
-        {
-            AZStd::string fullname = sequence->GetName();
-            xmlNode->setAttr("sequence", fullname.c_str());
-        }
-        xmlNode->setAttr("dt", dt);
-        xmlNode->setAttr("fps", fps);
-        xmlNode->setAttr("time", time);
-        xmlNode->setAttr("bSingleFrame", singleFrame);
-        xmlNode->setAttr("bResetting", resetting);
-        xmlNode->setAttr("trackMask", trackMask);
-        xmlNode->setAttr("startTime", startTime);
-    }
-}
-
 inline void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
     gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
@@ -1459,5 +1411,3 @@ inline void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const 
 {
     gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H

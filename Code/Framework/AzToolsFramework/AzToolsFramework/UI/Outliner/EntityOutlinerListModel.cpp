@@ -280,17 +280,17 @@ namespace AzToolsFramework
     QVariant EntityOutlinerListModel::GetEntityIcon(const AZ::EntityId& id) const
     {
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(id);
-        QPixmap pixmap;
+        QIcon icon;
 
         // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
-            pixmap = entityUiHandler->GenerateItemIcon(id);
+            icon = entityUiHandler->GenerateItemIcon(id);
         }
 
-        if (!pixmap.isNull())
+        if (!icon.isNull())
         {
-            return QIcon(pixmap);
+            return icon;
         }
 
         // If no icon was returned by the handler, use the default one.
@@ -299,7 +299,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Editor_Only.svg")));
+            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -308,10 +308,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Not_Active.svg")));
+            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
         }
 
-        return QIcon(QPixmap(QString(":/Icons/Entity.svg")));
+        return QIcon(QString(":/Icons/Entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
@@ -1106,8 +1106,6 @@ namespace AzToolsFramework
     QMimeData* EntityOutlinerListModel::mimeData(const QModelIndexList& indexes) const
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        AZ::TypeId uuid1 = AZ::AzTypeInfo<AZ::Entity>::Uuid();
-        AZ::TypeId uuid2 = AZ::AzTypeInfo<EditorEntityIdContainer>::Uuid();
 
         EditorEntityIdContainer entityIdList;
         for (const QModelIndex& index : indexes)
@@ -1334,13 +1332,11 @@ namespace AzToolsFramework
         QueueEntityUpdate(entityId);
     }
 
-    void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentId, AZ::EntityId childId)
+    void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
     {
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
-        auto parentIndex = GetIndexFromEntity(parentId);
-        auto childIndex = GetIndexFromEntity(childId);
         beginResetModel();
     }
 

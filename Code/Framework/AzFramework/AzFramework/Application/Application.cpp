@@ -25,7 +25,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -60,7 +59,6 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -74,7 +72,7 @@
 #include <cctype>
 #include <stdio.h>
 
-static const char* s_azFrameworkWarningWindow = "AzFramework";
+[[maybe_unused]] static const char* s_azFrameworkWarningWindow = "AzFramework";
 
 namespace AzFramework
 {
@@ -83,71 +81,6 @@ namespace AzFramework
         static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
-
-        // A Helper function that can load an app descriptor from file.
-        AZ::Outcome<AZStd::unique_ptr<AZ::ComponentApplication::Descriptor>, AZStd::string> LoadDescriptorFromFilePath(const char* appDescriptorFilePath, AZ::SerializeContext& serializeContext)
-        {
-            AZStd::unique_ptr<AZ::ComponentApplication::Descriptor> loadedDescriptor;
-
-            AZ::IO::SystemFile appDescriptorFile;
-            if (!appDescriptorFile.Open(appDescriptorFilePath, AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
-            {
-                return AZ::Failure(AZStd::string::format("Failed to open file: %s", appDescriptorFilePath));
-            }
-
-            AZ::IO::SystemFileStream appDescriptorFileStream(&appDescriptorFile, true);
-            if (!appDescriptorFileStream.IsOpen())
-            {
-                return AZ::Failure(AZStd::string::format("Failed to stream file: %s", appDescriptorFilePath));
-            }
-
-            // Callback function for allocating the root elements in the file.
-            AZ::ObjectStream::InplaceLoadRootInfoCB inplaceLoadCb =
-                [](void** rootAddress, const AZ::SerializeContext::ClassData**, const AZ::Uuid& classId, AZ::SerializeContext*)
-            {
-                if (rootAddress && classId == azrtti_typeid<AZ::ComponentApplication::Descriptor>())
-                {
-                    // ComponentApplication::Descriptor is normally a singleton.
-                    // Force a unique instance to be created.
-                    *rootAddress = aznew AZ::ComponentApplication::Descriptor();
-                }
-            };
-
-            // Callback function for saving the root elements in the file.
-            AZ::ObjectStream::ClassReadyCB classReadyCb =
-                [&loadedDescriptor](void* classPtr, const AZ::Uuid& classId, AZ::SerializeContext* context)
-            {
-                // Save descriptor, delete anything else loaded from file.
-                if (classId == azrtti_typeid<AZ::ComponentApplication::Descriptor>())
-                {
-                    loadedDescriptor.reset(static_cast<AZ::ComponentApplication::Descriptor*>(classPtr));
-                }
-                else if (const AZ::SerializeContext::ClassData* classData = context->FindClassData(classId))
-                {
-                    classData->m_factory->Destroy(classPtr);
-                }
-                else
-                {
-                    AZ_Error("Application", false, "Unexpected type %s found in application descriptor file. This memory will leak.",
-                        classId.ToString<AZStd::string>().c_str());
-                }
-            };
-
-            // There's other stuff in the file we may not recognize (system components), but we're not interested in that stuff.
-            AZ::ObjectStream::FilterDescriptor loadFilter(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
-
-            if (!AZ::ObjectStream::LoadBlocking(&appDescriptorFileStream, serializeContext, classReadyCb, loadFilter, inplaceLoadCb))
-            {
-                return AZ::Failure(AZStd::string::format("Failed to load objects from file: %s", appDescriptorFilePath));
-            }
-
-            if (!loadedDescriptor)
-            {
-                return AZ::Failure(AZStd::string::format("Failed to find descriptor object in file: %s", appDescriptorFilePath));
-            }
-
-            return AZ::Success(AZStd::move(loadedDescriptor));
-        }
     }
 
     Application::Application()
@@ -296,7 +229,6 @@ namespace AzFramework
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
-            azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
@@ -312,7 +244,6 @@ namespace AzFramework
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
 
 #if !defined(AZCORE_EXCLUDE_LUA)
             azrtti_typeid<AZ::ScriptSystemComponent>(),
@@ -374,7 +305,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
@@ -607,7 +537,7 @@ namespace AzFramework
 
     void Application::SetRootPath(RootPathType type, const char* source)
     {
-        const size_t sourceLen = strlen(source);
+        [[maybe_unused]] const size_t sourceLen = strlen(source);
 
         // Copy the source path to the intended root path and correct the path separators as well
         switch (type)
@@ -632,6 +562,9 @@ namespace AzFramework
 
     static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
     {
+        constexpr const char* userCachePathFilename{ "Cache" };
+        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
@@ -640,9 +573,6 @@ namespace AzFramework
         // 128 seems like a reasonable compromise.
         constexpr int maxAttempts = 128;
 
-        constexpr const char* userCachePathFilename{ "Cache" };
-        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         int attemptNumber;
         for (attemptNumber = 0; attemptNumber < maxAttempts; ++attemptNumber)
         {
