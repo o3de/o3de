@@ -214,7 +214,7 @@ namespace AzToolsFramework
 
         auto FnExtractArchive = [this, archivePath, destinationPath](std::promise<bool>&& p) -> void
         {
-            auto archive = m_archive->OpenArchive(archivePath);
+            auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_READ_ONLY);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
@@ -302,7 +302,7 @@ namespace AzToolsFramework
 
         auto FnExtractFile = [this, archivePath, fileInArchive, destinationPath](std::promise<bool>&& p) -> void
         {
-            auto archive = m_archive->OpenArchive(archivePath);
+            auto archive = m_archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_READ_ONLY);
             if (!archive)
             {
                 AZ_Error(s_traceName, false, "Failed to open archive file '%s'", archivePath.c_str());
@@ -411,12 +411,12 @@ namespace AzToolsFramework
             }
 
             AZ::IO::Path workingPath{ workingDirectory };
-            AZ::IO::PathView relativePath = AZ::IO::PathView{ fileToAdd }.LexicallyRelative(workingPath);
+            AZ::IO::Path fullPath = workingPath / fileToAdd;
+            AZ::IO::PathView relativePath = AZ::IO::PathView{ fullPath }.LexicallyRelative(workingPath);
 
-            AZStd::string fullPath = (workingPath / relativePath).c_str();
             AZStd::vector<char> fileBuffer;
             bool success = false;
-            if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
+            if (ArchiveUtils::ReadFile(fullPath.c_str(), AZ::IO::OpenMode::ModeRead, fileBuffer))
             {
                 int result = archive->UpdateFile(
                     relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
@@ -529,9 +529,10 @@ namespace AzToolsFramework
 
         if (!file.empty())
         {
-            if (!m_localFileIO->Exists(file.c_str()) || m_localFileIO->IsDirectory(file.c_str()))
+            auto filePath = AZ::IO::Path{ directory } / file;
+            if (!m_localFileIO->Exists(filePath.c_str()) || m_localFileIO->IsDirectory(filePath.c_str()))
             {
-                AZ_Error(s_traceName, false, "File list '%s' is a directory or doesn't exist!", file.c_str());
+                AZ_Error(s_traceName, false, "File list '%s' is a directory or doesn't exist!", filePath.c_str());
                 return false;
             }
         }
