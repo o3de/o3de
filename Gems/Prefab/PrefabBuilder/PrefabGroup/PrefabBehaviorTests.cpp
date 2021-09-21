@@ -133,7 +133,7 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory tempDir;
         context.SetOutputDirectory(tempDir.GetDirectory());
 
-        auto jsonOutcome = AzFramework::FileFunc::ReadJsonFromString(Data::jsonPrefab);
+        auto jsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(Data::jsonPrefab);
         ASSERT_TRUE(jsonOutcome);
 
         auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
