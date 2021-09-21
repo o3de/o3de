@@ -30,14 +30,14 @@ namespace AtomToolsFramework
         "");
     AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
-    [[maybe_unused]] static AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
+    AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
     {
         const auto rotation = AZ::Matrix3x3::CreateFromMatrix4x4(matrix);
         const auto translation = matrix.GetTranslation();
         return AZ::Transform::CreateFromMatrix3x3AndTranslation(rotation, translation);
     }
 
-    [[maybe_unused]] static AZ::Matrix4x4 Matrix4x4FromTransform(const AZ::Transform& transform)
+    AZ::Matrix4x4 Matrix4x4FromTransform(const AZ::Transform& transform)
     {
         return AZ::Matrix4x4::CreateFromQuaternionAndTranslation(transform.GetRotation(), transform.GetTranslation());
     }
