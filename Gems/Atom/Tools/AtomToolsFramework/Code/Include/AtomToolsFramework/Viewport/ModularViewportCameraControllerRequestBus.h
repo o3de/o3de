@@ -35,6 +35,10 @@ namespace AtomToolsFramework
         //! Look at point after an interpolation has finished and no translation has occurred.
         virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
 
+        //! Return the current reference frame.
+        //! @note If a reference frame has not been set or a frame has been cleared, this is just the identity.
+        virtual AZ::Transform GetReferenceFrame() const = 0;
+
         //! Set a new reference frame other than the identity for the camera controller.
         virtual void SetReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
 

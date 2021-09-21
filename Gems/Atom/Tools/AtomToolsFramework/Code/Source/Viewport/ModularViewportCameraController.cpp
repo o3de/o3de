@@ -30,6 +30,18 @@ namespace AtomToolsFramework
         "");
     AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
+    [[maybe_unused]] static AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
+    {
+        const auto rotation = AZ::Matrix3x3::CreateFromMatrix4x4(matrix);
+        const auto translation = matrix.GetTranslation();
+        return AZ::Transform::CreateFromMatrix3x3AndTranslation(rotation, translation);
+    }
+
+    [[maybe_unused]] static AZ::Matrix4x4 Matrix4x4FromTransform(const AZ::Transform& transform)
+    {
+        return AZ::Matrix4x4::CreateFromQuaternionAndTranslation(transform.GetRotation(), transform.GetTranslation());
+    }
+
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
     {
@@ -167,7 +179,7 @@ namespace AtomToolsFramework
         controller->SetupCameraControllerPriority(m_priorityFn);
         controller->SetupCameraControllerViewportContext(m_modularCameraViewportContext);
 
-        auto handleCameraChange = [this](const AZ::Matrix4x4&)
+        auto handleCameraChange = [this]([[maybe_unused]] const AZ::Matrix4x4& cameraView)
         {
             // ignore these updates if the camera is being updated internally
             if (!m_updatingTransformInternally)
@@ -248,6 +260,8 @@ namespace AtomToolsFramework
                 return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
             };
 
+            m_cameraAnimation.m_time = AZ::GetClamp(m_cameraAnimation.m_time + event.m_deltaTime.count(), 0.0f, 1.0f);
+
             const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 
             const float transitionTime = smootherStepFn(animationTime);
@@ -260,8 +274,6 @@ namespace AtomToolsFramework
             m_camera.m_yaw = eulerAngles.GetZ();
             m_camera.m_lookAt = current.GetTranslation();
             m_targetCamera = m_camera;
-
-            m_cameraAnimation.m_time = AZ::GetClamp(animationTime + event.m_deltaTime.count(), 0.0f, 1.0f);
 
             m_modularCameraViewportContext->SetCameraTransform(current);
 
@@ -296,6 +308,11 @@ namespace AtomToolsFramework
     AZStd::optional<AZ::Vector3> ModularViewportCameraControllerInstance::LookAtAfterInterpolation() const
     {
         return m_lookAtAfterInterpolation;
+    }
+
+    AZ::Transform ModularViewportCameraControllerInstance::GetReferenceFrame() const
+    {
+        return m_referenceFrameOverride;
     }
 
     void ModularViewportCameraControllerInstance::SetReferenceFrame(const AZ::Transform& worldFromLocal)
@@ -339,11 +356,12 @@ namespace AtomToolsFramework
     void PlaceholderModularCameraViewportContextImpl::SetCameraTransform(const AZ::Transform& transform)
     {
         m_cameraTransform = transform;
+        m_viewMatrixChangedEvent.Signal(AzFramework::CameraViewFromCameraTransform(Matrix4x4FromTransform(transform)));
     }
 
     void PlaceholderModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(
-        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&)
+        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler)
     {
-        // noop
+        handler.Connect(m_viewMatrixChangedEvent);
     }
 } // namespace AtomToolsFramework

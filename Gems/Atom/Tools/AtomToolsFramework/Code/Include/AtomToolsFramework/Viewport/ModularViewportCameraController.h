@@ -116,6 +116,7 @@ namespace AtomToolsFramework
         // ModularViewportCameraControllerRequestBus overrides ...
         void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
         AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
+        AZ::Transform GetReferenceFrame() const override;
         void SetReferenceFrame(const AZ::Transform& worldFromLocal) override;
         void ClearReferenceFrame() override;
 
@@ -170,9 +171,10 @@ namespace AtomToolsFramework
     public:
         AZ::Transform GetCameraTransform() const override;
         void SetCameraTransform(const AZ::Transform& transform) override;
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override;
+        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler) override;
 
     private:
         AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
+        AZ::RPI::ViewportContext::MatrixChangedEvent m_viewMatrixChangedEvent;
     };
 } // namespace AtomToolsFramework
