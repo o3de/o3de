@@ -15,7 +15,7 @@
 
 namespace O3DE::ProjectManager
 {
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const
     {
         // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
         // otherwise default to the the default for Linux (Unix Makefiles)
@@ -53,7 +53,7 @@ namespace O3DE::ProjectManager
                                           "--target", launcherTargetName, ProjectCMakeBuildTargetEditor } );
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
     {
         return AZ::Success( QStringList { "kill", "-9", pidToKill } );
     }

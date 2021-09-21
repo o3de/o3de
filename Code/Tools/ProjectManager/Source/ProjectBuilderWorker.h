@@ -49,9 +49,9 @@ namespace O3DE::ProjectManager
         void QStringToAZTracePrint(const QString& error);
 
         // Command line argument builders
-        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const;
+        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const;
         AZ::Outcome<QStringList, QString> ConstructCmakeBuildCommandArguments() const;
-        AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(QString pidToKill) const;
+        AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(const QString& pidToKill) const;
 
 
         QProcess* m_configProjectProcess = nullptr;

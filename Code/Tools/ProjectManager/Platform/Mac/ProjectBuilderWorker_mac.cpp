@@ -38,7 +38,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const
     {
         // For Mac, we need to resolve the full path of cmake and use that in the process request. For
         // some reason, 'which' will resolve the full path, but when you just specify cmake with the same
@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
                                           "--target", launcherTargetName, ProjectCMakeBuildTargetEditor } );
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
     {
         return AZ::Success( QStringList { "kill", "-9", pidToKill } );
     }
