@@ -77,6 +77,13 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
+    AZ_CVAR(
+        bool,
+        ed_preferredWorldOuterSpace,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Which space is prefered to move to when using the outer space modifier");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const TogglePivotTitleRightClick = "Toggle pivot";
@@ -801,18 +808,19 @@ namespace AzToolsFramework
     // based on the state of the modifiers
     static ReferenceFrame ReferenceFrameFromModifiers(const ViewportInteraction::KeyboardModifiers modifiers)
     {
-        if (modifiers.Shift() && !modifiers.Alt())
+        if (modifiers.Shift())
         {
-            return ReferenceFrame::World;
-        }
-        else if (modifiers.Alt() && !modifiers.Shift())
-        {
-            return ReferenceFrame::Local;
+            return ed_preferredWorldOuterSpace ? ReferenceFrame::World : ReferenceFrame::Parent;
         }
         else
         {
-            return ReferenceFrame::Parent;
+            return ReferenceFrame::Local;
         }
+    }
+
+    static Influence InfluenceFromModifiers(const ViewportInteraction::KeyboardModifiers modifiers)
+    {
+        return modifiers.Alt() ? Influence::Individual : Influence::Group;
     }
 
     template<typename Action, typename EntityIdContainer>
@@ -838,6 +846,7 @@ namespace AzToolsFramework
         else
         {
             const ReferenceFrame referenceFrame = spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
+            const Influence influence = InfluenceFromModifiers(action.m_modifiers);
 
             // note: used for parent and world depending on the current reference frame
             const auto pivotOrientation =
@@ -854,9 +863,9 @@ namespace AzToolsFramework
 
                 const AZ::Vector3 worldTranslation = GetWorldTranslation(entityId);
 
-                switch (referenceFrame)
+                switch (influence)
                 {
-                case ReferenceFrame::Local:
+                case Influence::Individual:
                     {
                         // move in each entities local space at once
                         AZ::Quaternion worldOrientation = AZ::Quaternion::CreateIdentity();
@@ -876,10 +885,9 @@ namespace AzToolsFramework
                             entityId, entityItLookupIt->second.m_initial.GetTranslation() + localOffset, transformChangedInternally);
                     }
                     break;
-                case ReferenceFrame::Parent:
-                case ReferenceFrame::World:
+                case Influence::Group:
                     {
-                        AZ::Quaternion offsetRotation = pivotOrientation.m_worldOrientation *
+                        const AZ::Quaternion offsetRotation = pivotOrientation.m_worldOrientation *
                             QuaternionFromTransformNoScaling(entityIdManipulators.m_manipulators->GetLocalTransform().GetInverse());
 
                         const AZ::Vector3 localOffset = offsetRotation.TransformVector(action.LocalPositionOffset());
@@ -1062,7 +1070,8 @@ namespace AzToolsFramework
             {
                 AZStd::chrono::milliseconds timeNow;
                 AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::BroadcastResult(
-                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
+                    timeNow,
+                    &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
                 return timeNow;
             });
     }
@@ -1442,6 +1451,8 @@ namespace AzToolsFramework
             [this, prevModifiers, sharedRotationState](const AngularManipulator::Action& action) mutable -> void
             {
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
+                const Influence influence = InfluenceFromModifiers(action.m_modifiers);
+
                 const AZ::Quaternion manipulatorOrientation = action.m_start.m_rotation * action.m_current.m_delta;
                 // store the pivot override frame when positioning the manipulator manually (ctrl)
                 // so we don't lose the orientation when adding/removing entities from the selection
@@ -1452,9 +1463,7 @@ namespace AzToolsFramework
 
                 // only update the manipulator orientation if we're rotating in a local reference frame or we're
                 // manually modifying the manipulator orientation independent of the entity by holding ctrl
-                if ((sharedRotationState->m_referenceFrameAtMouseDown == ReferenceFrame::Local &&
-                     m_entityIdManipulators.m_lookups.size() == 1) ||
-                    action.m_modifiers.Ctrl())
+                if (sharedRotationState->m_referenceFrameAtMouseDown == ReferenceFrame::Local || action.m_modifiers.Ctrl())
                 {
                     m_entityIdManipulators.m_manipulators->SetLocalTransform(AZ::Transform::CreateFromQuaternionAndTranslation(
                         manipulatorOrientation, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation()));
@@ -1475,9 +1484,6 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    const auto pivotOrientation = ETCS::CalculateSelectionPivotOrientation(
-                        m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, ReferenceFrame::Parent);
-
                     // note: must use sorted entityIds based on hierarchy order when updating transforms
                     for (AZ::EntityId entityId : sharedRotationState->m_entityIds)
                     {
@@ -1492,9 +1498,9 @@ namespace AzToolsFramework
                         const AZ::Transform offsetRotation =
                             AZ::Transform::CreateFromQuaternion(sharedRotationState->m_savedOrientation * action.m_current.m_delta);
 
-                        switch (referenceFrame)
+                        switch (influence)
                         {
-                        case ReferenceFrame::Local:
+                        case Influence::Individual:
                             {
                                 const AZ::Quaternion rotation = entityIdLookupIt->second.m_initial.GetRotation().GetNormalized();
                                 const AZ::Vector3 position = entityIdLookupIt->second.m_initial.GetTranslation();
@@ -1510,22 +1516,19 @@ namespace AzToolsFramework
                                         AZ::Transform::CreateTranslation(-centerOffset) * AZ::Transform::CreateUniformScale(scale));
                             }
                             break;
-                        case ReferenceFrame::Parent:
+                        case Influence::Group:
                             {
+                                // only update the pivot override if the orientation is being modified in local space
+                                if (referenceFrame == ReferenceFrame::Local)
+                                {
+                                    m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
+                                }
+
+                                const auto pivotOrientation = ETCS::CalculateSelectionPivotOrientation(
+                                    m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, referenceFrame);
+
                                 const AZ::Transform pivotTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
                                     pivotOrientation.m_worldOrientation,
-                                    m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
-
-                                const AZ::Transform transformInPivotSpace =
-                                    pivotTransform.GetInverse() * entityIdLookupIt->second.m_initial;
-
-                                SetEntityWorldTransform(entityId, pivotTransform * offsetRotation * transformInPivotSpace);
-                            }
-                            break;
-                        case ReferenceFrame::World:
-                            {
-                                const AZ::Transform pivotTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-                                    AZ::Quaternion::CreateIdentity(),
                                     m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
                                 const AZ::Transform transformInPivotSpace =
                                     pivotTransform.GetInverse() * entityIdLookupIt->second.m_initial;
@@ -1624,20 +1627,24 @@ namespace AzToolsFramework
                 const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
                 const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
 
-                if (action.m_modifiers.Alt())
+                switch (const Influence influence = InfluenceFromModifiers(action.m_modifiers); influence)
                 {
-                    const AZ::Transform pivotTransform = TransformNormalizedScale(entityIdLookupIt->second.m_initial);
-                    const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+                case Influence::Individual:
+                    {
+                        const AZ::Transform pivotTransform = TransformNormalizedScale(entityIdLookupIt->second.m_initial);
+                        const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
 
-                    SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
-                }
-                else
-                {
-                    const AZ::Transform pivotTransform =
-                        TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-                    const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+                        SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                    }
+                    break;
+                case Influence::Group:
+                    {
+                        const AZ::Transform pivotTransform =
+                            TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                        const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
 
-                    SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                        SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                    }
                 }
             }
         };
