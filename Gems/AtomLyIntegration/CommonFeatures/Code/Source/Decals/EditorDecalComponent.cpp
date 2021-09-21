@@ -11,8 +11,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzCore/Math/IntersectSegment.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace Render
