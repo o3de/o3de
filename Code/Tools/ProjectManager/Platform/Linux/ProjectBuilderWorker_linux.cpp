@@ -9,16 +9,10 @@
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
-#include <PythonBindingsInterface.h>
 
 #include <QDir>
-#include <QFile>
-#include <QProcess>
-#include <QProcessEnvironment>
-#include <QTextStream>
-#include <QThread>
+#include <QString>
 
-#include "EngineInfo.h"
 namespace O3DE::ProjectManager
 {
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
@@ -27,17 +21,19 @@ namespace O3DE::ProjectManager
         // otherwise default to the the default for Linux (Unix Makefiles)
         QString cmakeGenerator = (QProcess::execute("which", QStringList{ "ninja" }) == 0) ? "Ninja" : "Unix Makefiles";
 
-        // On Linux the default compiiler is gcc. For O3DE, it is clang, so we need to specify the version of clang that is detected
+        // On Linux the default compiler is gcc. For O3DE, it is clang, so we need to specify the version of clang that is detected
         // in order to get the compiler option.
         auto compilerOptionResult = ProjectUtils::FindSupportedCompilerForPlatform();
         if (!compilerOptionResult.IsSuccess())
         {
             return AZ::Failure(compilerOptionResult.GetError());
         }
-        QString compilerOption = compilerOptionResult.GetValue();
 
-        return AZ::Success( QStringList { "cmake",
-                                          "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+        QString compilerOption = compilerOptionResult.GetValue();
+        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+
+        return AZ::Success( QStringList { ProjectCMakeCommand,
+                                          "-B", targetBuildPath,
                                           "-S", m_projectInfo.m_path,
                                           "-G", cmakeGenerator,
                                           QString("-DCMAKE_C_COMPILER=").append(compilerOption),
@@ -49,9 +45,12 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        return AZ::Success( QStringList { "cmake",
-                                          "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                                          "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" } );
+        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+
+        return AZ::Success( QStringList { ProjectCMakeCommand,
+                                          "--build", targetBuildPath,
+                                          "--target", launcherTargetName, ProjectCMakeBuildTargetEditor } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
