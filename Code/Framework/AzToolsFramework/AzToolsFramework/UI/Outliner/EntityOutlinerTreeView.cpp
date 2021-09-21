@@ -38,6 +38,8 @@ namespace AzToolsFramework
 
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        viewport()->setMouseTracking(true);
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
@@ -57,6 +59,11 @@ namespace AzToolsFramework
             delete m_queuedMouseEvent;
             m_queuedMouseEvent = nullptr;
         }
+    }
+
+    void EntityOutlinerTreeView::leaveEvent(QEvent* /*event*/)
+    {
+        m_mousePosition = QPoint();
     }
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
@@ -111,6 +118,8 @@ namespace AzToolsFramework
             //restore selection state
             setSelectionMode(selectionModeBefore);
         }
+
+        m_mousePosition = event->pos();
 
         //process mouse movement as normal, potentially triggering drag and drop
         QTreeView::mouseMoveEvent(event);
@@ -172,10 +181,44 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
     {
+        const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
+
+        const bool isSelected = selectionModel()->isSelected(index);
+        const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
+
+
+        // Paint the branch Selection/Hover Rect
+        PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);
+        
         // Paint the branch background as defined by the entity's handler, or its closes ancestor's.
         PaintBranchBackground(painter, rect, index);
 
         QTreeView::drawBranches(painter, rect, index);
+    }
+
+    void EntityOutlinerTreeView::PaintBranchSelectionHoverRect(
+        QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const
+    {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, false);
+
+        if (isSelected || isHovered)
+        {
+            QPainterPath backgroundPath;
+            QRect backgroundRect(rect);
+
+            backgroundPath.addRect(backgroundRect);
+
+            QColor backgroundColor = m_hoverColor;
+            if (isSelected)
+            {
+                backgroundColor = m_selectedColor;
+            }
+
+            painter->fillPath(backgroundPath, backgroundColor);
+        }
+
+        painter->restore();
     }
 
     void EntityOutlinerTreeView::PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const

@@ -13,6 +13,7 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -112,6 +113,17 @@ namespace AzToolsFramework
         }
     }
 
+    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
+        : m_entityDataCache(entityDataCache)
+    {
+        m_focusModeInterface = AZ::Interface<FocusModeFramework::FocusModeInterface>::Get();
+        AZ_Assert(
+            m_focusModeInterface,
+            "EditorHelpers - "
+            "Focus Mode Interface could not be found. "
+            "Check that it is being correctly initialized.");
+    }
+
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
@@ -171,6 +183,12 @@ namespace AzToolsFramework
                     }
                 }
             }
+        }
+
+        // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
+        {
+            return AZ::EntityId();
         }
 
         return entityIdUnderCursor;

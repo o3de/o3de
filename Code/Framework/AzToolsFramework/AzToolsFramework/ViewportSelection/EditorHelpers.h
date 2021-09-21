@@ -23,6 +23,11 @@ namespace AzToolsFramework
 {
     class EditorVisibleEntityDataCache;
 
+    namespace FocusModeFramework
+    {
+        class FocusModeInterface;
+    }
+
     namespace ViewportInteraction
     {
         struct MouseInteractionEvent;
@@ -38,10 +43,7 @@ namespace AzToolsFramework
 
         //! An EditorVisibleEntityDataCache must be passed to EditorHelpers to allow it to
         //! efficiently read entity data without resorting to EBus calls.
-        explicit EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
-            : m_entityDataCache(entityDataCache)
-        {
-        }
+        explicit EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache);
         EditorHelpers(const EditorHelpers&) = delete;
         EditorHelpers& operator=(const EditorHelpers&) = delete;
         ~EditorHelpers() = default;
@@ -62,5 +64,6 @@ namespace AzToolsFramework
 
     private:
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
+        FocusModeFramework::FocusModeInterface* m_focusModeInterface = nullptr;
     };
 } // namespace AzToolsFramework
