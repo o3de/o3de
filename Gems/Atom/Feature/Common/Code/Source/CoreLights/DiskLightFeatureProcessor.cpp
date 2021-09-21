@@ -123,7 +123,7 @@ namespace AZ
 
         void DiskLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DiskLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DiskLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -135,7 +135,7 @@ namespace AZ
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DiskLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DiskLightFeatureProcessor: Simulate");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

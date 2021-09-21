@@ -174,7 +174,7 @@ namespace AZ
             AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
 
             // Region color cache
-            AZStd::unordered_map<const GroupRegionName*, ImVec4> m_regionColorMap;
+            AZStd::unordered_map<GroupRegionName, ImVec4, RHI::CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;
 
             // Tracks the frame boundaries
             AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
