@@ -44,7 +44,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -88,6 +88,8 @@ namespace AZ
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
 
+                // If includeMaterialPropertyNames is true, then we need materials to depend on materialtype only once in order to get
+                // the property names. After the initial processing, materials will no longer be dependent on materialtype files.
                 bool includeMaterialPropertyNames = true;
                 RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
                 jobDependency.m_type = includeMaterialPropertyNames ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;

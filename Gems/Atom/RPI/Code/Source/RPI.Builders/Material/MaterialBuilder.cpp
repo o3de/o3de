@@ -9,7 +9,6 @@
 #include "MaterialBuilder.h"
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -31,6 +30,7 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -47,7 +47,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 107; // ATOM-14918
+            materialBuilderDescriptor.m_version = 108; // ATOM-14918
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -67,21 +67,19 @@ namespace AZ
         //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
         //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
         //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-        //! to the AssetBuilderSDK::CreateJobsResponse.
-        void AddPossibleDependencies(
-            AZStd::string_view currentFilePath, AZStd::string_view referencedParentPath,
-            AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
-            const char* jobKey, AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
+        //! to the AssetBuilderSDK::CreateJobsResponse. If isOrderedOnceForMaterialTypes is true and the dependency is a materialtype file, the job dependency type
+        //! will be set to JobDependencyType::OrderOnce.
+        void AddPossibleDependencies(AZStd::string_view currentFilePath,
+            AZStd::string_view referencedParentPath,
+            const char* jobKey,
+            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
+            bool isOrderedOnceForMaterialTypes = false)
         {
             bool dependencyFileFound = false;
 
             AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
-                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = file;
-                sourceFileDependencies.push_back(sourceFileDependency);
-
                 // The first path found is the highest priority, and will have a job dependency, as this is the one
                 // the builder will actually use
                 if (!dependencyFileFound)
@@ -96,9 +94,8 @@ namespace AZ
                         jobDependency.m_jobKey = jobKey;
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
 
-                        bool includeMaterialPropertyNames = true;
-                        RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
-                        jobDependency.m_type = includeMaterialPropertyNames ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
+                        const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(file.c_str(), MaterialTypeSourceData::Extension);
+                        jobDependency.m_type = (isMaterialTypeFile && isOrderedOnceForMaterialTypes) ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
 
                         jobDependencies.push_back(jobDependency);
                     }
@@ -178,8 +175,9 @@ namespace AZ
 
                     for (auto& shader : materialTypeSourceData.GetValue().m_shaderCollection)
                     {
-                        AddPossibleDependencies(request.m_sourceFile, shader.m_shaderFilePath,
-                            response.m_sourceFileDependencyList, "Shader Asset",
+                        AddPossibleDependencies(request.m_sourceFile,
+                            shader.m_shaderFilePath,
+                            "Shader Asset",
                             outputJobDescriptor.m_jobDependencyList);
                     }
 
@@ -189,9 +187,10 @@ namespace AZ
 
                         for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
                         {
-                            AddPossibleDependencies(request.m_sourceFile, dependency.m_sourceFilePath,
-                                response.m_sourceFileDependencyList,
-                                dependency.m_jobKey.c_str(), outputJobDescriptor.m_jobDependencyList);
+                            AddPossibleDependencies(request.m_sourceFile,
+                                dependency.m_sourceFilePath,
+                                dependency.m_jobKey.c_str(),
+                                outputJobDescriptor.m_jobDependencyList);
                         }
                     }
                 }
@@ -224,11 +223,21 @@ namespace AZ
                         parentMaterialPath = materialTypePath;
                     }
 
+                    // If includeMaterialPropertyNames is true, then we need materials to depend on materialtype only once in order to get
+                    // the property names. After the initial processing, materials will no longer be dependent on materialtype files.
+                    bool includeMaterialPropertyNames = true;
+                    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                    {
+                        settingsRegistry->Get(includeMaterialPropertyNames, "/O3DE/Atom/RPI/MaterialBuilder/IncludeMaterialPropertyNames");
+                    }
+
                     // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
                     // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
-                    AddPossibleDependencies(request.m_sourceFile, parentMaterialPath,
-                        response.m_sourceFileDependencyList,
-                        JobKey, outputJobDescriptor.m_jobDependencyList);
+                    AddPossibleDependencies(request.m_sourceFile,
+                        parentMaterialPath,
+                        JobKey,
+                        outputJobDescriptor.m_jobDependencyList,
+                        includeMaterialPropertyNames);
                 }
             }
             
