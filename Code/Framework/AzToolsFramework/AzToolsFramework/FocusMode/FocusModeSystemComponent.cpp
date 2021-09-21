@@ -75,6 +75,11 @@ namespace AzToolsFramework
         // TODO - If m_focusRoot != AZ::EntityId(), activate focus mode via ViewportEditorModeTrackerInterface; else, deactivate focus mode
     }
 
+    void FocusModeSystemComponent::ClearFocusRoot()
+    {
+        SetFocusRoot(AZ::EntityId());
+    }
+
     AZ::EntityId FocusModeSystemComponent::GetFocusRoot()
     {
         return m_focusRoot;
