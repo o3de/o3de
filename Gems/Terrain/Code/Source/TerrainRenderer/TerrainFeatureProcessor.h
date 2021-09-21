@@ -68,28 +68,6 @@ namespace Terrain
 
     private:
 
-        // System-level references to the shader, pipeline, and shader-related information
-        enum ShaderType 
-        {
-            Depth,
-            Forward,
-            Count,
-        };
-
-        struct ShaderState
-        {
-            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
-            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState;
-            AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-
-            void Reset()
-            {
-                m_shader.reset();
-                m_pipelineState.reset();
-                m_pipelineStateDescriptor = {};
-            }
-        };
-
         struct ShaderTerrainData // Must align with struct in Object Srg
         {
             AZStd::array<float, 2> m_uvMin;
@@ -111,23 +89,15 @@ namespace Terrain
             float m_v;
         };
 
-        // RPI::SceneNotificationBus overrides ...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override;
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
-
-        void InitializeAtomStuff();
-        void ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail);
-
         struct PatchData
         {
             AZStd::vector<VertexPosition> m_positions;
             AZStd::vector<VertexUv> m_uvs;
             AZStd::vector<uint16_t> m_indices;
         };
-
+        
+        void Initialize();
         void InitializeTerrainPatch(PatchData& patchdata);
-
         bool InitializePatchModel();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
@@ -140,10 +110,6 @@ namespace Terrain
         static constexpr uint32_t GridSize{ 32 }; // number of terrain quads (vertices are m_gridSize + 1)
         static constexpr float GridMeters{ GridSpacing * GridSize };
 
-        // System-level cached reference to the Atom RHI
-        AZ::RHI::RHISystemInterface* m_rhiSystem = nullptr;
-
-        AZStd::array<ShaderState, ShaderType::Count> m_shaderStates;
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 

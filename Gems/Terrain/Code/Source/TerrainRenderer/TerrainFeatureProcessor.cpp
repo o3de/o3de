@@ -67,64 +67,12 @@ namespace Terrain
     void TerrainFeatureProcessor::Activate()
     {
         m_areaData = {};
-
-        InitializeAtomStuff();
-        EnableSceneNotification();
+        //Initialize();
     }
 
-    void TerrainFeatureProcessor::ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail)
+    void TerrainFeatureProcessor::Initialize()
     {
-        if (shaderState.m_shader == nullptr)
         {
-            AZ_Assert(shaderState.m_shader || !assertOnFail, "Terrain shader failed to load correctly.");
-            return;
-        }
-
-        bool success = GetParentScene()->ConfigurePipelineState(shaderState.m_shader->GetDrawListTag(), shaderState.m_pipelineStateDescriptor);
-        AZ_Assert(success || !assertOnFail, "Couldn't configure the pipeline state.");
-        if (success)
-        {
-            shaderState.m_pipelineState = shaderState.m_shader->AcquirePipelineState(shaderState.m_pipelineStateDescriptor);
-            AZ_Assert(shaderState.m_pipelineState, "Failed to acquire default pipeline state.");
-        }
-    }
-
-    void TerrainFeatureProcessor::InitializeAtomStuff()
-    {
-        m_rhiSystem = AZ::RHI::RHISystemInterface::Get();
-
-        {
-            auto LoadShader = [this](const char* filePath, ShaderState& shaderState)
-            {
-                shaderState.m_shader = AZ::RPI::LoadShader(filePath);
-                if (!shaderState.m_shader)
-                {
-                    AZ_Error(TerrainFPName, false, "Failed to find or create a shader instance from shader asset '%s'", filePath);
-                    return;
-                }
-                
-                // Create the data layout
-                shaderState.m_pipelineStateDescriptor = AZ::RHI::PipelineStateDescriptorForDraw{};
-                {
-                    AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-
-                    layoutBuilder.AddBuffer()
-                        ->Channel("POSITION", AZ::RHI::Format::R32G32_FLOAT)
-                        ->Channel("UV", AZ::RHI::Format::R32G32_FLOAT)
-                        ;
-                    shaderState.m_pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
-                }
-
-                auto shaderVariant = shaderState.m_shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId);
-                shaderVariant.ConfigurePipelineState(shaderState.m_pipelineStateDescriptor);
-                
-                // If this fails to run now, it's ok, we'll initialize it in OnRenderPipelineAdded later.
-                ConfigurePipelineState(shaderState, false);
-            };
-            
-            LoadShader("Shaders/Terrain/Terrain.azshader", m_shaderStates[ShaderType::Forward]);
-            LoadShader("Shaders/Terrain/Terrain_DepthPass.azshader", m_shaderStates[ShaderType::Depth]);
-
             // Load the terrain material asynchronously
             const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
             m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -138,33 +86,8 @@ namespace Terrain
                     {
                         AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
                     }
-                    m_materialAssetLoader.reset();
                 }
             );
-
-            // Forward and depth shader use same srg layout.
-            AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> perObjectSrgLayout =
-                m_shaderStates[ShaderType::Forward].m_shader->FindShaderResourceGroupLayout(AZ::Name{"ObjectSrg"});
-
-            if (!perObjectSrgLayout)
-            {
-                AZ_Error(TerrainFPName, false, "Failed to get shader resource group layout");
-                return;
-            }
-            else if (!perObjectSrgLayout->IsFinalized())
-            {
-                AZ_Error(TerrainFPName, false, "Shader resource group layout is not loaded");
-                return;
-            }
-
-            m_heightmapImageIndex = perObjectSrgLayout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::HeightmapImage));
-            AZ_Error(TerrainFPName, m_heightmapImageIndex.IsValid(), "Failed to find shader input image %s.", ShaderInputs::HeightmapImage);
-
-            m_modelToWorldIndex = perObjectSrgLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
-            AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
-
-            m_terrainDataIndex = perObjectSrgLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
-            AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
         }
 
         if (!InitializePatchModel())
@@ -174,31 +97,12 @@ namespace Terrain
         }
     }
 
-    void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
-    {
-        for (ShaderState& shaderState: m_shaderStates)
-        {
-            ConfigurePipelineState(shaderState, true);
-        }
-    }
-
-    void TerrainFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] AZ::RPI::RenderPipeline* pipeline)
-    {
-    }
-
-    void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
-    {
-    }
-
-
     void TerrainFeatureProcessor::Deactivate()
     {
         DisableSceneNotification();
 
         m_patchModel = {};
         m_areaData = {};
-
-        m_rhiSystem = nullptr;
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -257,23 +161,25 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
 
-        if ((m_shaderStates[ShaderType::Forward].m_shader == nullptr) ||
-            (m_shaderStates[ShaderType::Depth].m_shader == nullptr) ||
-            m_shaderStates[ShaderType::Forward].m_shader->GetDrawListTag().IsNull() ||
-            m_shaderStates[ShaderType::Depth].m_shader->GetDrawListTag().IsNull())
-        {
-            return;
-        }
-
         if (!m_areaData.m_terrainBounds.IsValid())
         {
             return;
         }
         
-        if (m_areaData.m_propertiesDirty)
+        if (m_areaData.m_propertiesDirty && m_materialInstance)
         {
             m_areaData.m_propertiesDirty = false;
             m_sectorData.clear();
+            
+            const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
+            m_heightmapImageIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::HeightmapImage));
+            AZ_Error(TerrainFPName, m_heightmapImageIndex.IsValid(), "Failed to find shader input image %s.", ShaderInputs::HeightmapImage);
+
+            m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
+            AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
+
+            m_terrainDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
+            AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
 
             float xFirstPatchStart =
                 m_areaData.m_terrainBounds.GetMin().GetX() - fmod(m_areaData.m_terrainBounds.GetMin().GetX(), GridMeters);
