@@ -19,8 +19,6 @@ PUSHD %~dp0
 
 CALL %~dp0\Env_Core.bat
 
-::SETLOCAL ENABLEDELAYEDEXPANSION
-
 echo.
 echo _____________________________________________________________________
 echo.
@@ -41,6 +39,12 @@ echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=10)
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 
+IF "%DCCSI_PY_TAG_REV%"=="" (set DCCSI_PY_TAG_REV=rev2)
+echo     DCCSI_PY_TAG_REV = %DCCSI_PY_TAG_REV%
+
+IF "%DCCSI_PY_TAG_PLAT%"=="" (set DCCSI_PY_TAG_PLAT=windows)
+echo     DCCSI_PY_TAG_PLAT = %DCCSI_PY_TAG_PLAT%
+
 :: shared location for 64bit python 3.7 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
@@ -56,31 +60,24 @@ echo     DCCSI_PYTHON_LIB_PATH = %DCCSI_PYTHON_LIB_PATH%
 SET PATH=%DCCSI_PYTHON_LIB_PATH%;%PATH%
 
 :: shared location for default O3DE python location
-set DCCSI_PYTHON_INSTALL=%O3DE_DEV%\Python
-echo     DCCSI_PYTHON_INSTALL = %DCCSI_PYTHON_INSTALL%
+set O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
+echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
-set DCCSI_PY_BASE=%DCCSI_PYTHON_INSTALL%\python.cmd
+set DCCSI_PY_BASE=%O3DE_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
-:: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
+CALL %O3DE_PYTHON_INSTALL%\get_python_path.bat
 
-:: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
+IF "%DCCSI_PY_IDE%"=="" (set DCCSI_PY_IDE=%PYTHONHOME%\python.exe)
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
-set DCCSI_PY_IDE_PACKAGES=%DCCSI_PY_IDE%\Lib\site-packages
-echo     DCCSI_PY_IDE_PACKAGES = %DCCSI_PY_IDE_PACKAGES% 
-
 :: add to the PATH
-SET PATH=%DCCSI_PYTHON_INSTALL%;%DCCSI_PY_IDE%;%DCCSI_PY_IDE_PACKAGES%;%PATH%
+SET PATH=%O3DE_PYTHON_INSTALL%;%PYTHONHOME%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BUILD_PATH%;%PYTHONPATH%
 echo     PYTHONPATH = %PYTHONPATH%
-
-::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_PY_INIT=1

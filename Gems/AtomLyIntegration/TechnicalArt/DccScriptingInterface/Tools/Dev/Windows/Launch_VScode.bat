@@ -64,11 +64,11 @@ echo.
 echo     O3DE_DEV = %O3DE_DEV%
 
 :: shared location for default O3DE python location
-set DCCSI_PYTHON_INSTALL=%O3DE_DEV%\Python
-echo     DCCSI_PYTHON_INSTALL = %DCCSI_PYTHON_INSTALL%
+set O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
+echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
 
 :: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
+set DCCSI_PY_IDE = %O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: ide and debugger plug

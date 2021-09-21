@@ -16,9 +16,9 @@ PUSHD %~dp0
 set O3DE_DEV=..\..\..\..\..\..
 
 :: shared location for default O3DE python location
-set DCCSI_PYTHON_INSTALL=%O3DE_DEV%\Python
+set O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
 
-set PY_SITE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python\Lib\site-packages
+set PY_SITE=%O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python\Lib\site-packages
 
 set PACKAGE_LOC=C:\Depot\3rdParty\packages\openimageio-2.1.16.0-rev1-windows\OpenImageIO\2.1.16.0\win_x64\bin
 

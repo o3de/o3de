@@ -10,7 +10,7 @@
 # -- This line is 75 characters -------------------------------------------
 from __future__ import unicode_literals
 '''
-Module: <DCCsi>\azpy\shared\common\base_env.py
+Module: <DCCsi>\\azpy\\shared\\common\\base_env.py
 
 This module packs the most basic set of environment variables.
 

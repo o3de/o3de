@@ -59,7 +59,7 @@ Configures several useful environment config settings and paths,
 
     :: Default version py37 has a launcher
     (activates the env, starts py interpreter)
-    set DCCSI_PY_BASE=%DCCSI_PYTHON_INSTALL%\python.exe
+    set DCCSI_PY_BASE=%O3DE_PYTHON_INSTALL%\python.exe
 
     :: shared location for 64bit python 3.7 BASE location 
     set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%\Launch_pyBASE.bat

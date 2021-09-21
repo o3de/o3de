@@ -34,10 +34,10 @@ echo     Rel_Dev = %Rel_Dev%
 :: Restore original directory
 popd
 
-set DCCSI_PYTHON_INSTALL=%Rel_Dev%\Tools\Python\3.7.5\windows
+set O3DE_PYTHON_INSTALL=%Rel_Dev%\Tools\Python\3.7.5\windows
 
 :: add to the PATH
-SET PATH=%DCCSI_PYTHON_INSTALL%;%PATH%
+SET PATH=%O3DE_PYTHON_INSTALL%;%PATH%
 
 :: dcc scripting interface gem path
 set DCCSIG_PATH=%Rel_Dev%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
@@ -72,7 +72,7 @@ SET PATH=%DCCSIG_PATH%;%PATH%
 
 set PYTHONPATH=%DCCSIG_PATH%;%PYTHONPATH%
 
-CALL %DCCSI_PYTHON_INSTALL%\python.exe "%DCCSIG_PATH%\SDK\Maya\Scripts\Python\kitbash_converter\standalone.py"
+CALL %O3DE_PYTHON_INSTALL%\python.exe "%DCCSIG_PATH%\SDK\Maya\Scripts\Python\kitbash_converter\standalone.py"
 
 
 ENDLOCAL
