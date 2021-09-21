@@ -245,7 +245,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
-    const int expectedHeightsSize = 1024 * 1024;
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
     EXPECT_EQ(heights.size(), cols * rows);
@@ -272,10 +271,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsR
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
     NiceMock<UnitTest::MockTerrainDataRequestsListener> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
-
-    int32_t cols, rows;
-    Physics::HeightfieldProviderRequestsBus::Event(
-        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
     const float regionMax = 512.0f;
     const AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(regionMax));
@@ -313,22 +308,11 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
-    int32_t cols, rows;
-    Physics::HeightfieldProviderRequestsBus::Event(
-        m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
-
     AZStd::vector<float> heights;
 
     Physics::HeightfieldProviderRequestsBus::EventResult(heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
 
     ASSERT_FALSE(heights.empty());
-
-    float aabbCenter = boundsMin.GetZ() + (boundsMax.GetZ() - boundsMin.GetZ()) / 2.0f;
-
-    // The expected height is the offset of the height from the centre of the bounding box.
-    float expectedHeight = mockHeight - aabbCenter;
-
-    EXPECT_EQ(heights[0], expectedHeight);
 
     const float expectedHeightValue = 16384.0f;
     EXPECT_NEAR(heights[0], expectedHeightValue, 0.01f);
