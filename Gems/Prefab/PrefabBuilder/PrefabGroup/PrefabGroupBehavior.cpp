@@ -8,6 +8,7 @@
 
 #include <PrefabGroup/PrefabGroupBehavior.h>
 #include <PrefabGroup/PrefabGroup.h>
+#include <PrefabGroup/ProceduralAssetHandler.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
@@ -41,6 +42,7 @@ namespace AZ::SceneAPI::Behaviors
     {
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
+        AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
 
         ExportEventHandler() = delete;
 

@@ -41,9 +41,10 @@ ly_add_target(
             Gem::PrefabBuilder.Static
 )
 
-# the prefab builder only needs to be active in builders
+# the prefab builder only needs to be active in builders and tools
 # use the PrefabBuilder module in Clients and Servers:
 ly_create_alias(NAME PrefabBuilder.Builders NAMESPACE Gem TARGETS Gem::PrefabBuilder)
+ly_create_alias(NAME PrefabBuilder.Tools NAMESPACE Gem TARGETS Gem::PrefabBuilder)
 
 # we automatically add this gem, if it is present, to all our known set of builder applications:
 ly_enable_gems(GEMS PrefabBuilder VARIANTS Builders TARGETS AssetProcessor AssetProcessorBatch AssetBuilder)
