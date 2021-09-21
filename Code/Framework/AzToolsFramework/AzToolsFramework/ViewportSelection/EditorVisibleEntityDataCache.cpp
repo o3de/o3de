@@ -312,8 +312,6 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
         if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))

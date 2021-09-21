@@ -9,6 +9,7 @@
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -431,7 +432,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const        { return m_last - m_start; }
-        AZ_FORCE_INLINE size_type   max_size() const    { return m_allocator.get_max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const    { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool        empty() const       { return m_start == m_last; }
 
         void reserve(size_type numElements)

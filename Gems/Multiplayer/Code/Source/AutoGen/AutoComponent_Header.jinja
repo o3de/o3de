@@ -7,21 +7,21 @@
 {% macro DeclareNetworkPropertyGetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
-{% else %}
+{%          else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
-{% endif %}
+{%          endif %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}
 {%     elif Property.attrib['Container'] == 'Vector' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
-{% else %}
+{%          else %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
-{% endif %}
+{%          endif %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
 const {{ Property.attrib['Type'] }}& {{ PropertyName }}GetBack() const;
 uint32_t {{ PropertyName }}GetSize() const;
@@ -31,6 +31,9 @@ void {{ PropertyName }}SizeChangedAddEvent(AZ::Event<uint32_t>::Handler& handler
 {%          endif %}
 {%     else %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
+const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}Previous() const;
+{%          endif %}
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<{{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}
@@ -230,7 +233,8 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {% if ControllerDerived %}
 {%      set ControllerBaseName = ControllerName + "Base" %}
 {% endif %}
-{% set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{% set NetworkInputCount = AutoComponentMacros.GetNetworkInputCount(Component) | int %}
+{% set NetworkInputsExposedToScriptCount = AutoComponentMacros.GetNetworkInputsExposedToScriptCount(Component) | int %}
 {% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
 {% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "AutoComponentTypes.h"
@@ -250,6 +254,10 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
+{% if NetworkInputsExposedToScriptCount > 0 %}
+#include <AzCore/RTTI/BehaviorContext.h>
+{% endif %}
+
 
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
@@ -263,7 +271,7 @@ namespace {{ Service.attrib['Namespace'] }}
 {%      endif %}
 {% endfor %}
 
-{{ AutoComponentMacros.EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentBaseName, ComponentDerived, ControllerName, ControllerBaseName, ControllerDerived, NetworkInputCount) }}
+{{ AutoComponentMacros.EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentBaseName, ComponentDerived, ControllerName, ControllerBaseName, ControllerDerived) }}
 namespace {{ Component.attrib['Namespace'] }}
 {
     //! Forward declarations
@@ -337,6 +345,13 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
+{%      if NetworkInputsExposedToScriptCount > 0 %}
+        AZ_TYPE_INFO({{ ComponentName }}NetworkInput, "{{ (ComponentName ~ "NetworkInput") | createHashGuid }}") 
+        {{ ComponentName }}NetworkInput() = default;
+        {{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }});
+        static void Reflect(AZ::ReflectContext* context);
+        
+{%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
@@ -348,7 +363,41 @@ namespace {{ Component.attrib['Namespace'] }}
         static Multiplayer::NetComponentId s_netComponentId;
         friend void RegisterMultiplayerComponents();
     };
+{% if NetworkInputsExposedToScriptCount > 0 %}
 
+    class {{ ComponentName }}Requests
+        : public AZ::ComponentBus
+    {
+    public:
+        AZ_RTTI({{ ComponentName }}Requests, "{{ (ComponentName ~ "Requests") | createHashGuid }}")
+
+        virtual {{ ComponentName }}NetworkInput CreateInput(float deltaTime) = 0;
+        virtual void ProcessInput({{ ComponentName }}NetworkInput* networkInput, float deltaTime) = 0;
+    };
+
+    using {{ ComponentName }}RequestBus = AZ::EBus<{{ ComponentName }}Requests>;
+
+    class {{ ComponentName }}BusHandler final
+        : public {{ ComponentName }}RequestBus::Handler
+          , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER({{ ComponentName }}BusHandler, "{{ (ComponentName ~ "BusHandler") | createHashGuid }}", AZ::SystemAllocator, CreateInput, ProcessInput)
+
+        {{ ComponentName }}NetworkInput CreateInput(float deltaTime) override
+        {
+            {{ ComponentName }}NetworkInput result;
+            CallResult(result, FN_CreateInput, deltaTime);
+            return result;
+        }
+
+        void ProcessInput({{ ComponentName }}NetworkInput* networkInput, float deltaTime) override
+        {
+            Call(FN_ProcessInput, networkInput, deltaTime);
+        }
+    };
+
+{% endif %}
 {% endif %}
     class {{ ControllerBaseName }}{% if not ControllerDerived %} final{% endif %}{{ "" }}
         : public Multiplayer::MultiplayerController
@@ -373,8 +422,14 @@ namespace {{ Component.attrib['Namespace'] }}
         //! MultiplayerController interface
         //! @{
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
+
+{% if NetworkInputsExposedToScriptCount > 0 %}
+        void CreateInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) final;
+        void ProcessInputFromScript([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) final;
+{% endif %}
         void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+
         //! @}
 
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', false)|indent(8) -}}

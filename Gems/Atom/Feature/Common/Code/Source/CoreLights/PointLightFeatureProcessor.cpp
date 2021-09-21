@@ -119,7 +119,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PointLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "PointLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -131,7 +131,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Render(const PointLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PointLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "PointLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -298,19 +298,9 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
         }
 
-        void PointLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
-        }
-
         void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
-        }
-
-        void PointLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
         void PointLightFeatureProcessor::SetEsmExponent(LightHandle handle, float esmExponent)

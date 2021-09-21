@@ -78,7 +78,7 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
             // TargetManagerClient
             void DesiredTargetConnected(bool connected) override;
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId) override;
             void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
             void TargetLeftNetwork(AzFramework::TargetInfo info) override;
             //////////////////////////////////////////////////////////////////////////

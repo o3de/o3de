@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-
 #include <Editor/EditorViewportEntityPicker.h>
 
 namespace PhysX
@@ -28,16 +28,12 @@ namespace PhysX
     }
 
     AZ::EntityId EditorViewportEntityPicker::PickEntity(
-        [[maybe_unused]] const AzFramework::CameraState& cameraState
-        , const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction
-        , AZ::Vector3& pickPosition
-        , AZ::Aabb& pickAabb)
-    {  
+        [[maybe_unused]] const AzFramework::CameraState& cameraState,
+        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
+        AZ::Vector3& pickPosition,
+        AZ::Aabb& pickAabb)
+    {
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        AzToolsFramework::ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
 
         // selecting new entities
         AZ::EntityId entityIdUnderCursor;
@@ -48,31 +44,29 @@ namespace PhysX
         {
             const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
-            if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex)
-                || !m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+            if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex) || !m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
             {
                 continue;
             }
 
             // Ignore the case where the mouse hovers over an icon. Proceed to check for intersection with entity's AABB.
-            if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(
-                    entityId, AzFramework::ViewportInfo{viewportId});
+            if (const AZ::Aabb aabb =
+                    AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, AzFramework::ViewportInfo{ viewportId });
                 aabb.IsValid())
             {
                 const float pickRayLength = 1000.0f;
-                const AZ::Vector3 rayScaledDir =
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_rayDirection * pickRayLength;
+                const AZ::Vector3 rayScaledDir = mouseInteraction.m_mouseInteraction.m_mousePick.m_rayDirection * pickRayLength;
 
                 AZ::Vector3 startNormal;
                 float t, end;
                 int intersectResult = AZ::Intersect::IntersectRayAABB(
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_rayOrigin, rayScaledDir,
-                    rayScaledDir.GetReciprocal(), aabb, t, end, startNormal);
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_rayOrigin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end,
+                    startNormal);
                 if (intersectResult > 0)
                 {
                     entityIdUnderCursor = entityId;
-                    pickPosition = mouseInteraction.m_mouseInteraction.m_mousePick.m_rayOrigin 
-                        + (mouseInteraction.m_mouseInteraction.m_mousePick.m_rayDirection * pickRayLength * t);
+                    pickPosition = mouseInteraction.m_mouseInteraction.m_mousePick.m_rayOrigin +
+                        (mouseInteraction.m_mouseInteraction.m_mousePick.m_rayDirection * pickRayLength * t);
                     pickAabb = aabb;
                 }
             }
@@ -82,10 +76,8 @@ namespace PhysX
     }
 
     void EditorViewportEntityPicker::DisplayViewport(
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_UNUSED(debugDisplay);
         m_entityDataCache->CalculateVisibleEntityDatas(viewportInfo);
     }
 } // namespace PhysX

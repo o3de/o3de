@@ -75,8 +75,7 @@ namespace AZ
 
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "MeshFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
@@ -149,7 +148,7 @@ namespace AZ
             const MeshHandleDescriptor& descriptor,
             const MaterialAssignmentMap& materials)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
@@ -479,8 +478,6 @@ namespace AZ
             : m_modelAsset(modelAsset)
             , m_parent(parent)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             if (!m_modelAsset.GetId().IsValid())
             {
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
@@ -508,7 +505,6 @@ namespace AZ
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
@@ -580,8 +576,6 @@ namespace AZ
 
         void MeshDataInstance::Init(Data::Instance<RPI::Model> model)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
@@ -612,8 +606,6 @@ namespace AZ
 
         void MeshDataInstance::BuildDrawPacketList(size_t modelLodIndex)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
 
@@ -959,7 +951,7 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            rayTracingFeatureProcessor->SetMesh(m_objectId, subMeshes);
+            rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
         }
 
         void MeshDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
@@ -991,7 +983,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance:: UpdateDrawPackets");
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -1006,7 +998,7 @@ namespace AZ
 
         void MeshDataInstance::BuildCullable()
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance: BuildCullable");
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1083,7 +1075,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance: UpdateCullBounds");
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 

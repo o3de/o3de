@@ -35,7 +35,7 @@ public:
     CUiAnimViewSequenceManager();
     ~CUiAnimViewSequenceManager();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     unsigned int GetCount() const { return static_cast<unsigned int>(m_sequences.size()); }
 

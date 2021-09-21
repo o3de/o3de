@@ -19,13 +19,22 @@ namespace Benchmark
     class BM_MathObb
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_position.Set(1.0f, 2.0f, 3.0f);
             m_rotation = AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi);
             m_halfLengths = AZ::Vector3(0.5f);
             m_obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(m_position, m_rotation, m_halfLengths);
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         AZ::Obb m_obb;

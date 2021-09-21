@@ -212,7 +212,7 @@ namespace AZ
 
         void PipelineStateCache::Compact()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "PipelineStateCache: Compact");
+            AZ_PROFILE_SCOPE(RHI, "PipelineStateCache: Compact");
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
             // Merge the pending cache into the read-only cache.
@@ -278,8 +278,6 @@ namespace AZ
 
         const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(RHI);
-
             if (handle.IsNull())
             {
                 return nullptr;

@@ -52,7 +52,7 @@ namespace AZ
 #undef POST_PROCESS_MEMBER
 
             // Auto-gen getter and setter functions for post process members...
-#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
 #include <Atom/Feature/PostProcess/PostProcessParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
