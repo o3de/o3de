@@ -86,6 +86,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTestFixture.h
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
+    Prefab/ProceduralPrefabAssetTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
