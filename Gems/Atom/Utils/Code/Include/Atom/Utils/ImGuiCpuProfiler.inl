@@ -124,7 +124,7 @@ namespace AZ
                     m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
 
                     CollectFrameData();
-                    CullFrameData(currentCpuTimingStatistics); 
+                    CullFrameData(currentCpuTimingStatistics);
 
                     // Only listen to system ticks when the profiler is active
                     if (!SystemTickBus::Handler::BusIsConnected())
@@ -148,7 +148,7 @@ namespace AZ
                 }
             }
             ImGui::End();
-         
+
             if (m_captureToFile)
             {
                 AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
@@ -325,7 +325,7 @@ namespace AZ
         {
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
             const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
-                
+
             switch (columnToSort)
             {
             case (0): // Sort by group name
@@ -343,7 +343,7 @@ namespace AZ
             case (4): // Sort by invocations
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_invocationsLastFrame, ascending));
                 break;
-            case (5): // Sort by total time 
+            case (5): // Sort by total time
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_lastFrameTotalTicks, ascending));
                 break;
             }
@@ -401,7 +401,7 @@ namespace AZ
                 }
 
                 DrawTable();
-            } 
+            }
         }
 
         inline void ImGuiCpuProfiler::DrawFilePicker()
@@ -460,17 +460,17 @@ namespace AZ
                 const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                     m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
-                const RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+                const RHI::CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
                 m_savedData[entry.m_threadId].push_back(newRegion);
 
-                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic. 
+                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic.
                 const static Name frameBoundaryName = Name("RPISystem: OnSystemTick");
                 if (entry.m_regionName == frameBoundaryName)
                 {
                     m_frameEndTicks.push_back(entry.m_endTick);
-                }  
+                }
 
-                // Update running statistics 
+                // Update running statistics
                 if (!m_groupRegionMap[*groupNameItr].contains(*regionNameItr))
                 {
                     m_groupRegionMap[*groupNameItr][*regionNameItr].m_groupName = *groupNameItr;
@@ -487,7 +487,7 @@ namespace AZ
             // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
             for (auto& [threadId, singleThreadData] : m_savedData)
             {
-                AZStd::sort(singleThreadData.begin(), singleThreadData.end(), 
+                AZStd::sort(singleThreadData.begin(), singleThreadData.end(),
                 [](const TimeRegion& lhs, const TimeRegion& rhs)
                 {
                     return lhs.m_startTick < rhs.m_startTick;
@@ -669,7 +669,7 @@ namespace AZ
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
             {
-                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId); 
+                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId);
                 // The profiler can sometime return threads without any profiling events when dropping threads, FIXME(ATOM-15949)
                 if (singleThreadRegionMap.size() == 0)
                 {
@@ -686,7 +686,7 @@ namespace AZ
                         newVisualizerData.push_back(region); // Copies
 
                         // Also update the statistical view's data
-                        const AZStd::string& groupName = region.m_groupRegionName->m_groupName;
+                        const AZStd::string& groupName = region.m_groupRegionName.m_groupName;
 
                         if (!m_groupRegionMap[groupName].contains(regionName))
                         {
@@ -765,7 +765,7 @@ namespace AZ
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
         {
             // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
-            if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName->m_regionName))
+            if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName.m_regionName))
             {
                 return;
             }
@@ -798,7 +798,7 @@ namespace AZ
             if (regionPixelWidth > maxCharWidth) // We can draw at least one character
             {
                 const AZStd::string label =
-                    AZStd::string::format("%s/ %s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                    AZStd::string::format("%s/ %s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
                 const float textWidth = ImGui::CalcTextSize(label.c_str()).x;
 
                 if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
@@ -809,7 +809,7 @@ namespace AZ
                     // so we must adjust for the scale manually.
                     const float scaleFactor = ImGui::GetIO().FontGlobalScale;
                     const float fontSize = ImGui::GetFont()->FontSize * scaleFactor;
-                    
+
                     ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
                 }
                 else // We have enough space to draw the entire label, draw and center text.
@@ -828,7 +828,7 @@ namespace AZ
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     m_enableVisualizer = false;
-                    const auto newFilter = AZStd::string(block.m_groupRegionName->m_regionName);
+                    const auto newFilter = AZStd::string(block.m_groupRegionName.m_regionName);
                     m_timedRegionFilter = ImGuiTextFilter(newFilter.c_str());
                     m_timedRegionFilter.Build();
                 }
@@ -836,7 +836,7 @@ namespace AZ
                 drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
 
                 ImGui::BeginTooltip();
-                ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                ImGui::Text("%s::%s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
                 ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
                 ImGui::Text("Ticks %lld => %lld", block.m_startTick, block.m_endTick);
                 ImGui::EndTooltip();
@@ -846,10 +846,10 @@ namespace AZ
         inline ImU32 ImGuiCpuProfiler::GetBlockColor(const TimeRegion& block)
         {
             // Use the GroupRegionName pointer a key into the cache, equal regions will have equal pointers
-            const GroupRegionName* key = block.m_groupRegionName;
-            if (m_regionColorMap.contains(key)) // Cache hit
+            const GroupRegionName& key = block.m_groupRegionName;
+            if (auto iter = m_regionColorMap.find(key); iter != m_regionColorMap.end()) // Cache hit
             {
-                return ImGui::GetColorU32(m_regionColorMap[key]);
+                return ImGui::GetColorU32(iter->second);
             }
 
             // Cache miss, generate a new random color

@@ -10,11 +10,12 @@
 # Only 'xcb' and 'wayland' are recognized
 if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 
-    find_library(XCB_LIBRARY xcb)
-
     set(LY_BUILD_DEPENDENCIES
         PRIVATE
-            ${XCB_LIBRARY}
+            3rdParty::X11::xcb
+            3rdParty::X11::xcb_xkb
+            3rdParty::X11::xkbcommon
+            3rdParty::X11::xkbcommon_X11
     )
 
     set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)

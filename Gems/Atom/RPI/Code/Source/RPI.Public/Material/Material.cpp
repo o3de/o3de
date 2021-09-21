@@ -100,8 +100,14 @@ namespace AZ
                 ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
 
+            // If this Init() is actually a re-initialize, we need to re-apply any overridden property values
+            // after loading the property values from the asset, so we save that data here.
             MaterialPropertyFlags prevOverrideFlags = m_propertyOverrideFlags;
             AZStd::vector<MaterialPropertyValue> prevPropertyValues = m_propertyValues;
+
+            // The property values are cleared to their default state to ensure that SetPropertyValue() does not early-return
+            // when called below. This is important when Init() is actually a re-initialize.
+            m_propertyValues.clear();
 
             // Initialize the shader runtime data like shader constant buffers and shader variants by applying the 
             // material's property values. This will feed through the normal runtime material value-change data flow, which may
@@ -504,7 +510,7 @@ namespace AZ
 
             MaterialPropertyValue& savedPropertyValue = m_propertyValues[index.GetIndex()];
 
-            // If the property value didn't actually change, don't waste time running functors and compiling the changes
+            // If the property value didn't actually change, don't waste time running functors and compiling the changes.
             if (savedPropertyValue == value)
             {
                 return false;

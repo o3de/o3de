@@ -140,9 +140,6 @@
              <property name="horizontalScrollMode">
               <enum>QAbstractItemView::ScrollPerPixel</enum>
              </property>
-             <property name="showGrid">
-              <bool>false</bool>
-             </property>
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
@@ -202,6 +199,11 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>AzQtComponents::TableView</class>
+   <extends>QTreeView</extends>
+   <header>AzQtComponents/Components/Widgets/TableView.h</header>
+  </customwidget>
+  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTreeView</class>
    <extends>QTreeView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
@@ -214,7 +216,7 @@
   </customwidget>
   <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
-   <extends>QTableView</extends>
+   <extends>AzQtComponents::TableView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
  </customwidgets>
