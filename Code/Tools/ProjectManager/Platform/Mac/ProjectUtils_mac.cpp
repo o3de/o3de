@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
             QString pathValue = currentEnvironment.value("PATH");
             pathValue += ":/usr/local/bin";
             currentEnvironment.insert("PATH", pathValue);
-            return currentEnvironment;
+            return AZ::Success(currentEnvironment);
         }
 
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
