@@ -300,7 +300,10 @@ namespace AzToolsFramework
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Constant("InvalidComponentId", BehaviorConstant(AZ::InvalidComponentId));
+            behaviorContext->ConstantProperty("InvalidComponentId", BehaviorConstant(AZ::InvalidComponentId))
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Entity")
+                ->Attribute(AZ::Script::Attributes::Module, "entity");
 
             behaviorContext->EBus<EntityUtilityBus>("EntityUtilityBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)

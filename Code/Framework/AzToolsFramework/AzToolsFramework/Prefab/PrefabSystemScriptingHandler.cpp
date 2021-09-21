@@ -18,6 +18,11 @@ namespace AzToolsFramework::Prefab
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->ConstantProperty("InvalidTemplateId", BehaviorConstant(InvalidTemplateId))
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab");
+
             behaviorContext->EBus<PrefabSystemScriptingBus>("PrefabSystemScriptingBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "prefab")
