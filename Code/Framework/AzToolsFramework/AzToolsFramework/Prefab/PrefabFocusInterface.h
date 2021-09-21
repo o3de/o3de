@@ -16,17 +16,15 @@
 
 namespace AzToolsFramework::Prefab
 {
-    typedef AZ::Outcome<void, AZStd::string> PrefabFocusOperationResult;
+    using PrefabFocusOperationResult = AZ::Outcome<void, AZStd::string>;
 
-    /*!
-     * PrefabFocusInterface
-     */
+    //! Interface to handle operations related to the Prefab Focus system.
     class PrefabFocusInterface
     {
     public:
         AZ_RTTI(PrefabFocusInterface, "{F3CFA37B-5FD8-436A-9C30-60EB54E350E1}");
 
-        //! Set the focused prefab instance to the owning instance of the entityId provided
+        //! Set the focused prefab instance to the owning instance of the entityId provided.
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) = 0;
 

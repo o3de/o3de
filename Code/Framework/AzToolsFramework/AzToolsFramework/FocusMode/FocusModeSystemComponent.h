@@ -15,6 +15,9 @@
 
 namespace AzToolsFramework
 {
+    bool IsInFocusSubTree(AZ::EntityId entityId, AZ::EntityId focusRootId);
+
+    //! System Component to handle the Editor Focus Mode system
     class FocusModeSystemComponent final
         : public AZ::Component
         , private FocusModeInterface
@@ -25,7 +28,7 @@ namespace AzToolsFramework
         FocusModeSystemComponent() = default;
         virtual ~FocusModeSystemComponent();
 
-        // AZ::Component...
+        // AZ::Component overrides ...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
@@ -35,14 +38,12 @@ namespace AzToolsFramework
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        // FocusModeInterface...
+        // FocusModeInterface overrides ...
         void SetFocusRoot(AZ::EntityId entityId) override;
         AZ::EntityId GetFocusRoot() override;
         bool IsInFocusSubTree(AZ::EntityId entityId) override;
 
     private:
-        static bool IsInFocusSubTree_helper(AZ::EntityId entityId, AZ::EntityId focusRootId);
-
         AZ::EntityId m_focusRoot;
     };
 
