@@ -110,6 +110,7 @@ set(FILES
     UI/EntityPropertyEditorTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
+    Viewport/ViewportEditorModeTests.cpp
     Viewport/ViewportScreenTests.cpp
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
