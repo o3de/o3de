@@ -13,10 +13,10 @@ import pytest
 
 import ly_test_tools.environment.file_system as file_system
 import editor_python_test_tools.hydra_test_utils as hydra
-from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES
+from Atom.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
-TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
+TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
