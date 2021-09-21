@@ -35,12 +35,8 @@
 
 namespace AzToolsFramework
 {
-    namespace FocusModeFramework
-    {
-        class FocusModeInterface;
-    }
-
     class EditorEntityUiInterface;
+    class FocusModeInterface;
 
     namespace EntityOutliner
     {
@@ -279,7 +275,7 @@ namespace AzToolsFramework
         QVariant GetEntityTooltip(const AZ::EntityId& id) const;
         
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
-        FocusModeFramework::FocusModeInterface* m_focusModeInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox

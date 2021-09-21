@@ -22,11 +22,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     class EditorVisibleEntityDataCache;
-
-    namespace FocusModeFramework
-    {
-        class FocusModeInterface;
-    }
+    class FocusModeInterface;
 
     namespace ViewportInteraction
     {
@@ -64,6 +60,6 @@ namespace AzToolsFramework
 
     private:
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
-        FocusModeFramework::FocusModeInterface* m_focusModeInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
     };
 } // namespace AzToolsFramework

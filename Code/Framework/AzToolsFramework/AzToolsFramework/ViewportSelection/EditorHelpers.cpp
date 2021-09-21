@@ -116,7 +116,7 @@ namespace AzToolsFramework
     EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
-        m_focusModeInterface = AZ::Interface<FocusModeFramework::FocusModeInterface>::Get();
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         AZ_Assert(
             m_focusModeInterface,
             "EditorHelpers - "
