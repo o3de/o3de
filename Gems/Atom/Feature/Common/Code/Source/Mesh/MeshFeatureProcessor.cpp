@@ -951,7 +951,7 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            rayTracingFeatureProcessor->SetMesh(m_objectId, subMeshes);
+            rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
         }
 
         void MeshDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
