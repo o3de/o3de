@@ -278,7 +278,7 @@ namespace AZ
             Page* page = reinterpret_cast<Page*>(memBlock);
             if (!page->m_magic.Validate())
             {
-                return NULL;
+                return nullptr;
             }
             return page;
         }
@@ -403,7 +403,7 @@ PoolAllocation<Allocator>::Allocate(size_t byteSize, size_t alignment)
 
     u32 bucketIndex = static_cast<u32>((byteSize >> m_minAllocationShift)-1);
     BucketType& bucket = m_buckets[bucketIndex];
-    PageType* page = 0;
+    PageType* page = nullptr;
     if (!bucket.m_pages.empty())
     {
         page = &bucket.m_pages.front();
@@ -411,7 +411,7 @@ PoolAllocation<Allocator>::Allocate(size_t byteSize, size_t alignment)
         // check if we have free slot in the page
         if (page->m_freeList.empty())
         {
-            page = 0;
+            page = nullptr;
         }
         else if (page->m_freeList.size()==1)
         {
@@ -464,7 +464,7 @@ AZ_INLINE void
 PoolAllocation<Allocator>::DeAllocate(void* ptr)
 {
     PageType* page = m_allocator->PageFromAddress(ptr);
-    if (page==NULL)
+    if (page==nullptr)
     {
         AZ_Error("Memory", false, "Address 0x%08x is not in the ThreadPool!", ptr);
         return;
@@ -503,7 +503,7 @@ PoolAllocation<Allocator>::DeAllocate(void* ptr)
                 m_allocator->PushFreePage(page);
             }
         }
-        else if (frontPage->m_next != 0)
+        else if (frontPage->m_next != nullptr)
         {
             // if the next page has free slots free the current page
             if (frontPage->m_next->m_freeList.size() < maxElementsPerBucket)
@@ -584,7 +584,7 @@ PoolAllocation<Allocator>::GarbageCollect(bool isForceFreeAllPages)
 // [9/15/2009]
 //=========================================================================
 PoolSchema::PoolSchema(const Descriptor& desc)
-    : m_impl(NULL)
+    : m_impl(nullptr)
 {
     (void)desc;  // ignored here, applied in Create()
 }
@@ -595,7 +595,7 @@ PoolSchema::PoolSchema(const Descriptor& desc)
 //=========================================================================
 PoolSchema::~PoolSchema()
 {
-    AZ_Assert(m_impl==NULL, "You did not destroy the pool schema!");
+    AZ_Assert(m_impl==nullptr, "You did not destroy the pool schema!");
     delete m_impl;
 }
 
@@ -605,12 +605,12 @@ PoolSchema::~PoolSchema()
 //=========================================================================
 bool PoolSchema::Create(const Descriptor& desc)
 {
-    AZ_Assert(m_impl==NULL, "PoolSchema already created!");
-    if (m_impl == NULL)
+    AZ_Assert(m_impl==nullptr, "PoolSchema already created!");
+    if (m_impl == nullptr)
     {
         m_impl = aznew PoolSchemaImpl(desc);
     }
-    return (m_impl!=NULL);
+    return (m_impl!=nullptr);
 }
 
 //=========================================================================
@@ -620,7 +620,7 @@ bool PoolSchema::Create(const Descriptor& desc)
 bool PoolSchema::Destroy()
 {
     delete m_impl;
-    m_impl = NULL;
+    m_impl = nullptr;
     return true;
 }
 
@@ -707,6 +707,11 @@ PoolSchema::GarbageCollect()
     //m_impl->GarbageCollect();
 }
 
+auto PoolSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_impl->m_allocator.m_maxAllocationSize;
+}
+
 //=========================================================================
 // NumAllocatedBytes
 // [11/1/2010]
@@ -751,7 +756,7 @@ PoolSchema::GetSubAllocator()
 PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor& desc)
     : m_pageAllocator(desc.m_pageAllocator ? desc.m_pageAllocator : &AllocatorInstance<SystemAllocator>::Get())
     , m_allocator(this, desc.m_pageSize, desc.m_minAllocationSize, desc.m_maxAllocationSize)
-    , m_staticDataBlock(0)
+    , m_staticDataBlock(nullptr)
     , m_numStaticPages(desc.m_numStaticPages)
     , m_isDynamic(desc.m_isDynamic)
     , m_pageSize(desc.m_pageSize)
@@ -851,7 +856,7 @@ PoolSchemaImpl::AllocationSize(PoolSchema::pointer_type ptr)
 AZ_FORCE_INLINE PoolSchemaImpl::Page*
 PoolSchemaImpl::PopFreePage()
 {
-    Page* page = 0;
+    Page* page = nullptr;
     if (!m_freePages.empty())
     {
         page = &m_freePages.front();
@@ -938,7 +943,7 @@ PoolSchemaImpl::Page::SetupFreeList(size_t elementSize, size_t pageDataBlockSize
 // [9/15/2009]
 //=========================================================================
 ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData)
-    : m_impl(NULL)
+    : m_impl(nullptr)
     , m_threadPoolGetter(getThreadPoolData)
     , m_threadPoolSetter(setThreadPoolData)
 {
@@ -950,7 +955,7 @@ ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThrea
 //=========================================================================
 ThreadPoolSchema::~ThreadPoolSchema()
 {
-    AZ_Assert(m_impl==NULL, "You did not destroy the thread pool schema!");
+    AZ_Assert(m_impl==nullptr, "You did not destroy the thread pool schema!");
     delete m_impl;
 }
 
@@ -960,12 +965,12 @@ ThreadPoolSchema::~ThreadPoolSchema()
 //=========================================================================
 bool ThreadPoolSchema::Create(const Descriptor& desc)
 {
-    AZ_Assert(m_impl==NULL, "PoolSchema already created!");
-    if (m_impl == NULL)
+    AZ_Assert(m_impl==nullptr, "PoolSchema already created!");
+    if (m_impl == nullptr)
     {
         m_impl = aznew ThreadPoolSchemaImpl(desc, m_threadPoolGetter, m_threadPoolSetter);
     }
-    return (m_impl!=NULL);
+    return (m_impl!=nullptr);
 }
 
 //=========================================================================
@@ -975,7 +980,7 @@ bool ThreadPoolSchema::Create(const Descriptor& desc)
 bool ThreadPoolSchema::Destroy()
 {
     delete m_impl;
-    m_impl = NULL;
+    m_impl = nullptr;
     return true;
 }
 //=========================================================================
@@ -1052,6 +1057,11 @@ ThreadPoolSchema::GarbageCollect()
     m_impl->GarbageCollect();
 }
 
+auto ThreadPoolSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_impl->m_maxAllocationSize;
+}
+
 //=========================================================================
 // NumAllocatedBytes
 // [11/1/2010]
@@ -1099,7 +1109,7 @@ ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(const ThreadPoolSchema::Descriptor& d
     : m_threadPoolGetter(threadPoolGetter)
     , m_threadPoolSetter(threadPoolSetter)
     , m_pageAllocator(desc.m_pageAllocator)
-    , m_staticDataBlock(0)
+    , m_staticDataBlock(nullptr)
     , m_numStaticPages(desc.m_numStaticPages)
     , m_pageSize(desc.m_pageSize)
     , m_minAllocationSize(desc.m_minAllocationSize)
@@ -1112,7 +1122,7 @@ ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(const ThreadPoolSchema::Descriptor& d
     SetCriticalSectionSpinCount(m_mutex.native_handle(), 4000);
 #   endif
 
-    if (m_pageAllocator == 0)
+    if (m_pageAllocator == nullptr)
     {
         m_pageAllocator = &AllocatorInstance<SystemAllocator>::Get();  // use the SystemAllocator if no page allocator is provided
     }
@@ -1211,7 +1221,7 @@ ThreadPoolSchemaImpl::Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolS
     {
         // deallocate elements if they were freed from other threads
         Page::FakeNodeLF* fakeLFNode;
-        while ((fakeLFNode = threadData->m_freedElements.pop())!=0)
+        while ((fakeLFNode = threadData->m_freedElements.pop())!=nullptr)
         {
             threadData->m_allocator.DeAllocate(fakeLFNode);
         }
@@ -1228,12 +1238,12 @@ void
 ThreadPoolSchemaImpl::DeAllocate(ThreadPoolSchema::pointer_type ptr)
 {
     Page* page = PageFromAddress(ptr);
-    if (page==NULL)
+    if (page==nullptr)
     {
         AZ_Error("Memory", false, "Address 0x%08x is not in the ThreadPool!", ptr);
         return;
     }
-    AZ_Assert(page->m_threadData!=0, ("We must have valid page thread data for the page!"));
+    AZ_Assert(page->m_threadData!=nullptr, ("We must have valid page thread data for the page!"));
     ThreadPoolData* threadData = m_threadPoolGetter();
     if (threadData == page->m_threadData)
     {
@@ -1262,11 +1272,11 @@ ThreadPoolSchema::size_type
 ThreadPoolSchemaImpl::AllocationSize(ThreadPoolSchema::pointer_type ptr)
 {
     Page* page = PageFromAddress(ptr);
-    if (page==NULL)
+    if (page==nullptr)
     {
         return 0;
     }
-    AZ_Assert(page->m_threadData!=0, ("We must have valid page thread data for the page!"));
+    AZ_Assert(page->m_threadData!=nullptr, ("We must have valid page thread data for the page!"));
     return page->m_threadData->m_allocator.AllocationSize(ptr);
 }
 
@@ -1282,7 +1292,7 @@ ThreadPoolSchemaImpl::PopFreePage()
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         if (m_freePages.empty())
         {
-            page = NULL;
+            page = nullptr;
         }
         else
         {
@@ -1387,7 +1397,7 @@ ThreadPoolData::~ThreadPoolData()
 {
     // deallocate elements if they were freed from other threads
     ThreadPoolSchemaImpl::Page::FakeNodeLF* fakeLFNode;
-    while ((fakeLFNode = m_freedElements.pop())!=0)
+    while ((fakeLFNode = m_freedElements.pop())!=nullptr)
     {
         m_allocator.DeAllocate(fakeLFNode);
     }

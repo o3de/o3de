@@ -38,7 +38,8 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonDeserializer::Load(
-        void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context)
+        void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, UseTypeDeserializer custom,
+        JsonDeserializerContext& context)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -48,8 +49,8 @@ namespace AZ
                 "Target object for Json Serialization is pointing to nothing during loading.");
         }
 
-        BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
-        if (serializer)
+        if (BaseJsonSerializer* serializer
+            = (custom == UseTypeDeserializer::Yes ? context.GetRegistrationContext()->GetSerializerForType(typeId) : nullptr))
         {
             return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
         }
@@ -70,8 +71,11 @@ namespace AZ
                 // type itself has not been reflected using EnumBuilder. Treat it as an enum.
                 return LoadEnum(object, *classData, value, context);
             }
-            serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
-            if (serializer)
+            
+            if (BaseJsonSerializer* serializer
+                = (custom == UseTypeDeserializer::Yes)
+                    ? context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId())
+                    : nullptr)
             {
                 return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
             }
@@ -101,7 +105,7 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonDeserializer::LoadToPointer(void* object, const Uuid& typeId,
-        const rapidjson::Value& value, JsonDeserializerContext& context)
+        const rapidjson::Value& value, UseTypeDeserializer useCustom, JsonDeserializerContext& context)
     {
         using namespace JsonSerializationResult;
 
@@ -134,7 +138,7 @@ namespace AZ
             const SerializeContext::ClassData* resolvedClassData = context.GetSerializeContext()->FindClassData(resolvedTypeId);
             if (resolvedClassData)
             {
-                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, true, context);
+                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, true, useCustom, context);
 
                 *objectPtr = resolvedClassData->m_azRtti->Cast(*objectPtr, typeId);
 
@@ -171,11 +175,11 @@ namespace AZ
             }
             AZ_Assert(classElement.m_azRtti->GetTypeId() == classElement.m_typeId,
                 "Type id mismatch during deserialization of a json file. (%s vs %s)");
-            return LoadToPointer(object, classElement.m_typeId, value, context);
+            return LoadToPointer(object, classElement.m_typeId, value, UseTypeDeserializer::Yes, context);
         }
         else
         {
-            return Load(object, classElement.m_typeId, value, false, context);
+            return Load(object, classElement.m_typeId, value, false, UseTypeDeserializer::Yes, context);
         }
     }
 
@@ -571,11 +575,23 @@ namespace AZ
             if (loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ||
                 loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds)
             {
-                AZStd::string_view message = loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds ?
-                    "Unable to resolve provided type because the same name points to multiple types." :
-                    "Unable to resolve provided type.";
-                status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
-                return ResolvePointerResult::FullyProcessed;
+                    auto typeField = pointerData.FindMember(JsonSerialization::TypeIdFieldIdentifier);
+                    if (typeField != pointerData.MemberEnd() && typeField->value.IsString())
+                    {
+                        const char* format = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type: %.*s." : 
+                            "Unable to resolve provided type %.*s because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, 
+                            AZStd::string::format(format, typeField->value.GetStringLength(), typeField->value.GetString()));
+                    }
+                    else
+                    {
+                        const char* message = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type." :
+                            "Unable to resolve provided type because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
+                    }
+                    return ResolvePointerResult::FullyProcessed;
             }
 
             if (loadedTypeId.m_typeId != objectType)

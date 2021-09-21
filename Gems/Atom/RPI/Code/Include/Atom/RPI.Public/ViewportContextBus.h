@@ -110,11 +110,13 @@ namespace AZ
             virtual void OnViewportSizeChanged(AzFramework::WindowSize size){AZ_UNUSED(size);}
             //! Called when the window DPI scaling changes for a given viewport context.
             virtual void OnViewportDpiScalingChanged(float dpiScale){AZ_UNUSED(dpiScale);}
-            //! Called when the active view for a given viewport context name changes.
+            //! Called when the active view changes for a given viewport context.
             virtual void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view){AZ_UNUSED(view);}
             //! Called when the viewport is to be rendered.
-            //! Add draws to this functions if they only need to be rendered to this viewport. 
-            virtual void OnRenderTick(){};
+            //! Add draws to this function if they only need to be rendered to this viewport. 
+            virtual void OnRenderTick(){}
+            //! Called when the viewport finishes rendering a frame.
+            virtual void OnFrameEnd(){}
 
         protected:
             ~ViewportContextNotifications() = default;

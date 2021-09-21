@@ -11,6 +11,10 @@
 
 #include <TerrainModule.h>
 #include <Components/TerrainSystemComponent.h>
+#include <Components/TerrainWorldComponent.h>
+#include <Components/TerrainWorldDebuggerComponent.h>
+#include <Components/TerrainHeightGradientListComponent.h>
+#include <Components/TerrainLayerSpawnerComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
 
 namespace Terrain
@@ -20,6 +24,10 @@ namespace Terrain
     {
         m_descriptors.insert(m_descriptors.end(), {
                 TerrainSystemComponent::CreateDescriptor(),
+                TerrainWorldComponent::CreateDescriptor(),
+                TerrainWorldDebuggerComponent::CreateDescriptor(),
+                TerrainHeightGradientListComponent::CreateDescriptor(),
+                TerrainLayerSpawnerComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),
             });
     }

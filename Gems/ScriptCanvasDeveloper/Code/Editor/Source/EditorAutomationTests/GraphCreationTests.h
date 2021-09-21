@@ -55,8 +55,8 @@ namespace ScriptCanvasDeveloper
 
         protected:
 
-            void OnSetupStateActions(EditorAutomationActionRunner& actionRunner);
-            void OnStateActionsComplete();
+            void OnSetupStateActions(EditorAutomationActionRunner& actionRunner) override;
+            void OnStateActionsComplete() override;
 
         private:
 

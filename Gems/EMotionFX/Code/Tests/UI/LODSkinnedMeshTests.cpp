@@ -32,7 +32,6 @@
 #include <Tests/UI/UIFixture.h>
 #include <Editor/ReselectingTreeView.h>
 
-#include <Mocks/IRendererMock.h>
 #include <Mocks/ISystemMock.h>
 
 namespace EMotionFX
@@ -73,7 +72,6 @@ namespace EMotionFX
 
         struct DataMembers
         {
-            testing::NiceMock<IRendererMock> m_renderer;
             testing::NiceMock<LODSystemMock> m_system;
         };
 

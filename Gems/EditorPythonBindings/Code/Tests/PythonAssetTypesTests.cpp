@@ -116,7 +116,7 @@ namespace UnitTest
             return AZ::Data::AssetType("{7FD86523-3903-4037-BCD1-542027BFC553}");
         }
 
-        virtual const char* GetFileFilter() const
+        const char* GetFileFilter() const override
         {
             return nullptr;
         }
@@ -366,7 +366,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };

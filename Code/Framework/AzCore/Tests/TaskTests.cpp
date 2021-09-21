@@ -225,6 +225,7 @@ namespace UnitTest
                 defaultTD,
                 [td = AZStd::move(td)]
                 {
+                    AZ_UNUSED(td);
                 });
             task.Invoke();
             // Destructor should not have run yet (except on moved-from instances)
@@ -550,17 +551,35 @@ namespace Benchmark
 {
     class TaskGraphBenchmarkFixture : public ::benchmark::Fixture
     {
-    public:
-        void SetUp(benchmark::State&) override
+        void internalSetUp()
         {
             executor = new TaskExecutor;
             graph = new TaskGraph;
         }
 
-        void TearDown(benchmark::State&) override
+        void internalTearDown()
         {
             delete graph;
             delete executor;
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         TaskDescriptor descriptors[4] = { { "critical", "benchmark", TaskPriority::CRITICAL },

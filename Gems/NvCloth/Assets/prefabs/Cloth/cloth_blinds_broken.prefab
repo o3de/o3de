@@ -22,8 +22,7 @@
             "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 4272963378099646759,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[4848458548047175816]": {
                 "$type": "EditorVisibilityComponent",
@@ -60,7 +59,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 10786078036233199116,
                     "Configuration": {
-                        "Mesh Node": "pPlane1",
+                        "Mesh Node": "pPlane1_1",
                         "Damping": [
                             0.0,
                             0.0,
@@ -127,66 +126,10 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 4939437553142322315
                 },
-                "Component_[538074694053236341]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 538074694053236341,
-                    "Controller": {
-                        "Configuration": {
-                            "materials": [
-                                {
-                                    "Key": {
-                                        "materialAssetId": {
-                                            "guid": "{A64AD477-5E35-5834-A9A3-580B9D708E0C}",
-                                            "subId": 902256226
-                                        }
-                                    },
-                                    "Value": {
-                                        "MaterialAsset": {
-                                            "assetId": {
-                                                "guid": "{EB6CB909-E4BB-54CB-8CAE-6A4B4F203B1B}"
-                                            },
-                                            "assetHint": "objects/cloth/environment/cloth_blinds_broken.azmaterial"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialAssetId": {
-                                    "guid": "{A64AD477-5E35-5834-A9A3-580B9D708E0C}",
-                                    "subId": 902256226
-                                }
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{EB6CB909-E4BB-54CB-8CAE-6A4B4F203B1B}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_blinds_broken.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialAssetId": {
-                                        "guid": "{A64AD477-5E35-5834-A9A3-580B9D708E0C}",
-                                        "subId": 902256226
-                                    }
-                                }
-                            }
-                        ]
-                    ]
-                },
                 "Component_[5681411293917950785]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 5681411293917950785,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform Parent": "ContainerEntity"
+                    "Parent Entity": "ContainerEntity"
                 },
                 "Component_[7046686956433693767]": {
                     "$type": "EditorInspectorComponent",
@@ -209,12 +152,73 @@
                         }
                     ]
                 },
+                "Component_[7873865615483617838]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 7873865615483617838,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 902256226
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{EB6CB909-E4BB-54CB-8CAE-6A4B4F203B1B}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_blinds_broken.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialSlotStableId": 902256226
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{EB6CB909-E4BB-54CB-8CAE-6A4B4F203B1B}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_blinds_broken.azmaterial"
+                            },
+                            "defaultMaterialAsset": {
+                                "assetId": {
+                                    "guid": "{A64AD477-5E35-5834-A9A3-580B9D708E0C}",
+                                    "subId": 902256226
+                                },
+                                "loadBehavior": "PreLoad",
+                                "assetHint": "objects/cloth/environment/cloth_blinds_broken_lambert1_3614897150141879906.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialSlotStableId": 902256226
+                                },
+                                "defaultMaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{A64AD477-5E35-5834-A9A3-580B9D708E0C}",
+                                        "subId": 902256226
+                                    },
+                                    "loadBehavior": "PreLoad",
+                                    "assetHint": "objects/cloth/environment/cloth_blinds_broken_lambert1_3614897150141879906.azmaterial"
+                                }
+                            }
+                        ]
+                    ]
+                },
                 "Component_[9565338131843702938]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 9565338131843702938
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

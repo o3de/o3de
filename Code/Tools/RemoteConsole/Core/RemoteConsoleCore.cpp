@@ -239,6 +239,11 @@ void SRemoteServer::Run()
 
     while (m_bAcceptClients)
     {
+        AZTIMEVAL timeout { 1, 0 };
+        if (!AZ::AzSock::IsRecvPending(m_socket, &timeout))
+        {
+            continue;
+        }
         AZ::AzSock::AzSocketAddress clientAddress;
         sClient = AZ::AzSock::Accept(m_socket, clientAddress);
         if (!m_bAcceptClients || !AZ::AzSock::IsAzSocketValid(sClient))
@@ -383,6 +388,13 @@ void SRemoteClient::Run()
 
     bool ok = true;
     bool autoCompleteDoneSent = false;
+    
+    // Send a message that is used to verify that the Remote Console connected
+    SNoDataEvent<eCET_ConnectMessage> connectMessage;
+    SRemoteEventFactory::GetInst()->WriteToBuffer(&connectMessage, szBuff, size, kDefaultBufferSize);
+    ok &= SendPackage(szBuff, size);
+    ok &= RecvPackage(szBuff, size);
+    ok &= m_pServer->ReadBuffer(szBuff, size);
     while (ok)
     {
         // read data
@@ -531,6 +543,7 @@ SRemoteEventFactory::SRemoteEventFactory()
 
     REGISTER_EVENT_NODATA(eCET_Strobo_FrameInfoStart);
     REGISTER_EVENT_STRING(eCET_Strobo_FrameInfoAdd);
+    REGISTER_EVENT_NODATA(eCET_ConnectMessage);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

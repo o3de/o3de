@@ -87,19 +87,19 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
     CCryFile file;
 
     {
-        const char* szLog = "Executing console batch file (try game,config,root):";
+        [[maybe_unused]] const char* szLog = "Executing console batch file (try game,config,root):";
         AZStd::string filenameLog;
         AZStd::string sfn = PathUtil::GetFile(filename);
 
-        if (file.Open(filename.c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        if (file.Open(filename.c_str(), "rb"))
         {
             filenameLog = AZStd::string("game/") + sfn;
         }
-        else if (file.Open((AZStd::string("config/") + sfn).c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        else if (file.Open((AZStd::string("config/") + sfn).c_str(), "rb"))
         {
             filenameLog = AZStd::string("game/config/") + sfn;
         }
-        else if (file.Open((AZStd::string("./") + sfn).c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        else if (file.Open((AZStd::string("./") + sfn).c_str(), "rb"))
         {
             filenameLog = AZStd::string("./") + sfn;
         }

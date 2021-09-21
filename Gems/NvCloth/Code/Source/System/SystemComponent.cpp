@@ -125,7 +125,7 @@ namespace NvCloth
                 }
                 else
                 {
-                    AZ_PROFILE_END();
+                    AZ_PROFILE_END(Cloth);
                 }
             }
         };

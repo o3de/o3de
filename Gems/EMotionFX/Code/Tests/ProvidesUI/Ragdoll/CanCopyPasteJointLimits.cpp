@@ -41,7 +41,10 @@ namespace EMotionFX
     {
         using testing::_;
 
-        D6JointLimitConfiguration::Reflect(GetSerializeContext());
+        AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+        Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+        D6JointLimitConfiguration::Reflect(serializeContext);
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
 

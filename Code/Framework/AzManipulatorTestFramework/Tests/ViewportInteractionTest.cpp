@@ -48,10 +48,10 @@ namespace UnitTest
     {
         bool snapping = false;
 
-        m_viewportInteraction->EnableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        m_viewportInteraction->SetGridSnapping(true);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         EXPECT_TRUE(snapping);
     }
@@ -60,10 +60,10 @@ namespace UnitTest
     {
         bool snapping = true;
 
-        m_viewportInteraction->DisableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        m_viewportInteraction->SetGridSnapping(false);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         EXPECT_FALSE(snapping);
     }
@@ -75,10 +75,10 @@ namespace UnitTest
 
         m_viewportInteraction->SetGridSize(expectedGridSize);
 
-        m_viewportInteraction->DisableGridSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        m_viewportInteraction->SetGridSnapping(false);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             gridSize, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
         EXPECT_EQ(gridSize, expectedGridSize);
     }
@@ -87,10 +87,10 @@ namespace UnitTest
     {
         bool snapping = false;
 
-        m_viewportInteraction->EnableAngularSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        m_viewportInteraction->SetAngularSnapping(true);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
 
         EXPECT_TRUE(snapping);
     }
@@ -99,10 +99,10 @@ namespace UnitTest
     {
         bool snapping = true;
 
-        m_viewportInteraction->DisableAngularSnaping();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        m_viewportInteraction->SetAngularSnapping(false);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             snapping, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
 
         EXPECT_FALSE(snapping);
     }
@@ -114,9 +114,9 @@ namespace UnitTest
 
         m_viewportInteraction->SetAngularStep(expectedAngularStep);
 
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
             angularStep, m_viewportInteraction->GetViewportId(),
-            &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::AngleStep);
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::AngleStep);
 
         EXPECT_EQ(angularStep, expectedAngularStep);
     }

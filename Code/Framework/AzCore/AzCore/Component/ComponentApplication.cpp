@@ -51,7 +51,6 @@
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 #include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
@@ -74,6 +73,8 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+
+AZ_CVAR(float, g_simulation_tick_rate, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The rate at which the game simulation tick loop runs, or 0 for as fast as possible");
 
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
@@ -546,6 +547,10 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
+#if !defined(_RELEASE)
+        m_budgetTracker.Reset();
+#endif
+
         DestroyAllocator();
     }
 
@@ -594,6 +599,10 @@ namespace AZ
         CreateOSAllocator();
         CreateSystemAllocator();
 
+#if !defined(_RELEASE)
+        m_budgetTracker.Init();
+#endif
+
         // This can be moved to the ComponentApplication constructor if need be
         // This is reading the *.setreg files using SystemFile and merging the settings
         // to the settings registry.
@@ -625,8 +634,6 @@ namespace AZ
             m_eventLogger->Start(outputPath.Native(), baseFileName);
         }
 
-        CreateDrillers();
-
         Sfmt::Create();
 
         CreateReflectionManager();
@@ -639,7 +646,7 @@ namespace AZ
         NameDictionary::Create();
 
         // Call this and child class's reflects
-        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), AZStd::bind(&ComponentApplication::Reflect, this, AZStd::placeholders::_1));
+        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), [this](ReflectContext* context) {Reflect(context); });
 
         RegisterCoreComponents();
         TickBus::AllowFunctionQueuing(true);
@@ -745,12 +752,6 @@ namespace AZ
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();
         TickRequestBus::Handler::BusDisconnect();
-
-        if (m_drillerManager)
-        {
-            Debug::DrillerManager::Destroy(m_drillerManager);
-            m_drillerManager = nullptr;
-        }
 
         m_eventLogger->Stop();
 
@@ -899,33 +900,6 @@ namespace AZ
         allocatorManager.FinalizeConfiguration();
     }
 
-    //=========================================================================
-    // CreateDrillers
-    // [2/20/2013]
-    //=========================================================================
-    void ComponentApplication::CreateDrillers()
-    {
-        // Create driller manager and register drillers if requested
-        if (m_descriptor.m_enableDrilling)
-        {
-            m_drillerManager = Debug::DrillerManager::Create();
-            // Memory driller is responsible for tracking allocations.
-            // Tracking type and overhead is determined by app configuration.
-
-            // Only one MemoryDriller is supported at a time
-            // Only create the memory driller if there is no handlers connected to the MemoryDrillerBus
-            if (!Debug::MemoryDrillerBus::HasHandlers())
-            {
-                m_drillerManager->Register(aznew Debug::MemoryDriller);
-            }
-            // Profiler driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::ProfilerDriller);
-            // Trace messages driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::TraceMessagesDriller);
-            m_drillerManager->Register(aznew Debug::EventTraceDriller);
-        }
-    }
-
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
     {
         SettingsRegistryInterface::Specializations specializations;
@@ -998,7 +972,12 @@ namespace AZ
     {
         if (ReflectionEnvironment::GetReflectionManager())
         {
-            ReflectionEnvironment::GetReflectionManager()->Reflect(descriptor->GetUuid(), AZStd::bind(&ComponentDescriptor::Reflect, descriptor, AZStd::placeholders::_1));
+            ReflectionEnvironment::GetReflectionManager()->Reflect(
+                descriptor->GetUuid(),
+                [descriptor](ReflectContext* context)
+                {
+                    descriptor->Reflect(context);
+                });
         }
     }
 
@@ -1272,6 +1251,8 @@ namespace AZ
 
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
             {
                 // By default the auto load option is true
@@ -1294,7 +1275,7 @@ namespace AZ
             void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
             {
                 // Remove last path segment and check if the key corresponds to the Modules array
-                AZStd::optional<AZStd::string_view> moduleIndex = AZ::StringFunc::TokenizeLast(path, "/");
+                AZ::StringFunc::TokenizeLast(path, "/");
                 if (path.ends_with("/Modules"))
                 {
                     // Remove the "Modules" path segment to be at the GemName key
@@ -1415,10 +1396,23 @@ namespace AZ
                 AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
             }
-        }
-        if (m_drillerManager)
-        {
-            m_drillerManager->FrameUpdate();
+
+            // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
+            // sleeping if there's still time remaining.
+            if (g_simulation_tick_rate > 0.f)
+            {
+                now = AZStd::chrono::system_clock::now();
+
+                // Work in microsecond durations here as that's the native measurement time for time_point
+                constexpr float microsecondsPerSecond = 1000.f * 1000.f;
+                const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
+                AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
+
+                if (timeUntilNextTick.count() > 0)
+                {
+                    AZStd::this_thread::sleep_for(timeUntilNextTick);
+                }
+            }
         }
     }
 

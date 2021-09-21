@@ -55,10 +55,8 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
     //------------------------------------------------------------------------
-    SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
-        : m_pSystem(pSystem)
+    SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
-        LOADING_TIME_PROFILE_SECTION;
         CRY_ASSERT(pSystem);
 
         m_fLastLevelLoadTime = 0;
@@ -248,8 +246,6 @@ namespace LegacyLevelSystem
 
         // This scope is specifically used for marking a loading time profile section
         {
-            LOADING_TIME_PROFILE_SECTION;
-
             m_bLevelLoaded = false;
             m_lastLevelName = levelName;
             gEnv->pConsole->SetScrollMax(600);
@@ -388,8 +384,6 @@ namespace LegacyLevelSystem
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
-        LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
-
         for (auto& listener : m_listeners)
         {
             listener->OnLoadingStart(levelName);
@@ -474,10 +468,7 @@ namespace LegacyLevelSystem
             sChain = " (Chained)";
         }
 
-        AZStd::string text;
-        text.format(
-            "Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-        gEnv->pLog->Log(text.c_str());
+        gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     }
 
     //////////////////////////////////////////////////////////////////////////

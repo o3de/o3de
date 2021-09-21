@@ -11,11 +11,12 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -25,6 +26,19 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/Prefabs/SaveAllPrefabs";
+
+        void PrefabLoader::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Enum<SaveAllPrefabsPreference>()
+                    ->Value("Ask every time", SaveAllPrefabsPreference::AskEveryTime)
+                    ->Value("Save all", SaveAllPrefabsPreference::SaveAll)
+                    ->Value("Save none", SaveAllPrefabsPreference::SaveNone);
+            }
+        }
+
         void PrefabLoader::RegisterPrefabLoaderInterface()
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -136,7 +150,7 @@ namespace AzToolsFramework
             }
 
             // Read Template's prefab file from disk and parse Prefab DOM from file.
-            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AzFramework::FileFunc::ReadJsonFromString(fileContent);
+            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(fileContent);
             if (!readPrefabFileResult.IsSuccess())
             {
                 AZ_Error(
@@ -348,7 +362,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, GetFullPath(domAndFilepath->second));
+            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, GetFullPath(domAndFilepath->second).Native());
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -389,7 +403,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, absolutePath);
+            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, absolutePath.Native());
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -412,7 +426,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AzFramework::FileFunc::WriteJsonToString(domAndFilepath->first, output);
+            auto outcome = AZ::JsonSerializationUtils::WriteJsonString(domAndFilepath->first, output);
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -656,6 +670,24 @@ namespace AzToolsFramework
             }
 
             return finalPath;
+        }
+
+        SaveAllPrefabsPreference PrefabLoader::GetSaveAllPrefabsPreference() const
+        {
+            SaveAllPrefabsPreference saveAllPrefabsPreference = SaveAllPrefabsPreference::AskEveryTime;
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->GetObject(saveAllPrefabsPreference, s_saveAllPrefabsKey);
+            }
+            return saveAllPrefabsPreference;
+        }
+
+        void PrefabLoader::SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference)
+        {
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->SetObject(s_saveAllPrefabsKey, saveAllPrefabsPreference);
+            }
         }
 
         AZ::IO::Path PrefabLoaderInterface::GeneratePath()

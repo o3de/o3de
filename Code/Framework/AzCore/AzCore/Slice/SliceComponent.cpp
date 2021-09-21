@@ -3464,7 +3464,7 @@ namespace AZ
     const SliceComponent::DataFlagsPerEntity* SliceComponent::GetCorrectBundleOfDataFlags(EntityId entityId) const
     {
         // It would be possible to search non-instantiated slices by crawling over lists, but we haven't needed the capability yet.
-        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.")
+        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.");
 
         if (IsInstantiated())
         {
@@ -3839,6 +3839,7 @@ namespace AZ
                 {
                     if (instance->GetId() == existingInstance.GetId())
                     {
+                        AZ_UNUSED(sliceReference); // Prevent unused warning in release builds
                         AZ_Warning("Slice", false, "Multiple slice instances with the same ID from slice %s were found. The last instance found has been loaded.",
                             sliceReference.GetSliceAsset().GetHint().c_str());
                         return true;

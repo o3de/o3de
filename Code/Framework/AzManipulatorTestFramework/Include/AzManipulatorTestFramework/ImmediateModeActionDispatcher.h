@@ -10,11 +10,14 @@
 
 #include <AzManipulatorTestFramework/ActionDispatcher.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzManipulatorTestFramework
 {
     //! Dispatches actions immediately to the manipulators.
-    class ImmediateModeActionDispatcher : public ActionDispatcher<ImmediateModeActionDispatcher>
+    class ImmediateModeActionDispatcher
+        : public ActionDispatcher<ImmediateModeActionDispatcher>
+        , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     {
         using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using KeyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers;
@@ -44,17 +47,18 @@ namespace AzManipulatorTestFramework
         //! Execute an arbitrary section of code inline in the action dispatcher.
         ImmediateModeActionDispatcher* ExecuteBlock(const AZStd::function<void()>& blockFn);
 
-        //! Get the current state of the keyboard modifiers.
-        KeyboardModifiers GetKeyboardModifiers() const;
+        // EditorModifierKeyRequestBus overrides ...
+        KeyboardModifiers QueryKeyboardModifiers() override;
 
     protected:
         // ActionDispatcher ...
-        void EnableSnapToGridImpl() override;
-        void DisableSnapToGridImpl() override;
+        void SetSnapToGridImpl(bool enabled) override;
+        void SetStickySelectImpl(bool enabled) override;
         void GridSizeImpl(float size) override;
         void CameraStateImpl(const AzFramework::CameraState& cameraState) override;
         void MouseLButtonDownImpl() override;
         void MouseLButtonUpImpl() override;
+        void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
         void KeyboardModifierUpImpl(const KeyboardModifier& keyModifier) override;
@@ -94,11 +98,11 @@ namespace AzManipulatorTestFramework
 
     inline ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetKeyboardModifiers(KeyboardModifiers& keyboardModifiers)
     {
-        keyboardModifiers = GetKeyboardModifiers();
+        keyboardModifiers = QueryKeyboardModifiers();
         return this;
     }
 
-    inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::GetKeyboardModifiers() const
+    inline AzToolsFramework::ViewportInteraction::KeyboardModifiers ImmediateModeActionDispatcher::QueryKeyboardModifiers()
     {
         return GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers;
     }

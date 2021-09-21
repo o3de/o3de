@@ -45,8 +45,19 @@ ly_add_target(
 )
 
 # clients and servers will use the above Gem::AWSCore module.
-ly_create_alias(NAME AWSCore.Servers NAMESPACE Gem TARGETS Gem::AWSCore)
-ly_create_alias(NAME AWSCore.Clients NAMESPACE Gem TARGETS Gem::AWSCore)
+ly_create_alias(
+    NAME AWSCore.Servers
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore
+)
+
+ly_create_alias(
+    NAME AWSCore.Clients
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore
+)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -84,8 +95,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzCore
                 Gem::AWSCore.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::AWSCore
     )
 
     # This target is not a real gem module
@@ -106,8 +115,21 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
 
     # Builders and Tools (such as the Editor use AWSCore.Editor) use the .Editor module above.
-    ly_create_alias(NAME AWSCore.Tools NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
-    ly_create_alias(NAME AWSCore.Builders NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
+    ly_create_alias(
+        NAME AWSCore.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore
+            Gem::AWSCore.Editor
+    )
+
+    ly_create_alias(
+        NAME AWSCore.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore
+            Gem::AWSCore.Editor
+    )
 
 endif()
 
@@ -167,8 +189,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 endif()
 
-install(DIRECTORY "Tools/ResourceMappingTool"
-    DESTINATION "Gems/AWSCore/Code/Tools"
-    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    PATTERN "__pycache__" EXCLUDE
-)
+ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)

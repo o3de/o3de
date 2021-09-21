@@ -144,7 +144,7 @@ namespace AZ
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
             {
-                if (m_enabled)
+                if (m_enabled && ms_threadLocalStorage != nullptr)
                 {
                     ms_threadLocalStorage->RegionStackPopBack();
                 }

@@ -123,11 +123,6 @@ set(FILES
     Entity/SliceGameEntityOwnershipServiceBus.h
     Entity/PrefabEntityOwnershipService.h
     Entity/PrefabEntityOwnershipService.cpp
-    Driller/RemoteDrillerInterface.cpp
-    Driller/RemoteDrillerInterface.h
-    Driller/DrillerConsoleAPI.h
-    Driller/DrillToFileComponent.h
-    Driller/DrillToFileComponent.cpp
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
@@ -348,6 +343,8 @@ set(FILES
     Input/Channels/InputChannelQuaternion.h
     Input/Contexts/InputContext.cpp
     Input/Contexts/InputContext.h
+    Input/Contexts/InputContextComponent.cpp
+    Input/Contexts/InputContextComponent.h
     Input/Devices/InputDevice.cpp
     Input/Devices/InputDevice.h
     Input/Devices/InputDeviceId.cpp

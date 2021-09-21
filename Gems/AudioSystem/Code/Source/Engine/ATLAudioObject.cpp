@@ -762,7 +762,7 @@ namespace Audio
         AZStd::string eventsString;
         for (auto activeEvent : m_cActiveEvents)
         {
-            eventsString = AZStd::string::format("%s%" PRIu64 "%s", eventsString.c_str(), activeEvent, sSeparator);
+            eventsString = AZStd::string::format("%s%llu%s", eventsString.c_str(), activeEvent, sSeparator);
         }
 
         return eventsString;
@@ -1042,7 +1042,8 @@ namespace Audio
         auxGeom.SetRenderFlags(newRenderFlags);
 
         const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
-        const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
+        // ToDo: Update to work with Atom? LYN-3677
+        //const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
 
         size_t numRays = m_obstOccType == eAOOCT_SINGLE_RAY ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)

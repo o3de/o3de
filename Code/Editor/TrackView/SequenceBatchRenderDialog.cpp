@@ -36,6 +36,9 @@
 #include "CryEdit.h"
 #include "Viewport.h"
 
+// Atom Renderer
+#include <Atom/RPI.Public/RPISystemInterface.h>
+
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_SequenceBatchRenderDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -719,8 +722,7 @@ bool CSequenceBatchRenderDialog::GetResolutionFromCustomResText(const char* cust
     int     scannedWidth  = retCustomWidth;      // initialize with default fall-back values - they'll be overwritten in the case of a succesful sscanf below.
     int     scannedHeight = retCustomHeight;
 
-    QString strFormat = QString::fromLatin1(customResFormat).replace(QRegularExpression(QStringLiteral("%\\d")), QStringLiteral("%d"));
-    scanSuccess = (azsscanf(customResText, strFormat.toStdString().c_str(), &scannedWidth, &scannedHeight) == 2);
+    scanSuccess = (azsscanf(customResText, "Custom(%d x %d)...", &scannedWidth, &scannedHeight) == 2);
     if (scanSuccess)
     {
         retCustomWidth = scannedWidth;
@@ -1234,6 +1236,13 @@ void CSequenceBatchRenderDialog::OnKickIdleTimout()
         if (componentApplication)
         {
             componentApplication->TickSystem();
+        }
+
+        // Directly tick the renderer, as it's no longer part of the system tick
+        if (auto rpiSystem = AZ::RPI::RPISystemInterface::Get())
+        {
+            rpiSystem->SimulationTick();
+            rpiSystem->RenderTick();
         }
     }
 }

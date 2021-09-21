@@ -60,6 +60,7 @@ namespace JsonSerializationTests
             return "[188, 288, 388]";
         }
 
+        using BasicContainerConformityTestDescriptor<Container>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Container>();
@@ -133,6 +134,7 @@ namespace JsonSerializationTests
             return "[188, 288, 388]";
         }
 
+        using BasicContainerConformityTestDescriptor<Container>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Container>();
@@ -144,11 +146,6 @@ namespace JsonSerializationTests
             {
                 return false;
             }
-
-            auto compare = [](const int* lhs, const int* rhs) -> bool
-            {
-                return *lhs == *rhs;
-            };
             return AZStd::equal(lhs.begin(), lhs.end(), rhs.begin(), SimplePointerTestDescriptionCompare{});
         }
     };
@@ -230,6 +227,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using BasicContainerConformityTestDescriptor<Container>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);
@@ -296,6 +294,7 @@ namespace JsonSerializationTests
         using Container = AZStd::vector<SimpleClass>;
         using BaseClassContainer = AZStd::vector<AZStd::shared_ptr<BaseClass>>;
 
+        using JsonBasicContainerSerializerTests::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             SimpleClass::Reflect(serializeContext, true);
@@ -357,6 +356,7 @@ namespace JsonSerializationTests
         static constexpr size_t ContainerSize = 4;
         using Container = AZStd::fixed_vector<int, ContainerSize>;
 
+        using JsonBasicContainerSerializerTests::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->RegisterGenericType<Container>();
@@ -392,6 +392,7 @@ namespace JsonSerializationTests
     public:
         using Set = AZStd::set<int>;
 
+        using JsonBasicContainerSerializerTests::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->RegisterGenericType<Set>();

@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 
-
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator, 0)
@@ -126,8 +125,13 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex &parent, int first, int last)
+    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        if (!parent.isValid())
+        {
+            return;
+        }
+
         EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
         EMStudio::AnimGraphPlugin* animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(plugin);
         if (animGraphPlugin)
@@ -206,7 +210,7 @@ namespace EMotionFX
 
                 QPushButton* removeTransitionButton = new QPushButton();
                 EMStudio::EMStudioManager::MakeTransparentButton(removeTransitionButton, "Images/Icons/Trash.svg", "Remove transition from list");
-                connect(removeTransitionButton, &QPushButton::clicked, this, [this, removeTransitionButton, id]()
+                connect(removeTransitionButton, &QPushButton::clicked, this, [this, id]()
                     {
                         m_transitionIds.erase(AZStd::remove(m_transitionIds.begin(), m_transitionIds.end(), id), m_transitionIds.end());
                         Reinit();

@@ -34,7 +34,7 @@ namespace AzToolsFramework
 
         static PreemptiveUndoCache* Get();
         PreemptiveUndoCache();
-        ~PreemptiveUndoCache();
+        virtual ~PreemptiveUndoCache();
 
         void RegisterToUndoCacheInterface();
 

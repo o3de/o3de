@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
@@ -195,14 +196,14 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
-        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) override final;
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) override final;
-        void SignalEntityActivated(Entity* entity) override final;
-        void SignalEntityDeactivated(Entity* entity) override final;
+        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) final;
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) final;
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) final;
+        void SignalEntityActivated(Entity* entity) final;
+        void SignalEntityDeactivated(Entity* entity) final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;
@@ -224,11 +225,6 @@ namespace AZ
         const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
         /// Returns the path to the folder the executable is in.
         const char* GetExecutableFolder() const override { return m_exeDirectory.c_str(); }
-
-
-        /// Returns pointer to the driller manager if it's enabled, otherwise NULL.
-        Debug::DrillerManager* GetDrillerManager() override { return m_drillerManager; }
-        //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         /// TickRequestBus
@@ -324,9 +320,6 @@ namespace AZ
         /// Create the system allocator using the data in the m_descriptor
         void        CreateSystemAllocator();
 
-        /// Create the drillers
-        void        CreateDrillers();
-
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
@@ -402,14 +395,16 @@ namespace AZ
         // from the m_console member when it goes out of scope
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryConsoleFunctors;
 
+#if !defined(_RELEASE)
+        Debug::BudgetTracker m_budgetTracker;
+#endif
+
         // this is used when no argV/ArgC is supplied.
         // in order to have the same memory semantics (writable, non-const)
         // we create a buffer that can be written to (up to AZ_MAX_PATH_LEN) and then
         // pack it with a single param.
         char                                        m_commandLineBuffer[AZ_MAX_PATH_LEN];
         char*                                       m_commandLineBufferAddress{ m_commandLineBuffer };
-
-        Debug::DrillerManager*                      m_drillerManager{ nullptr };
 
         StartupParameters                           m_startupParameters;
 

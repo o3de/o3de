@@ -12,6 +12,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -27,12 +28,28 @@
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/FlowLayout.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+
+
 #include <QApplication>
+#include <QCheckBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFrame>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMessageBox>
+#include <QScrollArea>
+#include <QVBoxLayout>
+#include <QWidget>
+
 
 namespace AzToolsFramework
 {
@@ -43,8 +60,19 @@ namespace AzToolsFramework
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabEditInterface* PrefabIntegrationManager::s_prefabEditInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
+        PrefabSystemComponentInterface* PrefabIntegrationManager::s_prefabSystemComponentInterface = nullptr;
 
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
+        
+        static const char* const ClosePrefabDialog = "ClosePrefabDialog";
+        static const char* const FooterSeparatorLine = "FooterSeparatorLine";
+        static const char* const PrefabSavedMessageFrame = "PrefabSavedMessageFrame";
+        static const char* const PrefabSavePreferenceHint = "PrefabSavePreferenceHint";
+        static const char* const PrefabSaveWarningFrame = "PrefabSaveWarningFrame";
+        static const char* const SaveDependentPrefabsCard = "SaveDependentPrefabsCard";
+        static const char* const SavePrefabDialog = "SavePrefabDialog";
+        static const char* const UnsavedPrefabFileName = "UnsavedPrefabFileName";
+        
 
         void PrefabUserSettings::Reflect(AZ::ReflectContext* context)
         {
@@ -85,6 +113,13 @@ namespace AzToolsFramework
             if (s_prefabLoaderInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+            if (s_prefabSystemComponentInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabSystemComponentInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -157,7 +192,7 @@ namespace AzToolsFramework
                             QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
                             createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                            QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
+                            QObject::connect(createAction, &QAction::triggered, createAction, [selectedEntities] {
                                 ContextMenu_CreatePrefab(selectedEntities);
                             });
                         }
@@ -171,7 +206,7 @@ namespace AzToolsFramework
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
 
                 QObject::connect(
-                    instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiatePrefab(); });
+                    instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
             }
 
             menu->addSeparator();
@@ -196,7 +231,7 @@ namespace AzToolsFramework
                                 QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                                 editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
-                                QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
+                                QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
                                     ContextMenu_EditPrefab(selectedEntity);
                                 });
 
@@ -213,7 +248,7 @@ namespace AzToolsFramework
                             QAction* saveAction = menu->addAction(QObject::tr("Save Prefab to file"));
                             saveAction->setToolTip(QObject::tr("Save the changes to the prefab to disk."));
 
-                            QObject::connect(saveAction, &QAction::triggered, saveAction, [this, selectedEntity] {
+                            QObject::connect(saveAction, &QAction::triggered, saveAction, [selectedEntity] {
                                 ContextMenu_SavePrefab(selectedEntity);
                             });
 
@@ -229,7 +264,7 @@ namespace AzToolsFramework
             }
 
             QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
-            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [this] { ContextMenu_DeleteSelected(); });
+            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
             if (selectedEntities.size() == 0 ||
                 (selectedEntities.size() == 1 && s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0])))
             {
@@ -247,7 +282,7 @@ namespace AzToolsFramework
                     QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                     QObject::connect(
                         detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [this, selectedEntity]
+                        [selectedEntity]
                         {
                             ContextMenu_DetachPrefab(selectedEntity);
                         });
@@ -994,7 +1029,7 @@ namespace AzToolsFramework
                     msgBox.setStandardButtons(QMessageBox::Cancel);
                     msgBox.setDefaultButton(QMessageBox::Yes);
                     msgBox.setDetailedText(message.c_str());
-                    const int response = msgBox.exec();
+                    msgBox.exec();
 
                     if (msgBox.clickedButton() == moveButton)
                     {
@@ -1049,6 +1084,240 @@ namespace AzToolsFramework
                 WarnUserOfError("Entity Creation Error", createResult.GetError());
                 return AZ::EntityId();
             }
+        }
+
+        int PrefabIntegrationManager::ExecuteClosePrefabDialog(TemplateId templateId)
+        {
+            if (s_prefabSystemComponentInterface->AreDirtyTemplatesPresent(templateId))
+            {
+                auto prefabSaveSelectionDialog = ConstructClosePrefabDialog(templateId);
+
+                int prefabSaveSelection = prefabSaveSelectionDialog->exec();
+
+                if (prefabSaveSelection == QDialog::Accepted)
+                {
+                    SavePrefabsInDialog(prefabSaveSelectionDialog.get());
+                }
+
+                return prefabSaveSelection;
+            }
+
+            return QDialogButtonBox::DestructiveRole;
+        }
+
+        void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        {
+            auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
+            AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
+
+            if (s_prefabSystemComponentInterface->IsTemplateDirty(templateId))
+            {
+                if (s_prefabLoaderInterface->SaveTemplate(templateId) == false)
+                {
+                    AZ_Error("Prefab", false, "Template '%s' could not be saved successfully.", prefabTemplatePath.c_str());
+                    return;
+                }
+            }
+
+            if (s_prefabSystemComponentInterface->AreDirtyTemplatesPresent(templateId))
+            {
+                if (useSaveAllPrefabsPreference)
+                {
+                    SaveAllPrefabsPreference saveAllPrefabsPreference = s_prefabLoaderInterface->GetSaveAllPrefabsPreference();
+
+                    if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveAll)
+                    {
+                        s_prefabSystemComponentInterface->SaveAllDirtyTemplates(templateId);
+                        return;
+                    }
+                    else if (saveAllPrefabsPreference == SaveAllPrefabsPreference::SaveNone)
+                    {
+                        return;
+                    }
+                }
+
+                AZStd::unique_ptr<QDialog> savePrefabDialog = ConstructSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
+                if (savePrefabDialog)
+                {
+                    int prefabSaveSelection = savePrefabDialog->exec();
+
+                    if (prefabSaveSelection == QDialog::Accepted)
+                    {
+                        SavePrefabsInDialog(savePrefabDialog.get());
+                    }
+                }
+            }
+        }
+
+        void PrefabIntegrationManager::SavePrefabsInDialog(QDialog* unsavedPrefabsDialog)
+        {
+            QList<QLabel*> unsavedPrefabFileLabels = unsavedPrefabsDialog->findChildren<QLabel*>(UnsavedPrefabFileName);
+            if (unsavedPrefabFileLabels.size() > 0)
+            {
+                for (const QLabel* unsavedPrefabFileLabel : unsavedPrefabFileLabels)
+                {
+                    AZStd::string unsavedPrefabFileName = unsavedPrefabFileLabel->property("FilePath").toString().toUtf8().data();
+                    AzToolsFramework::Prefab::TemplateId unsavedPrefabTemplateId =
+                        s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(unsavedPrefabFileName.data());
+                    bool isTemplateSavedSuccessfully = s_prefabLoaderInterface->SaveTemplate(unsavedPrefabTemplateId);
+                    AZ_Error("Prefab", isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.", unsavedPrefabFileName.c_str());
+                }
+            }
+        }
+
+        AZStd::unique_ptr<QDialog> PrefabIntegrationManager::ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        {
+            AZStd::unique_ptr<QDialog> savePrefabDialog = AZStd::make_unique<QDialog>(AzToolsFramework::GetActiveWindow());
+
+            savePrefabDialog->setWindowTitle("Unsaved files detected");
+
+            // Main Content section begins.
+            savePrefabDialog->setObjectName(SavePrefabDialog);
+            QBoxLayout* contentLayout = new QVBoxLayout(savePrefabDialog.get());
+
+            QFrame* prefabSavedMessageFrame = new QFrame(savePrefabDialog.get());
+            QHBoxLayout* prefabSavedMessageLayout = new QHBoxLayout(savePrefabDialog.get());
+            prefabSavedMessageFrame->setObjectName(PrefabSavedMessageFrame);
+            prefabSavedMessageFrame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+
+            // Add a checkMark icon next to the level entities saved message.
+            QPixmap checkMarkIcon(QString(":/Notifications/checkmark.svg"));
+            QLabel* prefabSavedSuccessfullyIconContainer = new QLabel(savePrefabDialog.get());
+            prefabSavedSuccessfullyIconContainer->setPixmap(checkMarkIcon);
+            prefabSavedSuccessfullyIconContainer->setFixedWidth(checkMarkIcon.width());
+
+            // Add a message that level entities are saved successfully.
+
+            auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
+            AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
+            QLabel* prefabSavedSuccessfullyLabel = new QLabel(
+                QString("Prefab '<b>%1</b>' has been saved. Do you want to save the below dependent prefabs too?").arg(prefabTemplatePath.c_str()),
+                savePrefabDialog.get());
+            prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyIconContainer);
+            prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyLabel);
+            prefabSavedMessageFrame->setLayout(prefabSavedMessageLayout);
+            contentLayout->addWidget(prefabSavedMessageFrame);
+
+            AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsContainer = ConstructUnsavedPrefabsCard(templateId);
+            contentLayout->addWidget(unsavedPrefabsContainer.release());
+
+            contentLayout->addStretch();
+
+            // Footer section begins.
+            QHBoxLayout* footerLayout = new QHBoxLayout(savePrefabDialog.get());
+
+            if (useSaveAllPrefabsPreference)
+            {
+                QFrame* footerSeparatorLine = new QFrame(savePrefabDialog.get());
+                footerSeparatorLine->setObjectName(FooterSeparatorLine);
+                footerSeparatorLine->setFrameShape(QFrame::HLine);
+                contentLayout->addWidget(footerSeparatorLine);
+
+                QLabel* prefabSavePreferenceHint = new QLabel(
+                    "<u>You can prevent this window from showing in the future by updating your global save preferences.</u>",
+                    savePrefabDialog.get());
+                prefabSavePreferenceHint->setToolTip(
+                    "Go to 'Edit > Editor Settings > Global Preferences... > Global save preferences' to update your preference");
+                prefabSavePreferenceHint->setObjectName(PrefabSavePreferenceHint);
+                footerLayout->addWidget(prefabSavePreferenceHint);
+            }
+
+            QDialogButtonBox* prefabSaveConfirmationButtons =
+                new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::No, savePrefabDialog.get());
+            footerLayout->addWidget(prefabSaveConfirmationButtons);
+            contentLayout->addLayout(footerLayout);
+            connect(prefabSaveConfirmationButtons, &QDialogButtonBox::accepted, savePrefabDialog.get(), &QDialog::accept);
+            connect(prefabSaveConfirmationButtons, &QDialogButtonBox::rejected, savePrefabDialog.get(), &QDialog::reject);
+            AzQtComponents::StyleManager::setStyleSheet(savePrefabDialog->parentWidget(), QStringLiteral("style:Editor.qss"));
+
+            savePrefabDialog->setLayout(contentLayout);
+            return AZStd::move(savePrefabDialog);
+        }
+
+        AZStd::shared_ptr<QDialog> PrefabIntegrationManager::ConstructClosePrefabDialog(TemplateId templateId)
+        {
+            AZStd::shared_ptr<QDialog> closePrefabDialog = AZStd::make_shared<QDialog>(AzToolsFramework::GetActiveWindow());
+            closePrefabDialog->setWindowTitle("Unsaved files detected");
+            AZStd::weak_ptr<QDialog> closePrefabDialogWeakPtr(closePrefabDialog);
+            closePrefabDialog->setObjectName(ClosePrefabDialog);
+
+            // Main Content section begins.
+            QVBoxLayout* contentLayout = new QVBoxLayout(closePrefabDialog.get());
+            QFrame* prefabSaveWarningFrame = new QFrame(closePrefabDialog.get());
+            QHBoxLayout* levelEntitiesSaveQuestionLayout = new QHBoxLayout(closePrefabDialog.get());
+            prefabSaveWarningFrame->setObjectName(PrefabSaveWarningFrame);
+
+            // Add a warning icon next to save prefab warning.
+            prefabSaveWarningFrame->setLayout(levelEntitiesSaveQuestionLayout);
+            QPixmap warningIcon(QString(":/Notifications/warning.svg"));
+            QLabel* warningIconContainer = new QLabel(closePrefabDialog.get());
+            warningIconContainer->setPixmap(warningIcon);
+            warningIconContainer->setFixedWidth(warningIcon.width());
+            levelEntitiesSaveQuestionLayout->addWidget(warningIconContainer);
+
+            // Ask user if they want to save entities in level.
+            QLabel* prefabSaveQuestionLabel = new QLabel("Do you want to save the below unsaved prefabs?", closePrefabDialog.get());
+            levelEntitiesSaveQuestionLayout->addWidget(prefabSaveQuestionLabel);
+            contentLayout->addWidget(prefabSaveWarningFrame);
+
+            auto templateToSave = s_prefabSystemComponentInterface->FindTemplate(templateId);
+            AZ::IO::Path templateToSaveFilePath = templateToSave->get().GetFilePath();
+            AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsCard = ConstructUnsavedPrefabsCard(templateId);
+            contentLayout->addWidget(unsavedPrefabsCard.release());
+
+            contentLayout->addStretch();
+
+            QHBoxLayout* footerLayout = new QHBoxLayout(closePrefabDialog.get());
+
+            QDialogButtonBox* prefabSaveConfirmationButtons = new QDialogButtonBox(
+                QDialogButtonBox::Save | QDialogButtonBox::Discard | QDialogButtonBox::Cancel, closePrefabDialog.get());
+            footerLayout->addWidget(prefabSaveConfirmationButtons);
+            contentLayout->addLayout(footerLayout);
+            QObject::connect(prefabSaveConfirmationButtons, &QDialogButtonBox::accepted, closePrefabDialog.get(), &QDialog::accept);
+            QObject::connect(prefabSaveConfirmationButtons, &QDialogButtonBox::rejected, closePrefabDialog.get(), &QDialog::reject);
+            QObject::connect(
+                prefabSaveConfirmationButtons, &QDialogButtonBox::clicked, closePrefabDialog.get(),
+                [closePrefabDialogWeakPtr, prefabSaveConfirmationButtons](QAbstractButton* button)
+                {
+                    int prefabSaveSelection = prefabSaveConfirmationButtons->buttonRole(button);
+                    closePrefabDialogWeakPtr.lock()->done(prefabSaveSelection);
+                });
+            AzQtComponents::StyleManager::setStyleSheet(closePrefabDialog.get(), QStringLiteral("style:Editor.qss"));
+            closePrefabDialog->setLayout(contentLayout);
+            return closePrefabDialog;
+        }
+
+        AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
+        {
+            FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
+
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
+
+            for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
+            {
+                QLabel* prefabNameLabel =
+                    new QLabel(QString("<u>%1</u>").arg(dirtyTemplatePath.Filename().Native().data()), AzToolsFramework::GetActiveWindow());
+                prefabNameLabel->setObjectName(UnsavedPrefabFileName);
+                prefabNameLabel->setWordWrap(true);
+                prefabNameLabel->setToolTip(dirtyTemplatePath.Native().data());
+                prefabNameLabel->setProperty("FilePath", dirtyTemplatePath.Native().data());
+                unsavedPrefabsLayout->addWidget(prefabNameLabel);
+            }
+
+            AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsContainer = AZStd::make_unique<AzQtComponents::Card>(AzToolsFramework::GetActiveWindow());
+            unsavedPrefabsContainer->setObjectName(SaveDependentPrefabsCard);
+            unsavedPrefabsContainer->setTitle("Unsaved Prefabs");
+            unsavedPrefabsContainer->header()->setHasContextMenu(false);
+            unsavedPrefabsContainer->header()->setIcon(QIcon(QStringLiteral(":/Entity/prefab_edit.svg")));
+
+            QFrame* unsavedPrefabsFrame = new QFrame(unsavedPrefabsContainer.get());
+            unsavedPrefabsFrame->setLayout(unsavedPrefabsLayout);
+            QScrollArea* unsavedPrefabsScrollArea = new QScrollArea(unsavedPrefabsContainer.get());
+            unsavedPrefabsScrollArea->setWidget(unsavedPrefabsFrame);
+            unsavedPrefabsScrollArea->setWidgetResizable(true);
+            unsavedPrefabsContainer->setContentWidget(unsavedPrefabsScrollArea);
+
+            return AZStd::move(unsavedPrefabsContainer);
         }
     }
 }

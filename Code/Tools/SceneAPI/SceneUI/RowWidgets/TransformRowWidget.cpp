@@ -149,7 +149,7 @@ namespace AZ
                 hider->setLayout(layout2);
                 layoutOriginal->addWidget(hider);
 
-                connect(toolButton, &QToolButton::clicked, this, [this, hider, parentWidget, toolButton]
+                connect(toolButton, &QToolButton::clicked, this, [this, hider, toolButton]
                 {
                     m_expanded = !m_expanded;
                     if (m_expanded)

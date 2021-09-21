@@ -419,9 +419,9 @@ namespace AZ::IO::ZipDir
         }
 
         // defining file attributes for opening files using constants to avoid the need to include windows headers
-        constexpr int FileFlagNoBufferinf = 0x20000000;
+        constexpr int FileFlagNoBuffering = 0x20000000;
         constexpr int FileAttributeNormal = 0x00000080;
-        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileAttributeNormal | FileAttributeNormal))
+        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileFlagNoBuffering | FileAttributeNormal))
         {
             m_nSize = aznumeric_cast<int64_t>(m_unbufferedFile.Length());
             return true;
@@ -432,18 +432,18 @@ namespace AZ::IO::ZipDir
 
     bool CZipFile::EvaluateSectorSize(const char* filename)
     {
-        char volume[AZ_MAX_PATH_LEN];
+        AZ::IO::FixedMaxPath volume;
 
-        if (AZ::StringFunc::Path::IsRelative(filename))
+        if (AZ::IO::PathView(filename).IsRelative())
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename, volume, AZ_ARRAY_SIZE(volume));
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(volume, filename);
         }
         else
         {
-            azstrcpy(volume, AZ_ARRAY_SIZE(volume), filename);
+            volume = filename;
         }
 
-        AZ::IO::FixedMaxPathString drive{ AZ::IO::PathView(volume).RootName().Native() };
+        AZ::IO::FixedMaxPath drive = volume.RootName();
         if (drive.empty())
         {
             return false;
@@ -666,7 +666,9 @@ namespace AZ::IO::ZipDir
             DirEntry* pEnd = pBegin + this->numDirs;
             DirEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            if (pEntry != pEnd && !azstrnicmp(szName.data(), pEntry->GetName(pNamePool), szName.size()))
+            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
+            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
+            if (pEntry != pEnd && searchPath == entryPath)
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -690,7 +692,9 @@ namespace AZ::IO::ZipDir
             FileEntry* pEnd = pBegin + this->numFiles;
             FileEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            if (pEntry != pEnd && !azstrnicmp(szName.data(), pEntry->GetName(pNamePool), szName.size()))
+            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
+            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
+            if (pEntry != pEnd && searchPath == entryPath)
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -990,13 +994,6 @@ namespace AZ::IO::ZipDir
     }
 
     //////////////////////////////////////////////////////////////////////////
-    uint32_t FileNameHash(AZStd::string_view filename)
-    {
-        AZ::IO::StackString pathname{ filename };
-        AZStd::replace(AZStd::begin(pathname), AZStd::end(pathname), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
-
-        return AZ::Crc32(pathname);
-    }
 
     int64_t FSeek(CZipFile* file, int64_t origin, int command)
     {

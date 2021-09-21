@@ -65,7 +65,6 @@ namespace PhysX
         {
             // collision group id
             AzPhysics::CollisionGroups::Id collisionGroupId;
-            const int baseColliderComponentIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
             FindElementRecursiveAndGetData(classElement, AZ_CRC("CollisionGroupId", 0x84fe4bbe), collisionGroupId);
 
             // collider config

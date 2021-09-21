@@ -5,7 +5,6 @@
 	       QualifiedName="ScriptCanvas::Nodes::Logic::Gate"
 	       PreferredClassName="If"
            Uuid="{F19CC10A-02FD-4E75-ADAA-9CFBD8A4E2F8}"
-           Base="ScriptCanvas::Node"
            Icon="Icons/ScriptCanvas/Print.png"
            Version="0"
            GeneratePropertyFriend="True"

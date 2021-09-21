@@ -13,8 +13,6 @@
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
-#include <CryCommon/ISystem.h>
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/MatrixUtils.h>
@@ -54,7 +52,6 @@ static const int TabCharCount = 4;
 // set buffer sizes to hold max characters that can be drawn in 1 DrawString call
 static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
-static const char DrawList2DPassName[] = "2dpass";
 
 AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     : m_name(fontName)
@@ -125,17 +122,10 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
 
     Free();
 
-    auto pPak = gEnv->pCryPak;
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
 
-    AZStd::string fullFile;
-    if (pPak->IsAbsPath(fontFilePath))
-    {
-        fullFile = fontFilePath;
-    }
-    else
-    {
-        fullFile = m_curPath + fontFilePath;
-    }
+    AZ::IO::Path fullFile(m_curPath);
+    fullFile /= fontFilePath;
 
     int smoothMethodFlag = (flags & TTFFLAG_SMOOTH_MASK) >> TTFFLAG_SMOOTH_SHIFT;
     AZ::FontSmoothMethod smoothMethod = AZ::FontSmoothMethod::None;
@@ -162,42 +152,41 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
     }
 
 
-    AZ::IO::HandleType fileHandle = pPak->FOpen(fullFile.c_str(), "rb");
+    AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
+    fileIoBase->Open(fullFile.c_str(), AZ::IO::GetOpenModeFromStringMode("rb"), fileHandle);
     if (fileHandle == AZ::IO::InvalidHandle)
     {
         return false;
     }
 
-    size_t fileSize = pPak->FGetSize(fileHandle);
+    AZ::u64 fileSize{};
+    fileIoBase->Size(fileHandle, fileSize);
     if (!fileSize)
     {
-        pPak->FClose(fileHandle);
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    unsigned char* buffer = new unsigned char[fileSize];
-    if (!pPak->FReadRaw(buffer, fileSize, 1, fileHandle))
+    auto buffer = AZStd::make_unique<uint8_t[]>(fileSize);
+    if (!fileIoBase->Read(fileHandle, buffer.get(), fileSize))
     {
-        pPak->FClose(fileHandle);
-        delete [] buffer;
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    pPak->FClose(fileHandle);
+    fileIoBase->Close(fileHandle);
 
     if (!m_fontTexture)
     {
         m_fontTexture = new FontTexture();
     }
-
-    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer, (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
+    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer.get(), (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
     {
-        delete [] buffer;
         return false;
     }
 
     m_monospacedFont = m_fontTexture->GetMonospaced();
-    m_fontBuffer = buffer;
+    m_fontBuffer = AZStd::move(buffer);
     m_fontBufferSize = fileSize;
     m_fontTexDirty = false;
     m_sizeRatio = sizeRatio;
@@ -214,10 +203,9 @@ void AZ::FFont::Free()
     m_fontImageVersion = 0;
 
     delete m_fontTexture;
-    m_fontTexture = 0;
+    m_fontTexture = nullptr;
 
-    delete[] m_fontBuffer;
-    m_fontBuffer = 0;
+    m_fontBuffer.reset();
     m_fontBufferSize = 0;
 }
 

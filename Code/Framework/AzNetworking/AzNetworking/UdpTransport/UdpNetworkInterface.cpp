@@ -277,7 +277,7 @@ namespace AzNetworking
 
                 timeoutItem->UpdateTimeoutTime(startTimeMs);
 
-                bool handledPacket = false;
+                PacketDispatchResult handledPacket = PacketDispatchResult::Failure;
                 if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
                 {
                     handledPacket = connection->HandleCorePacket(m_connectionListener, header, packetSerializer);
@@ -287,7 +287,7 @@ namespace AzNetworking
                     handledPacket = m_connectionListener.OnPacketReceived(connection, header, packetSerializer);
                 }
 
-                if (handledPacket)
+                if (handledPacket == PacketDispatchResult::Success)
                 {
                     connection->UpdateHeartbeat(currentTimeMs);
                     if (connection->GetConnectionState() == ConnectionState::Connecting && !connection->GetDtlsEndpoint().IsConnecting())
@@ -299,8 +299,14 @@ namespace AzNetworking
                 else if (m_socket->IsEncrypted() && connection->GetDtlsEndpoint().IsConnecting() &&
                     !IsHandshakePacket(connection->GetDtlsEndpoint(), header.GetPacketType()))
                 {
-                    // It's possible for one side to finish its half of the handshake and start sending encrypted data
+                    // It's possible for one side to finish its half of the encryption handshake and start sending encrypted data
+                    // This will appear as a SerializationError due to the incomplete encryption handshake
                     // If it's not an expected unencrypted type then skip it for now
+                    continue;
+                }
+                else if (handledPacket == PacketDispatchResult::Skipped)
+                {
+                    // If the result is marked as skipped then do so (i.e. if a handshake is not yet complete)
                     continue;
                 }
                 else if (connection->GetConnectionState() != ConnectionState::Disconnecting)

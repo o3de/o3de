@@ -3500,7 +3500,6 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    AZ::Uuid dummyBuilderUUID = AZ::Uuid::CreateRandom();
     QDir tempPath(m_tempDir.path());
     QString watchFolderPath = tempPath.absoluteFilePath("subfolder1");
     const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
