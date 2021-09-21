@@ -176,7 +176,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
     // If the heightfield is not expanded to ensure it encompasses the shape bounds,
-    // the values returned would by 1023.
+    // the values returned would be 1023.
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
@@ -209,7 +209,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
     // If the heightfield is not expanded to ensure it encompasses the shape bounds,
-    // the values returned would by 1023.
+    // the values returned would be 1023.
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
