@@ -13,9 +13,9 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
     ly_add_pytest(
-        NAME AutomatedTesting::AtomRenderer_HydraTests_Main
+        NAME AutomatedTesting::Atom_TestSuite_Main
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
         TEST_SERIAL
         TIMEOUT 600
         RUNTIME_DEPENDENCIES
@@ -26,9 +26,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Atom
     )
     ly_add_pytest(
-        NAME AutomatedTesting::AtomRenderer_HydraTests_MainOptimized
+        NAME AutomatedTesting::Atom_TestSuite_Main_Optimized
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Optimized.py
         TEST_SERIAL
         TIMEOUT 600
         RUNTIME_DEPENDENCIES
@@ -39,9 +39,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Atom
     )
     ly_add_pytest(
-        NAME AutomatedTesting::AtomRenderer_HydraTests_Sandbox
+        NAME AutomatedTesting::Atom_TestSuite_Sandbox
         TEST_SUITE sandbox
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_SandboxSuite.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
         TEST_SERIAL
         TIMEOUT 400
         RUNTIME_DEPENDENCIES
@@ -52,28 +52,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Atom
     )
     ly_add_pytest(
-        NAME AutomatedTesting::AtomRenderer_HydraTests_GPUTests
+        NAME AutomatedTesting::Atom_TestSuite_Main_GPU
         TEST_SUITE main
         TEST_REQUIRES gpu
         TEST_SERIAL
         TIMEOUT 1200
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_GPUTests.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_GPU.py
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets
             Editor
         COMPONENT
             Atom
-    )
-    ly_add_pytest(
-        NAME AutomatedTesting::AtomRenderer_HydraTests_ShaderBuildPipeline
-        TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_ShaderBuildPipelineSuite.py
-        TEST_SERIAL
-        TIMEOUT 600
-        RUNTIME_DEPENDENCIES
-            AssetProcessor
-            AutomatedTesting.Assets
-            Editor
     )
 endif()
