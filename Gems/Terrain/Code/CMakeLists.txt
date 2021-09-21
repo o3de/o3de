@@ -21,6 +21,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
+            Gem::Atom_Feature_Common
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral

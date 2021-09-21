@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Transform.h>
-#include <RenderCommon.h>
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Model/Model.h>

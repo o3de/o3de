@@ -33,6 +33,22 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     };
 
     TerrainData m_terrainData;
+
+    //! Reflection Probe (smallest probe volume that overlaps the object position)
+    struct ReflectionProbeData
+    {
+        float3 m_aabbPos;
+        float3 m_outerAabbMin;
+        float3 m_outerAabbMax;
+        float3 m_innerAabbMin;
+        float3 m_innerAabbMax;
+        float m_padding;
+        bool m_useReflectionProbe;
+        bool m_useParallaxCorrection;
+    };
+
+    ReflectionProbeData m_reflectionProbeData;
+    TextureCube m_reflectionProbeCubeMap;
 }
 
 struct VertexInput
@@ -61,7 +77,7 @@ float GetHeight(float2 origUv)
     return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::PointSampler, uv, 0).r - 0.5f);
 }
 
-float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
+float3 GetTerrainWorldPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
 {
     // Remove all vertices outside our bounds by turning them into NaN positions.
     if (any(uv > 1.0) || any (uv < 0.0))
@@ -71,6 +87,10 @@ float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 ve
 
     // Loop up the height and calculate our final position.
     float height = GetHeight(uv);
-    float4 worldPosition = mul(GetObject_WorldMatrix(), float4(vertexPosition, height, 1.0f));
-    return mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    return mul(GetObject_WorldMatrix(), float4(vertexPosition, height, 1.0f)).xyz;
+}
+
+float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
+{
+    return mul(ViewSrg::m_viewProjectionMatrix, float4(GetTerrainWorldPosition(terrainData, vertexPosition, uv), 1.0));
 }
