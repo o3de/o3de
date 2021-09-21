@@ -78,7 +78,7 @@ namespace Maestro
 
         //////////////////////////////////////////////////////////////////////////
         // TickBus - used to refresh property displays when values are animated
-        virtual void OnTick(float deltaTime, AZ::ScriptTimePoint time);
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         //////////////////////////////////////////////////////////////////////////
 
         // TODO - this should be on a Bus, right?

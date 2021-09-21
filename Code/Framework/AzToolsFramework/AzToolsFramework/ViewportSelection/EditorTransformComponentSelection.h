@@ -33,8 +33,6 @@
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, ed_viewportStickySelect);
-
     class EditorVisibleEntityDataCache;
 
     using EntityIdSet = AZStd::unordered_set<AZ::EntityId>; //!< Alias for unordered_set of EntityIds.
@@ -207,6 +205,7 @@ namespace AzToolsFramework
         void SetSelectedEntities(const EntityIdList& entityIds);
         void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
+        void ChangeSelectedEntity(AZ::EntityId entityId);
 
         void RefreshSelectedEntityIds();
         void RefreshSelectedEntityIds(const EntityIdList& selectedEntityIds);
@@ -297,6 +296,11 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
+
+        bool PerformGroupDitto(AZ::EntityId entityId);
+        bool PerformIndividualDitto(AZ::EntityId entityId);
+        void PerformManipulatorDitto(AZ::EntityId entityId);
+        void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);

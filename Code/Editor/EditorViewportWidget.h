@@ -77,6 +77,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float AngleStep() const override;
     float ManipulatorLineBoundWidth() const override;
     float ManipulatorCircleBoundWidth() const override;
+    bool StickySelectEnabled() const override;
 };
 
 // EditorViewportWidget window
@@ -89,10 +90,8 @@ class SANDBOX_API EditorViewportWidget final
     , private Camera::EditorCameraRequestBus::Handler
     , private Camera::CameraNotificationBus::Handler
     , private AzFramework::InputSystemCursorConstraintRequestBus::Handler
-    , private AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
-    , private AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
@@ -202,10 +201,6 @@ private:
     // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
     void* GetSystemCursorConstraintWindow() const override;
 
-    // AzToolsFramework::ViewportFreezeRequestBus overrides ...
-    bool IsViewportInputFrozen() override;
-    void FreezeViewportInput(bool freeze) override;
-
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
     AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
@@ -215,9 +210,6 @@ private:
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
-
-    // EditorModifierKeyRequestBus overrides ...
-    AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
@@ -386,9 +378,6 @@ private:
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
     // Unclear if it's still necessary.
     QSet<int> m_keyDown;
-
-    // State for ViewportFreezeRequestBus, currently does nothing
-    bool m_freezeViewportInput = false;
 
     // This widget holds a reference to the manipulator manage because its responsible for drawing manipulators
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;

@@ -35,7 +35,7 @@ namespace AZ
 
         protected:
             // Pass overrides...
-            void FrameBeginInternal(FramePrepareParams params);
+            void FrameBeginInternal(FramePrepareParams params) override;
             void BuildInternal() override;
             void FrameEndInternal() override;
 

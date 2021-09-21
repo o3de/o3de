@@ -165,15 +165,6 @@ namespace AZ::Render
         m_filterParameterNeedsUpdate = true;
     }
     
-    void ProjectedShadowFeatureProcessor::SetPcfMethod(ShadowId id, PcfMethod method)
-    {
-        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetPcfMethod().");
-        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_pcfMethod = method;
-
-        m_deviceBufferNeedsUpdate = true;
-    }
-
     void ProjectedShadowFeatureProcessor::SetEsmExponent(ShadowId id, float exponent)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetEsmExponent().");
@@ -188,7 +179,7 @@ namespace AZ::Render
         
         ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_shadowFilterMethod = aznumeric_cast<uint16_t>(method);
+        shadowData.m_shadowFilterMethod = aznumeric_cast<uint32_t>(method);
 
         UpdateShadowView(shadowProperty);
         
@@ -205,19 +196,6 @@ namespace AZ::Render
         
         m_shadowmapPassNeedsUpdate = true;
         m_filterParameterNeedsUpdate = true;
-    }
-    
-    void ProjectedShadowFeatureProcessor::SetPredictionSampleCount(ShadowId id, uint16_t count)
-    {
-        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetPredictionSampleCount().");
-
-        AZ_Warning("ProjectedShadowFeatureProcessor", count <= Shadow::MaxPcfSamplingCount, "Sampling count exceed the limit.");
-        count = GetMin(count, Shadow::MaxPcfSamplingCount);
-        
-        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
-        shadowData.m_predictionSampleCount = count;
-
-        m_deviceBufferNeedsUpdate = true;
     }
     
     void ProjectedShadowFeatureProcessor::SetFilteringSampleCount(ShadowId id, uint16_t count)
@@ -508,7 +486,7 @@ namespace AZ::Render
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "ProjectedShadowFeatureProcessor: Simulate");
+        AZ_PROFILE_SCOPE(RPI, "ProjectedShadowFeatureProcessor: Simulate");
 
         if (m_shadowmapPassNeedsUpdate)
         {
@@ -603,7 +581,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::Render(const ProjectedShadowFeatureProcessor::RenderPacket& packet)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "ProjectedShadowFeatureProcessor: Render");
+        AZ_PROFILE_SCOPE(RPI, "ProjectedShadowFeatureProcessor: Render");
 
         if (!m_projectedShadowmapsPasses.empty())
         {
