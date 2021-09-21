@@ -62,7 +62,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Camera.Static
                 Gem::AtomToolsFramework.Static
-	RUNTIME_DEPENDENCIES
+        RUNTIME_DEPENDENCIES
             Legacy::EditorCommon
     )
 
