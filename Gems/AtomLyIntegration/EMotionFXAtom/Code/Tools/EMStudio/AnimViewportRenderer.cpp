@@ -9,6 +9,8 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Components/TransformComponent.h>
 
+#include <Integration/Assets/ActorAsset.h>
+#include <Integration/ActorComponentBus.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
@@ -145,6 +147,18 @@ namespace EMStudio
         m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
         m_modelEntity->Activate();
 
+        // Create an actor.
+        // TODO: Support multiple actors.
+        AzFramework::EntityContextRequestBus::EventResult(
+            m_actorEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportModel");
+        AZ_Assert(m_actorEntity != nullptr, "Failed to create model entity.");
+
+        static constexpr const char* const ActorComponentTypeId = "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}";
+        m_actorEntity->CreateComponent(ActorComponentTypeId);
+        m_actorEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
+        m_actorEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_actorEntity->Activate();
+
         // Create grid
         AzFramework::EntityContextRequestBus::EventResult(
             m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
@@ -177,6 +191,7 @@ namespace EMStudio
         DestoryEntity(m_postProcessEntity, entityContextId);
         DestoryEntity(m_cameraEntity, entityContextId);
         DestoryEntity(m_modelEntity, entityContextId);
+        DestoryEntity(m_actorEntity, entityContextId);
         DestoryEntity(m_gridEntity, entityContextId);
         m_entityContext->DestroyContext();
 
@@ -216,6 +231,13 @@ namespace EMStudio
             "objects/shaderball_simple.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_modelEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
+
+        // Reset the actor asset
+        AZ::TransformBus::Event(m_actorEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, modelTransform);
+        auto actorAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<EMotionFX::Integration::ActorAsset>(
+            "objects/characters/jack/jack.actor", AZ::RPI::AssetUtils::TraceLevel::Assert);
+        EMotionFX::Integration::ActorComponentRequestBus::Event(
+            m_actorEntity->GetId(), &EMotionFX::Integration::ActorComponentRequestBus::Events::SetActorAsset, actorAsset);
 
         Camera::Configuration cameraConfig;
         Camera::CameraRequestBus::EventResult(

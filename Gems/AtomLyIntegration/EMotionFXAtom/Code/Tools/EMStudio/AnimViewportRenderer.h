@@ -66,6 +66,7 @@ namespace EMStudio
         AZ::Entity* m_cameraEntity = nullptr;
         AZ::Component* m_cameraComponent = nullptr;
         AZ::Entity* m_modelEntity = nullptr;
+        AZ::Entity* m_actorEntity = nullptr;
         AZ::Data::AssetId m_modelAssetId;
         AZ::Entity* m_gridEntity = nullptr;
 
