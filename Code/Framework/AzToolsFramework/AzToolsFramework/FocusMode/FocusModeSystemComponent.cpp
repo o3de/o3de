@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/Component/TransformBus.h>
 
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
