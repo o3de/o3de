@@ -88,7 +88,7 @@ end
 -- @return a table with two values {min,max}. Negative values are below the surface and positive values are above the surface.
 function CalcOverallHeightRange(context)
     
-    local heightMinMax = {nil, nil}
+    local heightMinMax = {}
 
     local function GetMergedHeightRange(heightMinMax, offset, factor)
         top = offset
