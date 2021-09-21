@@ -11,11 +11,7 @@
 #include <ProjectUtils.h>
 
 #include <QDir>
-#include <QFile>
-#include <QProcess>
-#include <QProcessEnvironment>
-#include <QTextStream>
-#include <QThread>
+#include <QString>
 
 namespace O3DE::ProjectManager
 {
@@ -30,7 +26,9 @@ namespace O3DE::ProjectManager
             }
             auto currentEnvironment = environmentRequest.GetValue();
 
-            auto queryCmakeInstalled = ProjectUtils::ExecuteCommandResult("which",QStringList {"cmake"}, currentEnvironment);
+            auto queryCmakeInstalled = ProjectUtils::ExecuteCommandResult("which",
+                                                                          QStringList { ProjectCMakeCommand }, 
+                                                                          currentEnvironment);
             if (!queryCmakeInstalled.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
@@ -51,9 +49,11 @@ namespace O3DE::ProjectManager
         {
             return AZ::Failure(cmakeInstalledPathQuery.GetError());
         }
-        auto cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
+        QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
+        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+
         return AZ::Success( QStringList { cmakeInstalledPath,
-                                          "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                                          "-B", targetBuildPath,
                                           "-S", m_projectInfo.m_path,
                                           "-G", "Xcode",
                                           "-DLY_UNITY_BUILD=ON" } );
@@ -70,12 +70,15 @@ namespace O3DE::ProjectManager
         {
             return AZ::Failure(cmakeInstalledPathQuery.GetError());
         }
+
         QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+
         return AZ::Success( QStringList { cmakeInstalledPath,
                                           "--build", targetBuildPath,
                                           "--config", "profile",
-                                          "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" } );
+                                          "--target", launcherTargetName, ProjectCMakeBuildTargetEditor } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const

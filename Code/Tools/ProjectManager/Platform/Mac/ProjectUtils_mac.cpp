@@ -15,6 +15,10 @@ namespace O3DE::ProjectManager
     {
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
         {
+            // For CMake on Mac, if its installed through home-brew, then it will be installed
+            // under /usr/local/bin, which may not be in the system PATH environment. 
+            // Add that path for the command line process so that it will be able to locate
+            // a home-brew installed version of CMake
             QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
             QString pathValue = currentEnvironment.value("PATH");
             pathValue += ":/usr/local/bin";
