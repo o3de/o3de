@@ -19,13 +19,11 @@ class CUiAnimViewKeyConstHandle
 {
 public:
     CUiAnimViewKeyConstHandle()
-        : m_bIsValid(false)
-        , m_keyIndex(0)
+        : m_keyIndex(0)
         , m_pTrack(nullptr) {}
 
     CUiAnimViewKeyConstHandle(const CUiAnimViewTrack* pTrack, unsigned int keyIndex)
-        : m_bIsValid(true)
-        , m_keyIndex(keyIndex)
+        : m_keyIndex(keyIndex)
         , m_pTrack(pTrack) {}
 
     void GetKey(IKey* pKey) const;
@@ -33,7 +31,6 @@ public:
     const CUiAnimViewTrack* GetTrack() const { return m_pTrack; }
 
 private:
-    bool m_bIsValid;
     unsigned int m_keyIndex;
     const CUiAnimViewTrack* m_pTrack;
 };
@@ -118,6 +115,7 @@ class CUiAnimViewKeyBundle
 public:
     CUiAnimViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CUiAnimViewKeyBundle() = default;
 
     virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 
@@ -159,7 +157,7 @@ public:
     virtual ~CUiAnimViewNode() {}
 
     // Name
-    virtual const char* GetName() const = 0;
+    virtual AZStd::string GetName() const = 0;
     virtual bool SetName([[maybe_unused]] const char* pName) { return false; };
     virtual bool CanBeRenamed() const { return false; }
 

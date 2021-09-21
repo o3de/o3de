@@ -53,6 +53,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 
+AZ_DEFINE_BUDGET(AzToolsFramework);
+
 namespace AzToolsFramework
 {
     AzToolsFrameworkModule::AzToolsFrameworkModule()

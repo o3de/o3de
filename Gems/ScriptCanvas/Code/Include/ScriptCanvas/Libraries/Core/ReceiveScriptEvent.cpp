@@ -86,7 +86,6 @@ namespace ScriptCanvas
 
                     if (!wasConfigured)
                     {
-                        AZ::Uuid addressTypeId = m_definition.GetAddressType();
                         AZ::Uuid addressId = m_definition.GetAddressTypeProperty().GetId();
 
                         if (m_definition.IsAddressRequired())
@@ -354,7 +353,7 @@ namespace ScriptCanvas
 
             AZStd::optional<size_t> ReceiveScriptEvent::GetEventIndex(AZStd::string eventName) const
             {
-                return m_handler->GetFunctionIndex(eventName.c_str());;
+                return m_handler ? AZStd::optional<size_t>(m_handler->GetFunctionIndex(eventName.c_str())) : AZStd::nullopt;
             }
 
             AZStd::vector<SlotId> ReceiveScriptEvent::GetEventSlotIds() const
@@ -552,29 +551,6 @@ namespace ScriptCanvas
                     AZ_Verify(m_ebus->m_createHandler->InvokeResult(m_handler, &m_definition), "Behavior Context EBus handler creation failed %s", m_definition.GetName().c_str());
 
                     AZ_Assert(m_handler, "Ebus create handler failed %s", m_definition.GetName().c_str());
-                }
-
-                return true;
-            }
-
-            bool ReceiveScriptEvent::SetupHandler()
-            {
-                if (!m_handler)
-                {
-                    if (!m_asset.IsReady() && m_scriptEventAssetId.IsValid())
-                    {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                        m_asset.BlockUntilLoadComplete();
-                        CreateHandler(m_asset);
-                        CreateEbus();
-                    }
-
-                    if (!m_handler)
-                    {
-                        AZStd::string error = AZStd::string::format("Script Event receiver node was not initialized (%s)!", m_definition.GetName().c_str());
-                        SCRIPTCANVAS_REPORT_ERROR((*this), error.c_str());
-                        return false;
-                    }
                 }
 
                 return true;

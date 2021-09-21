@@ -107,17 +107,17 @@ namespace AZ
         m_used = 0;
 
         m_desc = desc;
-        m_subAllocator = 0;
+        m_subAllocator = nullptr;
 
         for (int i = 0; i < Descriptor::m_maxNumBlocks; ++i)
         {
-            m_memSpaces[i] = 0;
+            m_memSpaces[i] = nullptr;
             m_ownMemoryBlock[i] = false;
         }
 
         for (int i = 0; i < m_desc.m_numMemoryBlocks; ++i)
         {
-            if (m_desc.m_memoryBlocks[i] == 0)  // Allocate memory block if requested!
+            if (m_desc.m_memoryBlocks[i] == nullptr)  // Allocate memory block if requested!
             {
                 AZ_Assert(AllocatorInstance<SystemAllocator>::IsReady(), "You requested to allocate memory using the system allocator, but it's not created yet!");
                 m_subAllocator = &AllocatorInstance<SystemAllocator>::Get();
@@ -152,7 +152,7 @@ namespace AZ
             if (m_memSpaces[i])
             {
                 AZDLMalloc::destroy_mspace(m_memSpaces[i]);
-                m_memSpaces[i] = 0;
+                m_memSpaces[i] = nullptr;
 
                 if (m_ownMemoryBlock[i])
                 {
@@ -172,7 +172,7 @@ namespace AZ
         AZ_UNUSED(lineNum);
         AZ_UNUSED(suppressStackRecord);
         int blockId = flags;
-        AZ_Assert(m_memSpaces[blockId]!=0, "Invalid block id!");
+        AZ_Assert(m_memSpaces[blockId]!=nullptr, "Invalid block id!");
         HeapSchema::pointer_type address = AZDLMalloc::mspace_memalign(m_memSpaces[blockId], alignment, byteSize);
         if (address)
         {
@@ -186,7 +186,7 @@ namespace AZ
     {
         AZ_UNUSED(byteSize);
         AZ_UNUSED(alignment);
-        if (ptr==0)
+        if (ptr==nullptr)
         {
             return;
         }
@@ -194,7 +194,7 @@ namespace AZ
         // if we use m_spaces just count the chunk sizes.
         m_used -= ChunckSize(ptr);
 #ifdef FOOTERS
-        AZDLMalloc::mspace_free(0, ptr);                        ///< We use footers so we know which memspace the pointer belongs to.
+        AZDLMalloc::mspace_free(nullptr, ptr);                        ///< We use footers so we know which memspace the pointer belongs to.
 #else
         int i = 0;
         for (; i < m_desc.m_numMemoryBlocks; ++i)
@@ -244,11 +244,16 @@ namespace AZ
         return maxChunk;
     }
 
+    auto HeapSchema::GetMaxContiguousAllocationSize() const -> size_type
+    {
+        return MAX_REQUEST;
+    }
+
     AZ_FORCE_INLINE HeapSchema::size_type
     HeapSchema::ChunckSize(pointer_type ptr)
     {
         // based on azmalloc_usable_size + the overhead
-        if (ptr != 0)
+        if (ptr != nullptr)
         {
             mchunkptr p = mem2chunk(ptr);
             //if (is_inuse(p))  // we can even skip this check since we track for double free and so on anyway

@@ -106,7 +106,6 @@ namespace
         { AnimParamType::User, "Muted", QColor(255, 224, 224) },
     };
 
-    const int kButtonsIdBase = 0x7fff;
     const int kMaxRows = 20;
     const int kColumnWidth = 300;
     const int kRowHeight = 24;

@@ -12,6 +12,7 @@ set(FILES
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h
@@ -27,6 +28,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Include/AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
@@ -38,6 +40,7 @@ set(FILES
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
     Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentMainWindow.cpp
     Source/Document/AtomToolsDocumentSystemSettings.cpp
     Source/Document/AtomToolsDocumentSystemComponent.cpp
     Source/Document/AtomToolsDocumentSystemComponent.h

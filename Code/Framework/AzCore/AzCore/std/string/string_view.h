@@ -9,6 +9,7 @@
 
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
+#include <AzCore/std/limits.h>
 
 
 namespace AZStd
@@ -501,6 +502,9 @@ namespace AZStd
             swap(other);
         }
 
+        // C++23 overload to prevent initializing a string_view via a nullptr or integer type
+        constexpr basic_string_view(AZStd::nullptr_t) = delete;
+
         constexpr const_reference operator[](size_type index) const { return data()[index]; }
         /// Returns value, not reference. If index is out of bounds, 0 is returned (can't be reference).
         constexpr value_type at(size_type index) const
@@ -875,22 +879,7 @@ namespace AZStd
         for (; first != last; ++first)
         {
             hash ^= static_cast<size_t>(*first);
-#if AZ_COMPILER_MSVC < 1924
-            // Workaround for integer overflow warning for hash function when used in a constexpr context
-            // The warning must be disabled at the call site and is a compiler bug that has been fixed
-            // with Visual Studio 2019 version 16.4
-            // https://developercommunity.visualstudio.com/content/problem/211134/unsigned-integer-overflows-in-constexpr-functionsa.html?childToView=211580#comment-211580
-            constexpr size_t fnvPrimeHigh{ 0x100ULL };
-            constexpr size_t fnvPrimeLow{ 0x000001b3 };
-            const uint64_t hashHigh{ hash >> 32 };
-            const uint64_t hashLow{ hash & 0xFFFF'FFFF };
-            const uint64_t lowResult{ hashLow * fnvPrimeLow };
-            const uint64_t fnvPrimeHighResult{ hashLow * fnvPrimeHigh };
-            const uint64_t hashHighResult{ hashHigh * fnvPrimeLow };
-            hash = (lowResult & 0xffff'ffff) + (((lowResult >> 32) + (fnvPrimeHighResult & 0xffff'ffff) + (hashHighResult & 0xffff'ffff)) << 32);
-#else
             hash *= fnvPrime;
-#endif
         }
         return hash;
     }

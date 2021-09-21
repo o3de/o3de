@@ -123,9 +123,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
-            Device& device = GetDevice();
-            
             Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
             Image& image = static_cast<Image&>(*request.m_image);
             

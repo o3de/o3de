@@ -114,7 +114,7 @@ namespace AZ
                      //Autoreleasepool is to ensure that the driver is not leaking memory related to the command buffer and encoder
                      @autoreleasepool
                      {
-                         AZ_PROFILE_SCOPE(AzRender, "ExecuteWork");
+                         AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                          AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
                          
                          if (request.m_signalFenceValue > 0)

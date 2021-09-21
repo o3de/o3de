@@ -1,6 +1,0 @@
-<download name="C15308217_NoCrash_LevelSwitchWithTerrain" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39202" md5="a3b61b101a26658d4c445a487f7bca2e"/>
- </files>
-</download>

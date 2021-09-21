@@ -20,6 +20,8 @@
 #include <foundation/PxVec4.h>
 #include <foundation/PxQuat.h>
 
+AZ_DEFINE_BUDGET(Cloth);
+
 namespace NvCloth
 {
     namespace Internal

@@ -51,20 +51,9 @@
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(LINUX) || defined(APPLE)
     #define __STDC_FORMAT_MACROS
-    #include <inttypes.h>
-    #if defined(APPLE) || defined(LINUX64)
-    // int64 is not the same type as the operating system's int64_t
-        #undef PRIX64
-        #undef PRIx64
-        #undef PRId64
-        #undef PRIu64
-        #define PRIX64 "llX"
-        #define PRIx64 "llx"
-        #define PRId64 "lld"
-        #define PRIu64 "llu"
-    #endif
+    #include <cinttypes>
 #else
-    #include <inttypes.h>
+    #include <cinttypes>
 #endif
 
 #if !defined(PRISIZE_T)
@@ -353,12 +342,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-// Include support for meta-type data.
-#include "TypeInfo_decl.h"
-
-// Include array.
-#include <CryArray.h>
-
 bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
 
@@ -370,16 +353,6 @@ threadID CryGetCurrentThreadId();
     #define NO_INLINE _declspec(noinline)
     #define NO_INLINE_WEAK _declspec(noinline) inline
     #define __PACKED
-#endif
-
-// Fallback for Alignment macro of GCC/CLANG (must be after the class definition)
-#if !defined(_ALIGN)
-    #define _ALIGN(num) AZ_POP_DISABLE_WARNING
-#endif
-
-// Fallback for Alignment macro of MSVC (must be before the class definition)
-#if !defined(_MS_ALIGN)
-        #define _MS_ALIGN(num) AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option")
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)

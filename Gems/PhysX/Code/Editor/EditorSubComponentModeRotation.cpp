@@ -84,10 +84,9 @@ namespace PhysX
             m_rotationManipulators[i]->SetAxis(axes[i]);
             m_rotationManipulators[i]->SetLocalTransform(localTransform);
             const float manipulatorRadius = 2.0f;
-            const float manipulatorWidth = 0.05f;
             m_rotationManipulators[i]->SetView(AzToolsFramework::CreateManipulatorViewCircle(
-                *m_rotationManipulators[i], colors[i],
-                manipulatorRadius, manipulatorWidth, AzToolsFramework::DrawHalfDottedCircle));
+                *m_rotationManipulators[i], colors[i], manipulatorRadius,
+                AzToolsFramework::ManipulatorCicleBoundWidth(), AzToolsFramework::DrawHalfDottedCircle));
         }
         
         Refresh();

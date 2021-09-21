@@ -57,6 +57,7 @@ namespace AZ
         AZ_FORCE_INLINE size_type           NumAllocatedBytes() const               { return m_used; }
         AZ_FORCE_INLINE size_type           Capacity() const                        { return m_desc.m_memoryBlockByteSize; }
         size_type                           GetMaxAllocationSize() const;
+        size_type                           GetMaxContiguousAllocationSize() const;
         AZ_FORCE_INLINE IAllocatorAllocate* GetSubAllocator() const                 { return m_desc.m_mapAllocator; }
 
         /**

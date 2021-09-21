@@ -203,9 +203,6 @@ namespace EMStudio
         QAction*                m_saveAllAction;
         QAction*                m_mergeActorAction;
         QAction*                m_saveSelectedActorsAction;
-#ifdef EMFX_DEVELOPMENT_BUILD
-        QAction*                m_saveSelectedActorAsAttachmentsAction;
-#endif
 
         // application mode
         QComboBox*              m_applicationMode;
@@ -293,7 +290,7 @@ namespace EMStudio
             /// CommandManagerCallback implementation
             void OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPostExecuteCommand(MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/, bool /*wasSuccess*/, const AZStd::string& /*outResult*/) override { }
-            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine);
+            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPreExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*undo*/) override { }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*wasSuccess*/) override { }
             void OnAddCommandToHistory(size_t /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }

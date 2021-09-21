@@ -100,13 +100,11 @@ namespace EMotionFX
 
     TEST_P(AnimGraphStateMachineSyncFixture, PlayspeedTests)
     {
-        const AnimGraphStateMachineSyncParam param = GetParam();
-
         bool transitioned = false;
         Simulate(2.0f/*simulationTime*/, 10.0f/*expectedFps*/, 0.0f/*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int){},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int){},
             /*postUpdateCallback*/[this, &transitioned](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, [[maybe_unused]] int frame)
             {
                 if (m_rootStateMachine->IsTransitionActive(m_transition, animGraphInstance))

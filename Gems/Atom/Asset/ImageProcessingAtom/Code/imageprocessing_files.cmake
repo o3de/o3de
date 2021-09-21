@@ -114,6 +114,8 @@ set(FILES
     ../External/CubeMapGen/CImageSurface.cpp
     ../External/CubeMapGen/CImageSurface.h
     ../External/CubeMapGen/VectorMacros.h
+    Source/Compressors/ASTCCompressor.cpp
+    Source/Compressors/ASTCCompressor.h
     Source/Compressors/Compressor.h
     Source/Compressors/Compressor.cpp
     Source/Compressors/CTSquisher.h
@@ -129,6 +131,8 @@ set(FILES
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.h
     Source/Compressors/CryTextureSquisher/ColorTypes.h
+    Source/Compressors/ISPCTextureCompressor.cpp
+    Source/Compressors/ISPCTextureCompressor.h
     Source/Thumbnail/ImageThumbnail.cpp
     Source/Thumbnail/ImageThumbnail.h
     Source/Thumbnail/ImageThumbnailSystemComponent.cpp

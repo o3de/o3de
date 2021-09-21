@@ -22,8 +22,6 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Debug/FrameProfilerBus.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/UnitTest/TestTypes.h>
 

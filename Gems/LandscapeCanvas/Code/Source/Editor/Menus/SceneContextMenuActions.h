@@ -22,7 +22,11 @@ namespace LandscapeCanvasEditor
         virtual ~FindSelectedNodesAction() = default;
 
         GraphCanvas::ActionGroupId GetActionGroupId() const override;
+
+        using GraphCanvas::ContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::ContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
     private:

@@ -327,12 +327,8 @@ namespace
 
 }
 
-AZ::AtomFont::AtomFont(ISystem* system)
-    : m_system(system)
-    , m_fonts()
+AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 {
-    assert(m_system);
-
     CryLogAlways("Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
 
     // Persist fonts for application lifetime to prevent unnecessary work
@@ -735,20 +731,14 @@ IFFont* AZ::AtomFont::LoadFont(const char* fontName)
         font = NewFont(fontNameLower.c_str());
         if (!font)
         {
-            AZStd::string errorMsg = "Error creating a new font named ";
-            errorMsg += fontNameLower;
-            errorMsg += ".";
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error creating a new font named %s.", fontNameLower.c_str());
         }
         else
         {
             // creating font adds one to its refcount so no need for AddRef here
             if (!font->Load(fontNameLower.c_str()))
             {
-                AZStd::string errorMsg = "Error loading a font from ";
-                errorMsg += fontNameLower;
-                errorMsg += ".";
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error loading a font from %s.", fontNameLower.c_str());
                 font->Release();
                 font = nullptr;
             }
@@ -796,8 +786,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     AZStd::to_lower<AZStd::string::iterator>(loweredFilename.begin(), loweredFilename.end());
     if (m_fontFamilies.find(loweredFilename) != m_fontFamilies.end())
     {
-        AZStd::string warnMsg = AZStd::string::format("Couldn't load Font Family '%s': already loaded", fontFamilyFilename);
-        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't load Font Family '%s': already loaded", fontFamilyFilename);
         return false;
     }
 
@@ -807,8 +796,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     AZStd::to_lower<AZStd::string::iterator>(loweredFontFamilyName.begin(), loweredFontFamilyName.end());
     if (m_fontFamilies.find(loweredFontFamilyName) != m_fontFamilies.end())
     {
-        AZStd::string warnMsg = AZStd::string::format("Couldn't load Font Family '%s': already loaded", fontFamilyName);
-        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't load Font Family '%s': already loaded", fontFamilyName);
         return false;
     }
 

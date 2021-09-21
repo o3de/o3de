@@ -191,10 +191,51 @@ namespace AssetProcessor
             response.m_createJobOutputs.push_back(AZStd::move(job));
         }
 
-        AZ::IO::Path settingsRegistryWildcard = AZ::SettingsRegistryInterface::RegistryFolder;
+        AZ::IO::Path settingsRegistryWildcard = AZStd::string_view(AZ::Utils::GetEnginePath());
+        settingsRegistryWildcard /= AZ::SettingsRegistryInterface::RegistryFolder;
         settingsRegistryWildcard /= "*.setreg";
         response.m_sourceFileDependencyList.emplace_back(AZStd::move(settingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+
+        auto projectPath = AZ::IO::Path(AZStd::string_view(AZ::Utils::GetProjectPath()));
+        response.m_sourceFileDependencyList.emplace_back(
+            AZStd::move((projectPath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg").Native()),
+            AZ::Uuid::CreateNull(),
+            AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+        response.m_sourceFileDependencyList.emplace_back(
+            AZStd::move((projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "*.setreg").Native()),
+            AZ::Uuid::CreateNull(),
+            AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+
+        if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
+        {
+            AZStd::vector<AzFramework::GemInfo> gemInfos;
+            if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
+            {
+                // Gather unique list of Settings Registry wildcard directories
+                AZStd::vector<AZ::IO::Path> gemSettingsRegistryWildcards;
+                for (const AzFramework::GemInfo& gemInfo : gemInfos)
+                {
+                    for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
+                    {
+                        auto gemSettingsRegistryWildcard = absoluteSourcePath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg";
+                        if (auto foundIt = AZStd::find(gemSettingsRegistryWildcards.begin(), gemSettingsRegistryWildcards.end(), gemSettingsRegistryWildcard);
+                            foundIt == gemSettingsRegistryWildcards.end())
+                        {
+                            gemSettingsRegistryWildcards.emplace_back(gemSettingsRegistryWildcard);
+                        }
+                    }
+                }
+
+                // Add to the Source File Dependency list
+                for (AZ::IO::Path& gemSettingsRegistryWildcard : gemSettingsRegistryWildcards)
+                {
+                    response.m_sourceFileDependencyList.emplace_back(
+                        AZStd::move(gemSettingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
+                        AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+                }
+            }
+        }
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
@@ -337,7 +378,7 @@ namespace AssetProcessor
                 // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
-                AZ::ComponentApplicationBus::Broadcast([&registry, &commandLine](AZ::ComponentApplicationRequests* appRequests)
+                AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });

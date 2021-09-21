@@ -3,11 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Hydra script that is used to create a new level with a default rendering setup.
-After the level is setup, screenshots are diffed against golden images are used to verify pass/fail results of the test.
-
-See the run() function for more in-depth test info.
 """
 
 import os

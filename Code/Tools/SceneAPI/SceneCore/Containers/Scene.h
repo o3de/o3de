@@ -63,7 +63,7 @@ namespace AZ
                 SceneGraph m_graph;
                 SceneManifest m_manifest;
                 SceneOrientation m_originalOrientation = SceneOrientation::YUp;
-            AZ_POP_DISABLE_OVERRIDE_WARNING
+            AZ_POP_DISABLE_WARNING
             };
         } // Containers
     } // SceneAPI

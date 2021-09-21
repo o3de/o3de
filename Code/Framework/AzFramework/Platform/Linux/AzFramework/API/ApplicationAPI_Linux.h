@@ -55,6 +55,29 @@ namespace AzFramework
 
     using LinuxXcbConnectionManagerBus = AZ::EBus<LinuxXcbConnectionManager, LinuxXcbConnectionManagerBusTraits>;
     using LinuxXcbConnectionManagerInterface = AZ::Interface<LinuxXcbConnectionManager>;
+    
+    class LinuxXcbEventHandler
+    {
+    public:
+        AZ_RTTI(LinuxXcbEventHandler, "{3F756E14-8D74-42FD-843C-4863307710DB}");
+
+        virtual ~LinuxXcbEventHandler() = default;
+
+        virtual void HandleXcbEvent(xcb_generic_event_t* event) = 0;
+    };
+
+    class LinuxXcbEventHandlerBusTraits
+        : public AZ::EBusTraits
+    {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            //////////////////////////////////////////////////////////////////////////
+    };
+
+    using LinuxXcbEventHandlerBus = AZ::EBus<LinuxXcbEventHandler, LinuxXcbEventHandlerBusTraits>;
 
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 } // namespace AzFramework

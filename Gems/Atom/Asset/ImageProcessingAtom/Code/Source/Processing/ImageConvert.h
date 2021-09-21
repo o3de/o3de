@@ -122,6 +122,8 @@ namespace ImageProcessingAtom
         // Get output JobProducts and append them to the outProducts vector.
         void GetAppendOutputProducts(AZStd::vector<AssetBuilderSDK::JobProduct>& outProducts);
 
+        const ImageConvertProcessDescriptor* GetInputDesc() const;
+
     private:
         //input image and settings
         AZStd::shared_ptr<ImageConvertProcessDescriptor> m_input;
@@ -161,7 +163,7 @@ namespace ImageProcessingAtom
         bool FillCubemapMipmaps();
 
         //IBL cubemap generation, this creates a separate ImageConvertProcess
-        void CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr cubemapImage);
+        void CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
 
         //convert color space to linear with pixel format rgba32f
         bool ConvertToLinear();
