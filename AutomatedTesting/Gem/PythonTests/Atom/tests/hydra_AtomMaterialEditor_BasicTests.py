@@ -18,7 +18,7 @@ import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devassets, "Gem", "PythonTests"))
 
-import atom_renderer.atom_utils.material_editor_utils as material_editor
+import Atom.atom_utils.material_editor_utils as material_editor
 
 NEW_MATERIAL = "test_material.material"
 NEW_MATERIAL_1 = "test_material_1.material"
