@@ -49,14 +49,14 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        return QStringList { "cmake",
-                             "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                             "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" };
+        return AZ::Success( QStringList { "cmake",
+                                          "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                                          "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
     {
-        return QStringList { "kill", "-9", pidToKill };
+        return AZ::Success( QStringList { "kill", "-9", pidToKill } );
     }
 
 } // namespace O3DE::ProjectManager
