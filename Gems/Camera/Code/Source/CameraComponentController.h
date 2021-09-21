@@ -16,15 +16,12 @@
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 
-#include <IViewSystem.h>
-#include <ISystem.h>
-#include <Cry_Camera.h>
-
 namespace Camera
 {
     static constexpr float DefaultFoV = 75.0f;
     static constexpr float MinFoV = std::numeric_limits<float>::epsilon();
     static constexpr float MaxFoV = AZ::RadToDeg(AZ::Constants::Pi);
+    static constexpr float MinimumNearPlaneDistance = 0.001f;
     static constexpr float DefaultNearPlaneDistance = 0.2f;
     static constexpr float DefaultFarClipPlaneDistance = 1024.0f;
     static constexpr float DefaultFrustumDimension = 256.f;
@@ -68,6 +65,10 @@ namespace Camera
 
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
+
+        //! Defines a callback for determining whether this camera should push itself to the top of the Atom camera stack.
+        //! Used by the Editor to disable undesirable camera changes in edit mode.
+        void SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction);
 
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
@@ -134,10 +135,6 @@ namespace Camera
         bool m_updatingTransformFromEntity = false;
         bool m_isActiveView = false;
 
-        // Cry view integration
-        IView* m_view = nullptr;
-        AZ::u32 m_prevViewId = 0;
-        IViewSystem* m_viewSystem = nullptr;
-        ISystem* m_system = nullptr;
+        AZStd::function<bool()> m_shouldActivateFn;
     };
 } // namespace Camera

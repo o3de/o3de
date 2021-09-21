@@ -56,6 +56,8 @@ set(FILES
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
+    Source/EngineScreenCtrl.h
+    Source/EngineScreenCtrl.cpp
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h
@@ -98,4 +100,14 @@ set(FILES
     Source/GemCatalog/GemRequirementListView.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h
     Source/GemCatalog/GemSortFilterProxyModel.cpp
+    Source/GemRepo/GemRepoScreen.h
+    Source/GemRepo/GemRepoScreen.cpp
+    Source/GemRepo/GemRepoInfo.h
+    Source/GemRepo/GemRepoInfo.cpp
+    Source/GemRepo/GemRepoItemDelegate.h
+    Source/GemRepo/GemRepoItemDelegate.cpp
+    Source/GemRepo/GemRepoListView.h
+    Source/GemRepo/GemRepoListView.cpp
+    Source/GemRepo/GemRepoModel.h
+    Source/GemRepo/GemRepoModel.cpp
 )
