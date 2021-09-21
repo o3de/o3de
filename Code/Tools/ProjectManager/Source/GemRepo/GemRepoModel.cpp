@@ -7,8 +7,10 @@
  */
 
 #include <GemRepo/GemRepoModel.h>
+#include <PythonBindings.h>
 
 #include <QItemSelectionModel>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -16,6 +18,7 @@ namespace O3DE::ProjectManager
         : QStandardItemModel(parent)
     {
         m_selectionModel = new QItemSelectionModel(this, parent);
+        m_gemModel = new GemModel(this);
     }
 
     QItemSelectionModel* GemRepoModel::GetSelectionModel() const
@@ -37,8 +40,17 @@ namespace O3DE::ProjectManager
         item->setData(gemRepoInfo.m_repoLink, RoleRepoLink);
         item->setData(gemRepoInfo.m_lastUpdated, RoleLastUpdated);
         item->setData(gemRepoInfo.m_path, RolePath);
+        item->setData(gemRepoInfo.m_additionalInfo, RoleAdditionalInfo);
+        item->setData(gemRepoInfo.m_includedGemPaths, RoleIncludedGems);
 
         appendRow(item);
+
+        QVector<GemInfo> includedGemInfos = GetIncludedGemInfos(item->index());
+
+        for (const GemInfo& gemInfo : includedGemInfos)
+        {
+            m_gemModel->AddGem(gemInfo);
+        }
     }
 
     void GemRepoModel::Clear()
@@ -61,6 +73,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleSummary).toString();
     }
 
+    QString GemRepoModel::GetAdditionalInfo(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleAdditionalInfo).toString();
+    }
+
     QString GemRepoModel::GetDirectoryLink(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDirectoryLink).toString();
@@ -81,6 +98,45 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
+    QStringList GemRepoModel::GetIncludedGemPaths(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleIncludedGems).toStringList();
+    }
+
+    QStringList GemRepoModel::GetIncludedGemNames(const QModelIndex& modelIndex)
+    {
+        QStringList gemNames;
+        QVector<GemInfo> gemInfos = GetIncludedGemInfos(modelIndex);
+
+        for (const GemInfo& gemInfo : gemInfos)
+        {
+            gemNames.append(gemInfo.m_displayName);
+        }
+
+        return gemNames;
+    }
+
+    QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)
+    {
+        QVector<GemInfo> allGemInfos;
+        QStringList repoGemPaths = GetIncludedGemPaths(modelIndex);
+
+        for (const QString& gemPath : repoGemPaths)
+        {
+            AZ::Outcome<GemInfo> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(gemPath);
+            if (gemInfoResult.IsSuccess())
+            {
+                allGemInfos.append(gemInfoResult.GetValue());
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Gem Not Found"), QString("Cannot find info for gem %1.").arg(gemPath));
+            }
+        }
+
+        return allGemInfos;
+    }
+
     bool GemRepoModel::IsEnabled(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIsEnabled).toBool();
@@ -89,6 +145,11 @@ namespace O3DE::ProjectManager
     void GemRepoModel::SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled)
     {
         model.setData(modelIndex, isEnabled, RoleIsEnabled);
+    }
+
+    bool GemRepoModel::HasAdditionalInfo(const QModelIndex& modelIndex)
+    {
+        return !modelIndex.data(RoleAdditionalInfo).toString().isEmpty();
     }
 
 } // namespace O3DE::ProjectManager

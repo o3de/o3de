@@ -8,6 +8,7 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
+
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
@@ -189,28 +190,5 @@ namespace O3DE::ProjectManager
         m_versionLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-    }
-
-    GemInspector::GemsSubWidget::GemsSubWidget(QWidget* parent)
-        : QWidget(parent)
-    {
-        m_layout = new QVBoxLayout();
-        m_layout->setAlignment(Qt::AlignTop);
-        m_layout->setMargin(0);
-        setLayout(m_layout);
-
-        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 16, s_headerColor);
-        m_textLabel = GemInspector::CreateStyledLabel(m_layout, 10, s_textColor);
-        m_textLabel->setWordWrap(true);
-
-        m_tagWidget = new TagContainerWidget();
-        m_layout->addWidget(m_tagWidget);
-    }
-
-    void GemInspector::GemsSubWidget::Update(const QString& title, const QString& text, const QStringList& gemNames)
-    {
-        m_titleLabel->setText(title);
-        m_textLabel->setText(text);
-        m_tagWidget->Update(gemNames);
     }
 } // namespace O3DE::ProjectManager

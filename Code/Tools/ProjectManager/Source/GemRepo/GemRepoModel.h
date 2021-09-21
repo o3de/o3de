@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QStandardItemModel>
 #include <GemRepo/GemRepoInfo.h>
+#include <GemCatalog/GemModel.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
@@ -32,13 +33,19 @@ namespace O3DE::ProjectManager
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
         static QString GetSummary(const QModelIndex& modelIndex);
+        static QString GetAdditionalInfo(const QModelIndex& modelIndex);
         static QString GetDirectoryLink(const QModelIndex& modelIndex);
         static QString GetRepoLink(const QModelIndex& modelIndex);
         static QDateTime GetLastUpdated(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
 
+        static QStringList GetIncludedGemPaths(const QModelIndex& modelIndex);
+        static QStringList GetIncludedGemNames(const QModelIndex& modelIndex);
+        static QVector<GemInfo> GetIncludedGemInfos(const QModelIndex& modelIndex);
+
         static bool IsEnabled(const QModelIndex& modelIndex);
         static void SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled);
+        static bool HasAdditionalInfo(const QModelIndex& modelIndex);
 
     private:
         enum UserRole
@@ -50,9 +57,13 @@ namespace O3DE::ProjectManager
             RoleDirectoryLink,
             RoleRepoLink,
             RoleLastUpdated,
-            RolePath
+            RolePath,
+            RoleAdditionalInfo,
+            RoleIncludedGems,
         };
 
         QItemSelectionModel* m_selectionModel = nullptr;
+
+        GemModel* m_gemModel = nullptr;
     };
 } // namespace O3DE::ProjectManager
