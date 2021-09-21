@@ -59,9 +59,6 @@ namespace AZ
             // Returns the component transform which includes uniform-scale, rotation and translation
             AZ::Transform GetWorldTransform() const;
 
-            // Returns the optional non-uniform scale of the component.
-            AZ::Vector3 GetNonUniformScale() const;
-
             // Returns the full transform, including both the uniform scale and non-uniform scale along with rotation and translation
             AZ::Matrix3x4 GetWorldTransformWithNonUniformScale() const;
 

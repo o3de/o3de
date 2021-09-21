@@ -106,19 +106,12 @@ namespace AZ
             return transform;
         }
 
-        AZ::Vector3 EditorDecalComponent::GetNonUniformScale() const
-        {
-            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-            return nonUniformScale;
-        }
-
         AZ::Matrix3x4 EditorDecalComponent::GetWorldTransformWithNonUniformScale() const
         {
             const AZ::Transform worldTransform = GetWorldTransform();
             const AZ::Matrix3x3 rotationMat = AZ::Matrix3x3::CreateFromQuaternion(worldTransform.GetRotation());
 
-            const AZ::Vector3 nonUniformScale = GetNonUniformScale() * worldTransform.GetUniformScale();
+            const AZ::Vector3 nonUniformScale = m_controller.m_cachedNonUniformScale * worldTransform.GetUniformScale();
             const AZ::Matrix3x3 nonUniformScaleMat = AZ::Matrix3x3::CreateScale(nonUniformScale);
             const AZ::Matrix3x3 rotationAndScale = rotationMat * nonUniformScaleMat;
 
