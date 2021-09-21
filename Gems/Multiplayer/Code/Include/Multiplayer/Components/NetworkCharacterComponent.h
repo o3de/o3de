@@ -31,13 +31,9 @@ namespace Multiplayer
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkCharacterComponent, s_networkCharacterComponentConcreteUuid, Multiplayer::NetworkCharacterComponentBase)
 
         static void Reflect(AZ::ReflectContext* context);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetworkCharacterComponent();
-
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
-        }
 
         // AZ::Component
         void OnInit() override {}

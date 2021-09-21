@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.h>

@@ -19,7 +19,6 @@
 
 namespace Multiplayer
 {
-    
     bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB)
     {
         PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
@@ -92,6 +91,11 @@ namespace Multiplayer
                 ->Version(1);
         }
         NetworkCharacterComponentBase::Reflect(context);
+    }
+
+    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()
