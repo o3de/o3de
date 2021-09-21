@@ -2514,9 +2514,10 @@ namespace LandscapeCanvasEditor
         m_prefabPropagationInProgress = false;
 
         // After prefab propagation is complete, the entity tied to one of our open
-        // graphs might have been deleted (e.g. if a prefab was created from that entity),
-        // so we need to close that graph to be safe. We need to close them in a separate
-        // iterator because the CloseEditor API will end up modifying m_dockWidgetsByEntity.
+        // graphs might have been deleted (e.g. if a prefab was created from that entity).
+        // Any open graphs tied to an entity that no longer exists will need to be closed.
+        // We need to close them in a separate iterator because the CloseEditor API will
+        // end up modifying m_dockWidgetsByEntity.
         AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToDelete;
         for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
         {
