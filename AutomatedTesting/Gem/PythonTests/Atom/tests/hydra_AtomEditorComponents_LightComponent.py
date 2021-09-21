@@ -17,7 +17,7 @@ import azlmbr.legacy.general as general
 sys.path.append(os.path.join(azlmbr.paths.devassets, "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
-from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES
+from Atom.atom_utils.atom_constants import LIGHT_TYPES
 
 LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
 SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES = [
