@@ -37,7 +37,7 @@ namespace AZStd
             AZStd::apply(AZStd::move(fn), AZStd::move(argsTuple));
         };
         Internal::thread_info* ti = Internal::create_thread_info(AZStd::move(threadfunc));
-        m_thread.m_handle = Internal::create_thread(&desc, ti);
+        m_thread = Internal::create_thread(&desc, ti);
     }
 
     inline bool thread::joinable() const
