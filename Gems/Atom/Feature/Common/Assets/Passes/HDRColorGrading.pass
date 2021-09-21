@@ -96,7 +96,7 @@
                             "Value": 0.0 // -1 ... 1
                         },
                         {
-                            "Name": "m_splitToneMix",
+                            "Name": "m_splitToneWeight",
                             "Value": 0.0 // 0 ... 1
                         },
                         {
@@ -120,7 +120,7 @@
                             "Value": 1.0 // 0 ... 1
                         },
                         {
-                            "Name": "m_smhMix",
+                            "Name": "m_smhWeight",
                             "Value": 0.0 // 0 ... 1
                         }
                     ],
