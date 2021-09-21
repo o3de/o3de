@@ -11,6 +11,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzCore/Math/IntersectSegment.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace Render
@@ -106,7 +108,7 @@ namespace AZ
 
         AZ::Vector3 EditorDecalComponent::GetNonUniformScale() const
         {
-            AZ::Vector3 nonUniformScale;
+            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
             return nonUniformScale;
         }
