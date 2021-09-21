@@ -25,7 +25,7 @@ namespace UnitTest
 
     void EditorCameraTestEnvironment::AddGemsAndComponents()
     {
-        AddDynamicModulePaths({ "Camera.Editor" });
+        AddDynamicModulePaths({ CAMERA_EDITOR_MODULE });
         AddComponentDescriptors({ AzToolsFramework::Components::TransformComponent::CreateDescriptor() });
     }
 
