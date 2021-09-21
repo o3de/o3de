@@ -14,6 +14,7 @@ namespace O3DE::ProjectManager
     inline constexpr static int ProjectPreviewImageWidth = 210;
     inline constexpr static int ProjectPreviewImageHeight = 280;
     inline constexpr static int ProjectTemplateImageWidth = 92;
+    inline constexpr static int ProjectCommandLineTimeoutSeconds = 30;
 
     static const QString ProjectBuildDirectoryName = "build";
     extern const QString ProjectBuildPathPostfix;
@@ -24,4 +25,5 @@ namespace O3DE::ProjectManager
     
     static const QString ProjectCMakeCommand = "cmake";
     static const QString ProjectCMakeBuildTargetEditor = "Editor";
+
 } // namespace O3DE::ProjectManager

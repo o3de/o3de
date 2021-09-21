@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
             auto currentEnvironment = environmentRequest.GetValue();
 
             auto queryCmakeInstalled = ProjectUtils::ExecuteCommandResult("which",
-                                                                          QStringList { ProjectCMakeCommand }, 
+                                                                          QStringList{ProjectCMakeCommand}, 
                                                                           currentEnvironment);
             if (!queryCmakeInstalled.IsSuccess())
             {
@@ -52,11 +52,10 @@ namespace O3DE::ProjectManager
         QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
 
-        return AZ::Success( QStringList { cmakeInstalledPath,
-                                          "-B", targetBuildPath,
-                                          "-S", m_projectInfo.m_path,
-                                          "-G", "Xcode",
-                                          "-DLY_UNITY_BUILD=ON" } );
+        return AZ::Success(QStringList{cmakeInstalledPath,
+                                       "-B", targetBuildPath,
+                                       "-S", m_projectInfo.m_path,
+                                       "-G", "Xcode"});
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
@@ -75,15 +74,15 @@ namespace O3DE::ProjectManager
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
 
-        return AZ::Success( QStringList { cmakeInstalledPath,
-                                          "--build", targetBuildPath,
-                                          "--config", "profile",
-                                          "--target", launcherTargetName, ProjectCMakeBuildTargetEditor } );
+        return AZ::Success(QStringList{cmakeInstalledPath,
+                                        "--build", targetBuildPath,
+                                        "--config", "profile",
+                                        "--target", launcherTargetName, ProjectCMakeBuildTargetEditor});
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
     {
-        return AZ::Success( QStringList { "kill", "-9", pidToKill } );
+        return AZ::Success(QStringList{"kill", "-9", pidToKill});
     }
     
 } // namespace O3DE::ProjectManager

@@ -22,6 +22,8 @@
 #include <QSpacerItem>
 #include <QGridLayout>
 
+#include <AzCore/std/chrono/chrono.h>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
@@ -508,7 +510,11 @@ namespace O3DE::ProjectManager
             return ProjectManagerScreen::Invalid;
         }
 
-        AZ::Outcome<QString, QString> ExecuteCommandResult(const QString& cmd, const QStringList& arguments, const QProcessEnvironment& processEnv)
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QProcessEnvironment& processEnv,
+            int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
         {
             QProcess execProcess;
             execProcess.setProcessEnvironment(processEnv);
@@ -518,10 +524,10 @@ namespace O3DE::ProjectManager
             {
                 return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
             }
-            constexpr int execTimeoutSecs = 30;
-            if (!execProcess.waitForFinished(execTimeoutSecs * 1000))
+
+            if (!execProcess.waitForFinished(commandTimeoutSeconds * 1000 /* Milliseconds per second */))
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(execTimeoutSecs));
+                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
             }
             int resultCode = execProcess.exitCode();
             if (resultCode != 0)

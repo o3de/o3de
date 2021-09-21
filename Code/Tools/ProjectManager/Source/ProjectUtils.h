@@ -9,6 +9,7 @@
 
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
+#include <ProjectManagerDefs.h>
 
 #include <QWidget>
 #include <QProcessEnvironment>
@@ -34,7 +35,11 @@ namespace O3DE::ProjectManager
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
 
-        AZ::Outcome<QString, QString> ExecuteCommandResult(const QString& cmd, const QStringList& arguments, const QProcessEnvironment& processEnv);
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QProcessEnvironment& processEnv,
+            int commandTimeoutSeconds = ProjectCommandLineTimeoutSeconds);
 
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
 

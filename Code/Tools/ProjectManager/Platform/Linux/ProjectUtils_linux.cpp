@@ -29,10 +29,10 @@ namespace O3DE::ProjectManager
             }
 
             // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested for O3DE.
-            QStringList supportedClangCommands = { "clang-12", "clang-6" };
+            QStringList supportedClangCommands = {"clang-12", "clang-6"};
             for (const QString& supportClangCommand : supportedClangCommands)
             {
-                auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ supportClangCommand }, QProcessEnvironment::systemEnvironment());
+                auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{supportClangCommand}, QProcessEnvironment::systemEnvironment());
                 if (whichClangResult.IsSuccess())
                 {
                     return AZ::Success(supportClangCommand);

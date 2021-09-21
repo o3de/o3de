@@ -63,11 +63,11 @@ namespace O3DE::ProjectManager
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
-                QStringList vsWhereBaseArguments = QStringList { "-version",
-                                                                 "16.9.2",
-                                                                 "-latest",
-                                                                 "-requires",
-                                                                 "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
+                QStringList vsWhereBaseArguments = QStringList{"-version",
+                                                               "16.9.2",
+                                                               "-latest",
+                                                               "-requires",
+                                                               "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"};
 
                 QProcess vsWhereIsCompleteProcess;
                 vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
                     {
                         QProcess vsWhereCompilerVersionProcess;
                         vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
-                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "catalog_productDisplayVersion" });
+                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{"-property", "catalog_productDisplayVersion"});
 
                         if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
                         {
