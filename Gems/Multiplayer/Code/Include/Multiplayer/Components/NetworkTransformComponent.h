@@ -29,25 +29,8 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnPreRender(float deltaTime, float blendFactor);
+        void OnPreRender(float deltaTime);
         void OnCorrection();
-
-        void OnRotationChangedEvent(const AZ::Quaternion& rotation);
-        void OnTranslationChangedEvent(const AZ::Vector3& translation);
-        void OnScaleChangedEvent(float scale);
-        void OnResetCountChangedEvent();
-        void OnParentIdChangedEvent(NetEntityId newParent);
-
-        void UpdateTargetHostFrameId();
-
-        AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
-        AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
-
-        AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
-        AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
-        AZ::Event<float>::Handler m_scaleEventHandler;
-        AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
-        AZ::Event<NetEntityId>::Handler m_parentIdChangedEventHandler;
 
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;

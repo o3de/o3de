@@ -21,6 +21,9 @@ set(FILES
     Include/Multiplayer/Components/NetworkHierarchyChildComponent.h
     Include/Multiplayer/Components/NetworkHierarchyRootComponent.h
     Include/Multiplayer/Components/NetworkHierarchyBus.h
+    Include/Multiplayer/Components/NetworkCharacterComponent.h
+    Include/Multiplayer/Components/NetworkHitVolumesComponent.h
+    Include/Multiplayer/Components/NetworkRigidBodyComponent.h
     Include/Multiplayer/Components/NetworkTransformComponent.h
     Include/Multiplayer/ConnectionData/IConnectionData.h
     Include/Multiplayer/EntityDomains/IEntityDomain.h
@@ -56,6 +59,9 @@ set(FILES
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
+    Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
+    Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
+    Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml
     Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml
@@ -66,6 +72,9 @@ set(FILES
     Source/Components/NetBindComponent.cpp
     Source/Components/NetworkHierarchyChildComponent.cpp
     Source/Components/NetworkHierarchyRootComponent.cpp
+    Source/Components/NetworkCharacterComponent.cpp
+    Source/Components/NetworkHitVolumesComponent.cpp
+    Source/Components/NetworkRigidBodyComponent.cpp
     Source/Components/NetworkTransformComponent.cpp
     Source/ConnectionData/ClientToServerConnectionData.cpp
     Source/ConnectionData/ClientToServerConnectionData.h
