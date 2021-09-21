@@ -9,6 +9,7 @@
 import groovy.json.JsonOutput
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
+PIPELINE_RETRY_ATTEMPTS = 3
 
 EMPTY_JSON = readJSON text: '{}'
 
@@ -502,63 +503,72 @@ def CreateTeardownStage(Map environmentVars) {
 def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVars, String branchName, String pipelineName, String repositoryName, String projectName, boolean onlyMountEBSVolume = false) {
     def nodeLabel = envVars['NODE_LABEL']
     return {
-        node("${nodeLabel}") {
-            if(isUnix()) { // Has to happen inside a node
-                envVars['IS_UNIX'] = 1
-            }
-            withEnv(GetEnvStringList(envVars)) {
-                def build_job_name = build_job.key
-                try {
-                    CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
+        def currentResult = ''
+        def currentException = ''
+        retry(PIPELINE_RETRY_ATTEMPTS) {
+            node("${nodeLabel}") {
+                if(isUnix()) { // Has to happen inside a node
+                    envVars['IS_UNIX'] = 1
+                }
+                withEnv(GetEnvStringList(envVars)) {
+                    def build_job_name = build_job.key
+                    try {
+                        CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
-                    if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
-                        build_job.value.steps.each { build_step ->
-                            build_job_name = build_step
-                            envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
-                            try {
-                                CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
+                        if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
+                            build_job.value.steps.each { build_step ->
+                                build_job_name = build_step
+                                envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                                try {
+                                    CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
+                                }
+                                catch (Exception e) {
+                                    if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
+                                        unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
+                                    }
+                                }
                             }
-                            catch (Exception e) {
-                                if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
-                                    unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
-                                }
-                                else {
-                                    error "FAILURE: ${e}"
-                                }
+                        } else {
+                            CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                        }
+                    }
+                    catch(Exception e) {
+                        if (e instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
+                            def causes = e.getCauses().toString()
+                            if (causes.contains('RemovedNodeCause')) {
+                                error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
                         }
-                    } else {
-                        CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                        // All other errors will be raised outside the retry block
+                        currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
+                        currentException = e.toString()
                     }
-                }
-                catch(Exception e) {
-                    //  https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/Result.java
-                    //  {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED}
-                    def currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
-                    if (currentResult == 'FAILURE') {
-                        currentBuild.result = 'FAILURE'
-                        error "FAILURE: ${e}"
-                    } else if (currentResult == 'UNSTABLE') {
-                        currentBuild.result = 'UNSTABLE'
-                        unstable(message: "UNSTABLE: ${e}")
+                    finally {
+                        def params = platform.value.build_types[build_job_name].PARAMETERS
+                        if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
+                            def output_directory = params.OUTPUT_DIRECTORY
+                            def configuration = params.CONFIGURATION
+                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                        }
+                        if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
+                            CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                        }
+                        if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
+                            CreateExportTestScreenshotsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                        }
+                        CreateTeardownStage(envVars).call()
                     }
-                }
-                finally {
-                    def params = platform.value.build_types[build_job_name].PARAMETERS
-                    if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
-                        def output_directory = params.OUTPUT_DIRECTORY
-                        def configuration = params.CONFIGURATION
-                        CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
-                    }
-                    if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
-                        CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
-                    }
-                    if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
-                        CreateExportTestScreenshotsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
-                    }
-                    CreateTeardownStage(envVars).call()
                 }
             }
+        }
+        // https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/Result.java
+        // {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED}
+        if (currentResult == 'FAILURE') {
+            currentBuild.result = 'FAILURE'
+            error "FAILURE: ${currentException}"
+        } else if (currentResult == 'UNSTABLE') {
+            currentBuild.result = 'UNSTABLE'
+            unstable(message: "UNSTABLE: ${currentException}")
         }
     }
 }
