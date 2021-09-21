@@ -129,7 +129,7 @@ namespace AzToolsFramework::Prefab
 
     const int PrefabFocusHandler::GetPrefabFocusPathLength()
     {
-        return m_instanceFocusVector.size();
+        return aznumeric_cast<int>(m_instanceFocusVector.size());
     }
 
     void PrefabFocusHandler::OnEntityStreamLoadSuccess()
