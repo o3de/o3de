@@ -51,7 +51,7 @@ namespace AZ
             bool shouldCreateLibFromSerializedData = true;
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
                 RHI::Factory::Get().IsPixModuleLoaded() ||
-                RHI::Factory::Get().IsWarpEnabled())
+                RHI::Factory::Get().UsingWarpDevice())
             {
                 // CreatePipelineLibrary api does not function properly if Renderdoc, Pix or Warp is enabled
                 shouldCreateLibFromSerializedData = false;
@@ -219,7 +219,7 @@ namespace AZ
         {
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
                 RHI::Factory::Get().IsPixModuleLoaded() ||
-                RHI::Factory::Get().IsWarpEnabled())
+                RHI::Factory::Get().UsingWarpDevice())
             {
                 // StorePipeline api does not function properly if RenderDoc, Pix or Warp is enabled
                 return RHI::ResultCode::Fail;

@@ -203,8 +203,18 @@ namespace AZ
             {
                 unorderedAccessViewClear = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 1);
 
+                if (unorderedAccessViewClear.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for static handles. Please consider increasing the value of NumShaderVisibleCbvSrvUavStaticHandles"
+                        "within platformlimits.azasset file for dx12.");
+                    return;
+                }
+
                 if (m_allowDescriptorHeapCompaction)
                 {
+                    //We make a copy of static handles in case we need to compact and recreate the shader visible heap
                     m_device->CopyDescriptorsSimple(
                         1, m_backupStaticHandles.GetCpuPlatformHandle(unorderedAccessViewClear), unorderedAccessDescriptor,
                         unorderedAccessViewClear.m_type);
@@ -249,8 +259,19 @@ namespace AZ
             if (unorderedAccessViewClear.IsNull())
             {
                 unorderedAccessViewClear = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 1);
+
+                if (unorderedAccessViewClear.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for static handles. Please consider increasing the value of "
+                        "NumShaderVisibleCbvSrvUavStaticHandles within platformlimits.azasset file for dx12.");
+                    return;
+                }
+
                 if (m_allowDescriptorHeapCompaction)
                 {
+                    // We make a copy of static handles in case we need to compact and recreate the shader visible heap
                     m_device->CopyDescriptorsSimple(
                         1, m_backupStaticHandles.GetCpuPlatformHandle(unorderedAccessViewClear), unorderedAccessDescriptor,
                         unorderedAccessViewClear.m_type);
@@ -334,7 +355,7 @@ namespace AZ
             if (m_allowDescriptorHeapCompaction  && !m_compactionInProgress)
             {
                 // Track active SRGs in case we need to compact the shader visible cbv_srv_uav heap
-                AZStd::lock_guard<AZStd::mutex> lock(m_srgMapMutex);
+                AZStd::scoped_lock lock{ m_srgMapMutex };
                 auto iter = m_srgAllocations.find(srg);
                 if (iter == m_srgAllocations.end())
                 {
@@ -354,7 +375,7 @@ namespace AZ
             if (m_allowDescriptorHeapCompaction && !m_compactionInProgress)
             {
                 //Track active SRGs in case we need to compact the shader visible cbv_srv_uav heap
-                AZStd::lock_guard<AZStd::mutex> lock(m_srgMapMutex);
+                AZStd::scoped_lock lock{ m_srgMapMutex };
                 auto iter = m_srgAllocations.find(srg);
                 AZ_Assert(iter != m_srgAllocations.end(), "Srg entry not found");
                 m_srgAllocations[srg]--;
@@ -541,7 +562,7 @@ namespace AZ
 
         void DescriptorContext::CompactDescriptorHeap()
         {
-            //Check if heap compaction is enabled by the used. Since there is an overhead associated with heap compaction it is not enabled by default
+            //Check if heap compaction is enabled by the user. Since there is an overhead associated with heap compaction it is not enabled by default
             if(!m_allowDescriptorHeapCompaction)
             {
                 AZ_Assert(
@@ -571,10 +592,14 @@ namespace AZ
             //Clone the allocator of the source pool into the destination pool
             srcPool.CloneAllocator(destPool.GetAllocator());
 
-            //Re-update all the descriptor tables associated with active SRGs
-            for (const auto& [srg, numAllocations] : m_srgAllocations)
             {
-                static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
+                //The mutex is here 'just in case' Compaction is called from more than one thread.
+                AZStd::scoped_lock lock{ m_srgMapMutex };
+                //Re-update all the descriptor tables associated with active SRGs
+                for (const auto& [srg, numAllocations] : m_srgAllocations)
+                {
+                    static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
+                }
             }
 
             //Clear the allocator of the source pool

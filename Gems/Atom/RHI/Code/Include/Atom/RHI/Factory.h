@@ -113,7 +113,7 @@ namespace AZ
             static bool IsPixModuleLoaded();
 
             //! Returns true if Warp is enabled
-            static bool IsWarpEnabled();
+            static bool UsingWarpDevice();
 
             //! Returns the name of the Factory.
             virtual Name GetName() = 0;
