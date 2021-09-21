@@ -70,7 +70,7 @@
 
         bool HDRColorGradingPass::IsEnabled() const
         {
-            auto* colorGradingSettings = GetHDRColorGradingSettings();
+            const auto* colorGradingSettings = GetHDRColorGradingSettings();
             return colorGradingSettings ? colorGradingSettings->GetEnabled() : false;
         }
 
@@ -121,7 +121,7 @@
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                     if (postProcessSettings)
                     {
-                        const HDRColorGradingSettings* colorGradingSettings = postProcessSettings->GetHDRColorGradingSettings();;
+                        const HDRColorGradingSettings* colorGradingSettings = postProcessSettings->GetHDRColorGradingSettings();
                         if (colorGradingSettings != nullptr && colorGradingSettings->GetEnabled())
                         {
                             return postProcessSettings->GetHDRColorGradingSettings();
