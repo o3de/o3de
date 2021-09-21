@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 
@@ -171,6 +172,13 @@ namespace AzToolsFramework
                     }
                 }
             }
+        }
+
+        // Allow entity system to override the selection
+        auto editorInteractionInterface = AZ::Interface<EditorInteractionInterface>::Get();
+        if (editorInteractionInterface != nullptr)
+        {
+            entityIdUnderCursor = editorInteractionInterface->RedirectEntitySelection(entityIdUnderCursor);
         }
 
         return entityIdUnderCursor;

@@ -532,6 +532,7 @@ set(FILES
     ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h
     ViewportSelection/EditorPickEntitySelection.h
     ViewportSelection/EditorPickEntitySelection.cpp
+    ViewportSelection/EditorInteractionInterface.h
     ViewportSelection/EditorSelectionUtil.h
     ViewportSelection/EditorSelectionUtil.cpp
     ViewportSelection/EditorTransformComponentSelection.h
