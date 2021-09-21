@@ -10,6 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
@@ -21,6 +22,7 @@ namespace AzToolsFramework::Prefab
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
         : private PrefabFocusInterface
+        , private EditorEntityContextNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
@@ -30,13 +32,22 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusInterface override ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnPathIndex(int index) override;
         TemplateId GetFocusedPrefabTemplateId() override;
         InstanceOptionalReference GetFocusedPrefabInstance() override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) override;
+        const AZ::IO::Path& GetPrefabFocusPath() override;
+
+        // EditorEntityContextNotificationBus...
+        void OnEntityStreamLoadSuccess() override;
 
     private:
+        void RefreshInstanceFocusList();
+
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
+        AZStd::vector<InstanceOptionalReference> m_instanceFocusVector;
+        AZ::IO::Path m_instanceFocusPath;
 
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
     };

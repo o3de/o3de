@@ -19,6 +19,7 @@
 #include <QWidgetAction>
 #include <QComboBox>
 
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <HMDBus.h>
@@ -175,6 +176,8 @@ protected:
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
+
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler m_prefabViewportFocusPathHandler;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

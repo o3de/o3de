@@ -292,8 +292,6 @@ void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnInitDialog()
 {
-    m_ui->m_titleBtn->setText(m_title);
-
     // Add a child parented to us that listens for r_displayInfo changes.
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
@@ -314,13 +312,13 @@ void CViewportTitleDlg::OnInitDialog()
 
     m_cameraSpeed->setFixedWidth(width);
 
+    m_prefabViewportFocusPathHandler.Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetTitle(const QString& title)
 {
     m_title = title;
-    m_ui->m_titleBtn->setText(m_title);
 }
 
 //////////////////////////////////////////////////////////////////////////
