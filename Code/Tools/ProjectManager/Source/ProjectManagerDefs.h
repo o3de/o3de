@@ -21,4 +21,7 @@ namespace O3DE::ProjectManager
     static const QString ProjectBuildErrorLogName = "CMakeProjectBuildError.log";
     static const QString ProjectCacheDirectoryName = "Cache";
     static const QString ProjectPreviewImagePath = "preview.png";
+    
+    static const QString ProjectCMakeCommand = "cmake";
+    static const QString ProjectCMakeBuildTargetEditor = "Editor";
 } // namespace O3DE::ProjectManager

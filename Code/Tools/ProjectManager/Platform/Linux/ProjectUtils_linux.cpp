@@ -25,9 +25,10 @@ namespace O3DE::ProjectManager
             {
                 return AZ::Failure(QObject::tr("CMake not found. \n\n"
                     "Make sure that the minimum version of CMake is installed and available from the command prompt. "
-                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> for more information."));
+                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
             }
 
+            // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested for O3DE.
             QStringList supportedClangCommands = { "clang-12", "clang-6" };
             for (const QString& supportClangCommand : supportedClangCommands)
             {
@@ -39,7 +40,7 @@ namespace O3DE::ProjectManager
             }
             return AZ::Failure(QObject::tr("Clang not found. \n\n"
                 "Make sure that the clang is installed and available from the command prompt. "
-                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> for more information."));
+                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
         }
         
     } // namespace ProjectUtils
