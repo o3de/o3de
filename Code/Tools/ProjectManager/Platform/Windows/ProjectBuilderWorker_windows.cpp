@@ -8,38 +8,37 @@
 
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
-#include <PythonBindingsInterface.h>
 
 #include <QDir>
-#include <QFile>
-#include <QProcess>
-#include <QProcessEnvironment>
-#include <QTextStream>
-#include <QThread>
-
-#include "EngineInfo.h"
+#include <QString>
 
 namespace O3DE::ProjectManager
 {
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(QString thirdPartyPath) const
     {
-        return AZ::Success( QStringList { "cmake",
-                                          "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
-                                          "-S", m_projectInfo.m_path,
-                                          QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
-                                          "-DLY_UNITY_BUILD=ON" } );
+        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+
+        return AZ::Success(QStringList{ ProjectCMakeCommand,
+                                        "-B", targetBuildPath,
+                                        "-S", m_projectInfo.m_path,
+                                        QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
+                                        "-DLY_UNITY_BUILD=ON" } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        return AZ::Success( QStringList { "cmake",
-                                          "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix), "--config", "profile",
-                                          "--target", m_projectInfo.m_projectName + ".GameLauncher", "Editor" } );
+        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+
+        return AZ::Success(QStringList{ ProjectCMakeCommand,
+                                        "--build", targetBuildPath,
+                                        "--config", "profile",
+                                        "--target", launcherTargetName, ProjectCMakeBuildTargetEditor });
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(QString pidToKill) const
     {
-        return AZ::Success( QStringList { "cmd.exe", "/C", "taskkill", "/pid", pidToKill, "/f", "/t" } );
+        return AZ::Success(QStringList { "cmd.exe", "/C", "taskkill", "/pid", pidToKill, "/f", "/t" } );
     }
 
 } // namespace O3DE::ProjectManager
