@@ -43,6 +43,7 @@ namespace AzToolsFramework::Prefab
         void OnEntityStreamLoadSuccess() override;
 
     private:
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();
 
         InstanceOptionalReference m_focusedInstance;
