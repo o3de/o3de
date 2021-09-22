@@ -27,6 +27,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        //! Type of branch icon should the delegate paint,
         enum EntryBranchType
         {
             First,
@@ -38,7 +39,7 @@ namespace AzToolsFramework
 
         class AssetBrowserFilterModel;
 
-        //! EntryDelegate draws a single item in AssetBrowser
+        //! EntryDelegate draws a single item in AssetBrowser.
         class EntryDelegate
             : public QStyledItemDelegate
         {
@@ -62,7 +63,7 @@ namespace AzToolsFramework
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;
         };
 
-        //! SearchEntryDelegate draws a single item in AssetBrowserTableView
+        //! SearchEntryDelegate draws a single item in AssetBrowserTableView.
         class SearchEntryDelegate
             : public EntryDelegate
         {

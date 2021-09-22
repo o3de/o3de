@@ -30,8 +30,8 @@ namespace AzToolsFramework
         static constexpr const char* TreeIconPathLast = "Assets/Editor/Icons/AssetBrowser/TreeBranch_Last.svg";
         static constexpr const char* TreeIconPathOneChild = "Assets/Editor/Icons/AssetBrowser/TreeBranch_OneChild.svg";
 
-        const int ENTRY_SPACING_LEFT_PIXELS = 8;
-        const int ENTRY_ICON_MARGIN_LEFT_PIXELS = 2;
+        const int EntrySpacingLeftPixels = 8;
+        const int EntryIconMarginLeftPixels = 2;
 
         EntryDelegate::EntryDelegate(QWidget* parent)
             : QStyledItemDelegate(parent)
@@ -68,7 +68,7 @@ namespace AzToolsFramework
 
                 // Draw main entry thumbnail.
                 QRect remainingRect(option.rect);
-                remainingRect.adjust(ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+                remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
 
                 QSize iconSize(m_iconSize, m_iconSize);
                 // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
@@ -95,7 +95,7 @@ namespace AzToolsFramework
                     }
 
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                    remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
+                    remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
@@ -188,18 +188,17 @@ namespace AzToolsFramework
                 //If it is a SourceEntry or it is not the column name we don't want to add space for the branch Icon
                 if (sourceEntry || index.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    remainingRect.adjust(ENTRY_ICON_MARGIN_LEFT_PIXELS, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+                    remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
                     iconTopLeft = QPoint(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
                 }
                 else
                 {
-                    remainingRect.adjust(ENTRY_ICON_MARGIN_LEFT_PIXELS + m_iconSize, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+                    remainingRect.adjust(EntryIconMarginLeftPixels + m_iconSize, 0, 0, 0); // bump it rightwards to give some margin to the icon.
                     iconTopLeft = QPoint(remainingRect.x() / 2 + m_iconSize, remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
                     branchIconTopLeft =QPoint((remainingRect.x() / 2) - 2, remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
                 }
 
                 QPalette actualPalette(option.palette);
-
 
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
@@ -257,7 +256,7 @@ namespace AzToolsFramework
                     }
 
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                    remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
+                    remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
