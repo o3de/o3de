@@ -166,6 +166,8 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace1DNode::Output");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
@@ -276,6 +278,8 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace1DNode::Update");
+
         if (!m_disabled)
         {
             EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
