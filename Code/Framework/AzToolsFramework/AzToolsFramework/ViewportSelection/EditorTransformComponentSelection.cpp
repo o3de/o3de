@@ -784,7 +784,7 @@ namespace AzToolsFramework
         SortEntitiesByLocationInHierarchy(sortedEntityIdsOut);
     }
 
-    static void UpdateInitialRotation(EntityIdManipulators& entityManipulators)
+    static void UpdateInitialTransform(EntityIdManipulators& entityManipulators)
     {
         // save new start orientation (if moving rotation axes separate from object
         // or switching type of rotation (modifier keys change))
@@ -1293,7 +1293,7 @@ namespace AzToolsFramework
 
         ViewportInteraction::KeyboardModifiers prevModifiers{};
         translationManipulators->InstallLinearManipulatorMouseMoveCallback(
-            [this, prevModifiers, manipulatorEntityIds](const LinearManipulator::Action& action) mutable -> void
+            [this, prevModifiers, manipulatorEntityIds](const LinearManipulator::Action& action) mutable
             {
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
@@ -1327,7 +1327,7 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallPlanarManipulatorMouseMoveCallback(
-            [this, prevModifiers, manipulatorEntityIds](const PlanarManipulator::Action& action) mutable -> void
+            [this, prevModifiers, manipulatorEntityIds](const PlanarManipulator::Action& action) mutable
             {
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
@@ -1360,7 +1360,7 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallSurfaceManipulatorMouseMoveCallback(
-            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable -> void
+            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable
             {
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
@@ -1411,7 +1411,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable -> void
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable
             {
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
@@ -1433,9 +1433,9 @@ namespace AzToolsFramework
                 BeginRecordManipulatorCommand();
             });
 
-        ViewportInteraction::KeyboardModifiers prevModifiers{};
         rotationManipulators->InstallMouseMoveCallback(
-            [this, prevModifiers, sharedRotationState](const AngularManipulator::Action& action) mutable -> void
+            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(),
+             sharedRotationState](const AngularManipulator::Action& action) mutable
             {
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
                 const Influence influence = InfluenceFromModifiers(action.m_modifiers);
@@ -1459,14 +1459,14 @@ namespace AzToolsFramework
                 // save state if we change the type of rotation we're doing to to prevent snapping
                 if (prevModifiers != action.m_modifiers)
                 {
-                    UpdateInitialRotation(m_entityIdManipulators);
+                    UpdateInitialTransform(m_entityIdManipulators);
                     sharedRotationState->m_savedOrientation = action.m_current.m_delta.GetInverseFull();
                 }
 
                 // allow the user to modify the orientation without moving the object if ctrl is held
                 if (action.m_modifiers.Ctrl())
                 {
-                    UpdateInitialRotation(m_entityIdManipulators);
+                    UpdateInitialTransform(m_entityIdManipulators);
                     sharedRotationState->m_savedOrientation = action.m_current.m_delta.GetInverseFull();
                 }
                 else
@@ -1557,13 +1557,19 @@ namespace AzToolsFramework
         scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         scaleManipulators->ConfigureView(2.0f, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
 
-        // lambdas capture shared_ptr by value to increment ref count
-        auto manipulatorEntityIds = AZStd::make_shared<ManipulatorEntityIds>();
+        struct SharedScaleState
+        {
+            AZ::Vector3 m_savedScale = AZ::Vector3::CreateZero();
+            EntityIdList m_entityIds;
+        };
 
-        auto uniformLeftMouseDownCallback = [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
+        // lambdas capture shared_ptr by value to increment ref count
+        auto sharedScaleState = AZStd::make_shared<SharedScaleState>();
+
+        auto uniformLeftMouseDownCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             // important to sort entityIds based on hierarchy order when updating transforms
-            BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
+            BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedScaleState->m_entityIds);
 
             for (auto& entityIdLookup : m_entityIdManipulators.m_lookups)
             {
@@ -1577,20 +1583,26 @@ namespace AzToolsFramework
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
         };
 
-        auto uniformLeftMouseUpCallback = [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
+        auto uniformLeftMouseUpCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
-                &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
-                manipulatorEntityIds->m_entityIds);
+                &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged, sharedScaleState->m_entityIds);
 
             m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
                 m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
         };
 
-        auto uniformLeftMouseMoveCallback = [this, manipulatorEntityIds](const LinearManipulator::Action& action)
+        auto uniformLeftMouseMoveCallback = [this, sharedScaleState, prevModifiers = ViewportInteraction::KeyboardModifiers()](
+                                                const LinearManipulator::Action& action) mutable
         {
+            if (prevModifiers != action.m_modifiers)
+            {
+                UpdateInitialTransform(m_entityIdManipulators);
+                sharedScaleState->m_savedScale = action.LocalScaleOffset();
+            }
+
             // note: must use sorted entityIds based on hierarchy order when updating transforms
-            for (AZ::EntityId entityId : manipulatorEntityIds->m_entityIds)
+            for (AZ::EntityId entityId : sharedScaleState->m_entityIds)
             {
                 auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
                 if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
@@ -1606,7 +1618,8 @@ namespace AzToolsFramework
                     return vec.GetX() + vec.GetY() + vec.GetZ();
                 };
 
-                const float uniformScale = action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset());
+                const float uniformScale =
+                    action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScale);
                 const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
                 const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
 
@@ -1630,6 +1643,8 @@ namespace AzToolsFramework
                     }
                 }
             }
+
+            prevModifiers = action.m_modifiers;
         };
 
         scaleManipulators->InstallAxisLeftMouseDownCallback(uniformLeftMouseDownCallback);
@@ -3327,7 +3342,7 @@ namespace AzToolsFramework
 
         display.SetLineWidth(4.0f);
 
-        const auto axisFlip = [&transform, &cameraState](const AZ::Vector3& axis) -> float
+        const auto axisFlip = [&transform, &cameraState](const AZ::Vector3& axis)
         {
             return ShouldFlipCameraAxis(
                        AZ::Transform::CreateIdentity(), transform.GetTranslation(), TransformDirectionNoScaling(transform, axis),
