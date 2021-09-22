@@ -456,8 +456,17 @@ namespace AZ
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
-                // platform id from identifier
+                // Define a fallback platform ID based on the current host platform
+                #if defined(AZ_PLATFORM_LINUX)
+                AzFramework::PlatformId platformId = AzFramework::PlatformId::LINUX_ID;
+                #elif defined(AZ_PLATFORM_MAC)
+                AzFramework::PlatformId platformId = AzFramework::PlatformId::MAC_ID;
+                #elif defined(AZ_PLATFORM_WINDOWS)
                 AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
+                #else
+                #error Builders cannot be built on non-host platforms
+                #endif
+
                 if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
@@ -477,6 +486,10 @@ namespace AZ
                 else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
+                }
+                else if (platformIdentifier == "server")
+                {
+                    platformId = AzFramework::PlatformId::SERVER;
                 }
 
                 uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
