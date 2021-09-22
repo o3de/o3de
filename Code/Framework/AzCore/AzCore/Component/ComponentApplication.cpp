@@ -121,9 +121,9 @@ namespace AZ
         return environment ? environment->Get() : nullptr;
     }
 
-    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter() noexcept= default;
+    ComponentApplication::EventLoggerDeleter::EventLoggerDeleter() noexcept = default;
     ComponentApplication::EventLoggerDeleter::EventLoggerDeleter(bool skipDelete) noexcept
-        : m_skipDelete{skipDelete}
+        : m_skipDelete{ skipDelete }
     {}
     void ComponentApplication::EventLoggerDeleter::operator()(AZ::Debug::LocalFileEventLogger* ptr)
     {
@@ -332,27 +332,27 @@ namespace AZ
                     ->Value("Stack trace always", Debug::AllocationRecords::RECORD_FULL);
                 ec->Class<Descriptor>("System memory settings", "Settings for managing application memory usage")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::AutoExpand, true)
+                    ->Attribute(Edit::Attributes::AutoExpand, true)
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_grabAllMemory, "Allocate all memory at startup", "Allocate all system memory at startup if enabled, or allocate as needed if disabled")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecords, "Record allocations", "Collect information on each allocation made for debugging purposes (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsSaveNames, "Record allocations with name saving", "Saves names/filenames information on each allocation made, useful for tracking down leaks in dynamic modules (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsAttemptDecodeImmediately, "Record allocations and attempt immediate decode", "Decode callstacks for each allocation when they occur, used for tracking allocations that fail decoding. Very expensive. (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::ComboBox, &Descriptor::m_recordingMode, "Stack recording mode", "Stack record mode. (Ignored in final builds)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_stackRecordLevels, "Stack entries to record", "Number of stack levels to record for each allocation (ignored in Release builds)")
-                        ->Attribute(Edit::Attributes::Step, 1)
-                        ->Attribute(Edit::Attributes::Max, 1024)
+                    ->Attribute(Edit::Attributes::Step, 1)
+                    ->Attribute(Edit::Attributes::Max, 1024)
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_autoIntegrityCheck, "Validate allocations", "Check allocations for integrity on each allocation/free (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_markUnallocatedMemory, "Mark freed memory", "Set memory to 0xcd when a block is freed for debugging (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_doNotUsePools, "Don't pool allocations", "Pipe pool allocations in system/tree heap (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_pageSize, "Page size", "Memory page size in bytes (must be OS page size aligned)")
-                        ->Attribute(Edit::Attributes::Step, 1024)
+                    ->Attribute(Edit::Attributes::Step, 1024)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_poolPageSize, "Pool page size", "Memory pool page size in bytes (must be a multiple of page size)")
-                        ->Attribute(Edit::Attributes::Max, &Descriptor::m_pageSize)
-                        ->Attribute(Edit::Attributes::Step, 1024)
+                    ->Attribute(Edit::Attributes::Max, &Descriptor::m_pageSize)
+                    ->Attribute(Edit::Attributes::Step, 1024)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlockAlignment, "Block alignment", "Memory block alignment in bytes (must be multiple of the page size)")
-                        ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
+                    ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize, "Block size", "Memory block size in bytes (must be multiple of the page size)")
-                        ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
+                    ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_enableDrilling, "Enable Driller", "Enable Drilling support for the application (ignored in Release builds)")
@@ -419,11 +419,11 @@ namespace AZ
         }
         else
         {
-             azstrcpy(m_commandLineBuffer, AZ_ARRAY_SIZE(m_commandLineBuffer), "no_argv_supplied");
+            azstrcpy(m_commandLineBuffer, AZ_ARRAY_SIZE(m_commandLineBuffer), "no_argv_supplied");
             // use a "valid" value here.  This is because Qt and potentially other third party libraries require
             // that ArgC be 'at least 1' and that (*argV)[0] be a valid pointer to a real null terminated string.
-             m_argC = 1;
-             m_argV = &m_commandLineBufferAddress;
+            m_argC = 1;
+            m_argV = &m_commandLineBufferAddress;
         }
 
         // Create the Event logger if it doesn't exist, otherwise reuse the one registered
@@ -557,8 +557,8 @@ namespace AZ
 
     void ReportBadEngineRoot()
     {
-        AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
-                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
+        AZStd::string errorMessage = { "Unable to determine a valid path to the engine.\n"
+                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n" };
         if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
             AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
@@ -614,7 +614,6 @@ namespace AZ
         AZ_Assert(m_systemEntity, "SystemEntity failed to initialize!");
 
         AddRequiredSystemComponents(m_systemEntity.get());
-        //m_currentTime = GetElapsedTimeUs();
         m_isStarted = true;
         return m_systemEntity.get();
     }
@@ -1372,38 +1371,44 @@ namespace AZ
 
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
-        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        m_deltaTime = 0.0f;
-        if (now >= m_currentTime)
         {
-            AZStd::chrono::duration<float> delta = now - m_currentTime;
-            m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
-        }
-        {
-            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-            TickBus::ExecuteQueuedEvents();
-        }
-        m_currentTime = now;
-        {
-            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-            EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-        }
+            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
-        // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
-        // sleeping if there's still time remaining.
-        if (g_simulation_tick_rate > 0.f)
-        {
-            now = AZStd::chrono::system_clock::now();
+            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
 
-            // Work in microsecond durations here as that's the native measurement time for time_point
-            constexpr float microsecondsPerSecond = 1000.f * 1000.f;
-            const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
-            AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
+            m_deltaTime = 0.0f;
 
-            if (timeUntilNextTick.count() > 0)
+            if (now >= m_currentTime)
             {
-                AZStd::this_thread::sleep_for(timeUntilNextTick);
+                AZStd::chrono::duration<float> delta = now - m_currentTime;
+                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
+            }
+
+            {
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+                TickBus::ExecuteQueuedEvents();
+            }
+            m_currentTime = now;
+            {
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
+            }
+
+            // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
+            // sleeping if there's still time remaining.
+            if (g_simulation_tick_rate > 0.f)
+            {
+                now = AZStd::chrono::system_clock::now();
+
+                // Work in microsecond durations here as that's the native measurement time for time_point
+                constexpr float microsecondsPerSecond = 1000.f * 1000.f;
+                const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
+                AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
+
+                if (timeUntilNextTick.count() > 0)
+                {
+                    AZStd::this_thread::sleep_for(timeUntilNextTick);
+                }
             }
         }
     }
@@ -1555,5 +1560,4 @@ namespace AZ
             AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
         }
     }
-
 } // namespace AZ

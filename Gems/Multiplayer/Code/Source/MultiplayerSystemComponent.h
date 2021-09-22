@@ -111,9 +111,11 @@ namespace Multiplayer
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
         void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) override;
+        void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         float GetCurrentBlendFactor() const override;
@@ -154,6 +156,7 @@ namespace Multiplayer
         ClientDisconnectedEvent m_clientDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;
+        NotifyClientMigrationEvent m_notifyClientMigrationEvent;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
 

@@ -403,6 +403,8 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::MultiplayerController
     {
     public:
+        using ComponentType = {{ ComponentName }};
+
         {{ ControllerBaseName }}({{ ComponentName }}& owner);
         ~{{ ControllerBaseName }}() override = default;
 

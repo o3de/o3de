@@ -45,6 +45,7 @@ namespace Multiplayer
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
     using ClientDisconnectedEvent = AZ::Event<>;
+    using NotifyClientMigrationEvent = AZ::Event<HostId, uint64_t, ClientInputId>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -80,33 +81,37 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
-        //! Starts hosting a server
+        //! Starts hosting a server.
         //! @param port The port to listen for connection on
         //! @param isDedicated Whether the server is dedicated or client hosted
         //! @return if the application successfully started hosting
         virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
 
-        //! Connects to the specified IP as a Client
+        //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
         //! @result if a connection was successfully created
         virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
 
-        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context.
         //! @param reason The reason for terminating connections
         virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
 
-        //! Adds a ClientMigrationStartEvent Handler which is invoked at the start of a client migration
+        //! Adds a ClientMigrationStartEvent Handler which is invoked at the start of a client migration.
         //! @param handler The ClientMigrationStartEvent Handler to add
         virtual void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) = 0;
 
-        //! Adds a ClientMigrationEndEvent Handler which is invoked when a client completes migration
+        //! Adds a ClientMigrationEndEvent Handler which is invoked when a client completes migration.
         //! @param handler The ClientMigrationEndEvent Handler to add
         virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
 
-        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
         //! @param handler The ClientDisconnectedEvent Handler to add
         virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+
+        //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
+        //! @param handler The NotifyClientMigrationEvent Handler to add
+        virtual void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) = 0;
 
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
         //! @param handler The ConnectionAcquiredEvent Handler to add
@@ -120,7 +125,13 @@ namespace Multiplayer
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
-        //! Sends a packet telling if entity update messages can be sent
+        //! Signals a NotifyClientMigrationEvent with the provided parameters.
+        //! @param hostId            the host id of the host the client is migrating to
+        //! @param userIdentifier    the user identifier the client will provide the new host to validate identity
+        //! @param lastClientInputId the last processed clientInputId by the current host
+        virtual void SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId);
+
+        //! Sends a packet telling if entity update messages can be sent.
         //! @param readyForEntityUpdates Ready for entity updates or not
         virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
 
@@ -132,7 +143,7 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
-        //! Returns the current blend factor for client side interpolation
+        //! Returns the current blend factor for client side interpolation.
         //! This value is only relevant on the client and is used to smooth between host frames
         //! @return the current blend factor
         virtual float GetCurrentBlendFactor() const = 0;

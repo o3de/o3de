@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Time/ITime.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -377,14 +377,14 @@ namespace AZ
         EntityRemovedEvent                          m_entityRemovedEvent;
         EntityAddedEvent                            m_entityActivatedEvent;
         EntityRemovedEvent                          m_entityDeactivatedEvent;
-        AZ::IConsole*                               m_console{};
+        AZ::IConsole* m_console{};
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };
         bool                                        m_isSystemAllocatorOwner{ false };
         bool                                        m_isOSAllocatorOwner{ false };
         bool                                        m_ownsConsole{};
-        void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
-        IAllocatorAllocate*                         m_osAllocator{ nullptr };
+        void* m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
+        IAllocatorAllocate* m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
         AZ::IO::FixedMaxPath                        m_exeDirectory;
         AZ::IO::FixedMaxPath                        m_engineRoot;
@@ -405,11 +405,11 @@ namespace AZ
         // we create a buffer that can be written to (up to AZ_MAX_PATH_LEN) and then
         // pack it with a single param.
         char                                        m_commandLineBuffer[AZ_MAX_PATH_LEN];
-        char*                                       m_commandLineBufferAddress{ m_commandLineBuffer };
+        char* m_commandLineBufferAddress{ m_commandLineBuffer };
 
         StartupParameters                           m_startupParameters;
 
-        char**                                      m_argV{ nullptr };
+        char** m_argV{ nullptr };
         int                                         m_argC{ 0 };
         AZ::CommandLine                             m_commandLine; // < Stores parsed command line supplied to the constructor
 

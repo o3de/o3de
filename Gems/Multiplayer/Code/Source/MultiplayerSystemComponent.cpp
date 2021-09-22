@@ -617,7 +617,7 @@ namespace Multiplayer
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::ClientMigrated, TerminationEndpoint::Local); };
         m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         AZLOG_INFO("Migrating to new server shard");
-        //m_clientMigrateStartEvent(packet.GetLastInputGameTimeMs());
+        m_clientMigrationStartEvent.Signal(ClientInputId{ 0 });
         m_networkInterface->Connect(packet.GetRemoteServerAddress());
         return true;
     }
@@ -795,6 +795,11 @@ namespace Multiplayer
         handler.Connect(m_clientDisconnectedEvent);
     }
 
+    void MultiplayerSystemComponent::AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler)
+    {
+        handler.Connect(m_notifyClientMigrationEvent);
+    }
+
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connectionAcquiredEvent);
@@ -808,6 +813,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
     {
         handler.Connect(m_shutdownEvent);
+    }
+
+    void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId)
+    {
+        m_notifyClientMigrationEvent.Signal(hostId, userIdentifier, lastClientInputId);
     }
 
     void MultiplayerSystemComponent::SendReadyForEntityUpdates(bool readyForEntityUpdates)
