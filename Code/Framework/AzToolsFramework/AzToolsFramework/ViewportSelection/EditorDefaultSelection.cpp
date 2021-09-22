@@ -107,14 +107,6 @@ namespace AzToolsFramework
 
         m_componentModeCollection.BeginComponentMode();
 
-        // this call to activate the component mode editor state should eventually replace the bus call in
-        // ComponentModeCollection::BeginComponentMode() to EditorComponentModeNotifications::EnteredComponentMode
-        // such that all of the notifications for activating/deactivating the different editor modes are in a central location
-        if (m_viewportEditorModeTracker)
-        {
-            m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Component);
-        }
-
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
             &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
@@ -123,14 +115,6 @@ namespace AzToolsFramework
     void EditorDefaultSelection::TransitionFromComponentMode()
     {
         m_componentModeCollection.EndComponentMode();
-
-        // this call to deactivate the component mode editor state should eventually replace the bus call in
-        // ComponentModeCollection::EndComponentMode() to EditorComponentModeNotifications::LeftComponentMode
-        // such that all of the notifications for activating/deactivating the different editor modes are in a central location
-        if (m_viewportEditorModeTracker)
-        {
-            m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Component);
-        }
 
         if (m_transformComponentSelection)
         {
