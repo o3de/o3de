@@ -8,12 +8,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWidget>
-#include <QAbstractNativeEventFilter>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -38,14 +36,11 @@ namespace MaterialEditor
 
     class MaterialViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
-        , public QAbstractNativeEventFilter
     {
     public:
         MaterialViewportWidget(QWidget* parent = nullptr);
 
         QScopedPointer<Ui::MaterialViewportWidget> m_ui;
         AZStd::unique_ptr<MaterialViewportRenderer> m_renderer;
-
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
     };
 } // namespace MaterialEditor

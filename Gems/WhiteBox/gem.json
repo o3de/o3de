@@ -5,9 +5,20 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The White Box Gem provides White Box rapid design components for Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Design", "Tools", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Design",
+        "Tools",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/design/white-box/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/design/white-box/",
+    "dependencies": [
+        "Atom_RPI",
+        "Atom_Feature_Common",
+        "CommonFeaturesAtom"
+    ]
 }
