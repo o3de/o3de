@@ -143,7 +143,7 @@ namespace O3DE::ProjectManager
             else
             {
                 tagContainer->Update(ConvertFromModelIndices(tagIndices));
-                label->setText(QString("%1 %2").arg(QString::number(tagIndices.size()), tagIndices.size() == 1 ? singularTitle : pluralTitle));
+                label->setText(QString("%1 %2").arg(tagIndices.size()).arg(tagIndices.size() == 1 ? singularTitle : pluralTitle));
                 widget->show();
             }
         };
