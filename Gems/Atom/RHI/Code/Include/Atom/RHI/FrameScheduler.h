@@ -202,7 +202,7 @@ namespace AZ
 
             //! This method executes an entire group of contexts. Each context may result in a job dispatch depending
             //! on the respective job policies.
-            void ExecuteGroupInternal(AZ::TaskGraph* taskGraph, AZ::TaskToken* submitTaskToken, uint32_t groupIndex);
+            void ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex);
 
             bool m_isProcessing = false;
 

@@ -94,14 +94,12 @@ namespace AZ
             AZ_Assert(group.IsComplete(), "Ending a context group before all child contexts have ended!");
             group.EndInternal();
             group.m_isSubmittable = true;
-        }
-    
-        void FrameGraphExecuter::SubmitAllGroups()
-        {
-            for(auto& group : m_groups)
+
+            AZStd::lock_guard<AZStd::mutex> lock(m_pendingContextGroupLock);
+            while (m_pendingGroups.size() && m_pendingGroups.front()->IsSubmittable())
             {
-                AZ_Assert(group->IsSubmittable(), "Unsubmittable group found!");
-                ExecuteGroupInternal(*group);
+                ExecuteGroupInternal(*m_pendingGroups.front());
+                m_pendingGroups.pop();
             }
         }
     }

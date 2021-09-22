@@ -26,8 +26,8 @@
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Algorithms.h>
-// #include <AzCore/Jobs/JobCompletion.h>
-// #include <AzCore/Jobs/JobFunction.h>
+ #include <AzCore/Jobs/JobCompletion.h>
+ #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
@@ -262,7 +262,7 @@ namespace AZ
                 // Iterate over each SRG pool and fork jobs to compile SRGs.
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
                 AZ::TaskGraph taskGraph;
-                AZStd::atomic_int32_t numCompileEndRemaining = 0;
+                AZStd::atomic_int32_t numCompileEndRemaining = 0; // debug tools, remove before merge to O3DE
                 AZStd::atomic_int32_t numCompileGroupsRemaining = 0;
 
                 const auto compileIntervalsFunction = [compilesPerJob, &taskGraph, &numCompileEndRemaining, &numCompileGroupsRemaining](ShaderResourceGroupPool* srgPool)
@@ -273,13 +273,6 @@ namespace AZ
                     AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                     AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
-                    // mitigation
-//                    if (!compilesInPool)
-//                    {
-//                        srgPool->CompileGroupsEnd();
-//                        return;
-//                    }
-                    
                     ++numCompileEndRemaining;
                     auto srgCompileEndTask = taskGraph.AddTask(
                         srgCompileEndDesc, 
@@ -443,9 +436,9 @@ namespace AZ
             group.EndContext(index);
         }
 
-        void FrameScheduler::ExecuteGroupInternal(AZ::TaskGraph* taskGraph, AZ::TaskToken* submitTaskToken, uint32_t groupIndex)
+        void FrameScheduler::ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal");
+            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternalJob");
 
             FrameGraphExecuteGroup* executeGroup = m_frameGraphExecuter->BeginGroup(groupIndex);
             const uint32_t contextCount = executeGroup->GetContextCount();
@@ -456,7 +449,7 @@ namespace AZ
              * context.
              */
             const bool isSerialPolicy = executeGroup->GetJobPolicy() == JobPolicy::Serial;
-            const bool isSerialExecute = taskGraph == nullptr || contextCount == 1 || isSerialPolicy;
+            const bool isSerialExecute = parentJob == nullptr || contextCount == 1 || isSerialPolicy;
 
             if (isSerialExecute)
             {
@@ -470,28 +463,17 @@ namespace AZ
             // Spawns a job for each context in the group as a child of this job.
             else
             {
-                const static AZ::TaskDescriptor groupExecuteDesc{"FrameScheduler_ExecuteContext","Graphics"};
-                const static AZ::TaskDescriptor groupExecuteEndDesc{"FrameScheduler_ExecuteGroupEnd","Graphics"};
-
-                auto endGroupTask = taskGraph->AddTask( 
-                    groupExecuteEndDesc,
-                    [this, groupIndex]()
-                    {
-                        m_frameGraphExecuter->EndGroup(groupIndex);
-                    });
-                endGroupTask.Precedes(*submitTaskToken);
-
                 for (uint32_t i = 0; i < contextCount; ++i)
                 {
-                    auto executeTask = taskGraph->AddTask(
-                        groupExecuteDesc,
-                        [this, executeGroup, i]()
+                    const auto jobLambda = [this, executeGroup, i]()
                         {
                             ExecuteContextInternal(*executeGroup, i);
-                        });
-                    executeTask.Precedes(endGroupTask);
+                        };
+                    parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
                 }
+                parentJob->WaitForChildren();
             }
+            m_frameGraphExecuter->EndGroup(groupIndex);
         }
 
         void FrameScheduler::Execute(JobPolicy overrideJobPolicy)
@@ -515,49 +497,26 @@ namespace AZ
             {
                 for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
                 {
-                    ExecuteGroupInternal(nullptr, nullptr, groupIndex);
+                    ExecuteGroupInternal(nullptr, groupIndex);
                 }
-                m_frameGraphExecuter->SubmitAllGroups();
             }
 
             // Otherwise, fork a job for each group.
             else
             {
-                static const AZ::TaskDescriptor executeGroupTGDesc{"FrameScheduler_ExecuteGroupInternal", "Graphics"};
-                static const AZ::TaskDescriptor executeGroupSubmitTGDesc{"FrameScheduler_FrameGraphExecuterSubmitAllGroups", "Graphics"};
-                AZ::TaskGraph executeGroupTG; // This graph will generate the executeContextTG
-                AZ::TaskGraph executeContextTG; // has the FG Executer do the work
-                auto submitTask = executeContextTG.AddTask(
-                    executeGroupSubmitTGDesc,
-                    [this]
-                    {
-                        m_frameGraphExecuter->SubmitAllGroups();
-                    });
+                AZ::JobCompletion jobCompletion;
                 for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
                 {
-                    executeGroupTG.AddTask(
-                        executeGroupTGDesc,
-                        [this, &executeContextTG, &submitTask, groupIndex]()
-                        {
-                            ExecuteGroupInternal(&executeContextTG, &submitTask, groupIndex);
-                        });
-                }
-
-                if (!executeGroupTG.IsEmpty()) // jobs to generate the executeContext jobs
-                {
-                    // executeGroupTG.Detach();
-                    AZ::TaskGraphEvent executeGroupFinishedEvent;
-                    executeGroupTG.Submit(&executeGroupFinishedEvent);
-                    executeGroupFinishedEvent.Wait();
-                    
-                    if (!executeContextTG.IsEmpty()) //ExecuteGroupInternal will generate zero jobs if there is only 1 group context
+                    const auto jobLambda = [this, groupIndex](AZ::Job& owner)
                     {
-                        // executeContextTG.Detach();
-                        AZ::TaskGraphEvent executeContextFinishedEvent;
-                        executeContextTG.Submit(&executeContextFinishedEvent);
-                        executeContextFinishedEvent.Wait();
-                    }
+                        ExecuteGroupInternal(&owner, groupIndex);
+                    };
+
+                    AZ::Job* executeGroupJob = AZ::CreateJobFunction(jobLambda, true, nullptr);
+                    executeGroupJob->SetDependent(&jobCompletion);
+                    executeGroupJob->Start();
                 }
+                jobCompletion.StartAndWaitForCompletion();
             }
         }
 
