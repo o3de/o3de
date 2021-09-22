@@ -56,23 +56,7 @@ namespace AzToolsFramework::Prefab
             focusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         }
 
-        if (!focusedInstance.has_value())
-        {
-            return AZ::Failure(AZStd::string("Prefab Focus Handler: Couldn't find owning instance of entityId provided."));
-        }
-
-        if (&m_focusedInstance->get() != &focusedInstance->get())
-        {
-            m_focusedInstance = focusedInstance;
-            m_focusedTemplateId = focusedInstance->get().GetTemplateId();
-            s_focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
-
-            RefreshInstanceFocusList();
-
-            PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
-        }
-
-        return AZ::Success();
+        return FocusOnPrefabInstance(focusedInstance);
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex(int index)
@@ -82,8 +66,22 @@ namespace AzToolsFramework::Prefab
             return AZ::Failure(AZStd::string("Prefab Focus Handler: Invalid index on FocusOnPathIndex."));
         }
 
-        m_focusedInstance = focusedInstance;
-        m_focusedTemplateId = focusedInstance->get().GetTemplateId();
+        InstanceOptionalReference focusedInstance = m_instanceFocusVector[index];
+
+        return FocusOnPrefabInstance(focusedInstance);
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(InstanceOptionalReference focusedInstance)
+    {
+        if (!focusedInstance.has_value())
+        {
+            return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
+        }
+
+        if (&m_focusedInstance->get() != &focusedInstance->get())
+        {
+            m_focusedInstance = focusedInstance;
+            m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
         FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         if (focusModeInterface)
@@ -97,7 +95,6 @@ namespace AzToolsFramework::Prefab
         }
 
         return AZ::Success();
-
     }
     
     TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId()
