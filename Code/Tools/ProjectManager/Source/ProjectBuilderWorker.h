@@ -13,9 +13,6 @@
 
 #include <QObject>
 #include <QProcessEnvironment>
-
-#include "EngineInfo.h"
-
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
