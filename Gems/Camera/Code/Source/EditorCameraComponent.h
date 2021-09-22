@@ -21,8 +21,6 @@
 #include <AzFramework/Components/EditorEntityEvents.h>
 #include "CameraComponent.h"
 #include "CameraComponentController.h"
-#include <IViewSystem.h>
-#include <Cry_Camera.h>
 
 #include <Atom/RPI.Public/Base.h>
 

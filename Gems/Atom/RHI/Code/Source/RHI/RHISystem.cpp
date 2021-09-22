@@ -187,8 +187,7 @@ namespace AZ
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
+            AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");
@@ -201,7 +200,7 @@ namespace AZ
                  * own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                  */
                 {
-                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem: FrameUpdate: OnFramePrepare");
+                    AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
                     RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
                 }
 

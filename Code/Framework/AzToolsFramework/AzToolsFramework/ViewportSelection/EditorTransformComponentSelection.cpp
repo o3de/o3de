@@ -253,10 +253,10 @@ namespace AzToolsFramework
                  mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
         }
 
-        static bool ManipulatorDitto(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool ManipulatorDitto(
+            const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
-            return mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
@@ -1054,6 +1054,17 @@ namespace AzToolsFramework
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
+
+        // ensure the click detector uses the EditorViewportInputTimeNowRequests interface to retrieve elapsed time
+        // note: this is to facilitate overriding this functionality for purposes such as testing
+        m_clickDetector.OverrideTimeNowFn(
+            []
+            {
+                AZStd::chrono::milliseconds timeNow;
+                AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::BroadcastResult(
+                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
+                return timeNow;
+            });
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1883,7 +1894,7 @@ namespace AzToolsFramework
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
-            if (Input::ManipulatorDitto(mouseInteraction))
+            if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
             {
                 PerformManipulatorDitto(entityIdUnderCursor);
                 return false;
@@ -3631,7 +3642,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::OnViewportViewEntityChanged(const AZ::EntityId& newViewId)
+    void EditorTransformComponentSelection::OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -3639,12 +3650,12 @@ namespace AzToolsFramework
         // match the editor camera translation/orientation), record the entity id if we have
         // a manipulator tracking it (entity id exists in m_entityIdManipulator lookups)
         // and remove it when recreating manipulators (see InitializeManipulators)
-        if (newViewId.IsValid())
+        if (viewEntityId.IsValid())
         {
-            const auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(newViewId);
+            const auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(viewEntityId);
             if (entityIdLookupIt != m_entityIdManipulators.m_lookups.end())
             {
-                m_editorCameraComponentEntityId = newViewId;
+                m_editorCameraComponentEntityId = viewEntityId;
                 RegenerateManipulators();
             }
         }

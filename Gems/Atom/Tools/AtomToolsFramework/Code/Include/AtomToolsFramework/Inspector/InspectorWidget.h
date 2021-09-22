@@ -41,6 +41,10 @@ namespace AtomToolsFramework
         ~InspectorWidget() override;
 
         // InspectorRequestBus::Handler overrides...
+        void AddHeading(QWidget* headingWidget) override;
+
+        void ClearHeading() override;
+
         void Reset() override;
 
         void AddGroupsBegin() override;
@@ -77,7 +81,6 @@ namespace AtomToolsFramework
         virtual void OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event);
 
     private:
-        QVBoxLayout* m_layout = nullptr;
         QScopedPointer<Ui::InspectorWidget> m_ui;
 
         struct GroupWidgetPair
