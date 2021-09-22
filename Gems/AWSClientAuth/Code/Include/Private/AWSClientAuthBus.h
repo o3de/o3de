@@ -9,6 +9,8 @@
 
 #include <AzCore/EBus/EBus.h>
 
+#include <memory>
+
 namespace Aws
 {
     namespace CognitoIdentityProvider
