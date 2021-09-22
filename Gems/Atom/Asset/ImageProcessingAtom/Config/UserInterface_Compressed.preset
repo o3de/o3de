@@ -17,7 +17,7 @@
                 "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
                 "Name": "UserInterface_Compressed",
                 "SuppressEngineReduce": true,
-                "PixelFormat": "ETC2"
+                "PixelFormat": "ASTC_6x6"
             },
             "ios": {
                 "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
