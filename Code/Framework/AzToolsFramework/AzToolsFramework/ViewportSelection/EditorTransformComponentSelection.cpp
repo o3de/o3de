@@ -1568,6 +1568,7 @@ namespace AzToolsFramework
 
         auto uniformLeftMouseDownCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
         {
+            sharedScaleState->m_savedScale = AZ::Vector3::CreateZero();
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedScaleState->m_entityIds);
 
