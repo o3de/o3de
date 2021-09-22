@@ -15,6 +15,7 @@
 #include <QBasicTimer>
 #include <QEvent>
 
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 #endif
 
@@ -35,6 +36,7 @@ namespace AzToolsFramework
     //! of other entities. If the selection updates instantly, this would never be possible.
     class EntityOutlinerTreeView
         : public AzQtComponents::StyledTreeView
+        , private FocusModeNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -60,6 +62,9 @@ namespace AzToolsFramework
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
         void leaveEvent(QEvent* event) override;
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId entityId) override;
 
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;

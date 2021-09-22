@@ -34,11 +34,8 @@ namespace AzToolsFramework::Prefab
         m_breadcrumbsWidget = breadcrumbsWidget;
         m_backButton = backButton;
 
-        m_backButton->setVisible(false);
-
         // If a part of the path is clicked, focus on that instance
-        connect(
-            m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
+        connect(m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
             [&](const QString&, int linkIndex)
             {
                 m_prefabFocusInterface->FocusOnPathIndex(linkIndex);
@@ -65,7 +62,14 @@ namespace AzToolsFramework::Prefab
         m_breadcrumbsWidget->pushPath(m_prefabFocusInterface->GetPrefabFocusPath().c_str());
 
         // Only show the back icon button if the path has more than one element
-        m_backButton->setVisible(m_prefabFocusInterface->GetPrefabFocusPathLength() > 1);
+        if(m_prefabFocusInterface->GetPrefabFocusPathLength() > 1)
+        {
+            m_backButton->show();
+        }
+        else
+        {
+            m_backButton->hide();
+        }
     }
 
 } // namespace AzToolsFramework::Prefab

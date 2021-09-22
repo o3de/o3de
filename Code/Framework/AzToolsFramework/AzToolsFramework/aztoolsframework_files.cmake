@@ -151,6 +151,7 @@ set(FILES
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeNotificationBus.h
     FocusMode/FocusModeSystemComponent.h
     FocusMode/FocusModeSystemComponent.cpp
     Logger/TraceLogger.cpp
