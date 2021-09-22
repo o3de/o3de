@@ -693,7 +693,6 @@ namespace AzToolsFramework
     {
         // open the manifest and deserialize it
         bool manifestExtracted = false;
-        const bool overwriteExisting = true;
 
         TemporaryDir tempDir(sourcePak);
         if (!tempDir.m_result)
