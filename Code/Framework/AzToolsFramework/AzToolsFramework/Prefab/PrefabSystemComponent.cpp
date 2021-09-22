@@ -34,7 +34,6 @@ namespace AzToolsFramework
             m_prefabLoader.RegisterPrefabLoaderInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
-            m_prefabFocusHandler.Initialize();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
             m_prefabPublicRequestHandler.Connect();
             AZ::SystemTickBus::Handler::BusConnect();

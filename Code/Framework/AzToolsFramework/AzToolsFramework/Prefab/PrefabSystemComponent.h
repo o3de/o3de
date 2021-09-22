@@ -21,7 +21,6 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapper.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
-#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
@@ -378,9 +377,6 @@ namespace AzToolsFramework
 
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
-
-            // Handles the Prefab Focus API that determines what prefab is being edited.
-            PrefabFocusHandler m_prefabFocusHandler;
 
             // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;

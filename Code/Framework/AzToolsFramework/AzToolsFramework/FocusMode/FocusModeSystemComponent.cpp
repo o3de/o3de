@@ -31,22 +31,18 @@ namespace AzToolsFramework
         return IsInFocusSubTree(parentId, focusRootId);
     }
 
-    FocusModeSystemComponent::~FocusModeSystemComponent()
-    {
-        AZ::Interface<FocusModeInterface>::Unregister(this);
-    }
-
     void FocusModeSystemComponent::Init()
     {
-        AZ::Interface<FocusModeInterface>::Register(this);
     }
 
     void FocusModeSystemComponent::Activate()
     {
+        AZ::Interface<FocusModeInterface>::Register(this);
     }
 
     void FocusModeSystemComponent::Deactivate()
     {
+        AZ::Interface<FocusModeInterface>::Unregister(this);
     }
 
     void FocusModeSystemComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)

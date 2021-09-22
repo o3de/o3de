@@ -14,15 +14,8 @@
 
 namespace AzToolsFramework::Prefab
 {
-    PrefabFocusHandler::~PrefabFocusHandler()
+    PrefabFocusHandler::PrefabFocusHandler()
     {
-        AZ::Interface<PrefabFocusInterface>::Unregister(this);
-    }
-
-    void PrefabFocusHandler::Initialize()
-    {
-        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         AZ_Assert(
             m_instanceEntityMapperInterface,
@@ -30,21 +23,35 @@ namespace AzToolsFramework::Prefab
             "Instance Entity Mapper Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        m_prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-        AZ_Assert(
-            m_prefabEditorEntityOwnershipInterface,
-            "Prefab - PrefabFocusHandler - "
-            "Prefab Editor Entity Ownership Interface could not be found. "
-            "Check that it is being correctly initialized.");
-
         AZ::Interface<PrefabFocusInterface>::Register(this);
+    }
+
+    PrefabFocusHandler::~PrefabFocusHandler()
+    {
+        AZ::Interface<PrefabFocusInterface>::Unregister(this);
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
-        InstanceOptionalReference focusedInstance = (entityId == AZ::EntityId())
-            ? m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()
-            : m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        InstanceOptionalReference focusedInstance;
+
+        if (entityId == AZ::EntityId())
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+            if(!prefabEditorEntityOwnershipInterface)
+            {
+                return AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
+                                                 "(PrefabEditorEntityOwnershipInterface unavailable)."));
+            }
+
+            focusedInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        }
+        else
+        {
+            focusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        }
 
         if (!focusedInstance.has_value())
         {
@@ -54,9 +61,11 @@ namespace AzToolsFramework::Prefab
 
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
-        if (m_focusModeInterface)
+
+        FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        if (focusModeInterface)
         {
-            m_focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
+            focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
         }
 
         return AZ::Success();

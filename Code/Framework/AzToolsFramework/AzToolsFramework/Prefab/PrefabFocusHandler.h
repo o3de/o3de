@@ -14,12 +14,6 @@
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
-namespace AzToolsFramework
-{
-    class FocusModeInterface;
-    class PrefabEditorEntityOwnershipInterface;
-}
-
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
@@ -31,9 +25,8 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
+        PrefabFocusHandler();
         ~PrefabFocusHandler();
-
-        void Initialize();
 
         // PrefabFocusInterface override ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -45,9 +38,7 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
 
-        FocusModeInterface* m_focusModeInterface;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
-        PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface;
     };
 
 } // namespace AzToolsFramework::Prefab
