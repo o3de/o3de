@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
             });
 
         // added dependencies 
-        CreateGemSection( tr("Gem dependency to be activated"), tr("Gem dependencies to be activated"), [=]
+        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [=]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
@@ -95,7 +95,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed dependencies 
-        CreateGemSection( tr("Gem dependency to be deactivated"), tr("Gem dependencies to be deactivated"), [=]
+        CreateGemSection( tr("dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
