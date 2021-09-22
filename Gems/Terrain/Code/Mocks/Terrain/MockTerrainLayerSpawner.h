@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#include <gmock/gmock.h>
-
-#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore\Component\Component.h>
 
 namespace UnitTest
 {

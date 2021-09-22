@@ -30,9 +30,6 @@ protected:
     AZ::ComponentApplication m_app;
 
     AZStd::unique_ptr<AZ::Entity> m_entity;
-    Terrain::TerrainHeightGradientListComponent* m_heightGradientListComponent;
-    UnitTest::MockAxisAlignedBoxShapeComponent* m_boxComponent;
-    UnitTest::MockTerrainLayerSpawnerComponent* m_layerSpawner;
 
     void SetUp() override
     {
@@ -55,19 +52,19 @@ protected:
         ASSERT_TRUE(m_entity);
 
         // Create the required box component.
-        m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
-        m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+        UnitTest::MockAxisAlignedBoxShapeComponent* boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+        m_app.RegisterComponentDescriptor(boxComponent->CreateDescriptor());
 
         // Create the TerrainHeightGradientListComponent with an entity in its configuration.
         Terrain::TerrainHeightGradientListConfig config;
         config.m_gradientEntities.push_back(m_entity->GetId());
 
-        m_heightGradientListComponent = m_entity->CreateComponent<Terrain::TerrainHeightGradientListComponent>(config);
-        m_app.RegisterComponentDescriptor(m_heightGradientListComponent->CreateDescriptor());
+        Terrain::TerrainHeightGradientListComponent* heightGradientListComponent = m_entity->CreateComponent<Terrain::TerrainHeightGradientListComponent>(config);
+        m_app.RegisterComponentDescriptor(heightGradientListComponent->CreateDescriptor());
 
         // Create a MockTerrainLayerSpawnerComponent to provide the required TerrainAreaService.
-        m_layerSpawner = m_entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
-        m_app.RegisterComponentDescriptor(m_layerSpawner->CreateDescriptor());
+        UnitTest::MockTerrainLayerSpawnerComponent* layerSpawner = m_entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
+        m_app.RegisterComponentDescriptor(layerSpawner->CreateDescriptor());
 
         m_entity->Init();
     }
@@ -81,7 +78,7 @@ TEST_F(TerrainHeightGradientListComponentTest, ActivateEntityActivateSuccess)
     m_entity->Activate();
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTerrainSystem)
@@ -103,7 +100,7 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTer
     // Stop the EXPECT_CALL check now, as OnCompositionChanged will get called twice again during the reset.
     Mock::VerifyAndClearExpectations(&terrainSystem);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsHeights)
@@ -144,6 +141,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
 
     EXPECT_NEAR(height, mockGradientValue * max, 0.01f);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
