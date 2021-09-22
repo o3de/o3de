@@ -58,28 +58,6 @@ namespace UnitTest
         return true;
     }
 
-    class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
-    {
-    public:
-        AZ::Transform GetCameraTransform() const override
-        {
-            return m_cameraTransform;
-        }
-
-        void SetCameraTransform(const AZ::Transform& transform) override
-        {
-            m_cameraTransform = transform;
-        }
-
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override
-        {
-            // noop
-        }
-
-    private:
-        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
-    };
-
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
@@ -146,7 +124,7 @@ namespace UnitTest
             controller->SetCameraViewportContextBuilderCallback(
                 [this](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
                 {
-                    cameraViewportContext = AZStd::make_unique<TestModularCameraViewportContextImpl>();
+                    cameraViewportContext = AZStd::make_unique<AtomToolsFramework::PlaceholderModularCameraViewportContextImpl>();
                     m_cameraViewportContextView = cameraViewportContext.get();
                 });
 
