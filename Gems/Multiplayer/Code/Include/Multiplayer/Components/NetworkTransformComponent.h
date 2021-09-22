@@ -31,9 +31,11 @@ namespace Multiplayer
     private:
         void OnPreRender(float deltaTime);
         void OnCorrection();
-
+        void OnParentChanged(NetEntityId parentId);
+        
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+        AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
 
         Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };

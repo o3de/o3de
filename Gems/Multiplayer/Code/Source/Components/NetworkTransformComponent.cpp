@@ -28,6 +28,7 @@ namespace Multiplayer
     NetworkTransformComponent::NetworkTransformComponent()
         : m_entityPreRenderEventHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
+        , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
     {
         ;
     }
@@ -41,6 +42,7 @@ namespace Multiplayer
     {
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
+        ParentEntityIdAddEvent(m_parentChangedEventHandler);
     }
 
     void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -97,6 +99,21 @@ namespace Multiplayer
         }
     }
 
+    void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
+    {
+        const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
+        if (parentEntityHandle.Exists())
+        {
+            if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+            {
+                GetEntity()->GetTransform()->SetParent(parentEntity->GetId());
+            }
+        }
+        else
+        {
+            GetEntity()->GetTransform()->SetParent(AZ::EntityId());
+        }
+    }
 
     NetworkTransformComponentController::NetworkTransformComponentController(NetworkTransformComponent& parent)
         : NetworkTransformComponentControllerBase(parent)

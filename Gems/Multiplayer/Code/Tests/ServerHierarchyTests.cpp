@@ -109,7 +109,7 @@ namespace Multiplayer
 
     TEST_F(ServerSimpleHierarchyTests, Child_Has_Root_Cleared_On_Detach)
     {
-        // now detach the child        
+        // now detach the child
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
 
         EXPECT_EQ(
@@ -165,7 +165,7 @@ namespace Multiplayer
             m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->IsHierarchyEnabled(),
             true
         );
-        
+
         StopEntity(m_root->m_entity);
         m_root->m_entity->Deactivate();
 
@@ -183,7 +183,7 @@ namespace Multiplayer
             m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->IsHierarchyEnabled(),
             true
         );
-        
+
         StopEntity(m_child->m_entity);
         m_child->m_entity->Deactivate();
 
@@ -435,6 +435,9 @@ namespace Multiplayer
             CreateBranchedHierarchy(*m_root, *m_child, *m_childOfChild,
                 *m_child2, *m_childOfChild2, *m_child2OfChild2);
 
+            m_child2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+            m_childOfChild2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_child2->m_entity->GetId());
+            m_child2OfChild2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_child2->m_entity->GetId());
             m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
             m_childOfChild->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_child->m_entity->GetId());
             // now the entities are under one hierarchy
@@ -469,13 +472,6 @@ namespace Multiplayer
             SetupEntity(child2.m_entity, child2.m_netId, NetEntityRole::Authority);
             SetupEntity(childOfChild2.m_entity, childOfChild2.m_netId, NetEntityRole::Authority);
             SetupEntity(child2OfChild2.m_entity, child2OfChild2.m_netId, NetEntityRole::Authority);
-
-            // we need a parent-id value to be present in NetworkTransformComponent (which is in client mode and doesn't have a controller)
-            SetParentIdOnNetworkTransform(child.m_entity, root.m_netId);
-            SetParentIdOnNetworkTransform(childOfChild.m_entity, child.m_netId);
-            SetParentIdOnNetworkTransform(child2.m_entity, root.m_netId);
-            SetParentIdOnNetworkTransform(childOfChild2.m_entity, child2.m_netId);
-            SetParentIdOnNetworkTransform(child2OfChild2.m_entity, child2.m_netId);
 
             // Create entity replicators
             const NetworkEntityHandle childOfChild2Handle(childOfChild2.m_entity.get(), m_networkEntityTracker.get());
@@ -1014,8 +1010,8 @@ namespace Multiplayer
 
             CreateDeepHierarchy(*m_root, *m_child, *m_childOfChild);
 
-            m_root->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
-            m_childOfChild->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+            m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+            m_childOfChild->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_child->m_entity->GetId());
             // now the entities are under one hierarchy
         }
 

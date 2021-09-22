@@ -101,7 +101,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetHostTimeMs, AZ::TimeMs());
         MOCK_CONST_METHOD0(GetRewindingConnectionId, AzNetworking::ConnectionId());
         MOCK_CONST_METHOD1(GetHostFrameIdForRewindingConnection, Multiplayer::HostFrameId(AzNetworking::ConnectionId));
-        MOCK_METHOD3(AlterTime, void(Multiplayer::HostFrameId, AZ::TimeMs, AzNetworking::ConnectionId));
+        MOCK_METHOD4(AlterTime, void (Multiplayer::HostFrameId, AZ::TimeMs, float, AzNetworking::ConnectionId));
         MOCK_METHOD1(SyncEntitiesToRewindState, void(const AZ::Aabb&));
         MOCK_METHOD0(ClearRewoundEntities, void());
     };
