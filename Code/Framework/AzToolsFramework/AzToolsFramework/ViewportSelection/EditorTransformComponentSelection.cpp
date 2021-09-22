@@ -77,13 +77,6 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
-    AZ_CVAR(
-        bool,
-        ed_viewportStickySelect,
-        true,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "Sticky select implies a single click will not change selection with an entity already selected");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const TogglePivotTitleRightClick = "Toggle pivot";
@@ -260,10 +253,10 @@ namespace AzToolsFramework
                  mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
         }
 
-        static bool ManipulatorDitto(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool ManipulatorDitto(
+            const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
-            return mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
@@ -1061,6 +1054,17 @@ namespace AzToolsFramework
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
+
+        // ensure the click detector uses the EditorViewportInputTimeNowRequests interface to retrieve elapsed time
+        // note: this is to facilitate overriding this functionality for purposes such as testing
+        m_clickDetector.OverrideTimeNowFn(
+            []
+            {
+                AZStd::chrono::milliseconds timeNow;
+                AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::BroadcastResult(
+                    timeNow, &AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Events::EditorViewportInputTimeNow);
+                return timeNow;
+            });
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1790,7 +1794,8 @@ namespace AzToolsFramework
 
         CheckDirtyEntityIds();
 
-        const AzFramework::CameraState cameraState = GetCameraState(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+        const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
+        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
@@ -1835,7 +1840,11 @@ namespace AzToolsFramework
             return true;
         }
 
-        if (ed_viewportStickySelect)
+        bool stickySelect = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            stickySelect, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::StickySelectEnabled);
+
+        if (stickySelect)
         {
             // double click to deselect all
             if (Input::DeselectAll(mouseInteraction))
@@ -1885,13 +1894,13 @@ namespace AzToolsFramework
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
-            if (Input::ManipulatorDitto(mouseInteraction))
+            if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
             {
                 PerformManipulatorDitto(entityIdUnderCursor);
                 return false;
             }
 
-            if (ed_viewportStickySelect)
+            if (stickySelect)
             {
                 return false;
             }
@@ -1900,7 +1909,7 @@ namespace AzToolsFramework
         // standard toggle selection
         if (Input::IndividualSelect(clickOutcome))
         {
-            if (!ed_viewportStickySelect)
+            if (!stickySelect)
             {
                 ChangeSelectedEntity(entityIdUnderCursor);
             }

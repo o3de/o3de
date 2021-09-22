@@ -119,8 +119,6 @@ namespace AZ::IO::ZipDir
         const char* m_szDescription;
     };
 
-#define THROW_ZIPDIR_ERROR(ZD_ERR, DESC) AZ_Warning("Archive", false, DESC)
-
     // possible initialization methods
     enum InitMethodEnum
     {
@@ -157,8 +155,6 @@ namespace AZ::IO::ZipDir
 
     int FEof(CZipFile* zipFile);
 
-    uint32_t FileNameHash(AZStd::string_view filename);
-
 
     //////////////////////////////////////////////////////////////////////////
     struct SExtraZipFileData
@@ -173,7 +169,7 @@ namespace AZ::IO::ZipDir
 
         inline static constexpr uint32_t INVALID_DATA_OFFSET = 0xFFFFFFFF;
         ZipFile::DataDescriptor desc{};
-        uint32_t nFileDataOffset{}; // offset of the packed info inside the file; NOTE: this can be INVALID_DATA_OFFSET, if not calculated yet!
+        uint32_t nFileDataOffset{ INVALID_DATA_OFFSET }; // offset of the packed info inside the file; NOTE: this can be INVALID_DATA_OFFSET, if not calculated yet!
         uint32_t nFileHeaderOffset{ INVALID_DATA_OFFSET }; // offset of the local file header
         uint32_t nNameOffset{};       // offset of the file name in the name pool for the directory
 

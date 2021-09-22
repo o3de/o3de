@@ -7,21 +7,21 @@
 {% macro DeclareNetworkPropertyGetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
-{% else %}
+{%          else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
-{% endif %}
+{%          endif %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}
 {%     elif Property.attrib['Container'] == 'Vector' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
 const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
-{% else %}
+{%          else %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Vector() const;
-{% endif %}
+{%          endif %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}(int32_t index) const;
 const {{ Property.attrib['Type'] }}& {{ PropertyName }}GetBack() const;
 uint32_t {{ PropertyName }}GetSize() const;
@@ -31,6 +31,9 @@ void {{ PropertyName }}SizeChangedAddEvent(AZ::Event<uint32_t>::Handler& handler
 {%          endif %}
 {%     else %}
 const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
+{%          if Property.attrib['IsRewindable']|booleanTrue %}
+const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}Previous() const;
+{%          endif %}
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<{{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}

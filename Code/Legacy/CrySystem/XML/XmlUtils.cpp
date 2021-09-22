@@ -169,7 +169,7 @@ public:
     {
         if (m_fileHandle != AZ::IO::InvalidHandle)
         {
-            gEnv->pCryPak->FWrite(pData, size, 1, m_fileHandle);
+            gEnv->pCryPak->FWrite(pData, size, m_fileHandle);
         }
     }
 private:
