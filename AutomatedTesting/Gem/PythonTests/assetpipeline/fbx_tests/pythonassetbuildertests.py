@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
 
 @pytest.fixture
-@pytest.mark.SUITE_sandbox
 def local_resources(request, workspace, ap_setup_fixture):
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
@@ -43,12 +42,11 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_main
 class TestsPythonAssetProcessing_APBatch(object):   
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
     def test_ProcessAssetWithoutScriptAfterAssetWithScript_ScriptOnlyRunsOnExpectedAsset(self, workspace, ap_setup_fixture, asset_processor):
         # This is a regression test. The situation it's testing is, the Python script to run
         # defined in scene manifest files was persisting in a single builder. So if
