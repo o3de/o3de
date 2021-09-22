@@ -700,13 +700,6 @@ namespace AzToolsFramework
                 switch (referenceFrame)
                 {
                 case ReferenceFrame::Local:
-                    // if we have a group selection, always use the pivot override if one
-                    // is set when moving to local space (can't pick individual local space)
-                    if (entityIdMap.size() > 1)
-                    {
-                        pivot.m_worldOrientation = pivotOverrideFrame.m_orientationOverride.value();
-                    }
-                    break;
                 case ReferenceFrame::Parent:
                     pivot.m_worldOrientation = pivotOverrideFrame.m_orientationOverride.value();
                     break;
@@ -2736,8 +2729,7 @@ namespace AzToolsFramework
 
         if (m_pivotOverrideFrame.m_orientationOverride && m_entityIdManipulators.m_manipulators)
         {
-            m_pivotOverrideFrame.m_orientationOverride =
-                QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+            m_pivotOverrideFrame.m_orientationOverride = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetRotation();
         }
 
         if (m_pivotOverrideFrame.m_translationOverride && m_entityIdManipulators.m_manipulators)

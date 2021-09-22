@@ -371,16 +371,16 @@ namespace UnitTest
         // Given
         AzToolsFramework::SelectEntity(m_entityId1);
 
-        ArrangeIndividualRotatedEntitySelection(m_entityIds, AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
+        const auto entityTransform = AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
+        ArrangeIndividualRotatedEntitySelection(m_entityIds, entityTransform.GetRotation());
         RefreshManipulators(EditorTransformComponentSelectionRequestBus::Events::RefreshType::All);
 
         SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Rotation);
 
         const AZ::Transform manipulatorTransformBefore = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
 
-        // check preconditions - manipulator transform matches parent/world transform (identity)
-        EXPECT_THAT(manipulatorTransformBefore.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
-        EXPECT_THAT(manipulatorTransformBefore.GetBasisZ(), IsClose(AZ::Vector3::CreateAxisZ()));
+        // check preconditions - manipulator transform matches the entity transform
+        EXPECT_THAT(manipulatorTransformBefore, IsClose(entityTransform));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1661,7 +1661,7 @@ namespace UnitTest
         All,
         EditorTransformComponentSelectionSingleEntityPivotAndOverrideFixture,
         testing::Values(
-            ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::Local, ChildExpectedPivotLocalOrientationInWorldSpace },
+            ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::Local, PivotOverrideLocalOrientationInWorldSpace },
             ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::Parent, PivotOverrideLocalOrientationInWorldSpace },
             ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::World, AZ::Quaternion::CreateIdentity() }));
 
