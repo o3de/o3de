@@ -12,17 +12,9 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 
-
-
-
-
-
-
-#include <AzToolsFramework/ViewportSelection/ViewportEditorModeTracker.h>
-
 namespace AzToolsFramework
 {
-    //class ViewportEditorModeTracker;
+    class ViewportEditorModeTracker;
 
     //! System Component to wrap active input handler.
     //! EditorInteractionSystemComponent is notified of viewport mouse events from RenderViewport
