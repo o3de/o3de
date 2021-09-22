@@ -20,6 +20,8 @@
 #include <QLabel>
 #include <QHeaderView>
 #include <QTableWidget>
+#include <QFrame>
+#include <QStackedWidget>
 
 namespace O3DE::ProjectManager
 {
@@ -31,12 +33,109 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
-        setLayout(vLayout);
+       setLayout(vLayout);
+
+        m_contentStack = new QStackedWidget(this);
+
+        m_noRepoContent = CreateNoReposContent();
+        m_contentStack->addWidget(m_noRepoContent);
+
+        m_repoContent = CreateReposContent();
+        m_contentStack->addWidget(m_repoContent);
+
+        vLayout->addWidget(m_contentStack);
+
+        Reinit();
+    }
+
+    void GemRepoScreen::Reinit()
+    {
+        m_gemRepoModel->clear();
+        FillModel();
+
+        // If model contains any data show the repos
+        if (m_gemRepoModel->rowCount())
+        {
+            m_contentStack->setCurrentWidget(m_repoContent);
+        }
+        else
+        {
+            m_contentStack->setCurrentWidget(m_noRepoContent);
+        }
+
+        // Select the first entry after everything got correctly sized
+        QTimer::singleShot(200, [=]{
+            QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
+            m_gemRepoListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+        });
+    }
+
+    void GemRepoScreen::FillModel()
+    {
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
+        if (allGemRepoInfosResult.IsSuccess())
+        {
+            // Add all available repos to the model
+            const QVector<GemRepoInfo> allGemRepoInfos = allGemRepoInfosResult.GetValue();
+            for (const GemRepoInfo& gemRepoInfo : allGemRepoInfos)
+            {
+                m_gemRepoModel->AddGemRepo(gemRepoInfo);
+            }
+        }
+        else
+        {
+            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.\n\nError:\n%2").arg(allGemRepoInfosResult.GetError().c_str()));
+        }
+    }
+
+    QFrame* GemRepoScreen::CreateNoReposContent()
+    {
+        QFrame* contentFrame = new QFrame(this);
+
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setAlignment(Qt::AlignHCenter);
+        vLayout->setMargin(0);
+        vLayout->setSpacing(0);
+        contentFrame->setLayout(vLayout);
+
+        vLayout->addStretch();
+
+        QLabel* noRepoLabel = new QLabel(tr("No repositories have been added yet."), this);
+        noRepoLabel->setObjectName("gemRepoNoReposLabel");
+        vLayout->addWidget(noRepoLabel);
+        vLayout->setAlignment(noRepoLabel, Qt::AlignHCenter);
+
+        vLayout->addSpacing(20);
+
+        // Size hint for button is wrong so horizontal layout with stretch is used to center it
+        QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setMargin(0);
+        hLayout->setSpacing(0);
+
+        hLayout->addStretch();
+
+        m_AddRepoButton = new QPushButton(tr("Add Repository"), this);
+        m_AddRepoButton->setObjectName("gemRepoAddButton");
+        m_AddRepoButton->setMinimumWidth(120);
+        hLayout->addWidget(m_AddRepoButton);
+
+        hLayout->addStretch();
+
+        vLayout->addLayout(hLayout);
+
+        vLayout->addStretch();
+
+        return contentFrame;
+    }
+
+    QFrame* GemRepoScreen::CreateReposContent()
+    {
+        QFrame* contentFrame = new QFrame(this);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
         hLayout->setSpacing(0);
-        vLayout->addLayout(hLayout);
+        contentFrame->setLayout(hLayout);
 
         hLayout->addSpacing(60);
 
@@ -67,8 +166,10 @@ namespace O3DE::ProjectManager
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         m_AddRepoButton = new QPushButton(tr("Add Repository"), this);
-        m_AddRepoButton->setObjectName("gemRepoHeaderAddButton");
+        m_AddRepoButton->setObjectName("gemRepoAddButton");
         topMiddleHLayout->addWidget(m_AddRepoButton);
+
+        topMiddleHLayout->addSpacing(30);
 
         middleVLayout->addLayout(topMiddleHLayout);
 
@@ -105,37 +206,7 @@ namespace O3DE::ProjectManager
         hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemRepoInspector);
 
-        Reinit();
-    }
-
-    void GemRepoScreen::Reinit()
-    {
-        m_gemRepoModel->clear();
-        FillModel();
-
-        // Select the first entry after everything got correctly sized
-        QTimer::singleShot(200, [=]{
-            QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
-            });
-    }
-
-    void GemRepoScreen::FillModel()
-    {
-        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
-        if (allGemRepoInfosResult.IsSuccess())
-        {
-            // Add all available repos to the model
-            const QVector<GemRepoInfo> allGemRepoInfos = allGemRepoInfosResult.GetValue();
-            for (const GemRepoInfo& gemRepoInfo : allGemRepoInfos)
-            {
-                m_gemRepoModel->AddGemRepo(gemRepoInfo);
-            }
-        }
-        else
-        {
-            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.\n\nError:\n%2").arg(allGemRepoInfosResult.GetError().c_str()));
-        }
+        return contentFrame;
     }
 
     ProjectManagerScreen GemRepoScreen::GetScreenEnum()
