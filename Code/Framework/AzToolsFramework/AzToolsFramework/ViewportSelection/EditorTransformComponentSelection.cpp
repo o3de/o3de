@@ -1471,6 +1471,12 @@ namespace AzToolsFramework
                 }
                 else
                 {
+                    // only update the pivot override if the orientation is being modified in local space
+                    if (referenceFrame == ReferenceFrame::Local && sharedRotationState->m_entityIds.size() > 1)
+                    {
+                        m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
+                    }
+
                     // note: must use sorted entityIds based on hierarchy order when updating transforms
                     for (AZ::EntityId entityId : sharedRotationState->m_entityIds)
                     {
@@ -1505,18 +1511,8 @@ namespace AzToolsFramework
                             break;
                         case Influence::Group:
                             {
-                                // only update the pivot override if the orientation is being modified in local space
-                                if (referenceFrame == ReferenceFrame::Local && sharedRotationState->m_entityIds.size() != 1)
-                                {
-                                    m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
-                                }
-
-                                const auto pivotOrientation = ETCS::CalculateSelectionPivotOrientation(
-                                    m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, referenceFrame);
-
                                 const AZ::Transform pivotTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-                                    pivotOrientation.m_worldOrientation,
-                                    m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
+                                    manipulatorOrientation, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
                                 const AZ::Transform transformInPivotSpace =
                                     pivotTransform.GetInverse() * entityIdLookupIt->second.m_initial;
 
