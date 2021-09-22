@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
@@ -83,11 +84,17 @@ namespace AzToolsFramework::Prefab
             m_focusedInstance = focusedInstance;
             m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-        FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        if (focusModeInterface)
-        {
-            focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
-        }
+            AZ::EntityId containerEntityId = focusedInstance->get().GetContainerEntityId();
+
+            // Select the container entity
+            AzToolsFramework::SelectEntity(containerEntityId);
+
+            // Focus on the descendants of the container entity
+            FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+            if (focusModeInterface)
+            {
+                focusModeInterface->SetFocusRoot(containerEntityId);
+            }
 
             RefreshInstanceFocusList();
 
