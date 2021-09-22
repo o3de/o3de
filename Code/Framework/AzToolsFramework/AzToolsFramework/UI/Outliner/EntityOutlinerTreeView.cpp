@@ -38,10 +38,14 @@ namespace AzToolsFramework
 
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        FocusModeNotificationBus::Handler::BusConnect();
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
+
         ClearQueuedMouseEvent();
     }
 
@@ -260,6 +264,11 @@ namespace AzToolsFramework
         });
 
         StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
+    }
+
+    void EntityOutlinerTreeView::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId entityId)
+    {
+        viewport()->repaint();
     }
 }
 
