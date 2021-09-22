@@ -149,6 +149,9 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
+    FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeSystemComponent.h
+    FocusMode/FocusModeSystemComponent.cpp
     Logger/TraceLogger.cpp
     Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
@@ -629,6 +632,9 @@ set(FILES
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabFocusHandler.h
+    Prefab/PrefabFocusHandler.cpp
+    Prefab/PrefabFocusInterface.h
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
@@ -721,9 +727,6 @@ set(FILES
     UI/Layer/LayerUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
-    UI/Prefab/PrefabEditInterface.h
-    UI/Prefab/PrefabEditManager.h
-    UI/Prefab/PrefabEditManager.cpp
     UI/Prefab/PrefabIntegrationBus.h
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp

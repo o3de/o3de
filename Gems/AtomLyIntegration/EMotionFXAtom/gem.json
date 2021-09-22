@@ -8,7 +8,14 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "EMotionFX",
+        "Atom",
+        "Atom_Feature_Common",
+        "Atom_RPI",
+        "Atom_RHI",
+        "CommonFeaturesAtom"
+    ]
 }
