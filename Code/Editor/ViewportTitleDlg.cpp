@@ -155,6 +155,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
+    QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);

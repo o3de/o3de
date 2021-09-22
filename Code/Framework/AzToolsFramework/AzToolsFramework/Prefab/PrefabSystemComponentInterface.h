@@ -33,6 +33,7 @@ namespace AzToolsFramework
             virtual LinkReference FindLink(const LinkId& id) = 0;
 
             virtual TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) = 0;
+            virtual void UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath) = 0;
             virtual void RemoveTemplate(const TemplateId& templateId) = 0;
             virtual void RemoveAllTemplates() = 0;
 

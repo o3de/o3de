@@ -9,6 +9,8 @@
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzFramework/Components/TransformComponent.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {
@@ -29,10 +31,32 @@ namespace Multiplayer
 
     void NetworkSpawnableHolderComponent::Activate()
     {
+        const auto agentType = GetMultiplayer()->GetAgentType();
+        const bool shouldSpawnNetEntities =
+            (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
+
+        if(shouldSpawnNetEntities)
+        {
+            AZ::Transform rootEntityTransform = AZ::Transform::CreateIdentity();
+
+            AzFramework::TransformComponent* rootEntityTransformComponent =
+                GetEntity()->FindComponent<AzFramework::TransformComponent>();
+            if (rootEntityTransformComponent)
+            {
+                rootEntityTransform = rootEntityTransformComponent->GetWorldTM();
+            }
+
+            INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+            AZ_Assert(networkEntityManager != nullptr,
+                "Network Entity Manager must be initialized before NetworkSpawnableHolderComponent is activated");
+
+            m_netSpawnableTicket = networkEntityManager->RequestNetSpawnableInstantiation(m_networkSpawnableAsset, rootEntityTransform);
+        }
     }
 
     void NetworkSpawnableHolderComponent::Deactivate()
     {
+        m_netSpawnableTicket.reset();
     }
 
     void NetworkSpawnableHolderComponent::SetNetworkSpawnableAsset(AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset)
@@ -40,7 +64,7 @@ namespace Multiplayer
         m_networkSpawnableAsset = networkSpawnableAsset;
     }
 
-    AZ::Data::Asset<AzFramework::Spawnable> NetworkSpawnableHolderComponent::GetNetworkSpawnableAsset()
+    AZ::Data::Asset<AzFramework::Spawnable> NetworkSpawnableHolderComponent::GetNetworkSpawnableAsset() const
     {
         return m_networkSpawnableAsset;
     }

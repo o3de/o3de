@@ -301,7 +301,7 @@ namespace UnitTest
             &WhiteBox::EditorWhiteBoxComponentModeRequestBus::Events::OverrideKeyboardModifierQuery,
             [this]()
             {
-                return m_actionDispatcher->GetKeyboardModifiers();
+                return m_actionDispatcher->QueryKeyboardModifiers();
             });
 
         AzFramework::SetCameraTransform(

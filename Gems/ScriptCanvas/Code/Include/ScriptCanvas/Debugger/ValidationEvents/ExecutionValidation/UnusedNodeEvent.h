@@ -60,7 +60,7 @@ namespace ScriptCanvas
         }
 
         // HighlightEntityEffect
-        AZ::EntityId GetHighlightTarget() const
+        AZ::EntityId GetHighlightTarget() const override
         {
             return m_nodeId;
         }

@@ -101,6 +101,7 @@ namespace JsonSerializationTests
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
+        using JsonSerializerConformityTestDescriptor<AZ::Data::Asset<TestAssetData>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Asset>();

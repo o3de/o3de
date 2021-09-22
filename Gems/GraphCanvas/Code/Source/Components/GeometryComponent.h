@@ -69,7 +69,7 @@ namespace GraphCanvas
 
         void SetIsPositionAnimating(bool animating) override;
 
-        void SetAnimationTarget(const AZ::Vector2& targetPoint);
+        void SetAnimationTarget(const AZ::Vector2& targetPoint) override;
         ////
 
         // VisualNotificationBus

@@ -22,8 +22,7 @@ namespace Benchmark
     class BM_MathTransform
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_testDataArray.resize(1000);
 
@@ -50,6 +49,15 @@ namespace Benchmark
                 testData.index = distInt(rng) % 3;
                 return testData;
             });
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         struct TestData

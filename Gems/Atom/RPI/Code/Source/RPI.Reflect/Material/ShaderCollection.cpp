@@ -23,7 +23,7 @@ namespace AZ
             : public SerializeContext::IEventHandler
         {
             //! Called right before we start reading from the instance pointed by classPtr.
-            virtual void OnReadBegin(void* classPtr)
+            void OnReadBegin(void* classPtr) override
             {
                 ShaderCollection::Item* shaderVariantReference = reinterpret_cast<ShaderCollection::Item*>(classPtr);
                 shaderVariantReference->m_shaderVariantId = shaderVariantReference->m_shaderOptionGroup.GetShaderVariantId();

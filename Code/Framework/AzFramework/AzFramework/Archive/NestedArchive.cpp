@@ -174,7 +174,7 @@ namespace AZ::IO
         return m_pCache->ReadFile(reinterpret_cast<ZipDir::FileEntry*>(fileHandle), nullptr, pBuffer);
     }
 
-    const char* NestedArchive::GetFullPath() const
+    AZ::IO::PathView NestedArchive::GetFullPath() const
     {
         return m_pCache->GetFilePath();
     }
@@ -193,19 +193,9 @@ namespace AZ::IO
         if (nFlagsToSet & FLAGS_RELATIVE_PATHS_ONLY)
         {
             m_nFlags |= FLAGS_RELATIVE_PATHS_ONLY;
-        }
-
-        if (nFlagsToSet & FLAGS_ON_HDD)
-        {
-            m_nFlags |= FLAGS_ON_HDD;
-        }
-
-        if (nFlagsToSet & FLAGS_RELATIVE_PATHS_ONLY ||
-            nFlagsToSet & FLAGS_ON_HDD)
-        {
-            // we don't support changing of any other flags
             return true;
         }
+
         return false;
     }
 
@@ -252,20 +242,12 @@ namespace AZ::IO
             return AZ::IO::FixedMaxPathString{ szRelativePath };
         }
 
-        if ((szRelativePath.size() > 1 && szRelativePath[1] == ':') || (m_nFlags & FLAGS_ABSOLUTE_PATHS))
+        if ((m_nFlags & FLAGS_ABSOLUTE_PATHS) == FLAGS_ABSOLUTE_PATHS)
         {
             // make the normalized full path and try to match it against the binding root of this object
-            auto resolvedPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szRelativePath);
-
-            // Make sure the resolve path is longer than the bind root and that it starts with the bind root
-            if (!resolvedPath || resolvedPath->Native().size() <= m_strBindRoot.size() || azstrnicmp(resolvedPath->c_str(), m_strBindRoot.c_str(), m_strBindRoot.size()) != 0)
-            {
-                return {};
-            }
-
-            // Remove the bind root prefix from the resolved path
-            resolvedPath->Native().erase(0, m_strBindRoot.size() + 1);
-            return resolvedPath->Native();
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedPath, szRelativePath);
+            return resolvedPath.LexicallyProximate(m_strBindRoot).Native();
         }
 
         return AZ::IO::FixedMaxPathString{ szRelativePath };

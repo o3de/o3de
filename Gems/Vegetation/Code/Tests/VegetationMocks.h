@@ -269,7 +269,7 @@ namespace UnitTest
             }
         }
 
-        void GetSystemConfig(AZ::ComponentConfig* config) const
+        void GetSystemConfig(AZ::ComponentConfig* config) const override
         {
             if (azrtti_typeid(m_areaSystemConfig) == azrtti_typeid(*config))
             {

@@ -70,12 +70,23 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
 
     # link dependencies are not runtime dependencies (we dont have anything to copy) however, we need to traverse
     # them since them or some dependency downstream could have something to copy over
-    foreach(link_dependency ${link_dependencies})
-        if(NOT ${link_dependency} MATCHES "^::@") # Skip wraping produced when targets are not created in the same directory (https://cmake.org/cmake/help/latest/prop_tgt/LINK_LIBRARIES.html)
-            unset(dependencies)
-            ly_get_runtime_dependencies(dependencies ${link_dependency})
-            list(APPEND all_runtime_dependencies ${dependencies})
+    foreach(link_dependency IN LISTS link_dependencies)
+        if(${link_dependency} MATCHES "^::@")
+            # Skip wraping produced when targets are not created in the same directory
+            # (https://cmake.org/cmake/help/latest/prop_tgt/LINK_LIBRARIES.html)
+            continue()
         endif()
+
+        if(TARGET ${link_dependency} AND link_dependency MATCHES "^3rdParty::")
+            get_target_property(is_system_library ${link_dependency} LY_SYSTEM_LIBRARY)
+            if(is_system_library)
+                continue()
+            endif()
+        endif()
+
+        unset(dependencies)
+        ly_get_runtime_dependencies(dependencies ${link_dependency})
+        list(APPEND all_runtime_dependencies ${dependencies})
     endforeach()
 
     # For manual dependencies, we want to copy over the dependency and traverse them

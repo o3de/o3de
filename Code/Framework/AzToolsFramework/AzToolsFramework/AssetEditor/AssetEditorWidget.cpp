@@ -103,7 +103,7 @@ namespace AzToolsFramework
             else
             {
                 AZStd::string error = AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
-                assetCheckoutAndSaveCallback(false, error, nullptr);
+                assetCheckoutAndSaveCallback(false, error, AZStd::string{});
             }
         }
 

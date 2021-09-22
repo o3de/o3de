@@ -75,8 +75,7 @@ namespace AZ
 
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "MeshFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
@@ -149,7 +148,7 @@ namespace AZ
             const MeshHandleDescriptor& descriptor,
             const MaterialAssignmentMap& materials)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
@@ -952,7 +951,7 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            rayTracingFeatureProcessor->SetMesh(m_objectId, subMeshes);
+            rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
         }
 
         void MeshDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
@@ -984,7 +983,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance:: UpdateDrawPackets");
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -999,7 +998,7 @@ namespace AZ
 
         void MeshDataInstance::BuildCullable()
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance: BuildCullable");
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1076,7 +1075,7 @@ namespace AZ
 
         void MeshDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "MeshDataInstance: UpdateCullBounds");
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1112,20 +1111,17 @@ namespace AZ
             if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
-                AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));
-                AZ_Error("MeshDataInstance", posConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+                AZ::RHI::ShaderInputConstantIndex modelToWorldConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_modelToWorld"));
+                AZ_Error("MeshDataInstance", modelToWorldConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
-                AZ::RHI::ShaderInputConstantIndex outerAabbMinConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_outerAabbMin"));
-                AZ_Error("MeshDataInstance", outerAabbMinConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+                AZ::RHI::ShaderInputConstantIndex modelToWorldInverseConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_modelToWorldInverse"));
+                AZ_Error("MeshDataInstance", modelToWorldInverseConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
-                AZ::RHI::ShaderInputConstantIndex outerAabbMaxConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_outerAabbMax"));
-                AZ_Error("MeshDataInstance", outerAabbMaxConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+                AZ::RHI::ShaderInputConstantIndex outerObbHalfLengthsConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_outerObbHalfLengths"));
+                AZ_Error("MeshDataInstance", outerObbHalfLengthsConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
-                AZ::RHI::ShaderInputConstantIndex innerAabbMinConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_innerAabbMin"));
-                AZ_Error("MeshDataInstance", innerAabbMinConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
-
-                AZ::RHI::ShaderInputConstantIndex innerAabbMaxConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_innerAabbMax"));
-                AZ_Error("MeshDataInstance", innerAabbMaxConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+                AZ::RHI::ShaderInputConstantIndex innerObbHalfLengthsConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_innerObbHalfLengths"));
+                AZ_Error("MeshDataInstance", innerObbHalfLengthsConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
                 AZ::RHI::ShaderInputConstantIndex useReflectionProbeConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_useReflectionProbe"));
                 AZ_Error("MeshDataInstance", useReflectionProbeConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
@@ -1147,11 +1143,10 @@ namespace AZ
 
                 if (!reflectionProbes.empty() && reflectionProbes[0])
                 {
-                    m_shaderResourceGroup->SetConstant(posConstantIndex, reflectionProbes[0]->GetPosition());
-                    m_shaderResourceGroup->SetConstant(outerAabbMinConstantIndex, reflectionProbes[0]->GetOuterAabbWs().GetMin());
-                    m_shaderResourceGroup->SetConstant(outerAabbMaxConstantIndex, reflectionProbes[0]->GetOuterAabbWs().GetMax());
-                    m_shaderResourceGroup->SetConstant(innerAabbMinConstantIndex, reflectionProbes[0]->GetInnerAabbWs().GetMin());
-                    m_shaderResourceGroup->SetConstant(innerAabbMaxConstantIndex, reflectionProbes[0]->GetInnerAabbWs().GetMax());
+                    m_shaderResourceGroup->SetConstant(modelToWorldConstantIndex, reflectionProbes[0]->GetTransform());
+                    m_shaderResourceGroup->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbes[0]->GetTransform()).GetInverseFull());
+                    m_shaderResourceGroup->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetOuterObbWs().GetHalfLengths());
+                    m_shaderResourceGroup->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
                     m_shaderResourceGroup->SetConstant(useReflectionProbeConstantIndex, true);
                     m_shaderResourceGroup->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbes[0]->GetUseParallaxCorrection());
 

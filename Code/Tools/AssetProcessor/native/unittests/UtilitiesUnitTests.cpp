@@ -543,7 +543,7 @@ public:
         Q_EMIT UnitTestPassed();
     }
 
-    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
     {
         m_assertTriggered = true;
         return true;

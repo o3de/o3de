@@ -77,6 +77,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float AngleStep() const override;
     float ManipulatorLineBoundWidth() const override;
     float ManipulatorCircleBoundWidth() const override;
+    bool StickySelectEnabled() const override;
 };
 
 // EditorViewportWidget window
@@ -89,7 +90,6 @@ class SANDBOX_API EditorViewportWidget final
     , private Camera::EditorCameraRequestBus::Handler
     , private Camera::CameraNotificationBus::Handler
     , private AzFramework::InputSystemCursorConstraintRequestBus::Handler
-    , private AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
@@ -201,18 +201,12 @@ private:
     // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
     void* GetSystemCursorConstraintWindow() const override;
 
-    // AzToolsFramework::ViewportFreezeRequestBus overrides ...
-    bool IsViewportInputFrozen() override;
-    void FreezeViewportInput(bool freeze) override;
-
-    // AzToolsFramework::MainEditorViewportInteractionRequestBus
+    // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
     AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
-    void BeginWidgetContext() override;
-    void EndWidgetContext() override;
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
@@ -271,7 +265,7 @@ private:
     // note: The argument passed to parameter **point**, originating
     // from a Qt event, must first be passed to WidgetToViewport before being
     // passed to BuildMousePick.
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point);
+    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
     bool CheckRespondToInput() const;
 
@@ -281,7 +275,6 @@ private:
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(const QPoint& point) const;
 
     void RestoreViewportAfterGameMode();
 
@@ -385,9 +378,6 @@ private:
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
     // Unclear if it's still necessary.
     QSet<int> m_keyDown;
-
-    // State for ViewportFreezeRequestBus, currently does nothing
-    bool m_freezeViewportInput = false;
 
     // This widget holds a reference to the manipulator manage because its responsible for drawing manipulators
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;

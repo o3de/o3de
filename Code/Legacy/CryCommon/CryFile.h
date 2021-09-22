@@ -9,11 +9,11 @@
 // Description : File wrapper.
 #pragma once
 
-#include <CryPath.h>
-#include <ISystem.h>
-#include <AzFramework/Archive/IArchive.h>
-#include <IConsole.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzFramework/Archive/IArchive.h>
 
 //////////////////////////////////////////////////////////////////////////
 #define CRYFILE_MAX_PATH                         260
@@ -28,7 +28,7 @@ public:
     CCryFile(const char* filename, const char* mode);
     ~CCryFile();
 
-    bool Open(const char* filename, const char* mode, int nOpenFlagsEx = 0);
+    bool Open(const char* filename, const char* mode);
     void Close();
 
     // Summary:
@@ -58,15 +58,7 @@ public:
 
     // Description:
     //    Retrieves the filename of the selected file.
-    const char* GetFilename() const { return m_filename; };
-
-    // Description:
-    //    Retrieves the filename after adjustment to the real relative to engine root path.
-    // Example:
-    //    Original filename "textures/red.dds" adjusted filename will look like "game/textures/red.dds"
-    // Return:
-    //    Adjusted filename, this is a pointer to a static string, copy return value if you want to keep it.
-    const char* GetAdjustedFilename() const;
+    const char* GetFilename() const { return m_filename.c_str(); };
 
     // Summary:
     //   Checks if file is opened from Archive file.
@@ -74,12 +66,11 @@ public:
 
     // Summary:
     //   Gets path of archive this file is in.
-    const char* GetPakPath() const;
+    AZ::IO::PathView GetPakPath() const;
 
 private:
-    char m_filename[CRYFILE_MAX_PATH];
+    AZ::IO::FixedMaxPath m_filename;
     AZ::IO::HandleType m_fileHandle;
-    AZ::IO::IArchive* m_pIArchive;
 };
 
 // Summary:
@@ -87,14 +78,12 @@ private:
 inline CCryFile::CCryFile()
 {
     m_fileHandle = AZ::IO::InvalidHandle;
-    m_pIArchive = gEnv ? gEnv->pCryPak : NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////
 inline CCryFile::CCryFile(const char* filename, const char* mode)
 {
     m_fileHandle = AZ::IO::InvalidHandle;
-    m_pIArchive = gEnv ? gEnv->pCryPak : NULL;
     Open(filename, mode);
 }
 
@@ -109,22 +98,17 @@ inline CCryFile::~CCryFile()
 //   For nOpenFlagsEx see IArchive::EFOpenFlags
 // See also:
 //   IArchive::EFOpenFlags
-inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlagsEx)
+inline bool CCryFile::Open(const char* filename, const char* mode)
 {
-    char tempfilename[CRYFILE_MAX_PATH] = "";
-    azstrcpy(tempfilename, CRYFILE_MAX_PATH, filename);
-
+    m_filename = filename;
 #if !defined (_RELEASE)
-    if (gEnv && gEnv->IsEditor() && gEnv->pConsole)
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
-        ICVar* const pCvar = gEnv->pConsole->GetCVar("ed_lowercasepaths");
-        if (pCvar)
+        if (bool lowercasePaths{}; console->GetCvarValue("ed_lowercasepaths", lowercasePaths) == AZ::GetValueResult::Success)
         {
-            const int lowercasePaths = pCvar->GetIVal();
             if (lowercasePaths)
             {
-                const AZStd::string lowerString = PathUtil::ToLower(tempfilename);
-                azstrcpy(tempfilename, CRYFILE_MAX_PATH, lowerString.c_str());
+                AZStd::to_lower(m_filename.Native().begin(), m_filename.Native().end());
             }
         }
     }
@@ -133,16 +117,8 @@ inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlag
     {
         Close();
     }
-    azstrcpy(m_filename, CRYFILE_MAX_PATH, tempfilename);
 
-    if (m_pIArchive)
-    {
-        m_fileHandle = m_pIArchive->FOpen(tempfilename, mode, nOpenFlagsEx);
-    }
-    else
-    {
-        AZ::IO::FileIOBase::GetInstance()->Open(tempfilename, AZ::IO::GetOpenModeFromStringMode(mode), m_fileHandle);
-    }
+    AZ::IO::FileIOBase::GetInstance()->Open(m_filename.c_str(), AZ::IO::GetOpenModeFromStringMode(mode), m_fileHandle);
 
     return m_fileHandle != AZ::IO::InvalidHandle;
 }
@@ -152,27 +128,17 @@ inline void CCryFile::Close()
 {
     if (m_fileHandle != AZ::IO::InvalidHandle)
     {
-        if (m_pIArchive)
-        {
-            m_pIArchive->FClose(m_fileHandle);
-        }
-        else
-        {
-            AZ::IO::FileIOBase::GetInstance()->Close(m_fileHandle);
-        }
+        AZ::IO::FileIOBase::GetInstance()->Close(m_fileHandle);
+
         m_fileHandle = AZ::IO::InvalidHandle;
-        m_filename[0] = 0;
+        m_filename.clear();
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 inline size_t CCryFile::Write(const void* lpBuf, size_t nSize)
 {
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FWrite(lpBuf, 1, nSize, m_fileHandle);
-    }
+    AZ_Assert(m_fileHandle != AZ::IO::InvalidHandle, "File Handle is invalid. Cannot Write");
 
     if (AZ::IO::FileIOBase::GetInstance()->Write(m_fileHandle, lpBuf, nSize))
     {
@@ -185,11 +151,7 @@ inline size_t CCryFile::Write(const void* lpBuf, size_t nSize)
 //////////////////////////////////////////////////////////////////////////
 inline size_t CCryFile::ReadRaw(void* lpBuf, size_t nSize)
 {
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FReadRaw(lpBuf, 1, nSize, m_fileHandle);
-    }
+    AZ_Assert(m_fileHandle != AZ::IO::InvalidHandle, "File Handle is invalid. Cannot Read");
 
     AZ::u64 bytesRead = 0;
     AZ::IO::FileIOBase::GetInstance()->Read(m_fileHandle, lpBuf, nSize, false, &bytesRead);
@@ -200,11 +162,7 @@ inline size_t CCryFile::ReadRaw(void* lpBuf, size_t nSize)
 //////////////////////////////////////////////////////////////////////////
 inline size_t CCryFile::GetLength()
 {
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FGetSize(m_fileHandle);
-    }
+    AZ_Assert(m_fileHandle != AZ::IO::InvalidHandle, "File Handle is invalid. Cannot query file length");
     //long curr = ftell(m_file);
     AZ::u64 size = 0;
     AZ::IO::FileIOBase::GetInstance()->Size(m_fileHandle, size);
@@ -214,11 +172,7 @@ inline size_t CCryFile::GetLength()
 //////////////////////////////////////////////////////////////////////////
 inline size_t CCryFile::Seek(size_t seek, int mode)
 {
-    assert(m_fileHandle != AZ::IO::InvalidHandle);
-    if (m_pIArchive)
-    {
-        return m_pIArchive->FSeek(m_fileHandle, long(seek), mode);
-    }
+    AZ_Assert(m_fileHandle != AZ::IO::InvalidHandle, "File Handle is invalid. Cannot seek in unopen file");
 
     if (AZ::IO::FileIOBase::GetInstance()->Seek(m_fileHandle, seek, AZ::IO::GetSeekTypeFromFSeekMode(mode)))
     {
@@ -230,45 +184,25 @@ inline size_t CCryFile::Seek(size_t seek, int mode)
 //////////////////////////////////////////////////////////////////////////
 inline bool CCryFile::IsInPak() const
 {
-    if (m_fileHandle != AZ::IO::InvalidHandle && m_pIArchive)
+    if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        m_fileHandle != AZ::IO::InvalidHandle && archive != nullptr)
     {
-        return m_pIArchive->GetFileArchivePath(m_fileHandle) != NULL;
+        return !archive->GetFileArchivePath(m_fileHandle).empty();
     }
     return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
-inline const char* CCryFile::GetPakPath() const
+inline AZ::IO::PathView CCryFile::GetPakPath() const
 {
-    if (m_fileHandle != AZ::IO::InvalidHandle && m_pIArchive)
+    if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        m_fileHandle != AZ::IO::InvalidHandle && archive != nullptr)
     {
-        const char* sPath = m_pIArchive->GetFileArchivePath(m_fileHandle);
-        if (sPath != NULL)
+        if (AZ::IO::PathView sPath(archive->GetFileArchivePath(m_fileHandle)); sPath.empty())
         {
             return sPath;
         }
     }
-    return "";
+    return {};
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-inline const char* CCryFile::GetAdjustedFilename() const
-{
-    static char szAdjustedFile[AZ::IO::IArchive::MaxPath];
-    assert(m_pIArchive);
-    if (!m_pIArchive)
-    {
-        return "";
-    }
-
-    // Gets mod path to file.
-    const char* gameUrl = m_pIArchive->AdjustFileName(m_filename, szAdjustedFile, AZ::IO::IArchive::MaxPath, 0);
-
-    // Returns standard path otherwise.
-    if (gameUrl != &szAdjustedFile[0])
-    {
-        azstrcpy(szAdjustedFile, AZ::IO::IArchive::MaxPath, gameUrl);
-    }
-    return szAdjustedFile;
-}

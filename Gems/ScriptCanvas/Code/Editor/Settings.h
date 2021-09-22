@@ -41,7 +41,7 @@ namespace ScriptCanvasEditor
             ScriptCanvasConstructPresets();
             ~ScriptCanvasConstructPresets() override = default;
 
-            void InitializeConstructType(GraphCanvas::ConstructType constructType);            
+            void InitializeConstructType(GraphCanvas::ConstructType constructType) override;
         };
 
         class EditorWorkspace
