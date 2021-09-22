@@ -231,6 +231,32 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleRequirement).toString();
     }
 
+    GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)
+    {
+        GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(model);
+        if (proxyModel)
+        {
+            return proxyModel->GetSourceModel();
+        }
+        else
+        {
+            return qobject_cast<GemModel*>(model);
+        }
+    }
+
+    const GemModel* GemModel::GetSourceModel(const QAbstractItemModel* model)
+    {
+        const GemSortFilterProxyModel* proxyModel = qobject_cast<const GemSortFilterProxyModel*>(model);
+        if (proxyModel)
+        {
+            return proxyModel->GetSourceModel();
+        }
+        else
+        {
+            return qobject_cast<const GemModel*>(model);
+        }
+    }
+
     bool GemModel::IsAdded(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIsAdded).toBool();
@@ -248,7 +274,7 @@ namespace O3DE::ProjectManager
         UpdateDependencies(model, modelIndex);
     }
 
-    bool GemModel::HasDependentGems(const QModelIndex& modelIndex)
+    bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
     {
         QVector<QModelIndex> dependentGems = GatherDependentGems(modelIndex);
         for (const QModelIndex& dependency : dependentGems)
@@ -261,25 +287,11 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    GemModel* GetGemModel(QAbstractItemModel& model)
-    {
-        GemModel* gemModel = nullptr;
-        GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(&model);
-        if (proxyModel)
-        {
-            gemModel = proxyModel->GetSourceModel();
-        }
-        else
-        {
-            gemModel = qobject_cast<GemModel*>(&model);
-        }
-        AZ_Assert(gemModel, "Failed to obtain GemModel");
-        return gemModel;
-    }
-
     void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
     {
-        GemModel* gemModel = GetGemModel(model);
+        GemModel* gemModel = GetSourceModel(&model);
+        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
         if (IsAdded(modelIndex))
         {
@@ -312,7 +324,8 @@ namespace O3DE::ProjectManager
         if (wasAdded)
         {
             // update all dependencies
-            GemModel* gemModel = GetGemModel(model);
+            GemModel* gemModel = GetSourceModel(&model);
+            AZ_Assert(gemModel, "Failed to obtain GemModel");
             QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
             for (const QModelIndex& dependency : dependencies)
             {
@@ -378,7 +391,7 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    QVector<QModelIndex> GemModel::GatherGemDependencies(const QModelIndex& modelIndex)
+    QVector<QModelIndex> GemModel::GatherGemDependencies(const QModelIndex& modelIndex) const 
     {
         QVector<QModelIndex> result;
         const QString& gemName = modelIndex.data(RoleName).toString();

@@ -173,19 +173,6 @@ namespace O3DE::ProjectManager
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
-    const GemModel* GetGemModel(const QAbstractItemModel* model)
-    {
-        const GemSortFilterProxyModel* proxyModel = qobject_cast<const GemSortFilterProxyModel*>(model);
-        if (proxyModel)
-        {
-            return proxyModel->GetSourceModel();
-        }
-        else
-        {
-            return qobject_cast<const GemModel*>(model);
-        }
-    }
-
     QString GetGemNameList(const QVector<QModelIndex> modelIndices)
     {
         QString list;
@@ -222,7 +209,7 @@ namespace O3DE::ProjectManager
                 {
                     if(GemModel::IsAddedDependency(index) && !GemModel::IsAdded(index))
                     {
-                        const GemModel* gemModel = GetGemModel(index.model());
+                        const GemModel* gemModel = GemModel::GetSourceModel(index.model());
                         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
                         // we only want to display the gems that must be de-selected to automatically

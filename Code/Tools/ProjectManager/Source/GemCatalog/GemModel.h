@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
         QStringList GetDependingGemNames(const QModelIndex& modelIndex);
-        bool HasDependentGems(const QModelIndex& modelIndex);
+        bool HasDependentGems(const QModelIndex& modelIndex) const;
 
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         static QStringList GetFeatures(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
         static QString GetRequirement(const QModelIndex& modelIndex);
+        static GemModel* GetSourceModel(QAbstractItemModel* model);
+        static const GemModel* GetSourceModel(const QAbstractItemModel* model);
 
         static bool IsAdded(const QModelIndex& modelIndex);
         static bool IsAddedDependency(const QModelIndex& modelIndex);
@@ -65,7 +67,7 @@ namespace O3DE::ProjectManager
 
         bool DoGemsToBeAddedHaveRequirements() const;
 
-        QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex);
+        QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex) const;
         QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
         QVector<QModelIndex> GatherGemsToBeAdded(bool includeDependencies = false) const;
         QVector<QModelIndex> GatherGemsToBeRemoved(bool includeDependencies = false) const;
