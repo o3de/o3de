@@ -12,7 +12,6 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -183,8 +182,8 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
         AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
 
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
@@ -195,9 +194,9 @@ namespace AtomToolsFramework
             editorPythonEventsInterface->StartPython();
         }
 
-        QTimer::singleShot(0, this, [this]() {
-            ProcessCommandLine(m_commandLine);
-        });
+        // Delay execution of commands and scripts post initialization
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
+
         m_timer.start();
     }
 
