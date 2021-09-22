@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
     private:
         QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
 
-        using GetTagIndicesCallback  = AZStd::function<QVector<QModelIndex>()>;
+        using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
 
         QVBoxLayout* m_layout = nullptr;
