@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace Multiplayer
 {
@@ -74,6 +75,15 @@ namespace Multiplayer
             AutoActivate autoActivate,
             const AZ::Transform& transform
         ) = 0;
+
+        //! Requests a network spawnable to instantiate at a given transform
+        //! This is an async function. The instantiated entities are not available immediately but will be constructed by the spawnable system
+        //! The spawnable ticket has to be kept for the whole lifetime of the entities
+        //! @param netSpawnable the network spawnable to spawn
+        //! @param transform the transform where the spawnable should be spawned
+        //! @return the ticket for managing the spawned entities
+        [[nodiscard]] virtual AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) = 0;
 
         //! Configures new networked entity
         //! @param netEntity the entity to setup
