@@ -26,7 +26,7 @@ namespace AzToolsFramework
         AZ_COMPONENT(FocusModeSystemComponent, "{6CE522FE-2057-4794-BD05-61E04BD8EA30}");
 
         FocusModeSystemComponent() = default;
-        virtual ~FocusModeSystemComponent();
+        virtual ~FocusModeSystemComponent() = default;
 
         // AZ::Component overrides ...
         void Init() override;
