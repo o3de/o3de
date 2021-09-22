@@ -852,6 +852,47 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
+        TEST_F(AliasTest, GetAlias_LogsError_WhenAccessingDeprecatedAlias_Succeeds)
+        {
+            AZ::IO::LocalFileIO local;
+            AZ::IO::FixedMaxPathString aliasFolder("/temp");
+            local.SetAlias("@test@", aliasFolder.c_str());
+            local.SetDeprecatedAlias("@deprecated@", "@test@");
+            local.SetDeprecatedAlias("@deprecatednonexistent@", "@nonexistent@");
+            local.SetDeprecatedAlias("@deprecatedsecond@", "@deprecated@");
+            local.SetDeprecatedAlias("@deprecatednonaliaspath@", aliasFolder);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            const char* testAlias = local.GetAlias("@test@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+
+            // Validate that accessing Deprecated Alias results in AZ_Error
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecated@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatednonexistent@");
+            EXPECT_EQ(nullptr, testAlias);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatedsecond@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatednonaliaspath@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        }
+
         class SmartMoveTests
             : public FolderFixture
         {

@@ -213,6 +213,11 @@ namespace AZ
             /// GetAlias - Returns the destination path for a given alias, or nullptr if the alias does not exist
             virtual const char* GetAlias(const char* alias) const = 0;
 
+            /// SetDeprecateAlias - Adds a deprecated alias with path resolution which points to a new alias
+            /// When the DeprecatedAlias is used an Error is logged and the alias is resolved to the path
+            /// specified by the new alais
+            virtual void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) = 0;
+
             /// Shorten the given path if it contains an alias.  it will always pick the longest alias match.
             /// note that it re-uses the buffer, since the data can only get smaller and we don't want to internally allocate memory if we
             /// can avoid it.

@@ -546,6 +546,16 @@ namespace AZ::IO
         realUnderlyingFileIO->GetAlias(alias);
     }
 
+    void ArchiveFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+    {
+        FileIOBase* realUnderlyingFileIO = FileIOBase::GetDirectInstance();
+        if (!realUnderlyingFileIO)
+        {
+            return;
+        }
+        realUnderlyingFileIO->SetDeprecatedAlias(oldAlias, newAlias);
+    }
+
     AZStd::optional<AZ::u64> ArchiveFileIO::ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const
     {
         if ((!inOutBuffer) || (bufferLength == 0))

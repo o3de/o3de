@@ -793,6 +793,12 @@ namespace AZ
             REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::ClearAlias(alias=%s)", alias?alias:"nullptr").c_str());
         }
 
+        void NetworkFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::SetDeprecatedAlias(oldAlias=%.*s, newAlias=%.*s)",
+                AZ_STRING_ARG(oldAlias), AZ_STRING_ARG(newAlias)).c_str());
+        }
+
         AZStd::optional<AZ::u64> NetworkFileIO::ConvertToAlias(char* inOutBuffer, [[maybe_unused]] AZ::u64 bufferLength) const
         {
             REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::ConvertToAlias(inOutBuffer=%s, bufferLength=%u)", inOutBuffer?inOutBuffer:"nullptr", bufferLength).c_str());
@@ -1358,6 +1364,14 @@ namespace AZ
             if (m_excludedFileIO)
             {
                 m_excludedFileIO->ClearAlias(alias);
+            }
+        }
+
+        void RemoteFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            if (m_excludedFileIO)
+            {
+                m_excludedFileIO->SetDeprecatedAlias(oldAlias, newAlias);
             }
         }
 

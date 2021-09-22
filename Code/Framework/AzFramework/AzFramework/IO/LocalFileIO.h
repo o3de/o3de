@@ -61,6 +61,8 @@ namespace AZ
             void SetAlias(const char* alias, const char* path) override;
             void ClearAlias(const char* alias) override;
             const char* GetAlias(const char* alias) const override;
+            void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
+
             AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
             bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
             using FileIOBase::ConvertToAlias;
@@ -91,6 +93,7 @@ namespace AZ
             AZStd::atomic<HandleType> m_nextHandle;
             AZStd::unordered_map<HandleType, SystemFile> m_openFiles;
             AZStd::unordered_map<AZStd::string, AZStd::string> m_aliases;
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_deprecatedAliases;
 
             void CheckInvalidWrite(const char* path);
         };

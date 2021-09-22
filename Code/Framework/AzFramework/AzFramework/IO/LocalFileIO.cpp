@@ -12,6 +12,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string_view.h>
@@ -542,10 +543,56 @@ namespace AZ
 
         const char* LocalFileIO::GetAlias(const char* key) const
         {
-            const auto it = m_aliases.find(key);
-            if (it != m_aliases.end())
+            if (const auto it = m_aliases.find(key); it != m_aliases.end())
             {
                 return it->second.c_str();
+            }
+            else if (const auto deprecatedIt = m_deprecatedAliases.find(key);
+                deprecatedIt != m_deprecatedAliases.end())
+            {
+                AZ_Error("FileIO", false, R"(Alias "%s" is deprecated. Please use alias "%s" instead)",
+                    key, deprecatedIt->second.c_str());
+                AZStd::string_view aliasValue = deprecatedIt->second;
+                // Contains the list of aliases resolved so far
+                // If max_size is hit, than an error is logged and nullptr is returned
+                using VisitedAliasSet = AZStd::fixed_unordered_set<AZStd::string_view, 8, 8>;
+                VisitedAliasSet visitedAliasSet;
+                while (aliasValue.starts_with("@"))
+                {
+                    if (visitedAliasSet.contains(aliasValue))
+                    {
+                        AZ_Error("FileIO", false, "Cycle found with for alias %.*s when trying to resolve deprecated alias %s",
+                            AZ_STRING_ARG(aliasValue), key);
+                        return nullptr;
+                    }
+
+                    if(visitedAliasSet.size() == visitedAliasSet.max_size())
+                    {
+                        AZ_Error("FileIO", false, "Unable to resolve path to deprecated alias %s within %zu steps",
+                            key, visitedAliasSet.max_size());
+                        return nullptr;
+                    }
+
+                    // Add the current alias value to the visited set
+                    visitedAliasSet.emplace(aliasValue);
+
+                    // Check if the alias value corresponds to another alias
+                    if (auto resolvedIter = m_aliases.find(aliasValue); resolvedIter != m_aliases.end())
+                    {
+                        aliasValue = resolvedIter->second;
+                    }
+                    else if (resolvedIter = m_deprecatedAliases.find(aliasValue);
+                        resolvedIter != m_deprecatedAliases.end())
+                    {
+                        aliasValue = resolvedIter->second;
+                    }
+                    else
+                    {
+                        return nullptr;
+                    }
+                }
+
+                return aliasValue.data();
             }
             return nullptr;
         }
@@ -553,6 +600,11 @@ namespace AZ
         void LocalFileIO::ClearAlias(const char* key)
         {
             m_aliases.erase(key);
+        }
+
+        void LocalFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            m_deprecatedAliases[oldAlias] = newAlias;
         }
 
         AZStd::optional<AZ::u64> LocalFileIO::ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const
