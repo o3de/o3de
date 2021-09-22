@@ -9,6 +9,85 @@
             }
         ],
         "properties": {
+            "general": [
+                {
+                    "id": "applySpecularAA",
+                    "displayName": "Apply Specular AA",
+                    "description": "Whether to apply specular anti-aliasing in the shader.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_applySpecularAA"
+                    }
+                },
+                {
+                    "id": "enableShadows",
+                    "displayName": "Enable Shadows",
+                    "description": "Whether to use the shadow maps.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableShadows"
+                    }
+                },
+                {
+                    "id": "enableDirectionalLights",
+                    "displayName": "Enable Directional Lights",
+                    "description": "Whether to use directional lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableDirectionalLights"
+                    }
+                },
+                {
+                    "id": "enablePunctualLights",
+                    "displayName": "Enable Punctual Lights",
+                    "description": "Whether to use punctual lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enablePunctualLights"
+                    }
+                },
+                {
+                    "id": "enableAreaLights",
+                    "displayName": "Enable Area Lights",
+                    "description": "Whether to use area lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableAreaLights"
+                    }
+                },
+                {
+                    "id": "enableIBL",
+                    "displayName": "Enable IBL",
+                    "description": "Whether to use Image Based Lighting (IBL).",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableIBL"
+                    }
+                },
+                {
+                    "id": "forwardPassIBLSpecular",
+                    "displayName": "Forward Pass IBL Specular",
+                    "description": "Whether to apply IBL specular in the forward pass.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_materialUseForwardPassIBLSpecular"
+                    }
+                }
+            ],
             "settings": [
                 {
                     "id": "baseColor",

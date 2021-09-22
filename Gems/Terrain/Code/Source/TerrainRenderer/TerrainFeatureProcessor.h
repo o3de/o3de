@@ -97,7 +97,7 @@ namespace Terrain
         };
         
         void Initialize();
-        void InitializeTerrainPatch(PatchData& patchdata);
+        void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
         bool InitializePatchModel();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
@@ -107,7 +107,7 @@ namespace Terrain
 
         // System-level parameters
         static constexpr float GridSpacing{ 1.0f };
-        static constexpr uint32_t GridSize{ 32 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr uint32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
         static constexpr float GridMeters{ GridSpacing * GridSize };
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
@@ -136,15 +136,9 @@ namespace Terrain
 
         struct SectorData
         {
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
             AZ::Aabb m_aabb;
-            const AZ::RPI::MeshDrawPacket m_drawPacket;
-
-            SectorData(const AZ::RPI::MeshDrawPacket& drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
-                : m_srg(srg)
-                , m_aabb(aabb)
-                , m_drawPacket(drawPacket)
-            {}
+            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
         };
 
         AZStd::vector<SectorData> m_sectorData;

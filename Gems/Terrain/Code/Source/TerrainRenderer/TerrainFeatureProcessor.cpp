@@ -67,7 +67,7 @@ namespace Terrain
     void TerrainFeatureProcessor::Activate()
     {
         m_areaData = {};
-        //Initialize();
+        Initialize();
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -238,50 +238,74 @@ namespace Terrain
                         objectSrg->Compile();
                     }
 
-                    AZ::RPI::ModelLod& modelLod = *m_patchModel->GetLods()[0].get();
-                    AZ::RPI::MeshDrawPacket drawPacket(modelLod, 0, m_materialInstance, objectSrg);
+                    m_sectorData.push_back();
+                    SectorData& sectorData = m_sectorData.back();
 
-                    // set the shader option to select forward pass IBL specular if necessary
-                    if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
+                    for (auto& lod : m_patchModel->GetLods())
                     {
-                        AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                    }
-                    uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                    drawPacket.SetStencilRef(stencilRef);
-                    drawPacket.Update(*GetParentScene(), false);
+                        AZ::RPI::ModelLod& modelLod = *lod.get();
+                        sectorData.m_drawPackets.emplace_back(modelLod, 0, m_materialInstance, objectSrg);
+                        AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
 
-                    m_sectorData.emplace_back(
-                        drawPacket,
+                        // set the shader option to select forward pass IBL specular if necessary
+                        if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
+                        {
+                            AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                        }
+                        uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                        drawPacket.SetStencilRef(stencilRef);
+                        drawPacket.Update(*GetParentScene(), false);
+                    }
+
+                    sectorData.m_aabb =
                         AZ::Aabb::CreateFromMinMax(
                             AZ::Vector3(xPatch, yPatch, m_areaData.m_terrainBounds.GetMin().GetZ()),
                             AZ::Vector3(xPatch + GridMeters, yPatch + GridMeters, m_areaData.m_terrainBounds.GetMax().GetZ())
-                        ),
-                        objectSrg
-                    );
+                        );
+                    sectorData.m_srg = objectSrg;
                 }
             }
         }
-        
-        for (auto& view : process.m_views)
+
+        for (auto& sectorData : m_sectorData)
         {
-            AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-            for (auto& sectorData : m_sectorData)
+            uint8_t lodChoice = AZ::RPI::ModelLodAsset::LodCountMax;
+
+            // Go through all cameras and choose an LOD based on the closest camera.
+            for (auto& view : process.m_views)
             {
+                if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
+                {
+                    AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
+                    AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
+                    AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
+
+                    float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
+                    float lodForCamera = ceilf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
+                    lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
+                }
+            }
+
+            // Add the correct LOD draw packet for visible sectors.
+            for (auto& view : process.m_views)
+            {
+                AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
                 if (viewFrustum.IntersectAabb(sectorData.m_aabb) != AZ::IntersectResult::Exterior)
                 {
-                    view->AddDrawPacket(sectorData.m_drawPacket.GetRHIDrawPacket());
+                    uint8_t lodToRender = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(sectorData.m_drawPackets.size() - 1));
+                    view->AddDrawPacket(sectorData.m_drawPackets.at(lodToRender).GetRHIDrawPacket());
                 }
             }
         }
     }
 
-    void TerrainFeatureProcessor::InitializeTerrainPatch(PatchData& patchdata)
+    void TerrainFeatureProcessor::InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata)
     {
         patchdata.m_positions.clear();
         patchdata.m_uvs.clear();
         patchdata.m_indices.clear();
 
-        uint16_t gridVertices = GridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
+        uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
         size_t size = gridVertices * gridVertices;
         size *= size;
 
@@ -292,16 +316,16 @@ namespace Terrain
         {
             for (uint16_t x = 0; x < gridVertices; ++x)
             {
-                patchdata.m_positions.push_back({ aznumeric_cast<float>(x) * GridSpacing, aznumeric_cast<float>(y) * GridSpacing });
-                patchdata.m_uvs.push_back({ aznumeric_cast<float>(x) / GridSize, aznumeric_cast<float>(y) / GridSize });
+                patchdata.m_positions.push_back({ aznumeric_cast<float>(x) * gridSpacing, aznumeric_cast<float>(y) * gridSpacing });
+                patchdata.m_uvs.push_back({ aznumeric_cast<float>(x) / gridSize, aznumeric_cast<float>(y) / gridSize });
             }
         }
 
-        patchdata.m_indices.reserve(GridSize * GridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
+        patchdata.m_indices.reserve(gridSize * gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
         
-        for (uint16_t y = 0; y < GridSize; ++y)
+        for (uint16_t y = 0; y < gridSize; ++y)
         {
-            for (uint16_t x = 0; x < GridSize; ++x)
+            for (uint16_t x = 0; x < gridSize; ++x)
             {
                 uint16_t topLeft = y * gridVertices + x;
                 uint16_t topRight = topLeft + 1;
@@ -346,43 +370,53 @@ namespace Terrain
 
     bool TerrainFeatureProcessor::InitializePatchModel()
     {
-        PatchData patchData;
-        InitializeTerrainPatch(patchData);
-
-        auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
-        auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
-        
-        auto uvBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_uvs.size()), AZ::RHI::Format::R32G32_FLOAT);
-        auto uvsOutcome = CreateBufferAsset(patchData.m_uvs.data(), uvBufferViewDesc, "TerrainPatchUvs");
-        
-        auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
-        auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
-
-        if (!positionsOutcome.IsSuccess() || !uvsOutcome.IsSuccess() || !indicesOutcome.IsSuccess())
-        {
-            AZ_Error(TerrainFPName, false, "Failed to create GPU buffers for Terrain");
-            return false;
-        }
-
-        AZ::RPI::ModelLodAssetCreator modelLodAssetCreator;
-        modelLodAssetCreator.Begin(AZ::Uuid::CreateRandom());
-
-        modelLodAssetCreator.BeginMesh();
-        modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION" }, AZ::Name(), {positionsOutcome.GetValue(), positionBufferViewDesc});
-        modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "UV" }, AZ::Name(), {uvsOutcome.GetValue(), uvBufferViewDesc});
-        modelLodAssetCreator.SetMeshIndexBuffer({indicesOutcome.GetValue(), indexBufferViewDesc});
-
-        AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridMeters, GridMeters, 0.0));
-        modelLodAssetCreator.SetMeshAabb(AZStd::move(aabb));
-        modelLodAssetCreator.SetMeshName(AZ::Name("Terrain Patch"));
-        modelLodAssetCreator.EndMesh();
-
-        AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset;
-        modelLodAssetCreator.End(modelLodAsset);
-        
         AZ::RPI::ModelAssetCreator modelAssetCreator;
         modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
-        modelAssetCreator.AddLodAsset(AZStd::move(modelLodAsset));
+
+        uint16_t gridSize = GridSize;
+        float gridSpacing = GridSpacing;
+
+        for (uint32_t i = 0; i < AZ::RPI::ModelLodAsset::LodCountMax && gridSize > 0; ++i)
+        {
+            PatchData patchData;
+            InitializeTerrainPatch(gridSize, gridSpacing, patchData);
+
+            auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
+            auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
+        
+            auto uvBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_uvs.size()), AZ::RHI::Format::R32G32_FLOAT);
+            auto uvsOutcome = CreateBufferAsset(patchData.m_uvs.data(), uvBufferViewDesc, "TerrainPatchUvs");
+        
+            auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
+            auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
+
+            if (!positionsOutcome.IsSuccess() || !uvsOutcome.IsSuccess() || !indicesOutcome.IsSuccess())
+            {
+                AZ_Error(TerrainFPName, false, "Failed to create GPU buffers for Terrain");
+                return false;
+            }
+            
+            AZ::RPI::ModelLodAssetCreator modelLodAssetCreator;
+            modelLodAssetCreator.Begin(AZ::Uuid::CreateRandom());
+
+            modelLodAssetCreator.BeginMesh();
+            modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION" }, AZ::Name(), {positionsOutcome.GetValue(), positionBufferViewDesc});
+            modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "UV" }, AZ::Name(), {uvsOutcome.GetValue(), uvBufferViewDesc});
+            modelLodAssetCreator.SetMeshIndexBuffer({indicesOutcome.GetValue(), indexBufferViewDesc});
+
+            AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridMeters, GridMeters, 0.0));
+            modelLodAssetCreator.SetMeshAabb(AZStd::move(aabb));
+            modelLodAssetCreator.SetMeshName(AZ::Name("Terrain Patch"));
+            modelLodAssetCreator.EndMesh();
+
+            AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset;
+            modelLodAssetCreator.End(modelLodAsset);
+        
+            modelAssetCreator.AddLodAsset(AZStd::move(modelLodAsset));
+
+            gridSize = gridSize / 2;
+            gridSpacing *= 2.0f;
+        }
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
         bool success = modelAssetCreator.End(modelAsset);

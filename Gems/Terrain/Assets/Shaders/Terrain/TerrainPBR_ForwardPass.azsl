@@ -6,13 +6,13 @@
  *
  */
 
+#include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
 #include <TerrainCommon.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
@@ -31,7 +31,8 @@ struct VSOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
+    float2 m_uv : UV1;
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
@@ -44,6 +45,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, uv);
     float3 worldPosition = GetTerrainWorldPosition(terrainData, IN.m_position, origUv);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    OUT.m_worldPosition = worldPosition;
 
     // Calculate normal
     float up    = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f, -1.0f));
@@ -54,6 +56,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     OUT.m_bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
     OUT.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
     OUT.m_normal = cross(OUT.m_tangent, OUT.m_bitangent);
+    OUT.m_uv = uv;
 
     // directional light shadow 
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -82,7 +85,8 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     // Albedo, SpecularF0
     const float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(TerrainPBRSrg::m_baseColor, specularF0Factor, 0.0);
+    float3 color = TerrainPBRSrg::m_baseColor;
+    surface.SetAlbedoAndSpecularF0(color, specularF0Factor, 0.0);
 
     // Clear Coat, Transmission
     surface.clearCoat.InitializeToZero();
