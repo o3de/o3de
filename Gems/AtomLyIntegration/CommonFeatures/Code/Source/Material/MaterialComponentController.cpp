@@ -9,6 +9,7 @@
 #include <Material/MaterialComponentController.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -134,7 +135,7 @@ namespace AZ
         {
             InitializeMaterialInstance(asset);
         }
-        
+
         void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             AZStd::unordered_set<MaterialAssignmentId> propertyOverrides;
@@ -187,7 +188,7 @@ namespace AZ
                 materialInstance->Compile();
             }
 
-            // Only disconnect from tick bus and send notification after all pending properties have been applied 
+            // Only disconnect from tick bus and send notification after all pending properties have been applied
             if (m_queuedPropertyOverrides.empty())
             {
                 if (m_queuedMaterialUpdateNotification)
@@ -223,7 +224,7 @@ namespace AZ
                 ReleaseMaterials();
             }
         }
-        
+
         void MaterialComponentController::InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset)
         {
             bool allReady = true;
@@ -293,7 +294,7 @@ namespace AZ
             // this function is called twice once material asset is changed, a temp variable is
             // needed to prevent material asset going out of scope during second call
             // before LoadMaterials() is called [LYN-2249]
-            auto temp = m_configuration.m_materials; 
+            auto temp = m_configuration.m_materials;
             m_configuration.m_materials = materials;
             LoadMaterials();
         }
