@@ -1471,7 +1471,8 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    // only update the pivot override if the orientation is being modified in local space
+                    // only update the pivot override if the orientation is being modified in local space and we have
+                    // more than one entity selected (so rotating a single entity does not set the orientation override)
                     if (referenceFrame == ReferenceFrame::Local && sharedRotationState->m_entityIds.size() > 1)
                     {
                         m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
