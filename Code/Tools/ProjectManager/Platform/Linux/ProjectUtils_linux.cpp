@@ -14,7 +14,7 @@ namespace O3DE::ProjectManager
     namespace ProjectUtils
     {
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
-        const QStringList SupportedClangCommands = {"clang-12|clang++-12", "clang-6|clang++-6"};
+        const QStringList SupportedClangCommands = {"clang-12|clang++-12"};
 
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
         {
