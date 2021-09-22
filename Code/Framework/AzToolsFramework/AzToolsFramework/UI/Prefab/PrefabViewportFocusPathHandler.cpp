@@ -11,6 +11,12 @@
 
 namespace AzToolsFramework::Prefab
 {
+    PrefabViewportFocusPathHandler::PrefabViewportFocusPathHandler()
+    {
+        // Connect to Prefab Focus Notifications
+        PrefabFocusNotificationBus::Handler::BusConnect();
+    }
+
     PrefabViewportFocusPathHandler::~PrefabViewportFocusPathHandler()
     {
         // Disconnect from Prefab Focus Notifications
@@ -26,9 +32,6 @@ namespace AzToolsFramework::Prefab
             AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabViewportFocusPathHandler construction.");
             return;
         }
-
-        // Connect to Prefab Focus Notifications
-        PrefabFocusNotificationBus::Handler::BusConnect();
 
         // Initialize Widgets
         m_breadcrumbsWidget = breadcrumbsWidget;
@@ -60,16 +63,6 @@ namespace AzToolsFramework::Prefab
     {
         // Push new Path
         m_breadcrumbsWidget->pushPath(m_prefabFocusInterface->GetPrefabFocusPath().c_str());
-
-        // Only show the back icon button if the path has more than one element
-        if(m_prefabFocusInterface->GetPrefabFocusPathLength() > 1)
-        {
-            m_backButton->show();
-        }
-        else
-        {
-            m_backButton->hide();
-        }
     }
 
 } // namespace AzToolsFramework::Prefab

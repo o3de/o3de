@@ -24,6 +24,7 @@ namespace AzToolsFramework::Prefab
         , private QObject
     {
     public:
+        PrefabViewportFocusPathHandler();
         ~PrefabViewportFocusPathHandler();
 
         void Initialize(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
