@@ -32,6 +32,8 @@ namespace EMotionFX
 
         bool Behavior::Init(const InitSettings& settings)
         {
+            AZ_PROFILE_SCOPE(Animation, "Behavior::Init");
+
             // Import all motion frames.
             size_t totalNumFramesImported = 0;
             size_t totalNumFramesDiscarded = 0;
@@ -81,7 +83,6 @@ namespace EMotionFX
 
             return true;
         }
-
 
         Behavior* Behavior::CreateBehaviorByType(const AZ::TypeId& typeId)
         {

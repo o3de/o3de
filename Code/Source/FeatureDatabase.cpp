@@ -99,6 +99,8 @@ namespace EMotionFX
 
         bool FeatureDatabase::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
         {
+            AZ_PROFILE_SCOPE(Animation, "FeatureDatabase::ExtractFeatures");
+
             const size_t numFrames = frameDatabase->GetNumFrames();
             if (numFrames == 0)
             {

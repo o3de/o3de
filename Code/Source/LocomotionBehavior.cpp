@@ -158,6 +158,8 @@ namespace EMotionFX
 
         void LocomotionBehavior::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
         {
+            AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::DebugDraw");
+
             Behavior::DebugDraw(draw, behaviorInstance);
             DebugDrawControlSpline(draw, behaviorInstance);
 
@@ -230,6 +232,8 @@ namespace EMotionFX
 
         size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, [[maybe_unused]] const Pose& previousPose, size_t currentFrameIndex, [[maybe_unused]] float timeDelta)
         {
+            AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::FindLowestCostFrameIndex");
+
             // Prepare our current pose data.
             //const BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
             const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);

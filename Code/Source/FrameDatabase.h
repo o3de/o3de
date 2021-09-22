@@ -29,7 +29,6 @@ namespace EMotionFX
 
     namespace MotionMatching
     {
-        class Feature;
         class BehaviorInstance;
         class MotionMatchEventData;
 
