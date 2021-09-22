@@ -27,7 +27,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        //! Type of branch icon should the delegate paint,
+        //! Type of branch icon the delegate should paint.
         enum EntryBranchType
         {
             First,
