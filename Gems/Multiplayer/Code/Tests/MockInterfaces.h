@@ -40,7 +40,10 @@ namespace UnitTest
     class MockNetworkEntityManager : public Multiplayer::INetworkEntityManager
     {
     public:
-        MOCK_METHOD4(CreateEntitiesImmediate, EntityList (const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::Transform&, Multiplayer::AutoActivate));
+        MOCK_METHOD2(RequestNetSpawnableInstantiation, AZStd::unique_ptr<AzFramework::EntitySpawnTicket> (const AZ::Data::Asset<AzFramework::Spawnable>&, const AZ::Transform&));
+        MOCK_METHOD4(
+            CreateEntitiesImmediate,
+            EntityList (const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::Transform&, Multiplayer::AutoActivate));
         MOCK_CONST_METHOD1(GetNetEntityIdById, Multiplayer::NetEntityId (const AZ::EntityId&));
         MOCK_METHOD0(GetNetworkEntityTracker, Multiplayer::NetworkEntityTracker* ());
         MOCK_METHOD0(GetNetworkEntityAuthorityTracker, Multiplayer::NetworkEntityAuthorityTracker* ());
