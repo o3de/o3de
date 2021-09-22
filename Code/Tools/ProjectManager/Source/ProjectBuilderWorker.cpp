@@ -120,6 +120,7 @@ namespace O3DE::ProjectManager
         auto currentEnvironmentRequest = ProjectUtils::GetCommandLineProcessEnvironment();
         if (!currentEnvironmentRequest.IsSuccess())
         {
+            QStringToAZTracePrint(currentEnvironmentRequest.GetError());
             return AZ::Failure(currentEnvironmentRequest.GetError());
         }
         QProcessEnvironment currentEnvironment = currentEnvironmentRequest.GetValue();
@@ -132,6 +133,7 @@ namespace O3DE::ProjectManager
         auto cmakeGenerateArgumentsResult = ConstructCmakeGenerateProjectArguments(engineInfo.m_thirdPartyPath);
         if (!cmakeGenerateArgumentsResult.IsSuccess())
         {
+            QStringToAZTracePrint(cmakeGenerateArgumentsResult.GetError());
             return AZ::Failure(cmakeGenerateArgumentsResult.GetError());
         }
         auto cmakeGenerateArguments = cmakeGenerateArgumentsResult.GetValue();
@@ -184,6 +186,7 @@ namespace O3DE::ProjectManager
         auto cmakeBuildArgumentsResult = ConstructCmakeBuildCommandArguments();
         if (!cmakeBuildArgumentsResult.IsSuccess())
         {
+            QStringToAZTracePrint(cmakeBuildArgumentsResult.GetError());
             return AZ::Failure(cmakeBuildArgumentsResult.GetError());
         }
         auto cmakeBuildArguments = cmakeBuildArgumentsResult.GetValue();

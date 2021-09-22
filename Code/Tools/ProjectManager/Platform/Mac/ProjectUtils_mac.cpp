@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
             currentEnvironment.insert("PATH", pathValue);
 
             // Validate that we have cmake installed first
-            auto queryCmakeInstalled = ExecuteCommandResult("which", QStringList{"cmake"}, currentEnvironment);
+            auto queryCmakeInstalled = ExecuteCommandResult("which", QStringList{ProjectCMakeCommand}, currentEnvironment);
             if (!queryCmakeInstalled.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));

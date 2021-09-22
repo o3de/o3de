@@ -55,7 +55,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(QStringList{cmakeInstalledPath,
                                        "-B", targetBuildPath,
                                        "-S", m_projectInfo.m_path,
-                                       "-G", "Xcode"});
+                                       "-GXcode"});
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const

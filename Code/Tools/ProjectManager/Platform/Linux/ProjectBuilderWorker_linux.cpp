@@ -19,7 +19,9 @@ namespace O3DE::ProjectManager
     {
         // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
         // otherwise default to the the default for Linux (Unix Makefiles)
-        QString cmakeGenerator = (QProcess::execute("which", QStringList{"ninja"}) == 0) ? "Ninja" : "Unix Makefiles";
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        QString cmakeGenerator = (whichNinjaResult.IsSuccess()) ? "Ninja Multi-Config" : "Unix Makefiles";
+        bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
 
         // On Linux the default compiler is gcc. For O3DE, it is clang, so we need to specify the version of clang that is detected
         // in order to get the compiler option.
@@ -28,28 +30,41 @@ namespace O3DE::ProjectManager
         {
             return AZ::Failure(compilerOptionResult.GetError());
         }
+        auto clangCompilers = compilerOptionResult.GetValue().split('|');
+        AZ_Assert(clangCompilers.length()==2, "Invalid clang compiler pair specification");
 
-        QString compilerOption = compilerOptionResult.GetValue();
+        QString clangCompilerOption = clangCompilers[0];
+        QString clangPPCompilerOption = clangCompilers[1];
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
-
-        return AZ::Success(QStringList{ProjectCMakeCommand,
-                                       "-B", targetBuildPath,
-                                       "-S", m_projectInfo.m_path,
-                                       "-G", cmakeGenerator,
-                                       QString("-DCMAKE_C_COMPILER=").append(compilerOption),
-                                       QString("-DCMAKE_CXX_COMPILER=").append(compilerOption),
-                                       QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
-                                       "-DCMAKE_BUILD_TYPE=profile"});
+        QStringList generateProjectArgs = QStringList{ProjectCMakeCommand,
+                                                      "-B", ProjectBuildPathPostfix,
+                                                      "-S", ".",
+                                                      QString("-G%1").arg(cmakeGenerator),
+                                                      QString("-DCMAKE_C_COMPILER=").append(clangCompilerOption),
+                                                      QString("-DCMAKE_CXX_COMPILER=").append(clangPPCompilerOption),
+                                                      QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath)};
+        if (!compileProfileOnBuild)
+        {
+            generateProjectArgs.append("-DCMAKE_BUILD_TYPE=profile");
+        }
+        return AZ::Success(generateProjectArgs);
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
 
-        return AZ::Success(QStringList{ProjectCMakeCommand,
-                                       "--build", targetBuildPath,
-                                       "--target", launcherTargetName, ProjectCMakeBuildTargetEditor});
+        QStringList buildProjectArgs = QStringList{ProjectCMakeCommand,
+                                                   "--build", ProjectBuildPathPostfix,
+                                                   "--target", launcherTargetName, ProjectCMakeBuildTargetEditor};
+        if (compileProfileOnBuild)
+        {
+            buildProjectArgs.append(QStringList{"--config","profile"});
+        }
+        return AZ::Success(buildProjectArgs);
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
