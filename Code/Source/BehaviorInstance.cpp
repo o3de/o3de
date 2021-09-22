@@ -138,6 +138,8 @@ namespace EMotionFX
 
         void BehaviorInstance::Output(Pose& outputPose)
         {
+            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Output");
+
             if (!m_behavior)
             {
                 outputPose.InitFromBindPose(m_actorInstance);
@@ -203,6 +205,8 @@ namespace EMotionFX
 
         void BehaviorInstance::Update(float timePassedInSeconds)
         {
+            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Update");
+
             if (!m_behavior)
             {
                 return;
