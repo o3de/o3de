@@ -195,7 +195,7 @@ namespace EditorPythonBindings
 
                 if (!m_handler)
                 {
-                    AZ_Error("python", false, "No EBus connection deteced; missing call or failed call to connect()?");
+                    AZ_Error("python", false, "No EBus connection detected; missing call or failed call to connect()?");
                     return false;
                 }
 
