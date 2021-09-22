@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/EBus/Policies.h>
 

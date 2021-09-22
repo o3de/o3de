@@ -11,6 +11,7 @@
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/ConnectionLayer/IConnectionSet.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AzNetworking
 {

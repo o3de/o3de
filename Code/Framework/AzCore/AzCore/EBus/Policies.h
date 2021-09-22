@@ -18,9 +18,8 @@
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/intrusive_set.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
-#include <AzCore/Module/Environment.h>
-#include <AzCore/EBus/Environment.h>
 
 namespace AZ
 {
@@ -251,29 +250,29 @@ namespace AZ
         void Execute()
         {
             AZ_Warning("System", m_isActive, "You are calling execute queued functions on a bus which has not activated its function queuing! Call YourBus::AllowFunctionQueuing(true)!");
+            // The while true loop is used to allow for functions to be added to the message queue
+            // during the middle of executing the previous queue
             while (true)
             {
-                BusMessageCall invoke;
+                MessageQueueType localMessages;
 
-                //////////////////////////////////////////////////////////////////////////
-                // Pop element from the queue.
+                // Swap the current list of queue functions with a local instance
                 {
-                    AZStd::lock_guard<MutexType> lock(m_messagesMutex);
-                    size_t numMessages = m_messages.size();
-                    if (numMessages == 0)
-                    {
-                        break;
-                    }
-                    AZStd::swap(invoke, m_messages.front());
-                    m_messages.pop();
-                    if (numMessages == 1)
-                    {
-                        m_messages = {};
-                    }
+                    AZStd::scoped_lock lock(m_messagesMutex);
+                    AZStd::swap(localMessages, m_messages);
                 }
-                //////////////////////////////////////////////////////////////////////////
-
-                invoke();
+                // If the queue function list is empty there are no more function to execute
+                if (localMessages.empty())
+                {
+                    break;
+                }
+                // Execute the queue functions safely now that are owned by the function
+                while (!localMessages.empty())
+                {
+                    const BusMessageCall& localMessage = localMessages.front();
+                    localMessage();
+                    localMessages.pop();
+                }
             }
         }
 

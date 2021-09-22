@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 
