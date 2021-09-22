@@ -49,7 +49,6 @@ namespace HttpRequestor
         {
             m_thread.join();
         }
-        AWSNativeSDKInit::InitializationManager::Shutdown();
     }
 
     void Manager::AddRequest(Parameters && httpRequestParameters)
