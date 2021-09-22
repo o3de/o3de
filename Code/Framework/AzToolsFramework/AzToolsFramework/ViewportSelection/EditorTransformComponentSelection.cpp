@@ -77,13 +77,6 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The screen position of the gizmo in normalized (0-1) ndc space");
-    AZ_CVAR(
-        bool,
-        ed_preferredWorldOuterSpace,
-        true,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "Which space is prefered to move to when using the outer space modifier");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
     static const char* const TogglePivotTitleRightClick = "Toggle pivot";
@@ -804,20 +797,14 @@ namespace AzToolsFramework
         }
     }
 
-    // utility function to immediately return the current reference frame
-    // based on the state of the modifiers
+    // utility function to immediately return the current reference frame based on the state of the modifiers
     static ReferenceFrame ReferenceFrameFromModifiers(const ViewportInteraction::KeyboardModifiers modifiers)
     {
-        if (modifiers.Shift())
-        {
-            return ed_preferredWorldOuterSpace ? ReferenceFrame::World : ReferenceFrame::Parent;
-        }
-        else
-        {
-            return ReferenceFrame::Local;
-        }
+        return modifiers.Shift() ? ReferenceFrame::World : ReferenceFrame::Local;
     }
 
+    // utility function to immediately return the current sphere of influence of the manipulators based on the
+    // state of the modifiers
     static Influence InfluenceFromModifiers(const ViewportInteraction::KeyboardModifiers modifiers)
     {
         return modifiers.Alt() ? Influence::Individual : Influence::Group;
@@ -1519,7 +1506,7 @@ namespace AzToolsFramework
                         case Influence::Group:
                             {
                                 // only update the pivot override if the orientation is being modified in local space
-                                if (referenceFrame == ReferenceFrame::Local)
+                                if (referenceFrame == ReferenceFrame::Local && sharedRotationState->m_entityIds.size() != 1)
                                 {
                                     m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
                                 }
