@@ -89,7 +89,8 @@ namespace AZ
         private:
 
             // Number of size and format permutations
-            static constexpr int NumTextureArrays = 5;
+            // This number should match the number of texture arrays in Decals/ViewSrg.azsli
+            static constexpr int NumTextureArrays = 4;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
             struct DecalLocation
@@ -128,7 +129,7 @@ namespace AZ
             // 4 textures @ 512x512
             IndexableList < AZStd::pair < AZ::RHI::Size, DecalTextureArray>> m_textureArrayList;
 
-            AZStd::array<RHI::ShaderInputImageIndex, NumTextureArrays> m_decalTextureArrayIndices;
+            AZStd::array<AZStd::array<RHI::ShaderInputImageIndex, DecalMapType_Num>, NumTextureArrays> m_decalTextureArrayIndices;
             GpuBufferHandler m_decalBufferHandler;
 
             AsyncLoadTracker<DecalHandle> m_materialLoadTracker;
