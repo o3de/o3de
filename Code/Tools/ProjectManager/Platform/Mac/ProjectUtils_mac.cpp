@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
             auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{"-version"}, currentEnvironment);
             if (!queryCmakeVersionQuery.IsSuccess())
             {
-                return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
+                return AZ::Failure(QObject::tr("Unable to determine the version of CMake on this host."));
             }
             AZ_TracePrintf("Project Manager", "Cmake version %s detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
 

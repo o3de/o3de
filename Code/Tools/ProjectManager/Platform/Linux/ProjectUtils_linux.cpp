@@ -13,6 +13,9 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        // The list of clang C/C++ compiler command lines to validate on the host Linux system
+        const QStringList SupportedClangCommands = {"clang-12|clang++-12", "clang-6|clang++-6"};
+
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
         {
             return AZ::Success(QProcessEnvironment(QProcessEnvironment::systemEnvironment()));
@@ -30,8 +33,7 @@ namespace O3DE::ProjectManager
             }
 
             // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested for O3DE.
-            QStringList supportedClangCommands = {"clang-12|clang++-12", "clang-6|clang++-6"};
-            for (const QString& supportClangCommand : supportedClangCommands)
+            for (const QString& supportClangCommand : SupportedClangCommands)
             {
                 auto clangCompilers = supportClangCommand.split('|');
                 AZ_Assert(clangCompilers.length()==2, "Invalid clang compiler pair specification");
