@@ -611,13 +611,13 @@ namespace Multiplayer
         }
 
         // Store the temporary user identifier so we can transmit it with our next Connect packet
-        // The new server will use this to reattach our set of autonomous entities
+        // The new server will use this to re-attach our set of autonomous entities
 
         // Disconnect our existing server connection
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::ClientMigrated, TerminationEndpoint::Local); };
         m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         AZLOG_INFO("Migrating to new server shard");
-        m_clientMigrationStartEvent.Signal(ClientInputId{ 0 });
+        m_clientMigrationStartEvent.Signal(packet.GetLastClientInputId());
         m_networkInterface->Connect(packet.GetRemoteServerAddress());
         return true;
     }
