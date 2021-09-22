@@ -16,6 +16,8 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QHeaderView)
 QT_FORWARD_DECLARE_CLASS(QTableWidget)
+QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -37,6 +39,12 @@ namespace O3DE::ProjectManager
 
     private:
         void FillModel();
+        QFrame* CreateNoReposContent();
+        QFrame* CreateReposContent();
+
+        QStackedWidget* m_contentStack = nullptr;
+        QFrame* m_noRepoContent;
+        QFrame* m_repoContent;
 
         QTableWidget* m_gemRepoHeaderTable = nullptr;
         QHeaderView* m_gemRepoListHeader = nullptr;

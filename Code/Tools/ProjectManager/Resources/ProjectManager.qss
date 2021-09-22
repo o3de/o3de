@@ -568,17 +568,20 @@ QProgressBar::chunk {
     font-size: 12px;
 }
 
+#gemRepoNoReposLabel {
+    font-size: 16px;
+}
+
 #gemRepoHeaderRefreshButton {
     background-color: transparent;
     qproperty-flat: true;
     qproperty-iconSize: 14px;
 }
 
-#gemRepoHeaderAddButton {
+#gemRepoAddButton {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #888888, stop: 1.0 #555555);
     qproperty-flat: true;
-    margin-right:30px;
     min-width:120px;
     max-width:120px;
     min-height:24px;
@@ -588,11 +591,11 @@ QProgressBar::chunk {
     font-size:12px;
     font-weight:600;
 }
-#gemRepoHeaderAddButton:hover {
+#gemRepoAddButton:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #999999, stop: 1.0 #666666);
 }
-#gemRepoHeaderAddButton:pressed {
+#gemRepoAddButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
 }
