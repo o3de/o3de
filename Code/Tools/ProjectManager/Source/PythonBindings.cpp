@@ -339,7 +339,7 @@ namespace O3DE::ProjectManager
             {
                 for (auto engine : allEngines)
                 {
-                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine));
                     if (enginePath.Compare(m_enginePath) == 0)
                     {
                         return;
