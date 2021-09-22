@@ -55,7 +55,9 @@ namespace O3DE::ProjectManager
         static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
         static void SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
         static void SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
+        static bool WasPreviouslyAdded(const QModelIndex& modelIndex);
         static void SetWasPreviouslyAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
+        static bool WasPreviouslyAddedDependency(const QModelIndex& modelIndex);
         static bool NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);

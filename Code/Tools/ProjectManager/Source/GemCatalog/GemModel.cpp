@@ -326,6 +326,16 @@ namespace O3DE::ProjectManager
         model.setData(modelIndex, wasAdded, RoleWasPreviouslyAddedDependency);
     }
 
+    bool GemModel::WasPreviouslyAdded(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleWasPreviouslyAdded).toBool();
+    }
+
+    bool GemModel::WasPreviouslyAddedDependency(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleWasPreviouslyAddedDependency).toBool();
+    }
+
     bool GemModel::NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies)
     {
         bool previouslyAdded = modelIndex.data(RoleWasPreviouslyAdded).toBool();
