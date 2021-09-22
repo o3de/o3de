@@ -128,17 +128,6 @@ namespace AZ
                 nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
             }
 
-#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
-            // When launching in game mode, the surface will be ready at this point, meaning that after
-            // intialization, this swap chain is ready to present
-            AZ::ApplicationTypeQuery appType;
-            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-            if (appType.IsGame())
-            {
-                m_readyToPresent.store(true);
-            }
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
             SetName(GetName());
             return result;
         }
