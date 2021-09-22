@@ -1144,7 +1144,7 @@ namespace AZ
                 if (!reflectionProbes.empty() && reflectionProbes[0])
                 {
                     m_shaderResourceGroup->SetConstant(modelToWorldConstantIndex, reflectionProbes[0]->GetTransform());
-                    m_shaderResourceGroup->SetConstant(modelToWorldInverseConstantIndex, reflectionProbes[0]->GetTransform().GetInverse());
+                    m_shaderResourceGroup->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbes[0]->GetTransform()).GetInverseFull());
                     m_shaderResourceGroup->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetOuterObbWs().GetHalfLengths());
                     m_shaderResourceGroup->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
                     m_shaderResourceGroup->SetConstant(useReflectionProbeConstantIndex, true);
