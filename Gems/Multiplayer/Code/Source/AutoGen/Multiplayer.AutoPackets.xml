@@ -40,8 +40,8 @@
     </Packet>
 
     <Packet Name="ClientMigration" Desc="Tell a client to migrate to a new server">
-		<Member Type="AzNetworking::IpAddress" Name="remoteServerAddress" Init="AzNetworking::IpAddress()" />
-		<Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />
-		<Member Type="Multiplayer::ClientInputId" Name="lastClientInputId" Init="Multiplayer::ClientInputId{ 0 }" />
+        <Member Type="AzNetworking::IpAddress" Name="remoteServerAddress" Init="AzNetworking::IpAddress()" />
+        <Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />
+        <Member Type="Multiplayer::ClientInputId" Name="lastClientInputId" Init="Multiplayer::ClientInputId{ 0 }" />
     </Packet>
 </PacketGroup>
