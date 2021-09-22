@@ -21,7 +21,7 @@ sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "P
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
-from atom_renderer.atom_utils.screenshot_utils import ScreenshotHelper
+from Atom.atom_utils.screenshot_utils import ScreenshotHelper
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
