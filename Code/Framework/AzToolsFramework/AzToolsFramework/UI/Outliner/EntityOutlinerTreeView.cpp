@@ -186,7 +186,6 @@ namespace AzToolsFramework
         const bool isSelected = selectionModel()->isSelected(index);
         const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
 
-
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);
         
