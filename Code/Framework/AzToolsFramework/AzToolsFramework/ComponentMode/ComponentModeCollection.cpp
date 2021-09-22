@@ -8,8 +8,8 @@
 
 #include "ComponentModeCollection.h"
 
-#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +17,7 @@ namespace AzToolsFramework
     {
         AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator, 0)
 
-            static const char* const s_nextActiveComponentModeTitle = "Edit Next";
+        static const char* const s_nextActiveComponentModeTitle = "Edit Next";
         static const char* const s_previousActiveComponentModeTitle = "Edit Previous";
         static const char* const s_nextActiveComponentModeDesc = "Move to the next component";
         static const char* const s_prevActiveComponentModeDesc = "Move to the previous component";
