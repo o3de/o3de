@@ -19,7 +19,6 @@
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
