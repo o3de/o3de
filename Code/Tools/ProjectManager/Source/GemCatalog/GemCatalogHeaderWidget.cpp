@@ -7,6 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogHeaderWidget.h>
+#include <AzCore/std/functional.h>
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QLabel>
@@ -42,73 +43,113 @@ namespace O3DE::ProjectManager
         m_layout->addLayout(hLayout);
 
         // added
-        {
-            m_addedWidget = new QWidget();
-            m_addedWidget->setFixedWidth(s_width);
-            m_layout->addWidget(m_addedWidget);
+        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [=]
+            {
+                QVector<QModelIndex> gems;
+                const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/false);
 
-            QVBoxLayout* layout = new QVBoxLayout();
-            layout->setAlignment(Qt::AlignTop);
-            m_addedWidget->setLayout(layout);
-
-            m_addedLabel = new QLabel();
-            m_addedLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
-            layout->addWidget(m_addedLabel);
-            m_addedTagContainer = new TagContainerWidget();
-            layout->addWidget(m_addedTagContainer);
-        }
+                // don't include gems that were already active because they were dependencies
+                for (const QModelIndex& modelIndex : toBeAdded)
+                {
+                    if (!GemModel::WasPreviouslyAddedDependency(modelIndex))
+                    {
+                        gems.push_back(modelIndex);
+                    }
+                }
+                return gems;
+            });
 
         // removed
-        {
-            m_removedWidget = new QWidget();
-            m_removedWidget->setFixedWidth(s_width);
-            m_layout->addWidget(m_removedWidget);
+        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [=]
+            {
+                QVector<QModelIndex> gems;
+                const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/false);
 
-            QVBoxLayout* layout = new QVBoxLayout();
-            layout->setAlignment(Qt::AlignTop);
-            m_removedWidget->setLayout(layout);
+                // don't include gems that are still active because they are dependencies
+                for (const QModelIndex& modelIndex : toBeAdded)
+                {
+                    if (!GemModel::IsAddedDependency(modelIndex))
+                    {
+                        gems.push_back(modelIndex);
+                    }
+                }
+                return gems;
+            });
 
-            m_removedLabel = new QLabel();
-            m_removedLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
-            layout->addWidget(m_removedLabel);
-            m_removedTagContainer = new TagContainerWidget();
-            layout->addWidget(m_removedTagContainer);
-        }
+        // added dependencies 
+        CreateGemSection( tr("Gem dependency to be activated"), tr("Gem dependencies to be activated"), [=]
+            {
+                QVector<QModelIndex> dependencies;
+                const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
+
+                // only include gems that are dependencies and not explicitley added 
+                for (const QModelIndex& modelIndex : toBeAdded)
+                {
+                    if (GemModel::IsAddedDependency(modelIndex) && !GemModel::IsAdded(modelIndex))
+                    {
+                        dependencies.push_back(modelIndex);
+                    }
+                }
+                return dependencies;
+
+            });
+
+        // removed dependencies 
+        CreateGemSection( tr("Gem dependency to be deactivated"), tr("Gem dependencies to be deactivated"), [=]
+            {
+                QVector<QModelIndex> dependencies;
+                const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
+
+                // don't include gems that were explicitly removed - those are listed in a different section
+                for (const QModelIndex& modelIndex : toBeRemoved)
+                {
+                    if (!GemModel::WasPreviouslyAdded(modelIndex))
+                    {
+                        dependencies.push_back(modelIndex);
+                    }
+                }
+                return dependencies;
+
+            });
+
 
         setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
-
-        Update();
-        connect(gemModel, &GemModel::dataChanged, this, [=]
-            {
-                Update();
-            });
     }
 
-    void CartOverlayWidget::Update()
+    void CartOverlayWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
     {
-        const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
-        if (toBeAdded.isEmpty())
-        {
-            m_addedWidget->hide();
-        }
-        else
-        {
-            m_addedTagContainer->Update(ConvertFromModelIndices(toBeAdded));
-            m_addedLabel->setText(QString("%1 %2").arg(QString::number(toBeAdded.size()), tr("Gems to be activated")));
-            m_addedWidget->show();
-        }
+        QWidget* widget = new QWidget();
+        widget->setFixedWidth(s_width);
+        m_layout->addWidget(widget);
 
-        const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
-        if (toBeRemoved.isEmpty())
+        QVBoxLayout* layout = new QVBoxLayout();
+        layout->setAlignment(Qt::AlignTop);
+        widget->setLayout(layout);
+
+        QLabel* label = new QLabel();
+        label->setObjectName("GemCatalogCartOverlaySectionLabel");
+        layout->addWidget(label);
+
+        TagContainerWidget* tagContainer = new TagContainerWidget();
+        layout->addWidget(tagContainer);
+
+        auto update = [=]()
         {
-            m_removedWidget->hide();
-        }
-        else
-        {
-            m_removedTagContainer->Update(ConvertFromModelIndices(toBeRemoved));
-            m_removedLabel->setText(QString("%1 %2").arg(QString::number(toBeRemoved.size()), tr("Gems to be deactivated")));
-            m_removedWidget->show();
-        }
+            const QVector<QModelIndex> tagIndices = getTagIndices();
+            if (tagIndices.isEmpty())
+            {
+                widget->hide();
+            }
+            else
+            {
+                tagContainer->Update(ConvertFromModelIndices(tagIndices));
+                label->setText(QString("%1 %2").arg(QString::number(tagIndices.size()), tagIndices.size() == 1 ? singularTitle : pluralTitle));
+                widget->show();
+            }
+        };
+
+        connect(m_gemModel, &GemModel::dataChanged, this, update); 
+        update();
     }
 
     QStringList CartOverlayWidget::ConvertFromModelIndices(const QVector<QModelIndex>& gems) const

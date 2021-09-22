@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/std/function/function_fwd.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <GemCatalog/GemModel.h>
@@ -30,29 +32,15 @@ namespace O3DE::ProjectManager
 
     public:
         CartOverlayWidget(GemModel* gemModel, QWidget* parent = nullptr);
-        void Update();
 
     private:
         QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
 
+        using GetTagIndicesCallback  = AZStd::function<QVector<QModelIndex>()>;
+        void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
+
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
-
-        QWidget* m_addedWidget = nullptr;
-        QLabel* m_addedLabel = nullptr;
-        TagContainerWidget* m_addedTagContainer = nullptr;
-
-        QWidget* m_removedWidget = nullptr;
-        QLabel* m_removedLabel = nullptr;
-        TagContainerWidget* m_removedTagContainer = nullptr;
-
-        QWidget* m_addedDependentWidget = nullptr;
-        QLabel* m_addedDependentLabel = nullptr;
-        TagContainerWidget* m_addedDependentTagContainer = nullptr;
-
-        QWidget* m_removedDependentWidget = nullptr;
-        QLabel* m_removedDependentLabel = nullptr;
-        TagContainerWidget* m_removedDependentTagContainer = nullptr;
 
         inline constexpr static int s_width = 240;
     };
