@@ -22,11 +22,6 @@ namespace AzToolsFramework::Prefab
     void PrefabFocusHandler::Initialize()
     {
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        AZ_Assert(
-            m_focusModeInterface,
-            "Prefab - PrefabFocusHandler - "
-            "Focus Mode Interface could not be found. "
-            "Check that it is being correctly initialized.");
 
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         AZ_Assert(
@@ -59,7 +54,10 @@ namespace AzToolsFramework::Prefab
 
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
-        m_focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
+        if (m_focusModeInterface)
+        {
+            m_focusModeInterface->SetFocusRoot(focusedInstance->get().GetContainerEntityId());
+        }
 
         return AZ::Success();
     }
