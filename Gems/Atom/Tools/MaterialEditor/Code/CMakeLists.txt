@@ -93,12 +93,14 @@ ly_add_target(
     AUTOMOC
     FILES_CMAKE
         materialeditor_files.cmake
-        Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
             Source
-            Source/Platform/${PAL_PLATFORM_NAME}
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -123,13 +125,6 @@ ly_create_alias(NAME MaterialEditor.Builders NAMESPACE Gem)
 # Add build dependency to Editor for the MaterialEditor application since
 # Editor opens up the MaterialEditor
 ly_add_dependencies(Editor Gem::MaterialEditor)
-
-ly_add_target_dependencies(
-    TARGETS
-        MaterialEditor
-    DEPENDENCIES_FILES
-        Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-)
 
 # Inject the project path into the MaterialEditor VS debugger command arguments if the build system being invoked
 # in a project centric view
