@@ -1118,6 +1118,54 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
 
+    // create alias for EditorTransformComponentSelectionViewportPickingManipulatorTestFixture to help group tests
+    using EditorTransformComponentSelectionManipulatorInteractionTestFixture =
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture;
+
+    // note: this replicates rotating an entity in local space with no modifiers held (local space)
+    TEST_F(
+        EditorTransformComponentSelectionManipulatorInteractionTestFixture,
+        RotatingASingleEntityInLocalSpaceWillRotateBothTheEntityAndTheManipulator)
+    {
+        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
+
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Rotation);
+
+        AzToolsFramework::SelectEntity(m_entityId1);
+
+        const float screenToWorldMultiplier = AzToolsFramework::CalculateScreenToWorldMultiplier(m_entity1WorldTranslation, m_cameraState);
+        const float manipulatorRadius = 2.0f * screenToWorldMultiplier;
+
+        const auto rotationManipulatorStartHoldWorldPosition = m_entity1WorldTranslation +
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
+        const auto rotationManipulatorEndHoldWorldPosition = m_entity1WorldTranslation +
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-135.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
+
+        // calculate the position in screen space of the second entity
+        const auto rotationManipulatorHoldScreenPosition =
+            AzFramework::WorldToScreen(rotationManipulatorStartHoldWorldPosition, m_cameraState);
+        const auto rotationManipulatorEndHoldScreenPosition =
+            AzFramework::WorldToScreen(rotationManipulatorEndHoldWorldPosition, m_cameraState);
+
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(rotationManipulatorHoldScreenPosition)
+            ->MouseLButtonDown()
+            ->MousePosition(rotationManipulatorEndHoldScreenPosition)
+            ->MouseLButtonUp();
+
+        const auto expectedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)), m_entity1WorldTranslation);
+
+        const auto manipulatorTransform = GetManipulatorTransform();
+        const auto entityTransform = AzToolsFramework::GetWorldTransform(m_entityId1);
+
+        EXPECT_THAT(*manipulatorTransform, IsClose(expectedTransform));
+        EXPECT_THAT(entityTransform, IsClose(expectedTransform));
+    }
+
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;
 

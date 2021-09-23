@@ -1252,7 +1252,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<TranslationManipulators> translationManipulators = AZStd::make_unique<TranslationManipulators>(
             TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
-        translationManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
+        translationManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth());
 
         InitializeManipulators(*translationManipulators);
 
@@ -1380,7 +1380,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<RotationManipulators> rotationManipulators =
             AZStd::make_unique<RotationManipulators>(AZ::Transform::CreateIdentity());
-        rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth(ViewportUi::DefaultViewportId));
+        rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth());
 
         InitializeManipulators(*rotationManipulators);
 
@@ -1541,7 +1541,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZStd::unique_ptr<ScaleManipulators> scaleManipulators = AZStd::make_unique<ScaleManipulators>(AZ::Transform::CreateIdentity());
-        scaleManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth(ViewportUi::DefaultViewportId));
+        scaleManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth());
 
         InitializeManipulators(*scaleManipulators);
 
