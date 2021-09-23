@@ -60,6 +60,9 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) override;
 
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;
+
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
 
         uint32_t GetEntityCount() const override;
