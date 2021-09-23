@@ -5,9 +5,18 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Graph Model Gem provides a generic node graph data model framework for Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Framework", "Tools", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Framework",
+        "Tools",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/framework/graph-model/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/framework/graph-model/",
+    "dependencies": [
+        "GraphCanvas"
+    ]
 }

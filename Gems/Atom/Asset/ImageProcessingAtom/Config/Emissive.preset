@@ -29,7 +29,7 @@
                     "_em",
                     "_emit"
                 ],
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "DiscardAlpha": true
             },
             "ios": {

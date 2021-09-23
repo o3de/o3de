@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Game State Gem provides a generic framework to determine and manage game states and game state transitions in Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Gameplay", "Framework", "Scripting"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Gameplay",
+        "Framework",
+        "Scripting"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/game-state/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/game-state/",
+    "dependencies": []
 }

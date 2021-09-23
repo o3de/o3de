@@ -36,7 +36,7 @@
                     "_bc",
                     "_diffuse"
                 ],
-                "PixelFormat": "ETC2a1",
+                "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
