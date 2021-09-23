@@ -5,9 +5,17 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Camera Gem provides a basic camera component that defines a frustum for runtime rendering.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Rendering", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Rendering",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/camera/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/camera/",
+    "dependencies": [
+        "Atom_RPI"
+    ]
 }
