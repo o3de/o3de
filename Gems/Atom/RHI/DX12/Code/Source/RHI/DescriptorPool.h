@@ -60,16 +60,15 @@ namespace AZ
             RHI::Allocator* GetAllocator() const;
             
          protected:
-            D3D12_DESCRIPTOR_HEAP_DESC m_Desc;
+            D3D12_DESCRIPTOR_HEAP_DESC m_desc;
             AZStd::mutex m_mutex;
-            D3D12_CPU_DESCRIPTOR_HANDLE m_CpuStart = {};
-            D3D12_GPU_DESCRIPTOR_HANDLE m_GpuStart = {};
-            uint32_t m_Stride = 0;
+            D3D12_CPU_DESCRIPTOR_HANDLE m_cpuStart = {};
+            D3D12_GPU_DESCRIPTOR_HANDLE m_gpuStart = {};
+            uint32_t m_stride = 0;
         private:
-            D3D12_CPU_DESCRIPTOR_HANDLE m_NullDescriptor = {};
 
             // Native heap 
-            Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
+            Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_descriptorHeap;
 
             // Allocator used to manage the whole native heap. In the case of DescriptorPoolShaderVisibleCbvSrvUav this allocator
             // is used to manage the part of the heap that only manages static handles. 

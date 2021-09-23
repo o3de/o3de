@@ -518,7 +518,7 @@ namespace AZ
                 descriptorTable, descriptorHandles.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         }
 
-        void ShaderResourceGroupPool::UpdateDescriptorTableAfterCompaction(
+        RHI::ResultCode ShaderResourceGroupPool::UpdateDescriptorTableAfterCompaction(
             RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
         {
             // Since we are trying to compact we will re-create all the descriptor tables and re-update them all
@@ -535,7 +535,7 @@ namespace AZ
                         false,
                         "Descriptor heap ran out of memory. Please consider increasing number of handles allowed for the second value"
                         "of DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
-                    return;
+                    return RHI::ResultCode::OutOfMemory;
                 }
 
                 CacheGpuHandlesForViews(group);
@@ -576,7 +576,7 @@ namespace AZ
                                 false,
                                 "Descriptor heap ran out of memory. Please consider increasing number of handles allowed for the second value"
                                 "of DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
-                            return;
+                            return RHI::ResultCode::OutOfMemory;
                         }
 
                         ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
@@ -609,7 +609,7 @@ namespace AZ
                                 false,
                                 "Descriptor heap ran out of memory. Please consider increasing number of handles allowed for the second value"
                                 "of DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
-                            return;
+                            return RHI::ResultCode::OutOfMemory;
                         }
 
                         ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
@@ -621,6 +621,7 @@ namespace AZ
                     shaderInputIndex++;
                 }
             }
+            return RHI::ResultCode::Success;
         }
 
         void ShaderResourceGroupPool::OnFrameEnd()

@@ -21,25 +21,25 @@ namespace AZ
             uint32_t descriptorCountForHeap,
             uint32_t descriptorCountForAllocator)
         {
-            m_Desc.Type = type;
-            m_Desc.Flags = flags;
-            m_Desc.NumDescriptors = descriptorCountForHeap;
-            m_Desc.NodeMask = 1;
+            m_desc.Type = type;
+            m_desc.Flags = flags;
+            m_desc.NumDescriptors = descriptorCountForHeap;
+            m_desc.NodeMask = 1;
 
             ID3D12DescriptorHeap* heap;
-            DX12::AssertSuccess(device->CreateDescriptorHeap(&m_Desc, IID_GRAPHICS_PPV_ARGS(&heap)));
+            DX12::AssertSuccess(device->CreateDescriptorHeap(&m_desc, IID_GRAPHICS_PPV_ARGS(&heap)));
             heap->SetName(L"DescriptorHeap");
 
-            m_DescriptorHeap.Attach(heap);
-            m_Stride = device->GetDescriptorHandleIncrementSize(m_Desc.Type);
+            m_descriptorHeap.Attach(heap);
+            m_stride = device->GetDescriptorHandleIncrementSize(m_desc.Type);
 
-            m_CpuStart = heap->GetCPUDescriptorHandleForHeapStart();
-            m_GpuStart = {};
+            m_cpuStart = heap->GetCPUDescriptorHandleForHeapStart();
+            m_gpuStart = {};
 
             const bool isGpuVisible = RHI::CheckBitsAll(flags, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
             if (isGpuVisible)
             {
-                m_GpuStart = heap->GetGPUDescriptorHandleForHeapStart();
+                m_gpuStart = heap->GetGPUDescriptorHandleForHeapStart();
             }
 
             if (isGpuVisible)
@@ -83,7 +83,7 @@ namespace AZ
 
             if (address.IsValid())
             {
-                DescriptorHandle handle(m_Desc.Type, m_Desc.Flags, static_cast<uint32_t>(address.m_ptr));
+                DescriptorHandle handle(m_desc.Type, m_desc.Flags, static_cast<uint32_t>(address.m_ptr));
                 return handle;
             }
             else
@@ -121,27 +121,27 @@ namespace AZ
 
         ID3D12DescriptorHeap* DescriptorPool::GetPlatformHeap() const
         {
-            return m_DescriptorHeap.Get();
+            return m_descriptorHeap.Get();
         }
 
         D3D12_CPU_DESCRIPTOR_HANDLE DescriptorPool::GetCpuPlatformHandle(DescriptorHandle handle) const
         {
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_CpuStart.ptr + handle.m_index * m_Stride };
+            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_cpuStart.ptr + handle.m_index * m_stride };
         }
 
         D3D12_GPU_DESCRIPTOR_HANDLE DescriptorPool::GetGpuPlatformHandle(DescriptorHandle handle) const
         {
             AZ_Assert(handle.IsShaderVisible(), "Handle is not shader visible");
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_GpuStart.ptr + (handle.m_index * m_Stride) };
+            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_gpuStart.ptr + (handle.m_index * m_stride) };
         }
 
         D3D12_CPU_DESCRIPTOR_HANDLE DescriptorPool::GetCpuPlatformHandleForTable(DescriptorTable descTable) const
         {
             DescriptorHandle handle = descTable.GetOffset();
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_CpuStart.ptr + handle.m_index * m_Stride };
+            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_cpuStart.ptr + handle.m_index * m_stride };
         }
 
         D3D12_GPU_DESCRIPTOR_HANDLE DescriptorPool::GetGpuPlatformHandleForTable(DescriptorTable descTable) const
@@ -149,7 +149,7 @@ namespace AZ
             DescriptorHandle handle = descTable.GetOffset();
             AZ_Assert(handle.IsShaderVisible(), "Handle is not shader visible");
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_GpuStart.ptr + (handle.m_index * m_Stride) };
+            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_gpuStart.ptr + (handle.m_index * m_stride) };
         }
 
         void DescriptorPool::CloneAllocator(RHI::Allocator* newAllocator)
@@ -159,7 +159,7 @@ namespace AZ
 
         void DescriptorPool::ClearAllocator()
         {
-            AZ_Assert(m_GpuStart.ptr, "Clearing the allocator is only supported for the gpu visible heap as only this heap can be compacted");
+            AZ_Assert(m_gpuStart.ptr, "Clearing the allocator is only supported for the gpu visible heap as only this heap can be compacted");
             static_cast<RHI::FreeListAllocator*>(m_allocator.get())
                 ->Init(static_cast<RHI::FreeListAllocator*>(m_allocator.get())->GetDescriptor());
         }
@@ -204,7 +204,7 @@ namespace AZ
 
             if (address.IsValid())
             {
-                DescriptorHandle handle(m_Desc.Type, m_Desc.Flags, static_cast<uint32_t>(address.m_ptr));
+                DescriptorHandle handle(m_desc.Type, m_desc.Flags, static_cast<uint32_t>(address.m_ptr));
                 return DescriptorTable(handle, static_cast<uint16_t>(count));
             }
             else
@@ -234,7 +234,7 @@ namespace AZ
         {
             DescriptorHandle handle = descTable.GetOffset();
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_CpuStart.ptr + (m_startingHandleIndex * m_Stride) + (handle.m_index * m_Stride) };
+            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_cpuStart.ptr + (m_startingHandleIndex * m_stride) + (handle.m_index * m_stride) };
         }
 
         D3D12_GPU_DESCRIPTOR_HANDLE DescriptorPoolShaderVisibleCbvSrvUav::GetGpuPlatformHandleForTable(DescriptorTable descTable) const
@@ -242,7 +242,7 @@ namespace AZ
             DescriptorHandle handle = descTable.GetOffset();
             AZ_Assert(handle.IsShaderVisible(), "Handle is not shader visible");
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_GpuStart.ptr + (m_startingHandleIndex * m_Stride) + (handle.m_index * m_Stride) };
+            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_gpuStart.ptr + (m_startingHandleIndex * m_stride) + (handle.m_index * m_stride) };
         }
 
         void DescriptorPoolShaderVisibleCbvSrvUav::ClearAllocator()

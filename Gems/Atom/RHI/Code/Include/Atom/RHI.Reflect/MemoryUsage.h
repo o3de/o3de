@@ -61,10 +61,10 @@ namespace AZ
                 {
                     AZ_Assert(
                         m_budgetInBytes >= m_reservedInBytes,
-                        "Reserved memory is larger than memory budget. Memory budget %u Reserved %zu", m_budgetInBytes, m_reservedInBytes.load());
+                        "Reserved memory is larger than memory budget. Memory budget %zu Reserved %zu", m_budgetInBytes, m_reservedInBytes.load());
                     AZ_Assert(
                         m_reservedInBytes >= m_residentInBytes,
-                        "Resident memory is larger than reserved memory. Reserved Memory %u Resident memory %zu", m_reservedInBytes.load(),
+                        "Resident memory is larger than reserved memory. Reserved Memory %zu Resident memory %zu", m_reservedInBytes.load(),
                         m_residentInBytes.load());
                 }
             }

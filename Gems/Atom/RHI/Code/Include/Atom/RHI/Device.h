@@ -140,7 +140,10 @@ namespace AZ
             virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
             //! Allows the back-ends to compact SRG related memory if applicable
-            virtual void CompactSRGMemory() {};
+            virtual RHI::ResultCode CompactSRGMemory()
+            {
+                return RHI::ResultCode::Success;
+            };
 
         protected:
             DeviceFeatures m_features;

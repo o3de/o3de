@@ -560,7 +560,7 @@ namespace AZ
             }
         }
 
-        void DescriptorContext::CompactDescriptorHeap()
+        RHI::ResultCode DescriptorContext::CompactDescriptorHeap()
         {
             //Check if heap compaction is enabled by the user. Since there is an overhead associated with heap compaction it is not enabled by default
             if(!m_allowDescriptorHeapCompaction)
@@ -569,7 +569,7 @@ namespace AZ
                     false,
                     "Descriptor heap Compaction not allowed. Please consider increasing number of handles allowed for the second value"
                     "of DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV or enabling AllowDescriptorHeapCompaction within platformlimits.azasset file for dx12.");
-                return;
+                return RHI::ResultCode::OutOfMemory;
             }
 
             //We need to ping-pong between two heaps as we cannot compact the active heap without updating it and that is not allowed as
@@ -598,7 +598,11 @@ namespace AZ
                 //Re-update all the descriptor tables associated with active SRGs
                 for (const auto& [srg, numAllocations] : m_srgAllocations)
                 {
-                    static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
+                    RHI::ResultCode resultCode = static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
+                    if (resultCode != RHI::ResultCode::Success)
+                    {
+                        return resultCode;
+                    }
                 }
             }
 
@@ -606,6 +610,8 @@ namespace AZ
             srcPool.ClearAllocator();
 
             m_compactionInProgress = false;
+
+            return RHI::ResultCode::Success;
         }
 
         bool DescriptorContext::IsShaderVisibleCbvSrvUavHeap(uint32_t type, uint32_t flag) const

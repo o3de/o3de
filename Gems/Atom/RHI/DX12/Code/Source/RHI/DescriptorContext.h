@@ -124,10 +124,10 @@ namespace AZ
             ID3D12DeviceX* GetDevice();
 
             //! Since we are only allowed one shader visible CbvSrvUav heap of a limited size in certain hardware, it is possible that
-            //! it can get fragmented by constant alloc/de-alloc of descriptor tables related to SRG and unbounded resource. This uses two
+            //! it can get fragmented by constant alloc/de-alloc of descriptor tables related to direct views or unbounded resource views within a SRG. We use two
             //! heaps to ping pong during compaction as fragmentation can occur many times. It copies static handles directly and for all the
             //! dynamic handles we re-update the new heap by copying over the handles from the 'non-shader visible' heap.
-            void CompactDescriptorHeap();
+            RHI::ResultCode CompactDescriptorHeap();
 
         private:
             void CopyDescriptor(DescriptorHandle dst, DescriptorHandle src);

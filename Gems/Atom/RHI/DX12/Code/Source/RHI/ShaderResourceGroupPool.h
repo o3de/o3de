@@ -31,7 +31,7 @@ namespace AZ
             static RHI::Ptr<ShaderResourceGroupPool> Create();
 
             //! Re-Update the descriptor tables for all the cbv/srv/uav views (direct and via unbounded array)
-            void UpdateDescriptorTableAfterCompaction(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData);
+            RHI::ResultCode UpdateDescriptorTableAfterCompaction(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData);
 
         private:
             ShaderResourceGroupPool() = default;
