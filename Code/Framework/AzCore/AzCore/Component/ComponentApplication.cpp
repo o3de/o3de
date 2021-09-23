@@ -672,7 +672,7 @@ namespace AZ
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
         AZ::IO::FixedMaxPath platformCachePath;
         m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-        m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        m_console->ExecuteConfigFile((platformCachePath / "config" / "user.cfg").Native());
 
         // Parse the command line parameters for console commands after modules have loaded
         m_console->ExecuteCommandLine(m_commandLine);
