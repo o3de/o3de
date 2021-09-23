@@ -361,3 +361,19 @@ class EditorEntity:
         :return: True if "isVisible" is enabled, False otherwise.
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
+
+    def set_local_uniform_scale(self, scale_float) -> None:
+        """
+        Sets the "SetLocalUniformScale" value on the entity.
+        :param scale_float: value for "SetLocalUniformScale" to set to.
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", self.id, scale_float)
+
+    def set_local_rotation(self, vector3_rotation) -> None:
+        """
+        Sets the "SetLocalRotation" value on the entity.
+        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity.
+        :return:
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, vector3_rotation)

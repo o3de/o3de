@@ -65,4 +65,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         COMPONENT
             Atom
     )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_TestSuite_Main_GPU_Optimized
+        TEST_SUITE main
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_GPU_Optimized.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
 endif()
