@@ -14,6 +14,11 @@
 #include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
 
+
+
+
+#include <TestEngine/Run/TestImpactTestRunner.h>
+
 namespace TestImpact
 {
     //! Per-job data for test enumerations.
@@ -52,12 +57,10 @@ namespace TestImpact
         : public TestJobRunner<TestEnumerationJobData, TestEnumeration>
     {
         using JobRunner = TestJobRunner<TestEnumerationJobData, TestEnumeration>;
-
+    
     public:
-        //! Constructs a test enumerator with the specified parameters common to all enumeration job runs of this enumerator.
-        //! @param maxConcurrentEnumerations The maximum number of enumerations to be in flight at any given time.
-        explicit TestEnumerator(size_t maxConcurrentEnumerations);
-
+        using JobRunner::JobRunner;
+    
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
         //! @param cacheExceptionPolicy The cache exception policy to be used for this run.

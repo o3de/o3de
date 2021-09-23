@@ -11,7 +11,8 @@
 #include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
 #include <TestEngine/Run/TestImpactTestRunJobData.h>
 #include <AzCore/Outcome/Outcome.h>
-
+#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 
 
@@ -62,7 +63,7 @@ namespace TestImpact
                 {
                     const auto& [meta, jobInfo] = jobData;
                     if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
-                    {                        
+                    {
                         if (auto outcome = PayloadFactory<AdditionalInfo, Payload>(*jobInfo, meta);
                             outcome.IsSuccess())
                         {

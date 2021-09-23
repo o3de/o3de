@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

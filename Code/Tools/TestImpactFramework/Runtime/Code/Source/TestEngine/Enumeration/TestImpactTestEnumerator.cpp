@@ -38,11 +38,6 @@ namespace TestImpact
     {
         return m_cache;
     }
-
-    TestEnumerator::TestEnumerator(size_t maxConcurrentEnumerations)
-        : JobRunner(maxConcurrentEnumerations)
-    {
-    }
     
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestEnumerator::Job>> TestEnumerator::Enumerate(
         const AZStd::vector<JobInfo>& jobInfos,
@@ -61,11 +56,11 @@ namespace TestImpact
                 if (jobInfo->GetCache()->m_policy == JobData::CachePolicy::Read)
                 {
                     JobMeta meta;
-                    AZStd::optional<TestEnumeration> enumeration;
+                    AZStd::optional<JobPayload> enumeration;
 
                     try
                     {
-                        enumeration = TestEnumeration(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo->GetCache()->m_file)));
+                        enumeration = JobPayload(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo->GetCache()->m_file)));
                     }
                     catch (const TestEngineException& e)
                     {
