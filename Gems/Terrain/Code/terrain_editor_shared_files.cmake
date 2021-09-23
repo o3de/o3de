@@ -15,6 +15,8 @@ set(FILES
     Source/EditorComponents/EditorTerrainWorldComponent.h
     Source/EditorComponents/EditorTerrainWorldDebuggerComponent.cpp
     Source/EditorComponents/EditorTerrainWorldDebuggerComponent.h
+    Source/EditorComponents/EditorTerrainWorldRendererComponent.cpp
+    Source/EditorComponents/EditorTerrainWorldRendererComponent.h
     Source/EditorComponents/EditorTerrainSystemComponent.cpp
     Source/EditorComponents/EditorTerrainSystemComponent.h
     Source/EditorTerrainModule.cpp
