@@ -19,6 +19,22 @@ namespace Physics
 
 namespace Multiplayer
 {
+    //! NetworkCharacterRequests
+    //! ComponentBus handled by NetworkCharacterComponentController.
+    //! Bus was created for exposing controller methods to script; C++ users should access the controller directly.
+    class NetworkCharacterRequests : public AZ::ComponentBus
+    {
+    public:
+        //! TryMoveWithVelocity
+        //! Will move this character entity kinematically through physical world while also ensuring the network stays in-sync.
+        //! Velocity will be applied over delta-time to determine the movement amount.
+        //! Returns this entity's world-space position after the move.
+        virtual AZ::Vector3 TryMoveWithVelocity(const AZ::Vector3& velocity, float deltaTime) = 0;
+    };
+
+    typedef AZ::EBus<NetworkCharacterRequests> NetworkCharacterRequestBus;
+
+ 
     //! NetworkCharacterComponent
     //! Provides multiplayer support for game-play player characters.
     class NetworkCharacterComponent
@@ -37,6 +53,12 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
+        }
+
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            NetworkCharacterComponentBase::GetRequiredServices(required);
+            required.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
         }
 
         // AZ::Component
@@ -65,18 +87,22 @@ namespace Multiplayer
     //! Class provides the ability to move characters in physical space while keeping the network in-sync.
     class NetworkCharacterComponentController
         : public NetworkCharacterComponentControllerBase
+        , private NetworkCharacterRequestBus::Handler
     {
     public:
+        AZ_RTTI(NetworkCharacterComponentController, "{C91851A2-8B95-4484-9F97-BFF9D1F528A0}")
+        static void Reflect(AZ::ReflectContext* context);
         NetworkCharacterComponentController(NetworkCharacterComponent& parent);
 
         // NetworkCharacterComponentControllerBase
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
+        // NetworkCharacterRequestBus::Handler
         //! TryMoveWithVelocity
         //! Will move this character entity kinematically through physical world while also ensuring the network stays in-sync.
         //! Velocity will be applied over delta-time to determine the movement amount.
         //! Returns this entity's world-space position after the move.
-        AZ::Vector3 TryMoveWithVelocity(const AZ::Vector3& velocity, float deltaTime);
+        AZ::Vector3 TryMoveWithVelocity(const AZ::Vector3& velocity, float deltaTime) override;
     };
 }

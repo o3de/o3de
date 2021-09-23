@@ -1518,7 +1518,7 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Client')|indent(4) }}
 
-            behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
+            behaviorContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
 
