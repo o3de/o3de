@@ -167,7 +167,7 @@ namespace Multiplayer
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<NetworkCharacterRequestBus>("NetworkCharacterRequestBus")
-                ->Event("TryMoveWithVelocity", &NetworkCharacterRequestBus::Events::TryMoveWithVelocity);
+                ->Event("TryMoveWithVelocity", &NetworkCharacterRequestBus::Events::TryMoveWithVelocity, {{ { "Velocity" }, { "DeltaTime" } }});
 
             behaviorContext->Class<NetworkCharacterComponentController>("NetworkCharacterComponentController")
                 ->RequestBus("NetworkCharacterRequestBus");
