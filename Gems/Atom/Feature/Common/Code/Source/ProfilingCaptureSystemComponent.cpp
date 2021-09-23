@@ -8,7 +8,6 @@
 
 #include "ProfilingCaptureSystemComponent.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>

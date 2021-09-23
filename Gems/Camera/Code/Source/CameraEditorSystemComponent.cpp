@@ -21,16 +21,11 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
-#include <IEditor.h>
-#include <ViewManager.h>
-#include <GameEngine.h>
-#include <Objects/BaseObject.h>
-#include <Include/IObjectManager.h>
-
-#include <Cry_Geo.h>
-#include <MathConversion.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
+
+#include <QAction>
+#include <QMenu>
 
 namespace Camera
 {
@@ -72,15 +67,6 @@ namespace Camera
 
     void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2&, int flags)
     {
-        IEditor* editor;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
-        CGameEngine* gameEngine = editor->GetGameEngine();
-        if (!gameEngine || !gameEngine->IsLevelLoaded())
-        {
-            return;
-        }
-
         if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
         {
             QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
@@ -90,9 +76,6 @@ namespace Camera
 
     void CameraEditorSystemComponent::CreateCameraEntityFromViewport()
     {
-        IEditor* editor = nullptr;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
         AzFramework::CameraState cameraState{};
         AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> aggregator;
         Camera::EditorCameraRequestBus::BroadcastResult(

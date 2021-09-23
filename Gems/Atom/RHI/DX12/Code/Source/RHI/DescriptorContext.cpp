@@ -10,7 +10,6 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
 
 namespace AZ

@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Starting Point Movement Gem provides a series of Lua scripts that listen and respond to input events and trigger transform operations such as translation and rotation.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Input", "Gameplay", "Scripting"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Input",
+        "Gameplay",
+        "Scripting"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/starting-point-movement/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/starting-point-movement/",
+    "dependencies": []
 }
