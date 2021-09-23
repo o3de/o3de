@@ -242,11 +242,11 @@ namespace UnitTest
         {
             // the initial starting position of the entities
             AZ::TransformBus::Event(
-                m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity1WorldTranslation));
+                m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(Entity1WorldTranslation));
             AZ::TransformBus::Event(
-                m_entityId2, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity2WorldTranslation));
+                m_entityId2, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(Entity2WorldTranslation));
             AZ::TransformBus::Event(
-                m_entityId3, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(m_entity3WorldTranslation));
+                m_entityId3, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(Entity3WorldTranslation));
         }
 
         static void PositionCamera(AzFramework::CameraState& cameraState)
@@ -261,10 +261,15 @@ namespace UnitTest
         AZ::EntityId m_entityId1;
         AZ::EntityId m_entityId2;
         AZ::EntityId m_entityId3;
-        AZ::Vector3 m_entity1WorldTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
-        AZ::Vector3 m_entity2WorldTranslation = AZ::Vector3(5.0f, 14.0f, 10.0f);
-        AZ::Vector3 m_entity3WorldTranslation = AZ::Vector3(5.0f, 16.0f, 10.0f);
+
+        static const AZ::Vector3 Entity1WorldTranslation;
+        static const AZ::Vector3 Entity2WorldTranslation;
+        static const AZ::Vector3 Entity3WorldTranslation;
     };
+
+    const AZ::Vector3 EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
+    const AZ::Vector3 EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation = AZ::Vector3(5.0f, 14.0f, 10.0f);
+    const AZ::Vector3 EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation = AZ::Vector3(5.0f, 16.0f, 10.0f);
 
     void ArrangeIndividualRotatedEntitySelection(const AzToolsFramework::EntityIdList& entityIds, const AZ::Quaternion& orientation)
     {
@@ -624,7 +629,7 @@ namespace UnitTest
         EXPECT_TRUE(selectedEntitiesBefore.empty());
 
         // calculate the position in screen space of the initial entity position
-        const auto entity1ScreenPosition = AzFramework::WorldToScreen(m_entity1WorldTranslation, m_cameraState);
+        const auto entity1ScreenPosition = AzFramework::WorldToScreen(Entity1WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
@@ -649,7 +654,7 @@ namespace UnitTest
         EXPECT_TRUE(selectedEntitiesBefore.empty());
 
         // calculate the position in screen space of the initial entity position
-        const auto entity1ScreenPosition = AzFramework::WorldToScreen(m_entity1WorldTranslation, m_cameraState);
+        const auto entity1ScreenPosition = AzFramework::WorldToScreen(Entity1WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(false)
@@ -728,7 +733,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
@@ -754,7 +759,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(false)
@@ -780,7 +785,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
@@ -806,7 +811,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(false)
@@ -832,7 +837,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntities({ m_entityId1, m_entityId2 });
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
@@ -858,7 +863,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntities({ m_entityId1, m_entityId2 });
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(false)
@@ -1001,7 +1006,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // single click select entity2
         m_actionDispatcher->SetStickySelect(false)
@@ -1035,7 +1040,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // single click select entity2
         m_actionDispatcher->SetStickySelect(GetParam())
@@ -1056,7 +1061,7 @@ namespace UnitTest
             manipulatorTransform, AzToolsFramework::GetEntityContextId(),
             &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity2WorldTranslation));
+        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
     }
 
     TEST_P(
@@ -1069,7 +1074,7 @@ namespace UnitTest
         AzToolsFramework::SelectEntity(m_entityId1);
 
         // calculate the position in screen space of the second entity
-        const auto entity2ScreenPosition = AzFramework::WorldToScreen(m_entity2WorldTranslation, m_cameraState);
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(Entity2WorldTranslation, m_cameraState);
 
         // position in space above the entities
         const auto clickOffPositionWorld = AZ::Vector3(5.0f, 15.0f, 12.0f);
@@ -1096,7 +1101,7 @@ namespace UnitTest
                         manipulatorTransform, AzToolsFramework::GetEntityContextId(),
                         &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-                    EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity2WorldTranslation));
+                    EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
                 })
             ->MousePosition(clickOffPositionScreen)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
@@ -1113,7 +1118,7 @@ namespace UnitTest
             &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
         // manipulator transform is reset
-        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(m_entity1WorldTranslation));
+        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity1WorldTranslation));
     }
 
     INSTANTIATE_TEST_CASE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
@@ -1122,10 +1127,22 @@ namespace UnitTest
     using EditorTransformComponentSelectionManipulatorInteractionTestFixture =
         EditorTransformComponentSelectionViewportPickingManipulatorTestFixture;
 
-    // note: this replicates rotating an entity in local space with no modifiers held (local space)
-    TEST_F(
-        EditorTransformComponentSelectionManipulatorInteractionTestFixture,
-        RotatingASingleEntityInLocalSpaceWillRotateBothTheEntityAndTheManipulator)
+    struct ManipulatorOptionsSingle
+    {
+        AzToolsFramework::ViewportInteraction::KeyboardModifier m_keyboardModifier;
+        AZ::Transform m_expectedManipulatorTransformAfter;
+        AZ::Transform m_expectedEntityTransformAfter;
+    };
+
+    class EditorTransformComponentSelectionRotationManipulatorSingleEntityTestFixtureParam
+        : public EditorTransformComponentSelectionManipulatorInteractionTestFixture
+        , public ::testing::WithParamInterface<ManipulatorOptionsSingle>
+    {
+    };
+
+    TEST_P(
+        EditorTransformComponentSelectionRotationManipulatorSingleEntityTestFixtureParam,
+        RotatingASingleEntityWithDifferentModifierCombinations)
     {
         using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
 
@@ -1136,12 +1153,12 @@ namespace UnitTest
 
         AzToolsFramework::SelectEntity(m_entityId1);
 
-        const float screenToWorldMultiplier = AzToolsFramework::CalculateScreenToWorldMultiplier(m_entity1WorldTranslation, m_cameraState);
+        const float screenToWorldMultiplier = AzToolsFramework::CalculateScreenToWorldMultiplier(Entity1WorldTranslation, m_cameraState);
         const float manipulatorRadius = 2.0f * screenToWorldMultiplier;
 
-        const auto rotationManipulatorStartHoldWorldPosition = m_entity1WorldTranslation +
+        const auto rotationManipulatorStartHoldWorldPosition = Entity1WorldTranslation +
             AZ::Quaternion::CreateRotationX(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
-        const auto rotationManipulatorEndHoldWorldPosition = m_entity1WorldTranslation +
+        const auto rotationManipulatorEndHoldWorldPosition = Entity1WorldTranslation +
             AZ::Quaternion::CreateRotationX(AZ::DegToRad(-135.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
 
         // calculate the position in screen space of the second entity
@@ -1152,19 +1169,163 @@ namespace UnitTest
 
         m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(rotationManipulatorHoldScreenPosition)
+            ->KeyboardModifierDown(GetParam().m_keyboardModifier)
             ->MouseLButtonDown()
             ->MousePosition(rotationManipulatorEndHoldScreenPosition)
             ->MouseLButtonUp();
 
-        const auto expectedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)), m_entity1WorldTranslation);
+        const auto expectedEntityTransform = GetParam().m_expectedEntityTransformAfter;
+        const auto expectedManipulatorTransform = GetParam().m_expectedManipulatorTransformAfter;
 
         const auto manipulatorTransform = GetManipulatorTransform();
         const auto entityTransform = AzToolsFramework::GetWorldTransform(m_entityId1);
 
-        EXPECT_THAT(*manipulatorTransform, IsClose(expectedTransform));
-        EXPECT_THAT(entityTransform, IsClose(expectedTransform));
+        EXPECT_THAT(*manipulatorTransform, IsClose(expectedManipulatorTransform));
+        EXPECT_THAT(entityTransform, IsClose(expectedEntityTransform));
     }
+
+    static const AZ::Transform ExpectedTransformAfterLocalRotationManipulatorMotion = AZ::Transform::CreateFromQuaternionAndTranslation(
+        AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)),
+        EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation);
+
+    INSTANTIATE_TEST_CASE_P(
+        All,
+        EditorTransformComponentSelectionRotationManipulatorSingleEntityTestFixtureParam,
+        testing::Values(
+            // this replicates rotating an entity in local space with no modifiers held
+            // manipulator and entity rotate
+            ManipulatorOptionsSingle{ AzToolsFramework::ViewportInteraction::KeyboardModifier::None,
+                                              ExpectedTransformAfterLocalRotationManipulatorMotion,
+                                              ExpectedTransformAfterLocalRotationManipulatorMotion },
+            // this replicates rotating an entity in local space with the alt modifier held
+            // manipulator and entity rotate
+            ManipulatorOptionsSingle{ AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt,
+                                              ExpectedTransformAfterLocalRotationManipulatorMotion,
+                                              ExpectedTransformAfterLocalRotationManipulatorMotion },
+            // this replicates rotating an entity in world space with the shift modifier held
+            // entity rotates, manipulator remains aligned to world
+            ManipulatorOptionsSingle{
+                AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift,
+                AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation),
+                ExpectedTransformAfterLocalRotationManipulatorMotion },
+            // this replicates rotating the manipulator in local space with the ctrl modifier held (entity is unchanged)
+            ManipulatorOptionsSingle{
+                AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl, ExpectedTransformAfterLocalRotationManipulatorMotion,
+                AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation) }));
+
+    struct ManipulatorOptionsMultiple
+    {
+        AzToolsFramework::ViewportInteraction::KeyboardModifier m_keyboardModifier;
+        AZ::Transform m_expectedManipulatorTransformAfter;
+        AZ::Transform m_firstExpectedEntityTransformAfter;
+        AZ::Transform m_secondExpectedEntityTransformAfter;
+    };
+
+    class EditorTransformComponentSelectionRotationManipulatorMultipleEntityTestFixtureParam
+        : public EditorTransformComponentSelectionManipulatorInteractionTestFixture
+        , public ::testing::WithParamInterface<ManipulatorOptionsMultiple>
+    {
+    };
+
+    TEST_P(
+        EditorTransformComponentSelectionRotationManipulatorMultipleEntityTestFixtureParam,
+        RotatingMultipleEntitiesWithDifferentModifierCombinations)
+    {
+        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
+
+        PositionEntities();
+        PositionCamera(m_cameraState);
+
+        SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Rotation);
+
+        AzToolsFramework::SelectEntities({ m_entityId2, m_entityId3 });
+
+        // manipulator should be centered between the two entities
+        const auto initialManipulatorTransform = GetManipulatorTransform();
+
+        const float screenToWorldMultiplier =
+            AzToolsFramework::CalculateScreenToWorldMultiplier(initialManipulatorTransform->GetTranslation(), m_cameraState);
+        const float manipulatorRadius = 2.0f * screenToWorldMultiplier;
+
+        const auto rotationManipulatorStartHoldWorldPosition = initialManipulatorTransform->GetTranslation() +
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
+        const auto rotationManipulatorEndHoldWorldPosition = initialManipulatorTransform->GetTranslation() +
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(-135.0f)).TransformVector(AZ::Vector3::CreateAxisY(-manipulatorRadius));
+
+        // calculate the position in screen space of the second entity
+        const auto rotationManipulatorHoldScreenPosition =
+            AzFramework::WorldToScreen(rotationManipulatorStartHoldWorldPosition, m_cameraState);
+        const auto rotationManipulatorEndHoldScreenPosition =
+            AzFramework::WorldToScreen(rotationManipulatorEndHoldWorldPosition, m_cameraState);
+
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(rotationManipulatorHoldScreenPosition)
+            ->KeyboardModifierDown(GetParam().m_keyboardModifier)
+            ->MouseLButtonDown()
+            ->MousePosition(rotationManipulatorEndHoldScreenPosition)
+            ->MouseLButtonUp();
+
+        const auto expectedEntity2Transform = GetParam().m_firstExpectedEntityTransformAfter;
+        const auto expectedEntity3Transform = GetParam().m_secondExpectedEntityTransformAfter;
+        const auto expectedManipulatorTransform = GetParam().m_expectedManipulatorTransformAfter;
+
+        const auto manipulatorTransformAfter = GetManipulatorTransform();
+        const auto entity2Transform = AzToolsFramework::GetWorldTransform(m_entityId2);
+        const auto entity3Transform = AzToolsFramework::GetWorldTransform(m_entityId3);
+
+        EXPECT_THAT(*manipulatorTransformAfter, IsClose(expectedManipulatorTransform));
+        EXPECT_THAT(entity2Transform, IsClose(expectedEntity2Transform));
+        EXPECT_THAT(entity3Transform, IsClose(expectedEntity3Transform));
+    }
+
+    // note: The aggregate manipulator position will be the average of entity 2 and 3 combined which
+    // winds up being the same as entity 1
+    static const AZ::Vector3 AggregateManipulatorPositionWithEntity2and3Selected =
+        EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation;
+
+    static const AZ::Transform ExpectedEntity2TransformAfterLocalGroupRotationManipulatorMotion =
+        AZ::Transform::CreateTranslation(AggregateManipulatorPositionWithEntity2and3Selected) *
+        AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f))) *
+        AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(-1.0f));
+    static const AZ::Transform ExpectedEntity3TransformAfterLocalGroupRotationManipulatorMotion =
+        AZ::Transform::CreateTranslation(AggregateManipulatorPositionWithEntity2and3Selected) *
+        AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f))) *
+        AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(1.0f));
+    static const AZ::Transform ExpectedEntity2TransformAfterLocalIndividualRotationManipulatorMotion =
+        AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation) *
+        AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)));
+    static const AZ::Transform ExpectedEntity3TransformAfterLocalIndividualRotationManipulatorMotion =
+        AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) *
+        AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)));
+
+    INSTANTIATE_TEST_CASE_P(
+        All,
+        EditorTransformComponentSelectionRotationManipulatorMultipleEntityTestFixtureParam,
+        testing::Values(
+            // this replicates rotating an entity in local space with no modifiers held
+            // manipulator and entity rotate
+            ManipulatorOptionsMultiple{ AzToolsFramework::ViewportInteraction::KeyboardModifier::None,
+                                                ExpectedTransformAfterLocalRotationManipulatorMotion,
+                                                ExpectedEntity2TransformAfterLocalGroupRotationManipulatorMotion,
+                                                ExpectedEntity3TransformAfterLocalGroupRotationManipulatorMotion },
+            // this replicates rotating an entity in local space with the alt modifier held
+            // manipulator and entity rotate
+            ManipulatorOptionsMultiple{ AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt,
+                                                ExpectedTransformAfterLocalRotationManipulatorMotion,
+                                                ExpectedEntity2TransformAfterLocalIndividualRotationManipulatorMotion,
+                                                ExpectedEntity3TransformAfterLocalIndividualRotationManipulatorMotion },
+            // this replicates rotating an entity in world space with the shift modifier held
+            // entity rotates, manipulator remains aligned to world
+            ManipulatorOptionsMultiple{
+                AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift,
+                AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation),
+                ExpectedEntity2TransformAfterLocalGroupRotationManipulatorMotion,
+                ExpectedEntity3TransformAfterLocalGroupRotationManipulatorMotion },
+            // this replicates rotating the manipulator in local space with the ctrl modifier held (entity is unchanged)
+            ManipulatorOptionsMultiple{
+                AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl, ExpectedTransformAfterLocalRotationManipulatorMotion,
+                AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation),
+                AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) }));
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;
