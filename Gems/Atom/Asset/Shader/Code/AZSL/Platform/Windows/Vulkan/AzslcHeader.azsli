@@ -12,3 +12,7 @@
 */
 
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
+
+
+// Different constant buffer alignment on platforms
+#define AZ_TRAIT_CONSTANT_BUFFER_ALIGNMENT      128

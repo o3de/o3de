@@ -159,8 +159,6 @@ namespace AtomToolsFramework
         AZ::RPI::ViewPtr m_defaultCamera;
         // Our viewport-local aux geom pipeline for supplemental rendering.
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
-        // Used to keep track of a pending resize event to avoid initialization before window activate.
-        bool m_windowResizedEvent = false;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.
         bool m_mouseOver = false;
         // The last recorded mouse position, in local viewport screen coordinates.

@@ -7,14 +7,15 @@
  */
 
 #include <EngineSettingsScreen.h>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QMessageBox>
 #include <FormLineEditWidget.h>
 #include <FormFolderBrowseEditWidget.h>
 #include <PythonBindingsInterface.h>
 #include <PathValidator.h>
+
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -76,16 +77,6 @@ namespace O3DE::ProjectManager
     ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::EngineSettings;
-    }
-
-    QString EngineSettingsScreen::GetTabText()
-    {
-        return tr("Engine");
-    }
-
-    bool EngineSettingsScreen::IsTab()
-    {
-        return true;
     }
 
     void EngineSettingsScreen::OnTextChanged()

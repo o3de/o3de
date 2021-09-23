@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Test Asset Builder Gem is used to feature test Asset Processor.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets", "Debug", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Debug",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/test-asset-builder/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/test-asset-builder/",
+    "dependencies": []
 }

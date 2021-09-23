@@ -12,5 +12,9 @@
         "Debug",
         "Rendering"
     ],
-    "requirements": ""
+    "requirements": "",
+    "dependencies": [
+        "ImguiAtom",
+        "Atom"
+    ]
 }

@@ -14,7 +14,7 @@
 {% set Namespace = dataFiles[0].attrib['Namespace'] %}
 {% for Component in dataFiles %}
 {%     if Component.attrib['Namespace'] != Namespace %}
-#error "mismatched component namespaces detected in declared multiplayer components, expected {{ Namespace }} but found {{ Component.attrib['Namespace'] }}"
+#error "mismatched component namespaces detected in declared multiplayer components, expected {{ Namespace }} but {{ Component.attrib['Name'] }} is using {{ Component.attrib['Namespace'] }} namespace."
 {%     endif %}
 {% endfor %}
 namespace {{ Namespace }}

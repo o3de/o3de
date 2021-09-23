@@ -16,7 +16,6 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -107,7 +106,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -119,7 +118,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

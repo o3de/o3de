@@ -22,7 +22,7 @@
                 "FileMasks": [
                     "_spec"
                 ],
-                "PixelFormat": "ETC2a",
+                "PixelFormat": "ASTC_4x4",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

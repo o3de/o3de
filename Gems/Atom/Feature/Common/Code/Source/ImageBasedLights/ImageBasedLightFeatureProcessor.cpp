@@ -11,8 +11,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
@@ -50,7 +48,7 @@ namespace AZ
 
         void ImageBasedLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "ImageBasedLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "ImageBasedLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             m_sceneSrg->SetImage(m_specularEnvMapIndex, m_specular);

@@ -51,6 +51,8 @@ set(FILES
     Include/Atom/Feature/PostProcess/Bloom/BloomConstants.h
     Include/Atom/Feature/PostProcess/Bloom/BloomParams.inl
     Include/Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h
+    Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
+    Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldParams.inl
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h
