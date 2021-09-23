@@ -88,6 +88,10 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse3.Sample(PassSrg::LinearSampler, decalUV);
                 normalMap = ViewSrg::m_decalTextureArrayNormalMaps3.Sample(PassSrg::LinearSampler, decalUV);
             break;
+            case 4:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse4.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV);
+            break;            
         }
         
         float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
