@@ -8,7 +8,6 @@ Unit tests for ly_test_tools.builtin.helpers functions.
 """
 import unittest.mock as mock
 import os
-
 import pytest
 
 import ly_test_tools.builtin.helpers
@@ -112,10 +111,11 @@ class TestBuiltinHelpers(object):
             ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root(
                 initial_path='mock_dev_dir')
 
+    @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager.teardown')
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager.setup')
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.NullArtifactManager', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_SetupBuiltinWorkspace_ValidWorkspaceSetup_ReturnsWorkspaceObject(self, mock_setup):
+    def test_SetupTeardownBuiltinWorkspace_ValidWorkspaceSetup_ReturnsWorkspaceObject(self, mock_setup, mock_teardown):
         mock_test_name = 'mock_test_name'
         mock_test_amount = 10
         mock_workspace = ly_test_tools.builtin.helpers.create_builtin_workspace(
@@ -125,25 +125,16 @@ class TestBuiltinHelpers(object):
             output_path='mock_output_path',
         )
 
-        under_test = ly_test_tools.builtin.helpers.setup_builtin_workspace(
+        setup_test = ly_test_tools.builtin.helpers.setup_builtin_workspace(
             mock_workspace, mock_test_name, mock_test_amount)
 
-        assert under_test == mock_workspace
+        assert setup_test == mock_workspace
         assert mock_setup.call_count == 1
         mock_workspace.artifact_manager.set_test_name.assert_called_with(
             test_name=mock_test_name, amount=mock_test_amount)
 
-    @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager.teardown')
-    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_TeardownBuiltinWorkspace_ValidWorkspaceSetup_ReturnsWorkspaceObject(self, mock_teardown):
-        mock_workspace = ly_test_tools.builtin.helpers.create_builtin_workspace(
-            build_directory='build_directory',
-            project='mock_project',
-            tmp_path='mock_tmp_path',
-            output_path='mock_output_path',
-        )
+        # Teardown not tested separately due to patched MockedAbstractResourceLocator creating a StopIteration error on Linux
+        teardown_test = ly_test_tools.builtin.helpers.teardown_builtin_workspace(mock_workspace)
 
-        under_test = ly_test_tools.builtin.helpers.teardown_builtin_workspace(mock_workspace)
-
-        assert under_test == mock_workspace
+        assert teardown_test == mock_workspace
         assert mock_teardown.call_count == 1

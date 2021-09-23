@@ -208,20 +208,6 @@ class TestUnZip(unittest.TestCase):
 
         self.assertEqual(path, expected_path)
 
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_ReleaseBuild_JoinCalledWithNoPathNoExtension(self, mock_join, mock_check_free, mock_exists):
-
-        path = ''
-        self.src_path = r'C:\packages\lumberyard-1.2.0.3-54321-pc-1234.zip'
-        mock_exists.return_value = self.exists
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, 'lumberyard-1.2.0.3-54321-pc-1234')
-
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
@@ -374,20 +360,6 @@ class TestUnTgz(unittest.TestCase):
             path = self.call_decomp(self.dest_path, self.src_path)
 
         self.assertEqual(path, expected_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_Untgz_ReleaseBuild_JoinCalledWithNoPathNoExtension(self, mock_stat, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-
-        path = ''
-        self.src_path = r'C:\packages\lumberyard-1.2.0.3-54321-pc-1234.zip'
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, 'lumberyard-1.2.0.3-54321-pc-1234')
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
