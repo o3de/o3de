@@ -133,6 +133,9 @@ namespace AZ
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
 
+        u32 GetSpawnTicketId() const;
+        void SetSpawnTicketId(u32);
+
         //! Connects an entity state event handler to the entity.
         //! All state changes will be signaled through this event.
         //! @param handler reference to the EntityStateEvent handler to attach to the entities state event.
@@ -409,6 +412,8 @@ namespace AZ
 
         //! A user-friendly name for the entity. This makes error messages easier to read.
         AZStd::string m_name;
+
+        u32 m_spawnTicketId = 0;
 
         //! The state of the entity.
         State m_state;

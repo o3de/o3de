@@ -649,6 +649,16 @@ namespace AZ
         m_stateEvent.Signal(oldState, m_state);
     }
 
+    void Entity::SetSpawnTicketId(u32 spawnTicketId)
+    {
+        m_spawnTicketId = AZStd::move(spawnTicketId);
+    }
+
+    u32 Entity::GetSpawnTicketId() const
+    {
+        return m_spawnTicketId;
+    }
+
     void Entity::OnNameChanged() const
     {
         EBUS_EVENT_ID(GetId(), EntityBus, OnEntityNameChanged, m_name);

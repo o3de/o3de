@@ -16,7 +16,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <AzFramework/Spawnable/SpawnedEntityTicketMapper.h>
 
 namespace AZ
 {
@@ -58,6 +57,9 @@ namespace AzFramework
         void SpawnEntities(
             EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
+        void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) override;
+        void GetEntitySpawnTicket(
+            EntitySpawnTicket::Id entitySpawnTicketId, GetEntitySpawnTicketCallback getEntitySpawnTicketCallback) override;
         void ReloadSpawnable(
             EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
 
@@ -67,8 +69,6 @@ namespace AzFramework
             EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
         void ClaimEntities(
             EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) override;
-        void ClaimEntity(
-            AZ::EntityId entityId, void* ticket, ClaimEntityOptionalArgs optionalArgs = {}) override;
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
@@ -135,6 +135,14 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
+        struct DespawnEntityCommand
+        {
+            EntityDespawnCallback m_completionCallback;
+            Ticket* m_ticket;
+            EntitySpawnTicket::Id m_ticketId;
+            uint32_t m_requestId;
+            AZ::EntityId m_entityId;
+        };
         struct ReloadSpawnableCommand
         {
             AZ::Data::Asset<Spawnable> m_spawnable;
@@ -165,12 +173,6 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct ClaimEntityCommand
-        {
-            Ticket* m_ticket;
-            uint32_t m_requestId;
-            AZ::EntityId m_entityId;
-        };
         struct BarrierCommand
         {
             BarrierCallback m_completionCallback;
@@ -185,8 +187,16 @@ namespace AzFramework
         };
 
         using Requests = AZStd::variant<
-            SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand, ListEntitiesCommand,
-            ListIndicesEntitiesCommand, ClaimEntitiesCommand, ClaimEntityCommand, BarrierCommand, DestroyTicketCommand>;
+            SpawnAllEntitiesCommand,
+            SpawnEntitiesCommand,
+            DespawnAllEntitiesCommand,
+            DespawnEntityCommand,
+            ReloadSpawnableCommand,
+            ListEntitiesCommand,
+            ListIndicesEntitiesCommand,
+            ClaimEntitiesCommand,
+            BarrierCommand,
+            DestroyTicketCommand>;
 
         struct Queue
         {
@@ -196,7 +206,7 @@ namespace AzFramework
         };
 
         template<typename T>
-        void QueueRequest(Ticket* ticket, SpawnablePriority priority, T&& request);
+        void QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request);
         AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) override;
         void DestroyTicket(void* ticket) override;
 
@@ -208,11 +218,11 @@ namespace AzFramework
         bool ProcessRequest(SpawnAllEntitiesCommand& request);
         bool ProcessRequest(SpawnEntitiesCommand& request);
         bool ProcessRequest(DespawnAllEntitiesCommand& request);
+        bool ProcessRequest(DespawnEntityCommand& request);
         bool ProcessRequest(ReloadSpawnableCommand& request);
         bool ProcessRequest(ListEntitiesCommand& request);
         bool ProcessRequest(ListIndicesEntitiesCommand& request);
         bool ProcessRequest(ClaimEntitiesCommand& request);
-        bool ProcessRequest(ClaimEntityCommand& request);
         bool ProcessRequest(BarrierCommand& request);
         bool ProcessRequest(DestroyTicketCommand& request);
 
@@ -234,8 +244,6 @@ namespace AzFramework
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
         //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
-    private:
-        SpawnedEntityTicketMapper m_spawnedEntityTicketMapper;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);

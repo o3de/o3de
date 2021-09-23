@@ -294,9 +294,6 @@ set(FILES
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
-    Spawnable/SpawnedEntityTicketMapper.h
-    Spawnable/SpawnedEntityTicketMapper.cpp
-    Spawnable/SpawnedEntityTicketMapperInterface.h
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h
