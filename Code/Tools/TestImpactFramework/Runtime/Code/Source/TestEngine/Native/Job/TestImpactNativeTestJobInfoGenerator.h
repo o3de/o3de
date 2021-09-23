@@ -11,9 +11,9 @@
 #include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <Artifact/Dynamic/TestImpactCoverage.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
-#include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Run/TestImpactTestRunner.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
+#include <TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
+#include <TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h>
 
 #include <AzCore/std/containers/vector.h>
 

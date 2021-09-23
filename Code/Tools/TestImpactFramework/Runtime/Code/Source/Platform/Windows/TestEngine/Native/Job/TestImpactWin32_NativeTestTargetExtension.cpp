@@ -8,7 +8,7 @@
 
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/JobRunner/TestImpactTestTargetExtension.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h>
 
 namespace TestImpact
 {

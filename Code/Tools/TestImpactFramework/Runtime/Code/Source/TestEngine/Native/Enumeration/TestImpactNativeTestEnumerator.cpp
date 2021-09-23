@@ -10,11 +10,9 @@
 
 #include <Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-
-#include <AzCore/IO/SystemFile.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerationSerializer.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumeration.h>
 
 namespace TestImpact
 {

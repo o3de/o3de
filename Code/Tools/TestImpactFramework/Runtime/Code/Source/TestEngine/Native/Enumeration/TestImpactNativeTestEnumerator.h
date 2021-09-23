@@ -11,13 +11,8 @@
 #include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
-
-
-
-
-#include <TestEngine/Run/TestImpactTestRunner.h>
+#include <TestEngine/native/Enumeration/TestImpactNativeTestEnumeration.h>
+#include <TestEngine/Common/JobRunner/TestImpactTestJobRunner.h>
 
 namespace TestImpact
 {

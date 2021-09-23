@@ -87,27 +87,28 @@ set(FILES
     Source/Target/TestImpactTestTarget.cpp
     Source/Target/TestImpactTestTarget.h
     Source/Target/TestImpactTestTargetList.h
-    Source/TestEngine/Enumeration/TestImpactTestEnumeration.h
-    Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.cpp
-    Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h
-    Source/TestEngine/Enumeration/TestImpactTestEnumerator.cpp
-    Source/TestEngine/Enumeration/TestImpactTestEnumerator.h
-    Source/TestEngine/Run/TestImpactTestRunSerializer.cpp
-    Source/TestEngine/Run/TestImpactTestRunSerializer.h
-    Source/TestEngine/Run/TestImpactTestRunner.cpp
-    Source/TestEngine/Run/TestImpactTestRunner.h
-    Source/TestEngine/Run/TestImpactInstrumentedTestRunner.cpp
-    Source/TestEngine/Run/TestImpactInstrumentedTestRunner.h
-    Source/TestEngine/Run/TestImpactTestRun.cpp
-    Source/TestEngine/Run/TestImpactTestRun.h
-    Source/TestEngine/Run/TestImpactTestRunJobData.cpp
-    Source/TestEngine/Run/TestImpactTestRunJobData.h
-    Source/TestEngine/Run/TestImpactTestCoverage.cpp
-    Source/TestEngine/Run/TestImpactTestCoverage.h
-    Source/TestEngine/JobRunner/TestImpactTestJobRunner.h
-    Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.cpp
-    Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h
-    Source/TestEngine/JobRunner/TestImpactTestTargetExtension.h
+    Source/TestEngine/Common/JobRunner/TestImpactTestJobRunner.h
+    Source/TestEngine/Common/TestRunner/TestImpactTestRunner.h
+    Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumeration.h
+    Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumerationSerializer.cpp
+    Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumerationSerializer.h
+    Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.cpp
+    Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h
+    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h
+    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h
+    Source/TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h
+    Source/TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h
+    Source/TestEngine/Native/Run/TestImpactNativeTestCoverage.cpp
+    Source/TestEngine/Native/Run/TestImpactNativeTestCoverage.h
+    Source/TestEngine/Native/Run/TestImpactNativeTestRun.cpp
+    Source/TestEngine/Native/Run/TestImpactNativeTestRun.h
+    Source/TestEngine/Native/Run/TestImpactNativeTestRunSerializer.cpp
+    Source/TestEngine/Native/Run/TestImpactNativeTestRunSerializer.h
     Source/TestEngine/TestImpactTestEngineJobFailure.cpp
     Source/TestEngine/TestImpactTestEngineJobFailure.h
     Source/TestEngine/TestImpactTestSuiteContainer.h

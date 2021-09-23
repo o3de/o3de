@@ -8,36 +8,15 @@
 
 #pragma once
 
-#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
-#include <TestEngine/Run/TestImpactTestCoverage.h>
-#include <TestEngine/Run/TestImpactTestRun.h>
-#include <TestEngine/Run/TestImpactTestRunJobData.h>
-
-
-
-
-
-
-
+#include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
-#include <TestEngine/Run/TestImpactTestRunner.h>
+#include <TestEngine/Common/TestRunner/TestImpactTestRunner.h>
+#include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h>
+#include <TestEngine/Native/Run/TestImpactNativeTestCoverage.h>
+#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
 
 namespace TestImpact
 {
-    //! Per-job data for instrumented test runs.
-    class InstrumentedTestRunJobData
-        : public TestRunJobData
-    {
-    public:
-        InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
-
-        //! Returns the path to the coverage artifact produced by the test target.
-        const RepoPath& GetCoverageArtifactPath() const;
-
-    private:
-        RepoPath m_coverageArtifact; //!< Path to coverage data.
-    };
-
     class InstrumentedTestRunner
         : public TestRunner<InstrumentedTestRunJobData, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>
     {

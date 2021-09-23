@@ -6,7 +6,7 @@
  *
  */
 
-#include "TestImpactTestRun.h"
+#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
 
 namespace TestImpact
 {

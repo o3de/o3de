@@ -9,7 +9,7 @@
 #pragma once
 
 #include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumeration.h>
 
 namespace TestImpact
 {

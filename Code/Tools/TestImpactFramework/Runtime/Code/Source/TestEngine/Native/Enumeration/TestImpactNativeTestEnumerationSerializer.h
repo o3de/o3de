@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumeration.h>
 
 #include <AzCore/std/string/string.h>
 
