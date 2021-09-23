@@ -191,7 +191,7 @@ class TestSubprocessCheckCallWrapperSafe(unittest.TestCase):
     reason="tests.unit.test_process_utils is restricted to the Windows platform.")
 class TestCloseWindowsProcess(unittest.TestCase):
 
-    @mock.patch('ly_test_tools.environment.process_utils.WINDOWS', False)
+    @mock.patch('ly_test_tools.WINDOWS', False)
     def test_CloseWindowsProccess_NotOnWindows_Error(self):
         with pytest.raises(NotImplementedError):
             process_utils.close_windows_process(1)
