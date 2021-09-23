@@ -78,6 +78,9 @@ namespace AZ
             bool AreAllAssetsReady() const;
             bool IsAssetReady(const MaterialData& materialData) const;
 
+            bool AreAllTextureMapsPresent(const DecalMapType mapType) const;
+            bool IsTextureMapPresentInMaterial(const MaterialData& materialData, const DecalMapType mapType) const;
+
             void ClearAssets();
             void ClearAsset(MaterialData& materialData);
 

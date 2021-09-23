@@ -90,7 +90,7 @@ namespace AZ
 
             // Number of size and format permutations
             // This number should match the number of texture arrays in Decals/ViewSrg.azsli
-            static constexpr int NumTextureArrays = 4;
+            static constexpr int NumTextureArrays = 5;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
             struct DecalLocation

@@ -197,6 +197,12 @@ namespace AZ
             for (int i = 0; i < DecalMapType_Num; ++i)
             {
                 const DecalMapType mapType = aznumeric_cast<DecalMapType>(i);
+                if (!AreAllTextureMapsPresent(mapType))
+                {
+                    AZ_Warning("DecalTextureArray", true, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    m_textureArrayPacked[i] = nullptr;
+                    continue;
+                }
 
                 const auto mipChainAsset = BuildPackedMipChainAsset(mapType, numTexturesToCreate);
                 RHI::ImageViewDescriptor imageViewDescriptor;
@@ -304,6 +310,24 @@ namespace AZ
         {
             const auto& id = materialData.m_materialAssetData.GetId();
             return id.IsValid() && materialData.m_materialAssetData.IsReady();
+        }
+
+        bool DecalTextureArray::AreAllTextureMapsPresent(const DecalMapType mapType) const
+        {
+            int iter = m_materials.begin();
+            while (iter != -1)
+            {
+                if (!IsTextureMapPresentInMaterial(m_materials[iter], mapType))
+                    return false;
+
+                iter = m_materials.next(iter);
+            }
+            return true;
+        }
+
+        bool DecalTextureArray::IsTextureMapPresentInMaterial(const MaterialData& materialData, const DecalMapType mapType) const
+        {
+            return GetStreamingImageAsset(materialData.m_materialAssetData, GetMapName(mapType)).IsReady();
         }
 
         void DecalTextureArray::ClearAssets()
