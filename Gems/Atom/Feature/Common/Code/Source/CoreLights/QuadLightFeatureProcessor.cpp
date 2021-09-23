@@ -16,7 +16,6 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
