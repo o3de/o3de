@@ -52,9 +52,9 @@ namespace TestImpact
         //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
         //! @param jobId The id to assign for this job.
-        TestRunner::JobInfo GenerateRegularTestRunJobInfo(
+        RegularTestRunner::JobInfo GenerateRegularTestRunJobInfo(
             const TestTarget* testTarget,
-            TestRunner::JobInfo::Id jobId) const;
+            RegularTestRunner::JobInfo::Id jobId) const;
 
         //! Generates the information for an instrumented test run job.
         //! @param testTarget The test target to generate the job information for.
@@ -71,7 +71,7 @@ namespace TestImpact
             TestEnumerator::JobInfo::CachePolicy cachePolicy) const;
 
         //! Generates the information for the batch of test run jobs.
-        AZStd::vector<TestRunner::JobInfo> GenerateRegularTestRunJobInfos(
+        AZStd::vector<RegularTestRunner::JobInfo> GenerateRegularTestRunJobInfos(
             const AZStd::vector<const TestTarget*>& testTargets) const;
 
         //! Generates the information for the batch of instrumented test run jobs.

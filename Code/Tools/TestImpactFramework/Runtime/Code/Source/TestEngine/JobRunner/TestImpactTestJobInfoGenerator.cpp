@@ -91,13 +91,13 @@ namespace TestImpact
         return JobInfo(jobId, args, JobData(enumerationArtifact, Cache{ cachePolicy, GenerateTargetEnumerationCacheFilePath(testTarget) }));
     }
 
-    TestRunner::JobInfo TestJobInfoGenerator::GenerateRegularTestRunJobInfo(
+    RegularTestRunner::JobInfo TestJobInfoGenerator::GenerateRegularTestRunJobInfo(
         const TestTarget* testTarget,
-        TestRunner::JobInfo::Id jobId) const
+        RegularTestRunner::JobInfo::Id jobId) const
     {
-        using Command = TestRunner::Command;
-        using JobInfo = TestRunner::JobInfo;
-        using JobData = TestRunner::JobData;
+        using Command = RegularTestRunner::Command;
+        using JobInfo = RegularTestRunner::JobInfo;
+        using JobData = RegularTestRunner::JobData;
 
         const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget);
         const Command args =
@@ -161,10 +161,10 @@ namespace TestImpact
         return jobInfos;
     }
 
-    AZStd::vector<TestRunner::JobInfo> TestJobInfoGenerator::GenerateRegularTestRunJobInfos(
+    AZStd::vector<RegularTestRunner::JobInfo> TestJobInfoGenerator::GenerateRegularTestRunJobInfos(
         const AZStd::vector<const TestTarget*>& testTargets) const
     {
-        AZStd::vector<TestRunner::JobInfo> jobInfos;
+        AZStd::vector<RegularTestRunner::JobInfo> jobInfos;
         jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {

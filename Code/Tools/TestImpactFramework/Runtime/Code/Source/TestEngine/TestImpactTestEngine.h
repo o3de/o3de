@@ -25,7 +25,7 @@ namespace TestImpact
     class TestJobInfoGenerator;
     class TestEnumerator;
     class InstrumentedTestRunner;
-    class TestRunner;
+    class RegularTestRunner;
 
     //! Callback for when a given test engine job completes.
     using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob& testJob)>;
@@ -118,7 +118,7 @@ namespace TestImpact
         AZStd::unique_ptr<TestJobInfoGenerator> m_testJobInfoGenerator;
         AZStd::unique_ptr<TestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<InstrumentedTestRunner> m_instrumentedTestRunner;
-        AZStd::unique_ptr<TestRunner> m_testRunner;
+        AZStd::unique_ptr<RegularTestRunner> m_testRunner;
         RepoPath m_artifactDir;
     };
 } // namespace TestImpact

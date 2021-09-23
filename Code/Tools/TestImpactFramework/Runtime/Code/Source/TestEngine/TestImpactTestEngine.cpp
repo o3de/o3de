@@ -129,7 +129,7 @@ namespace TestImpact
 
         // Type trait for the test runner
         template<>
-        struct TestJobRunnerTrait<TestRunner>
+        struct TestJobRunnerTrait<RegularTestRunner>
         {
             using TestEngineJobType = TestEngineRegularRun;
         };
@@ -244,7 +244,7 @@ namespace TestImpact
             sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
         , m_testEnumerator(AZStd::make_unique<TestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<InstrumentedTestRunner>(maxConcurrentRuns))
-        , m_testRunner(AZStd::make_unique<TestRunner>(maxConcurrentRuns))
+        , m_testRunner(AZStd::make_unique<RegularTestRunner>(maxConcurrentRuns))
         , m_artifactDir(artifactDir)
     {
     }
@@ -288,17 +288,17 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        TestEngineJobMap<TestRunner::JobInfo::IdType> engineJobs;
+        TestEngineJobMap<RegularTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
-        TestJobRunnerCallbackHandler<TestRunner> jobCallback(testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback);
+        TestJobRunnerCallbackHandler<RegularTestRunner> jobCallback(testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback);
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
             testTargetTimeout,
             globalTimeout,
             jobCallback);
 
-        auto engineRuns = CompileTestEngineRuns<TestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        auto engineRuns = CompileTestEngineRuns<RegularTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 

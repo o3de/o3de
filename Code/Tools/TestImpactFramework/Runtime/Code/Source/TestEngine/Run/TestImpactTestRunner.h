@@ -21,12 +21,6 @@
 
 namespace TestImpact
 {
-    //template<typename TestRunType>
-    //TestRunType TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
-    //{
-    //    static_assert(false, "Please specify a factory function for the test run type.");
-    //};
-
     template<typename Payload>
     using PayloadOutcome = AZ::Outcome<Payload, AZStd::string>;
 
@@ -38,7 +32,7 @@ namespace TestImpact
 
     //! Runs a batch of test targets to determine the test passes/failures.
     template<typename AdditionalInfo, typename Payload>
-    class TestRunner_
+    class TestRunner
         : public TestJobRunner<AdditionalInfo, Payload>
     {
     protected:
@@ -68,17 +62,7 @@ namespace TestImpact
                 {
                     const auto& [meta, jobInfo] = jobData;
                     if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
-                    {
-                        //try
-                        //{
-                        //    runs[jobId] = TestRunFactory<TestRunType>(*jobInfo, meta);
-                        //}
-                        //catch (const Exception& e)
-                        //{
-                        //    AZ_Printf("RunTests", AZStd::string::format("%s\n", e.what()).c_str());
-                        //    runs[jobId] = AZStd::nullopt;
-                        //}
-                        
+                    {                        
                         if (auto outcome = PayloadFactory<AdditionalInfo, Payload>(*jobInfo, meta);
                             outcome.IsSuccess())
                         {
@@ -101,19 +85,12 @@ namespace TestImpact
         }
     };
 
-    class TestRunner
-        : public TestRunner_<TestRunJobData, TestRun>
+    class RegularTestRunner
+        : public TestRunner<TestRunJobData, TestRun>
     {
     public:
-        using TestRunner_<TestRunJobData, TestRun>::TestRunner_;
+        using TestRunner<TestRunJobData, TestRun>::TestRunner;
     };
-
-    //template<>
-    //inline TestRun TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
-    //{
-    //    return TestRun(
-    //        GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())), jobMeta.m_duration.value());
-    //};
 
     template<>
     inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<TestRunJobData>& jobData, const JobMeta& jobMeta)
