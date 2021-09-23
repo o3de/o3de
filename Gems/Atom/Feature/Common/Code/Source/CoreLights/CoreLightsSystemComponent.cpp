@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
@@ -32,8 +33,6 @@
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/ShadowmapPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
-
-#include <RenderCommon.h>
 
 namespace AZ
 {
