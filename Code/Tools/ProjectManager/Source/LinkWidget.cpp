@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
 
     void LinkLabel::enterEvent([[maybe_unused]] QEvent* event)
     {
-        setStyleSheet(QString("font-size: %1px; color: #94D2FF; text-decoration: underline;").arg(QString::number(m_fontSize)));
+        setStyleSheet(QString("font-size: %1px; color: #94D2FF; text-decoration: underline;").arg(m_fontSize));
     }
 
     void LinkLabel::leaveEvent([[maybe_unused]] QEvent* event)
@@ -49,6 +49,6 @@ namespace O3DE::ProjectManager
 
     void LinkLabel::SetDefaultStyle()
     {
-        setStyleSheet(QString("font-size: %1px; color: #94D2FF;").arg(QString::number(m_fontSize)));
+        setStyleSheet(QString("font-size: %1px; color: #94D2FF;").arg(m_fontSize));
     }
 } // namespace O3DE::ProjectManager

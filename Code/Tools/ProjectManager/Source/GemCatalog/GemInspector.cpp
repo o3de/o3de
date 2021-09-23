@@ -91,7 +91,7 @@ namespace O3DE::ProjectManager
         // Additional information
         m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
         m_lastUpdatedLabel->setText(QString("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(QString::number(m_model->GetBinarySizeInKB(modelIndex))));
+        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(m_model->GetBinarySizeInKB(modelIndex)));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
