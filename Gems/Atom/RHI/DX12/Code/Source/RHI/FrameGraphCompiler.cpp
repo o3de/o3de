@@ -15,7 +15,6 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ScopeAttachment.h>

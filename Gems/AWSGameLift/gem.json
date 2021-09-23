@@ -5,9 +5,18 @@
     "origin": "Amazon Web Services, Inc.",
     "type": "Code",
     "summary": "The AWS GameLift Gem provides a framework to extend O3DE networking layer to work with GameLift resources via GameLift server and client SDK.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["AWS", "Framework", "Network"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AWS",
+        "Framework",
+        "Network"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/",
+    "dependencies": [
+        "AWSCore"
+    ]
 }

@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Object.h>
+
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>

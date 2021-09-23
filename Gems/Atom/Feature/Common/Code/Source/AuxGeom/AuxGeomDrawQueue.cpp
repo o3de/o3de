@@ -9,8 +9,6 @@
 
 #include "AuxGeomDrawQueue.h"
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Scene.h>
 
 #include <AzCore/Debug/EventTrace.h>
