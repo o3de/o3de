@@ -77,18 +77,19 @@ namespace Multiplayer
                 }
             }
 
+            AzFramework::TransformComponent* transformComponent = GetTransformComponent();
             if (GetParentEntityId() == InvalidNetEntityId)
             {
-                if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
+                if (!transformComponent->GetWorldTM().IsClose(blendTransform))
                 {
-                    GetTransformComponent()->SetWorldTM(blendTransform);
+                    transformComponent->SetWorldTM(blendTransform);
                 }
             }
             else
             {
-                if (!GetTransformComponent()->GetLocalTM().IsClose(blendTransform))
+                if (!transformComponent->GetLocalTM().IsClose(blendTransform))
                 {
-                    GetTransformComponent()->SetLocalTM(blendTransform);
+                    transformComponent->SetLocalTM(blendTransform);
                 }
             }
         }
@@ -103,18 +104,19 @@ namespace Multiplayer
         targetTransform.SetUniformScale(GetScale());
 
         // Hard set the entities transform
+        AzFramework::TransformComponent* transformComponent = GetTransformComponent();
         if (GetParentEntityId() == InvalidNetEntityId)
         {
-            if (!GetTransformComponent()->GetWorldTM().IsClose(targetTransform))
+            if (!transformComponent->GetWorldTM().IsClose(targetTransform))
             {
-                GetTransformComponent()->SetWorldTM(targetTransform);
+                transformComponent->SetWorldTM(targetTransform);
             }
         }
         else
         {
-            if (!GetTransformComponent()->GetLocalTM().IsClose(targetTransform))
+            if (!transformComponent->GetLocalTM().IsClose(targetTransform))
             {
-                GetTransformComponent()->SetLocalTM(targetTransform);
+                transformComponent->SetLocalTM(targetTransform);
             }
         }
     }
