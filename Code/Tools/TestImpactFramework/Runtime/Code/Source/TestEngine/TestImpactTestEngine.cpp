@@ -317,7 +317,7 @@ namespace TestImpact
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
-        auto [result, runnerJobs] = m_instrumentedTestRunner->RunInstrumentedTests(
+        auto [result, runnerJobs] = m_instrumentedTestRunner->RunTests(
             jobInfos,
             testTargetTimeout,
             globalTimeout,

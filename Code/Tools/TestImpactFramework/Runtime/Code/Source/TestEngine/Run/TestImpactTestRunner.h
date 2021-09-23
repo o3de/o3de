@@ -10,7 +10,7 @@
 
 #include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
 #include <TestEngine/Run/TestImpactTestRunJobData.h>
-
+#include <AzCore/Outcome/Outcome.h>
 
 
 
@@ -21,20 +21,29 @@
 
 namespace TestImpact
 {
-    template<typename TestRunType>
-    TestRunType TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
+    //template<typename TestRunType>
+    //TestRunType TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
+    //{
+    //    static_assert(false, "Please specify a factory function for the test run type.");
+    //};
+
+    template<typename Payload>
+    using PayloadOutcome = AZ::Outcome<Payload, AZStd::string>;
+
+    template<typename AdditionalInfo, typename Payload>
+    PayloadOutcome<Payload> PayloadFactory(const JobInfo<AdditionalInfo>& jobData, const JobMeta& jobMeta)
     {
-        static_assert(false, "Please specify a factory function for the test run type.");
+        static_assert(false, "Please specify a factory function for the payload and job info type.");
     };
 
     //! Runs a batch of test targets to determine the test passes/failures.
-    template<typename TestRunType>
+    template<typename AdditionalInfo, typename Payload>
     class TestRunner_
-        : public TestJobRunner<TestRunJobData, TestRunType>
+        : public TestJobRunner<AdditionalInfo, Payload>
     {
     protected:
         // using JobRunner = TestJobRunner<TestRunJobData, TestRun>;
-        using JobRunner = TestJobRunner<TestRunJobData, TestRunType>;
+        using JobRunner = TestJobRunner<AdditionalInfo, Payload>;
         using JobRunner::JobRunner;
 
     public:
@@ -60,14 +69,25 @@ namespace TestImpact
                     const auto& [meta, jobInfo] = jobData;
                     if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                     {
-                        try
+                        //try
+                        //{
+                        //    runs[jobId] = TestRunFactory<TestRunType>(*jobInfo, meta);
+                        //}
+                        //catch (const Exception& e)
+                        //{
+                        //    AZ_Printf("RunTests", AZStd::string::format("%s\n", e.what()).c_str());
+                        //    runs[jobId] = AZStd::nullopt;
+                        //}
+                        
+                        if (auto outcome = PayloadFactory<AdditionalInfo, Payload>(*jobInfo, meta);
+                            outcome.IsSuccess())
                         {
-                            runs[jobId] = TestRunFactory<TestRunType>(*jobInfo, meta);
+                            runs[jobId] = AZStd::move(outcome.TakeValue());
                         }
-                        catch (const Exception& e)
+                        else
                         {
-                            AZ_Printf("RunTests", AZStd::string::format("%s\n", e.what()).c_str());
                             runs[jobId] = AZStd::nullopt;
+                            AZ_Printf("RunTests", outcome.GetError().c_str());
                         }
                     }
                 }
@@ -81,17 +101,33 @@ namespace TestImpact
         }
     };
 
-    template<>
-    inline TestRun TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
-    {
-        return TestRun(
-            GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())), jobMeta.m_duration.value());
-    };
-
     class TestRunner
-        : public TestRunner_<TestRun>
+        : public TestRunner_<TestRunJobData, TestRun>
     {
     public:
-        using TestRunner_<TestRun>::TestRunner_;
+        using TestRunner_<TestRunJobData, TestRun>::TestRunner_;
     };
+
+    //template<>
+    //inline TestRun TestRunFactory(const TestRunJobData& jobData, const JobMeta& jobMeta)
+    //{
+    //    return TestRun(
+    //        GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())), jobMeta.m_duration.value());
+    //};
+
+    template<>
+    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<TestRunJobData>& jobData, const JobMeta& jobMeta)
+    {
+        try
+        {
+            return AZ::Success(TestRun(
+                GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
+                jobMeta.m_duration.value()));
+        }
+        catch (const Exception& e)
+        {
+            return AZ::Failure(AZStd::string::format("%s\n", e.what()));
+        }
+    };
+
 } // namespace TestImpact
