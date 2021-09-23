@@ -32,6 +32,7 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
+
 #include <CommonFiles/Preprocessor.h>
 #include <AzslCompiler.h>
 
