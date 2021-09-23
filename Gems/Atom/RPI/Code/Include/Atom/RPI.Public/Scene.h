@@ -29,6 +29,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Script/ScriptTimePoint.h>
+#include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -43,7 +44,6 @@ namespace AZ
         class ShaderResourceGroupAsset;
         class CullingScene;
         class DynamicDrawSystem;
-        class TaskGraphEvent;
 
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;

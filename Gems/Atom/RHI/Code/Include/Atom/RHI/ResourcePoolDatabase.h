@@ -10,7 +10,6 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
