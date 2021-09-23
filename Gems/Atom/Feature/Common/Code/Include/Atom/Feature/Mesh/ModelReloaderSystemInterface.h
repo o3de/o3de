@@ -28,7 +28,8 @@ namespace AZ
     namespace Render
     {
         using ModelReloadedEvent = Event<const Data::Asset<RPI::ModelAsset>>;
-        
+
+        //! A system that handles reloading the hierarchy of model assets in the correct order
 		class ModelReloaderSystemInterface
         {
         public:

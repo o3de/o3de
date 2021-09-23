@@ -576,7 +576,7 @@ namespace AZ
             {
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
 
-                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+                // If the asset was modified, reload it
                 AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
                     {

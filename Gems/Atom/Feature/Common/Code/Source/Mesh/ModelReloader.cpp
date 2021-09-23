@@ -21,6 +21,7 @@ namespace AZ
             m_pendingDependencies.reset();
             removeReloaderFromSystemHandler.Connect(m_onRemoveReloaderFromSystem);
 
+            // Iterate over the model and track the assets that need to be reloaded
             for (auto& modelLodAsset : modelAsset->GetLodAssets())
             {
                 for (auto& mesh : modelLodAsset->GetMeshes())
@@ -34,6 +35,10 @@ namespace AZ
                 }
                 m_modelDependencies.push_back(modelLodAsset);
             }
+
+            AZ_Assert(
+                m_meshDependencies.size() <= m_pendingDependencies.size(),
+                "There are more buffers used by the model %s than are supported by the ModelReloader.", modelAsset.GetHint().c_str());
 
             m_state = State::WaitingForMeshDependencies;
             ReloadDependenciesAndWait();
@@ -50,6 +55,7 @@ namespace AZ
 
             const Data::AssetId& reloadedAssetId = asset.GetId();
 
+            // Find the index of the asset that was reloaded
             const auto matchesId = [reloadedAssetId](const Data::Asset<Data::AssetData>& asset){ return asset.GetId() == reloadedAssetId;};
             const auto& iter = AZStd::find_if(AZStd::begin(pendingDependencies), AZStd::end(pendingDependencies), matchesId);
             AZ_Assert(
@@ -73,7 +79,7 @@ namespace AZ
         void ModelReloader::OnAssetReloadError(Data::Asset<Data::AssetData> asset)
         {
             // An error is actually okay/expected in some situations.
-            // For example, if a UV set was removed, and we tried to reload the second uv set, it would fail.
+            // For example, if the 2nd UV set was removed, and we tried to reload the second uv set, the reload would fail.
             // We want to treat it as a success, and mark that dependency as 'up to date'
             OnAssetReloaded(asset);
         }

@@ -24,6 +24,8 @@ namespace AZ
 
     namespace Render
     {
+        //! ModelReloader takes care of reloading Buffer, ModelLod, and Model assets in the correct order
+        //! The ModelReloaderSystem should be used to reload a model, rather than using a ModelReloader directly
         class ModelReloader
             : private Data::AssetBus::MultiHandler
         {
@@ -32,7 +34,13 @@ namespace AZ
             AZ_RTTI(AZ::Render::ModelReloader, "{99B75A6A-62B6-490A-9953-029BE7D69452}");
 
             ModelReloader() = default;
+
+            //! Reload a model asset
+            //! @param modelAsset - the asset to be reloaded
+            //! @param removeReloaderFromSystemHandler - an event that will tell the ModelReloaderSystem when to remove the reloader because it is finished
             ModelReloader(Data::Asset<RPI::ModelAsset> modelAsset, RemoveModelFromReloaderSystemEvent::Handler& removeReloaderFromSystemHandler);
+
+            //! Connects a handler that will handle an event when the model is finished reloading
             void ConnectOnReloadedEventHandler(ModelReloadedEvent::Handler& onReloadedEventHandler);
 
         private:
