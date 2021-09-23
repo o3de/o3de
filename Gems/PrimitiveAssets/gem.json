@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
     "summary": "The Primitive Assets Gem provides primitive shape mesh assets with physics enabled.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets", "Sample", "Debug"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Sample",
+        "Debug"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/primitive-assets/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/primitive-assets/",
+    "dependencies": []
 }

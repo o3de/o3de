@@ -8,7 +8,16 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "AtomToolsFramework",
+        "Atom_RPI",
+        "Atom_RHI",
+        "Atom_Feature_Common",
+        "ImageProcessingAtom",
+        "Atom_Component_DebugCamera",
+        "CommonFeaturesAtom",
+        "LyShine"
+    ]
 }

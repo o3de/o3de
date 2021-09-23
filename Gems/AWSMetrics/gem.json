@@ -5,9 +5,18 @@
     "origin": "Amazon Web Services, Inc.",
     "type": "Code",
     "summary": "The AWS Metrics Gem provides a solution for AWS metrics submission and analytics.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["AWS", "Network", "SDK"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AWS",
+        "Network",
+        "SDK"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/",
+    "dependencies": [
+        "AWSCore"
+    ]
 }

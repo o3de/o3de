@@ -9,6 +9,7 @@
 #include <EditorModularViewportCameraComposer.h>
 
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -34,10 +35,12 @@ namespace SandboxEditor
         : m_viewportId(viewportId)
     {
         EditorModularViewportCameraComposerNotificationBus::Handler::BusConnect(viewportId);
+        Camera::EditorCameraNotificationBus::Handler::BusConnect();
     }
 
     EditorModularViewportCameraComposer::~EditorModularViewportCameraComposer()
     {
+        Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         EditorModularViewportCameraComposerNotificationBus::Handler::BusDisconnect();
     }
 
@@ -282,5 +285,23 @@ namespace SandboxEditor
         m_orbitRotateCamera->SetRotateInputChannelId(SandboxEditor::CameraOrbitLookChannelId());
         m_orbitCamera->SetOrbitInputChannelId(SandboxEditor::CameraOrbitChannelId());
         m_orbitDollyMoveCamera->SetDollyInputChannelId(SandboxEditor::CameraOrbitDollyChannelId());
+    }
+
+    void EditorModularViewportCameraComposer::OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId)
+    {
+        if (viewEntityId.IsValid())
+        {
+            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldFromLocal, viewEntityId, &AZ::TransformBus::Events::GetWorldTM);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame,
+                worldFromLocal);
+        }
+        else
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::ClearReferenceFrame);
+        }
     }
 } // namespace SandboxEditor
