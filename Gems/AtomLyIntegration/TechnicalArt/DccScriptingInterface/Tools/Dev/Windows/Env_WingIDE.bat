@@ -27,18 +27,9 @@ CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
 
-:: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
-echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
-
-:: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_IDE%\python.exe
-
 :: put project env variables/paths here
 set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
-SET WING_PROJ=%DCCSIG_PATH%\Solutions\.wing\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr
-
-::SETLOCAL ENABLEDELAYEDEXPANSION
+SET WING_PROJ=%DCCSIG_PATH%\Tools\Dev\Windows\Solutions\.wing\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr
 
 echo.
 echo _____________________________________________________________________
@@ -54,8 +45,6 @@ echo     WING_PROJ = %WING_PROJ%
 
 :: add to the PATH
 SET PATH=%WINGHOME%;%PATH%
-
-::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_WINGIDE_INIT=1

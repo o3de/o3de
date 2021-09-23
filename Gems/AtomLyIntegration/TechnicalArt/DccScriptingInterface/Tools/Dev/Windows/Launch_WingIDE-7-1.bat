@@ -20,6 +20,9 @@ COLOR 8E
 cd %~dp0
 PUSHD %~dp0
 
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
 :: Constant Vars (Global)
 :: global debug (propogates)
 IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=True)
@@ -60,21 +63,6 @@ echo     O3DE_DEV = %O3DE_DEV%
 :: shared location for default O3DE python location
 set O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
 echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
-
-:: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
-echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
-
-:: ide and debugger plug
-set DCCSI_PY_BASE=%DCCSI_PY_IDE%\python.exe
-echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
-
-:: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
-echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 

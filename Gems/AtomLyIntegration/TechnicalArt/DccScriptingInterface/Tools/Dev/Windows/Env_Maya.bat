@@ -27,13 +27,11 @@ IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=11)
 
 :: Default Maya Version
-IF "%DCCSI_MAYA_VERSION%"=="" (set DCCSI_MAYA_VERSION=%MAYA_VERSION%)
+IF "%DCCSI_MAYA_VERSION%"=="" (set DCCSI_MAYA_VERSION=2020)
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
-
-::SETLOCAL ENABLEDELAYEDEXPANSION
 
 echo.
 echo _____________________________________________________________________

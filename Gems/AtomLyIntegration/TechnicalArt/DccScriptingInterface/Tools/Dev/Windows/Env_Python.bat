@@ -39,12 +39,6 @@ echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=10)
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 
-IF "%DCCSI_PY_TAG_REV%"=="" (set DCCSI_PY_TAG_REV=rev2)
-echo     DCCSI_PY_TAG_REV = %DCCSI_PY_TAG_REV%
-
-IF "%DCCSI_PY_TAG_PLAT%"=="" (set DCCSI_PY_TAG_PLAT=windows)
-echo     DCCSI_PY_TAG_PLAT = %DCCSI_PY_TAG_PLAT%
-
 :: shared location for 64bit python 3.7 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
@@ -64,16 +58,20 @@ set O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
 echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
+:: Note, many DCC tools (like Maya) include thier own python interpretter
+:: Some apps may not operate correctly if O3DE_PYTHONHOME is set (this is definitely the case with Maya)
+:: Be aware the python.cmd below does set PYTHONHOME
 set DCCSI_PY_BASE=%O3DE_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
 CALL %O3DE_PYTHON_INSTALL%\get_python_path.bat
 
-IF "%DCCSI_PY_IDE%"=="" (set DCCSI_PY_IDE=%PYTHONHOME%\python.exe)
+:: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
+IF "%DCCSI_PY_IDE%"=="" (set DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe)
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: add to the PATH
-SET PATH=%O3DE_PYTHON_INSTALL%;%PYTHONHOME%;%PATH%
+SET PATH=%O3DE_PYTHON_INSTALL%;%PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BUILD_PATH%;%PYTHONPATH%

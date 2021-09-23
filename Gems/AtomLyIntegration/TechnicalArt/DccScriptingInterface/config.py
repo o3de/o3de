@@ -301,7 +301,7 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(settings.DCCSI_CONFIG_PATH))
     _LOGGER.info('DCCSIG_PATH: {}'.format(settings.DCCSIG_PATH))
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(settings.DCCSI_PYTHON_LIB_PATH))
-    _LOGGER.info('DDCCSI_PY_BASE: {}'.format(settings.DDCCSI_PY_BASE))
+    _LOGGER.info('DDCCSI_PY_BASE: {}'.format(settings.DCCSI_PY_BASE))
 
     # To Do: These should ONLY be set for Lumberyard and non-DCC environments
     # They will most likely cause Qt/PySide DCC apps to fail
