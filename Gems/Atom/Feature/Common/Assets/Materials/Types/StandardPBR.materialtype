@@ -73,6 +73,12 @@
         "properties": {
             "general": [
                 {
+                    "id": "doubleSided",
+                    "displayName": "Double-sided",
+                    "description": "Whether to render back-faces or just front-faces.",
+                    "type": "Bool"
+                },
+                {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
                     "description": "Whether to apply specular anti-aliasing in the shader.",
