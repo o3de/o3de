@@ -20,8 +20,6 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
 
     <!-- configure install page -->
     <String Id="OptionsHeader">Setup Options</String>
-    <String Id="DebugSDK">Include debug SDK</String>
-    <String Id="ReleaseMonolithicSDK">Include release-monolithic SDK</String>
     <String Id="OptionsLocationLabel">Install location:</String>
     <String Id="OptionsBrowseButton">&amp;Browse</String>
     <String Id="OptionsWarningTitle">WARNING:</String>
