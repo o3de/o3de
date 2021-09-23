@@ -51,15 +51,13 @@ namespace AZ::SceneAPI::Behaviors
             ManifestAction action,
             RequestingApplication requester) override;
 
-
     protected:
-        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene);
+        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath);
         void UnloadPython();
         bool DoPrepareForExport(Events::PreExportEventContext& context);
 
     private:
         AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
-        AZStd::string m_scriptFilename;
 
         struct ExportEventHandler;
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
