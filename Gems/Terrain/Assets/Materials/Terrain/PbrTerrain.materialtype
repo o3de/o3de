@@ -90,6 +90,16 @@
             ],
             "settings": [
                 {
+                    "id": "heightmapImage",
+                    "displayName": "Heightmap Image",
+                    "description": "Heightmap of the terrain, controlled by the runtime.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_heightmapImage"
+                    }
+                },
+                {
                     "id": "baseColor",
                     "displayName": "Base Color",
                     "type": "Color",

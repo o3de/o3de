@@ -18,12 +18,6 @@
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-ShaderResourceGroup TerrainPBRSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float m_roughness;
-}
-
 struct VSOutput
 {
     float4 m_position : SV_Position;
@@ -80,12 +74,12 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(IN.m_normal);
-    surface.roughnessLinear = TerrainPBRSrg::m_roughness;
+    surface.roughnessLinear = TerrainMaterialSrg::m_roughness;
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
     const float specularF0Factor = 0.5f;
-    float3 color = TerrainPBRSrg::m_baseColor;
+    float3 color = TerrainMaterialSrg::m_baseColor;
     surface.SetAlbedoAndSpecularF0(color, specularF0Factor, 0.0);
 
     // Clear Coat, Transmission

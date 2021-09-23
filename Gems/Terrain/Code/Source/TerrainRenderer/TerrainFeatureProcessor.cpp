@@ -27,6 +27,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
@@ -46,9 +47,13 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
+    namespace MaterialInputs
+    {
+        static const char* const HeightmapImage("settings.heightmapImage");
+    }
+
     namespace ShaderInputs
     {
-        static const char* const HeightmapImage("m_heightmapImage");
         static const char* const ModelToWorld("m_modelToWorld");
         static const char* const TerrainData("m_terrainData");
     }
@@ -80,11 +85,13 @@ namespace Terrain
                 [&](AZ::Data::Asset<AZ::Data::AssetData> assetData, bool success) -> void
                 {
                     const AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset = static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(assetData);
-                    m_materialInstance = success ? AZ::RPI::Material::FindOrCreate(assetData) : nullptr;
-                    
-                    if (!materialAsset->GetObjectSrgLayout())
+                    if (success)
                     {
-                        AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
+                        m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
+                        if (!materialAsset->GetObjectSrgLayout())
+                        {
+                            AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
+                        }
                     }
                 }
             );
@@ -170,10 +177,15 @@ namespace Terrain
         {
             m_areaData.m_propertiesDirty = false;
             m_sectorData.clear();
-            
+
+            AZ::RPI::MaterialPropertyIndex heightmapPropertyIndex =
+                m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
+            AZ_Error(TerrainFPName, heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
+            AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
+            m_materialInstance->SetPropertyValue(heightmapPropertyIndex, heightmapImage);
+            m_materialInstance->Compile();
+
             const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
-            m_heightmapImageIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::HeightmapImage));
-            AZ_Error(TerrainFPName, m_heightmapImageIndex.IsValid(), "Failed to find shader input image %s.", ShaderInputs::HeightmapImage);
 
             m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
             AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
@@ -224,7 +236,6 @@ namespace Terrain
 
                         AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
 
-                        objectSrg->SetImage(m_heightmapImageIndex, m_areaData.m_heightmapImage);
                         objectSrg->SetConstant(m_modelToWorldIndex, matrix3x4);
 
                         ShaderTerrainData terrainDataForSrg;
@@ -254,7 +265,7 @@ namespace Terrain
                         }
                         uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
                         drawPacket.SetStencilRef(stencilRef);
-                        drawPacket.Update(*GetParentScene(), false);
+                        drawPacket.Update(*GetParentScene(), true);
                     }
 
                     sectorData.m_aabb =

@@ -113,7 +113,6 @@ namespace Terrain
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        AZ::RHI::ShaderInputImageIndex m_heightmapImageIndex;
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
         AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
 
