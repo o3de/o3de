@@ -11,6 +11,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -18,6 +19,8 @@
 #include <Atom/Utils/StableDynamicArray.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
+
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -177,6 +180,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
+                meshHandle->m_meshLoader.reset();
                 meshHandle->DeInit();
                 m_transformService->ReleaseObjectId(meshHandle->m_objectId);
 
@@ -489,10 +493,12 @@ namespace AZ
             }
 
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
 
         MeshDataInstance::MeshLoader::~MeshLoader()
         {
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
         }
 
@@ -547,10 +553,51 @@ namespace AZ
             }
         }
 
+        
+        void MeshDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            OnAssetReady(asset);
+        }
+
         void MeshDataInstance::MeshLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
         {
             // Note: m_modelAsset and asset represents same asset, but only m_modelAsset contains the file path in its hint from serialization
-            AZ_Error("MeshDataInstance::MeshLoader", false, "Failed to load asset %s.", m_modelAsset.GetHint().c_str()); 
+            AZ_Error(
+                "MeshDataInstance::MeshLoader", false, "Failed to load asset %s. It may be missing, or not be finished processing",
+                m_modelAsset.GetHint().c_str());
+
+            AzFramework::AssetSystemRequestBus::Broadcast(
+                &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
+        }
+        
+        void MeshDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+        {
+            if (assetId == m_modelAsset.GetId())
+            {
+                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
+
+                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+                AZ::SystemTickBus::QueueFunction(
+                    [=]() mutable
+                    {
+                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                    });
+            }
+        }
+
+        void MeshDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+        {
+            if (assetId == m_modelAsset.GetId())
+            {
+                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
+                
+                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+                AZ::SystemTickBus::QueueFunction(
+                    [=]() mutable
+                    {
+                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                    });
+            }
         }
 
         // MeshDataInstance...
@@ -566,7 +613,6 @@ namespace AZ
                 rayTracingFeatureProcessor->RemoveMesh(m_objectId);
             }
 
-            m_meshLoader.reset();
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
             m_shaderResourceGroup = {};

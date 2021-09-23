@@ -77,6 +77,12 @@ namespace AZ
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             void SetReady();
 
             AZ::Name m_name;

@@ -25,6 +25,7 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
+    Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
@@ -169,6 +170,10 @@ set(FILES
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
     Source/Mesh/MeshFeatureProcessor.cpp
+    Source/Mesh/ModelReloader.cpp
+    Source/Mesh/ModelReloader.h
+    Source/Mesh/ModelReloaderSystem.cpp
+    Source/Mesh/ModelReloaderSystem.h
     Source/MorphTargets/MorphTargetComputePass.cpp
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp

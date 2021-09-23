@@ -34,6 +34,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
 
             static Data::Instance<Model> FindOrCreate(const Data::Asset<ModelAsset>& modelAsset);
+            static void TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset);
 
             ~Model() = default;
 
