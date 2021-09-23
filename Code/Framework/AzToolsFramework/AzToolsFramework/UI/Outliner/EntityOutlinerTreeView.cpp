@@ -61,7 +61,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerTreeView::leaveEvent(QEvent* /*event*/)
+    void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
         m_mousePosition = QPoint();
     }

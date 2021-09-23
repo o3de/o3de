@@ -79,7 +79,7 @@ namespace AzToolsFramework
         return m_focusRoot;
     }
 
-    bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId)
+    bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId) const
     {
         if (m_focusRoot == AZ::EntityId())
         {
