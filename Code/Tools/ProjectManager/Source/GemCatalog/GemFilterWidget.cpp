@@ -260,7 +260,6 @@ namespace O3DE::ProjectManager
         m_statusFilter->deleteLater();
         m_statusFilter = filterWidget;
 
-        const GemSortFilterProxyModel::GemSelected currentFilterState = m_filterProxyModel->GetGemSelected();
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
 
         QAbstractButton* unselectedButton = buttons[0];
