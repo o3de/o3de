@@ -5,10 +5,18 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Maestro Cinematics Gem provides Track View, Open 3D Engine's animated sequence and cinematics editor.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Animation", "Tools", "Scripting"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Animation",
+        "Tools",
+        "Scripting"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/animation/maestro/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/animation/maestro/",
+    "dependencies": [
+        "LmbrCentral"
+    ]
 }
-

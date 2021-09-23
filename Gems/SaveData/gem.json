@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Save Data Gem provides a platform independent API to save and load persistent user data in Open 3D Engine projects.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Utility", "Gameplay"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Utility",
+        "Gameplay"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/utility/save-data/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/utility/save-data/",
+    "dependencies": []
 }

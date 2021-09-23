@@ -14,7 +14,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabEditInterface;
         class PrefabPublicInterface;
     };
 
@@ -36,7 +35,6 @@ namespace AzToolsFramework
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
     private:
-        Prefab::PrefabEditInterface* m_prefabEditInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         static constexpr int m_levelRootBorderThickness = 1;

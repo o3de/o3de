@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Multiplayer Compression Gem provides an open source Compressor for use with AzNetworking's transport layer.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Multiplayer", "Network", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Multiplayer",
+        "Network",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/multiplayer/multiplayer-compression/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/multiplayer/multiplayer-compression/",
+    "dependencies": []
 }
