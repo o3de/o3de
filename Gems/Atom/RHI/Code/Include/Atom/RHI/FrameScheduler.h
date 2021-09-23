@@ -23,7 +23,7 @@
 namespace AZ
 {
     class Job;
-    class TaskGraph;
+    class UseTaskGraphInterface;
 
     namespace RHI
     {
@@ -229,6 +229,8 @@ namespace AZ
 
             // list of RayTracingShaderTables that should be built this frame
             AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+
+            AZ::UseTaskGraphInterface* m_useTaskGraph = nullptr;
         };
     }
 }

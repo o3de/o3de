@@ -6,9 +6,13 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Task/TaskGraphSystemComponent.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+// Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
+AZ_CVAR(bool, cl_useTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag for use of TaskGraph (Note does not disable task graph system)");
 
 namespace AZ
 {
@@ -16,12 +20,14 @@ namespace AZ
     {
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
+        Interface<UseTaskGraphInterface>::Register(this);
         m_taskExecutor = aznew TaskExecutor();
         m_taskExecutor->SetInstance(m_taskExecutor);
     }
 
     void TaskGraphSystemComponent::Deactivate()
     {
+        Interface<UseTaskGraphInterface>::Unregister(this);
     }
 
     void TaskGraphSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -46,5 +52,10 @@ namespace AZ
                 ->Version(1)
                 ;
         }
+    }
+
+    bool TaskGraphSystemComponent::UseTaskGraph() const
+    {
+        return cl_useTaskGraph;
     }
 } // namespace AZ

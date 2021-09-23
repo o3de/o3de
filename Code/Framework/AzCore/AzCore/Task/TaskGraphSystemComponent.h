@@ -8,18 +8,24 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
     class TaskGraphSystemComponent
         : public Component
+        , public UseTaskGraphInterface
     {
     public:
         AZ_COMPONENT(AZ::TaskGraphSystemComponent, "{5D56B829-1FEB-43D5-A0BD-E33C0497EFE2}")
 
         TaskGraphSystemComponent() = default;
+
+        // Implement UseTaskGraphInterface
+        bool UseTaskGraph() const override;
+
     private:
         //////////////////////////////////////////////////////////////////////////
         // Component base
@@ -36,6 +42,6 @@ namespace AZ
         /// \red ComponentDescriptor::Reflect
         static void Reflect(ReflectContext* reflection);
 
-        AZ::TaskExecutor*   m_taskExecutor;
+        AZ::TaskExecutor*   m_taskExecutor = nullptr;
     };
 }

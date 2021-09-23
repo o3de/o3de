@@ -198,12 +198,25 @@ namespace AZ
             // Helper function to wait for end of TaskGraph
             void WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn = nullptr);
 
+            // Helper function for wait and clean up a completion job
+            void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
+
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);
 
             // Send out event to PrepareSceneSrgEvent::Handlers so they can update scene srg as needed
             // This happens in UpdateSrgs()
             void PrepareSceneSrg();
+
+            // Implementation functions that allow scene to switch between using Jobs or TaskGraphs
+            void SimulateTaskGraph();
+            void SimulateJobs();
+
+            void CollectDrawPacketsTaskGraph();
+            void CollectDrawPacketsJobs();
+
+            void FinalizeDrawListsTaskGraph();
+            void FinalizeDrawListsJobs();
 
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
@@ -214,6 +227,9 @@ namespace AZ
             // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
             AZ::TaskGraphEvent m_simulationFinishedTGEvent;
             AZStd::atomic_bool m_simulationFinishedWorkActive = false;
+
+            // CPU simulation job completion for track all feature processors' simulation jobs
+            AZ::JobCompletion* m_simulationCompletion = nullptr;
 
             AZ::RPI::CullingScene* m_cullingScene;
 
@@ -230,6 +246,7 @@ namespace AZ
             SceneId m_id;
 
             bool m_activated = false;
+            bool m_useTaskGraph = false; // update during tick, to ensure it only changes on frame boundaries
 
             RenderPipelinePtr m_defaultPipeline;
 

@@ -25,9 +25,10 @@
 #include <Atom/RHI/RayTracingShaderTable.h>
 
 #include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
- #include <AzCore/Jobs/JobCompletion.h>
- #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
@@ -78,6 +79,8 @@ namespace AZ
             m_rootScope = m_rootScopeProducer->GetScope();
             m_device = &device;
 
+            m_useTaskGraph = AZ::Interface<AZ::UseTaskGraphInterface>::Get();
+
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
 
             return ResultCode::Success;
@@ -86,6 +89,7 @@ namespace AZ
         void FrameScheduler::Shutdown()
         {
             m_device = nullptr;
+            m_useTaskGraph = nullptr;
             m_rootScopeProducer = nullptr;
             m_rootScope = nullptr;
             m_frameGraphExecuter = nullptr;
@@ -261,46 +265,96 @@ namespace AZ
             {
                 // Iterate over each SRG pool and fork jobs to compile SRGs.
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
-                AZ::TaskGraph taskGraph;
-
-                const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](ShaderResourceGroupPool* srgPool)
+                if (m_useTaskGraph && m_useTaskGraph->UseTaskGraph())
                 {
-                    srgPool->CompileGroupsBegin();
-                    const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                    const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
-                    AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
-                    AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
+                    AZ::TaskGraph taskGraph;
 
-                    auto srgCompileEndTask = taskGraph.AddTask(
-                        srgCompileEndDesc, 
-                        [srgPool]()
-                        {
-                            srgPool->CompileGroupsEnd();
-                        });
-
-                    for (uint32_t i = 0; i < jobCount; ++i)
+                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](ShaderResourceGroupPool* srgPool)
                     {
-                        Interval interval;
-                        interval.m_min = i * compilesPerJob;
-                        interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+                        srgPool->CompileGroupsBegin();
+                        const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
+                        AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
-                        auto compileTask = taskGraph.AddTask(
-                            srgCompileDesc,
-                            [srgPool, interval]()
+                        auto srgCompileEndTask = taskGraph.AddTask(
+                            srgCompileEndDesc, 
+                            [srgPool]()
                             {
-                            AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
-                                srgPool->CompileGroupsForInterval(interval);
+                                srgPool->CompileGroupsEnd();
                             });
-                            compileTask.Precedes(srgCompileEndTask);
-                    }
-                };
 
-                resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
-                if (!taskGraph.IsEmpty())
+                        for (uint32_t i = 0; i < jobCount; ++i)
+                        {
+                            Interval interval;
+                            interval.m_min = i * compilesPerJob;
+                            interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+
+                            auto compileTask = taskGraph.AddTask(
+                                srgCompileDesc,
+                                [srgPool, interval]()
+                                {
+                                AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
+                                    srgPool->CompileGroupsForInterval(interval);
+                                });
+                                compileTask.Precedes(srgCompileEndTask);
+                        }
+                    };
+
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
+                    if (!taskGraph.IsEmpty())
+                    {
+                        AZ::TaskGraphEvent finishedEvent;
+                        taskGraph.Submit(&finishedEvent);
+                        finishedEvent.Wait();
+                    }
+                }
+                else // use Job system
                 {
-                    AZ::TaskGraphEvent finishedEvent;
-                    taskGraph.Submit(&finishedEvent);
-                    finishedEvent.Wait();
+                    const auto compileGroupsBeginFunction = [](ShaderResourceGroupPool* srgPool)
+                    {
+                        srgPool->CompileGroupsBegin();
+                    };
+
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsBeginFunction)>(compileGroupsBeginFunction);
+
+                    // Iterate over each SRG pool and fork jobs to compile SRGs.
+                    const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
+                    AZ::JobCompletion jobCompletion;
+
+                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
+                    {
+                        const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+
+                        for (uint32_t i = 0; i < jobCount; ++i)
+                        {
+                            Interval interval;
+                            interval.m_min = i * compilesPerJob;
+                            interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+
+                            const auto compileGroupsForIntervalLambda = [srgPool, interval]()
+                            {
+                                AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
+                                srgPool->CompileGroupsForInterval(interval);
+                            };
+
+                            AZ::Job* executeGroupJob = AZ::CreateJobFunction(AZStd::move(compileGroupsForIntervalLambda), true, nullptr);
+                            executeGroupJob->SetDependent(&jobCompletion);
+                            executeGroupJob->Start();
+                        }
+                    };
+
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
+
+                    jobCompletion.StartAndWaitForCompletion();
+
+                    const auto compileGroupsEndFunction = [](ShaderResourceGroupPool* srgPool)
+                    {
+                        srgPool->CompileGroupsEnd();
+                    };
+
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsEndFunction)>(compileGroupsEndFunction);
                 }
             }
             else

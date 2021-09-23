@@ -27,6 +27,14 @@ namespace AZ
     class TaskExecutor;
     class TaskGraph;
 
+    class UseTaskGraphInterface
+    {
+    public:
+        AZ_RTTI(ComponentApplicationRequests, "{08118074-B139-4EF9-B8FD-29F1D6DC9233}");
+
+        virtual bool UseTaskGraph() const = 0;
+    };
+
     // A TaskToken is returned each time a Task is added to the TaskGraph. TaskTokens are used to
     // express dependencies between tasks within the graph, and have no purpose after the graph
     // is submitted (simply let them go out of scope)
