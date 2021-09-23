@@ -82,7 +82,7 @@ namespace O3DE::ProjectManager
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
 
-                // only include gems that are dependencies and not explicitley added 
+                // only include gems that are dependencies and not explicitly added 
                 for (const QModelIndex& modelIndex : toBeAdded)
                 {
                     if (GemModel::IsAddedDependency(modelIndex) && !GemModel::IsAdded(modelIndex))
@@ -91,11 +91,10 @@ namespace O3DE::ProjectManager
                     }
                 }
                 return dependencies;
-
             });
 
         // removed dependencies 
-        CreateGemSection( tr("dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
+        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -109,9 +108,7 @@ namespace O3DE::ProjectManager
                     }
                 }
                 return dependencies;
-
             });
-
 
         setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     }

@@ -175,25 +175,25 @@ namespace O3DE::ProjectManager
 
     QString GetGemNameList(const QVector<QModelIndex> modelIndices)
     {
-        QString list;
+        QString gemNameList;
         for (int i = 0; i < modelIndices.size(); ++i)
         {
-            if (!list.isEmpty())
+            if (!gemNameList.isEmpty())
             {
                 if (i == modelIndices.size() - 1)
                 {
-                    list.append(" and ");
+                    gemNameList.append(" and ");
                 }
                 else
                 {
-                    list.append(", ");
+                    gemNameList.append(", ");
                 }
             }
 
-            list.append(GemModel::GetDisplayName(modelIndices[i]));
+            gemNameList.append(GemModel::GetDisplayName(modelIndices[i]));
         }
 
-        return list;
+        return gemNameList;
     }
 
     bool GemItemDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
