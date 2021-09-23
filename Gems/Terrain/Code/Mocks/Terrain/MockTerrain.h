@@ -14,7 +14,6 @@
 
 namespace UnitTest
 {
-
     class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
@@ -69,11 +68,7 @@ namespace UnitTest
             Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD3(GetHeight, void(
-            const AZ::Vector3& inPosition,
-            AZ::Vector3& outPosition,
-            bool& terrainExists));
-
+        MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
@@ -92,4 +87,32 @@ namespace UnitTest
         MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
-}
+
+    class MockTerrainDataRequests : public AzFramework::Terrain::TerrainDataRequestBus::Handler
+    {
+    public:
+        MockTerrainDataRequests()
+        {
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainDataRequests()
+        {
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, AZ::Vector2());
+        MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
+
+        MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
+        MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
+        MOCK_CONST_METHOD3(GetHeight, float(AZ::Vector3, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceWeight, AzFramework::SurfaceData::SurfaceTagWeight(AZ::Vector3, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetMaxSurfaceWeightFromFloats, AzFramework::SurfaceData::SurfaceTagWeight(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceName, const char*(AZ::Vector3, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetIsHoleFromFloats, bool(float, float, Sampler));
+        MOCK_CONST_METHOD3(GetNormal, AZ::Vector3(AZ::Vector3, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetNormalFromFloats, AZ::Vector3(float, float, Sampler, bool*));
+    };
+} // namespace UnitTest

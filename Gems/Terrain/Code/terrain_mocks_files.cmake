@@ -8,4 +8,5 @@
 
 set(FILES
     Mocks/Terrain/MockTerrain.h
+    Mocks/terrain/MockTerrainLayerSpawner.h
 )
