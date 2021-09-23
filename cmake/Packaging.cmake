@@ -235,6 +235,8 @@ ly_configure_cpack_component(
     DISPLAY_NAME "${PROJECT_NAME}"
     DESCRIPTION "${PROJECT_NAME} Headers, scripts and common files"
 )
+#file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})\n")
+
 foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     string(TOUPPER ${conf} UCONF)
     unset(flags)
@@ -243,11 +245,20 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     else()
         set(flags DISABLED)
     endif()
+
+    # Inject a check to not declare components that have not been built. We are using AzCore since that is a
+    # common target that will always be build, in every permutation and configuration
+    #file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
+    #    "if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n")
     ly_configure_cpack_component(
         ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF} ${flags}
         DISPLAY_NAME "${PROJECT_NAME} (${conf})"
         DESCRIPTION "${PROJECT_NAME} Libraries and Tools in ${conf}"
     )
+    #file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
+#"list(APPEND LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF})
+#endif()\n")
+
 endforeach()
 
 if(LY_INSTALLER_DOWNLOAD_URL)
@@ -260,3 +271,5 @@ if(LY_INSTALLER_DOWNLOAD_URL)
         ALL
     )
 endif()
+
+#file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(CPACK_COMPONENTS_ALL \${LY_CPACK_COMPONENTS_ALL})\n")
