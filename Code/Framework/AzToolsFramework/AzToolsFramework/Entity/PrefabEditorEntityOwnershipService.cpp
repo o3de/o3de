@@ -79,6 +79,8 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::Reset()
     {
+        m_isLevelLoaded = false;
+
         if (m_rootInstance)
         {
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
@@ -203,6 +205,7 @@ namespace AzToolsFramework
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+        m_isLevelLoaded = true;
 
         return true;
     }
@@ -302,6 +305,12 @@ namespace AzToolsFramework
         }
 
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+        m_isLevelLoaded = true;
+    }
+
+    bool PrefabEditorEntityOwnershipService::IsLevelLoaded() const
+    {
+        return m_isLevelLoaded;
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::CreatePrefab(
