@@ -414,12 +414,12 @@ namespace Multiplayer
     class ServerBranchedHierarchyTests : public HierarchyTests
     {
     public:
-        static const NetEntityId RootNetEntityId = NetEntityId{ 1 };
-        static const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
-        static const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
-        static const NetEntityId Child2NetEntityId = NetEntityId{ 4 };
-        static const NetEntityId ChildOfChild2NetEntityId = NetEntityId{ 5 };
-        static const NetEntityId Child2OfChild2NetEntityId = NetEntityId{ 6 };
+        const NetEntityId RootNetEntityId = NetEntityId{ 1 };
+        const NetEntityId ChildNetEntityId = NetEntityId{ 2 };
+        const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
+        const NetEntityId Child2NetEntityId = NetEntityId{ 4 };
+        const NetEntityId ChildOfChild2NetEntityId = NetEntityId{ 5 };
+        const NetEntityId Child2OfChild2NetEntityId = NetEntityId{ 6 };
 
         void SetUp() override
         {
@@ -610,9 +610,9 @@ namespace Multiplayer
     class ServerHierarchyOfHierarchyTests : public ServerDeepHierarchyTests
     {
     public:
-        static const NetEntityId Root2NetEntityId = NetEntityId{ 4 };
-        static const NetEntityId Child2NetEntityId = NetEntityId{ 5 };
-        static const NetEntityId ChildOfChild2NetEntityId = NetEntityId{ 6 };
+        const NetEntityId Root2NetEntityId = NetEntityId{ 4 };
+        const NetEntityId Child2NetEntityId = NetEntityId{ 5 };
+        const NetEntityId ChildOfChild2NetEntityId = NetEntityId{ 6 };
 
         void SetUp() override
         {
@@ -1132,9 +1132,9 @@ namespace Multiplayer
     class ServerHierarchyWithThreeRoots : public ServerHierarchyOfHierarchyTests
     {
     public:
-        static const NetEntityId Root3NetEntityId = NetEntityId{ 7 };
-        static const NetEntityId Child3NetEntityId = NetEntityId{ 8 };
-        static const NetEntityId ChildOfChild3NetEntityId = NetEntityId{ 9 };
+        const NetEntityId Root3NetEntityId = NetEntityId{ 7 };
+        const NetEntityId Child3NetEntityId = NetEntityId{ 8 };
+        const NetEntityId ChildOfChild3NetEntityId = NetEntityId{ 9 };
 
         void SetUp() override
         {
