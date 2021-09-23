@@ -12,7 +12,6 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/containers/array.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 
