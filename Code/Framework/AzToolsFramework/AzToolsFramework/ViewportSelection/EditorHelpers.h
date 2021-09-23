@@ -60,6 +60,6 @@ namespace AzToolsFramework
 
     private:
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
-        FocusModeInterface* m_focusModeInterface = nullptr;
+        const FocusModeInterface* m_focusModeInterface = nullptr;
     };
 } // namespace AzToolsFramework

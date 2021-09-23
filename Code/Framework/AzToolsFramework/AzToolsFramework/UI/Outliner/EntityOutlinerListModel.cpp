@@ -537,8 +537,7 @@ namespace AzToolsFramework
             break;
         }
 
-        AZ::EntityId entityId = GetEntityFromIndex(index);
-        if (!m_focusModeInterface->IsInFocusSubTree(entityId))
+        if (AZ::EntityId entityId = GetEntityFromIndex(index); !m_focusModeInterface->IsInFocusSubTree(entityId))
         {
             itemFlags &= !Qt::ItemIsEnabled;
         }
