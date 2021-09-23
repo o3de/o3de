@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Local User Gem provides functionality for mapping local user ids to local player slots and managing local user profiles.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Input", "Gameplay", "Scripting"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Input",
+        "Gameplay",
+        "Scripting"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/local-user/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/local-user/",
+    "dependencies": []
 }

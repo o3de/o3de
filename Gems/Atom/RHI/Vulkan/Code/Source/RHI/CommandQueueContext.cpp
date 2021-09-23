@@ -8,7 +8,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Debug/EventTrace.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 #include <RHI/Semaphore.h>

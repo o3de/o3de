@@ -5,9 +5,19 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
     "summary": "The LyShine Examples Gem provides example code and assets for LyShine, the runtime UI system and editor for Open 3D Engine projects.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["UI", "Sample", "Assets"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "UI",
+        "Sample",
+        "Assets"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/ui/lyshine-examples/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/ui/lyshine-examples/",
+    "dependencies": [
+        "LmbrCentral",
+        "LyShine"
+    ]
 }

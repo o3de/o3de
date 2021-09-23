@@ -6,7 +6,6 @@
  *
  */
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraph.h>
