@@ -12,7 +12,6 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "FixedShapeProcessor.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>

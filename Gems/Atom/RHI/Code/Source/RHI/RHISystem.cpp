@@ -6,12 +6,12 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystem.h>
 #include <Atom/RHI/RHIUtils.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
