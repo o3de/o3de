@@ -14,7 +14,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/SpawnedEntityTicketMapperInterface.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include "GameEntityContextComponent.h"
 
@@ -290,10 +290,21 @@ namespace AzFramework
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
                 if (isPrefabSystemEnabled)
                 {
-                    SpawnedEntityTicketMapperInterface* spawnedEntityTicketMapperInterface =
-                        AZ::Interface<SpawnedEntityTicketMapperInterface>::Get();
-                    AZ_Assert(spawnedEntityTicketMapperInterface != nullptr, "SpawnedEntityTicketMapperInterface is not found.");
-                    spawnedEntityTicketMapperInterface->RemoveSpawnedEntity(currentEntity->GetId());
+                    if (currentEntity->GetSpawnTicketId() > 0)
+                    {
+                        SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
+                        AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
+                        spawnableEntitiesInterface->GetEntitySpawnTicket(
+                            currentEntity->GetSpawnTicketId(),
+                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket* entitySpawnTicket)
+                            {
+                                if (entitySpawnTicket != nullptr)
+                                {
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), *entitySpawnTicket);
+                                }
+                            });
+                        return;
+                    }
                 }
 
                 if (currentEntity->GetState() == AZ::Entity::State::Active)
