@@ -8,4 +8,4 @@
 #pragma once
 
 #define AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC "azslc"
-
+#define AZ_TRAIT_ATOM_FALLBACK_ASSET_HOST_PLATFORM AzFramework::PlatformId::LINUX_ID

@@ -32,11 +32,11 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
-
 #include <CommonFiles/Preprocessor.h>
 #include <AzslCompiler.h>
 
 #include "ShaderPlatformInterfaceRequest.h"
+#include "ShaderBuilder_Traits_Platform.h"
 #include "AtomShaderConfig.h"
 
 #include "SrgLayoutUtility.h"
@@ -457,15 +457,7 @@ namespace AZ
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
                 // Define a fallback platform ID based on the current host platform
-                #if defined(AZ_PLATFORM_LINUX)
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::LINUX_ID;
-                #elif defined(AZ_PLATFORM_MAC)
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::MAC_ID;
-                #elif defined(AZ_PLATFORM_WINDOWS)
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                #else
-                #error Builders cannot be built on non-host platforms
-                #endif
+                AzFramework::PlatformId platformId = AZ_TRAIT_ATOM_FALLBACK_ASSET_HOST_PLATFORM;
 
                 if (platformIdentifier == "pc")
                 {
