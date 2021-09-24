@@ -675,6 +675,14 @@ namespace O3DE::ProjectManager
                     }
                 }
 
+                if (data.contains("dependencies"))
+                {
+                    for (auto dependency : data["dependencies"])
+                    {
+                        gemInfo.m_dependencies.push_back(Py_To_String(dependency));
+                    }
+                }
+
                 QString gemType = Py_To_String_Optional(data, "type", "");
                 if (gemType == "Asset")
                 {
