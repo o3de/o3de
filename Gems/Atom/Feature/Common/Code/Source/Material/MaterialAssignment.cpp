@@ -134,6 +134,35 @@ namespace AZ
                 !m_defaultMaterialAsset.IsLoading();
         }
 
+        bool MaterialAssignment::ApplyProperties()
+        {
+            // if there is no instance or no properties there's nothing to apply
+            if (!m_materialInstance || m_propertyOverrides.empty())
+            {
+                return true;
+            }
+
+            if (m_materialInstance->CanCompile())
+            {
+                for (const auto& propertyPair : m_propertyOverrides)
+                {
+                    if (!propertyPair.second.empty())
+                    {
+                        const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
+                        if (!materialPropertyIndex.IsNull())
+                        {
+                            m_materialInstance->SetPropertyValue(
+                                materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
+                        }
+                    }
+                }
+
+                return m_materialInstance->Compile();
+            }
+
+            return false;
+        }
+
         AZStd::string MaterialAssignment::ToString() const
         {
             AZStd::string assetPathString;
