@@ -126,6 +126,7 @@ namespace ScriptCanvasEditor
             config.reportFilteredGraphs = !m_view->onlyShowOutdated->isChecked();
             config.filter = isUpToDate;
 
+            SetLoggingPreferences();
             ModelRequestsBus::Broadcast(&ModelRequestsTraits::Scan, config);
         }
 
@@ -199,6 +200,7 @@ namespace ScriptCanvasEditor
                 return result == QMessageBox::YesToAll;
             };
 
+            SetLoggingPreferences();
             ModifyConfiguration config;
             config.modification = simpleUpdate;
             config.onReadOnlyFile = onReadyOnlyFile;
@@ -433,6 +435,12 @@ namespace ScriptCanvasEditor
 
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(true);
+        }
+
+        void Controller::SetLoggingPreferences()
+        {
+            LogBus::Broadcast(&LogTraits::SetVerbose, m_view->verbose->isChecked());
+            LogBus::Broadcast(&LogTraits::SetVersionExporerExclusivity, m_view->updateReportingOnly->isChecked());
         }
 
         void Controller::SetSpinnerIsBusy(bool isBusy)

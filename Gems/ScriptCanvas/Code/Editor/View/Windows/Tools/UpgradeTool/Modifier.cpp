@@ -237,6 +237,9 @@ namespace ScriptCanvasEditor
                 TickUpdateGraph();
                 break;
             }
+
+            AZ::Data::AssetManager::Instance().DispatchEvents();
+            AZ::SystemTickBus::ExecuteQueuedEvents();
         }
 
         void Modifier::SaveModifiedGraph(const ModificationResult& result)

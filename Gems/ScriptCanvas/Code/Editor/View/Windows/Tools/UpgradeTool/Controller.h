@@ -88,6 +88,7 @@ namespace ScriptCanvasEditor
             void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) override;
             void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) override;
 
+            void SetLoggingPreferences();
             void SetSpinnerIsBusy(bool isBusy);
             void SetRowBusy(int index);
             void SetRowFailed(int index, AZStd::string_view message);
