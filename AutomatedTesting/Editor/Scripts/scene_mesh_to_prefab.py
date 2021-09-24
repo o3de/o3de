@@ -93,7 +93,7 @@ def update_manifest(scene):
         result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
 
         if not result:
-            print("UpdateComponentForEntity failed")
+            raise_error("UpdateComponentForEntity failed")
             return
 
         created_entities.append(entity_id)
@@ -101,7 +101,7 @@ def update_manifest(scene):
     my_template = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", created_entities, source_filename_only + ".prefab")
 
     if my_template == azlmbr.prefab.InvalidTemplateId:
-        print("CreatePrefab failed")
+        raise_error("CreatePrefab failed")
         return
 
     output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", my_template)
@@ -112,7 +112,7 @@ def update_manifest(scene):
         jsonResult = json.loads(jsonString)
         scene_manifest.add_prefab_group(source_filename_only, uuid, jsonResult)
     else:
-        print("SaveTemplateToString failed")
+        raise_error("SaveTemplateToString failed")
 
     new_manifest = scene_manifest.export()
 
