@@ -58,7 +58,7 @@ namespace Multiplayer
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             NetworkCharacterComponentBase::GetRequiredServices(required);
-            required.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+            required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
         }
 
         // AZ::Component
