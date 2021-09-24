@@ -1127,6 +1127,7 @@ namespace UnitTest
     using EditorTransformComponentSelectionManipulatorInteractionTestFixture =
         EditorTransformComponentSelectionViewportPickingManipulatorTestFixture;
 
+    // type to group related inputs and outcomes for parameterized tests (single entity)
     struct ManipulatorOptionsSingle
     {
         AzToolsFramework::ViewportInteraction::KeyboardModifier m_keyboardModifier;
@@ -1213,6 +1214,7 @@ namespace UnitTest
                 AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl, ExpectedTransformAfterLocalRotationManipulatorMotion,
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation) }));
 
+    // type to group related inputs and outcomes for parameterized tests (two entities)
     struct ManipulatorOptionsMultiple
     {
         AzToolsFramework::ViewportInteraction::KeyboardModifier m_keyboardModifier;

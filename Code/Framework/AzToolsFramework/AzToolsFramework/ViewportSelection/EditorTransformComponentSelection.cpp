@@ -3559,7 +3559,7 @@ namespace AzToolsFramework
         // screen space
         const auto calculateGizmoAxis = [&cameraView, &cameraProjection, &screenOffset](const AZ::Vector3& axis)
         {
-            auto result = AZ::Vector2(AzFramework::WorldToScreenNDC(axis, cameraView, cameraProjection));
+            auto result = AZ::Vector2(AzFramework::WorldToScreenNdc(axis, cameraView, cameraProjection));
             result.SetY(1.0f - result.GetY());
             return result + screenOffset;
         };

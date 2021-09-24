@@ -21,11 +21,11 @@
 namespace UnitTest
 {
     // transform a point from normalized device coordinates to world space, and then from world space back to normalized device coordinates
-    AZ::Vector2 ScreenNDCToWorldToScreenNDC(const AZ::Vector2& ndcPoint, const AzFramework::CameraState& cameraState)
+    AZ::Vector2 ScreenNdcToWorldToScreenNdc(const AZ::Vector2& ndcPoint, const AzFramework::CameraState& cameraState)
     {
         const auto worldResult =
-            AzFramework::ScreenNDCToWorld(ndcPoint, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
-        const auto ndcResult = AzFramework::WorldToScreenNDC(worldResult, CameraView(cameraState), CameraProjection(cameraState));
+            AzFramework::ScreenNdcToWorld(ndcPoint, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
+        const auto ndcResult = AzFramework::WorldToScreenNdc(worldResult, CameraView(cameraState), CameraProjection(cameraState));
         return AZ::Vector3ToVector2(ndcResult);
     }
 
@@ -113,25 +113,25 @@ namespace UnitTest
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
         {
             const auto expectedNdcPoint = NdcPoint{ 0.75f, 0.75f };
-            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            const auto resultNdcPoint = ScreenNdcToWorldToScreenNdc(expectedNdcPoint, cameraState);
             EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
         }
 
         {
             const auto expectedNdcPoint = NdcPoint{ 0.5f, 0.5f };
-            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            const auto resultNdcPoint = ScreenNdcToWorldToScreenNdc(expectedNdcPoint, cameraState);
             EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
         }
 
         {
             const auto expectedNdcPoint = NdcPoint{ 0.0f, 0.0f };
-            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            const auto resultNdcPoint = ScreenNdcToWorldToScreenNdc(expectedNdcPoint, cameraState);
             EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
         }
 
         {
             const auto expectedNdcPoint = NdcPoint{ 1.0f, 1.0f };
-            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            const auto resultNdcPoint = ScreenNdcToWorldToScreenNdc(expectedNdcPoint, cameraState);
             EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
         }
     }
@@ -147,7 +147,7 @@ namespace UnitTest
         const auto cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenDimensions);
 
         const auto expectedNdcPoint = NdcPoint{ 0.25f, 0.5f };
-        const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+        const auto resultNdcPoint = ScreenNdcToWorldToScreenNdc(expectedNdcPoint, cameraState);
         EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
     }
 
@@ -164,7 +164,7 @@ namespace UnitTest
         const auto cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenDimensions);
 
         const auto worldResult =
-            AzFramework::ScreenNDCToWorld(NdcPoint{ 0.5f, 0.5f }, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
+            AzFramework::ScreenNdcToWorld(NdcPoint{ 0.5f, 0.5f }, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
         EXPECT_THAT(worldResult, IsClose(AZ::Vector3(10.1f, 0.0f, 0.0f)));
     }
 
