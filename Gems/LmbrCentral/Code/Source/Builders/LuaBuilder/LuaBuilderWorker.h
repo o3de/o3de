@@ -18,7 +18,8 @@ namespace AZ
 
 namespace LuaBuilder
 {
-    class LuaBuilderWorker : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
+    class LuaBuilderWorker
+        : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
     public:
         AZ_TYPE_INFO(LuaBuilderWorker, "{166A7962-A3E4-4451-AC1A-AAD32E29C52C}");
