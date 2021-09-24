@@ -35,7 +35,7 @@ namespace AzToolsFramework::Prefab
     {
         InstanceOptionalReference focusedInstance;
 
-        if (entityId == static_cast<AZ::EntityId>(AZ::EntityId::InvalidEntityId))
+        if (!entityId.IsValid())
         {
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -89,7 +89,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        if (entityId == static_cast<AZ::EntityId>(AZ::EntityId::InvalidEntityId))
+        if (!entityId.IsValid())
         {
             return false;
         }
