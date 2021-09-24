@@ -23,7 +23,6 @@
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI/ImagePool.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>

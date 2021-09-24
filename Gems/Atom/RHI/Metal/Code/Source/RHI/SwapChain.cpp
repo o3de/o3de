@@ -6,10 +6,10 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/SwapChain.h>
