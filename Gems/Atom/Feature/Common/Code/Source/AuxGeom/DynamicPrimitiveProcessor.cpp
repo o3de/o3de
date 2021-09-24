@@ -9,7 +9,6 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -20,6 +19,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/View.h>
+
+#include <AzCore/Debug/Profiler.h>
 
 namespace AZ
 {
