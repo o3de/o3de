@@ -59,18 +59,6 @@ namespace UnitTest
             m_instanceMap["city"] = m_rootInstance.get();
         }
 
-        AZ::EntityId CreateEditorEntity(const char* name, AZ::EntityId parentId)
-        {
-            AZ::Entity* newEntity = CreateEntity(name);
-            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{ newEntity });
-
-            // Parent
-            AZ::TransformBus::Event(newEntity->GetId(), &AZ::TransformInterface::SetParent, parentId);
-
-            return newEntity->GetId();
-        }
-
         AZStd::unordered_map<AZStd::string, AZ::Entity*> m_entityMap;
         AZStd::unordered_map<AZStd::string, Instance*> m_instanceMap;
 
