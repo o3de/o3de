@@ -44,7 +44,12 @@ namespace Multiplayer
         if(shouldSpawnNetEntities)
         {
             AZ::Transform rootEntityTransform = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(rootEntityTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
+
+            auto* transformInterface = GetEntity()->GetTransform();
+            if(transformInterface)
+            {
+                rootEntityTransform = transformInterface->GetWorldTM();
+            }
 
             INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
             AZ_Assert(networkEntityManager != nullptr,
