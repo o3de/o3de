@@ -78,7 +78,6 @@ namespace O3DE::ProjectManager
 
         // Depending and conflicting gems
         GemsSubWidget* m_dependingGems = nullptr;
-        GemsSubWidget* m_conflictingGems = nullptr;
 
         // Additional information
         QLabel* m_versionLabel = nullptr;
