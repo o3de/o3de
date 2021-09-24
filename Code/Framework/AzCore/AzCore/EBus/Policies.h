@@ -250,29 +250,21 @@ namespace AZ
         void Execute()
         {
             AZ_Warning("System", m_isActive, "You are calling execute queued functions on a bus which has not activated its function queuing! Call YourBus::AllowFunctionQueuing(true)!");
-            // The while true loop is used to allow for functions to be added to the message queue
-            // during the middle of executing the previous queue
-            while (true)
-            {
-                MessageQueueType localMessages;
 
-                // Swap the current list of queue functions with a local instance
-                {
-                    AZStd::scoped_lock lock(m_messagesMutex);
-                    AZStd::swap(localMessages, m_messages);
-                }
-                // If the queue function list is empty there are no more function to execute
-                if (localMessages.empty())
-                {
-                    break;
-                }
-                // Execute the queue functions safely now that are owned by the function
-                while (!localMessages.empty())
-                {
-                    const BusMessageCall& localMessage = localMessages.front();
-                    localMessage();
-                    localMessages.pop();
-                }
+            MessageQueueType localMessages;
+
+            // Swap the current list of queue functions with a local instance
+            {
+                AZStd::scoped_lock lock(m_messagesMutex);
+                AZStd::swap(localMessages, m_messages);
+            }
+
+            // Execute the queue functions safely now that are owned by the function
+            while (!localMessages.empty())
+            {
+                const BusMessageCall& localMessage = localMessages.front();
+                localMessage();
+                localMessages.pop();
             }
         }
 
