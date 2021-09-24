@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
@@ -25,8 +26,8 @@ namespace Multiplayer
     //! The default blend factor for ScopedAlterTime
     static constexpr float DefaultBlendFactor = 1.f;
 
-    AZ_TYPE_SAFE_INTEGRAL(HostId, uint32_t);
-    static constexpr HostId InvalidHostId = static_cast<HostId>(-1);
+    using HostId = AzNetworking::IpAddress;
+    static const HostId InvalidHostId = HostId();
 
     AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint32_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
@@ -152,7 +153,6 @@ namespace Multiplayer
     }
 }
 
-AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetEntityId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetComponentId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
@@ -162,7 +162,6 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::HostId, "{D04B3363-8E1B-4193-8B2B-D2140389C9D5}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetEntityId, "{05E4C08B-3A1B-4390-8144-3767D8E56A81}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetComponentId, "{8AF3B382-F187-4323-9014-B380638767E3}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::PropertyIndex, "{F4460210-024D-4B3B-A10A-04B669C34230}");

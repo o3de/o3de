@@ -42,7 +42,7 @@ namespace Multiplayer
 
     private:
         void OnControlledEntityRemove();
-        void OnControlledEntityMigration(const ConstNetworkEntityHandle& entityHandle, HostId remoteHostId, AzNetworking::ConnectionId connectionId);
+        void OnControlledEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId);
         void OnGameplayStarted();
 
         EntityReplicationManager m_entityReplicationManager;

@@ -106,7 +106,7 @@ namespace Multiplayer
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
         bool StartHosting(uint16_t port, bool isDedicated = true) override;
-        bool Connect(AZStd::string remoteAddress, uint16_t port) override;
+        bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
@@ -115,7 +115,7 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
-        void SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) override;
+        void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         float GetCurrentBlendFactor() const override;

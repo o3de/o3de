@@ -41,7 +41,7 @@ namespace Multiplayer
         //! Configures the NetworkEntityManager to operate as an authoritative host.
         //! @param hostId       the hostId of this NetworkEntityManager
         //! @param entityDomain the entity domain used to determine which entities this manager has authority over
-        virtual void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
+        virtual void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
 
         //! Returns whether or not the network entity manager has been initialized to host.
         //! @return boolean true if this network entity manager has been intialized to host
@@ -65,7 +65,7 @@ namespace Multiplayer
 
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
-        virtual HostId GetHostId() const = 0;
+        virtual const HostId& GetHostId() const = 0;
 
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn

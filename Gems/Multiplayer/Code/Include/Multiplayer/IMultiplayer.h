@@ -45,7 +45,7 @@ namespace Multiplayer
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
     using ClientDisconnectedEvent = AZ::Event<>;
-    using NotifyClientMigrationEvent = AZ::Event<HostId, uint64_t, ClientInputId>;
+    using NotifyClientMigrationEvent = AZ::Event<const HostId&, uint64_t, ClientInputId>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -91,7 +91,7 @@ namespace Multiplayer
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
         //! @result if a connection was successfully created
-        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port) = 0;
 
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context.
         //! @param reason The reason for terminating connections
@@ -129,7 +129,7 @@ namespace Multiplayer
         //! @param hostId            the host id of the host the client is migrating to
         //! @param userIdentifier    the user identifier the client will provide the new host to validate identity
         //! @param lastClientInputId the last processed clientInputId by the current host
-        virtual void SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId);
+        virtual void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) = 0;
 
         //! Sends a packet telling if entity update messages can be sent.
         //! @param readyForEntityUpdates Ready for entity updates or not

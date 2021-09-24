@@ -41,7 +41,7 @@ namespace Multiplayer
         AZ::Interface<INetworkEntityManager>::Unregister(this);
     }
 
-    void NetworkEntityManager::Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
+    void NetworkEntityManager::Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_hostId = hostId;
         m_entityDomain = AZStd::move(entityDomain);
@@ -73,7 +73,7 @@ namespace Multiplayer
         return &m_multiplayerComponentRegistry;
     }
 
-    HostId NetworkEntityManager::GetHostId() const
+    const HostId& NetworkEntityManager::GetHostId() const
     {
         return m_hostId;
     }
@@ -106,8 +106,6 @@ namespace Multiplayer
             if (net_DebugCheckNetworkEntityManager)
             {
                 AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
-                [[maybe_unused]] const bool isClientOnlyEntity = false;// (ServerIdFromEntityId(it->first) == InvalidHostId);
-                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
             m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });

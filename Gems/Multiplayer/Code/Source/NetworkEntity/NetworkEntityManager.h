@@ -33,13 +33,13 @@ namespace Multiplayer
 
         //! INetworkEntityManager overrides.
         //! @{
-        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) override;
+        void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) override;
         bool IsInitialized() const override;
         IEntityDomain* GetEntityDomain() const override;
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
-        HostId GetHostId() const override;
+        const HostId& GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
         NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 

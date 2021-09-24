@@ -13,7 +13,6 @@
     </Packet>
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
-        <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>
   

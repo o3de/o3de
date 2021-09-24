@@ -23,14 +23,14 @@ namespace AzNetworking
 
     AZ_CVAR(bool, net_TcpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Tcp connections");
     AZ_CVAR(AZ::TimeMs, net_TcpHeartbeatTimeMs, AZ::TimeMs{  2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Tcp connection heartbeat frequency");
-    AZ_CVAR(AZ::TimeMs, net_TcpDefaultTimeoutTimeMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Tcp connection");
+    AZ_CVAR(AZ::TimeMs, net_TcpDefaultTimeoutMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Tcp connection");
 
     TcpNetworkInterface::TcpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
         , m_listenThread(listenThread)
-        , m_timeoutMs(net_TcpDefaultTimeoutTimeMs)
+        , m_timeoutMs(net_TcpDefaultTimeoutMs)
     {
         ;
     }

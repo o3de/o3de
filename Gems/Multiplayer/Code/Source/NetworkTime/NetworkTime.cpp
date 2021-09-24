@@ -105,7 +105,7 @@ namespace Multiplayer
                 if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                 {
                     AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-                    const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityLocalBoundsUnion(entity->GetId());
+                    const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityWorldBoundsUnion(entity->GetId());
                     const AZ::Vector3 currentCenter = currentBounds.GetCenter();
 
                     NetworkTransformComponent* networkTransform = entity->template FindComponent<NetworkTransformComponent>();

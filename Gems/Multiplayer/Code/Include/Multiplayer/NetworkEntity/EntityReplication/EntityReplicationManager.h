@@ -56,8 +56,8 @@ namespace Multiplayer
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
         ~EntityReplicationManager() = default;
 
-        void SetRemoteHostId(HostId hostId);
-        HostId GetRemoteHostId() const;
+        void SetRemoteHostId(const HostId& hostId);
+        const HostId& GetRemoteHostId() const;
 
         void ActivatePendingEntities();
         void SendUpdates(AZ::TimeMs hostTimeMs);
@@ -127,7 +127,7 @@ namespace Multiplayer
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);
-        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, HostId remoteHostId, AzNetworking::ConnectionId connectionId);
+        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId);
 
         EntityReplicator* AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole netEntityRole);
 

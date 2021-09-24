@@ -24,8 +24,8 @@ namespace Multiplayer
         NetworkEntityAuthorityTracker(INetworkEntityManager& networkEntityManager);
 
         bool DoesEntityHaveOwner(ConstNetworkEntityHandle entityHandle) const;
-        bool AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, HostId newOwner);
-        void RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, HostId previousOwner);
+        bool AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner);
+        void RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner);
         HostId GetEntityAuthorityManager(ConstNetworkEntityHandle entityHandle) const;
 
     private:
@@ -37,7 +37,7 @@ namespace Multiplayer
         struct TimeoutData final
         {
             TimeoutData() = default;
-            TimeoutData(ConstNetworkEntityHandle entityHandle, HostId previousOwner);
+            TimeoutData(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner);
             ConstNetworkEntityHandle m_entityHandle;
             HostId m_previousOwner = InvalidHostId;
         };

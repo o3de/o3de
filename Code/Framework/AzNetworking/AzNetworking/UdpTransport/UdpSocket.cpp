@@ -79,17 +79,15 @@ namespace AzNetworking
             {
                 const int32_t error = GetLastNetworkError();
                 AZLOG_ERROR("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+                Close();
                 return false;
             }
         }
 
-        if (!SetSocketBufferSizes(m_socketFd, net_UdpSendBufferSize, net_UdpRecvBufferSize))
+        if (!SetSocketBufferSizes(m_socketFd, net_UdpSendBufferSize, net_UdpRecvBufferSize)
+         || !SetSocketNonBlocking(m_socketFd))
         {
-            return false;
-        }
-
-        if (!SetSocketNonBlocking(m_socketFd))
-        {
+            Close();
             return false;
         }
 

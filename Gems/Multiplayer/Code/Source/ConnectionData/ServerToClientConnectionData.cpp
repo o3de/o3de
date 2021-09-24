@@ -28,7 +28,7 @@ namespace Multiplayer
     )
         : m_connection(connection)
         , m_controlledEntityRemovedHandler([this](const ConstNetworkEntityHandle&) { OnControlledEntityRemove(); })
-        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, HostId remoteHostId, AzNetworking::ConnectionId connectionId) { OnControlledEntityMigration(entityHandle, remoteHostId, connectionId); })
+        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId) { OnControlledEntityMigration(entityHandle, remoteHostId, connectionId); })
         , m_controlledEntity(controlledEntity)
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalServerToRemoteClient)
     {
@@ -94,13 +94,10 @@ namespace Multiplayer
     void ServerToClientConnectionData::OnControlledEntityMigration
     (
         [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-        [[maybe_unused]] HostId remoteHostId,
+        [[maybe_unused]] const HostId& remoteHostId,
         [[maybe_unused]] AzNetworking::ConnectionId connectionId
     )
     {
-        AzNetworking::IpAddress serverAddress;
-        // serverAddress = GetHost(remoteHostId).GetAddress();
-
         ClientInputId migratedClientInputId = ClientInputId{ 0 };
         if (m_controlledEntity != nullptr)
         {
@@ -118,7 +115,7 @@ namespace Multiplayer
         GetMultiplayer()->SendNotifyClientMigrationEvent(remoteHostId, randomUserIdentifier, migratedClientInputId);
 
         // Tell the client who to join
-        MultiplayerPackets::ClientMigration clientMigration(serverAddress, randomUserIdentifier, migratedClientInputId);
+        MultiplayerPackets::ClientMigration clientMigration(remoteHostId, randomUserIdentifier, migratedClientInputId);
         GetConnection()->SendReliablePacket(clientMigration);
 
         m_controlledEntity = NetworkEntityHandle();

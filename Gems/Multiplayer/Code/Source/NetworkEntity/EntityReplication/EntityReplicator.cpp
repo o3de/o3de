@@ -413,10 +413,10 @@ namespace Multiplayer
             AZLOG
             (
                 NET_RepDeletes,
-                "Sending delete replicator id %u migrated %d to remote manager id %d",
+                "Sending delete replicator id %u migrated %d to remote host %s",
                 aznumeric_cast<uint32_t>(GetEntityHandle().GetNetEntityId()),
                 WasMigrated() ? 1 : 0,
-                aznumeric_cast<int32_t>(m_replicationManager.GetRemoteHostId())
+                m_replicationManager.GetRemoteHostId().GetString().c_str()
             );
             return NetworkEntityUpdateMessage(GetEntityHandle().GetNetEntityId(), WasMigrated(), m_propertyPublisher->IsRemoteReplicatorEstablished());
         }

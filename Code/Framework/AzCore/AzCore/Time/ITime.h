@@ -83,7 +83,7 @@ namespace AZ
     //! Converts from microseconds to milliseconds
     inline TimeMs TimeUsToMs(TimeUs value)
     {
-        return static_cast<TimeMs>(value * static_cast<TimeUs>(1000));
+        return static_cast<TimeMs>(value / static_cast<TimeUs>(1000));
     }
 
     //! Converts from milliseconds to seconds

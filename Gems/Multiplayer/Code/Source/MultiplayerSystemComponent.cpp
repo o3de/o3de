@@ -71,7 +71,7 @@ namespace Multiplayer
 
     AZ_CVAR(uint16_t, cl_clientport, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The port to bind to for game traffic when connecting to a remote host, a value of 0 will select any available port");
-    AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "The address of the remote server or host to connect to");
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");
@@ -92,8 +92,6 @@ namespace Multiplayer
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
-            serializeContext->Class<HostId>()
-                ->Version(1);
             serializeContext->Class<NetEntityId>()
                 ->Version(1);
             serializeContext->Class<NetComponentId>()
@@ -109,7 +107,6 @@ namespace Multiplayer
         }
         else if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<HostId>();
             behaviorContext->Class<NetEntityId>();
             behaviorContext->Class<NetComponentId>();
             behaviorContext->Class<PropertyIndex>();
@@ -208,7 +205,7 @@ namespace Multiplayer
         return m_networkInterface->Listen(port);
     }
 
-    bool MultiplayerSystemComponent::Connect(AZStd::string remoteAddress, uint16_t port)
+    bool MultiplayerSystemComponent::Connect(const AZStd::string& remoteAddress, uint16_t port)
     {
         InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
@@ -468,7 +465,7 @@ namespace Multiplayer
         }
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
             m_didHandshake = true;
 
@@ -760,7 +757,11 @@ namespace Multiplayer
                 if (!m_networkEntityManager.IsInitialized())
                 {
                     // Set up a full ownership domain if we didn't construct a domain during the initialize event
-                    m_networkEntityManager.Initialize(InvalidHostId, AZStd::make_unique<FullOwnershipEntityDomain>());
+                    const AZ::CVarFixedString serverAddr = cl_serveraddr;
+                    const uint16_t serverPort = cl_serverport;
+                    const AzNetworking::ProtocolType serverProtocol = sv_protocol;
+                    const AzNetworking::IpAddress hostId = AzNetworking::IpAddress(serverAddr.c_str(), serverPort, serverProtocol);
+                    m_networkEntityManager.Initialize(hostId, AZStd::make_unique<FullOwnershipEntityDomain>());
                 }
             }
         }
@@ -815,7 +816,7 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
-    void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(HostId hostId, uint64_t userIdentifier, ClientInputId lastClientInputId)
+    void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId)
     {
         m_notifyClientMigrationEvent.Signal(hostId, userIdentifier, lastClientInputId);
     }
@@ -1012,7 +1013,10 @@ namespace Multiplayer
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated);
+        if (!AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated))
+        {
+            AZLOG_ERROR("Failed to start listening on port %u, port is in use?", static_cast<uint32_t>(sv_port));
+        }
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 

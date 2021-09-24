@@ -29,9 +29,16 @@ namespace Multiplayer
         {
             AZ_Assert(networkEntityTracker, "NetworkEntityTracker is not valid");
             NetBindComponent* netBindComponent = m_entity->template FindComponent<NetBindComponent>();
-            AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
-            m_netBindComponent = netBindComponent;
-            m_netEntityId = netBindComponent->GetNetEntityId();
+            if (netBindComponent != nullptr)
+            {
+                AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
+                m_netBindComponent = netBindComponent;
+                m_netEntityId = netBindComponent->GetNetEntityId();
+            }
+            else
+            {
+                *this = ConstNetworkEntityHandle();
+            }
         }
     }
 
