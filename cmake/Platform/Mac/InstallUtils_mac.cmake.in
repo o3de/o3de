@@ -155,7 +155,9 @@ function(ly_copy source_file target_directory)
 endfunction()
 
 function(ly_download_and_codesign_sdk_python)
-    execute_process(COMMAND ${CMAKE_COMMAND} -DPAL_PLATFORM_NAME=Mac -DLY_3RDPARTY_PATH=${CMAKE_INSTALL_PREFIX}/python -P ${CMAKE_INSTALL_PREFIX}/python/get_python.cmake)
+    execute_process(COMMAND ${CMAKE_COMMAND} -DPAL_PLATFORM_NAME=Mac -DLY_3RDPARTY_PATH=${CMAKE_INSTALL_PREFIX}/python -P ${CMAKE_INSTALL_PREFIX}/python/get_python.cmake
+        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+    )
     fixup_python_framework(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
     codesign_python_framework_binaries(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
     codesign_file(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework @LY_ROOT_FOLDER@/python/Platform/Mac/PythonEntitlements.plist)
