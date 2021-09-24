@@ -1590,6 +1590,12 @@ namespace AzToolsFramework
         auto uniformLeftMouseMoveCallback = [this, sharedScaleState, prevModifiers = ViewportInteraction::KeyboardModifiers()](
                                                 const LinearManipulator::Action& action) mutable
         {
+            // do nothing to modify the manipulator
+            if (action.m_modifiers.Ctrl())
+            {
+                return;
+            }
+
             if (prevModifiers != action.m_modifiers)
             {
                 UpdateInitialTransform(m_entityIdManipulators);
