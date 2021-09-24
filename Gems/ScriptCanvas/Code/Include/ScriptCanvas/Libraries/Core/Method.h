@@ -168,7 +168,7 @@ namespace ScriptCanvas
 
                 AZ_INLINE void SetWarnOnMissingFunction(bool enabled) { m_warnOnMissingFunction = enabled; }
 
-                bool GetBehaviorContextClassMethod(const AZStd::string& name, const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
+                bool GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
 
             private:
                 friend struct ScriptCanvas::BehaviorContextMethodHelper;
