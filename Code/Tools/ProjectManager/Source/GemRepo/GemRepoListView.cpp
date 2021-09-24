@@ -11,13 +11,14 @@
 
 namespace O3DE::ProjectManager
 {
-    GemRepoListView::GemRepoListView(QAbstractItemModel* model, QWidget* parent)
+    GemRepoListView::GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("gemRepoListView");
         setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
         setModel(model);
+        setSelectionModel(selectionModel);
         setItemDelegate(new GemRepoItemDelegate(model, this));
     }
 } // namespace O3DE::ProjectManager

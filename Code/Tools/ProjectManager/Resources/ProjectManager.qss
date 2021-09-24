@@ -498,6 +498,18 @@ QProgressBar::chunk {
     font-size: 10px;
 }
 
+/************** Gems SubWidget **************/
+
+#gemSubWidgetTitleLabel {
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+#gemSubWidgetTextLabel {
+    color: #DDDDDD;
+    font-size: 10px;
+}
+
 /************** Gem Catalog (Inspector) **************/
 
 #GemCatalogInspector {
@@ -596,4 +608,21 @@ QProgressBar::chunk {
 
 #gemRepoInspector {
     background: #444444;
+}
+
+/************** Gem Repo Inspector **************/
+
+#gemRepoInspectorNameLabel {
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+#gemRepoInspectorBodyLabel {
+    font-size: 12px;
+    color: #DDDDDD;
+}
+
+#gemRepoInspectorAddInfoTitleLabel {
+    font-size: 16px;
+    color: #FFFFFF;
 }

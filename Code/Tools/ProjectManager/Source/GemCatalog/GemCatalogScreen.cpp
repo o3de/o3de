@@ -100,6 +100,8 @@ namespace O3DE::ProjectManager
                 m_gemModel->AddGem(gemInfo);
             }
 
+            m_gemModel->UpdateGemDependencies();
+
             // Gather enabled gems for the given project.
             auto enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
             if (enabledGemNamesResult.IsSuccess())
