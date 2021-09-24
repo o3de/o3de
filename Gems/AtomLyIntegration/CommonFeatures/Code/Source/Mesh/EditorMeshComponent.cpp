@@ -18,6 +18,25 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct MeshComponentNotificationBusHandler final
+                : public MeshComponentNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    MeshComponentNotificationBusHandler,
+                    "{8B8F4977-817F-4C7C-9141-0E5FF899E1BC}",
+                    AZ::SystemAllocator,
+                    OnModelReady);
+
+                void OnModelReady(const Data::Asset<RPI::ModelAsset>& [[maybe_unused]] modelAsset, const Data::Instance<RPI::Model>& [[maybe_unused]] model) override
+                {
+                    Call(FN_OnModelReady);
+                }
+            };
+        } // namespace Internal
+
         void EditorMeshComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -112,6 +131,14 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
 
                 behaviorContext->Class<EditorMeshComponent>()->RequestBus("RenderMeshComponentRequestBus");
+
+                behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Script::Attributes::Module, "editor")
+                    ->Handler<Internal::MeshComponentNotificationBusHandler>()
+                    ->Event("OnModelReady", &MeshComponentNotifications::OnModelReady)
+                    ;
             }
         }
 
