@@ -55,8 +55,24 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         AddressW = Clamp;
     };
 
+    // Base Color
     float3 m_baseColor;
-    float m_roughness;
+    float m_baseColorFactor;
+    Texture2D<float3> m_baseColorMap;
+
+    // Normal
+    Texture2D<float2> m_normalMap;
+    bool m_flipNormalX;
+    bool m_flipNormalY;
+    float m_normalFactor;
+
+    // Roughness
+    Texture2D<float> m_roughnessMap;
+    float m_roughnessFactor;
+
+    // Specular
+    Texture2D<float> m_specularF0Map;
+    float m_specularF0Factor;
 }
 
 option bool o_useTerrainSmoothing = false;

@@ -74,11 +74,11 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(IN.m_normal);
-    surface.roughnessLinear = TerrainMaterialSrg::m_roughness;
+    surface.roughnessLinear = TerrainMaterialSrg::m_roughnessFactor;
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    const float specularF0Factor = 0.5f;
+    const float specularF0Factor = TerrainMaterialSrg::m_specularF0Factor;
     float3 color = TerrainMaterialSrg::m_baseColor;
     surface.SetAlbedoAndSpecularF0(color, specularF0Factor, 0.0);
 
