@@ -28,21 +28,21 @@ namespace AzToolsFramework
     {
         std::promise<bool> p;
         p.set_value(false);
-        return AZStd::move(p.get_future());
+        return p.get_future();
     }
 
     std::future<bool> NullArchiveComponent::CreateArchive(
         const AZStd::string& /*archivePath*/,
         const AZStd::string& /*dirToArchive*/)
     {
-        return AZStd::move(DefaultFuture());
+        return DefaultFuture();
     }
 
     std::future<bool> NullArchiveComponent::ExtractArchive(
         const AZStd::string& /*archivePath*/,
         const AZStd::string& /*destinationPath*/)
     {
-        return AZStd::move(DefaultFuture());
+        return DefaultFuture();
     }
 
     std::future<bool> NullArchiveComponent::ExtractFile(
@@ -50,7 +50,7 @@ namespace AzToolsFramework
         const AZStd::string& /*fileInArchive*/,
         const AZStd::string& /*destinationPath*/)
     {
-        return AZStd::move(DefaultFuture());
+        return DefaultFuture();
     }
 
     bool NullArchiveComponent::ListFilesInArchive(const AZStd::string& /*archivePath*/, AZStd::vector<AZStd::string>& /*outFileEntries*/)
@@ -63,7 +63,7 @@ namespace AzToolsFramework
         const AZStd::string& /*fileToAdd*/,
         const AZStd::string& /*pathInArchive*/)
     {
-        return AZStd::move(DefaultFuture());
+        return DefaultFuture();
     }
 
     std::future<bool> NullArchiveComponent::AddFilesToArchive(
@@ -71,7 +71,7 @@ namespace AzToolsFramework
         const AZStd::string& /*workingDirectory*/,
         const AZStd::string& /*listFilePath*/)
     {
-        return AZStd::move(DefaultFuture());
+        return DefaultFuture();
     }
 
     void NullArchiveComponent::Reflect(AZ::ReflectContext* context)

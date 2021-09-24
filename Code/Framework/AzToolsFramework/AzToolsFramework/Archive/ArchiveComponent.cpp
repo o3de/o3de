@@ -103,6 +103,7 @@ namespace AzToolsFramework
         {
             t.join();
         }
+        m_threads = {};
     }
 
     void ArchiveComponent::Reflect(AZ::ReflectContext * context)
@@ -134,7 +135,7 @@ namespace AzToolsFramework
         {
             std::promise<bool> p;
             p.set_value(false);
-            return AZStd::move(p.get_future());
+            return p.get_future();
         }
 
         auto FnCreateArchive = [this, archivePath, dirToArchive](std::promise<bool>&& p) -> void
@@ -165,7 +166,7 @@ namespace AzToolsFramework
 
                 AZ::IO::PathView relativePath = AZ::IO::PathView{ fileName }.LexicallyRelative(workingPath);
 
-                AZStd::string fullPath = (workingPath / relativePath).c_str();
+                AZStd::string fullPath = (workingPath / relativePath).Native();
                 if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
@@ -198,7 +199,7 @@ namespace AzToolsFramework
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Create)";
         m_threads.emplace_back(threadDesc, FnCreateArchive, AZStd::move(p));
-        return AZStd::move(f);
+        return f;
     }
 
 
@@ -210,7 +211,7 @@ namespace AzToolsFramework
         {
             std::promise<bool> p;
             p.set_value(false);
-            return AZStd::move(p.get_future());
+            return p.get_future();
         }
 
         auto FnExtractArchive = [this, archivePath, destinationPath](std::promise<bool>&& p) -> void
@@ -285,7 +286,7 @@ namespace AzToolsFramework
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Extract)";
         m_threads.emplace_back(threadDesc, FnExtractArchive, AZStd::move(p));
-        return AZStd::move(f);
+        return f;
     }
 
 
@@ -298,7 +299,7 @@ namespace AzToolsFramework
         {
             std::promise<bool> p;
             p.set_value(false);
-            return AZStd::move(p.get_future());
+            return p.get_future();
         }
 
         auto FnExtractFile = [this, archivePath, fileInArchive, destinationPath](std::promise<bool>&& p) -> void
@@ -360,7 +361,7 @@ namespace AzToolsFramework
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Extract Single)";
         m_threads.emplace_back(threadDesc, FnExtractFile, AZStd::move(p));
-        return AZStd::move(f);
+        return f;
     }
 
 
@@ -398,7 +399,7 @@ namespace AzToolsFramework
         {
             std::promise<bool> p;
             p.set_value(false);
-            return AZStd::move(p.get_future());
+            return p.get_future();
         }
 
         auto FnAddFileToArchive = [this, archivePath, workingDirectory, fileToAdd](std::promise<bool>&& p) -> void
@@ -446,7 +447,7 @@ namespace AzToolsFramework
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Add Single)";
         m_threads.emplace_back(threadDesc, FnAddFileToArchive, AZStd::move(p));
-        return AZStd::move(f);
+        return f;
     }
 
 
@@ -459,7 +460,7 @@ namespace AzToolsFramework
         {
             std::promise<bool> p;
             p.set_value(false);
-            return AZStd::move(p.get_future());
+            return p.get_future();
         }
 
         auto FnAddFilesToArchive = [this, archivePath, workingDirectory, listFilePath](std::promise<bool>&& p) -> void
@@ -512,7 +513,7 @@ namespace AzToolsFramework
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Archive Task (Add)";
         m_threads.emplace_back(threadDesc, FnAddFilesToArchive, AZStd::move(p));
-        return AZStd::move(f);
+        return f;
     }
 
 

@@ -605,6 +605,8 @@ namespace AZ::IO::ZipDir
             fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) +
                 localFileHeader->nFileNameLength + localFileHeader->nExtraFieldLength;
 
+            fileEntry.nEOFOffset = fileEntry.nFileDataOffset + fileEntry.desc.lSizeCompressed;
+
             if (m_nInitMethod != ZipDir::InitMethod::Default)
             {
                 if (m_nInitMethod == ZipDir::InitMethod::FullValidation)
@@ -641,9 +643,9 @@ namespace AZ::IO::ZipDir
                 Read(buffer.data() + buffer.size(), extraDataLen);
 
                 // Compare local file name with the CDR file name, they should match
-                auto zipFileNameBegin = buffer.data() + sizeof(ZipFile::LocalFileHeader);
-                auto zipFileNameEnd = zipFileNameBegin + localFileHeader->nFileNameLength;
-                if (!AZStd::equal(zipFileNameBegin, zipFileNameEnd, reinterpret_cast<const char*>(pFileHeader + 1)))
+                AZStd::string_view zipFileName{ buffer.data() + sizeof(ZipFile::LocalFileHeader), localFileHeader->nFileNameLength };
+                AZStd::string_view cdrFileName{ reinterpret_cast<const char*>(pFileHeader + 1), pFileHeader->nFileNameLength };
+                if (zipFileName != cdrFileName)
                 {
                     AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
                         " The file name in the local file header doesn't match the name in the global file header."
@@ -654,8 +656,6 @@ namespace AZ::IO::ZipDir
 
                 // make sure it's the same file and the fileEntry structure is properly initialized
                 AZ_Assert(fileEntry.nFileHeaderOffset == pFileHeader->lLocalHeaderOffset, "The file entry header offset doesn't match the file header local offst");
-
-                fileEntry.nEOFOffset = fileEntry.nFileDataOffset + fileEntry.desc.lSizeCompressed;
 
                 if (fileEntry.nFileDataOffset >= m_nCDREndPos)
                 {
