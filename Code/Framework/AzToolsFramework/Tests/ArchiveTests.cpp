@@ -31,7 +31,6 @@ namespace UnitTest
 {
     namespace
     {
-
         bool CreateDummyFile(const QString& fullPathToFile, const QString& tempStr = {})
         {
             QFileInfo fi(fullPathToFile);
@@ -50,7 +49,7 @@ namespace UnitTest
             return true;
         }
 
-        class ArchiveTest :
+        class ArchiveComponentTest :
             public ::testing::Test
         {
 
@@ -73,7 +72,12 @@ namespace UnitTest
                 return "Archive";
             }
 
-            void CreateArchiveFolder( QString archiveFolderName, QStringList fileList )
+            QString GetExtractFolderName()
+            {
+                return "Extracted";
+            }
+
+            void CreateArchiveFolder(QString archiveFolderName, QStringList fileList)
             {
                 QDir tempPath = QDir(m_tempDir.GetDirectory()).filePath(archiveFolderName);
 
@@ -82,6 +86,14 @@ namespace UnitTest
                     QString absoluteTestFilePath = tempPath.absoluteFilePath(thisFile);
                     EXPECT_TRUE(CreateDummyFile(absoluteTestFilePath));
                 }
+            }
+
+            QString CreateArchiveListTextFile()
+            {
+                QString listFilePath = QDir(m_tempDir.GetDirectory()).absoluteFilePath("FileList.txt");
+                QString textContent = CreateArchiveFileList().join("\n");
+                EXPECT_TRUE(CreateDummyFile(listFilePath, textContent));
+                return listFilePath;
             }
 
             void CreateArchiveFolder()
@@ -99,6 +111,11 @@ namespace UnitTest
                 return QDir(m_tempDir.GetDirectory()).filePath(GetArchiveFolderName());
             }
 
+            QString GetExtractFolder()
+            {
+                return QDir(m_tempDir.GetDirectory()).filePath(GetExtractFolderName());
+            }
+
             bool CreateArchive()
             {
                 std::future<bool> createResult;
@@ -111,7 +128,7 @@ namespace UnitTest
 
             void SetUp() override
             {
-                m_app.reset(aznew ToolsTestApplication("ArchiveTest"));
+                m_app.reset(aznew ToolsTestApplication("ArchiveComponentTest"));
                 m_app->Start(AzFramework::Application::Descriptor());
                 // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
                 // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -135,9 +152,9 @@ namespace UnitTest
         };
 
 #if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
+        TEST_F(ArchiveComponentTest, DISABLED_CreateArchive_FilesAtThreeDepths_ArchiveCreated)
 #else
-        TEST_F(ArchiveTest, CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
+        TEST_F(ArchiveComponentTest, CreateArchive_FilesAtThreeDepths_ArchiveCreated)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.IsValid());
@@ -147,13 +164,13 @@ namespace UnitTest
             bool createResult = CreateArchive();
             AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
-            EXPECT_EQ(createResult, true);
+            EXPECT_TRUE(createResult);
         }
 
 #if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
+        TEST_F(ArchiveComponentTest, DISABLED_ListFilesInArchive_FilesAtThreeDepths_FilesFound)
 #else
-        TEST_F(ArchiveTest, ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
+        TEST_F(ArchiveComponentTest, ListFilesInArchive_FilesAtThreeDepths_FilesFound)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.IsValid());
@@ -174,9 +191,9 @@ namespace UnitTest
         }
 
 #if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_CreateDeltaCatalog_AssetsNotRegistered_Failure)
+        TEST_F(ArchiveComponentTest, DISABLED_CreateDeltaCatalog_AssetsNotRegistered_Failure)
 #else
-        TEST_F(ArchiveTest, CreateDeltaCatalog_AssetsNotRegistered_Failure)
+        TEST_F(ArchiveComponentTest, CreateDeltaCatalog_AssetsNotRegistered_Failure)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
@@ -190,15 +207,67 @@ namespace UnitTest
 
             bool catalogCreated{ true };
             AZ::Test::AssertAbsorber assertAbsorber;
-            AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
+            AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated,
+                &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
 
             EXPECT_EQ(catalogCreated, false);
         }
 
 #if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
+        TEST_F(ArchiveComponentTest, DISABLED_AddFilesToArchive_FromListFile_Success)
 #else
-        TEST_F(ArchiveTest, CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
+        TEST_F(ArchiveComponentTest, AddFilesToArchive_FromListFile_Success)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        {
+            QString listFile = CreateArchiveListTextFile();
+            CreateArchiveFolder(GetArchiveFolderName(), CreateArchiveFileList());
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            std::future<bool> addResult;
+            AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+                addResult, &AzToolsFramework::ArchiveCommandsBus::Events::AddFilesToArchive, GetArchivePath().toStdString().c_str(),
+                GetArchiveFolder().toStdString().c_str(), listFile.toStdString().c_str());
+            bool result = addResult.get();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+
+            EXPECT_TRUE(result);
+        }
+
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveComponentTest, DISABLED_ExtractArchive_AllFiles_Success)
+#else
+        TEST_F(ArchiveComponentTest, ExtractArchive_AllFiles_Success)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        {
+            CreateArchiveFolder();
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            bool createResult = CreateArchive();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+            EXPECT_TRUE(createResult);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            std::future<bool> extractResult;
+            AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+                extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, GetArchivePath().toStdString().c_str(),
+                GetExtractFolder().toStdString().c_str());
+            bool result = extractResult.get();
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+
+            EXPECT_TRUE(result);
+
+            QStringList archiveFiles = CreateArchiveFileList();
+            for (const auto& file : archiveFiles)
+            {
+                QString fullFilePath = QDir(GetExtractFolder()).absoluteFilePath(file);
+                QFileInfo fi(fullFilePath);
+                EXPECT_TRUE(fi.exists());
+            }
+        }
+
+#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
+        TEST_F(ArchiveComponentTest, DISABLED_CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
+#else
+        TEST_F(ArchiveComponentTest, CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();

@@ -187,6 +187,7 @@ namespace AzToolsFramework
                 success = (success && thisSuccess);
             }
 
+            archive.reset();
             p.set_value(success);
         };
 
@@ -434,6 +435,7 @@ namespace AzToolsFramework
                     AZ_STRING_ARG(archive->GetFullPath().Native()));
             }
 
+            archive.reset();
             p.set_value(success);
         };
 
@@ -499,6 +501,7 @@ namespace AzToolsFramework
 
             ArchiveUtils::ProcessFileList(listFilePath, PerLineCallback);
 
+            archive.reset();
             p.set_value(success);
         };
 
