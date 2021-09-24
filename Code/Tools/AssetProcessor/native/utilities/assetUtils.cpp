@@ -164,7 +164,10 @@ namespace AssetUtilsInternal
 
         AZ::SettingsRegistryMergeUtils::DumperSettings apDumperSettings;
         apDumperSettings.m_prettifyOutput = true;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        AZ_POP_DISABLE_WARNING
         {
             // The AssetUtils only updates the following keys in the registry
             // Dump them all out to the setreg file

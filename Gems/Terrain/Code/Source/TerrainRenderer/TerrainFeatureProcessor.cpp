@@ -65,7 +65,7 @@ namespace Terrain
         EnableSceneNotification();
     }
 
-    void TerrainFeatureProcessor::ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail)
+    void TerrainFeatureProcessor::ConfigurePipelineState(ShaderState& shaderState, [[maybe_unused]] bool assertOnFail)
     {
         if (shaderState.m_shader == nullptr)
         {

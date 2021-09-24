@@ -228,9 +228,9 @@ namespace AZ
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
 
-            const AZStd::sys_time_t createJobsEndStamp = AZStd::GetTimeNowMicroSecond();
-            const u64 createJobDurationMicros = createJobsEndStamp - shaderAssetBuildTimestamp;
-            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", fullPath.c_str(), createJobDurationMicros );
+            AZ_TracePrintf(
+                ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", fullPath.c_str(),
+                AZStd::GetTimeNowMicroSecond() - shaderAssetBuildTimestamp);
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }

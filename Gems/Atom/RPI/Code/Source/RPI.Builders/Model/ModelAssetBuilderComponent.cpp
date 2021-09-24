@@ -1078,7 +1078,9 @@ namespace AZ
         template<typename T>
         void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
         {
+#if defined(AZ_ENABLE_TRACING)
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
+#endif()
             AZ_Error(s_builderName, expectedVertexCount == actualVertexCount, "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool so they were merged.", streamName);
         }
 
