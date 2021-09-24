@@ -56,8 +56,9 @@ namespace O3DE::ProjectManager
         // Gems
 
         /**
-         * Get info about a Gem 
-         * @param projectPath the absolute path to the Gem 
+         * Get info about a Gem.
+         * @param path The absolute path to the Gem
+         * @param projectPath (Optional) The absolute path to the Gem project
          * @return an outcome with GemInfo on success 
          */
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;

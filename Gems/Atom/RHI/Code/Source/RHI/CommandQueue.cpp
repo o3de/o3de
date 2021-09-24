@@ -7,8 +7,9 @@
  */
 
 #include <Atom/RHI/CommandQueue.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
+
+#include <AzCore/Debug/Profiler.h>
 
 namespace AZ
 {

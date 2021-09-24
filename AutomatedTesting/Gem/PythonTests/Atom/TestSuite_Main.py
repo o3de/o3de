@@ -38,24 +38,24 @@ class TestAtomEditorComponentsMain(object):
         7. Exposure Control
         8. Directional Light
         9. DepthOfField
-        10. Decal (Atom)
+        10. Decal
         """
         cfg_args = [level]
 
         expected_lines = [
-            # Decal (Atom) Component
-            "Decal (Atom) Entity successfully created",
-            "Decal (Atom)_test: Component added to the entity: True",
-            "Decal (Atom)_test: Component removed after UNDO: True",
-            "Decal (Atom)_test: Component added after REDO: True",
-            "Decal (Atom)_test: Entered game mode: True",
-            "Decal (Atom)_test: Exit game mode: True",
-            "Decal (Atom) Controller|Configuration|Material: SUCCESS",
-            "Decal (Atom)_test: Entity is hidden: True",
-            "Decal (Atom)_test: Entity is shown: True",
-            "Decal (Atom)_test: Entity deleted: True",
-            "Decal (Atom)_test: UNDO entity deletion works: True",
-            "Decal (Atom)_test: REDO entity deletion works: True",
+            # Decal Component
+            "Decal Entity successfully created",
+            "Decal_test: Component added to the entity: True",
+            "Decal_test: Component removed after UNDO: True",
+            "Decal_test: Component added after REDO: True",
+            "Decal_test: Entered game mode: True",
+            "Decal_test: Exit game mode: True",
+            "Decal Controller|Configuration|Material: SUCCESS",
+            "Decal_test: Entity is hidden: True",
+            "Decal_test: Entity is shown: True",
+            "Decal_test: Entity deleted: True",
+            "Decal_test: UNDO entity deletion works: True",
+            "Decal_test: REDO entity deletion works: True",
             # DepthOfField Component
             "DepthOfField Entity successfully created",
             "DepthOfField_test: Component added to the entity: True",

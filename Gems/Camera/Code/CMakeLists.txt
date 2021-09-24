@@ -57,6 +57,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzToolsFramework
                 Gem::Camera.Static
+                Gem::AtomToolsFramework.Static
         RUNTIME_DEPENDENCIES
             Legacy::EditorCommon
     )

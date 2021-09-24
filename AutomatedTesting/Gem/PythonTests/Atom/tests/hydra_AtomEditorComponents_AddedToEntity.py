@@ -184,7 +184,7 @@ def run():
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
     ComponentTests(
-        "Decal (Atom)", lambda entity_obj: verify_set_property(
+        "Decal", lambda entity_obj: verify_set_property(
             entity_obj, "Controller|Configuration|Material", material_asset))
 
     # Directional Light Component

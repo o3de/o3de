@@ -77,7 +77,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 
     // compute specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
     float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (!ComputeProbeSpecular(IN.m_position.xy, positionWS, ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, sampleIndex, specular))
+    if (!ComputeProbeSpecular(IN.m_position.xy, positionWS, ObjectSrg::GetWorldMatrixInverse(), ObjectSrg::m_outerObbHalfLengths, sampleIndex, specular))
     {
         discard;
     }
@@ -85,13 +85,17 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     // determine blend based on position with respect to the inner and outer AABBs
     // if it's inside the inner AABB it blends at 100%, otherwise it's the percentage of the distance between the inner/outer AABB
     float blendWeight = 1.0f;
-    if (!AabbContainsPoint(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, positionWS))
+    if (!ObbContainsPoint(ObjectSrg::GetWorldMatrixInverse(), ObjectSrg::m_innerObbHalfLengths, positionWS))
     {
         // not inside the inner AABB, so it's in between the inner and outer AABBs
         // compute blend amount based on the distance to the outer AABB
-        blendWeight = ComputeLerpBetweenInnerOuterAABBs(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS);
+        blendWeight = ComputeLerpBetweenInnerOuterOBBs(
+            ObjectSrg::GetWorldMatrixInverse(),
+            ObjectSrg::m_innerObbHalfLengths,
+            ObjectSrg::m_outerObbHalfLengths,
+            positionWS);
     }
-        
+
     // retrieve the blend weight of all probes at this location
     float blendWeightAllProbes = PassSrg::m_blendWeight.Load(IN.m_position.xy, sampleIndex).r;
 
