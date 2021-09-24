@@ -125,7 +125,7 @@ namespace AZ
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
-            AZStd::unordered_set<MaterialAssignmentId> m_queuedPropertyOverrides;
+            AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
         };
     } // namespace Render

@@ -45,6 +45,9 @@ namespace AZ
             //! Return true if contained assets have not been loaded
             bool RequiresLoading() const;
 
+            //! Applies property overrides to material instance
+            bool ApplyProperties();
+
             //! Returns a string composed of the asset path.
             AZStd::string ToString() const;
 
