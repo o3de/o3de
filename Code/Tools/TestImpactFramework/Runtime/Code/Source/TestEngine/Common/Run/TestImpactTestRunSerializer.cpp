@@ -7,7 +7,7 @@
  */
 
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestRunSerializer.h>
+#include <TestEngine/Common/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/prettywriter.h>

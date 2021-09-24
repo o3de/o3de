@@ -11,9 +11,9 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestEngine/Common/TestRunner/TestImpactTestRunner.h>
+#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Common/Run/TestImpactTestRun.h>
 #include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestCoverage.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
 
 namespace TestImpact
 {

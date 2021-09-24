@@ -9,7 +9,7 @@
 #pragma once
 
 #include <TestEngine/TestImpactTestEngineRegularRun.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestCoverage.h>
+#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
 
 namespace TestImpact
 {

@@ -17,7 +17,7 @@
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Target/TestImpactTestTarget.h>
-#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumeration.h>
+#include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
 #include <TestImpactTestTargetExclusionList.h>
 

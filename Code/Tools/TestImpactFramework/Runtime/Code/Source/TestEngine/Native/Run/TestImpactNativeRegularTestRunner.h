@@ -8,12 +8,13 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
+#include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/Common/TestRunner/TestImpactTestRunner.h>
+#include <TestEngine/Common/Run/TestImpactTestRun.h>
 #include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestImpactFramework/TestImpactUtils.h>
-#include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
 
 namespace TestImpact
 {
@@ -38,5 +39,4 @@ namespace TestImpact
             return AZ::Failure(AZStd::string::format("%s\n", e.what()));
         }
     };
-
 } // namespace TestImpact

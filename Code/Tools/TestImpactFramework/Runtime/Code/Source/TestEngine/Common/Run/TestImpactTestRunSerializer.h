@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
+#include <TestEngine/Common/Run/TestImpactTestRun.h>
 
 #include <AzCore/std/string/string.h>
 

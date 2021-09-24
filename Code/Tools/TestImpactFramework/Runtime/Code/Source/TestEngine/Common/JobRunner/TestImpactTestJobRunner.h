@@ -11,12 +11,27 @@
 #include <Process/JobRunner/TestImpactProcessJob.h>
 #include <Process/JobRunner/TestImpactProcessJobRunner.h>
 
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
+    //! Outcome of a payload processed by a test runner payload factory.
+    //! @tparam Payload The payload produced by the test runner specialization.
+    template<typename Payload>
+    using PayloadOutcome = AZ::Outcome<Payload, AZStd::string>;
+
+    //! Default template payload factory (to be specialized by specific test runners).
+    //! @tparam AdditionalInfo The additional info class/struct provided to the test runner specialization.
+    //! @tparam Payload The The payload produced by the test runner specialization.
+    template<typename AdditionalInfo, typename Payload>
+    PayloadOutcome<Payload> PayloadFactory(const JobInfo<AdditionalInfo>& jobData, const JobMeta& jobMeta)
+    {
+        static_assert(false, "Please specify a factory function for the payload and additional info type.");
+    };
+
     //! Base class for test related job runners.
     //! @tparam AdditionalInfo The data structure containing the information additional to the command arguments necessary to execute and
     //! complete a job.

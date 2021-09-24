@@ -11,7 +11,7 @@
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
 #include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Native/Run/TestImpactNativeTestRun.h>
+#include <TestEngine/Common/Run/TestImpactTestRun.h>
 
 namespace TestImpact
 {

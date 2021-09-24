@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestEngine/Common/JobRunner/TestImpactTestJobRunner.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
 
 namespace TestImpact
 {
