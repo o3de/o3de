@@ -306,6 +306,7 @@
   },
   "release_vs2019": {
     "TAGS": [
+      "default",
       "nightly-incremental",
       "nightly-clean",
       "weekly-build-metrics"
