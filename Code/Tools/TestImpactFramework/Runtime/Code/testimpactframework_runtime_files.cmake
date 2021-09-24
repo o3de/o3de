@@ -87,12 +87,14 @@ set(FILES
     Source/Target/TestImpactTestTarget.cpp
     Source/Target/TestImpactTestTarget.h
     Source/Target/TestImpactTestTargetList.h
-    Source/TestEngine/Common/JobRunner/TestImpactTestJobRunner.h
-    Source/TestEngine/Common/TestRunner/TestImpactTestRunner.h
-    Source/TestEngine/Common/TestEnumerator/TestImpactTestEnumerator.h
+    Source/TestEngine/Common/Job/TestImpactTestJobRunner.h
+    Source/TestEngine/Common/Enumeration/TestImpactTestEnumerator.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.h
+    Source/TestEngine/Common/Run/TestImpactTestRunner.h
+    Source/TestEngine/Common/Run/TestImpactRegularTestRunner.h
+    Source/TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h
     Source/TestEngine/Common/Run/TestImpactTestCoverage.cpp
     Source/TestEngine/Common/Run/TestImpactTestCoverage.h
     Source/TestEngine/Common/Run/TestImpactTestRun.cpp

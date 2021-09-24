@@ -8,7 +8,7 @@
 
 #include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
 
-namespace TestImpact
+namespace TestImpact::Native
 {
     TestRunJobData::TestRunJobData(const RepoPath& resultsArtifact)
         : m_runArtifact(resultsArtifact)

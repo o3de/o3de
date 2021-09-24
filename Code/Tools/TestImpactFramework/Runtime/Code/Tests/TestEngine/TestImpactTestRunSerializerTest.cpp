@@ -8,8 +8,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <TestEngine/Run/TestImpactTestRun.h>
-#include <TestEngine/Run/TestImpactTestRunSerializer.h>
+#include <TestEngine/Common/Run/TestImpactTestRun.h>
+#include <TestEngine/Common/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

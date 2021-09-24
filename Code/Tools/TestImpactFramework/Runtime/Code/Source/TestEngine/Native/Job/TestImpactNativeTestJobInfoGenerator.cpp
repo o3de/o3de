@@ -10,7 +10,7 @@
 #include <TestEngine/native/Job/TestImpactnativeTestJobInfoGenerator.h>
 #include <TestEngine/native/Job/TestImpactnativeTestTargetExtension.h>
 
-namespace TestImpact
+namespace TestImpact::Native
 {
     TestJobInfoGenerator::TestJobInfoGenerator(
         const RepoPath& sourceDir,

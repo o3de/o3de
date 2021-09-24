@@ -10,7 +10,7 @@
 
 #include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
 
-namespace TestImpact
+namespace TestImpact::Native
 {
     //! Per-job data for instrumented test runs.
     class InstrumentedTestRunJobData

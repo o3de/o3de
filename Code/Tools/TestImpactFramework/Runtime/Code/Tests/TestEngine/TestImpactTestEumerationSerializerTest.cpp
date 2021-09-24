@@ -8,8 +8,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
+#include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

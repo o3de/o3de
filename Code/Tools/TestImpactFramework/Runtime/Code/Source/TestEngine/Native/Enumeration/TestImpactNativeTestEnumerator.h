@@ -9,7 +9,7 @@
 #pragma once
 
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Common/TestEnumerator/TestImpactTestEnumerator.h>
+#include <TestEngine/Common/Enumeration/TestImpactTestEnumerator.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestEnumerationJobData.h>
 
 
@@ -17,7 +17,7 @@
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.h>
 #include <Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h>
 
-namespace TestImpact
+namespace TestImpact::Native
 {
     //! Enumerate a batch of test targets to determine the test suites and fixtures they contain, caching the results where applicable.
     class TestEnumerator : public TestJobRunner<TestEnumerationJobData, TestEnumeration>

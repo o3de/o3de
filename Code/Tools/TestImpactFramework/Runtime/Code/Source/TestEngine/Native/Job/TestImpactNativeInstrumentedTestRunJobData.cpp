@@ -8,7 +8,7 @@
 
 #include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h>
 
-namespace TestImpact
+namespace TestImpact::Native
 {
     InstrumentedTestRunJobData::InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact)
         : TestRunJobData(resultsArtifact)

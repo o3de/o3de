@@ -12,7 +12,7 @@
 
 #include <Artifact/TestImpactArtifactException.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Common/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/Common/Job/TestImpactTestJobRunner.h>
 
 namespace TestImpact
 {

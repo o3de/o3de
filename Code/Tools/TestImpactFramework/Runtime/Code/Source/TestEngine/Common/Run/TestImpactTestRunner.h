@@ -8,10 +8,8 @@
 
 #pragma once
 
-#include <TestEngine/Common/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/Common/Job/TestImpactTestJobRunner.h>
 #include <TestEngine/Native/Job/TestImpactnativeRegularTestRunJobData.h>
-#include <TestEngine/TestImpactTestEngineException.h>
-#include <TestImpactFramework/TestImpactUtils.h>
 
 namespace TestImpact
 {

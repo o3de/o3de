@@ -11,22 +11,24 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/Common/TestRunner/TestImpactTestRunner.h>
-#include <TestEngine/Common/Run/TestImpactTestRun.h>
-#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
 #include <TestEngine/TestImpactTestEngineException.h>
+#include <TestEngine/Common/Run/TestImpactRegularTestRunner.h>
+#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
 
 namespace TestImpact
 {
-    class RegularTestRunner
-        : public TestRunner<TestRunJobData, TestRun>
+    namespace Native
     {
-    public:
-        using TestRunner<TestRunJobData, TestRun>::TestRunner;
-    };
+        class RegularTestRunner
+            : public TestImpact::RegularTestRunner<TestRunJobData>
+        {
+        public:
+            using TestImpact::RegularTestRunner<TestRunJobData>::RegularTestRunner;
+        };
+    }
 
     template<>
-    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<TestRunJobData>& jobData, const JobMeta& jobMeta)
+    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<Native::TestRunJobData>& jobData, const JobMeta& jobMeta)
     {
         try
         {
