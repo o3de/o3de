@@ -22,6 +22,7 @@ namespace AZ
         //! to provide material overrides on a per-entity basis.
         class MaterialComponentController final
             : MaterialComponentRequestBus::Handler
+            , MaterialReceiverNotificationBus::Handler
             , Data::AssetBus::MultiHandler
             , TickBus::Handler
         {
@@ -99,6 +100,9 @@ namespace AZ
             void SetModelUvOverrides(
                 const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) override;
             AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
+
+            //! MaterialReceiverNotificationBus::Handler overrides...
+            void OnMaterialAssignmentsChanged() override;
 
         private:
 
