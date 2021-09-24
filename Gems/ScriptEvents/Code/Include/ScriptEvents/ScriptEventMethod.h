@@ -23,7 +23,6 @@ namespace ScriptEvents
     class Method
     {
     public:
-
         AZ_TYPE_INFO(Method, "{E034EA83-C798-413D-ACE8-4923C51CF4F7}");
 
         Method()
@@ -98,44 +97,44 @@ namespace ScriptEvents
             return m_name.Get<AZStd::string>() ? *m_name.Get<AZStd::string>() : "";
         }
         AZStd::string GetTooltip() const
-            {
+        {
             return m_tooltip.Get<AZStd::string>() ? *m_tooltip.Get<AZStd::string>() : "";
-            }
+        }
 
         const AZ::Uuid GetReturnType() const
-            {
+        {
             return m_returnType.Get<AZ::Uuid>() ? *m_returnType.Get<AZ::Uuid>() : AZ::Uuid::CreateNull();
-            }
+        }
 
         const AZStd::vector<Parameter>& GetParameters() const
-            {
+        {
             return m_parameters;
-            }
+        }
 
         ScriptEventData::VersionedProperty& GetNameProperty()
-            {
+        {
             return m_name;
-            }
+        }
 
         ScriptEventData::VersionedProperty& GetTooltipProperty()
-            {
+        {
             return m_tooltip;
-            }
+        }
 
         ScriptEventData::VersionedProperty& GetReturnTypeProperty()
-            {
+        {
             return m_returnType;
-                }
+        }
 
         const ScriptEventData::VersionedProperty& GetNameProperty() const
-                {
+        {
             return m_name;
-                }
+        }
 
         const ScriptEventData::VersionedProperty& GetTooltipProperty() const
         {
             return m_tooltip;
-            }
+        }
 
         const ScriptEventData::VersionedProperty& GetReturnTypeProperty() const
         {
@@ -145,19 +144,17 @@ namespace ScriptEvents
         AZ::Crc32 GetEventId() const
         {
             return AZ::Crc32(GetNameProperty().GetId().ToString<AZStd::string>().c_str());
-            }
+        }
         //! Validates that the asset data being stored is valid and supported.
         AZ::Outcome<bool, AZStd::string> Validate() const;
         void PreSave();
         void Flatten();
 
     private:
-
         ScriptEventData::VersionedProperty m_name;
         ScriptEventData::VersionedProperty m_tooltip;
         ScriptEventData::VersionedProperty m_returnType;
         AZStd::vector<Parameter> m_parameters;
-
-        };
+    };
 
 } // namespace ScriptEvents

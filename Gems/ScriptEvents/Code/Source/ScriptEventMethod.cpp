@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
- #include "ScriptEvents/ScriptEventMethod.h"
+
+#include "ScriptEvents/ScriptEventMethod.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -74,6 +74,7 @@ namespace ScriptEvents
                 ->Property("Parameters", BehaviorValueProperty(&Method::m_parameters));
         }
     }
+
     AZ::Outcome<bool, AZStd::string> Method::Validate() const
     {
         const AZStd::string name = GetName();
@@ -140,6 +141,7 @@ namespace ScriptEvents
 
         return AZ::Success(true);
     }
+
     void Method::PreSave()
     {
         m_name.PreSave();
@@ -151,6 +153,7 @@ namespace ScriptEvents
             parameter.PreSave();
         }
     }
+
     void Method::Flatten()
     {
         m_name.Flatten();

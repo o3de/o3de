@@ -12,14 +12,13 @@
 
 namespace AzToolsFramework::AssetEditor
 {
-void AssetEditorWindowSettings::Reflect(AZ::ReflectContext* context)
-{
-    if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void AssetEditorWindowSettings::Reflect(AZ::ReflectContext* context)
     {
-        serializeContext->Class<AssetEditorWindowSettings>()
-            ->Field("m_openAssets", &AssetEditorWindowSettings::m_openAssets)
-            ;
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<AssetEditorWindowSettings>()
+                ->Field("m_openAssets", &AssetEditorWindowSettings::m_openAssets)
+                ;
+        }
     }
-}
-
-}
+} // namespace AzToolsFramework::AssetEditor
