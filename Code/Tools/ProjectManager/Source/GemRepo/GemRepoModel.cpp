@@ -130,7 +130,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Gem Not Found"), QString("Cannot find info for gem %1.").arg(gemPath));
+                QMessageBox::critical(nullptr, tr("Gem Not Found"), tr("Cannot find info for gem %1.").arg(gemPath));
             }
         }
 

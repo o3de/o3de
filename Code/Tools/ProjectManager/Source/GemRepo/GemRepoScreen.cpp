@@ -134,7 +134,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.\n\nError:\n%2").arg(allGemRepoInfosResult.GetError().c_str()));
+            QMessageBox::critical(this, tr("Operation failed"), tr("Cannot retrieve gem repos for engine.\n\nError:\n%2").arg(allGemRepoInfosResult.GetError().c_str()));
         }
     }
 
