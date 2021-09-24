@@ -45,8 +45,7 @@ namespace Multiplayer
         {
             AZ::Transform rootEntityTransform = AZ::Transform::CreateIdentity();
 
-            auto* transformInterface = GetEntity()->GetTransform();
-            if(transformInterface)
+            if(auto* transformInterface = GetEntity()->GetTransform())
             {
                 rootEntityTransform = transformInterface->GetWorldTM();
             }
