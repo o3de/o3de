@@ -53,19 +53,9 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
-        {
-            Close();
-            return false;
-        }
-
-        if (!BindSocketForListenInternal(port))
-        {
-            Close();
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
+        if (!SocketCreateInternal()
+         || !BindSocketForListenInternal(port)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
             Close();
             return false;
