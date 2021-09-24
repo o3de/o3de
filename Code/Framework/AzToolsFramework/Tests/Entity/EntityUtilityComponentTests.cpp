@@ -79,6 +79,13 @@ namespace UnitTest
         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(g_globalEntityId);
 
         ASSERT_NE(entity, nullptr);
+
+        // Test cleaning up, make sure the entity is destroyed
+        AzToolsFramework::EntityUtilityBus::Broadcast(&AzToolsFramework::EntityUtilityBus::Events::ResetEntityContext);
+
+        entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(g_globalEntityId);
+
+        ASSERT_EQ(entity, nullptr);
     }
 
     TEST_F(EntityUtilityComponentTests, CreateEntityEmptyName)
