@@ -141,8 +141,8 @@ namespace AzFramework
 
     inline ScreenVector& operator*=(ScreenVector& lhs, const float rhs)
     {
-        lhs.m_x = aznumeric_cast<int>(AZStd::llround(aznumeric_cast<float>(lhs.m_x) * rhs));
-        lhs.m_y = aznumeric_cast<int>(AZStd::llround(aznumeric_cast<float>(lhs.m_y) * rhs));
+        lhs.m_x = AZStd::lround(aznumeric_cast<float>(lhs.m_x) * rhs);
+        lhs.m_y = AZStd::lround(aznumeric_cast<float>(lhs.m_y) * rhs);
         return lhs;
     }
 
