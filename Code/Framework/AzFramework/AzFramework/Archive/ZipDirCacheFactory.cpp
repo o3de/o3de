@@ -448,7 +448,6 @@ namespace AZ::IO::ZipDir
     // builds up the m_mapFileEntries
     bool CacheFactory::BuildFileEntryMap()
     {
-
         Seek(m_CDREnd.lCDROffset);
 
         if (m_CDREnd.lCDRSize == 0)
@@ -530,14 +529,6 @@ namespace AZ::IO::ZipDir
             {
                 // Add this file entry.
                 char* str = reinterpret_cast<char*>(pFileName);
-                for (int i = 0; i < pFile->nFileNameLength; i++)
-                {
-                    str[i] = std::tolower(str[i], std::locale());
-                    if (str[i] == AZ_WRONG_FILESYSTEM_SEPARATOR)
-                    {
-                        str[i] = AZ_CORRECT_FILESYSTEM_SEPARATOR;
-                    }
-                }
                 str[pFile->nFileNameLength] = 0; // Not standard!, may overwrite signature of the next memory record data in zip.
                 AddFileEntry(str, pFile, extra);
             }

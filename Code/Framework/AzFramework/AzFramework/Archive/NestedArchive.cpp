@@ -129,7 +129,7 @@ namespace AZ::IO
             return ZipDir::ZD_ERROR_UNEXPECTED;
         }
 
-        EnumerateFilesRecursive({}, tree, filesInArchive);
+        EnumerateFilesRecursive({ "", AZ::IO::PosixPathSeparator }, tree, filesInArchive);
 
         AZStd::swap(fileEntries, filesInArchive);
         return ZipDir::ZD_ERROR_SUCCESS;

@@ -101,10 +101,11 @@ namespace AZ::IO::ZipDir
         FileEntry* operator -> () { return m_pFileEntry; }
         FileEntryTransactionAdd(Cache* pCache, AZStd::string_view szRelativePath)
             : m_pCache(pCache)
+            , m_szRelativePath("", AZ::IO::PosixPathSeparator)
             , m_bCommitted(false)
         {
             // Update the cache string pool with the relative path to the file
-            auto pathIt = m_pCache->m_relativePathPool.emplace(AZ::IO::PathView(szRelativePath).LexicallyNormal());
+            auto pathIt = m_pCache->m_relativePathPool.emplace(AZ::IO::PathView(szRelativePath, AZ::IO::PosixPathSeparator).LexicallyNormal());
             m_szRelativePath = *pathIt.first;
             // this is the name of the directory - create it or find it
             m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath.Native());
