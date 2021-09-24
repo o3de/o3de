@@ -35,7 +35,7 @@ namespace Multiplayer
     using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
     using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
-    using EntityPreRenderEvent = AZ::Event<float, float>;
+    using EntityPreRenderEvent = AZ::Event<float>;
     using EntityCorrectionEvent = AZ::Event<>;
 
     //! @class NetBindComponent
@@ -118,7 +118,7 @@ namespace Multiplayer
         void NotifyMigrationStart(ClientInputId migratedInputId);
         void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
-        void NotifyPreRender(float deltaTime, float blendFactor);
+        void NotifyPreRender(float deltaTime);
         void NotifyCorrection();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
@@ -199,6 +199,8 @@ namespace Multiplayer
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;
+
+        friend class HierarchyTests;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

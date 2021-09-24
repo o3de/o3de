@@ -5,9 +5,21 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Vegetation Gem provides tools to place natural-looking vegetation in Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Environment", "Tools", "Design"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Environment",
+        "Tools",
+        "Design"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/vegetation/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/vegetation/",
+    "dependencies": [
+        "LmbrCentral",
+        "SurfaceData",
+        "CommonFeaturesAtom",
+        "GradientSignal"
+    ]
 }

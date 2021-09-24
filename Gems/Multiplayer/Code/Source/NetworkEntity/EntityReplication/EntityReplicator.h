@@ -36,7 +36,7 @@ namespace Multiplayer
     {
     public:
         EntityReplicator(EntityReplicationManager& replicationManager, AzNetworking::IConnection* connection, NetEntityRole remoteNetworkRole, const ConstNetworkEntityHandle& entityHandle);
-        virtual ~EntityReplicator();
+        ~EntityReplicator() override;
 
         NetEntityRole GetBoundLocalNetworkRole() const;
         NetEntityRole GetRemoteNetworkRole() const;
@@ -62,6 +62,8 @@ namespace Multiplayer
         bool IsDeletionAcknowledged() const;
         bool WasMigrated() const;
         void SetWasMigrated(bool wasMigrated);
+        // If an entity is part of a network hierarchy then it is only ready to activate when its direct parent entity is active.
+        bool IsReadyToActivate() const;
 
         NetworkEntityUpdateMessage GenerateUpdatePacket();
 

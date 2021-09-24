@@ -14,8 +14,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -299,7 +297,7 @@ namespace AZ
             //work function
             void Process() override
             {
-                AZ_PROFILE_FUNCTION(RPI);
+                AZ_PROFILE_SCOPE(RPI, "AddObjectsToViewJob: Process");
 
                 const View::UsageFlags viewFlags = m_jobData->m_view->GetUsageFlags();
                 const RHI::DrawListMask drawListMask = m_jobData->m_view->GetDrawListMask();
@@ -645,7 +643,7 @@ namespace AZ
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
 #endif
 
             const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
@@ -725,16 +723,26 @@ namespace AZ
 
         void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CullingScene: BeginCulling");
+            AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
             m_cullDataConcurrencyCheck.soft_lock();
 
             m_debugCtx.ResetCullStats();
             m_debugCtx.m_numCullablesInScene = GetNumCullables();
+            AZ::JobCompletion beginCullingCompletion;
 
             for (auto& view : views)
             {
-                view->BeginCulling();
+                const auto cullingLambda = [&view]()
+                {
+                    view->BeginCulling();
+                };
+
+                AZ::Job* cullingJob = AZ::CreateJobFunction(AZStd::move(cullingLambda), true, nullptr);
+                cullingJob->SetDependent(&beginCullingCompletion);
+                cullingJob->Start();
             }
+
+            beginCullingCompletion.StartAndWaitForCompletion();
 
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)
