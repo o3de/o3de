@@ -22,14 +22,10 @@
 namespace TestImpact
 {
     class TestTarget;
-
-    namespace Native
-    {
-        class TestJobInfoGenerator;
-        class TestEnumerator;
-        class InstrumentedTestRunner;
-        class RegularTestRunner;
-    }
+    class NativeTestJobInfoGenerator;
+    class NativeTestEnumerator;
+    class NativeInstrumentedTestRunner;
+    class NativeRegularTestRunner;
 
     //! Callback for when a given test engine job completes.
     using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob& testJob)>;
@@ -119,10 +115,10 @@ namespace TestImpact
         void DeleteArtifactXmls() const;
 
         size_t m_maxConcurrentRuns = 0;
-        AZStd::unique_ptr<Native::TestJobInfoGenerator> m_testJobInfoGenerator;
-        AZStd::unique_ptr<Native::TestEnumerator> m_testEnumerator;
-        AZStd::unique_ptr<Native::InstrumentedTestRunner> m_instrumentedTestRunner;
-        AZStd::unique_ptr<Native::RegularTestRunner> m_testRunner;
+        AZStd::unique_ptr<NativeTestJobInfoGenerator> m_testJobInfoGenerator;
+        AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;
+        AZStd::unique_ptr<NativeInstrumentedTestRunner> m_instrumentedTestRunner;
+        AZStd::unique_ptr<NativeRegularTestRunner> m_testRunner;
         RepoPath m_artifactDir;
     };
 } // namespace TestImpact

@@ -10,7 +10,7 @@
 
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
-namespace TestImpact::Native
+namespace TestImpact
 {
     //! Per-job data for test runs.
     class TestRunJobData

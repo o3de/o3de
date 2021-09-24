@@ -6,9 +6,9 @@
  *
  */
 
-#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
+#include <TestEngine/Common/Job/TestImpactTestEnumerationJobData.h>
 
-namespace TestImpact::Native
+namespace TestImpact
 {
     TestEnumerationJobData::TestEnumerationJobData(const RepoPath& enumerationArtifact, AZStd::optional<Cache>&& cache)
         : m_enumerationArtifact(enumerationArtifact)

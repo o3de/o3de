@@ -122,21 +122,21 @@ namespace TestImpact
 
         // Type trait for the test enumerator
         template<>
-        struct TestJobRunnerTrait<Native::TestEnumerator>
+        struct TestJobRunnerTrait<NativeTestEnumerator>
         {
             using TestEngineJobType = TestEngineEnumeration;
         };
 
         // Type trait for the test runner
         template<>
-        struct TestJobRunnerTrait<Native::RegularTestRunner>
+        struct TestJobRunnerTrait<NativeRegularTestRunner>
         {
             using TestEngineJobType = TestEngineRegularRun;
         };
 
         // Type trait for the instrumented test runner
         template<>
-        struct TestJobRunnerTrait<Native::InstrumentedTestRunner>
+        struct TestJobRunnerTrait<NativeInstrumentedTestRunner>
         {
             using TestEngineJobType = TestEngineInstrumentedRun;
         };
@@ -240,11 +240,11 @@ namespace TestImpact
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
         : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_testJobInfoGenerator(AZStd::make_unique<Native::TestJobInfoGenerator>(
+        , m_testJobInfoGenerator(AZStd::make_unique<NativeTestJobInfoGenerator>(
             sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
-        , m_testEnumerator(AZStd::make_unique<Native::TestEnumerator>(maxConcurrentRuns))
-        , m_instrumentedTestRunner(AZStd::make_unique<Native::InstrumentedTestRunner>(maxConcurrentRuns))
-        , m_testRunner(AZStd::make_unique<Native::RegularTestRunner>(maxConcurrentRuns))
+        , m_testEnumerator(AZStd::make_unique<NativeTestEnumerator>(maxConcurrentRuns))
+        , m_instrumentedTestRunner(AZStd::make_unique<NativeInstrumentedTestRunner>(maxConcurrentRuns))
+        , m_testRunner(AZStd::make_unique<NativeRegularTestRunner>(maxConcurrentRuns))
         , m_artifactDir(artifactDir)
     {
     }
@@ -288,10 +288,10 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        TestEngineJobMap<Native::RegularTestRunner::JobInfo::IdType> engineJobs;
+        TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
-        TestJobRunnerCallbackHandler<Native::RegularTestRunner> jobCallback(
+        TestJobRunnerCallbackHandler<NativeRegularTestRunner> jobCallback(
             testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback);
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
@@ -299,7 +299,7 @@ namespace TestImpact
             globalTimeout,
             jobCallback);
 
-        auto engineRuns = CompileTestEngineRuns<Native::RegularTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        auto engineRuns = CompileTestEngineRuns<NativeRegularTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
@@ -315,17 +315,17 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        TestEngineJobMap<Native::InstrumentedTestRunner::JobInfo::IdType> engineJobs;
+        TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunTests(
             jobInfos,
             testTargetTimeout,
             globalTimeout,
-            TestJobRunnerCallbackHandler<Native::InstrumentedTestRunner>(
+            TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner>(
                 testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback));
 
-        auto engineRuns = CompileTestEngineRuns<Native::InstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        auto engineRuns = CompileTestEngineRuns<NativeInstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
 
         // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
         // where a test target ran and completed its tests without incident yet failed to produce coverage data

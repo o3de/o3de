@@ -75,8 +75,6 @@ namespace TestImpact
             AZStd::optional<ClientJobCallback> clientCallback,
             AZStd::optional<DerivedJobCallback> derivedJobCallback);
 
-        const AZStd::optional<ClientJobCallback> m_clientJobCallback;
-
     private:
         JobRunner<Job> m_jobRunner;
         const AZStd::optional<DerivedJobCallback> m_derivedJobCallback;

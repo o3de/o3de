@@ -88,6 +88,12 @@ set(FILES
     Source/Target/TestImpactTestTarget.h
     Source/Target/TestImpactTestTargetList.h
     Source/TestEngine/Common/Job/TestImpactTestJobRunner.h
+    Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h
+    Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.h
+    Source/TestEngine/Common/Job/TestImpactRegularTestRunJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactRegularTestRunJobData.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerator.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
@@ -105,12 +111,6 @@ set(FILES
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
     Source/TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h
-    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestEnumerationJobData.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestEnumerationJobData.h
-    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h
     Source/TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h
     Source/TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h
     Source/TestEngine/TestImpactTestEngineJobFailure.cpp

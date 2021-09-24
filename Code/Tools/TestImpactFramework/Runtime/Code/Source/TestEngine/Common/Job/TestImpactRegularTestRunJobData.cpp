@@ -6,9 +6,9 @@
  *
  */
 
-#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
 
-namespace TestImpact::Native
+namespace TestImpact
 {
     TestRunJobData::TestRunJobData(const RepoPath& resultsArtifact)
         : m_runArtifact(resultsArtifact)

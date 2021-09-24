@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
 
-namespace TestImpact::Native
+#include <AzCore/std/optional.h>
+
+namespace TestImpact
 {
     //! Per-job data for test enumerations.
     class TestEnumerationJobData

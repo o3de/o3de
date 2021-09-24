@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
 
-namespace TestImpact::Native
+namespace TestImpact
 {
     //! Per-job data for instrumented test runs.
     class InstrumentedTestRunJobData

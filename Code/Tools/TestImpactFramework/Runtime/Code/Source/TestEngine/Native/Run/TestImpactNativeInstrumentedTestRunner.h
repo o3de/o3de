@@ -11,23 +11,26 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h>
 
 namespace TestImpact
 {
-    namespace Native
+    struct NativeInstrumentedTestRunJobData
+        : public InstrumentedTestRunJobData
     {
-        class InstrumentedTestRunner
-            : public TestImpact::InstrumentedTestRunner<InstrumentedTestRunJobData>
-        {
-        public:
-            using TestImpact::InstrumentedTestRunner<InstrumentedTestRunJobData>::InstrumentedTestRunner;
-        };
-    }
+        using InstrumentedTestRunJobData::InstrumentedTestRunJobData;
+    };
+
+    class NativeInstrumentedTestRunner
+        : public InstrumentedTestRunner<NativeInstrumentedTestRunJobData>
+    {
+    public:
+        using TestImpact::InstrumentedTestRunner<NativeInstrumentedTestRunJobData>::InstrumentedTestRunner;
+    };
 
     template<>
     inline PayloadOutcome<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>> PayloadFactory(
-        const JobInfo<Native::InstrumentedTestRunJobData>& jobData, const JobMeta& jobMeta)
+        const JobInfo<NativeInstrumentedTestRunJobData>& jobData, const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;
         try
