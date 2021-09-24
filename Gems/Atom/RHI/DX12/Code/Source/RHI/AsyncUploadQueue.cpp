@@ -196,7 +196,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: BeginFramePacket");
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended");
 
             FramePacket* framePacket = &m_framePackets[m_frameIndex];
@@ -212,7 +212,7 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(ID3D12CommandQueue* commandQueue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: EndFramePacket");
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
             AssertSuccess(m_commandList->Close());
@@ -229,7 +229,7 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
 
             uint64_t fenceValue = m_uploadFence.Increment();
 
@@ -475,7 +475,7 @@ namespace AZ
 
         void AsyncUploadQueue::WaitForUpload(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: WaitForUpload");
 
             if (!IsUploadFinished(fenceValue))
             {
@@ -489,7 +489,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallbacks(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallbacks");
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {

@@ -14,7 +14,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabEditInterface;
         class PrefabPublicInterface;
     };
 
@@ -29,14 +28,13 @@ namespace AzToolsFramework
         ~LevelRootUiHandler() override = default;
 
         // EditorEntityUiHandler...
-        QPixmap GenerateItemIcon(AZ::EntityId entityId) const override;
+        QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         bool CanRename(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
     private:
-        Prefab::PrefabEditInterface* m_prefabEditInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         static constexpr int m_levelRootBorderThickness = 1;

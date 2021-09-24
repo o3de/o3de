@@ -17,6 +17,7 @@
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
 #include <PostProcess/Ssao/SsaoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
+#include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ
@@ -52,7 +53,7 @@ namespace AZ
 #undef POST_PROCESS_MEMBER
 
             // Auto-gen getter and setter functions for post process members...
-#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
 #include <Atom/Feature/PostProcess/PostProcessParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 

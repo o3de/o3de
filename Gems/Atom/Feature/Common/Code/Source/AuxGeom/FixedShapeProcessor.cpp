@@ -12,7 +12,6 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/containers/array.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 
@@ -108,8 +107,8 @@ namespace AZ
         }
 
         void FixedShapeProcessor::PrepareFrame()
-        {            
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: PrepareFrame");
+        {
+            AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: PrepareFrame");
             m_processSrgs.clear();
             m_drawPackets.clear();
 
@@ -127,8 +126,7 @@ namespace AZ
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: ProcessObjects");
+            AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: ProcessObjects");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
 

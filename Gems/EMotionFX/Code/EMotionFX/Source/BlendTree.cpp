@@ -116,10 +116,11 @@ namespace EMotionFX
         return nullptr;
     }
 
-
     // process the blend tree and calculate its output
     void BlendTree::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendTree::Output");
+
         AZ_Assert(m_finalNode, "There should always be a final node. Something seems to be wrong with the blend tree creation.");
 
         // get the output pose
@@ -164,6 +165,8 @@ namespace EMotionFX
     // post sync update
     void BlendTree::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphStateMachine::PostUpdate");
+
         // if this node is disabled, exit
         if (m_disabled)
         {
@@ -212,6 +215,8 @@ namespace EMotionFX
     // update all nodes
     void BlendTree::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendTree::Update");
+
         // if this node is disabled, output the bind pose
         if (m_disabled)
         {
@@ -256,6 +261,8 @@ namespace EMotionFX
     // top down update
     void BlendTree::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendTree::TopDownUpdate");
+
         // get the final node
         AnimGraphNode* finalNode = GetRealFinalNode();
 

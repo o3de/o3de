@@ -30,13 +30,13 @@ namespace ScriptCanvas
 
                 OrderedSequencer();
 
-                bool CanDeleteSlot(const SlotId& slotId) const;
+                bool CanDeleteSlot(const SlotId& slotId) const override;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
-                SlotId HandleExtension(AZ::Crc32 extensionId);
+                SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 void OnInit() override;
 

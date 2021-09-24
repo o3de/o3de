@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Virtual Gamepad Gem provides controls that emulate a gamepad on touch screen devices.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Input", "Gameplay"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Input",
+        "Gameplay"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/virtual-gamepad/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/input/virtual-gamepad/",
+    "dependencies": []
 }

@@ -28,6 +28,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
@@ -248,6 +249,7 @@ namespace AzToolsFramework
         components.insert(components.end(), {
                 azrtti_typeid<EditorEntityContextComponent>(),
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
+                azrtti_typeid<FocusModeSystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
@@ -378,6 +380,7 @@ namespace AzToolsFramework
                 ->Event("CreateNewEntityAtPosition", &ToolsApplicationRequests::CreateNewEntityAtPosition)
                 ->Event("GetCurrentLevelEntityId", &ToolsApplicationRequests::GetCurrentLevelEntityId)
                 ->Event("GetExistingEntity", &ToolsApplicationRequests::GetExistingEntity)
+                ->Event("EntityExists", &ToolsApplicationRequests::EntityExists)
                 ->Event("DeleteEntityById", &ToolsApplicationRequests::DeleteEntityById)
                 ->Event("DeleteEntities", &ToolsApplicationRequests::DeleteEntities)
                 ->Event("DeleteEntityAndAllDescendants", &ToolsApplicationRequests::DeleteEntityAndAllDescendants)
@@ -781,6 +784,11 @@ namespace AzToolsFramework
     AZ::EntityId ToolsApplication::GetExistingEntity(AZ::u64 id)
     {
         return AZ::EntityId{id};
+    }
+
+    bool ToolsApplication::EntityExists(AZ::EntityId id)
+    {
+        return FindEntity(id) != nullptr;
     }
 
     void ToolsApplication::DeleteSelected()

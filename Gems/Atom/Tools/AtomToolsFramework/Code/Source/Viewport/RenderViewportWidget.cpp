@@ -6,23 +6,42 @@
  *
  */
 
-#include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <Atom/Bootstrap/BootstrapRequestBus.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
-#include <Atom/RPI.Public/View.h>
+#include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
-#include <AzCore/Math/MathUtils.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/Bootstrap/BootstrapRequestBus.h>
 
 #include <QApplication>
-#include <QCursor>
 #include <QBoxLayout>
-#include <QWindow>
+#include <QCursor>
 #include <QMouseEvent>
+#include <QScreen>
+#include <QTimer>
+#include <QWindow>
+
+static void OnInactiveViewportFrameRateChanged(const float& fpsLimit)
+{
+    AtomToolsFramework::RenderViewportWidgetNotificationBus::Broadcast(
+        &AtomToolsFramework::RenderViewportWidgetNotificationBus::Events::OnInactiveViewportFrameRateChanged, fpsLimit);
+}
+
+AZ_CVAR(
+    float,
+    ed_inactive_viewport_fps_limit,
+    0,
+    OnInactiveViewportFrameRateChanged,
+    AZ::ConsoleFunctorFlags::Null,
+    "The maximum framerate to render viewports that don't have focus at");
+
+static constexpr const char* LastFocusedViewportVariableName = "AtomToolsFramework::RenderViewportWidget::LastFocusedViewport";
 
 namespace AtomToolsFramework
 {
@@ -30,6 +49,12 @@ namespace AtomToolsFramework
         : QWidget(parent)
         , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDefault())
     {
+        m_lastFocusedViewport = AZ::Environment::FindVariable<RenderViewportWidget*>(LastFocusedViewportVariableName);
+        if (!m_lastFocusedViewport)
+        {
+            m_lastFocusedViewport = AZ::Environment::CreateVariable<RenderViewportWidget*>(LastFocusedViewportVariableName, nullptr);
+        }
+
         if (shouldInitializeViewportContext)
         {
             InitializeViewportContext();
@@ -38,13 +63,24 @@ namespace AtomToolsFramework
         setUpdatesEnabled(false);
         setFocusPolicy(Qt::FocusPolicy::WheelFocus);
         setMouseTracking(true);
+
+        // Wait a frame for our window handle to be constructed, then wire up our screen change signals.
+        QTimer::singleShot(
+            0,
+            [this]()
+            {
+                QObject::connect(windowHandle(), &QWindow::screenChanged, this, &RenderViewportWidget::SetScreen);
+            });
+        SetScreen(screen());
     }
 
     bool RenderViewportWidget::InitializeViewportContext(AzFramework::ViewportId id)
     {
         if (m_viewportContext != nullptr)
         {
-            AZ_Assert(id == AzFramework::InvalidViewportId || m_viewportContext->GetId() == id, "Attempted to reinitialize RenderViewportWidget with a different ID");
+            AZ_Assert(
+                id == AzFramework::InvalidViewportId || m_viewportContext->GetId() == id,
+                "Attempted to reinitialize RenderViewportWidget with a different ID");
             return true;
         }
 
@@ -59,7 +95,7 @@ namespace AtomToolsFramework
         // Before we do anything else, we must create a ViewportContext which will give us a ViewportId if we didn't manually specify one.
         AZ::RPI::ViewportContextRequestsInterface::CreationParameters params;
         params.device = AZ::RHI::RHISystemInterface::Get()->GetDevice();
-        params.windowHandle = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        params.windowHandle = GetNativeWindowHandle();
         params.id = id;
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
         m_viewportContext = viewportContextManager->CreateViewportContext(AZ::Name(), params);
@@ -80,29 +116,46 @@ namespace AtomToolsFramework
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
+        AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+        AtomToolsFramework::RenderViewportWidgetNotificationBus::Handler::BusConnect();
 
         m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
 
         // Forward input events to our controller list.
-        QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
+        QObject::connect(
+            m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
             [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
-        {
-            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            if (m_controllerList->HandleInputChannelEvent(AzFramework::ViewportControllerInputEvent{GetId(), windowId, *inputChannel}))
             {
-                // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
-                if (event)
+                const AzFramework::NativeWindowHandle windowId = GetNativeWindowHandle();
+                if (m_controllerList->HandleInputChannelEvent(
+                        AzFramework::ViewportControllerInputEvent{ GetId(), windowId, *inputChannel }))
                 {
-                    event->setAccepted(true);
+                    // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
+                    if (event)
+                    {
+                        event->setAccepted(true);
+                    }
                 }
-            }
-        });
+            });
+
+        // Update our target frame rate. If we're the only viewport, become active.
+        if (m_lastFocusedViewport.Get() == nullptr)
+        {
+            m_lastFocusedViewport.Set(this);
+        }
+        UpdateFrameRate();
+
 
         return true;
     }
 
     RenderViewportWidget::~RenderViewportWidget()
     {
+        if (m_lastFocusedViewport.Get() == this)
+        {
+            m_lastFocusedViewport.Set(nullptr);
+        }
+
         AzFramework::WindowRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
@@ -181,43 +234,31 @@ namespace AtomToolsFramework
 
         bool shouldConsumeEvent = true;
 
-        AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        const bool eventHandled = m_controllerList->HandleInputChannelEvent({GetId(), windowId, inputChannel});
+        const bool eventHandled = m_controllerList->HandleInputChannelEvent({ GetId(), GetNativeWindowHandle(), inputChannel });
 
-        // If our controllers handled the event and it's one we can safely consume (i.e. it's not an Ended event that other viewports might need), consume it.
+        // If our controllers handled the event and it's one we can safely consume (i.e. it's not an Ended event that other viewports might
+        // need), consume it.
         return eventHandled && shouldConsumeEvent;
     }
 
-    void RenderViewportWidget::OnTick([[maybe_unused]]float deltaTime, AZ::ScriptTimePoint time)
+    void RenderViewportWidget::OnTick([[maybe_unused]] float deltaTime, AZ::ScriptTimePoint time)
     {
         m_time = time;
-        m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
+        m_controllerList->UpdateViewport({ GetId(), AzFramework::FloatSeconds(deltaTime), m_time });
+    }
+
+    int RenderViewportWidget::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_PRE_RENDER;
     }
 
     void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
     {
-        // We need to wait until the window is activated, so the underlying surface
-        // has been created and has the correct size.
-        if (windowHandle()->isActive())
-        {
-            SendWindowResizeEvent();
-        }
-        else
-        {
-            m_windowResizedEvent = true;
-        }
+        SendWindowResizeEvent();
     }
 
     bool RenderViewportWidget::event(QEvent* event)
     {
-        // Check if we have a pending resize event.
-        // At this point the surface has been created and has
-        // the proper dimensions.
-        if (event->type() == QEvent::WindowActivate && m_windowResizedEvent)
-        {
-            SendWindowResizeEvent();
-        }
-
         return QWidget::event(event);
     }
 
@@ -236,6 +277,75 @@ namespace AtomToolsFramework
         m_mousePosition = event->localPos();
     }
 
+    void RenderViewportWidget::focusInEvent([[maybe_unused]] QFocusEvent* event)
+    {
+        RenderViewportWidget* lastFocusedViewport = m_lastFocusedViewport.Get();
+        if (lastFocusedViewport == this)
+        {
+            return;
+        }
+
+        RenderViewportWidget* previousFocusWidget = lastFocusedViewport;
+        m_lastFocusedViewport.Set(this);
+
+        // Ensure this viewport and whatever viewport last had focus (if any) respect
+        // the active / inactive viewport frame rate settings.
+        UpdateFrameRate();
+        if (previousFocusWidget != nullptr)
+        {
+            previousFocusWidget->UpdateFrameRate();
+        }
+    }
+
+    void RenderViewportWidget::OnFrameRateLimitChanged([[maybe_unused]] float fpsLimit)
+    {
+        UpdateFrameRate();
+    }
+
+    void RenderViewportWidget::OnInactiveViewportFrameRateChanged([[maybe_unused]] float fpsLimit)
+    {
+        UpdateFrameRate();
+    }
+
+    AzFramework::NativeWindowHandle RenderViewportWidget::GetNativeWindowHandle() const
+    {
+        return reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+    }
+
+    void RenderViewportWidget::UpdateFrameRate()
+    {
+        if (ed_inactive_viewport_fps_limit > 0.f && m_lastFocusedViewport.Get() != this)
+        {
+            m_viewportContext->SetFpsLimit(ed_inactive_viewport_fps_limit);
+        }
+        else
+        {
+            float fpsLimit = 0.f;
+            AZ::Render::Bootstrap::RequestBus::BroadcastResult(fpsLimit, &AZ::Render::Bootstrap::RequestBus::Events::GetFrameRateLimit);
+            m_viewportContext->SetFpsLimit(fpsLimit);
+        }
+    }
+
+    void RenderViewportWidget::SetScreen(QScreen* screen)
+    {
+        if (m_screen != screen)
+        {
+            if (m_screen)
+            {
+                QObject::disconnect(m_screen, &QScreen::refreshRateChanged, this, &RenderViewportWidget::NotifyUpdateRefreshRate);
+            }
+
+            if (screen)
+            {
+                QObject::connect(m_screen, &QScreen::refreshRateChanged, this, &RenderViewportWidget::NotifyUpdateRefreshRate);
+            }
+
+            NotifyUpdateRefreshRate();
+
+            m_screen = screen;
+        }
+    }
+
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
@@ -243,9 +353,14 @@ namespace AtomToolsFramework
         const QSize uiWindowSize = size();
         const QSize windowSize = uiWindowSize * devicePixelRatioF();
 
-        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
-        m_windowResizedEvent = false;
+        AzFramework::WindowNotificationBus::Event(
+            GetNativeWindowHandle(), &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+    }
+
+    void RenderViewportWidget::NotifyUpdateRefreshRate()
+    {
+        AzFramework::WindowNotificationBus::Event(
+            GetNativeWindowHandle(), &AzFramework::WindowNotificationBus::Events::OnRefreshRateChanged, GetDisplayRefreshRate());
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -303,9 +418,7 @@ namespace AtomToolsFramework
 
         // Build camera state from Atom camera transforms
         AzFramework::CameraState cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(
-            currentView->GetViewToWorldMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
-        );
+            currentView->GetViewToWorldMatrix(), AZ::Vector2{ aznumeric_cast<float>(width()), aznumeric_cast<float>(height()) });
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
 
         // Convert from Z-up
@@ -317,8 +430,7 @@ namespace AtomToolsFramework
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-            currentView == nullptr)
+        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView(); currentView == nullptr)
         {
             return AzFramework::ScreenPoint(0, 0);
         }
@@ -331,12 +443,10 @@ namespace AtomToolsFramework
         const auto& cameraProjection = m_viewportContext->GetCameraProjectionMatrix();
         const auto& cameraView = m_viewportContext->GetCameraViewMatrix();
 
-        const AZ::Vector4 normalizedScreenPosition {
-            screenPosition.m_x * 2.f / width() - 1.0f,
-            (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
-            1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
-            1.f
-        };
+        const AZ::Vector4 normalizedScreenPosition{ screenPosition.m_x * 2.f / width() - 1.0f,
+                                                    (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
+                                                    1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
+                                                    1.f };
 
         AZ::Matrix4x4 worldFromScreen = cameraProjection * cameraView;
         worldFromScreen.InvertFull();
@@ -365,7 +475,7 @@ namespace AtomToolsFramework
         AZ::Vector3 rayDirection = pos1.value() - pos0.value();
         rayDirection.Normalize();
 
-        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
+        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ rayOrigin, rayDirection };
     }
 
     float RenderViewportWidget::DeviceScalingFactor()
@@ -395,12 +505,12 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetClientAreaSize() const
     {
-        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+        return AzFramework::WindowSize{ aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height()) };
     }
 
     void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize)
     {
-        const QSize targetSize = QSize{aznumeric_cast<int>(clientAreaSize.m_width), aznumeric_cast<int>(clientAreaSize.m_height)};
+        const QSize targetSize = QSize{ aznumeric_cast<int>(clientAreaSize.m_width), aznumeric_cast<int>(clientAreaSize.m_height) };
         resize(targetSize);
     }
 
@@ -410,7 +520,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void RenderViewportWidget::SetFullScreenState([[maybe_unused]]bool fullScreenState)
+    void RenderViewportWidget::SetFullScreenState([[maybe_unused]] bool fullScreenState)
     {
         // The RenderViewportWidget does not currently support full screen.
     }
@@ -433,11 +543,20 @@ namespace AtomToolsFramework
 
     uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
     {
-        return 60;
+        return static_cast<uint32_t>(screen()->refreshRate());
     }
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        return 1;
+        uint32_t interval = 1;
+
+        // Get vsync_interval from AzFramework::NativeWindow, which owns it.
+        // NativeWindow also handles broadcasting OnVsyncIntervalChanged to all
+        // WindowNotificationBus listeners.
+        if (auto console = AZ::Interface<AZ::IConsole>::Get())
+        {
+            console->GetCvarValue<uint32_t>("vsync_interval", interval);
+        }
+        return interval;
     }
-} //namespace AtomToolsFramework
+} // namespace AtomToolsFramework

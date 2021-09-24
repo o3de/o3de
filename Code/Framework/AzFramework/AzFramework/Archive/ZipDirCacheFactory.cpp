@@ -41,13 +41,6 @@ namespace AZ::IO::ZipDir
         m_encryptedHeaders = ZipFile::HEADERS_NOT_ENCRYPTED;
         m_signedHeaders = ZipFile::HEADERS_NOT_SIGNED;
 
-        if (m_nFlags & FLAGS_FILENAMES_AS_CRC32)
-        {
-            m_bBuildFileEntryMap = false;
-            m_bBuildFileEntryTree = false;
-            m_bBuildOptimizedFileEntry = true;
-        }
-
         if (m_nFlags & FLAGS_READ_INSIDE_PAK)
         {
             m_fileExt.m_fileIOBase = AZ::IO::FileIOBase::GetInstance();
@@ -88,12 +81,12 @@ namespace AZ::IO::ZipDir
 
             if (m_fileExt.m_fileHandle == AZ::IO::InvalidHandle)
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Could not open file in binary mode for reading");
+                AZ_Warning("Archive", false, R"(ZD_ERROR_IO_FAILED: Could not open file "%s" in binary mode for reading)", szFileName);
                 return {};
             }
             if (!ReadCache(*pCache))
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Could not read the CDR of the pack file.");
+                AZ_Warning("Archive", false, R"(ZD_ERROR_IO_FAILED: Could not read the CDR of the pack file "%s".)", pCache->m_strFilePath.c_str());
                 return {};
             }
         }
@@ -113,12 +106,12 @@ namespace AZ::IO::ZipDir
                 size_t nFileSize = (size_t)Tell();
                 Seek(0, SEEK_SET);
 
-                AZ_Assert(nFileSize != 0, "File of size 0 will not be open for reading");
+                AZ_Warning("Archive", nFileSize != 0, R"(ZD_ERROR_IO_FAILED: File "%s" with size 0 will not be open for reading)", szFileName);
                 if (nFileSize)
                 {
                     if (!ReadCache(*pCache))
                     {
-                        THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Could not open file in binary mode for reading");
+                        AZ_Warning("Archive", false, R"(ZD_ERROR_IO_FAILED: Could not open file "%s" in binary mode for reading)", szFileName);
                         return {};
                     }
                     bOpenForWriting = false;
@@ -143,7 +136,7 @@ namespace AZ::IO::ZipDir
 
             if (m_fileExt.m_fileHandle == AZ::IO::InvalidHandle)
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Could not open file in binary mode for appending (read/write)");
+                AZ_Warning("Archive", false, R"(ZD_ERROR_IO_FAILED: Could not open file "%s" in binary mode for appending (read/write))", szFileName);
                 return {};
             }
         }
@@ -211,7 +204,7 @@ namespace AZ::IO::ZipDir
             if (m_headerExtended.nHeaderSize != sizeof(m_headerExtended))
             {
                 // Extended Header is not valid
-                THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Bad extended header");
+                AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Bad extended header");
                 return false;
             }
             //We have the header, so read the encryption and signing techniques
@@ -224,7 +217,7 @@ namespace AZ::IO::ZipDir
             if (m_headerExtended.nEncryption != ZipFile::HEADERS_NOT_ENCRYPTED && m_encryptedHeaders != ZipFile::HEADERS_NOT_ENCRYPTED)
             {
                 //Encryption technique has been specified in both the disk number (old technique) and the custom header (new technique).
-                THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Unexpected encryption technique in header");
+                AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Unexpected encryption technique in header");
                 return false;
             }
             else
@@ -240,7 +233,7 @@ namespace AZ::IO::ZipDir
                     break;
                 default:
                     // Unexpected technique
-                    THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Bad encryption technique in header");
+                    AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Bad encryption technique in header");
                     return false;
                 }
             }
@@ -255,7 +248,7 @@ namespace AZ::IO::ZipDir
                 break;
             default:
                 // Unexpected technique
-                THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Bad signing technique in header");
+                AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Bad signing technique in header");
                 return false;
             }
 
@@ -266,7 +259,7 @@ namespace AZ::IO::ZipDir
                     Read(&m_headerSignature, sizeof(m_headerSignature));
                     if (m_headerSignature.nHeaderSize != sizeof(m_headerSignature))
                     {
-                        THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Bad signature header");
+                        AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Bad signature header");
                         return false;
                     }
                 }
@@ -274,7 +267,7 @@ namespace AZ::IO::ZipDir
             else
             {
                 // Unexpected technique
-                THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Comment field is the wrong length");
+                AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: Comment field is the wrong length");
                 return false;
             }
         }
@@ -285,7 +278,7 @@ namespace AZ::IO::ZipDir
             || m_CDREnd.nCDRStartDisk != 0
             || m_CDREnd.numEntriesOnDisk != m_CDREnd.numEntriesTotal)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_UNSUPPORTED, "Multivolume archive detected. Current version of ZipDir does not support multivolume archives");
+            AZ_Warning("Archive", false, "ZD_ERROR_UNSUPPORTED: Multivolume archive detected.Current version of ZipDir does not support multivolume archives");
             return false;
         }
 
@@ -295,7 +288,7 @@ namespace AZ::IO::ZipDir
             || m_CDREnd.lCDRSize > m_nCDREndPos
             || m_CDREnd.lCDROffset + m_CDREnd.lCDRSize > m_nCDREndPos)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "The central directory offset or size are out of range, the pak is probably corrupt, try to repare or delete the file");
+            AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT: The central directory offset or size are out of range, the pak is probably corrupt, try to repare or delete the file");
             return false;
         }
 
@@ -394,7 +387,12 @@ namespace AZ::IO::ZipDir
             // if there's nothing to search
             if (nNewBufPos >= nOldBufPos)
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_NO_CDR, "Cannot find Central Directory Record in pak. This is either not a pak file, or a pak file without Central Directory. It does not mean that the data is permanently lost, but it may be severely damaged. Please repair the file with external tools, there may be enough information left to recover the file completely."); // we didn't find anything
+                AZ_Warning("Archive", false, "ZD_ERROR_NO_CDR: Cannot find Central Directory Record in pak."
+                    " This is either not a pak file, or a pak file without Central Directory."
+                    " It does not mean that the data is permanently lost,"
+                    " but it may be severely damaged."
+                    " Please repair the file with external tools,"
+                    " there may be enough information left to recover the file completely."); // we didn't find anything
                 return false;
             }
 
@@ -418,7 +416,11 @@ namespace AZ::IO::ZipDir
                     }
                     else
                     {
-                        THROW_ZIPDIR_ERROR(ZD_ERROR_DATA_IS_CORRUPT, "Central Directory Record is followed by a comment of inconsistent length. This might be a minor misconsistency, please try to repair the file. However, it is dangerous to open the file because I will have to guess some structure offsets, which can lead to permanent unrecoverable damage of the archive content");
+                        AZ_Warning("Archive", false, "ZD_ERROR_DATA_IS_CORRUPT:"
+                            " Central Directory Record is followed by a comment of inconsistent length."
+                            " This might be a minor misconsistency, please try to repair the file.However,"
+                            " it is dangerous to open the file because I will have to guess some structure offsets,"
+                            " which can lead to permanent unrecoverable damage of the archive content");
                         return false;
                     }
                 }
@@ -436,7 +438,7 @@ namespace AZ::IO::ZipDir
             nOldBufPos = nNewBufPos;
             memmove(&pReservedBuffer[CDRSearchWindowSize], pWindow, sizeof(ZipFile::CDREnd) - 1);
         }
-        THROW_ZIPDIR_ERROR(ZD_ERROR_UNEXPECTED, "The program flow may not have possibly lead here. This error is unexplainable"); // we shouldn't be here
+        AZ_Assert(false, "ZD_ERROR_UNEXPECTED: The program flow may not have possibly lead here. This error is unexplainable"); // we shouldn't be here
 
         return false;
     }
@@ -460,13 +462,13 @@ namespace AZ::IO::ZipDir
 
         if (pBuffer.empty()) // couldn't allocate enough memory for temporary copy of CDR
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_NO_MEMORY, "Not enough memory to cache Central Directory record for fast initialization. This error may not happen on non-console systems");
+            AZ_Warning("Archive", false, "ZD_ERROR_NO_MEMORY: Not enough memory to cache Central Directory record for fast initialization. This error may not happen on non-console systems");
             return false;
         }
 
         if (!ReadHeaderData(&pBuffer[0], m_CDREnd.lCDRSize))
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_CORRUPTED_DATA, "Archive contains corrupted CDR.");
+            AZ_Warning("Archive", false, "ZD_ERROR_CORRUPTED_DATA: Archive contains corrupted CDR.");
             return false;
         }
 
@@ -482,7 +484,7 @@ namespace AZ::IO::ZipDir
 
             if ((pFile->nVersionNeeded & 0xFF) > 20)
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_UNSUPPORTED, "Cannot read the archive file (nVersionNeeded > 20).");
+                AZ_Warning("Archive", false, "ZD_ERROR_UNSUPPORTED: Cannot read the archive file (nVersionNeeded > 20).");
                 return false;
             }
             //if (pFile->lSignature != pFile->SIGNATURE) // Timur, Dont compare signatures as signatue in memory can be overwritten by the code below
@@ -492,7 +494,8 @@ namespace AZ::IO::ZipDir
             // if the record overlaps with the End Of CDR structure, something is wrong
             if (pEndOfRecord > pEndOfData)
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_CDR_IS_CORRUPT, "Central Directory record is either corrupt, or truncated, or missing. Cannot read the archive directory");
+                AZ_Warning("Archive", false, "ZD_ERROR_CDR_IS_CORRUPT: Central Directory record is either corrupt, or truncated, or missing."
+                    " Cannot read the archive directory");
                 return false;
             }
 
@@ -550,18 +553,22 @@ namespace AZ::IO::ZipDir
 
     //////////////////////////////////////////////////////////////////////////
     // give the CDR File Header entry, reads the local file header to validate
-    // and determine where the actual file lies
+    // and determine where the actual file resides
     void CacheFactory::AddFileEntry(char* strFilePath, const ZipFile::CDRFileHeader* pFileHeader, const SExtraZipFileData& extra)
     {
         if (pFileHeader->lLocalHeaderOffset > m_CDREnd.lCDROffset)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_CDR_IS_CORRUPT, "Central Directory contains file descriptors pointing outside the archive file boundaries. The archive file is either truncated or damaged. Please try to repair the file"); // the file offset is beyond the CDR: impossible
+            AZ_Warning("Archive", false, "ZD_ERROR_CDR_IS_CORRUPT:"
+                " Central Directory contains file descriptors pointing outside the archive file boundaries."
+                " The archive file is either truncated or damaged.Please try to repair the file"); // the file offset is beyond the CDR: impossible
             return;
         }
 
         if ((pFileHeader->nMethod == ZipFile::METHOD_STORE || pFileHeader->nMethod == ZipFile::METHOD_STORE_AND_STREAMCIPHER_KEYTABLE) && pFileHeader->desc.lSizeUncompressed != pFileHeader->desc.lSizeCompressed)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_VALIDATION_FAILED, "File with STORE compression method declares its compressed size not matching its uncompressed size. File descriptor is inconsistent, archive content may be damaged, please try to repair the archive");
+            AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                " File with STORE compression method declares its compressed size not matching its uncompressed size."
+                " File descriptor is inconsistent, archive content may be damaged, please try to repair the archive");
             return;
         }
 
@@ -593,8 +600,7 @@ namespace AZ::IO::ZipDir
         if (m_encryptedHeaders != ZipFile::HEADERS_NOT_ENCRYPTED)
         {
             // use CDR instead of local header
-            // The pak encryption tool asserts that there is no extra data at the end of the local file header, so don't add any extra data from the CDR header.
-            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + pFileHeader->nFileNameLength;
+            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + pFileHeader->nFileNameLength + pFileHeader->nExtraFieldLength;
         }
         else
         {
@@ -617,7 +623,9 @@ namespace AZ::IO::ZipDir
                 //|| pFileHeader->nLastModTime != pLocalFileHeader->nLastModTime
                 )
             {
-                THROW_ZIPDIR_ERROR(ZD_ERROR_VALIDATION_FAILED, "The local file header descriptor doesn't match the basic parameters declared in the global file header in the file. The archive content is misconsistent and may be damaged. Please try to repair the archive");
+                AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    " The local file header descriptor doesn't match the basic parameters declared in the global file header in the file."
+                    " The archive content is misconsistent and may be damaged. Please try to repair the archive");
                 return;
             }
 
@@ -628,7 +636,9 @@ namespace AZ::IO::ZipDir
             if (!AZStd::equal(zipFileDataBegin, zipFileDataEnd, reinterpret_cast<const char*>(pFileHeader + 1), CompareNoCase))
             {
                 // either file name, or the extra field do not match
-                THROW_ZIPDIR_ERROR(ZD_ERROR_VALIDATION_FAILED, "The local file header contains file name which does not match the file name of the global file header. The archive content is misconsistent with its directory. Please repair the archive");
+                AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    " The local file header contains file name which does not match the file name of the global file header."
+                    " The archive content is misconsistent with its directory. Please repair the archive");
                 return;
             }
 
@@ -642,7 +652,9 @@ namespace AZ::IO::ZipDir
 
         if (fileEntry.nFileDataOffset >= m_nCDREndPos)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_VALIDATION_FAILED, "The global file header declares the file which crosses the boundaries of the archive. The archive is either corrupted or truncated, please try to repair it");
+            AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                " The global file header declares the file which crosses the boundaries of the archive."
+                " The archive is either corrupted or truncated, please try to repair it");
             return;
         }
 
@@ -686,29 +698,29 @@ namespace AZ::IO::ZipDir
         case Z_OK:
             break;
         case Z_MEM_ERROR:
-            THROW_ZIPDIR_ERROR(ZD_ERROR_ZLIB_NO_MEMORY, "ZLib reported out-of-memory error");
+            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_NO_MEMORY: ZLib reported out-of-memory error");
             return;
         case Z_BUF_ERROR:
-            THROW_ZIPDIR_ERROR(ZD_ERROR_ZLIB_CORRUPTED_DATA, "ZLib reported compressed stream buffer error");
+            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_CORRUPTED_DATA: ZLib reported compressed stream buffer error");
             return;
         case Z_DATA_ERROR:
-            THROW_ZIPDIR_ERROR(ZD_ERROR_ZLIB_CORRUPTED_DATA, "ZLib reported compressed stream data error");
+            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_CORRUPTED_DATA: ZLib reported compressed stream data error");
             return;
         default:
-            THROW_ZIPDIR_ERROR(ZD_ERROR_ZLIB_FAILED, "ZLib reported an unexpected unknown error");
+            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_FAILED: ZLib reported an unexpected unknown error");
             return;
         }
 
         if (nDestSize != fileEntry.desc.lSizeUncompressed)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_CORRUPTED_DATA, "Uncompressed stream doesn't match the size of uncompressed file stored in the archive file headers");
+            AZ_Warning("Archive", false, "ZD_ERROR_CORRUPTED_DATA: Uncompressed stream doesn't match the size of uncompressed file stored in the archive file headers");
             return;
         }
 
         uLong uCRC32 = AZ::Crc32((Bytef*)pUncompressed, nDestSize);
         if (uCRC32 != fileEntry.desc.lCRC32)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_CRC32_CHECK, "Uncompressed stream CRC32 check failed");
+            AZ_Warning("Archive", false, "ZD_ERROR_CRC32_CHECK: Uncompressed stream CRC32 check failed");
             return;
         }
     }
@@ -737,7 +749,7 @@ namespace AZ::IO::ZipDir
     {
         if (FSeek(&m_fileExt, nPos, nOrigin))
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Cannot fseek() to the new position in the file. This is unexpected error and should not happen under any circumstances. Perhaps some network or disk failure error has caused this");
+            AZ_Warning("Archive", false, "ZD_ERROR_IO_FAILED: Cannot fseek() to the new position in the file. This is unexpected error and should not happen under any circumstances. Perhaps some network or disk failure error has caused this");
             return;
         }
     }
@@ -747,7 +759,7 @@ namespace AZ::IO::ZipDir
         int64_t nPos = FTell(&m_fileExt);
         if (nPos == -1)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Cannot ftell() position in the archive. This is unexpected error and should not happen under any circumstances. Perhaps some network or disk failure error has caused this");
+            AZ_Warning("Archive", false, "ZD_ERROR_IO_FAILED: Cannot ftell() position in the archive. This is unexpected error and should not happen under any circumstances. Perhaps some network or disk failure error has caused this");
             return 0;
         }
         return nPos;
@@ -757,7 +769,7 @@ namespace AZ::IO::ZipDir
     {
         if (FRead(&m_fileExt, pDest, nSize, 1) != 1)
         {
-            THROW_ZIPDIR_ERROR(ZD_ERROR_IO_FAILED, "Cannot fread() a portion of data from archive");
+            AZ_Warning("Archive", false, "ZD_ERROR_IO_FAILED: Cannot fread() a portion of data from archive");
             return false;
         }
         return true;

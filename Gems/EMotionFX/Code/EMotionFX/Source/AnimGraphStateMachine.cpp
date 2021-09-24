@@ -92,6 +92,8 @@ namespace EMotionFX
 
     void AnimGraphStateMachine::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphStateMachine::Update");
+
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
         AnimGraphPose* outputPose = nullptr;
 
@@ -476,6 +478,8 @@ namespace EMotionFX
 
     void AnimGraphStateMachine::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphStateMachine::Update");
+
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
         // Defer switch to entry state.
@@ -622,6 +626,8 @@ namespace EMotionFX
 
     void AnimGraphStateMachine::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphStateMachine::PostUpdate");
+
         RequestRefDatas(animGraphInstance);
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
         AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -1344,6 +1350,8 @@ namespace EMotionFX
 
     void AnimGraphStateMachine::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphStateMachine::TopDownUpdate");
+
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
         if (!IsTransitioning(uniqueData))

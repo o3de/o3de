@@ -273,7 +273,7 @@ namespace AZ::IO
         // If the path input = 'D:bar', then the new PathIterable parts = [D:, 'bar' ]
         static constexpr void AppendNormalPathParts(PathIterable& pathIterableResult, const AZ::IO::PathView& path) noexcept;
 
-        constexpr int compare_string_view(AZStd::string_view other) const;
+        constexpr int ComparePathView(const PathView& other) const;
         constexpr AZStd::string_view root_name_view() const;
         constexpr AZStd::string_view root_directory_view() const;
         constexpr AZStd::string_view root_path_raw_view() const;
@@ -480,6 +480,8 @@ namespace AZ::IO
         // compare
         //! Performs a compare of each of the path parts for equivalence
         //! Each part of the path is compare using string comparison
+        //! If both *this path and the input path uses the WindowsPathSeparator
+        //! then a non-case sensitive compare is performed
         //! Ex: Comparing "test/foo" against "test/fop" returns -1;
         //! Path separators of the contained path string aren't compared
         //! Ex. Comparing "C:/test\foo" against C:\test/foo" returns 0;

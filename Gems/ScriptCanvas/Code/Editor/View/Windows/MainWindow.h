@@ -271,7 +271,7 @@ namespace ScriptCanvasEditor
     private:
         // UIRequestBus
         QMainWindow* GetMainWindow() override { return qobject_cast<QMainWindow*>(this); }
-        void OpenValidationPanel();
+        void OpenValidationPanel() override;
         //
 
         // Undo Handlers
@@ -298,9 +298,9 @@ namespace ScriptCanvasEditor
         bool ContainsGraph(const GraphCanvas::GraphId& graphId) const override;
         bool CloseGraph(const GraphCanvas::GraphId& graphId) override;
 
-        void CustomizeConnectionEntity(AZ::Entity* connectionEntity);
+        void CustomizeConnectionEntity(AZ::Entity* connectionEntity) override;
 
-        void ShowAssetPresetsMenu(GraphCanvas::ConstructType constructType);
+        void ShowAssetPresetsMenu(GraphCanvas::ConstructType constructType) override;
 
         GraphCanvas::ContextMenuAction::SceneReaction ShowSceneContextMenuWithGroup(const QPoint& screenPoint, const QPointF& scenePoint, AZ::EntityId groupTarget) override;
 
@@ -326,8 +326,8 @@ namespace ScriptCanvasEditor
         ////
 
         //! ScriptCanvas::BatchOperationsNotificationBus
-        void OnCommandStarted(AZ::Crc32 commandTag);
-        void OnCommandFinished(AZ::Crc32 commandTag);        
+        void OnCommandStarted(AZ::Crc32 commandTag) override;
+        void OnCommandFinished(AZ::Crc32 commandTag) override;
 
         // File menu
         void OnFileNew();
@@ -426,7 +426,7 @@ namespace ScriptCanvasEditor
         QVariant GetTabData(const AZ::Data::AssetId& assetId);
 
         //! GeneralRequestBus
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& assetId);
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& assetId) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(AZ::Data::AssetId scriptCanvasAssetId, int tabIndex = -1) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(const ScriptCanvasMemoryAsset& scriptCanvasAsset, int tabIndex = -1);
         int CloseScriptCanvasAsset(const AZ::Data::AssetId& assetId) override;
@@ -496,7 +496,7 @@ namespace ScriptCanvasEditor
         float GetEdgePanningScrollSpeed() const override;        
 
         GraphCanvas::EditorConstructPresets* GetConstructPresets() const override;
-        const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const;
+        const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const override;
 
         GraphCanvas::Styling::ConnectionCurveType GetConnectionCurveType() const override;
         GraphCanvas::Styling::ConnectionCurveType GetDataConnectionCurveType() const override;

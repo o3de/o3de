@@ -12,6 +12,7 @@
 #include <AzCore/Outcome/Outcome.h>
 
 #include <QObject>
+#include <QProcessEnvironment>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
@@ -43,6 +44,12 @@ namespace O3DE::ProjectManager
     private:
         AZ::Outcome<void, QString> BuildProjectForPlatform();
         void QStringToAZTracePrint(const QString& error);
+
+        // Command line argument builders
+        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const;
+        AZ::Outcome<QStringList, QString> ConstructCmakeBuildCommandArguments() const;
+        AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(const QString& pidToKill) const;
+
 
         QProcess* m_configProjectProcess = nullptr;
         QProcess* m_buildProjectProcess = nullptr;
