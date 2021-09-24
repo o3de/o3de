@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
 #include <AzCore/Console/IConsole.h>
+#include <QDebug>
 
 namespace AssetProcessor
 {
@@ -103,6 +104,7 @@ namespace AssetProcessor
                 if (!modelIsResetting)
                 {
                     QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
@@ -119,6 +121,7 @@ namespace AssetProcessor
         if (!modelIsResetting)
         {
             QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            Q_ASSERT(checkIndex(parentIndex));
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
@@ -174,6 +177,7 @@ namespace AssetProcessor
         }
 
         QModelIndex parentIndex = parent == m_root.get() ? QModelIndex() : createIndex(parent->GetRow(), 0, parent);
+        Q_ASSERT(checkIndex(parentIndex));
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 
