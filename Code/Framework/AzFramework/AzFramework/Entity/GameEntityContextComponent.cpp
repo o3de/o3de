@@ -294,7 +294,7 @@ namespace AzFramework
                     {
                         SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
                         AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
-                        spawnableEntitiesInterface->GetEntitySpawnTicket(
+                        spawnableEntitiesInterface->RetrieveEntitySpawnTicket(
                             currentEntity->GetSpawnTicketId(),
                             [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket* entitySpawnTicket)
                             {

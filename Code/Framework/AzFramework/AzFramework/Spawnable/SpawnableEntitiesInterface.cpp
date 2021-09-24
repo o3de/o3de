@@ -281,15 +281,13 @@ namespace AzFramework
 
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
         : m_payload(rhs.m_payload)
+        , m_id(rhs.m_id)
     {
         auto manager = SpawnableEntitiesInterface::Get();
         AZ_Assert(manager, "SpawnableEntitiesInterface has no implementation.");
         rhs.m_payload = nullptr;
-        Id previousId = m_id;
-        m_id = rhs.m_id;
         rhs.m_id = 0;
         AZStd::scoped_lock lock(manager->m_entitySpawnTicketMapMutex);
-        manager->m_entitySpawnTicketMap.erase(previousId);
         manager->m_entitySpawnTicketMap.insert_or_assign(rhs.m_id, this);
     }
 

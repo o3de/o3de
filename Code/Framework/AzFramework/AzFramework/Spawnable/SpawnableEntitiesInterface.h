@@ -176,7 +176,7 @@ namespace AzFramework
     using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
-    using GetEntitySpawnTicketCallback = AZStd::function<void(EntitySpawnTicket*)>;
+    using RetrieveEntitySpawnTicketCallback = AZStd::function<void(EntitySpawnTicket*)>;
     using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using ListIndicesEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstIndexEntityContainerView)>;
@@ -310,9 +310,8 @@ namespace AzFramework
         virtual void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) = 0;
         //! Gets the EntitySpawnTicket associated with the entitySpawnTicketId.
         //! @param entitySpawnTicketId the id of EntitySpawnTicket to get.
-        //! @param getEntitySpawnTicketCallback The callback to execute upon fetching the ticket.
-        virtual void GetEntitySpawnTicket(
-            EntitySpawnTicket::Id entitySpawnTicketId, GetEntitySpawnTicketCallback getEntitySpawnTicketCallback) = 0;
+        //! @param callback The callback to execute upon retrieving the ticket.
+        virtual void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) = 0;
         //! Removes all entities in the provided list from the environment and reconstructs the entities from the provided spawnable.
         //! @param ticket Holds the information on the entities to reload.
         //! @param priority The priority at which this call will be executed.
@@ -382,7 +381,7 @@ namespace AzFramework
         }
 
         AZStd::unordered_map<EntitySpawnTicket::Id, EntitySpawnTicket*> m_entitySpawnTicketMap;
-        AZStd::mutex m_entitySpawnTicketMapMutex;
+        AZStd::recursive_mutex m_entitySpawnTicketMapMutex;
     };
 
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;

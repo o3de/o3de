@@ -58,8 +58,7 @@ namespace AzFramework
             EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) override;
-        void GetEntitySpawnTicket(
-            EntitySpawnTicket::Id entitySpawnTicketId, GetEntitySpawnTicketCallback getEntitySpawnTicketCallback) override;
+        void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) override;
         void ReloadSpawnable(
             EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
 
@@ -139,9 +138,9 @@ namespace AzFramework
         {
             EntityDespawnCallback m_completionCallback;
             Ticket* m_ticket;
+            AZ::EntityId m_entityId;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
-            AZ::EntityId m_entityId;
         };
         struct ReloadSpawnableCommand
         {

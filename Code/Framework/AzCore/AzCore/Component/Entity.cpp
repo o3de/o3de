@@ -651,7 +651,7 @@ namespace AZ
 
     void Entity::SetSpawnTicketId(u32 spawnTicketId)
     {
-        m_spawnTicketId = AZStd::move(spawnTicketId);
+        m_spawnTicketId = spawnTicketId;
     }
 
     u32 Entity::GetSpawnTicketId() const
