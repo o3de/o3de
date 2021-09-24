@@ -151,7 +151,9 @@ namespace AZ
             //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
             virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
 
+            //! Returns the available, overridable material slots and the default assigned materials
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
+
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };
         using MaterialReceiverRequestBus = EBus<MaterialReceiverRequests>;
@@ -161,6 +163,7 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Notification that overridable material slots are available or have changed
             virtual void OnMaterialAssignmentsChanged() = 0;
         };
         using MaterialReceiverNotificationBus = EBus<MaterialReceiverNotifications>;

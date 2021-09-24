@@ -30,6 +30,7 @@ namespace AZ
             static void Reflect(ReflectContext* context);
             static bool ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
+            AZ::Data::AssetId GetActiveAssetId() const;
             AZ::Data::AssetId GetDefaultAssetId() const;
             AZStd::string GetLabel() const;
             bool HasSourceData() const;

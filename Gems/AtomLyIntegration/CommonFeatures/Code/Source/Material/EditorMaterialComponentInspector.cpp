@@ -88,6 +88,12 @@ namespace AZ
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
                     materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                if (!materialAssetId.IsValid())
+                {
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId,
+                        m_materialAssignmentId);
+                }
 
                if (!materialAssetId.IsValid())
                 {
@@ -728,11 +734,16 @@ namespace AZ
 
             void MaterialPropertyInspector::UpdateUI()
             {
-                AZ::Data::AssetId assetId;
+                AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                if (!materialAssetId.IsValid())
+                {
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_materialAssignmentId);
+                }
 
-                if (IsLoaded() && m_editData.m_materialAssetId == assetId)
+                if (IsLoaded() && m_editData.m_materialAssetId == materialAssetId)
                 {
                     LoadOverridesFromEntity();
                 }

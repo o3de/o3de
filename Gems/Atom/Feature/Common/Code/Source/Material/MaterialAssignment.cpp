@@ -71,9 +71,9 @@ namespace AZ
         }
 
         MaterialAssignment::MaterialAssignment(const AZ::Data::AssetId& materialAssetId)
-            : m_materialInstance()
+            : m_materialAsset(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid())
+            , m_materialInstance()
         {
-            m_materialAsset.Create(materialAssetId);
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset)
@@ -90,12 +90,48 @@ namespace AZ
 
         void MaterialAssignment::RebuildInstance()
         {
-            if (m_materialAsset.IsReady())
+            if (m_materialInstancePreCreated)
+            {
+                return;
+            }
+
+            if (m_materialAsset.GetId().IsValid())
+            {
+                if (m_materialAsset.IsReady())
+                {
+                    m_materialInstance =
+                        m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                    AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                }
+                return;
+            }
+
+            if (m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance =
-                    m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                    m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
             }
+        }
+
+        void MaterialAssignment::Release()
+        {
+            if (!m_materialInstancePreCreated)
+            {
+                m_materialInstance = nullptr;
+            }
+            m_materialAsset.Release();
+            m_defaultMaterialAsset.Release();
+        }
+
+        bool MaterialAssignment::RequiresLoading() const
+        {
+            return
+                !m_materialInstancePreCreated &&
+                !m_materialAsset.IsReady() &&
+                !m_materialAsset.IsLoading() &&
+                !m_defaultMaterialAsset.IsReady() &&
+                !m_defaultMaterialAsset.IsLoading();
         }
 
         AZStd::string MaterialAssignment::ToString() const

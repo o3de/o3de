@@ -182,7 +182,9 @@ namespace MaterialEditor
             AZ_Error("MaterialViewportRenderer", m_shadowCatcherMaterial != nullptr, "Could not create shadow catcher material.");
 
             AZ::Render::MaterialAssignmentMap shadowCatcherMaterials;
-            shadowCatcherMaterials[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = m_shadowCatcherMaterial;
+            auto& shadowCatcherMaterialAssignment = shadowCatcherMaterials[AZ::Render::DefaultMaterialAssignmentId];
+            shadowCatcherMaterialAssignment.m_materialInstance = m_shadowCatcherMaterial;
+            shadowCatcherMaterialAssignment.m_materialInstancePreCreated = true;
 
             AZ::Render::MaterialComponentRequestBus::Event(m_shadowCatcherEntity->GetId(),
                 &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, shadowCatcherMaterials);
@@ -291,7 +293,9 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(materialInstance, documentId, &MaterialDocumentRequestBus::Events::GetInstance);
 
         AZ::Render::MaterialAssignmentMap materials;
-        materials[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = materialInstance;
+        auto& materialAssignment = materials[AZ::Render::DefaultMaterialAssignmentId];
+        materialAssignment.m_materialInstance = materialInstance;
+        materialAssignment.m_materialInstancePreCreated = true;
 
         AZ::Render::MaterialComponentRequestBus::Event(m_modelEntity->GetId(),
             &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
