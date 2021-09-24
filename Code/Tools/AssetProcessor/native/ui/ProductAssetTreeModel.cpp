@@ -205,7 +205,7 @@ namespace AssetProcessor
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true, AZ::Uuid::CreateNull()));
@@ -231,7 +231,7 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 

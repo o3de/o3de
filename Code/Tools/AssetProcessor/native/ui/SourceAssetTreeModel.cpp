@@ -102,7 +102,7 @@ namespace AssetProcessor
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
@@ -118,7 +118,7 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
@@ -173,7 +173,7 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex parentIndex = createIndex(parent->GetRow(), 0, parent);
+        QModelIndex parentIndex = parent == m_root.get() ? QModelIndex() : createIndex(parent->GetRow(), 0, parent);
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 
