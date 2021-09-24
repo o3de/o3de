@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "HDRColorGradingTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "HDRColorGradingPass",
             "Slots": [
                 {
                     "Name": "Input",
@@ -85,7 +85,7 @@
                         },
                         {
                             "Name": "m_whiteBalanceKelvin",
-                            "Value": 6500.0 // 1000.0f ... 40000.0f kelvin
+                            "Value": 6600.0 // 1000.0f ... 40000.0f kelvin
                         },
                         {
                             "Name": "m_whiteBalanceTint",
@@ -96,7 +96,7 @@
                             "Value": 0.0 // -1 ... 1
                         },
                         {
-                            "Name": "m_splitToneMix",
+                            "Name": "m_splitToneWeight",
                             "Value": 0.0 // 0 ... 1
                         },
                         {
@@ -120,7 +120,7 @@
                             "Value": 1.0 // 0 ... 1
                         },
                         {
-                            "Name": "m_smhMix",
+                            "Name": "m_smhWeight",
                             "Value": 0.0 // 0 ... 1
                         }
                     ],

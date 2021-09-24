@@ -51,4 +51,5 @@ ly_add_target(
         AZ::AzCore
         AZ::AzToolsFramework
         AZ::AzQtComponents
+        Legacy::EditorCore
 )
