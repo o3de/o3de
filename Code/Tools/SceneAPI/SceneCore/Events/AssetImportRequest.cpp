@@ -6,6 +6,7 @@
  *
  */
 
+#include <API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -110,6 +111,22 @@ namespace AZ
                 AzFramework::StringFunc::Path::GetFileName(assetFilePath.c_str(), sceneName);
                 AZStd::shared_ptr<Containers::Scene> scene = AZStd::make_shared<Containers::Scene>(AZStd::move(sceneName));
                 AZ_Assert(scene, "Unable to create new scene for asset importing.");
+
+                Data::AssetInfo assetInfo;
+                AZStd::string watchFolder;
+                bool result = false;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolder);
+
+                if (result)
+                {
+                    scene->SetWatchFolder(watchFolder);
+                }
+                else
+                {
+                    AZ_Error(
+                        "AssetImportRequest", false, "Failed to get watch folder for source %s",
+                        sourceGuid.ToString<AZStd::string>().c_str());
+                }
 
                 // Unique pointer, will deactivate and clean up once going out of scope.
                 SceneCore::EntityConstructor::EntityPointer loaders = 
