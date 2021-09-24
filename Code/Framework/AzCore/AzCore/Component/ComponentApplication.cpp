@@ -674,7 +674,8 @@ namespace AZ
         m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
 
         AZ::IO::FixedMaxPath userConfigFilePath = platformCachePath / "user.cfg";
-        if (AZ::IO::SystemFile::Exists(userConfigFilePath.Native().c_str()))
+        if (auto fileIoBase = AZ::FileIOBase::GetInstance(); AZ::IO::SystemFile::Exists(userConfigFilePath.c_str())
+            || (fileIoBase != nullptr && fileIoBase->Exists(userConfigFilePath.c_str())))
         {
             m_console->ExecuteConfigFile(userConfigFilePath.Native());
         }
