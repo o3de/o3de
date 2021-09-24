@@ -101,7 +101,7 @@ namespace AZ::IO::ZipDir
         FileEntry* operator -> () { return m_pFileEntry; }
         FileEntryTransactionAdd(Cache* pCache, AZStd::string_view szRelativePath)
             : m_pCache(pCache)
-            , m_szRelativePath("", AZ::IO::PosixPathSeparator)
+            , m_szRelativePath(AZ::IO::PosixPathSeparator)
             , m_bCommitted(false)
         {
             // Update the cache string pool with the relative path to the file

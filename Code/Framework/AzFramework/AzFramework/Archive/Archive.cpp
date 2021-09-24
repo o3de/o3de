@@ -1631,9 +1631,20 @@ namespace AZ::IO
             return nullptr;
         }
 
-        const bool validate = (!ZipDir::IsReleaseConfig && (nFlags & INestedArchive::FLAGS_FULL_VALIDATE) != 0);
+        ZipDir::InitMethod initType = ZipDir::InitMethod::Default;
+        if (!ZipDir::IsReleaseConfig)
+        {
+            if ((nFlags & INestedArchive::FLAGS_FULL_VALIDATE) != 0)
+            {
+                initType = ZipDir::InitMethod::FullValidation;
+            }
+            else if ((nFlags & INestedArchive::FLAGS_VALIDATE_HEADERS) != 0)
+            {
+                initType = ZipDir::InitMethod::ValidateHeaders;
+            }
+        }
 
-        ZipDir::CacheFactory factory(validate ? ZipDir::ZD_INIT_FULL_VALIDATION : ZipDir::ZD_INIT_DEFAULT, nFactoryFlags);
+        ZipDir::CacheFactory factory(initType, nFactoryFlags);
 
         ZipDir::CachePtr cache = factory.New(szFullPath->c_str());
         if (cache)

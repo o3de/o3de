@@ -126,16 +126,21 @@ namespace AZ::IO::ZipDir
 #endif // _RELEASE
 
     // possible initialization methods
-    enum InitMethodEnum
+    enum class InitMethod
     {
         // initializes without any sort of extra validation steps
-        ZD_INIT_DEFAULT,
+        Default,
+
+        // initializes with extra validation steps
+        // not available in RELEASE
+        // will check CDR and local headers data match
+        ValidateHeaders,
 
         // initializes with extra validation steps
         // not available in RELEASE
         // will check CDR and local headers data match
         // will check file data CRC matches (when file is read)
-        ZD_INIT_FULL_VALIDATION,
+        FullValidation,
     };
 
     // Uncompresses raw (without wrapping) data that is compressed with method 8 (deflated) in the Zip file

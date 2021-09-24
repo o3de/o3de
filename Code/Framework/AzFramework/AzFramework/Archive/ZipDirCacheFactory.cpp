@@ -29,7 +29,7 @@ namespace AZ::IO::ZipDir
     // this sets the window size of the blocks of data read from the end of the file to find the Central Directory Record
     // since normally there are no
     static constexpr size_t CDRSearchWindowSize = 0x100;
-    CacheFactory::CacheFactory(InitMethodEnum nInitMethod, uint32_t nFlags)
+    CacheFactory::CacheFactory(InitMethod nInitMethod, uint32_t nFlags)
     {
         m_nCDREndPos = 0;
         m_bBuildFileEntryMap = false; // we only need it for validation/debugging
@@ -605,10 +605,13 @@ namespace AZ::IO::ZipDir
             fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) +
                 localFileHeader->nFileNameLength + localFileHeader->nExtraFieldLength;
 
-            if (m_nInitMethod == ZipDir::ZD_INIT_FULL_VALIDATION)
+            if (m_nInitMethod != ZipDir::InitMethod::Default)
             {
-                // Mark the FileEntry to check CRC upon read
-                fileEntry.bCheckCRCNextRead = true;
+                if (m_nInitMethod == ZipDir::InitMethod::FullValidation)
+                {
+                    // Mark the FileEntry to check CRC when the next read occurs
+                    fileEntry.bCheckCRCNextRead = true;
+                }
 
                 // Timestamps
                 if (pFileHeader->nLastModDate != localFileHeader->nLastModDate

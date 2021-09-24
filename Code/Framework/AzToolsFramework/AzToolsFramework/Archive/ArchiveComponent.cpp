@@ -21,10 +21,10 @@
 
 namespace AzToolsFramework
 {
-    const char s_traceName[] = "ArchiveComponent";
-    AZ::u32 s_compressionMethod = AZ::IO::INestedArchive::METHOD_COMPRESS;
-    AZ::s32 s_compressionLevel = AZ::IO::INestedArchive::LEVEL_NORMAL;
-    CompressionCodec::Codec s_compressionCodec = CompressionCodec::Codec::ZLIB;
+    constexpr const char s_traceName[] = "ArchiveComponent";
+    constexpr AZ::u32 s_compressionMethod = AZ::IO::INestedArchive::METHOD_DEFLATE;
+    constexpr AZ::s32 s_compressionLevel = AZ::IO::INestedArchive::LEVEL_NORMAL;
+    constexpr CompressionCodec::Codec s_compressionCodec = CompressionCodec::Codec::ZLIB;
 
     namespace ArchiveUtils
     {

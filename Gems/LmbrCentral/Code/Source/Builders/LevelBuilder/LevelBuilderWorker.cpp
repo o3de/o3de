@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
@@ -159,13 +160,12 @@ namespace LevelBuilder
         AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
             extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, levelPakFile, tempDirectory);
 
-        [[maybe_unused]] bool result = extractResult.get();
+        extractResult.wait();
 
-        AZStd::string levelsubfolder;
-        AZ::StringFunc::Path::Join(tempDirectory.c_str(), "level", levelsubfolder);
+        auto levelsubfolder = AZ::IO::Path(tempDirectory) / "level";
 
-        PopulateLevelSliceDependencies(levelsubfolder, productDependencies, productPathDependencies);
-        PopulateMissionDependencies(levelPakFile, levelsubfolder, productPathDependencies);
+        PopulateLevelSliceDependencies(levelsubfolder.Native(), productDependencies, productPathDependencies);
+        PopulateMissionDependencies(levelPakFile, levelsubfolder.Native(), productPathDependencies);
         PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
     }
 

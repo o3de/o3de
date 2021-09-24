@@ -629,8 +629,8 @@ namespace AzToolsFramework
     {
         // When no working directory is specified, assume that the file being injected goes into the root of the archive.
         // The filePath should be an absolute path, making the workingDirectory be the path leading up to the file.
-        AZ::IO::Path fullFilePath{ filePath, AZ::IO::PosixPathSeparator };
-        AZStd::string workingDir{ fullFilePath.RemoveFilename().Native() };
+        AZ::IO::PathView fullFilePath{ filePath, AZ::IO::PosixPathSeparator };
+        AZ::IO::Path workingDir{ fullFilePath.ParentPath() };
         return InjectFile(filePath, sourcePak, workingDir.c_str());
     }
 

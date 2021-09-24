@@ -121,7 +121,7 @@ namespace UnitTest
                 std::future<bool> createResult;
                 AzToolsFramework::ArchiveCommandsBus::BroadcastResult(createResult,
                     &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchive,
-                    GetArchivePath().toStdString().c_str(), GetArchiveFolder().toStdString().c_str());
+                    GetArchivePath().toUtf8().constData(), GetArchiveFolder().toUtf8().constData());
                 bool result = createResult.get();
                 return result;
             }
@@ -183,7 +183,7 @@ namespace UnitTest
             bool listResult{ false };
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(listResult,
                 &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchive,
-                GetArchivePath().toStdString().c_str(), fileList);
+                GetArchivePath().toUtf8().constData(), fileList);
             AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(listResult);
@@ -208,7 +208,7 @@ namespace UnitTest
             bool catalogCreated{ true };
             AZ::Test::AssertAbsorber assertAbsorber;
             AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated,
-                &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
+                &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toUtf8().constData(), true);
 
             EXPECT_EQ(catalogCreated, false);
         }
@@ -225,8 +225,8 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
             std::future<bool> addResult;
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
-                addResult, &AzToolsFramework::ArchiveCommandsBus::Events::AddFilesToArchive, GetArchivePath().toStdString().c_str(),
-                GetArchiveFolder().toStdString().c_str(), listFile.toStdString().c_str());
+                addResult, &AzToolsFramework::ArchiveCommandsBus::Events::AddFilesToArchive, GetArchivePath().toUtf8().constData(),
+                GetArchiveFolder().toUtf8().constData(), listFile.toUtf8().constData());
             bool result = addResult.get();
             AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
@@ -248,8 +248,8 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
             std::future<bool> extractResult;
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
-                extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, GetArchivePath().toStdString().c_str(),
-                GetExtractFolder().toStdString().c_str());
+                extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, GetArchivePath().toUtf8().constData(),
+                GetExtractFolder().toUtf8().constData());
             bool result = extractResult.get();
             AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
@@ -283,7 +283,7 @@ namespace UnitTest
             for (const auto& thisPath : fileList)
             {
                 AZ::Data::AssetInfo newInfo;
-                newInfo.m_relativePath = thisPath.toStdString().c_str();
+                newInfo.m_relativePath = thisPath.toUtf8().constData();
                 newInfo.m_assetType = AZ::Uuid::CreateRandom();
                 newInfo.m_sizeBytes = 100; // Arbitrary
                 AZ::Data::AssetId generatedID(AZ::Uuid::CreateRandom());
@@ -294,7 +294,7 @@ namespace UnitTest
 
             bool catalogCreated{ false };
             AZ_TEST_START_TRACE_SUPPRESSION;
-            AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
+            AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toUtf8().constData(), true);
             AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // produces different counts in different platforms
             EXPECT_EQ(catalogCreated, true);
         }

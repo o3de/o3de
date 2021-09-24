@@ -39,7 +39,7 @@ namespace AZ::IO::ZipDir
 
         // initializes the internal structures
         // nFlags can have FLAGS_READ_ONLY flag, in this case the object will be opened only for reading
-        CacheFactory(InitMethodEnum nInitMethod, uint32_t nFlags = 0);
+        CacheFactory(InitMethod nInitMethod, uint32_t nFlags = 0);
         ~CacheFactory();
 
         // the new function creates a new cache
@@ -82,7 +82,7 @@ namespace AZ::IO::ZipDir
         AZStd::string m_szFilename;
         CZipFile m_fileExt;
 
-        InitMethodEnum m_nInitMethod;
+        InitMethod m_nInitMethod;
         uint32_t m_nFlags;
         ZipFile::CDREnd m_CDREnd;
 

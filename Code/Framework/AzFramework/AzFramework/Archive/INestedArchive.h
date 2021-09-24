@@ -11,7 +11,9 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Archive/Codec.h>
 
 namespace AZ::IO
@@ -70,6 +72,9 @@ namespace AZ::IO
             // upon closing the archive file. This can be faster if you open/close the archive for writing
             // multiple times
             FLAGS_DONT_COMPACT = 1 << 5,
+
+            // if this is set, validate header data when opening the archive
+            FLAGS_VALIDATE_HEADERS = 1 << 9,
 
             // if this is set, validate header data when opening the archive and validate CRCs when decompressing
             // & reading files.
