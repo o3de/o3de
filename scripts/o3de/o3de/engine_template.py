@@ -1511,21 +1511,18 @@ def create_project(project_path: pathlib.Path,
 
     # project restricted name
     if project_restricted_name and not project_restricted_path:
-        project_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
-
+        gem_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
+        if not gem_restricted_path:
+            logger.error(f'Project Restricted Name {project_restricted_name} cannot be found.')
+            return 1
     # project restricted path
     elif project_restricted_path:
         if not os.path.isabs(project_restricted_path):
-            default_projects_restricted_folder = manifest.get_registered(restricted_name='projects')
-            new_project_restricted_path = default_projects_restricted_folder/ project_restricted_path
-            logger.info(f'Project restricted path {project_restricted_path} is not a full path, we must assume its'
-                        f' relative to default projects restricted path = {new_project_restricted_path}')
-            project_restricted_path = new_project_restricted_path
-    elif template_restricted_path:
-        project_restricted_default_path = manifest.get_registered(restricted_name='projects')
-        logger.info(f'--project-restricted-path is not specified, using default project restricted path / project name'
-                    f' = {project_restricted_default_path}')
-        project_restricted_path = project_restricted_default_path
+            logger.error(f'Project Restricted Path {project_restricted_path} is not an absolute path.')
+            return 1
+    # neither make a dir side by side with the new project named <project_name>-restricted
+    else:
+        project_restricted_path = project_path.parent / (project_name + '-restricted')
 
     # project restricted relative path
     if not project_restricted_platform_relative_path:
@@ -1589,7 +1586,6 @@ def create_project(project_path: pathlib.Path,
         return 1
 
     # We created the project, now do anything extra that a project requires
-    project_json = project_path / 'project.json'
 
     # If we are not keeping the restricted in the project read the name of the restricted folder from the
     # restricted json and set that as this projects restricted
@@ -1598,7 +1594,7 @@ def create_project(project_path: pathlib.Path,
             os.makedirs(project_restricted_path, exist_ok=True)
 
             # read the restricted_name from the projects restricted.json
-            restricted_json =  project_restricted_path / 'restricted.json'
+            restricted_json = project_restricted_path / 'restricted.json'
             if os.path.isfile(restricted_json):
                 if not validation.valid_o3de_restricted_json(restricted_json):
                     logger.error(f'Restricted json {restricted_json} is not valid.')
@@ -1622,7 +1618,8 @@ def create_project(project_path: pathlib.Path,
                 logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                 return 1
 
-            # set the "restricted_name": "restricted_name" element of the project.json
+            # set the "restricted": <restricted_name> element of the project.json
+            project_json = project_path / 'project.json'
             if not validation.valid_o3de_project_json(project_json):
                 logger.error(f'Project json {project_json} is not valid.')
                 return 1
@@ -1634,7 +1631,7 @@ def create_project(project_path: pathlib.Path,
                     logger.error(f'Failed to load project json {project_json}.')
                     return 1
 
-            project_json_data.update({"restricted_name": restricted_name})
+            project_json_data.update({"restricted": restricted_name})
             os.unlink(project_json)
             with open(project_json, 'w') as s:
                 try:
@@ -1656,7 +1653,6 @@ def create_project(project_path: pathlib.Path,
                             d.write('#\n')
                             d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
-
 
     # Register the project with the either o3de_manifest.json or engine.json
     # and set the project.json "engine" field to match the
@@ -1893,20 +1889,17 @@ def create_gem(gem_path: pathlib.Path,
     # gem restricted name
     if gem_restricted_name and not gem_restricted_path:
         gem_restricted_path = manifest.get_registered(restricted_name=gem_restricted_name)
-
+        if not gem_restricted_path:
+            logger.error(f'Gem Restricted Name {gem_restricted_name} cannot be found.')
+            return 1
     # gem restricted path
     elif gem_restricted_path:
         if not os.path.isabs(gem_restricted_path):
-            default_gems_restricted_folder = manifest.get_registered(restricted_name='gems')
-            new_gem_restricted_path = default_gems_restricted_folder /gem_restricted_path
-            logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
-                        f' relative to default gems restricted path = {new_gem_restricted_path}')
-            gem_restricted_path = new_gem_restricted_path
-    elif template_restricted_path:
-        gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
-        logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
-                    f' = {gem_restricted_default_path}')
-        gem_restricted_path = gem_restricted_default_path
+            logger.error(f'Gem Restricted Path {gem_restricted_path} is not an absolute path.')
+            return 1
+    # neither make a dir side by side with the new gem named <gem_name>-restricted
+    else:
+        gem_restricted_path = gem_path.parent / (gem_name + '-restricted')
 
     # gem restricted relative
     if not gem_restricted_platform_relative_path:
@@ -1997,47 +1990,48 @@ def create_gem(gem_path: pathlib.Path,
                     logger.error(f'Failed to load restricted json {restricted_json}.')
                     return 1
 
+            try:
+                restricted_name = restricted_json_data["restricted_name"]
+            except KeyError as e:
+                logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                return 1
+
+            # set the "restricted_name": <restricted_name> element of the gem.json
+            gem_json = gem_path / 'gem.json'
+            if not validation.valid_o3de_gem_json(gem_json):
+                logger.error(f'Gem json {gem_json} is not valid.')
+                return 1
+
+            with open(gem_json, 'r') as s:
                 try:
-                    restricted_name = restricted_json_data["restricted_name"]
-                except KeyError as e:
-                    logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                    gem_json_data = json.load(s)
+                except json.JSONDecodeError as e:
+                    logger.error(f'Failed to load gem json {gem_json}.')
                     return 1
 
-                # set the "restricted_name": "restricted_name" element of the gem.json
-                gem_json = gem_path / 'gem.json'
-                if not validation.valid_o3de_gem_json(gem_json):
-                    logger.error(f'Gem json {gem_json} is not valid.')
+            gem_json_data.update({"restricted": restricted_name})
+            os.unlink(gem_json)
+            with open(gem_json, 'w') as s:
+                try:
+                    s.write(json.dumps(gem_json_data, indent=4) + '\n')
+                except OSError as e:
+                    logger.error(f'Failed to write project json {gem_json}.')
                     return 1
 
-                with open(gem_json, 'r') as s:
-                    try:
-                        gem_json_data = json.load(s)
-                    except json.JSONDecodeError as e:
-                        logger.error(f'Failed to load gem json {gem_json}.')
-                        return 1
+            for restricted_platform in restricted_platforms:
+                restricted_gem = gem_restricted_path / restricted_platform/ gem_name
+                os.makedirs(restricted_gem, exist_ok=True)
+                cmakelists_file_name = restricted_gem / 'CMakeLists.txt'
+                if not os.path.isfile(cmakelists_file_name):
+                    with open(cmakelists_file_name, 'w') as d:
+                        if keep_license_text:
+                            d.write('# {BEGIN_LICENSE}\n')
+                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
+                            d.write('#\n')
+                            d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
+                            d.write('# {END_LICENSE}\n')
 
-                gem_json_data.update({"restricted_name": restricted_name})
-                os.unlink(gem_json)
-                with open(gem_json, 'w') as s:
-                    try:
-                        s.write(json.dumps(gem_json_data, indent=4) + '\n')
-                    except OSError as e:
-                        logger.error(f'Failed to write project json {gem_json}.')
-                        return 1
-
-                for restricted_platform in restricted_platforms:
-                    restricted_gem = gem_restricted_path / restricted_platform/ gem_name
-                    os.makedirs(restricted_gem, exist_ok=True)
-                    cmakelists_file_name = restricted_gem / 'CMakeLists.txt'
-                    if not os.path.isfile(cmakelists_file_name):
-                        with open(cmakelists_file_name, 'w') as d:
-                            if keep_license_text:
-                                d.write('# {BEGIN_LICENSE}\n')
-                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
-                                d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
-                                d.write('#\n')
-                                d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
-                                d.write('# {END_LICENSE}\n')
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
 

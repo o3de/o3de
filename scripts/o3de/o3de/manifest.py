@@ -20,18 +20,13 @@ logger = logging.getLogger()
 logging.basicConfig()
 
 # Directory methods
-override_home_folder = None
-
 
 def get_this_engine_path() -> pathlib.Path:
     return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
 
 def get_home_folder() -> pathlib.Path:
-    if override_home_folder:
-        return pathlib.Path(override_home_folder).resolve()
-    else:
-        return pathlib.Path(os.path.expanduser("~")).resolve()
+    return pathlib.Path(os.path.expanduser("~")).resolve()
 
 
 def get_o3de_folder() -> pathlib.Path:
@@ -118,13 +113,6 @@ def get_o3de_manifest() -> pathlib.Path:
         default_restricted_folder = get_o3de_restricted_folder()
         default_third_party_folder = get_o3de_third_party_folder()
 
-        default_projects_restricted_folder = default_projects_folder / 'Restricted'
-        default_projects_restricted_folder.mkdir(parents=True, exist_ok=True)
-        default_gems_restricted_folder = default_gems_folder / 'Restricted'
-        default_gems_restricted_folder.mkdir(parents=True, exist_ok=True)
-        default_templates_restricted_folder = default_templates_folder / 'Restricted'
-        default_templates_restricted_folder.mkdir(parents=True, exist_ok=True)
-
         json_data = {}
         json_data.update({'o3de_manifest_name': f'{username}'})
         json_data.update({'origin': o3de_folder.as_posix()})
@@ -149,27 +137,6 @@ def get_o3de_manifest() -> pathlib.Path:
                 restricted_json_data.update({'restricted_name': 'o3de'})
                 s.write(json.dumps(restricted_json_data, indent=4) + '\n')
         json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
-
-        default_projects_restricted_folder_json = default_projects_restricted_folder / 'restricted.json'
-        if not default_projects_restricted_folder_json.is_file():
-            with default_projects_restricted_folder_json.open('w') as s:
-                restricted_json_data = {}
-                restricted_json_data.update({'restricted_name': 'projects'})
-                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
-
-        default_gems_restricted_folder_json = default_gems_restricted_folder / 'restricted.json'
-        if not default_gems_restricted_folder_json.is_file():
-            with default_gems_restricted_folder_json.open('w') as s:
-                restricted_json_data = {}
-                restricted_json_data.update({'restricted_name': 'gems'})
-                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
-
-        default_templates_restricted_folder_json = default_templates_restricted_folder / 'restricted.json'
-        if not default_templates_restricted_folder_json.is_file():
-            with default_templates_restricted_folder_json.open('w') as s:
-                restricted_json_data = {}
-                restricted_json_data.update({'restricted_name': 'templates'})
-                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
         with manifest_path.open('w') as s:
             s.write(json.dumps(json_data, indent=4) + '\n')

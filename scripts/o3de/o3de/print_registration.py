@@ -362,9 +362,6 @@ def register_show(verbose: int, project_path: pathlib.Path = None, project_name:
 
 
 def _run_register_show(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     if args.this_engine:
         return print_this_engine(args.verbose)
     elif args.engines:
@@ -517,9 +514,6 @@ def add_parser_args(parser):
                        help='The path to a project.')
     project_group.add_argument('-pn', '--project-name', type=str,
                        help='The name of a project.')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
-                        help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_register_show)
 

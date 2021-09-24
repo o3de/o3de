@@ -153,9 +153,6 @@ def download_restricted(restricted_name: str,
 
 
 def _run_download(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     if args.engine_name:
         return download_engine(args.engine_name,
                                args.dest_path)
@@ -193,9 +190,6 @@ def add_parser_args(parser):
                                          ' i.e. download --project-name "AstomSamplerViewer" --dest-path "C:/projects"'
                                          ' will result in C:/projects/AtomSampleViewer'
                                          ' If blank will download to default object type folder')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
-                                    help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_download)
 

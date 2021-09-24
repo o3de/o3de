@@ -21,14 +21,14 @@ foreach(detection_file ${detection_files})
 endforeach()
 
 
-#! o3de_restricted_id: Reads the "restricted" key from the o3de manifest
+#! o3de_restricted_id: Reads the "restricted" key from an o3de json
 #
-# \arg:o3de_json_file name of the o3de json file to read the "restricted_name" key from
-# \arg:restricted returns the restricted association element from an o3de json, otherwise engine 'o3de' is assumed
+# \arg:o3de_json_file name of the o3de json file to read the "restricted" key from
+# \arg:restricted returns the restricted association element from an o3de json, otherwise its doesnt change anything
 # \arg:o3de_json_file name of the o3de json file
 function(o3de_restricted_id o3de_json_file restricted)
     ly_file_read(${o3de_json_file} json_data)
-    string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted_name")
+    string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted")
     if(json_error)
         # Restricted fields can never be a requirement so no warning is issued
         return()
@@ -40,10 +40,10 @@ endfunction()
 
 #! o3de_find_restricted_folder:
 #
-# \arg:restricted_path returns the path of the o3de restricted folder with name restricted_name
+# \arg:restricted_path returns the path of the o3de restricted folder using the restricted_name
 # \arg:restricted_name name of the restricted
 function(o3de_find_restricted_folder restricted_name restricted_path)
-    # Read the restricted path from engine.json if one EXISTS
+    # Read the restricted element from engine.json if one EXISTS
     ly_file_read(${LY_ROOT_FOLDER}/engine.json engine_json_data)
     string(JSON restricted_subdirs_count ERROR_VARIABLE engine_json_error LENGTH ${engine_json_data} "restricted")
     if(restricted_subdirs_count GREATER 0)
@@ -52,7 +52,7 @@ function(o3de_find_restricted_folder restricted_name restricted_path)
         return()
     endif()
 
-
+    # The o3de_manifest.json is in the home directory / .o3de folder
     file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory) # Windows
     if(NOT EXISTS ${home_directory})
         file(TO_CMAKE_PATH "$ENV{HOME}" home_directory) # Unix
@@ -60,9 +60,9 @@ function(o3de_find_restricted_folder restricted_name restricted_path)
             return()
         endif()
     endif()
+    set(o3de_manifest_path ${home_directory}/.o3de/o3de_manifest.json)
 
     # Examine the o3de manifest file for the list of restricted directories
-    set(o3de_manifest_path ${home_directory}/.o3de/o3de_manifest.json)
     if(EXISTS ${o3de_manifest_path})
         ly_file_read(${o3de_manifest_path} o3de_manifest_json_data)
         string(JSON restricted_subdirs_count ERROR_VARIABLE engine_json_error LENGTH ${o3de_manifest_json_data} "restricted")
@@ -74,6 +74,7 @@ function(o3de_find_restricted_folder restricted_name restricted_path)
             endforeach()
         endif()
     endif()
+
     # Iterate over the restricted directories from the manifest file
     foreach(restricted_entry ${restricted_subdirs})
         set(restricted_json_file ${restricted_entry}/restricted.json)
@@ -105,20 +106,10 @@ function(o3de_restricted_path o3de_json_file restricted_path)
     endif()
 endfunction()
 
-#! read_engine_restricted_path: Locates the restricted path within the engine from a json file
-#
-# \arg:output_restricted_path returns the path of the o3de restricted folder with name restricted_name
-function(read_engine_restricted_path output_restricted_path)
-    # Set manifest path to path in the user home directory
-    set(manifest_path ${LY_ROOT_FOLDER}/engine.json)
-    if(EXISTS ${manifest_path})
-        o3de_restricted_path(${manifest_path} read_restricted_path)
-        set(${output_restricted_path} ${read_restricted_path} PARENT_SCOPE)
-    endif()
-endfunction()
+# set the O3DE_ENGINE_RESTRICTED_PATH
+o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
 
-read_engine_restricted_path(O3DE_ENGINE_RESTRICTED_PATH)
-
+# detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
 foreach(detection_file ${detection_files})
     include(${detection_file})
@@ -170,7 +161,7 @@ function(ly_get_absolute_pal_filename out_name in_name)
         cmake_path(SET object_path NORMALIZE ${ARGV3})
     endif()
 
-    # The Default restricted object path is the result of the read_engine_restricted_path function
+    # The Default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
         # The user has supplied an object restricted path
