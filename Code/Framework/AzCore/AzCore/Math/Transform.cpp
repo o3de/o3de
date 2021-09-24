@@ -353,6 +353,7 @@ namespace AZ
                 Method("CreateFromMatrix3x3AndTranslation", &Transform::CreateFromMatrix3x3AndTranslation)->
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
+                Method("CreateLookAt", &Transform::CreateLookAt)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }
     }

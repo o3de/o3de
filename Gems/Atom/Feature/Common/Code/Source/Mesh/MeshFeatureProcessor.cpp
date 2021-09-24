@@ -8,7 +8,6 @@
 
 #include <RenderCommon.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>

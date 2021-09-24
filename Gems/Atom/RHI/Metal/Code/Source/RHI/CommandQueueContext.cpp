@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Debug/EventTrace.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <RHI/Device.h>

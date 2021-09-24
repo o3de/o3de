@@ -15,7 +15,6 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
