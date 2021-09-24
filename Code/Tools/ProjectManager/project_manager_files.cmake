@@ -27,6 +27,8 @@ set(FILES
     Source/FormFolderBrowseEditWidget.cpp
     Source/FormImageBrowseEditWidget.h
     Source/FormImageBrowseEditWidget.cpp
+    Source/GemsSubWidget.h
+    Source/GemsSubWidget.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
@@ -104,6 +106,8 @@ set(FILES
     Source/GemRepo/GemRepoScreen.cpp
     Source/GemRepo/GemRepoInfo.h
     Source/GemRepo/GemRepoInfo.cpp
+    Source/GemRepo/GemRepoInspector.h
+    Source/GemRepo/GemRepoInspector.cpp
     Source/GemRepo/GemRepoItemDelegate.h
     Source/GemRepo/GemRepoItemDelegate.cpp
     Source/GemRepo/GemRepoListView.h
