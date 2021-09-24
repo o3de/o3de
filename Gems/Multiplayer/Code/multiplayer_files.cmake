@@ -51,11 +51,11 @@ set(FILES
     Include/Multiplayer/NetworkTime/RewindableObject.inl
     Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
-    Source/AutoGen/AutoComponentTypes_Header.jinja
-    Source/AutoGen/AutoComponentTypes_Source.jinja
-    Source/AutoGen/AutoComponent_Common.jinja
-    Source/AutoGen/AutoComponent_Header.jinja
-    Source/AutoGen/AutoComponent_Source.jinja
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
