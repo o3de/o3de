@@ -375,11 +375,11 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame(float time)
         {
             AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
-            m_lastRenderStartTime = tick.m_currentGameTime;
+            m_lastRenderStartTime = time;
 
             OnPassModified();
 
