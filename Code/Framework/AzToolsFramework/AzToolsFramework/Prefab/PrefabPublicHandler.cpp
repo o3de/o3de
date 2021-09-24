@@ -332,7 +332,8 @@ namespace AzToolsFramework
 
             if (!prefabEditorEntityOwnershipInterface->GetRootPrefabInstance())
             {
-                return AZ::Failure(AZStd::string("Could not instantiate prefab - no level prefab is loaded."));
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - no root prefab is found. "
+                    "Currently, prefabs can only be instantiated inside a level."));
             }
 
             InstanceOptionalReference instanceToParentUnder;
