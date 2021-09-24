@@ -5,9 +5,25 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Game State Samples Gem provides a set of sample game states (built on top of the Game State Gem), including primary user selection, main menu, level loading, level running, and level paused.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Gameplay", "Sample", "Assets"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Gameplay",
+        "Sample",
+        "Assets"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/game-state-samples/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/game-state-samples/",
+    "dependencies": [
+        "GameState",
+        "LocalUser",
+        "LyShine",
+        "SaveData",
+        "MessagePopup",
+        "LmbrCentral",
+        "UiBasics",
+        "LyShineExamples"
+    ]
 }

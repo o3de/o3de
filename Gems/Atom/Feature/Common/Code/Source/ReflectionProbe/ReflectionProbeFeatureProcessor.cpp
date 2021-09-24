@@ -13,7 +13,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/PipelineState.h>

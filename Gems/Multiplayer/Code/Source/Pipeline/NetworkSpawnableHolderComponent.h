@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace Multiplayer
 {
@@ -21,10 +22,11 @@ namespace Multiplayer
     public:
         AZ_COMPONENT(NetworkSpawnableHolderComponent, "{B0E3ADEE-FCB4-4A32-8D4F-6920F1CB08E4}");
 
-        static void Reflect(AZ::ReflectContext* context);
-
         NetworkSpawnableHolderComponent();;
         ~NetworkSpawnableHolderComponent() override = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         //! AZ::Component overrides.
         //! @{
@@ -33,9 +35,10 @@ namespace Multiplayer
         //! @}
 
         void SetNetworkSpawnableAsset(AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset);
-        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset();
+        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset() const;
 
     private:
         AZ::Data::Asset<AzFramework::Spawnable> m_networkSpawnableAsset{ AZ::Data::AssetLoadBehavior::PreLoad };
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> m_netSpawnableTicket;
     };
 } // namespace Multiplayer

@@ -5,8 +5,19 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Multiplayer Gem provides a public API for multiplayer functionality such as connecting and hosting.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Multiplayer", "Network", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Multiplayer",
+        "Network",
+        "Framework"
+    ],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "dependencies": [
+        "CertificateManager",
+        "Atom_Feature_Common",
+        "ImGui"
+    ]
 }
