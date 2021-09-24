@@ -72,9 +72,4 @@ namespace AzToolsFramework::Prefab
 
         return prefab->GetTemplateId();
     }
-
-    void PrefabSystemScriptingHandler::RemoveAllTemplates()
-    {
-        m_prefabSystemComponentInterface->RemoveAllTemplates();
-    }
 }

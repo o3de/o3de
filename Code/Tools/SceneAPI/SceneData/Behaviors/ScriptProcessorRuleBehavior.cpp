@@ -19,6 +19,7 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <Entity/EntityUtilityComponent.h>
+#include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingBus.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
@@ -333,7 +334,7 @@ namespace AZ::SceneAPI::Behaviors
             m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
 
             EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
-            Prefab::PrefabSystemScriptingBus::Broadcast(&Prefab::PrefabSystemScriptingBus::Events::RemoveAllTemplates);
+            AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
 
             // attempt to load the manifest string back to a JSON-scene-manifest
             auto sceneManifestLoader = AZStd::make_unique<AZ::SceneAPI::Containers::SceneManifest>();
