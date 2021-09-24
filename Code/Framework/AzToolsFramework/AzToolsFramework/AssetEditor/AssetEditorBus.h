@@ -12,13 +12,10 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_map.h>
 
-namespace AZ
+namespace AZ::Data
 {
-    namespace Data
-    {
-        class AssetData;
-    }
-} // namespace AZ
+    class AssetData;
+}
 
 namespace AZStd
 {
