@@ -16,11 +16,8 @@ namespace AZ
 
     void TaskGraphEvent::Wait()
     {
+        AZ_Assert(m_executor->GetTaskWorker() == nullptr, "Waiting in a task is unsupported");
         m_semaphore.acquire();
-        if (m_executor)
-        {
-            m_executor->ReactivateTaskWorker();
-        }
     }
 
     void TaskToken::PrecedesInternal(TaskToken& comesAfter)

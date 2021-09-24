@@ -367,7 +367,6 @@ namespace AZ
         if (event && worker)
         {
             event->m_executor = this;
-            worker->Disable();
         }
 
         // Submit all tasks that have no inbound edges

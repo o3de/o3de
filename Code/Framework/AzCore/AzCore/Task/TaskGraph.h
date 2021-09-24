@@ -80,6 +80,7 @@ namespace AZ
         friend class ::AZ::Internal::CompiledTaskGraph;
         friend class TaskGraph;
         friend class TaskExecutor;
+
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
