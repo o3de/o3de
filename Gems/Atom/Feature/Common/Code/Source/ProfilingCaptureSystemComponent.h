@@ -12,7 +12,6 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 namespace AZ
 {

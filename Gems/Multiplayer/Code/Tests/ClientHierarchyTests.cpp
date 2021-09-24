@@ -307,7 +307,7 @@ namespace Multiplayer
     class ClientDeepHierarchyTests : public ClientSimpleHierarchyTests
     {
     public:
-        static const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
+        const NetEntityId ChildOfChildNetEntityId = NetEntityId{ 3 };
 
         void SetUp() override
         {

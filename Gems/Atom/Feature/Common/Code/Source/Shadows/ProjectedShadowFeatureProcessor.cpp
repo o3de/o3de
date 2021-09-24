@@ -11,7 +11,6 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <Math/GaussianMathFilter.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
