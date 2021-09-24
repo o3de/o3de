@@ -133,8 +133,13 @@ namespace AZ
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
 
+        //! Gets the ticket id used to spawn the entity.
+        //! @return the ticket id used to spawn the entity. If entity is not spawned, the id will be 0.
         u32 GetSpawnTicketId() const;
-        void SetSpawnTicketId(u32);
+
+        //! Sets the ticket id used to spawn the entity. The ticket id in the entity will remain 0 unless it's set using this function.
+        //! @param spawnTicketId the ticket id used to spawn the entity.
+        void SetSpawnTicketId(u32 spawnTicketId);
 
         //! Connects an entity state event handler to the entity.
         //! All state changes will be signaled through this event.
