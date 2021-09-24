@@ -167,7 +167,6 @@ namespace AzToolsFramework
         void StopPlayInEditor() override;
 
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
-        bool IsLevelLoaded() const override;
 
     protected:
 
@@ -216,6 +215,5 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
-        bool m_isLevelLoaded = false;
     };
 }
