@@ -565,11 +565,7 @@ namespace AZ::IO::ZipDir
 
         FileEntryBase fileEntry(*pFileHeader, extra);
 
-        // when using encrypted headers we should always initialize data offsets from CDR
-        if ((m_encryptedHeaders != ZipFile::HEADERS_NOT_ENCRYPTED || m_nInitMethod >= ZD_INIT_FULL) && pFileHeader->desc.lSizeCompressed)
-        {
-            InitDataOffset(fileEntry, pFileHeader);
-        }
+        InitDataOffset(fileEntry, pFileHeader);
 
         if (m_bBuildFileEntryMap)
         {
@@ -597,142 +593,77 @@ namespace AZ::IO::ZipDir
         {
             Seek(pFileHeader->lLocalHeaderOffset);
 
-            // read the local file header and the name (for validation) into the buffer
-            AZStd::vector<char>pBuffer;
-            uint32_t nBufferLength = sizeof(ZipFile::LocalFileHeader) + pFileHeader->nFileNameLength;
-            pBuffer.resize(nBufferLength);
-            Read(&pBuffer[0], nBufferLength);
+            // Read only the LocalFileHeader w/ no additional bytes ('name' or 'extra' fields)
+            AZStd::vector<char> buffer;
+            uint32_t bufferLen = sizeof(ZipFile::LocalFileHeader);
+            buffer.resize_no_construct(bufferLen);
+            Read(buffer.data(), bufferLen);
 
-            // validate the local file header (compare with the CDR file header - they should contain basically the same information)
-            const auto* pLocalFileHeader = reinterpret_cast<const ZipFile::LocalFileHeader*>(&pBuffer[0]);
-            if (pFileHeader->desc != pLocalFileHeader->desc
-                || pFileHeader->nMethod != pLocalFileHeader->nMethod
-                || pFileHeader->nFileNameLength != pLocalFileHeader->nFileNameLength
-                // for a tough validation, we can compare the timestamps of the local and central directory entries
-                // but we won't do that for backward compatibility with ZipDir
-                //|| pFileHeader->nLastModDate != pLocalFileHeader->nLastModDate
-                //|| pFileHeader->nLastModTime != pLocalFileHeader->nLastModTime
-                )
+            const auto* localFileHeader = reinterpret_cast<const ZipFile::LocalFileHeader*>(buffer.data());
+
+            // set the correct file data offset...
+            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) +
+                localFileHeader->nFileNameLength + localFileHeader->nExtraFieldLength;
+
+            if (m_nInitMethod == ZipDir::ZD_INIT_FULL_VALIDATION)
             {
-                AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
-                    " The local file header descriptor doesn't match the basic parameters declared in the global file header in the file."
-                    " The archive content is misconsistent and may be damaged. Please try to repair the archive");
-                return;
+                // Mark the FileEntry to check CRC upon read
+                fileEntry.bCheckCRCNextRead = true;
+
+                // Timestamps
+                if (pFileHeader->nLastModDate != localFileHeader->nLastModDate
+                    || pFileHeader->nLastModTime != localFileHeader->nLastModTime)
+                {
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                        " The local file header's modification timestamps don't match that of the global file header in the archive."
+                        " The archive timestamps are inconsistent and may be damaged. Check the archive file.");
+                    // don't return here, it may be ok.
+                }
+
+                // Validate data
+                if (pFileHeader->desc != localFileHeader->desc  // this checks CRCs and compressed/uncompressed sizes
+                    || pFileHeader->nMethod != localFileHeader->nMethod
+                    || pFileHeader->nFileNameLength != localFileHeader->nFileNameLength)
+                {
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                        " The local file header descriptor doesn't match basic parameters declared in the global file header in the file."
+                        " The archive content is inconsistent and may be damaged. Please try to repair the archive.");
+                    // return here because further checks aren't worse than this.
+                    return;
+                }
+
+                // Read extra data
+                uint32_t extraDataLen = localFileHeader->nFileNameLength + localFileHeader->nExtraFieldLength;
+                buffer.resize_no_construct(buffer.size() + extraDataLen);
+                Read(buffer.data() + buffer.size(), extraDataLen);
+
+                // Compare local file name with the CDR file name, they should match
+                auto zipFileNameBegin = buffer.data() + sizeof(ZipFile::LocalFileHeader);
+                auto zipFileNameEnd = zipFileNameBegin + localFileHeader->nFileNameLength;
+                if (!AZStd::equal(zipFileNameBegin, zipFileNameEnd, reinterpret_cast<const char*>(pFileHeader + 1)))
+                {
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                        " The file name in the local file header doesn't match the name in the global file header."
+                        " The archive content is inconsisten with the directory. Please check the archive.");
+                }
+
+                // CDR and local "extra field" lengths may be different, should we compare them if they are equal?
+
+                // make sure it's the same file and the fileEntry structure is properly initialized
+                AZ_Assert(fileEntry.nFileHeaderOffset == pFileHeader->lLocalHeaderOffset, "The file entry header offset doesn't match the file header local offst");
+
+                fileEntry.nEOFOffset = fileEntry.nFileDataOffset + fileEntry.desc.lSizeCompressed;
+
+                if (fileEntry.nFileDataOffset >= m_nCDREndPos)
+                {
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                        " The global file header declares the file which crosses the boundaries of the archive."
+                        " The archive is either corrupted or truncated, please try to repair it");
+                }
+
+                // End Validation
             }
-
-            // now compare the local file name with the one recorded in CDR: they must match.
-            auto CompareNoCase = [](const char lhs, const char rhs) { return std::tolower(lhs, std::locale()) == std::tolower(rhs, std::locale()); };
-            auto zipFileDataBegin = pBuffer.begin() + sizeof(ZipFile::LocalFileHeader);
-            auto zipFileDataEnd = zipFileDataBegin + pFileHeader->nFileNameLength;
-            if (!AZStd::equal(zipFileDataBegin, zipFileDataEnd, reinterpret_cast<const char*>(pFileHeader + 1), CompareNoCase))
-            {
-                // either file name, or the extra field do not match
-                AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
-                    " The local file header contains file name which does not match the file name of the global file header."
-                    " The archive content is misconsistent with its directory. Please repair the archive");
-                return;
-            }
-
-            fileEntry.nFileDataOffset = pFileHeader->lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + pLocalFileHeader->nFileNameLength + pLocalFileHeader->nExtraFieldLength;
         }
-
-        // make sure it's the same file and the fileEntry structure is properly initialized
-        AZ_Assert(fileEntry.nFileHeaderOffset == pFileHeader->lLocalHeaderOffset, "The file entry header offset doesn't match the file header local offst");
-
-        fileEntry.nEOFOffset = fileEntry.nFileDataOffset + fileEntry.desc.lSizeCompressed;
-
-        if (fileEntry.nFileDataOffset >= m_nCDREndPos)
-        {
-            AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
-                " The global file header declares the file which crosses the boundaries of the archive."
-                " The archive is either corrupted or truncated, please try to repair it");
-            return;
-        }
-
-        if (m_nInitMethod >= ZD_INIT_VALIDATE)
-        {
-            Validate(fileEntry);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // reads the file pointed by the given header and entry (they must be coherent)
-    // and decompresses it; then calculates and validates its CRC32
-    void CacheFactory::Validate(const FileEntryBase& fileEntry)
-    {
-        AZStd::vector<char> pBuffer;
-        // validate the file contents
-        // allocate memory for both the compressed data and uncompressed data
-        pBuffer.resize(fileEntry.desc.lSizeCompressed + fileEntry.desc.lSizeUncompressed);
-        char* pUncompressed = &pBuffer[fileEntry.desc.lSizeCompressed];
-        char* pCompressed = &pBuffer[0];
-
-        AZ_Assert(fileEntry.nFileDataOffset != FileEntry::INVALID_DATA_OFFSET, "File entry has invalid data offset of %" PRIx32, FileEntry::INVALID_DATA_OFFSET);
-        Seek(fileEntry.nFileDataOffset);
-
-        Read(pCompressed, fileEntry.desc.lSizeCompressed);
-
-        size_t nDestSize = fileEntry.desc.lSizeUncompressed;
-        int nError = Z_OK;
-        if (fileEntry.nMethod)
-        {
-            nError = ZipRawUncompress(pUncompressed, &nDestSize, pCompressed, fileEntry.desc.lSizeCompressed);
-        }
-        else
-        {
-            AZ_Assert(fileEntry.desc.lSizeCompressed == fileEntry.desc.lSizeUncompressed, "Uncompressed file does not have the same commpressed %u and uncompressed file sizes %u",
-                fileEntry.desc.lSizeCompressed, fileEntry.desc.lSizeUncompressed);
-            memcpy(pUncompressed, pCompressed, fileEntry.desc.lSizeUncompressed);
-        }
-        switch (nError)
-        {
-        case Z_OK:
-            break;
-        case Z_MEM_ERROR:
-            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_NO_MEMORY: ZLib reported out-of-memory error");
-            return;
-        case Z_BUF_ERROR:
-            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_CORRUPTED_DATA: ZLib reported compressed stream buffer error");
-            return;
-        case Z_DATA_ERROR:
-            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_CORRUPTED_DATA: ZLib reported compressed stream data error");
-            return;
-        default:
-            AZ_Warning("Archive", false, "ZD_ERROR_ZLIB_FAILED: ZLib reported an unexpected unknown error");
-            return;
-        }
-
-        if (nDestSize != fileEntry.desc.lSizeUncompressed)
-        {
-            AZ_Warning("Archive", false, "ZD_ERROR_CORRUPTED_DATA: Uncompressed stream doesn't match the size of uncompressed file stored in the archive file headers");
-            return;
-        }
-
-        uLong uCRC32 = AZ::Crc32((Bytef*)pUncompressed, nDestSize);
-        if (uCRC32 != fileEntry.desc.lCRC32)
-        {
-            AZ_Warning("Archive", false, "ZD_ERROR_CRC32_CHECK: Uncompressed stream CRC32 check failed");
-            return;
-        }
-    }
-
-
-    //////////////////////////////////////////////////////////////////////////
-    // extracts the file path from the file header with subsequent information
-    // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
-    // it's the responsibility of the caller to ensure that the file name is in readable valid memory
-    char* CacheFactory::GetFilePath(const char* pFileName, uint16_t nFileNameLength)
-    {
-        static char strResult[AZ_MAX_PATH_LEN];
-        AZ_Assert(nFileNameLength < AZ_MAX_PATH_LEN, "Only filenames shorter than %zu can be copied from filename parameter", AZ_MAX_PATH_LEN);
-        memcpy(strResult, pFileName, nFileNameLength);
-        strResult[nFileNameLength] = 0;
-        for (int i = 0; i < nFileNameLength; i++)
-        {
-            strResult[i] = std::tolower(strResult[i], std::locale{});
-        }
-
-        return strResult;
     }
 
     // seeks in the file relative to the starting position

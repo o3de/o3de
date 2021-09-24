@@ -71,6 +71,10 @@ namespace AZ::IO
             // multiple times
             FLAGS_DONT_COMPACT = 1 << 5,
 
+            // if this is set, validate header data when opening the archive and validate CRCs when decompressing
+            // & reading files.
+            FLAGS_FULL_VALIDATE = 1 << 10,
+
             // Disable a pak file without unloading it, this flag is used in combination with patches and multiplayer
             // to ensure that specific paks stay in the position(to keep the same priority) but being disabled
             // when running multiplayer

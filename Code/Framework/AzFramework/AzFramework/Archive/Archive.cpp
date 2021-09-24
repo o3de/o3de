@@ -1631,7 +1631,9 @@ namespace AZ::IO
             return nullptr;
         }
 
-        ZipDir::CacheFactory factory(ZipDir::ZD_INIT_FAST, nFactoryFlags);
+        const bool validate = (!ZipDir::IsReleaseConfig && (nFlags & INestedArchive::FLAGS_FULL_VALIDATE) != 0);
+
+        ZipDir::CacheFactory factory(validate ? ZipDir::ZD_INIT_FULL_VALIDATION : ZipDir::ZD_INIT_DEFAULT, nFactoryFlags);
 
         ZipDir::CachePtr cache = factory.New(szFullPath->c_str());
         if (cache)

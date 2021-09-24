@@ -741,6 +741,16 @@ namespace AZ::IO::ZipDir
                 {
                     return ZD_ERROR_CORRUPTED_DATA;
                 }
+                if (pFileEntry->bCheckCRCNextRead)
+                {
+                    pFileEntry->bCheckCRCNextRead = false;
+                    uLong uCRC32 = AZ::Crc32((Bytef*)pUncompressed, nSizeUncompressed);
+                    if (uCRC32 != pFileEntry->desc.lCRC32)
+                    {
+                        AZ_Warning("Archive", false, "ZD_ERROR_CRC32_CHECK: Uncompressed stream CRC32 check failed");
+                        return ZD_ERROR_CRC32_CHECK;
+                    }
+                }
             }
         }
 
