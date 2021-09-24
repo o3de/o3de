@@ -151,9 +151,9 @@ namespace AzToolsFramework
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
             header()->setStretchLastSection(true);
-            UpdateSizeSlot(parentWidget()->width());
             header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
             header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
+            UpdateSizeSlot(parentWidget()->width());
         }
 
         void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
