@@ -954,8 +954,16 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 #else
-        gemRepos.push_back(GemRepoInfo("JohnCreates", "John Smith", "", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true));
-        gemRepos.push_back(GemRepoInfo("JanesGems", "Jane Doe", "", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false));
+        GemRepoInfo mockJohnRepo("JohnCreates", "John Smith", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true);
+        mockJohnRepo.m_summary = "John's Summary. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitudin dapibus urna";
+        mockJohnRepo.m_repoLink = "https://github.com/o3de/o3de";
+        mockJohnRepo.m_additionalInfo = "John's additional info. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitu.";
+        gemRepos.push_back(mockJohnRepo);
+
+        GemRepoInfo mockJaneRepo("JanesGems", "Jane Doe", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false);
+        mockJaneRepo.m_summary = "Jane's Summary.";
+        mockJaneRepo.m_repoLink = "https://github.com/o3de/o3de.org";
+        gemRepos.push_back(mockJaneRepo);
 #endif // MOCK_GEM_REPO_INFO
 
         std::sort(gemRepos.begin(), gemRepos.end());

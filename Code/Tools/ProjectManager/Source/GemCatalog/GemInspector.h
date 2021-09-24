@@ -9,10 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <LinkWidget.h>
-#include <TagWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <GemCatalog/GemModel.h>
+#include <GemsSubWidget.h>
+#include <LinkWidget.h>
+
 #include <QItemSelection>
 #include <QScrollArea>
 #include <QWidget>
@@ -43,21 +44,6 @@ namespace O3DE::ProjectManager
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
     private:
-        // Title, description and tag widget container used for the depending and conflicting gems
-        class GemsSubWidget
-            : public QWidget
-        {
-        public:
-            GemsSubWidget(QWidget* parent = nullptr);
-            void Update(const QString& title, const QString& text, const QStringList& gemNames);
-
-        private:
-            QLabel* m_titleLabel = nullptr;
-            QLabel* m_textLabel = nullptr;
-            QVBoxLayout* m_layout = nullptr;
-            TagContainerWidget* m_tagWidget = nullptr;
-        };
-
         void InitMainWidget();
 
         GemModel* m_model = nullptr;
