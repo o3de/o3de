@@ -13,12 +13,16 @@
 
 namespace AzToolsFramework
 {
+    //! Used to notify when the editor focus changes.
     class FocusModeNotifications
         : public AZ::EBusTraits
     {
-    public:
-        virtual ~FocusModeNotifications() = default;
+    protected:
+        ~FocusModeNotifications() = default;
 
+    public:
+        //! Triggered when the editor focus is changed to a different entity.
+        //! @param entityId The entity the focus has been moved to.
         virtual void OnEditorFocusChanged(AZ::EntityId entityId) = 0;
     };
 

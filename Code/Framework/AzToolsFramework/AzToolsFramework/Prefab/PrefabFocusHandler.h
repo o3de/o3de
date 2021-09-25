@@ -30,16 +30,16 @@ namespace AzToolsFramework::Prefab
         PrefabFocusHandler();
         ~PrefabFocusHandler();
 
-        // PrefabFocusInterface override ...
+        // PrefabFocusInterface overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         PrefabFocusOperationResult FocusOnPathIndex(int index) override;
-        TemplateId GetFocusedPrefabTemplateId() override;
-        InstanceOptionalReference GetFocusedPrefabInstance() override;
-        bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) override;
-        const AZ::IO::Path& GetPrefabFocusPath() override;
-        const int GetPrefabFocusPathLength() override;
+        TemplateId GetFocusedPrefabTemplateId() const override;
+        InstanceOptionalReference GetFocusedPrefabInstance() const override;
+        bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
+        const AZ::IO::Path& GetPrefabFocusPath() const override;
+        const int GetPrefabFocusPathLength() const override;
 
-        // EditorEntityContextNotificationBus...
+        // EditorEntityContextNotificationBus overrides ...
         void OnEntityStreamLoadSuccess() override;
 
     private:

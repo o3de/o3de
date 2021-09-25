@@ -9,14 +9,19 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/Entity/EntityContext.h>
 
 namespace AzToolsFramework::Prefab
 {
-    class PrefabFocusNotifications : public AZ::EBusTraits
+    //! Used to notify when the editor focus changes.
+    class PrefabFocusNotifications
+        : public AZ::EBusTraits
     {
-    public:
-        virtual ~PrefabFocusNotifications() = default;
+    protected:
+        ~PrefabFocusNotifications() = default;
 
+    public:
+        //! Triggered when the editor focus is changed to a different prefab.
         virtual void OnPrefabFocusChanged() = 0;
     };
 

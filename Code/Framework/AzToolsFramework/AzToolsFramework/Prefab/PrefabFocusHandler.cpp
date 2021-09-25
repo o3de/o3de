@@ -79,7 +79,7 @@ namespace AzToolsFramework::Prefab
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
-        if (&m_focusedInstance->get() != &focusedInstance->get())
+        if (!m_focusedInstance.has_value() || &m_focusedInstance->get() != &focusedInstance->get())
         {
             m_focusedInstance = focusedInstance;
             m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -90,8 +90,7 @@ namespace AzToolsFramework::Prefab
             AzToolsFramework::SelectEntity(containerEntityId);
 
             // Focus on the descendants of the container entity
-            FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-            if (focusModeInterface)
+            if (FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
             {
                 focusModeInterface->SetFocusRoot(containerEntityId);
             }
@@ -104,17 +103,17 @@ namespace AzToolsFramework::Prefab
         return AZ::Success();
     }
     
-    TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId()
+    TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId() const
     {
         return m_focusedTemplateId;
     }
 
-    InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance()
+    InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance() const
     {
         return m_focusedInstance;
     }
 
-    bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId)
+    bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
     {
         if (!m_focusedInstance.has_value())
         {
@@ -132,12 +131,12 @@ namespace AzToolsFramework::Prefab
         return instance.has_value() && (&instance->get() == &m_focusedInstance->get());
     }
 
-    const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath()
+    const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath() const
     {
         return m_instanceFocusPath;
     }
 
-    const int PrefabFocusHandler::GetPrefabFocusPathLength()
+    const int PrefabFocusHandler::GetPrefabFocusPathLength() const
     {
         return aznumeric_cast<int>(m_instanceFocusVector.size());
     }
