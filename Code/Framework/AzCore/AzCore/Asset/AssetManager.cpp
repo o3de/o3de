@@ -567,7 +567,10 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(AzCore);
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchBegin);
-            AssetBus::ExecuteQueuedEvents();
+            while (AssetBus::QueuedEventCount())
+            {
+                AssetBus::ExecuteQueuedEvents();
+            }
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchEnd);
         }
 
