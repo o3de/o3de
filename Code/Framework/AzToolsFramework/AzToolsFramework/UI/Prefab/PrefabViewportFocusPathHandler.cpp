@@ -49,9 +49,7 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                int length = m_prefabFocusInterface->GetPrefabFocusPathLength();
-
-                if (length > 1)
+                if (int length = m_prefabFocusInterface->GetPrefabFocusPathLength(); length > 1)
                 {
                     m_prefabFocusInterface->FocusOnPathIndex(length - 2);
                 }

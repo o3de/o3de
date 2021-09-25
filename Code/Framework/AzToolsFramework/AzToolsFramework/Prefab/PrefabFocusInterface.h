@@ -33,22 +33,22 @@ namespace AzToolsFramework::Prefab
         virtual PrefabFocusOperationResult FocusOnPathIndex(int index) = 0;
 
         //! Returns the template id of the instance the prefab system is focusing on.
-        virtual TemplateId GetFocusedPrefabTemplateId() = 0;
+        virtual TemplateId GetFocusedPrefabTemplateId() const = 0;
 
         //! Returns a reference to the instance the prefab system is focusing on.
-        virtual InstanceOptionalReference GetFocusedPrefabInstance() = 0;
+        virtual InstanceOptionalReference GetFocusedPrefabInstance() const = 0;
 
         //! Returns whether the entity belongs to the instance that is being focused on, or one of its descendants.
         //! @param entityId The entityId of the queried entity.
         //! @return true if the entity belongs to the focused instance or one of its descendants, false otherwise.
-        virtual bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) = 0;
+        virtual bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const = 0;
 
         //! Returns the path from the root instance to the currently focused instance.
         //! @return A path composed from the names of the container entities for the instance path.
-        virtual const AZ::IO::Path& GetPrefabFocusPath() = 0;
+        virtual const AZ::IO::Path& GetPrefabFocusPath() const = 0;
 
         //! Returns the size of the path to the currently focused instance.
-        virtual const int GetPrefabFocusPathLength() = 0;
+        virtual const int GetPrefabFocusPathLength() const = 0;
     };
 
 } // namespace AzToolsFramework::Prefab
