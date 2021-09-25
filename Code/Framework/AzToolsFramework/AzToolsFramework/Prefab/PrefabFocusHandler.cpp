@@ -116,6 +116,12 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId)
     {
+        if (!m_focusedInstance.has_value())
+        {
+            // PrefabFocusHandler has not been initialized yet.
+            return false;
+        }
+
         if (entityId == AZ::EntityId())
         {
             return false;

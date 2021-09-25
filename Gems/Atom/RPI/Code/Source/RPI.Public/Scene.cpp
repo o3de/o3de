@@ -6,8 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
