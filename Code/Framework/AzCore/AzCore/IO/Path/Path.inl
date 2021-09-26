@@ -481,14 +481,6 @@ namespace AZ::IO
         return lhs.Compare(rhs) >= 0;
     }
 
-    constexpr void PathView::AppendPathParts(PathIterable& pathIterable, const AZ::IO::PathView& path) noexcept
-    {
-        for (auto pathParser = parser::PathParser::CreateBegin(path.m_path, path.m_preferred_separator); pathParser; ++pathParser)
-        {
-            pathIterable.emplace_back(*pathParser, parser::ClassifyPathPart(pathParser));
-        }
-    }
-
     constexpr void PathView::MakeRelativeTo(PathIterable& pathIterable, const AZ::IO::PathView& path, const AZ::IO::PathView& base) noexcept
     {
         const bool exactCaseCompare = path.m_preferred_separator == PosixPathSeparator
@@ -736,26 +728,6 @@ namespace AZ::IO
         : m_path(first, last)
         , m_preferred_separator(preferredSeparator) {}
 
-    template <typename StringType>
-    constexpr BasicPath<StringType>::BasicPath(const PathView::PathIterable& pathIterable) noexcept
-    {
-        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
-        {
-            Append(pathPartView);
-        }
-    }
-
-    template <typename StringType>
-    constexpr BasicPath<StringType>::BasicPath(const PathView::PathIterable& pathIterable,
-        const char preferredSeparator) noexcept
-        : m_preferred_separator(preferredSeparator)
-    {
-        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
-        {
-            Append(pathPartView);
-        }
-    }
-
 
     template <typename StringType>
     constexpr BasicPath<StringType>::operator PathView() const noexcept
@@ -768,17 +740,6 @@ namespace AZ::IO
     {
         m_path = other.m_path;
         m_preferred_separator = other.m_preferred_separator;
-        return *this;
-    }
-
-    template <typename StringType>
-    constexpr auto BasicPath<StringType>::operator=(const PathView::PathIterable& pathIterable) noexcept -> BasicPath&
-    {
-        m_path.clear();
-        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
-        {
-            Append(pathPartView);
-        }
         return *this;
     }
 
@@ -1288,15 +1249,28 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::LexicallyNormal() const -> BasicPath
     {
-        return PathView::GetNormalPathParts(*this);
+        BasicPath pathResult(m_preferred_separator);
+        PathView::PathIterable pathIterable = PathView::GetNormalPathParts(*this);
+        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
+        {
+            pathResult /= pathPartView;
+        }
+
+        return pathResult;
     }
 
     template <typename StringType>
     constexpr auto BasicPath<StringType>::LexicallyRelative(const PathView& base) const -> BasicPath
     {
+        BasicPath pathResult(m_preferred_separator);
         PathView::PathIterable pathIterable;
-        static_cast<PathView>(*this).MakeRelativeTo(pathIterable, *this, base);
-        return BasicPath(pathIterable, m_preferred_separator);
+        PathView::MakeRelativeTo(pathIterable, *this, base);
+        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
+        {
+            pathResult /= pathPartView;
+        }
+
+        return pathResult;
     }
 
     template <typename StringType>
@@ -1411,8 +1385,8 @@ namespace AZ::IO
 
     constexpr auto PathView::LexicallyNormal() const -> FixedMaxPath
     {
+        FixedMaxPath pathResult(m_preferred_separator);
         PathIterable pathIterable = GetNormalPathParts(*this);
-        FixedMaxPath pathResult;
         for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
         {
             pathResult /= pathPartView;
@@ -1423,9 +1397,9 @@ namespace AZ::IO
 
     constexpr auto PathView::LexicallyRelative(const PathView& base) const -> FixedMaxPath
     {
+        FixedMaxPath pathResult(m_preferred_separator);
         PathIterable pathIterable;
         MakeRelativeTo(pathIterable, *this, base);
-        FixedMaxPath pathResult;
         for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
         {
             pathResult /= pathPartView;

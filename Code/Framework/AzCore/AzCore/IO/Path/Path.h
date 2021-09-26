@@ -47,8 +47,6 @@ namespace AZ::IO
         using iterator = const_iterator;
         friend PathIterator<PathView>;
 
-        struct PathIterable;
-
         // constructors and destructor
         constexpr PathView() = default;
         constexpr PathView(const PathView& other) = default;
@@ -185,7 +183,7 @@ namespace AZ::IO
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
         //! # Path parts of "." are collapsed to nothing empty
-        //! # Paths parts of ".." are removed if there is a preceding directory 
+        //! # Paths parts of ".." are removed if there is a preceding directory
         //! The preceding directory is also removed
         //! # Runs of Two or more path separators are collapsed into one path separator
         //! unless the path begins with two path separators
@@ -245,7 +243,7 @@ namespace AZ::IO
 
         // iterators
         //! Returns an iterator to the beginning of the path that can be used to traverse the path
-        //! according to the following 
+        //! according to the following
         //! 1. Root name - (0 or 1)
         //! 2. Root directory - (0 or 1)
         //! 3. Filename - (0 or more)
@@ -260,6 +258,7 @@ namespace AZ::IO
         template <typename StringType>
         friend class BasicPath;
         friend struct AZStd::hash<PathView>;
+        struct PathIterable;
 
         static constexpr void MakeRelativeTo(PathIterable& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base) noexcept;
 
@@ -277,10 +276,6 @@ namespace AZ::IO
         //! If the path input = 'C:bar', then the new PathIterable parts = [C:', '/', 'foo', 'bar' ]
         //! If the path input = 'D:bar', then the new PathIterable parts = [D:, 'bar' ]
         static constexpr void AppendNormalPathParts(PathIterable& pathIterableResult, const AZ::IO::PathView& path) noexcept;
-
-        //! Populates a path iterable with each path segment of the PathView
-        //! The PathIterable can be rejoined the PathIterable constructor
-        static constexpr void AppendPathParts(PathIterable& pathIterableResult, const AZ::IO::PathView& path) noexcept;
 
         constexpr int ComparePathView(const PathView& other) const;
         constexpr AZStd::string_view root_name_view() const;
@@ -336,12 +331,6 @@ namespace AZ::IO
         // Conversion constructor for other types of BasicPath instantiations
         constexpr BasicPath(const PathView& other) noexcept;
 
-        // Contructor for creating a path out of a PathIterable struct
-        //! The preferred separator is to the OS default path separator
-        constexpr BasicPath(const PathView::PathIterable& pathIterable) noexcept;
-        //! The preferred separator is set to the parameter
-        constexpr BasicPath(const PathView::PathIterable& pathIterable, const char preferredSeparator) noexcept;
-
         // String constructors
         //! Constructs a Path by copying the pathString to its internal string
         //! The preferred separator is to the OS default path separator
@@ -387,7 +376,6 @@ namespace AZ::IO
 
         // conversion assignment operator
         constexpr BasicPath& operator=(const PathView& pathView) noexcept;
-        constexpr BasicPath& operator=(const PathView::PathIterable& pathIterable) noexcept;
         constexpr BasicPath& operator=(const string_type& str) noexcept;
         constexpr BasicPath& operator=(string_type&& str) noexcept;
         constexpr BasicPath& operator=(AZStd::string_view str) noexcept;
@@ -596,7 +584,7 @@ namespace AZ::IO
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
         //! # Path parts of "." are collapsed to nothing empty
-        //! # Paths parts of ".." are removed if there is a preceding directory 
+        //! # Paths parts of ".." are removed if there is a preceding directory
         //! The preceding directory is also removed
         //! # Runs of Two or more path separators are collapsed into one path separator
         //! unless the path begins with two path separators
@@ -638,7 +626,7 @@ namespace AZ::IO
 
         // iterators
         //! Returns an iterator to the beginning of the path that can be used to traverse the path
-        //! according to the following 
+        //! according to the following
         //! 1. Root name - (0 or 1)
         //! 2. Root directory - (0 or 1)
         //! 3. Filename - (0 or more)
