@@ -5,9 +5,20 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Surface Data Gem provides functionality to emit signals or tags from surfaces such as meshes and terrain.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Environment", "Utility", "Design"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Environment",
+        "Utility",
+        "Design"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/surface-data/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/surface-data/",
+    "dependencies": [
+        "LmbrCentral",
+        "Atom_RPI",
+        "Atom_Feature_Common"
+    ]
 }

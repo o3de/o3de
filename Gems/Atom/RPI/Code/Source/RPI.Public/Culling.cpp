@@ -14,8 +14,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Casting/numeric_cast.h>

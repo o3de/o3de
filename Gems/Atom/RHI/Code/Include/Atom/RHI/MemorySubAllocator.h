@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI/MemoryAllocation.h>

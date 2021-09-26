@@ -16,7 +16,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Windowing/WindowBus.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
 
 namespace AZ
@@ -46,7 +45,6 @@ namespace MaterialEditor
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
         , public MaterialViewportNotificationBus::Handler
         , public AZ::TransformNotificationBus::MultiHandler
-        , public AzFramework::WindowSystemRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialViewportRenderer, AZ::SystemAllocator, 0);
@@ -80,9 +78,6 @@ namespace MaterialEditor
 
         // AZ::TransformNotificationBus::MultiHandler overrides...
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
-
-        // AzFramework::WindowSystemRequestBus::Handler overrides ...
-        AzFramework::NativeWindowHandle GetDefaultWindowHandle() override;
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 

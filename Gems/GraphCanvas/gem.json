@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The Graph Canvas Gem provides a C++ framework for creating custom graphical node based editors for Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Framework", "Tools", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Framework",
+        "Tools",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/framework/graph-canvas/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/framework/graph-canvas/",
+    "dependencies": []
 }

@@ -10,5 +10,4 @@ set(FILES
     Source/main.cpp
     Source/MaterialEditorApplication.cpp
     Source/MaterialEditorApplication.h
-    tool_dependencies.cmake
 )
