@@ -13,7 +13,9 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -489,56 +491,25 @@ namespace ScriptCanvasEditor
 
     void UpgradeTool::BackupAsset(const AZ::Data::AssetInfo& assetInfo)
     {
-
-        AZStd::string devRoot = "@engroot@";
-        AZStd::string devAssets = "@projectroot@";
-
-        char devRootCStr[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(devRoot.c_str(), devRootCStr, AZ_MAX_PATH_LEN);
-
-        char devAssetsCStr[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(devAssets.c_str(), devAssetsCStr, AZ_MAX_PATH_LEN);
-
-        AZStd::string relativePath = devAssetsCStr;
-        AzFramework::StringFunc::Replace(relativePath, devRootCStr, "");
-        if (relativePath.starts_with("/"))
-        {
-            relativePath = relativePath.substr(1, relativePath.size() - 1);
-        }
-
-        AZStd::string sourceFilePath;
+        AZ::IO::FixedMaxPath sourceFilePath;
 
         // Using this to get the watch folder
         AZStd::string watchFolder;
-        AZ::Data::AssetInfo assetInfo2;
+        AZ::Data::AssetInfo sourceFileAssetInfo;
         bool sourceInfoFound{};
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetInfo.m_relativePath.c_str(), assetInfo2, watchFolder);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+             assetInfo.m_relativePath.c_str(), sourceFileAssetInfo, watchFolder);
         if (sourceInfoFound)
         {
-            AZStd::string assetPath;
-            AzFramework::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), assetPath);
-
-            sourceFilePath = assetPath;
+            sourceFilePath = AZ::IO::FixedMaxPath(AZStd::string_view(watchFolder)) / sourceFileAssetInfo.m_relativePath;
         }
 
-        devRoot = devRootCStr;
-        AzFramework::StringFunc::Path::Normalize(devRoot);
-
-        relativePath = sourceFilePath;
-        AzFramework::StringFunc::Replace(relativePath, devRoot.c_str(), "");
-        if (relativePath.starts_with("/"))
-        {
-            relativePath = relativePath.substr(1, relativePath.size() - 1);
-        }
-
-        AZStd::string targetFilePath;
-        AzFramework::StringFunc::Path::Join(m_backupPath.c_str(), relativePath.c_str(), targetFilePath);
+        const auto targetFilePath = AZ::IO::FixedMaxPath(AZStd::string_view(m_backupPath)) / sourceFileAssetInfo.m_relativePath;
 
         if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Error)
         {
-            AZStd::string filename;
-            AzFramework::StringFunc::Path::GetFileName(sourceFilePath.c_str(), filename);
-            AZ_TracePrintf("Script Canvas", "Backup: %s -> %s\n", filename.c_str(), targetFilePath.c_str());
+            AZ_TracePrintf("Script Canvas", "Backup: %s -> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
         }
         else
         {

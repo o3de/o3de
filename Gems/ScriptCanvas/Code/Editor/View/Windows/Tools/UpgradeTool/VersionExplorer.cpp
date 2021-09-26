@@ -19,6 +19,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -301,51 +302,37 @@ namespace ScriptCanvasEditor
             return "";
         }
 
+        auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+
         QDateTime theTime = QDateTime::currentDateTime();
         QString subFolder = theTime.toString("yyyy-MM-dd [HH.mm.ss]");
 
-        AZStd::string backupPath = AZStd::string::format("@engroot@/ScriptCanvas_BACKUP/%s", subFolder.toUtf8().data());
-        char backupPathCStr[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(backupPath.c_str(), backupPathCStr, AZ_MAX_PATH_LEN);
-        backupPath = backupPathCStr;
+        AZ::IO::FixedMaxPath projectUserPath;
+        settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
 
-        if (!AZ::IO::FileIOBase::GetInstance()->Exists(backupPath.c_str()))
+        AZ::IO::FixedMaxPath backupPath = projectUserPath / "ScriptCanvas_BACKUP" / subFolder.toUtf8().data();
+
+        if (!fileIoBase->Exists(backupPath.c_str()))
         {
-            if (AZ::IO::FileIOBase::GetInstance()->CreatePath(backupPath.c_str()) != AZ::IO::ResultCode::Success)
+            if (fileIoBase->CreatePath(backupPath.c_str()) != AZ::IO::ResultCode::Success)
             {
                 AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Failed to create backup folder %s", backupPath.c_str());
                 return "Failed to create backup folder";
             }
         }
 
-        AZStd::string devRoot = "@engroot@";
-        AZStd::string devAssets = "@projectroot@";
-
-        char devRootCStr[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(devRoot.c_str(), devRootCStr, AZ_MAX_PATH_LEN);
-
-        char devAssetsCStr[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(devAssets.c_str(), devAssetsCStr, AZ_MAX_PATH_LEN);
-
-        AZStd::string relativePath = devAssetsCStr;
-        AzFramework::StringFunc::Replace(relativePath, devRootCStr, "");
-        if (relativePath.starts_with("/"))
-        {
-            relativePath = relativePath.substr(1, relativePath.size() - 1);
-        }
-
-        AZStd::string sourceFilePath;
-
         AZStd::string watchFolder;
         AZ::Data::AssetInfo assetInfo;
+
+        AZ::IO::FixedMaxPath sourceFilePath;
         bool sourceInfoFound{};
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, asset.GetHint().c_str(), assetInfo, watchFolder);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+             asset.GetHint().c_str(), assetInfo, watchFolder);
         if (sourceInfoFound)
         {
-            AZStd::string assetPath;
-            AzFramework::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), assetPath);
-
-            sourceFilePath = assetPath;
+            sourceFilePath = AZ::IO::FixedMaxPath(AZStd::string_view(watchFolder)) / assetInfo.m_relativePath;
         }
         else
         {
@@ -353,23 +340,9 @@ namespace ScriptCanvasEditor
             return "Failed to find source file";
         }
 
-        devRoot = devRootCStr;
-        AzFramework::StringFunc::Path::Normalize(devRoot);
+        const AZ::IO::FixedMaxPath targetFilePath = backupPath / assetInfo.m_relativePath;
 
-        relativePath = sourceFilePath;
-        AzFramework::StringFunc::Replace(relativePath, devRoot.c_str(), "");
-        if (relativePath.starts_with("/"))
-        {
-            relativePath = relativePath.substr(1, relativePath.size() - 1);
-        }
-
-        AzFramework::StringFunc::Path::Normalize(relativePath);
-        AzFramework::StringFunc::Path::Normalize(backupPath);
-
-        AZStd::string targetFilePath = backupPath;
-        targetFilePath += relativePath;
-
-        if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Success)
+        if (fileIoBase->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Success)
         {
             AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "VersionExplorer::BackupGraph: Error creating backup: %s  ---> %s\n", sourceFilePath.c_str(), targetFilePath.c_str());
             return "Failed to copy source file to backup location";
@@ -602,7 +575,7 @@ namespace ScriptCanvasEditor
                 });
                 streamer->QueueRequest(flushRequest);
             }
-        }        
+        }
     }
 
     void VersionExplorer::GraphUpgradeComplete
@@ -873,7 +846,7 @@ namespace ScriptCanvasEditor
 
                 m_state = ProcessState::Upgrade;
                 AZ::SystemTickBus::Handler::BusConnect();
-            }          
+            }
         }
     }
 
@@ -883,7 +856,7 @@ namespace ScriptCanvasEditor
         m_inProgress = false;
         m_ui->progressBar->setValue(aznumeric_cast<int>(m_currentAssetRowIndex));
         m_ui->scanButton->setEnabled(true);
-        
+
         m_inspectingAsset = m_assetsToInspect.erase(m_inspectingAsset);
         FlushLogs();
 

@@ -39,15 +39,7 @@ namespace AssetProcessor
         // if you don't do this, things get fragmented very fast.
         m_saveBuffer.reserve(1024 * 1024 * 30);
 
-        m_absoluteDevFolderPath[0] = 0;
-        m_absoluteDevGameFolderPath[0] = 0;
-
-        AZStd::string engineRoot;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, engineRoot.c_str());
-
-        AZStd::string gameFolderPath{AssetUtilities::ComputeProjectPath().toUtf8().constData()};
-        azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, gameFolderPath.c_str());
+        AssetUtilities::ComputeProjectPath();
 
         AssetUtilities::ComputeProjectCacheRoot(m_cacheRootDir);
 
@@ -625,16 +617,6 @@ namespace AssetProcessor
     }
 
     //////////////////////////////////////////////////////////////////////////
-
-    const char* AssetCatalog::GetAbsoluteDevGameFolderPath()
-    {
-        return m_absoluteDevGameFolderPath;
-    }
-
-    const char* AssetCatalog::GetAbsoluteDevRootFolderPath()
-    {
-        return m_absoluteDevFolderPath;
-    }
 
     bool AssetCatalog::GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullSourceOrProductPath, AZStd::string& relativeProductPath)
     {

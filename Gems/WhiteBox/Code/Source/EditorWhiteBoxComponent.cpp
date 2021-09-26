@@ -22,6 +22,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -498,13 +499,13 @@ namespace WhiteBox
 
     static AZStd::string WhiteBoxPathAtProjectRoot(const AZStd::string_view name, const AZStd::string_view extension)
     {
-        const char* projectFolder = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            projectFolder, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
-
-        return AZStd::string::format(
-            "%s\\%.*s_whitebox.%.*s", projectFolder, aznumeric_cast<int>(name.size()), name.data(),
-            aznumeric_cast<int>(extension.size()), extension.data());
+        AZ::IO::Path whiteBoxPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(whiteBoxPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+        whiteBoxPath /= AZ::IO::FixedMaxPathString::format("%.*s.%.*s", AZ_STRING_ARG(name), AZ_STRING_ARG(extension));
+        return whiteBoxPath.Native();
     }
 
     void EditorWhiteBoxComponent::ExportToFile()
