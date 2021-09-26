@@ -1413,7 +1413,7 @@ namespace AZ::IO
         FixedMaxPath pathResult = LexicallyRelative(base);
         if (pathResult.empty())
         {
-            pathResult = base;
+            return FixedMaxPath(*this);
         }
 
         return pathResult;
