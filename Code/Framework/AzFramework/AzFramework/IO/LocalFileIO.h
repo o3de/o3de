@@ -73,7 +73,7 @@ namespace AZ
 
             bool GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const override;
             bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const;
-            
+
         private:
             SystemFile* GetFilePointerFromHandle(HandleType fileHandle);
 
@@ -81,7 +81,6 @@ namespace AZ
 
             AZStd::optional<AZ::u64> ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const;
             bool ResolveAliases(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const;
-            bool IsAbsolutePath(const char* path) const;
 
             bool LowerIfBeginsWith(char* inOutBuffer, AZ::u64 bufferLen, const char* alias) const;
 

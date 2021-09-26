@@ -17,6 +17,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <cctype>
 
 namespace AZ
@@ -471,7 +472,7 @@ namespace AZ
                 return false;
             }
 
-            if (IsAbsolutePath(path))
+            if (AZ::IO::PathView(path).IsAbsolute())
             {
                 size_t pathLen = strlen(path);
                 if (pathLen + 1 < resolvedPathSize)
@@ -490,22 +491,36 @@ namespace AZ
                 }
             }
 
-            AZ::IO::FixedMaxPath rootedPathBuffer;
+            constexpr AZStd::string_view productAssetAlias = "@projectproductassets@";
+            // Add plus one for the path separator: <alias>/<path>
+            constexpr size_t MaxPathSizeWithProductAssetAlias = AZ::IO::MaxPathLength + productAssetAlias.size() + 1;
+            using RootedPathString = AZStd::fixed_string<MaxPathSizeWithProductAssetAlias>;
+            RootedPathString rootedPathBuffer;
             const char* rootedPath = path;
             // if the path does not begin with an alias, then it is assumed to begin with @projectproductassets@
             if (path[0] != '@')
             {
                 if (GetAlias("@projectproductassets@"))
                 {
-                    rootedPathBuffer = "@projectproductassets@";
-                    rootedPathBuffer /= path;
+
+                    if (const size_t requiredSize = productAssetAlias.size() + strlen(path) + 1;
+                        requiredSize > rootedPathBuffer.capacity())
+                    {
+                        AZ_Error("FileIO", false, "Prepending the %.*s alias to the input path results in a path longer than the"
+                            " AZ::IO::MaxPathLength + the alias size of %zu. The size of the potential failed path is %zu",
+                            AZ_STRING_ARG(productAssetAlias), rootedPathBuffer.capacity(), requiredSize)
+                    }
+                    else
+                    {
+                        rootedPathBuffer = RootedPathString::format("%.*s/%s", AZ_STRING_ARG(productAssetAlias), path);
+                    }
                 }
                 else
                 {
-                    if (ConvertToAbsolutePath(path, rootedPathBuffer.Native().data(), rootedPathBuffer.Native().capacity()))
+                    if (ConvertToAbsolutePath(path, rootedPathBuffer.data(), rootedPathBuffer.capacity()))
                     {
                         // Recalculate the internal string length
-                        rootedPathBuffer.Native().resize_no_construct(AZStd::char_traits<char>::length(rootedPathBuffer.Native().data()));
+                        rootedPathBuffer.resize_no_construct(AZStd::char_traits<char>::length(rootedPathBuffer.data()));
                     }
                 }
                 rootedPath = rootedPathBuffer.c_str();
@@ -852,6 +867,11 @@ namespace AZ
             }
 
             return pathStr + "/";
+        }
+
+        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
+        {
+            return AZ::Utils::ConvertToAbsolutePath(path, absolutePath, maxLength);
         }
     } // namespace IO
 } // namespace AZ

@@ -149,36 +149,5 @@ namespace AZ
 
             return SystemFile::CreateDir(buf.c_str()) ? ResultCode::Success : ResultCode::Error;
         }
-
-        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
-        {
-            char* result = _fullpath(absolutePath, path, maxLength);
-            size_t len = ::strlen(absolutePath);
-            if (len > 0)
-            {
-                // strip trailing slash
-                if (absolutePath[len - 1] == '/' || absolutePath[len - 1] == '\\')
-                {
-                    absolutePath[len - 1] = 0;
-                }
-
-                // For some reason, at least on windows, _fullpath returns a lowercase drive letter even though other systems like Qt, use upper case.
-                if (len > 2)
-                {
-                    if (absolutePath[1] == ':')
-                    {
-                        absolutePath[0] = (char)toupper(absolutePath[0]);
-                    }
-                }
-            }
-            return result != nullptr;
-        }
-
-        bool LocalFileIO::IsAbsolutePath(const char* path) const
-        {
-            char drive[16] = { 0 };
-            _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
-            return strlen(drive) > 0;
-        }
     } // namespace IO
 }//namespace AZ
