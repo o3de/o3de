@@ -31,7 +31,7 @@ namespace AzToolsFramework
         // Read a file's contents into a provided buffer.
         // Does not add a zero byte at the end of the buffer.
         // returns true if read was successful, false otherwise.
-        bool ReadFile(const AZStd::string& filePath, AZ::IO::OpenMode openMode, AZStd::vector<char>& outBuffer)
+        bool ReadFile(const AZ::IO::Path& filePath, AZ::IO::OpenMode openMode, AZStd::vector<char>& outBuffer)
         {
             auto fileIO = AZ::IO::FileIOBase::GetDirectInstance();
             if (!fileIO)
@@ -64,7 +64,7 @@ namespace AzToolsFramework
         // Reads a text file that contains a list of file paths.
         // Tokenize the file by lines.
         // Calls the lineVisitor function for each line of the file.
-        void ProcessFileList(const AZStd::string& filePath, AZStd::function<void(AZStd::string_view line)> lineVisitor)
+        void ProcessFileList(const AZ::IO::Path& filePath, AZStd::function<void(AZStd::string_view line)> lineVisitor)
         {
             AZStd::vector<char> fileBuffer;
             if (ReadFile(filePath, AZ::IO::OpenMode::ModeText | AZ::IO::OpenMode::ModeRead, fileBuffer))
@@ -166,7 +166,7 @@ namespace AzToolsFramework
 
                 AZ::IO::PathView relativePath = AZ::IO::PathView{ fileName }.LexicallyRelative(workingPath);
 
-                AZStd::string fullPath = (workingPath / relativePath).Native();
+                AZ::IO::Path fullPath = (workingPath / relativePath);
                 if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
@@ -239,7 +239,7 @@ namespace AzToolsFramework
             AZ::u64 bytesWritten = 0;
             AZ::IO::INestedArchive::Handle srcHandle{};
             AZ::IO::HandleType dstHandle = AZ::IO::InvalidHandle;
-            const AZ::IO::OpenMode openMode =
+            constexpr AZ::IO::OpenMode openMode =
                 (AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeUpdate);
 
             for (const auto& filePath : filesInArchive)
@@ -418,7 +418,7 @@ namespace AzToolsFramework
 
             AZStd::vector<char> fileBuffer;
             bool success = false;
-            if (ArchiveUtils::ReadFile(fullPath.c_str(), AZ::IO::OpenMode::ModeRead, fileBuffer))
+            if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
             {
                 int result = archive->UpdateFile(
                     relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
@@ -479,7 +479,7 @@ namespace AzToolsFramework
             auto PerLineCallback = [&success, &basePath, &archive](AZStd::string_view filePathLine) -> void
             {
                 AZStd::vector<char> fileBuffer;
-                AZStd::string fullPath = (basePath / filePathLine).c_str();
+                AZ::IO::Path fullPath = (basePath / filePathLine);
                 if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
@@ -489,8 +489,8 @@ namespace AzToolsFramework
                     bool thisSuccess = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
                     success = (success && thisSuccess);
                     AZ_Error(
-                        s_traceName, thisSuccess, "Error %d encountered while adding '%.*s' to archive '%s'", result,
-                        AZ_STRING_ARG(filePathLine), archive->GetFullPath());
+                        s_traceName, thisSuccess, "Error %d encountered while adding '%.*s' to archive '%.*s'", result,
+                        AZ_STRING_ARG(filePathLine), AZ_STRING_ARG(archive->GetFullPath().Native()));
                 }
                 else
                 {
@@ -524,7 +524,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        if (!m_localFileIO->Exists(directory.c_str()) || !m_localFileIO->IsDirectory(directory.c_str()))
+        if (!m_localFileIO->IsDirectory(directory.c_str()))
         {
             AZ_Error(
                 s_traceName, false, "Working directory '%s' is not a directory or doesn't exist!", directory.c_str());
@@ -582,7 +582,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        if (!m_localFileIO->Exists(directory.c_str()) || !m_localFileIO->IsDirectory(directory.c_str()))
+        if (!m_localFileIO->IsDirectory(directory.c_str()))
         {
             AZ_Error(s_traceName, false, "Directory '%s' is not a directory or doesn't exist!", directory.c_str());
             return false;

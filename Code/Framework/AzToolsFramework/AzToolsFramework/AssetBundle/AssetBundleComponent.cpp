@@ -35,7 +35,6 @@ namespace AzToolsFramework
 
     const char AssetBundleComponent::DeltaCatalogName[] = "DeltaCatalog.xml";
 
-    constexpr int SleepTimeMS = 250;
     constexpr int InjectFileRetryCount = 4;
 
 
