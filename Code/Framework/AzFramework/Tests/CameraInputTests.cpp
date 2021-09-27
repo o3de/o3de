@@ -45,13 +45,13 @@ namespace UnitTest
             m_translateCameraInputChannelIds.m_boostChannelId = AzFramework::InputChannelId("keyboard_key_modifier_shift_l");
 
             m_firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
-            m_firstPersonTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, m_translateCameraInputChannelIds);
+            m_firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+                m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivot);
 
             m_pivotCamera = AZStd::make_shared<AzFramework::PivotCameraInput>(m_pivotChannelId);
             auto pivotRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
-            auto pivotTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::PivotTranslation, m_translateCameraInputChannelIds);
+            auto pivotTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+                m_translateCameraInputChannelIds, AzFramework::PivotTranslation, AzFramework::TranslateOffset);
 
             m_pivotCamera->m_pivotCameras.AddCamera(pivotRotateCamera);
             m_pivotCamera->m_pivotCameras.AddCamera(pivotTranslateCamera);
@@ -245,20 +245,21 @@ namespace UnitTest
                 return position;
             });
 
+        const auto expectedCameraPosition = AZ::Vector3(10.0f, 10.0f, 10.0f);
         AzFramework::UpdateCameraFromTransform(
             m_targetCamera,
             AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 10.0f, 10.0f)));
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), expectedCameraPosition));
 
         m_camera = m_targetCamera;
 
         HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
 
-        // verify the camera yaw has not changed and the look at point
-        // does not match that of the camera translation
+        // verify the camera yaw has not changed and pivot point matches the expected camera position
         using ::testing::Eq;
-        using ::testing::Not;
         EXPECT_THAT(m_camera.m_yaw, Eq(AZ::DegToRad(90.0f)));
-        
+        EXPECT_THAT(m_camera.m_pitch, Eq(0.0f));
+        EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
+        EXPECT_THAT(m_camera.m_pivot, IsClose(expectedCameraPosition));
     }
 } // namespace UnitTest

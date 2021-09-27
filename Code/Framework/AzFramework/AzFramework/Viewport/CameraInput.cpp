@@ -542,6 +542,10 @@ namespace AzFramework
     PivotCameraInput::PivotCameraInput(const InputChannelId& pivotChannelId)
         : m_pivotChannelId(pivotChannelId)
     {
+        m_pivotFn = []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
+        {
+            return AZ::Vector3::CreateZero();
+        };
     }
 
     bool PivotCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
