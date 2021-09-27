@@ -51,6 +51,8 @@ namespace AzToolsFramework
 
         // Returns a list of matching component type names.  Supports wildcard search terms
         virtual AZStd::vector<ComponentDetails> FindMatchingComponents(const AZStd::string& searchTerm) = 0;
+
+        virtual void ResetEntityContext() = 0;
     };
 
     using EntityUtilityBus = AZ::EBus<EntityUtilityTraits>;
@@ -67,6 +69,7 @@ namespace AzToolsFramework
         bool UpdateComponentForEntity(AZ::EntityId entity, AzFramework::BehaviorComponentId component, const AZStd::string& json) override;
         AZStd::string GetComponentDefaultJson(const AZStd::string& typeName) override;
         AZStd::vector<ComponentDetails> FindMatchingComponents(const AZStd::string& searchTerm) override;
+        void ResetEntityContext() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -80,5 +83,8 @@ namespace AzToolsFramework
 
         // TypeId, TypeName, Vector<BaseClassName>
         AZStd::vector<AZStd::tuple<AZ::TypeId, AZStd::string, AZStd::vector<AZStd::string>>> m_typeInfo;
+
+        // Keep track of the entities we create so they can be reset
+        AZStd::vector<AZ::EntityId> m_createdEntities;
     };
 }; // namespace AzToolsFramework

@@ -74,8 +74,11 @@ namespace AzToolsFramework
             &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *newEntity);
 
         newEntity->Init();
+        auto newEntityId = newEntity->GetId();
 
-        return newEntity->GetId();
+        m_createdEntities.emplace_back(newEntityId);
+
+        return newEntityId;
     }
 
     AZ::TypeId GetComponentTypeIdFromName(const AZStd::string& typeName)
@@ -290,6 +293,17 @@ namespace AzToolsFramework
         }
 
         return matches;
+    }
+
+    void EntityUtilityComponent::ResetEntityContext()
+    {
+        for (AZ::EntityId entityId : m_createdEntities)
+        {
+            m_entityContext->DestroyEntityById(entityId);
+        }
+
+        m_createdEntities.clear();
+        m_entityContext->ResetContext();
     }
 
     void EntityUtilityComponent::Reflect(AZ::ReflectContext* context)
