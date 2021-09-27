@@ -293,7 +293,7 @@ namespace AzToolsFramework
 
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
     }
-
+    
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::CreatePrefab(
         const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
