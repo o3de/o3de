@@ -19,8 +19,10 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PlatformLimitsDescriptor, Base>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("DescriptorHeapLimits", &PlatformLimitsDescriptor::m_descriptorHeapLimits)
+                    ->Field("NumShaderVisibleCbvSrvUavStaticHandles", &PlatformLimitsDescriptor::m_numShaderVisibleCbvSrvUavStaticHandles)
+                    ->Field("AllowDescriptorHeapCompaction", &PlatformLimitsDescriptor::m_allowDescriptorHeapCompaction)
                     ->Field("FrameGraphExecuterData", &PlatformLimitsDescriptor::m_frameGraphExecuterData)
                     ;
             }
@@ -54,7 +56,7 @@ namespace AZ
                 // Map default value must be initialized after attempting to serialize (and result in failure).
                 // Otherwise, serialization won't overwrite the default values.
                 m_descriptorHeapLimits = AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>>({
-                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV"), { 1000000, 1000000 } },
+                        { AZStd::string("DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV"), { 100000, 1000000 } },
                         { AZStd::string("DESCRIPTOR_HEAP_TYPE_SAMPLER"), { 2048, 2048 } },
                         { AZStd::string("DESCRIPTOR_HEAP_TYPE_RTV"), { 2048, 0 } },
                         { AZStd::string("DESCRIPTOR_HEAP_TYPE_DSV"), { 2048, 0 } }

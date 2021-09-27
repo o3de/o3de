@@ -6,41 +6,37 @@
  *
  */
 
-#include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Windowing/NativeWindow.h>
-#include <xcb/xcb.h>
+#include <AzFramework/XcbNativeWindow.h>
+#include <AzFramework/XcbConnectionManager.h>
 
-#include "NativeWindow_Linux_xcb.h"
+#include <xcb/xcb.h>
 
 namespace AzFramework
 {
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
-    [[maybe_unused]] const char LinuxXcbErrorWindow[] = "NativeWindow_Linux_xcb";
+    [[maybe_unused]] const char XcbErrorWindow[] = "XcbNativeWindow";
     static constexpr uint8_t s_XcbFormatDataSize = 32;              // Format indicator for xcb for client messages
     static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4;    // The default border with in pixels if a border was specified
     static constexpr uint8_t s_XcbResponseTypeMask = 0x7f;          // Mask to extract the specific event type from an xcb event
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    NativeWindowImpl_Linux_xcb::NativeWindowImpl_Linux_xcb() 
+    XcbNativeWindow::XcbNativeWindow() 
         : NativeWindow::Implementation()
     {
-        if (auto xcbConnectionManager = AzFramework::LinuxXcbConnectionManagerInterface::Get();
+        if (auto xcbConnectionManager = AzFramework::XcbConnectionManagerInterface::Get();
             xcbConnectionManager != nullptr)
         {
             m_xcbConnection = xcbConnectionManager->GetXcbConnection();
         }
-        AZ_Error(LinuxXcbErrorWindow, m_xcbConnection != nullptr, "Unable to get XCB Connection");
+        AZ_Error(XcbErrorWindow, m_xcbConnection != nullptr, "Unable to get XCB Connection");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    NativeWindowImpl_Linux_xcb::~NativeWindowImpl_Linux_xcb()
-    {
-    }
+    XcbNativeWindow::~XcbNativeWindow() = default;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::InitWindow(const AZStd::string& title,
+    void XcbNativeWindow::InitWindow(const AZStd::string& title,
                                                 const WindowGeometry& geometry,
                                                 const WindowStyleMasks& styleMasks)
     {
@@ -98,13 +94,13 @@ namespace AzFramework
         
         xcb_intern_atom_cookie_t cookieProtocol = xcb_intern_atom(m_xcbConnection, 1, strlen(wmProtocolString), wmProtocolString);
         xcb_intern_atom_reply_t* replyProtocol = xcb_intern_atom_reply(m_xcbConnection, cookieProtocol, nullptr);
-        AZ_Error(LinuxXcbErrorWindow, replyProtocol != nullptr, "Unable to query xcb '%s' atom", wmProtocolString);
+        AZ_Error(XcbErrorWindow, replyProtocol != nullptr, "Unable to query xcb '%s' atom", wmProtocolString);
         m_xcbAtomProtocols = replyProtocol->atom;
 
         const static char* wmDeleteWindowString = "WM_DELETE_WINDOW";
         xcb_intern_atom_cookie_t cookieDeleteWindow = xcb_intern_atom(m_xcbConnection, 0, strlen(wmDeleteWindowString), wmDeleteWindowString);
         xcb_intern_atom_reply_t* replyDeleteWindow = xcb_intern_atom_reply(m_xcbConnection, cookieDeleteWindow, nullptr);
-        AZ_Error(LinuxXcbErrorWindow, replyDeleteWindow != nullptr, "Unable to query xcb '%s' atom", wmDeleteWindowString);
+        AZ_Error(XcbErrorWindow, replyDeleteWindow != nullptr, "Unable to query xcb '%s' atom", wmDeleteWindowString);
         m_xcbAtomDeleteWindow = replyDeleteWindow->atom;
 
         xcbCheckResult = xcb_change_property_checked(m_xcbConnection, 
@@ -123,9 +119,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::Activate()
+    void XcbNativeWindow::Activate()
     {
-        LinuxXcbEventHandlerBus::Handler::BusConnect();
+        XcbEventHandlerBus::Handler::BusConnect();
 
         if (!m_activated) // nothing to do if window was already activated
         {
@@ -137,7 +133,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::Deactivate()
+    void XcbNativeWindow::Deactivate()
     {
         if (m_activated) // nothing to do if window was already deactivated
         {
@@ -148,17 +144,17 @@ namespace AzFramework
             xcb_unmap_window(m_xcbConnection, m_xcbWindow);
             xcb_flush(m_xcbConnection);
         }
-        LinuxXcbEventHandlerBus::Handler::BusDisconnect();
+        XcbEventHandlerBus::Handler::BusDisconnect();
     }    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    NativeWindowHandle NativeWindowImpl_Linux_xcb::GetWindowHandle() const
+    NativeWindowHandle XcbNativeWindow::GetWindowHandle() const
     {
         return reinterpret_cast<NativeWindowHandle>(m_xcbWindow);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::SetWindowTitle(const AZStd::string& title)
+    void XcbNativeWindow::SetWindowTitle(const AZStd::string& title)
     {
         xcb_void_cookie_t xcbCheckResult;
         xcbCheckResult = xcb_change_property(m_xcbConnection,
@@ -173,7 +169,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::ResizeClientArea(WindowSize clientAreaSize)
+    void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize)
     {
         const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
 
@@ -184,7 +180,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    uint32_t NativeWindowImpl_Linux_xcb::GetDisplayRefreshRate() const
+    uint32_t XcbNativeWindow::GetDisplayRefreshRate() const
     {
         // [GFX TODO][GHI - 2678]
         // Using 60 for now until proper support is added
@@ -192,7 +188,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool NativeWindowImpl_Linux_xcb::ValidateXcbResult(xcb_void_cookie_t cookie)
+    bool XcbNativeWindow::ValidateXcbResult(xcb_void_cookie_t cookie)
     {
         bool result = true;
         if (xcb_generic_error_t* error = xcb_request_check(m_xcbConnection, cookie))
@@ -204,7 +200,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::HandleXcbEvent(xcb_generic_event_t* event)
+    void XcbNativeWindow::HandleXcbEvent(xcb_generic_event_t* event)
     {
         switch (event->response_type & s_XcbResponseTypeMask)
         {
@@ -233,7 +229,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void NativeWindowImpl_Linux_xcb::WindowSizeChanged(const uint32_t width, const uint32_t height)
+    void XcbNativeWindow::WindowSizeChanged(const uint32_t width, const uint32_t height)
     {
         if (m_width != width || m_height != height)
         {
@@ -246,7 +242,4 @@ namespace AzFramework
             }
         }
     }
-    
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
 } // namespace AzFramework
