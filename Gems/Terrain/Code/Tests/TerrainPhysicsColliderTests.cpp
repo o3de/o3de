@@ -79,7 +79,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
     m_entity->Activate();
     EXPECT_EQ(m_entity->GetState(), AZ::Entity::State::Active);
      
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChangedNotifiesHeightfieldBus)
@@ -97,7 +97,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChang
     AZ::TransformNotificationBus::Event(
         m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNotifiesHeightfieldBus)
@@ -116,7 +116,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNo
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
         LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAlignedRowBoundsCorrectly)
@@ -147,7 +147,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoundsCorrectly)
@@ -180,7 +180,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoundsCorrectly)
@@ -213,7 +213,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     EXPECT_EQ(cols, 1024);
     EXPECT_EQ(rows, 1024);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsReturnsHeights)
@@ -249,7 +249,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     EXPECT_EQ(rows, 1024);
     EXPECT_EQ(heights.size(), cols * rows);
    
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsReturnsHeightsInRegion)
@@ -281,7 +281,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsR
 
     EXPECT_EQ(heights.size(), regionMax * regionMax);
 
-    m_entity->Reset();
+    m_entity.reset();
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativeHeightsCorrectly)
