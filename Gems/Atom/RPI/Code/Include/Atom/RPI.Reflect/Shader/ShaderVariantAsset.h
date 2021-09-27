@@ -40,7 +40,7 @@ namespace AZ
             //!                by ShaderVariantAssetBuilder this is 1+.
             static uint32_t MakeAssetProductSubId(
                 uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, ShaderVariantStableId variantStableId,
-                uint32_t subProductType = ShaderVariantAssetSubProductType);
+                uint32_t subProductType = 0);
 
             ShaderVariantAsset() = default;
             ~ShaderVariantAsset() = default;
