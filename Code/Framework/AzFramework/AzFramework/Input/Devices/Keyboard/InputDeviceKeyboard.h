@@ -94,137 +94,268 @@ namespace AzFramework
         struct Key
         {
             // Alphanumeric Keys
-            static const InputChannelId Alphanumeric0; //!< The 0 key
-            static const InputChannelId Alphanumeric1; //!< The 1 key
-            static const InputChannelId Alphanumeric2; //!< The 2 key
-            static const InputChannelId Alphanumeric3; //!< The 3 key
-            static const InputChannelId Alphanumeric4; //!< The 4 key
-            static const InputChannelId Alphanumeric5; //!< The 5 key
-            static const InputChannelId Alphanumeric6; //!< The 6 key
-            static const InputChannelId Alphanumeric7; //!< The 7 key
-            static const InputChannelId Alphanumeric8; //!< The 8 key
-            static const InputChannelId Alphanumeric9; //!< The 9 key
-            static const InputChannelId AlphanumericA; //!< The A key
-            static const InputChannelId AlphanumericB; //!< The B key
-            static const InputChannelId AlphanumericC; //!< The C key
-            static const InputChannelId AlphanumericD; //!< The D key
-            static const InputChannelId AlphanumericE; //!< The E key
-            static const InputChannelId AlphanumericF; //!< The F key
-            static const InputChannelId AlphanumericG; //!< The G key
-            static const InputChannelId AlphanumericH; //!< The H key
-            static const InputChannelId AlphanumericI; //!< The I key
-            static const InputChannelId AlphanumericJ; //!< The J key
-            static const InputChannelId AlphanumericK; //!< The K key
-            static const InputChannelId AlphanumericL; //!< The L key
-            static const InputChannelId AlphanumericM; //!< The M key
-            static const InputChannelId AlphanumericN; //!< The N key
-            static const InputChannelId AlphanumericO; //!< The O key
-            static const InputChannelId AlphanumericP; //!< The P key
-            static const InputChannelId AlphanumericQ; //!< The Q key
-            static const InputChannelId AlphanumericR; //!< The R key
-            static const InputChannelId AlphanumericS; //!< The S key
-            static const InputChannelId AlphanumericT; //!< The T key
-            static const InputChannelId AlphanumericU; //!< The U key
-            static const InputChannelId AlphanumericV; //!< The V key
-            static const InputChannelId AlphanumericW; //!< The W key
-            static const InputChannelId AlphanumericX; //!< The X key
-            static const InputChannelId AlphanumericY; //!< The Y key
-            static const InputChannelId AlphanumericZ; //!< The Z key
+            static constexpr inline InputChannelId Alphanumeric0{"keyboard_key_alphanumeric_0"}; //!< The 0 key
+            static constexpr inline InputChannelId Alphanumeric1{"keyboard_key_alphanumeric_1"}; //!< The 1 key
+            static constexpr inline InputChannelId Alphanumeric2{"keyboard_key_alphanumeric_2"}; //!< The 2 key
+            static constexpr inline InputChannelId Alphanumeric3{"keyboard_key_alphanumeric_3"}; //!< The 3 key
+            static constexpr inline InputChannelId Alphanumeric4{"keyboard_key_alphanumeric_4"}; //!< The 4 key
+            static constexpr inline InputChannelId Alphanumeric5{"keyboard_key_alphanumeric_5"}; //!< The 5 key
+            static constexpr inline InputChannelId Alphanumeric6{"keyboard_key_alphanumeric_6"}; //!< The 6 key
+            static constexpr inline InputChannelId Alphanumeric7{"keyboard_key_alphanumeric_7"}; //!< The 7 key
+            static constexpr inline InputChannelId Alphanumeric8{"keyboard_key_alphanumeric_8"}; //!< The 8 key
+            static constexpr inline InputChannelId Alphanumeric9{"keyboard_key_alphanumeric_9"}; //!< The 9 key
+            static constexpr inline InputChannelId AlphanumericA{"keyboard_key_alphanumeric_A"}; //!< The A key
+            static constexpr inline InputChannelId AlphanumericB{"keyboard_key_alphanumeric_B"}; //!< The B key
+            static constexpr inline InputChannelId AlphanumericC{"keyboard_key_alphanumeric_C"}; //!< The C key
+            static constexpr inline InputChannelId AlphanumericD{"keyboard_key_alphanumeric_D"}; //!< The D key
+            static constexpr inline InputChannelId AlphanumericE{"keyboard_key_alphanumeric_E"}; //!< The E key
+            static constexpr inline InputChannelId AlphanumericF{"keyboard_key_alphanumeric_F"}; //!< The F key
+            static constexpr inline InputChannelId AlphanumericG{"keyboard_key_alphanumeric_G"}; //!< The G key
+            static constexpr inline InputChannelId AlphanumericH{"keyboard_key_alphanumeric_H"}; //!< The H key
+            static constexpr inline InputChannelId AlphanumericI{"keyboard_key_alphanumeric_I"}; //!< The I key
+            static constexpr inline InputChannelId AlphanumericJ{"keyboard_key_alphanumeric_J"}; //!< The J key
+            static constexpr inline InputChannelId AlphanumericK{"keyboard_key_alphanumeric_K"}; //!< The K key
+            static constexpr inline InputChannelId AlphanumericL{"keyboard_key_alphanumeric_L"}; //!< The L key
+            static constexpr inline InputChannelId AlphanumericM{"keyboard_key_alphanumeric_M"}; //!< The M key
+            static constexpr inline InputChannelId AlphanumericN{"keyboard_key_alphanumeric_N"}; //!< The N key
+            static constexpr inline InputChannelId AlphanumericO{"keyboard_key_alphanumeric_O"}; //!< The O key
+            static constexpr inline InputChannelId AlphanumericP{"keyboard_key_alphanumeric_P"}; //!< The P key
+            static constexpr inline InputChannelId AlphanumericQ{"keyboard_key_alphanumeric_Q"}; //!< The Q key
+            static constexpr inline InputChannelId AlphanumericR{"keyboard_key_alphanumeric_R"}; //!< The R key
+            static constexpr inline InputChannelId AlphanumericS{"keyboard_key_alphanumeric_S"}; //!< The S key
+            static constexpr inline InputChannelId AlphanumericT{"keyboard_key_alphanumeric_T"}; //!< The T key
+            static constexpr inline InputChannelId AlphanumericU{"keyboard_key_alphanumeric_U"}; //!< The U key
+            static constexpr inline InputChannelId AlphanumericV{"keyboard_key_alphanumeric_V"}; //!< The V key
+            static constexpr inline InputChannelId AlphanumericW{"keyboard_key_alphanumeric_W"}; //!< The W key
+            static constexpr inline InputChannelId AlphanumericX{"keyboard_key_alphanumeric_X"}; //!< The X key
+            static constexpr inline InputChannelId AlphanumericY{"keyboard_key_alphanumeric_Y"}; //!< The Y key
+            static constexpr inline InputChannelId AlphanumericZ{"keyboard_key_alphanumeric_Z"}; //!< The Z key
 
-            // Edit (and escape) Keys
-            static const InputChannelId EditBackspace; //!< The backspace key
-            static const InputChannelId EditCapsLock;  //!< The caps lock key
-            static const InputChannelId EditEnter;     //!< The enter/return key
-            static const InputChannelId EditSpace;     //!< The spacebar key
-            static const InputChannelId EditTab;       //!< The tab key
-            static const InputChannelId Escape;        //!< The escape key
+            // Edit {and escape} Keys
+            static constexpr inline InputChannelId EditBackspace{"keyboard_key_edit_backspace"}; //!< The backspace key
+            static constexpr inline InputChannelId EditCapsLock{"keyboard_key_edit_capslock"}; //!< The caps lock key
+            static constexpr inline InputChannelId EditEnter{"keyboard_key_edit_enter"}; //!< The enter/return key
+            static constexpr inline InputChannelId EditSpace{"keyboard_key_edit_space"}; //!< The spacebar key
+            static constexpr inline InputChannelId EditTab{"keyboard_key_edit_tab"}; //!< The tab key
+            static constexpr inline InputChannelId Escape{"keyboard_key_escape"}; //!< The escape key
 
             // Function Keys
-            static const InputChannelId Function01; //!< The F1 key
-            static const InputChannelId Function02; //!< The F2 key
-            static const InputChannelId Function03; //!< The F3 key
-            static const InputChannelId Function04; //!< The F4 key
-            static const InputChannelId Function05; //!< The F5 key
-            static const InputChannelId Function06; //!< The F6 key
-            static const InputChannelId Function07; //!< The F7 key
-            static const InputChannelId Function08; //!< The F8 key
-            static const InputChannelId Function09; //!< The F9 key
-            static const InputChannelId Function10; //!< The F10 key
-            static const InputChannelId Function11; //!< The F11 key
-            static const InputChannelId Function12; //!< The F12 key
-            static const InputChannelId Function13; //!< The F13 key
-            static const InputChannelId Function14; //!< The F14 key
-            static const InputChannelId Function15; //!< The F15 key
-            static const InputChannelId Function16; //!< The F16 key
-            static const InputChannelId Function17; //!< The F17 key
-            static const InputChannelId Function18; //!< The F18 key
-            static const InputChannelId Function19; //!< The F19 key
-            static const InputChannelId Function20; //!< The F20 key
+            static constexpr inline InputChannelId Function01{"keyboard_key_function_F01"}; //!< The F1 key
+            static constexpr inline InputChannelId Function02{"keyboard_key_function_F02"}; //!< The F2 key
+            static constexpr inline InputChannelId Function03{"keyboard_key_function_F03"}; //!< The F3 key
+            static constexpr inline InputChannelId Function04{"keyboard_key_function_F04"}; //!< The F4 key
+            static constexpr inline InputChannelId Function05{"keyboard_key_function_F05"}; //!< The F5 key
+            static constexpr inline InputChannelId Function06{"keyboard_key_function_F06"}; //!< The F6 key
+            static constexpr inline InputChannelId Function07{"keyboard_key_function_F07"}; //!< The F7 key
+            static constexpr inline InputChannelId Function08{"keyboard_key_function_F08"}; //!< The F8 key
+            static constexpr inline InputChannelId Function09{"keyboard_key_function_F09"}; //!< The F9 key
+            static constexpr inline InputChannelId Function10{"keyboard_key_function_F10"}; //!< The F10 key
+            static constexpr inline InputChannelId Function11{"keyboard_key_function_F11"}; //!< The F11 key
+            static constexpr inline InputChannelId Function12{"keyboard_key_function_F12"}; //!< The F12 key
+            static constexpr inline InputChannelId Function13{"keyboard_key_function_F13"}; //!< The F13 key
+            static constexpr inline InputChannelId Function14{"keyboard_key_function_F14"}; //!< The F14 key
+            static constexpr inline InputChannelId Function15{"keyboard_key_function_F15"}; //!< The F15 key
+            static constexpr inline InputChannelId Function16{"keyboard_key_function_F16"}; //!< The F16 key
+            static constexpr inline InputChannelId Function17{"keyboard_key_function_F17"}; //!< The F17 key
+            static constexpr inline InputChannelId Function18{"keyboard_key_function_F18"}; //!< The F18 key
+            static constexpr inline InputChannelId Function19{"keyboard_key_function_F19"}; //!< The F19 key
+            static constexpr inline InputChannelId Function20{"keyboard_key_function_F20"}; //!< The F20 key
 
             // Modifier Keys
-            static const InputChannelId ModifierAltL;   //!< The left alt/option key
-            static const InputChannelId ModifierAltR;   //!< The right alt/option key
-            static const InputChannelId ModifierCtrlL;  //!< The left control key
-            static const InputChannelId ModifierCtrlR;  //!< The right control key
-            static const InputChannelId ModifierShiftL; //!< The left shift key
-            static const InputChannelId ModifierShiftR; //!< The right shift key
-            static const InputChannelId ModifierSuperL; //!< The left super (windows or apple) key
-            static const InputChannelId ModifierSuperR; //!< The right super (windows or apple) key
+            static constexpr inline InputChannelId ModifierAltL{"keyboard_key_modifier_alt_l"}; //!< The left alt/option key
+            static constexpr inline InputChannelId ModifierAltR{"keyboard_key_modifier_alt_r"}; //!< The right alt/option key
+            static constexpr inline InputChannelId ModifierCtrlL{"keyboard_key_modifier_ctrl_l"}; //!< The left control key
+            static constexpr inline InputChannelId ModifierCtrlR{"keyboard_key_modifier_ctrl_r"}; //!< The right control key
+            static constexpr inline InputChannelId ModifierShiftL{"keyboard_key_modifier_shift_l"}; //!< The left shift key
+            static constexpr inline InputChannelId ModifierShiftR{"keyboard_key_modifier_shift_r"}; //!< The right shift key
+            static constexpr inline InputChannelId ModifierSuperL{"keyboard_key_modifier_super_l"}; //!< The left super {windows or apple} key
+            static constexpr inline InputChannelId ModifierSuperR{"keyboard_key_modifier_super_r"}; //!< The right super {windows or apple} key
 
             // Navigation Keys
-            static const InputChannelId NavigationArrowDown;  //!< The down arrow key
-            static const InputChannelId NavigationArrowLeft;  //!< The left arrow key
-            static const InputChannelId NavigationArrowRight; //!< The right arrow key
-            static const InputChannelId NavigationArrowUp;    //!< The up arrow key
-            static const InputChannelId NavigationDelete;     //!< The delete key
-            static const InputChannelId NavigationEnd;        //!< The end key
-            static const InputChannelId NavigationHome;       //!< The home key
-            static const InputChannelId NavigationInsert;     //!< The insert key
-            static const InputChannelId NavigationPageDown;   //!< The page down key
-            static const InputChannelId NavigationPageUp;     //!< The page up key
+            static constexpr inline InputChannelId NavigationArrowDown{"keyboard_key_navigation_arrow_down"}; //!< The down arrow key
+            static constexpr inline InputChannelId NavigationArrowLeft{"keyboard_key_navigation_arrow_left"}; //!< The left arrow key
+            static constexpr inline InputChannelId NavigationArrowRight{"keyboard_key_navigation_arrow_right"}; //!< The right arrow key
+            static constexpr inline InputChannelId NavigationArrowUp{"keyboard_key_navigation_arrow_up"}; //!< The up arrow key
+            static constexpr inline InputChannelId NavigationDelete{"keyboard_key_navigation_delete"}; //!< The delete key
+            static constexpr inline InputChannelId NavigationEnd{"keyboard_key_navigation_end"}; //!< The end key
+            static constexpr inline InputChannelId NavigationHome{"keyboard_key_navigation_home"}; //!< The home key
+            static constexpr inline InputChannelId NavigationInsert{"keyboard_key_navigation_insert"}; //!< The insert key
+            static constexpr inline InputChannelId NavigationPageDown{"keyboard_key_navigation_page_down"}; //!< The page down key
+            static constexpr inline InputChannelId NavigationPageUp{"keyboard_key_navigation_page_up"}; //!< The page up key
 
             // Numpad Keys
-            static const InputChannelId NumLock; //!< The num lock key (the clear key on apple keyboards)
-            static const InputChannelId NumPad0; //!< The numpad 0 key
-            static const InputChannelId NumPad1; //!< The numpad 1 key
-            static const InputChannelId NumPad2; //!< The numpad 2 key
-            static const InputChannelId NumPad3; //!< The numpad 3 key
-            static const InputChannelId NumPad4; //!< The numpad 4 key
-            static const InputChannelId NumPad5; //!< The numpad 5 key
-            static const InputChannelId NumPad6; //!< The numpad 6 key
-            static const InputChannelId NumPad7; //!< The numpad 7 key
-            static const InputChannelId NumPad8; //!< The numpad 8 key
-            static const InputChannelId NumPad9; //!< The numpad 9 key
-            static const InputChannelId NumPadAdd;      //!< The numpad add key
-            static const InputChannelId NumPadDecimal;  //!< The numpad decimal key
-            static const InputChannelId NumPadDivide;   //!< The numpad divide key
-            static const InputChannelId NumPadEnter;    //!< The numpad enter key
-            static const InputChannelId NumPadMultiply; //!< The numpad multiply key
-            static const InputChannelId NumPadSubtract; //!< The numpad subtract key
+            static constexpr inline InputChannelId NumLock{"keyboard_key_num_lock"}; //!< The num lock key {the clear key on apple keyboards}
+            static constexpr inline InputChannelId NumPad0{"keyboard_key_numpad_0"}; //!< The numpad 0 key
+            static constexpr inline InputChannelId NumPad1{"keyboard_key_numpad_1"}; //!< The numpad 1 key
+            static constexpr inline InputChannelId NumPad2{"keyboard_key_numpad_2"}; //!< The numpad 2 key
+            static constexpr inline InputChannelId NumPad3{"keyboard_key_numpad_3"}; //!< The numpad 3 key
+            static constexpr inline InputChannelId NumPad4{"keyboard_key_numpad_4"}; //!< The numpad 4 key
+            static constexpr inline InputChannelId NumPad5{"keyboard_key_numpad_5"}; //!< The numpad 5 key
+            static constexpr inline InputChannelId NumPad6{"keyboard_key_numpad_6"}; //!< The numpad 6 key
+            static constexpr inline InputChannelId NumPad7{"keyboard_key_numpad_7"}; //!< The numpad 7 key
+            static constexpr inline InputChannelId NumPad8{"keyboard_key_numpad_8"}; //!< The numpad 8 key
+            static constexpr inline InputChannelId NumPad9{"keyboard_key_numpad_9"}; //!< The numpad 9 key
+            static constexpr inline InputChannelId NumPadAdd{"keyboard_key_numpad_add"}; //!< The numpad add key
+            static constexpr inline InputChannelId NumPadDecimal{"keyboard_key_numpad_decimal"}; //!< The numpad decimal key
+            static constexpr inline InputChannelId NumPadDivide{"keyboard_key_numpad_divide"}; //!< The numpad divide key
+            static constexpr inline InputChannelId NumPadEnter{"keyboard_key_numpad_enter"}; //!< The numpad enter key
+            static constexpr inline InputChannelId NumPadMultiply{"keyboard_key_numpad_multiply"}; //!< The numpad multiply key
+            static constexpr inline InputChannelId NumPadSubtract{"keyboard_key_numpad_subtract"}; //!< The numpad subtract key
 
             // Punctuation Keys
-            static const InputChannelId PunctuationApostrophe; //!< The apostrophe key
-            static const InputChannelId PunctuationBackslash;  //!< The backslash key
-            static const InputChannelId PunctuationBracketL;   //!< The left bracket key
-            static const InputChannelId PunctuationBracketR;   //!< The right bracket key
-            static const InputChannelId PunctuationComma;      //!< The comma key
-            static const InputChannelId PunctuationEquals;     //!< The equals key
-            static const InputChannelId PunctuationHyphen;     //!< The hyphen/underscore key
-            static const InputChannelId PunctuationPeriod;     //!< The period key
-            static const InputChannelId PunctuationSemicolon;  //!< The semicolon key
-            static const InputChannelId PunctuationSlash;      //!< The (forward) slash key
-            static const InputChannelId PunctuationTilde;      //!< The tilde/grave key
+            static constexpr inline InputChannelId PunctuationApostrophe{"keyboard_key_punctuation_apostrophe"}; //!< The apostrophe key
+            static constexpr inline InputChannelId PunctuationBackslash{"keyboard_key_punctuation_backslash"}; //!< The backslash key
+            static constexpr inline InputChannelId PunctuationBracketL{"keyboard_key_punctuation_bracket_l"}; //!< The left bracket key
+            static constexpr inline InputChannelId PunctuationBracketR{"keyboard_key_punctuation_bracket_r"}; //!< The right bracket key
+            static constexpr inline InputChannelId PunctuationComma{"keyboard_key_punctuation_comma"}; //!< The comma key
+            static constexpr inline InputChannelId PunctuationEquals{"keyboard_key_punctuation_equals"}; //!< The equals key
+            static constexpr inline InputChannelId PunctuationHyphen{"keyboard_key_punctuation_hyphen"}; //!< The hyphen/underscore key
+            static constexpr inline InputChannelId PunctuationPeriod{"keyboard_key_punctuation_period"}; //!< The period key
+            static constexpr inline InputChannelId PunctuationSemicolon{"keyboard_key_punctuation_semicolon"}; //!< The semicolon key
+            static constexpr inline InputChannelId PunctuationSlash{"keyboard_key_punctuation_slash"}; //!< The {forward} slash key
+            static constexpr inline InputChannelId PunctuationTilde{"keyboard_key_punctuation_tilde"}; //!< The tilde/grave key
 
             // Supplementary ISO Key
-            static const InputChannelId SupplementaryISO;      //!< The supplementary ISO layout key
+            static constexpr inline InputChannelId SupplementaryISO{"keyboard_key_supplementary_iso"}; //!< The supplementary ISO layout key
 
             // Windows System Keys
-            static const InputChannelId WindowsSystemPause;      //!< The windows pause key
-            static const InputChannelId WindowsSystemPrint;      //!< The windows print key
-            static const InputChannelId WindowsSystemScrollLock; //!< The windows scroll lock key
+            static constexpr inline InputChannelId WindowsSystemPause{"keyboard_key_windows_system_pause"}; //!< The windows pause key
+            static constexpr inline InputChannelId WindowsSystemPrint{"keyboard_key_windows_system_print"}; //!< The windows print key
+            static constexpr inline InputChannelId WindowsSystemScrollLock{"keyboard_key_windows_system_scroll_lock"}; //!< The windows scroll lock key
 
             //!< All keyboard key ids
-            static const AZStd::array<InputChannelId, 112> All;
+            static constexpr inline AZStd::array All
+            {
+                // Alphanumeric Keys
+                Alphanumeric0,
+                Alphanumeric1,
+                Alphanumeric2,
+                Alphanumeric3,
+                Alphanumeric4,
+                Alphanumeric5,
+                Alphanumeric6,
+                Alphanumeric7,
+                Alphanumeric8,
+                Alphanumeric9,
+                AlphanumericA,
+                AlphanumericB,
+                AlphanumericC,
+                AlphanumericD,
+                AlphanumericE,
+                AlphanumericF,
+                AlphanumericG,
+                AlphanumericH,
+                AlphanumericI,
+                AlphanumericJ,
+                AlphanumericK,
+                AlphanumericL,
+                AlphanumericM,
+                AlphanumericN,
+                AlphanumericO,
+                AlphanumericP,
+                AlphanumericQ,
+                AlphanumericR,
+                AlphanumericS,
+                AlphanumericT,
+                AlphanumericU,
+                AlphanumericV,
+                AlphanumericW,
+                AlphanumericX,
+                AlphanumericY,
+                AlphanumericZ,
+
+                // Edit (and escape) Keys
+                EditBackspace,
+                EditCapsLock,
+                EditEnter,
+                EditSpace,
+                EditTab,
+                Escape,
+
+                // Function Keys
+                Function01,
+                Function02,
+                Function03,
+                Function04,
+                Function05,
+                Function06,
+                Function07,
+                Function08,
+                Function09,
+                Function10,
+                Function11,
+                Function12,
+                Function13,
+                Function14,
+                Function15,
+                Function16,
+                Function17,
+                Function18,
+                Function19,
+                Function20,
+
+                // Modifier Keys
+                ModifierAltL,
+                ModifierAltR,
+                ModifierCtrlL,
+                ModifierCtrlR,
+                ModifierShiftL,
+                ModifierShiftR,
+                ModifierSuperL,
+                ModifierSuperR,
+
+                // Navigation Keys
+                NavigationArrowDown,
+                NavigationArrowLeft,
+                NavigationArrowRight,
+                NavigationArrowUp,
+                NavigationDelete,
+                NavigationEnd,
+                NavigationHome,
+                NavigationInsert,
+                NavigationPageDown,
+                NavigationPageUp,
+
+                // Numpad Keys
+                NumLock,
+                NumPad0,
+                NumPad1,
+                NumPad2,
+                NumPad3,
+                NumPad4,
+                NumPad5,
+                NumPad6,
+                NumPad7,
+                NumPad8,
+                NumPad9,
+                NumPadAdd,
+                NumPadDecimal,
+                NumPadDivide,
+                NumPadEnter,
+                NumPadMultiply,
+                NumPadSubtract,
+
+                // Punctuation Keys
+                PunctuationApostrophe,
+                PunctuationBackslash,
+                PunctuationBracketL,
+                PunctuationBracketR,
+                PunctuationComma,
+                PunctuationEquals,
+                PunctuationHyphen,
+                PunctuationPeriod,
+                PunctuationSemicolon,
+                PunctuationSlash,
+                PunctuationTilde,
+
+                // Supplementary ISO Key
+                SupplementaryISO,
+
+                // Windows System Keys
+                WindowsSystemPause,
+                WindowsSystemPrint,
+                WindowsSystemScrollLock
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

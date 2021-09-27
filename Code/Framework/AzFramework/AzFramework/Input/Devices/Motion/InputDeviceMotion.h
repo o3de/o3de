@@ -44,12 +44,17 @@ namespace AzFramework
         //! - InputMotionSensorRequests::SetInputChannelEnabled
         struct Acceleration
         {
-            static const InputChannelId Gravity;
-            static const InputChannelId Raw;
-            static const InputChannelId User;
+            static constexpr inline InputChannelId Gravity{"motion_acceleration_gravity"};
+            static constexpr inline InputChannelId Raw{"motion_acceleration_raw"};
+            static constexpr inline InputChannelId User{"motion_acceleration_user"};
 
             //!< All acceleration input channel ids
-            static const AZStd::array<InputChannelId, 3> All;
+            static constexpr inline AZStd::array All
+            {
+                Gravity,
+                Raw,
+                User
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,11 +65,15 @@ namespace AzFramework
         //! - InputMotionSensorRequests::SetInputChannelEnabled
         struct RotationRate
         {
-            static const InputChannelId Raw;
-            static const InputChannelId Unbiased;
+            static constexpr inline InputChannelId Raw{"motion_rotation_rate_raw"};
+            static constexpr inline InputChannelId Unbiased{"motion_rotation_rate_unbiased"};
 
             //!< All rotation rate input channel ids
-            static const AZStd::array<InputChannelId, 2> All;
+            static constexpr inline AZStd::array All
+            {
+                Raw,
+                Unbiased
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,12 +84,17 @@ namespace AzFramework
         //! - InputMotionSensorRequests::SetInputChannelEnabled
         struct MagneticField
         {
-            static const InputChannelId North;
-            static const InputChannelId Raw;
-            static const InputChannelId Unbiased;
+            static constexpr inline InputChannelId North{"motion_magnetic_field_north"};
+            static constexpr inline InputChannelId Raw{"motion_magnetic_field_raw"};
+            static constexpr inline InputChannelId Unbiased{"motion_magnetic_field_unbiased"};
 
             //!< All magnetic field input channel ids
-            static const AZStd::array<InputChannelId, 3> All;
+            static constexpr inline AZStd::array All
+            {
+                North,
+                Raw,
+                Unbiased
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,10 +105,13 @@ namespace AzFramework
         //! - InputMotionSensorRequests::SetInputChannelEnabled
         struct Orientation
         {
-            static const InputChannelId Current;
+            static constexpr inline InputChannelId Current{"motion_orientation_current"};
 
             //!< All orientation input channel ids
-            static const AZStd::array<InputChannelId, 1> All;
+            static constexpr inline AZStd::array All
+            {
+                Current
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

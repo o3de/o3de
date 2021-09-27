@@ -38,19 +38,31 @@ namespace AzFramework
         //! track is arbitrary, but ten seems to be more than sufficient for most game applications.
         struct Touch
         {
-            static const InputChannelId Index0; //!< Touch index 0
-            static const InputChannelId Index1; //!< Touch index 1
-            static const InputChannelId Index2; //!< Touch index 2
-            static const InputChannelId Index3; //!< Touch index 3
-            static const InputChannelId Index4; //!< Touch index 4
-            static const InputChannelId Index5; //!< Touch index 5
-            static const InputChannelId Index6; //!< Touch index 6
-            static const InputChannelId Index7; //!< Touch index 7
-            static const InputChannelId Index8; //!< Touch index 8
-            static const InputChannelId Index9; //!< Touch index 9
+            static constexpr inline InputChannelId Index0{"touch_index_0"}; //!< Touch index 0
+            static constexpr inline InputChannelId Index1{"touch_index_1"}; //!< Touch index 1
+            static constexpr inline InputChannelId Index2{"touch_index_2"}; //!< Touch index 2
+            static constexpr inline InputChannelId Index3{"touch_index_3"}; //!< Touch index 3
+            static constexpr inline InputChannelId Index4{"touch_index_4"}; //!< Touch index 4
+            static constexpr inline InputChannelId Index5{"touch_index_5"}; //!< Touch index 5
+            static constexpr inline InputChannelId Index6{"touch_index_6"}; //!< Touch index 6
+            static constexpr inline InputChannelId Index7{"touch_index_7"}; //!< Touch index 7
+            static constexpr inline InputChannelId Index8{"touch_index_8"}; //!< Touch index 8
+            static constexpr inline InputChannelId Index9{"touch_index_9"}; //!< Touch index 9
 
             //!< All touch input channel ids
-            static const AZStd::array<InputChannelId, 10> All;
+            static constexpr inline AZStd::array All
+            {
+                Index0,
+                Index1,
+                Index2,
+                Index3,
+                Index4,
+                Index5,
+                Index6,
+                Index7,
+                Index8,
+                Index9
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

@@ -29,33 +29,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputChannelId::InputChannelId(const char* name)
-        : m_crc32(name)
-    {
-        memset(m_name, 0, AZ_ARRAY_SIZE(m_name));
-        azstrncpy(m_name, NAME_BUFFER_SIZE, name, MAX_NAME_LENGTH);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputChannelId::InputChannelId(const InputChannelId& other)
-        : m_crc32(other.m_crc32)
-    {
-        memset(m_name, 0, AZ_ARRAY_SIZE(m_name));
-        azstrcpy(m_name, NAME_BUFFER_SIZE, other.m_name);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputChannelId& InputChannelId::operator=(const InputChannelId& other)
-    {
-        azstrcpy(m_name, NAME_BUFFER_SIZE, other.m_name);
-        m_crc32 = other.m_crc32;
-        return *this;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     const char* InputChannelId::GetName() const
     {
-        return m_name;
+        return m_name.c_str();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

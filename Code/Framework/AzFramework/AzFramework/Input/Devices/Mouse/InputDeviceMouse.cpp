@@ -34,35 +34,6 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Button::Left("mouse_button_left");
-    const InputChannelId InputDeviceMouse::Button::Right("mouse_button_right");
-    const InputChannelId InputDeviceMouse::Button::Middle("mouse_button_middle");
-    const InputChannelId InputDeviceMouse::Button::Other1("mouse_button_other1");
-    const InputChannelId InputDeviceMouse::Button::Other2("mouse_button_other2");
-    const AZStd::array<InputChannelId, 5> InputDeviceMouse::Button::All =
-    {{
-        Left,
-        Right,
-        Middle,
-        Other1,
-        Other2
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Movement::X("mouse_delta_x");
-    const InputChannelId InputDeviceMouse::Movement::Y("mouse_delta_y");
-    const InputChannelId InputDeviceMouse::Movement::Z("mouse_delta_z");
-    const AZStd::array<InputChannelId, 3> InputDeviceMouse::Movement::All =
-    {{
-        X,
-        Y,
-        Z
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::SystemCursorPosition("mouse_system_cursor_position");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMouse::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

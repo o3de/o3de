@@ -24,17 +24,6 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditEnter("virtual_keyboard_edit_enter");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditClear("virtual_keyboard_edit_clear");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::NavigationBack("virtual_keyboard_navigation_back");
-    const AZStd::array<InputChannelId, 3> InputDeviceVirtualKeyboard::Command::All =
-    {{
-        EditClear,
-        EditEnter,
-        NavigationBack
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceVirtualKeyboard::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
