@@ -55,6 +55,7 @@ namespace AZ
             size_t GetAllocationCount() const override;
             size_t GetAllocatedByteCount() const override;
             const Descriptor& GetDescriptor() const override;
+            void Clone(RHI::Allocator* newAllocator)  override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
