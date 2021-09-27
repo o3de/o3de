@@ -318,8 +318,9 @@ namespace AZ
             while (iter != -1)
             {
                 if (!IsTextureMapPresentInMaterial(m_materials[iter], mapType))
+                {                    
                     return false;
-
+                }
                 iter = m_materials.next(iter);
             }
             return true;
