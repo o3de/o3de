@@ -49,9 +49,11 @@ namespace AZ
             AZStd::array_view<uint8_t> bytes;
 
             bool shouldCreateLibFromSerializedData = true;
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() || RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
             {
-                // CreatePipelineLibrary api does not function properly if Renderdoc or Pix is enabled
+                // CreatePipelineLibrary api does not function properly if Renderdoc, Pix or Warp is enabled
                 shouldCreateLibFromSerializedData = false;
             }
 
@@ -215,9 +217,11 @@ namespace AZ
 
         RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
         {
-            if (RHI::Factory::Get().IsRenderDocModuleLoaded() || RHI::Factory::Get().IsPixModuleLoaded())
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
             {
-                // StorePipeline api does not function properly if RenderDoc or Pix is enabled
+                // StorePipeline api does not function properly if RenderDoc, Pix or Warp is enabled
                 return RHI::ResultCode::Fail;
             }
 

@@ -314,6 +314,11 @@ namespace AZ
 
                 resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileAllLambda)>(compileAllLambda);
             }
+
+            //It is possible for certain back ends to run out of SRG memory (due to fragmentation) in which case
+            //we try to compact and re-compile SRGs.
+            RHI::ResultCode resultCode = m_device->CompactSRGMemory();
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "SRG compaction failed and this can lead to a gpu crash.");
         }
 
         void FrameScheduler::BuildRayTracingShaderTables()

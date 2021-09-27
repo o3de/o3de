@@ -64,6 +64,12 @@ namespace AZ
             //! int array: Max count for descriptors 
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
 
+            // Number of max static handles for shader visible srv/uav/cbv views
+            uint32_t m_numShaderVisibleCbvSrvUavStaticHandles = 2000;
+
+            //Bool to indicate allowing compaction of shader visible srv/uav/cbv heap in case of fragmentation
+            bool m_allowDescriptorHeapCompaction = false;
+
             FrameGraphExecuterData m_frameGraphExecuterData;
 
             void LoadPlatformLimitsDescriptor(const char* rhiName) override;

@@ -112,6 +112,9 @@ namespace AZ
             //! Returns true if Pix dll is loaded
             static bool IsPixModuleLoaded();
 
+            //! Returns true if Warp is enabled
+            static bool UsingWarpDevice();
+
             //! Returns the name of the Factory.
             virtual Name GetName() = 0;
 
