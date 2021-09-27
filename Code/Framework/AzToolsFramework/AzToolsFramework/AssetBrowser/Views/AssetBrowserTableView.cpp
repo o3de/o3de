@@ -29,20 +29,20 @@ namespace AzToolsFramework
     {
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : AzQtComponents::TableView(parent)
-            , m_delegate(new EntryDelegate(this))
+            , m_delegate(new SearchEntryDelegate(this))
         {
-            setSortingEnabled(true);
+            setSortingEnabled(false);
             setItemDelegate(m_delegate);
             setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.
             header()->setDefaultAlignment(Qt::AlignLeft);
-            header()->setStyleSheet("QHeaderView { font-weight: bold; }");
+            header()->setStyleSheet("QHeaderView { font-weight: bold; };");
+            
 
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
-            setSortingEnabled(false);
             setSelectionMode(QAbstractItemView::SingleSelection);
 
             connect(this, &AzQtComponents::TableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
@@ -67,6 +67,8 @@ namespace AzToolsFramework
 
             header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
             header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+            header()->setSortIndicatorShown(false);
+            header()->setSectionsClickable(false);
         }
 
         void AssetBrowserTableView::SetName(const QString& name)
