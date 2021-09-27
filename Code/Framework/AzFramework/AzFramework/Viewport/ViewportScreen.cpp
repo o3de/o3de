@@ -37,7 +37,7 @@ namespace AzFramework
         //      yaw = AZ::Matrix4x4::CreateRotationZ(AZ::DegToRad(180.0f));
         //      conversion = pitch * yaw
         return AZ::Matrix4x4::CreateFromColumns(
-            AZ::Vector4(-1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, .0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+            AZ::Vector4(-1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
             AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
     }
 

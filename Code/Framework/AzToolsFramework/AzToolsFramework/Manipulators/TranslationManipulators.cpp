@@ -17,10 +17,10 @@ namespace AzToolsFramework
     static const float LinearManipulatorAxisLength = 2.0f;
     static const float SurfaceManipulatorRadius = 0.1f;
 
-    static const AZ::Color s_xAxisColor = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
-    static const AZ::Color s_yAxisColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
-    static const AZ::Color s_zAxisColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
-    static const AZ::Color s_surfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
+    static const AZ::Color LinearManipulatorXAxisColor = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+    static const AZ::Color LinearManipulatorYAxisColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
+    static const AZ::Color LinearManipulatorZAxisColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
+    static const AZ::Color SurfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
 
     TranslationManipulators::TranslationManipulators(
         const Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
@@ -325,15 +325,16 @@ namespace AzToolsFramework
     void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators)
     {
         translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
-        translationManipulators->ConfigurePlanarView(s_xAxisColor, s_yAxisColor, s_zAxisColor);
-        translationManipulators->ConfigureLinearView(LinearManipulatorAxisLength, s_xAxisColor, s_yAxisColor, s_zAxisColor);
-        translationManipulators->ConfigureSurfaceView(SurfaceManipulatorRadius, s_surfaceManipulatorColor);
+        translationManipulators->ConfigurePlanarView(LinearManipulatorXAxisColor, LinearManipulatorYAxisColor, LinearManipulatorZAxisColor);
+        translationManipulators->ConfigureLinearView(
+            LinearManipulatorAxisLength, LinearManipulatorXAxisColor, LinearManipulatorYAxisColor, LinearManipulatorZAxisColor);
+        translationManipulators->ConfigureSurfaceView(SurfaceManipulatorRadius, SurfaceManipulatorColor);
     }
 
     void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators)
     {
         translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY());
-        translationManipulators->ConfigurePlanarView(s_xAxisColor);
-        translationManipulators->ConfigureLinearView(LinearManipulatorAxisLength, s_xAxisColor, s_yAxisColor);
+        translationManipulators->ConfigurePlanarView(LinearManipulatorXAxisColor);
+        translationManipulators->ConfigureLinearView(LinearManipulatorAxisLength, LinearManipulatorXAxisColor, LinearManipulatorYAxisColor);
     }
 } // namespace AzToolsFramework

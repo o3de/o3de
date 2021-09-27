@@ -141,8 +141,8 @@ namespace AzFramework
 
     inline ScreenVector& operator*=(ScreenVector& lhs, const float rhs)
     {
-        lhs.m_x = AZStd::lround(aznumeric_cast<float>(lhs.m_x) * rhs);
-        lhs.m_y = AZStd::lround(aznumeric_cast<float>(lhs.m_y) * rhs);
+        lhs.m_x = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_x) * rhs));
+        lhs.m_y = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_y) * rhs));
         return lhs;
     }
 
@@ -156,18 +156,6 @@ namespace AzFramework
     inline float ScreenVectorLength(const ScreenVector& screenVector)
     {
         return aznumeric_cast<float>(AZStd::sqrt(screenVector.m_x * screenVector.m_x + screenVector.m_y * screenVector.m_y));
-    }
-
-    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
-    {
-        return ScreenPoint(
-            AZStd::lround(screenNDC.GetX() * viewportSize.GetX()), AZStd::lround((1.0f - screenNDC.GetY()) * viewportSize.GetY()));
-    }
-
-    inline AZ::Vector2 NdcFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)
-    {
-        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), viewportSize.GetY() - aznumeric_cast<float>(screenPoint.m_y)) /
-            viewportSize;
     }
 
     //! Return an AZ::Vector2 from a ScreenPoint.

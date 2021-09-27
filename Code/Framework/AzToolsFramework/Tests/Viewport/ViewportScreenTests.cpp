@@ -305,6 +305,28 @@ namespace UnitTest
         EXPECT_EQ(scaledScreenVector, ScreenVector(10, 20));
     }
 
+    TEST(ViewportScreen, ScreenVectorTransformedByScalarWithRounding)
+    {
+        using AzFramework::ScreenVector;
+
+        auto screenVector = ScreenVector(1, 6);
+        auto scaledScreenVector = screenVector * 0.1f;
+
+        // value less than 0.5 rounds down, greater than or equal to 0.5 rounds up
+        EXPECT_EQ(scaledScreenVector, ScreenVector(0, 1));
+    }
+
+    TEST(ViewportScreen, ScreenVectorTransformedByScalarWithRoundingAtHalfwayBoundary)
+    {
+        using AzFramework::ScreenVector;
+
+        auto screenVector = ScreenVector(5, 10);
+        auto scaledScreenVector = screenVector * 0.1f;
+
+        // value less than 0.5 rounds down, greater than or equal to 0.5 rounds up
+        EXPECT_EQ(scaledScreenVector, ScreenVector(1, 1));
+    }
+
     TEST(ViewportScreen, ScreenVectorTransformedByScalarDownwards)
     {
         using AzFramework::ScreenVector;

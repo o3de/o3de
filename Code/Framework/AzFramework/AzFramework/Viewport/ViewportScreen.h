@@ -8,21 +8,39 @@
 
 #pragma once
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AZ
 {
     class Frustum;
     class Matrix4x4;
-    class Vector3;
     struct ViewFrustumAttributes;
 } // namespace AZ
 
 namespace AzFramework
 {
     struct CameraState;
-    struct ScreenPoint;
     struct ViewportInfo;
+
+    //! Returns a position in screen space (in the range [0-viewportSize.x, 0-viewportSize.y]) from normalized device
+    //! coordinates (in the range 0.0-1.0).
+    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
+    {
+        return ScreenPoint(
+            aznumeric_cast<int>(AZStd::lround(screenNDC.GetX() * viewportSize.GetX())),
+            aznumeric_cast<int>(AZStd::lround((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
+    }
+
+    //! Returns a position in normalized device coordinates (in the range [0.0-1.0, 0.0-1.0]) from a
+    //! screen space position (in the range [0-viewportSize.x, 0-viewportSize.y]).
+    inline AZ::Vector2 NdcFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)
+    {
+        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), viewportSize.GetY() - aznumeric_cast<float>(screenPoint.m_y)) /
+            viewportSize;
+    }
 
     //! Projects a position in world space to screen space normalized device coordinates for the given camera.
     AZ::Vector3 WorldToScreenNdc(const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection);
