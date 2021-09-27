@@ -147,6 +147,7 @@ namespace AWSMetrics
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
 
+        AZ::Test::ScopedAutoTempDirectory m_testDirectory;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
@@ -154,8 +155,8 @@ namespace AWSMetrics
     private:
         AZ::IO::Path GetTestFolderPath()
         {
-            AZStd::optional<AZ::IO::FixedMaxPath> testPathString = AZ::Utils::ConvertToAbsolutePath(AZ_TRAIT_TEST_ROOT_FOLDER);
-            return testPathString.has_value() ? AZ::IO::PathView(*testPathString) : AZ::IO::PathView{ AZ_TRAIT_TEST_ROOT_FOLDER };
+            AZ::IO::Path testPathString{ m_testDirectory.GetDirectory() };
+            return testPathString;
         }
     };
 }
