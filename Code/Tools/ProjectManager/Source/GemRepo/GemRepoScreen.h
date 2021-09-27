@@ -37,6 +37,9 @@ namespace O3DE::ProjectManager
 
         GemRepoModel* GetGemRepoModel() const { return m_gemRepoModel; }
 
+    public slots:
+        void HandleAddRepoButton();
+
     private:
         void FillModel();
         QFrame* CreateNoReposContent();
@@ -54,6 +57,5 @@ namespace O3DE::ProjectManager
 
         QLabel* m_lastAllUpdateLabel;
         QPushButton* m_AllUpdateButton;
-        QPushButton* m_AddRepoButton;
     };
 } // namespace O3DE::ProjectManager
