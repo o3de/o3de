@@ -18,15 +18,6 @@
 namespace AzFramework
 {
     AZ_CVAR(
-        float,
-        ed_cameraSystemDefaultPlaneHeight,
-        34.0f,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "The default height of the ground plane to do intersection tests against when orbiting");
-    AZ_CVAR(float, ed_cameraSystemMinOrbitDistance, 10.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
         bool,
         ed_cameraSystemUseCursor,
         true,
@@ -135,7 +126,6 @@ namespace AzFramework
 
         camera.m_pitch = eulerAngles.GetX();
         camera.m_yaw = eulerAngles.GetZ();
-        // note: m_lookDist is negative so we must invert it here
         camera.m_pivot = transform.GetTranslation();
         camera.m_offset = AZ::Vector3::CreateZero();
     }
@@ -549,8 +539,8 @@ namespace AzFramework
         m_translateCameraInputChannelIds = translateCameraInputChannelIds;
     }
 
-    PivotCameraInput::PivotCameraInput(const InputChannelId& orbitChannelId)
-        : m_orbitChannelId(orbitChannelId)
+    PivotCameraInput::PivotCameraInput(const InputChannelId& pivotChannelId)
+        : m_pivotChannelId(pivotChannelId)
     {
     }
 
@@ -558,7 +548,7 @@ namespace AzFramework
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == m_orbitChannelId)
+            if (input->m_channelId == m_pivotChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -573,7 +563,7 @@ namespace AzFramework
 
         if (Active())
         {
-            return m_orbitCameras.HandleEvents(event, cursorDelta, scrollDelta);
+            return m_pivotCameras.HandleEvents(event, cursorDelta, scrollDelta);
         }
 
         return !Idle();
@@ -586,22 +576,19 @@ namespace AzFramework
 
         if (Beginning())
         {
-            // if there's no pivot set, default to the origin
-            nextCamera.m_pivot =
-                m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()).value_or(AZ::Vector3::CreateZero());
+            nextCamera.m_pivot = m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY());
             nextCamera.m_offset = nextCamera.View().TransformPoint(targetCamera.Translation());
         }
 
         if (Active())
         {
-            MovePivotDetached(
-                nextCamera, m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()).value_or(AZ::Vector3::CreateZero()));
-            nextCamera = m_orbitCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
+            MovePivotDetached(nextCamera, m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()));
+            nextCamera = m_pivotCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
         }
 
         if (Ending())
         {
-            m_orbitCameras.Reset();
+            m_pivotCameras.Reset();
 
             nextCamera.m_pivot = nextCamera.Translation();
             nextCamera.m_offset = AZ::Vector3::CreateZero();
@@ -610,9 +597,9 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void PivotCameraInput::SetPivotInputChannelId(const InputChannelId& orbitChanneId)
+    void PivotCameraInput::SetPivotInputChannelId(const InputChannelId& pivotChanneId)
     {
-        m_orbitChannelId = orbitChanneId;
+        m_pivotChannelId = pivotChanneId;
     }
 
     PivotDollyScrollCameraInput::PivotDollyScrollCameraInput()

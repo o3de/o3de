@@ -21,15 +21,6 @@
 
 namespace AtomToolsFramework
 {
-    AZ_CVAR(
-        AZ::Color,
-        ed_cameraSystemOrbitPointColor,
-        AZ::Color::CreateFromRgba(255, 255, 255, 255),
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "");
-    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
     AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
     {
         const auto rotation = AZ::Matrix3x3::CreateFromMatrix4x4(matrix);
