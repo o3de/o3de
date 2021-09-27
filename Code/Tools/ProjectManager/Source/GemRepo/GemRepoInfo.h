@@ -19,19 +19,25 @@ namespace O3DE::ProjectManager
     {
     public:
         GemRepoInfo() = default;
-        GemRepoInfo(const QString& name, const QString& creator, const QString& summary, const QDateTime& lastUpdated, bool isEnabled);
+        GemRepoInfo(
+            const QString& name,
+            const QString& creator,
+            const QDateTime& lastUpdated,
+            bool isEnabled);
 
         bool IsValid() const;
 
         bool operator<(const GemRepoInfo& gemRepoInfo) const;
 
-        QString m_path;
+        QString m_path = "";
         QString m_name = "Unknown Gem Repo Name";
         QString m_creator = "Unknown Creator";
         bool m_isEnabled = false; //! Is the repo currently enabled for this engine?
         QString m_summary = "No summary provided.";
-        QString m_directoryLink;
-        QString m_repoLink;
+        QString m_additionalInfo = "";
+        QString m_directoryLink = "";
+        QString m_repoLink = "";
+        QStringList m_includedGemPaths = {};
         QDateTime m_lastUpdated;
     };
 } // namespace O3DE::ProjectManager
