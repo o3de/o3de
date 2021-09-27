@@ -122,6 +122,9 @@ class BatchAnalytics:
             )
         ]
 
+        for named_query in self._named_queries:
+            named_query.node.add_dependency(self._athena_work_group)
+
     @property
     def athena_work_group_name(self) -> athena.CfnWorkGroup.name:
         return self._athena_work_group.name
