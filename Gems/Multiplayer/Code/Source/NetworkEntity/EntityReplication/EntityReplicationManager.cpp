@@ -75,6 +75,8 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
+        AZStd::vector<NetEntityId> notReadyEntities;
+
         const AZ::TimeMs endTimeMs = AZ::GetElapsedTimeMs() + m_entityActivationTimeSliceMs;
         while (!m_entitiesPendingActivation.empty())
         {
@@ -83,13 +85,25 @@ namespace Multiplayer
             EntityReplicator* entityReplicator = GetEntityReplicator(entityId);
             if (entityReplicator && !entityReplicator->IsMarkedForRemoval())
             {
-                entityReplicator->ActivateNetworkEntity();
+                if (entityReplicator->IsReadyToActivate())
+                {
+                    entityReplicator->ActivateNetworkEntity();
+                }
+                else
+                {
+                    notReadyEntities.push_back(entityId);
+                }
             }
             if (m_entityActivationTimeSliceMs > AZ::TimeMs{ 0 } && AZ::GetElapsedTimeMs() > endTimeMs)
             {
                 // If we go over our timeslice, break out the loop
                 break;
             }
+        }
+
+        for (NetEntityId netEntityId : notReadyEntities)
+        {
+            m_entitiesPendingActivation.push_back(netEntityId);
         }
     }
 
@@ -249,7 +263,7 @@ namespace Multiplayer
     void EntityReplicationManager::SendEntityUpdates(AZ::TimeMs hostTimeMs)
     {
         EntityReplicatorList toSendList = GenerateEntityUpdateList();
-    
+
         AZLOG
         (
             NET_ReplicationInfo,
@@ -258,13 +272,13 @@ namespace Multiplayer
             GetNetworkEntityManager()->GetHostId().GetString().c_str(),
             GetRemoteHostId().GetString().c_str()
         );
-    
+
         // prep a replication record for send, at this point, everything needs to be sent
         for (EntityReplicator* replicator : toSendList)
         {
             replicator->GetPropertyPublisher()->PrepareSerialization();
         }
-    
+
         // While our to send list is not empty, build up another packet to send
         do
         {
@@ -550,7 +564,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
     (
-        AzNetworking::IConnection* invokingConnection, 
+        AzNetworking::IConnection* invokingConnection,
         EntityReplicator* entityReplicator,
         AzNetworking::PacketId packetId,
         NetEntityId netEntityId,
@@ -1163,7 +1177,7 @@ namespace Multiplayer
                 AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
-                    invokingConnection, 
+                    invokingConnection,
                     replicator,
                     AzNetworking::InvalidPacketId,
                     message.m_netEntityId,

@@ -750,8 +750,10 @@ namespace Multiplayer
 
         if (m_agentType == MultiplayerAgentType::Uninitialized)
         {
+            m_spawnNetboundEntities = false;
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
+                m_spawnNetboundEntities = true;
                 m_initEvent.Signal(m_networkInterface);
 
                 if (!m_networkEntityManager.IsInitialized())
@@ -865,6 +867,16 @@ namespace Multiplayer
     IFilterEntityManager* MultiplayerSystemComponent::GetFilterEntityManager()
     {
         return m_filterEntityManager;
+    }
+
+    void MultiplayerSystemComponent::SetShouldSpawnNetworkEntities(bool value)
+    {
+        m_spawnNetboundEntities = value;
+    }
+
+    bool MultiplayerSystemComponent::GetShouldSpawnNetworkEntities() const
+    {
+        return m_spawnNetboundEntities;
     }
 
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

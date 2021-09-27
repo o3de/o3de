@@ -8,7 +8,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImagePoolBase.h>

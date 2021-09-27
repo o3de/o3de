@@ -3642,7 +3642,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::OnViewportViewEntityChanged(const AZ::EntityId& newViewId)
+    void EditorTransformComponentSelection::OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -3650,12 +3650,12 @@ namespace AzToolsFramework
         // match the editor camera translation/orientation), record the entity id if we have
         // a manipulator tracking it (entity id exists in m_entityIdManipulator lookups)
         // and remove it when recreating manipulators (see InitializeManipulators)
-        if (newViewId.IsValid())
+        if (viewEntityId.IsValid())
         {
-            const auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(newViewId);
+            const auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(viewEntityId);
             if (entityIdLookupIt != m_entityIdManipulators.m_lookups.end())
             {
-                m_editorCameraComponentEntityId = newViewId;
+                m_editorCameraComponentEntityId = viewEntityId;
                 RegenerateManipulators();
             }
         }

@@ -6,5 +6,6 @@
 #
 #
 
-set(GEM_DEPENDENCIES
+set(FILES
+    test_EditorCamera.cpp
 )

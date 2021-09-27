@@ -8,6 +8,8 @@
 
 #include <Atom/RHI/Fence.h>
 
+#include <AzCore/Debug/Profiler.h>
+
 namespace AZ
 {
     namespace RHI

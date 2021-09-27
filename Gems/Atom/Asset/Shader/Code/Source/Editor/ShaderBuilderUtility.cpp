@@ -37,6 +37,7 @@
 #include <AzslCompiler.h>
 
 #include "ShaderPlatformInterfaceRequest.h"
+#include "ShaderBuilder_Traits_Platform.h"
 #include "AtomShaderConfig.h"
 
 #include "SrgLayoutUtility.h"
@@ -456,8 +457,9 @@ namespace AZ
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
-                // platform id from identifier
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
+                // Define a fallback platform ID based on the current host platform
+                AzFramework::PlatformId platformId = AZ_TRAIT_ATOM_FALLBACK_ASSET_HOST_PLATFORM;
+
                 if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
@@ -477,6 +479,10 @@ namespace AZ
                 else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
+                }
+                else if (platformIdentifier == "server")
+                {
+                    platformId = AzFramework::PlatformId::SERVER;
                 }
 
                 uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));

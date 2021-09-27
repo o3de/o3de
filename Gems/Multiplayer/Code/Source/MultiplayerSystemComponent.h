@@ -123,6 +123,8 @@ namespace Multiplayer
         INetworkEntityManager* GetNetworkEntityManager() override;
         void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
         IFilterEntityManager* GetFilterEntityManager() override;
+        void SetShouldSpawnNetworkEntities(bool value) override;
+        bool GetShouldSpawnNetworkEntities() const override;
         //! @}
 
         //! Console commands.
@@ -167,6 +169,7 @@ namespace Multiplayer
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
         bool m_didHandshake = false;
+        bool m_spawnNetboundEntities = true;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

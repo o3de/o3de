@@ -162,8 +162,20 @@ namespace Multiplayer
         //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
         virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
 
-        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
+        //! Returns a pointer to the user-defined filtering manager of entities.
+        //! @return pointer to the filtered entity manager, or nullptr if not set
         virtual IFilterEntityManager* GetFilterEntityManager() = 0;
+
+        //! Enables or disables automatic instantiation of netbound entities.
+        //! This setting is controlled by the networking layer and should not be touched
+        //! If enabled, netbound entities will instantiate as spawnables are loaded into the game world, generally true for the server
+        //! If disabled, netbound entities will only stream from a host, always true for a client
+        //! @param value boolean value controlling netbound entity instantiation behaviour
+        virtual void SetShouldSpawnNetworkEntities(bool value) = 0;
+
+        //! Retrieves the current network entity instantiation behaviour.
+        //! @return boolean true if netbound entities should be auto instantiated, false if not
+        virtual bool GetShouldSpawnNetworkEntities() const = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance
