@@ -570,6 +570,8 @@ namespace AzFramework
         using VisitAction = AZ::SettingsRegistryInterface::VisitAction;
         using Type = AZ::SettingsRegistryInterface::Type;
 
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+
         VisitResponse Traverse(AZStd::string_view path, AZStd::string_view,
             VisitAction action, Type type) override
         {
