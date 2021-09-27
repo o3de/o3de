@@ -34,6 +34,9 @@ set(FILES
     EntityTestbed.h
     FileFunc.cpp
     FingerprintingTests.cpp
+    FocusMode/EditorFocusModeFixture.cpp
+    FocusMode/EditorFocusModeFixture.h
+    FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
     InstanceDataHierarchy.cpp
