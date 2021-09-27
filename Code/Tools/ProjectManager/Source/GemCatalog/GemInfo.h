@@ -75,8 +75,7 @@ namespace O3DE::ProjectManager
         QString m_version = "Unknown Version";
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
-        QStringList m_dependingGemUuids;
-        QStringList m_conflictingGemUuids;
+        QStringList m_dependencies;
     };
 } // namespace O3DE::ProjectManager
 
