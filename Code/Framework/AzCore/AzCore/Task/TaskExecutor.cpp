@@ -360,14 +360,7 @@ namespace AZ
     {
         ++m_graphsRemaining;
 
-        // If we are submitting a graph we need to wait on from a task worker, this worker must be
-        // disqualified from enqueuing future tasks until the wait is complete (see implementation of
-        // TaskGraphEvent::Wait)
-        Internal::TaskWorker* worker = GetTaskWorker();
-        if (event && worker)
-        {
-            event->m_executor = this;
-        }
+        event->m_executor = this; // Used to validate event is not waited for inside a job
 
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : graph.Tasks())

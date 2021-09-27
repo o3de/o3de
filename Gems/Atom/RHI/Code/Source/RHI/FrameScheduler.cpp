@@ -319,7 +319,6 @@ namespace AZ
                     resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsBeginFunction)>(compileGroupsBeginFunction);
 
                     // Iterate over each SRG pool and fork jobs to compile SRGs.
-                    const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
                     AZ::JobCompletion jobCompletion;
 
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
@@ -527,11 +526,6 @@ namespace AZ
 
             const uint32_t groupCount = m_frameGraphExecuter->GetGroupCount();
             const JobPolicy platformJobPolicy = m_frameGraphExecuter->GetJobPolicy();
-            
-            if (groupCount == 0)
-            {
-                return;
-            }
 
             /**
              * The scheduler itself can force serial execution even if the platform supports it (e.g. as a debugging flag).
