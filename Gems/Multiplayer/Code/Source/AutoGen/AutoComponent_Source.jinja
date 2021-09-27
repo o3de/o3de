@@ -909,6 +909,7 @@ enum class NetworkProperties
         controller->Set{{ UpperFirst(Property.attrib['Name']) }}({{ LowerFirst(Property.attrib['Name']) }});
 {%      endif %}
     })
+{% if Property.attrib['GenerateEventBindings']|booleanTrue %}
 {%  if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' -%}
     ->Method("GetOn{{ UpperFirst(Property.attrib['Name']) }}ChangedEvent", [](AZ::EntityId id) -> AZ::Event<int32_t, {{ Property.attrib['Type'] }}>*
 {%  else %}
@@ -936,6 +937,7 @@ enum class NetworkProperties
 {%  else %}
         ->Attribute(AZ::Script::Attributes::AzEventDescription, AZ::BehaviorAzEventDescription{ "On {{ UpperFirst(Property.attrib['Name']) }} Changed Event", {"New {{ Property.attrib['Type'] }}"} })
 {%  endif %}
+{% endif %}
 
 {% endif %}
 {% endcall %}
@@ -1518,7 +1520,7 @@ namespace {{ Component.attrib['Namespace'] }}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Client')|indent(4) }}
 
-            behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
+            behaviorContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
 
