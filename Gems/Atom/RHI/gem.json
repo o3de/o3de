@@ -8,7 +8,13 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "Atom_RHI_DX12",
+        "Atom_RHI_Metal",
+        "Atom_RHI_Vulkan",
+        "Atom_RHI_Null",
+        "Atom_Feature_Common"
+    ]
 }

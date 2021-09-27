@@ -52,6 +52,11 @@ namespace AZ
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialOverrides() const override;
             void ClearAllMaterialOverrides() override;
+            void ClearModelMaterialOverrides() override;
+            void ClearLodMaterialOverrides() override;
+            void ClearIncompatibleMaterialOverrides() override;
+            void ClearInvalidMaterialOverrides() override;
+            void RepairInvalidMaterialOverrides() override;
             void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
             const AZ::Data::AssetId GetDefaultMaterialOverride() const override;
             void ClearDefaultMaterialOverride() override;

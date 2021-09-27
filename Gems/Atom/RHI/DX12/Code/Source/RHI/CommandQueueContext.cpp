@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
@@ -101,7 +101,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
                 if (m_commandQueues[hardwareQueueIdx])
@@ -113,7 +113,7 @@ namespace AZ
 
         void CommandQueueContext::Begin()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: Begin");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Clearing Command Queue Timers");
@@ -131,8 +131,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandQueueContext: End");
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 
@@ -146,7 +145,6 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("DX12", "CommandQueueContext: Wait on Fences");
 
                 FenceEvent event("FrameFence");
                 m_frameFences[m_currentFrameIndex].Wait(event);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -21,15 +22,15 @@ namespace AZ
         //! Structure that is used to cache a timed region into the thread's local storage.
         struct CachedTimeRegion
         {
-            //! Structure that the profiling macro utilizes to create statically initialized instance to create string
-            //! literals in static memory
+            //! Structure used internally for caching assumed global string pointers (ideally literals) to the marker group/region
+            //! NOTE: When used in a separate shared library, the library mustn't be unloaded before the CpuProfiler is shutdown.
             struct GroupRegionName
             {
                 GroupRegionName() = delete;
                 GroupRegionName(const char* const group, const char* const region);
-                
-                const char* const m_groupName = nullptr;
-                const char* const m_regionName = nullptr;
+
+                const char* m_groupName = nullptr;
+                const char* m_regionName = nullptr;
 
                 struct Hash
                 {
@@ -39,29 +40,14 @@ namespace AZ
             };
 
             CachedTimeRegion() = default;
-            CachedTimeRegion(const GroupRegionName* groupRegionName);
-            CachedTimeRegion(const GroupRegionName* groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
+            CachedTimeRegion(const GroupRegionName& groupRegionName);
+            CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
-            //! Pointer to the GroupRegionName static instance.
-            //! NOTE: When used in a separate shared library, the library mustn't be unloaded before
-            //! the CpuProfiler is shutdown.
-            const GroupRegionName* m_groupRegionName = nullptr;
+            GroupRegionName m_groupRegionName{nullptr, nullptr};
 
             uint16_t m_stackDepth = 0u;
             AZStd::sys_time_t m_startTick = 0;
             AZStd::sys_time_t m_endTick = 0;
-        };
-
-        //! Helper class used as a RAII-style mechanism for the macros to begin and end a region.
-        class TimeRegion : public CachedTimeRegion
-        {
-        public:
-            TimeRegion() = delete;
-            TimeRegion(const GroupRegionName* groupRegionName);
-            ~TimeRegion();
-
-            //! End region
-            void EndRegion();
         };
 
         //! Interface class of the CpuProfiler
@@ -80,12 +66,6 @@ namespace AZ
 
             static CpuProfiler* Get();
 
-            //! Add a new time region
-            virtual void BeginTimeRegion(TimeRegion& timeRegion) = 0;
-
-            //! Ends a time region
-            virtual void EndTimeRegion() = 0;
-
             //! Get the last frame's TimeRegionMap
             virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 
@@ -101,38 +81,7 @@ namespace AZ
             virtual void SetProfilerEnabled(bool enabled) = 0;
 
             virtual bool IsProfilerEnabled() const = 0 ;
-
-            //! Used by AZ_ATOM_PROFILE_DYNAMIC to create GroupRegionNames with known lifetimes.
-            virtual const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) = 0;
         };
 
     } // namespace RPI
 } // namespace AZ
-
-//! Utility functions for timing a section of code and writing the timing (in cycles) to a new, named time region inside the
-//! provided statistics data.
-
-//! Supply a group and region to the time region
-#define AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
-    static const AZ::RHI::CachedTimeRegion::GroupRegionName AZ_JOIN(groupRegionName, __LINE__)(groupName, regionName); \
-    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));
-
-//! Supply a region to the time region; "Default" will be used for the group
-#define AZ_ATOM_PROFILE_TIME_REGION(regionName) \
-    AZ_ATOM_PROFILE_TIME_GROUP_REGION("Default", regionName)
-
-//! Used to create a time region; "Default" will be used for the group, and __FUNCTION__ macro for the region
-#define AZ_ATOM_PROFILE_TIME_FUNCTION() \
-    AZ_ATOM_PROFILE_TIME_GROUP_REGION("Default", AZ_FUNCTION_SIGNATURE)
-
-//! Macro that combines the AZ_TRACE_METHOD with time profiling macro
-#define AZ_ATOM_PROFILE_FUNCTION(groupName, regionName) \
-    AZ_TRACE_METHOD(); \
-    AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
-
-//! Macro that allows for region names to be submitted at runtime. Use sparingly - this acquires a lock and allocates new objects within a map.
-#define AZ_ATOM_PROFILE_DYNAMIC(groupName, regionName) \
-    static_assert(AZStd::is_convertible_v<decltype(groupName), const char*>, "Runtime group names are not allowed, use a static string literal instead."); \
-    const AZ::RHI::CachedTimeRegion::GroupRegionName& AZ_JOIN(groupRegionName, __LINE__) =                                                                 \
-        AZ::RHI::CpuProfiler::Get()->InsertDynamicName(groupName, regionName);                                                                             \
-    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));

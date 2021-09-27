@@ -46,7 +46,7 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
         {
-            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() != this);
+            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() == this);
             if (!proxyIndex.isValid() || !m_indexMap.contains(proxyIndex.row()))
             {
                 return QModelIndex();

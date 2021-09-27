@@ -5,8 +5,24 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Atom Renderer Gem provides Atom Renderer and its associated tools (such as Material Editor), utilites, libraries, and interfaces.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Rendering", "Core"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Rendering",
+        "Core"
+    ],
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom/",
+    "dependencies": [
+        "Atom_Feature_Common",
+        "AtomShader",
+        "Atom_Bootstrap",
+        "Atom_Component_DebugCamera",
+        "Atom_RHI",
+        "Atom_RPI",
+        "AtomToolsFramework",
+        "MaterialEditor",
+        "Atom_AtomBridge"
+    ]
 }

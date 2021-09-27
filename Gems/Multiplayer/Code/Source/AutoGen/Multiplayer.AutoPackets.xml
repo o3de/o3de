@@ -32,11 +32,11 @@
     <Packet Name="EntityUpdates" Desc="A packet that contains multiple entity updates">
         <Member Type="AZ::TimeMs" Name="hostTimeMs" Init="AZ::TimeMs{ 0 }" />
         <Member Type="Multiplayer::HostFrameId" Name="hostFrameId" Init="Multiplayer::InvalidHostFrameId" />
-        <Member Type="Multiplayer::NetworkEntityUpdateMessage" Name="entityMessages" Container="Vector" Count="Multiplayer::MaxAggregateEntityMessages" SuppressFromInitializerList="true" />
+        <Member Type="Multiplayer::NetworkEntityUpdateMessage" Name="entityMessages" Container="Vector" Count="Multiplayer::MaxAggregateEntityMessages" />
     </Packet>
 
     <Packet Name="EntityRpcs" Desc="A packet that contains multiple entity rpcs">
-        <Member Type="Multiplayer::NetworkEntityRpcMessage" Name="entityRpcs" Container="Vector" Count="Multiplayer::MaxAggregateRpcMessages" SuppressFromInitializerList="true" />
+        <Member Type="Multiplayer::NetworkEntityRpcMessage" Name="entityRpcs" Container="Vector" Count="Multiplayer::MaxAggregateRpcMessages" />
     </Packet>
 
     <Packet Name="ClientMigration" Desc="Tell a client to migrate to a new server">

@@ -62,8 +62,16 @@ namespace AzFramework
 
         uint32_t eventMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
         
+        const uint32_t interestedEvents =
+            XCB_EVENT_MASK_STRUCTURE_NOTIFY
+            | XCB_EVENT_MASK_BUTTON_PRESS
+            | XCB_EVENT_MASK_BUTTON_RELEASE
+            | XCB_EVENT_MASK_KEY_PRESS
+            | XCB_EVENT_MASK_KEY_RELEASE
+            | XCB_EVENT_MASK_POINTER_MOTION
+            ;
         uint32_t valueList[] = { xcbRootScreen->black_pixel, 
-                                 XCB_EVENT_MASK_STRUCTURE_NOTIFY };
+                                 interestedEvents };
 
         xcb_void_cookie_t xcbCheckResult;
 

@@ -50,13 +50,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_whiteBalanceKelvin;
     float m_whiteBalanceTint;
     float m_splitToneBalance;
-    float m_splitToneMix;
+    float m_splitToneWeight;
     float m_colorGradingPostSaturation;
     float m_smhShadowsStart;
     float m_smhShadowsEnd;
     float m_smhHighlightsStart;
     float m_smhHighlightsEnd;
-    float m_smhMix;
+    float m_smhWeight;
 
     float3 m_channelMixingRed;
     float3 m_channelMixingGreen;
@@ -69,9 +69,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_smhShadowsColor;
     float4 m_smhMidtonesColor;
     float4 m_smhHighlightsColor;
-
-    // my color grading output
-    float4 m_color;
 }
 
 float SaturateWithEpsilon(float value)
@@ -133,7 +130,7 @@ float3 NoNanPow(float3 base, float3 power)
     return pow(max(abs(base), float3(FloatEpsilon, FloatEpsilon, FloatEpsilon)), power);
 }
 
-float3 ColorGradeSplitTone (float3 frameColor, float balance, float mix) 
+float3 ColorGradeSplitTone (float3 frameColor, float balance, float weight) 
 {
     float3 frameSplitTone = NoNanPow(frameColor, 1.0 / 2.2);
     const float t = SaturateWithEpsilon(CalculateLuminance(SaturateWithEpsilon(frameSplitTone), ColorSpaceId::ACEScg) + balance);
@@ -142,7 +139,7 @@ float3 ColorGradeSplitTone (float3 frameColor, float balance, float mix)
     frameSplitTone = BlendMode_SoftLight(frameSplitTone, shadows);
     frameSplitTone = BlendMode_SoftLight(frameSplitTone, highlights);
     frameSplitTone = NoNanPow(frameSplitTone, 2.2);
-    return lerp(frameColor.rgb, frameSplitTone.rgb, mix);
+    return lerp(frameColor.rgb, frameSplitTone.rgb, weight);
 }
 
 float3 ColorGradeChannelMixer (float3 frameColor) 
@@ -154,7 +151,7 @@ float3 ColorGradeChannelMixer (float3 frameColor)
 }
 
 float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStart, float shadowsEnd, 
-                                            float highlightsStart, float highlightsEnd, float mix,
+                                            float highlightsStart, float highlightsEnd, float weight,
                                             float4 shadowsColor, float4 midtonesColor, float4 highlightsColor) 
 {
     const float3 shadowsColorACEScg = TransformColor(shadowsColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
@@ -169,7 +166,7 @@ float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStar
     const float3 frameSmh = frameColor * shadowsColorACEScg * shadowsWeight +
                        frameColor * midtonesColorACEScg * midtonesWeight +
                        frameColor * highlightsColorACEScg * highlightsWeight;
-    return lerp(frameColor.rgb, frameSmh.rgb, mix);
+    return lerp(frameColor.rgb, frameSmh.rgb, weight);
 }
 
 float3 ColorGrade (float3 frameColor) 
@@ -181,11 +178,11 @@ float3 ColorGrade (float3 frameColor)
                                          PassSrg::m_colorFilterMultiply);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation);
-    frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneMix);
+    frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight);
     frameColor = ColorGradeChannelMixer(frameColor);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
-                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhMix,
+                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
                                                     PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
     frameColor = ColorGradeHueShift(frameColor, PassSrg::m_colorGradingHueShift);
     frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation);
