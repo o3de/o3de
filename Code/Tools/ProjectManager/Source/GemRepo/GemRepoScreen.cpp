@@ -10,8 +10,8 @@
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoModel.h>
-#include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoAddDialog.h>
+#include <GemRepo/GemRepoInspector.h>
 #include <PythonBindingsInterface.h>
 
 #include <QVBoxLayout>
@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
-        setLayout(vLayout);
+       setLayout(vLayout);
 
         m_contentStack = new QStackedWidget(this);
 
