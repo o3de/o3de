@@ -262,9 +262,9 @@ namespace UnitTest
         AZ::EntityId m_entityId2;
         AZ::EntityId m_entityId3;
 
-        static inline const AZ::Vector3 Entity1WorldTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);;
+        static inline const AZ::Vector3 Entity1WorldTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
         static inline const AZ::Vector3 Entity2WorldTranslation = AZ::Vector3(5.0f, 14.0f, 10.0f);
-        static inline const AZ::Vector3 Entity3WorldTranslation= AZ::Vector3(5.0f, 16.0f, 10.0f);
+        static inline const AZ::Vector3 Entity3WorldTranslation = AZ::Vector3(5.0f, 16.0f, 10.0f);
     };
 
     void ArrangeIndividualRotatedEntitySelection(const AzToolsFramework::EntityIdList& entityIds, const AZ::Quaternion& orientation)
@@ -1631,8 +1631,7 @@ namespace UnitTest
         AZ::Transform::CreateUniformScale(LinearManipulatorZAxisMovement);
     static const AZ::Transform ExpectedEntity3TransformAfterLocalGroupScaleManipulatorMotion =
         AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) *
-        AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 1.0f, 0.0f)) *
-        AZ::Transform::CreateUniformScale(LinearManipulatorZAxisMovement);
+        AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 1.0f, 0.0f)) * AZ::Transform::CreateUniformScale(LinearManipulatorZAxisMovement);
     static const AZ::Transform ExpectedEntity2TransformAfterLocalIndividualScaleManipulatorMotion =
         AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation) *
         AZ::Transform::CreateUniformScale(LinearManipulatorZAxisMovement);
