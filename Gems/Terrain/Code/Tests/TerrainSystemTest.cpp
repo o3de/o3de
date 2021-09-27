@@ -231,7 +231,7 @@ TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
     const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 5.0f, 10.0f, 10.0f, 15.0f);
     auto entity = CreateAndActivateMockTerrainLayerSpawner(
         spawnerBox,
-        [spawnerHeight](AZ::Vector3& position, bool& terrainExists)
+        [](AZ::Vector3& position, bool& terrainExists)
         {
             position.SetZ(spawnerHeight);
             terrainExists = true;
@@ -287,7 +287,7 @@ TEST_F(TerrainSystemTest, TerrainHeightQueriesWithExactSamplersIgnoreQueryGrid)
     const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 5.0f, 10.0f, 10.0f, 15.0f);
     auto entity = CreateAndActivateMockTerrainLayerSpawner(
         spawnerBox,
-        [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
+        [](AZ::Vector3& position, bool& terrainExists)
         {
             position.SetZ(amplitudeMeters * sin(AZ::Constants::TwoPi * (position.GetX() / frequencyMeters)));
             terrainExists = true;
