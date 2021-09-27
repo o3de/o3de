@@ -10,6 +10,7 @@
 #include <gmock/gmock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace UnitTest
@@ -103,7 +104,6 @@ namespace UnitTest
 
         MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, AZ::Vector2());
         MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
-
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
         MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
         MOCK_CONST_METHOD3(GetHeight, float(AZ::Vector3, Sampler, bool*));
