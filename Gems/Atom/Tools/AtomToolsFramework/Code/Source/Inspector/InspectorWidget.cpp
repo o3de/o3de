@@ -31,20 +31,26 @@ namespace AtomToolsFramework
 
     void InspectorWidget::AddHeading(QWidget* headingWidget)
     {
-        headingWidget->setParent(m_ui->m_headingSection);
-        m_ui->m_headingSectionLayout->addWidget(headingWidget);
+        headingWidget->setParent(this);
+        m_ui->m_headingContentsLayout->addWidget(headingWidget);
     }
 
     void InspectorWidget::ClearHeading()
     {
-        qDeleteAll(m_ui->m_headingSection->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
-        qDeleteAll(m_ui->m_headingSectionLayout->children());
+        while (QLayoutItem* child = m_ui->m_headingContentsLayout->takeAt(0))
+        {
+            delete child->widget();
+            delete child;
+        }
     }
 
     void InspectorWidget::Reset()
     {
-        qDeleteAll(m_ui->m_groupContents->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
-        qDeleteAll(m_ui->m_groupContentsLayout->children());
+        while (QLayoutItem* child = m_ui->m_groupContentsLayout->takeAt(0))
+        {
+            delete child->widget();
+            delete child;
+        }
         m_groups.clear();
     }
 
