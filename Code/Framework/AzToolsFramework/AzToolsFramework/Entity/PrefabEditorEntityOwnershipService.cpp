@@ -66,11 +66,10 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::Destroy()
     {
         StopPlayInEditor();
+        Reset();
 
         m_editorSliceOwnershipService.BusDisconnect();
         m_sliceOwnershipService.BusDisconnect();
-
-        Reset();
     }
 
     void PrefabEditorEntityOwnershipService::Reset()
