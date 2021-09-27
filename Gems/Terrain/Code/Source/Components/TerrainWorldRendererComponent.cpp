@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
@@ -81,18 +82,25 @@ namespace Terrain
         }
     }
 
+    AZ::RPI::Scene* TerrainWorldRendererComponent::GetScene() const
+    {
+        // Find the entity context for the entity ID.
+        AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            entityContextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+
+        return AZ::RPI::Scene::GetSceneForEntityContextId(entityContextId);
+    }
+
     void TerrainWorldRendererComponent::Activate()
     {
-        // On component activation, register the terrain feature processor with Atom and the default scene.
+        // On component activation, register the terrain feature processor with Atom and the scene related to this entity context.
 
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
-        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
+
+        if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
-            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
-            {
-                AZ::RPI::Scene* scene = defaultScene.get();
-                scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
-            }
+            m_terrainFeatureProcessor = scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
         }
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
@@ -106,17 +114,14 @@ namespace Terrain
         m_terrainRendererActive = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
-        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
+        if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
-            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
+            if (scene->GetFeatureProcessor<Terrain::TerrainFeatureProcessor>())
             {
-                AZ::RPI::Scene* scene = defaultScene.get();
-                if (scene->GetFeatureProcessor<Terrain::TerrainFeatureProcessor>())
-                {
-                    scene->DisableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
-                }
+                scene->DisableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
             }
         }
+        m_terrainFeatureProcessor = nullptr;
 
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
@@ -145,16 +150,9 @@ namespace Terrain
     {
         // If the terrain is being destroyed, remove all existing terrain data from the feature processor.
 
-        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
+        if (m_terrainFeatureProcessor)
         {
-            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
-            {
-                const AZ::RPI::Scene* scene = defaultScene.get();
-                if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
-                {
-                    terrainFeatureProcessor->RemoveTerrainData();
-                }
-            }
+            m_terrainFeatureProcessor->RemoveTerrainData();
         }
     }
 
@@ -206,20 +204,10 @@ namespace Terrain
             }
         }
 
-        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
+        if (m_terrainFeatureProcessor)
         {
-            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
-            {
-                const AZ::RPI::Scene* scene = defaultScene.get();
-                if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
-                {
-                    terrainFeatureProcessor->UpdateTerrainData(
-                        transform, worldBounds, queryResolution.GetX(), width, height,
-                        pixels);
-                }
-            }
+            m_terrainFeatureProcessor->UpdateTerrainData(transform, worldBounds, queryResolution.GetX(), width, height, pixels);
         }
-
     }
 
 }

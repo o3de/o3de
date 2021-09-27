@@ -18,8 +18,15 @@ namespace LmbrCentral
     class EditorWrappedComponentBase;
 }
 
+namespace AZ::RPI
+{
+    class Scene;
+}
+
 namespace Terrain
 {
+    class TerrainFeatureProcessor;
+
     class TerrainWorldRendererConfig
         : public AZ::ComponentConfig
     {
@@ -58,8 +65,11 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        AZ::RPI::Scene* GetScene() const;
+
     private:
         TerrainWorldRendererConfig m_configuration;
         bool m_terrainRendererActive{ false };
+        TerrainFeatureProcessor* m_terrainFeatureProcessor{ nullptr };
     };
 }

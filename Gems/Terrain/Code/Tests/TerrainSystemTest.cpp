@@ -29,6 +29,13 @@ using ::testing::Return;
 class TerrainSystemTest : public ::testing::Test
 {
 protected:
+    // Defines a structure for defining both an XY position and the expected height for that position.
+    struct HeightTestPoint
+    {
+        AZ::Vector2 m_testLocation;
+        float m_expectedHeight;
+    };
+
     AZ::ComponentApplication m_app;
     AZStd::unique_ptr<Terrain::TerrainSystem> m_terrainSystem;
 
@@ -343,24 +350,24 @@ TEST_F(TerrainSystemTest, TerrainHeightQueriesWithClampSamplersUseQueryGrid)
 
     // Test some points and verify that the results always go "downward", whether they're in positive or negative space.
     // (Z contains the the expected result for convenience).
-    const AZ::Vector3 testPoints[] =
+    const HeightTestPoint testPoints[] =
     {
-        AZ::Vector3(0.0f, 0.0f,  0.0f),  // Should return a height of 0.00 + 0.00
-        AZ::Vector3(0.3f, 0.3f,  0.5f),  // Should return a height of 0.25 + 0.25
-        AZ::Vector3(2.8f, 2.8f,  5.5f),  // Should return a height of 2.75 + 2.75
-        AZ::Vector3(5.5f, 5.5f, 11.0f),  // Should return a height of 5.50 + 5.50
-        AZ::Vector3(7.7f, 7.7f, 15.0f),  // Should return a height of 7.50 + 7.50
+        { AZ::Vector2(0.0f, 0.0f), 0.0f }, // Should return a height of 0.00 + 0.00
+        { AZ::Vector2(0.3f, 0.3f), 0.5f }, // Should return a height of 0.25 + 0.25
+        { AZ::Vector2(2.8f, 2.8f), 5.5f }, // Should return a height of 2.75 + 2.75
+        { AZ::Vector2(5.5f, 5.5f), 11.0f }, // Should return a height of 5.50 + 5.50
+        { AZ::Vector2(7.7f, 7.7f), 15.0f }, // Should return a height of 7.50 + 7.50
 
-        AZ::Vector3(-0.3f, -0.3f,  -1.0f), // Should return a height of -0.50 + -0.50
-        AZ::Vector3(-2.8f, -2.8f,  -6.0f), // Should return a height of -3.00 + -3.00
-        AZ::Vector3(-5.5f, -5.5f, -11.0f), // Should return a height of -5.50 + -5.50
-        AZ::Vector3(-7.7f, -7.7f, -15.5f)  // Should return a height of -7.75 + -7.75
+        { AZ::Vector2(-0.3f, -0.3f), -1.0f }, // Should return a height of -0.50 + -0.50
+        { AZ::Vector2(-2.8f, -2.8f), -6.0f }, // Should return a height of -3.00 + -3.00
+        { AZ::Vector2(-5.5f, -5.5f), -11.0f }, // Should return a height of -5.50 + -5.50
+        { AZ::Vector2(-7.7f, -7.7f), -15.5f } // Should return a height of -7.75 + -7.75
     };
     for (auto& testPoint : testPoints)
     {
-        const float expectedHeight = testPoint.GetZ();
+        const float expectedHeight = testPoint.m_expectedHeight;
 
-        AZ::Vector3 position(testPoint.GetX(), testPoint.GetY(), 0.0f);
+        AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
         bool heightQueryTerrainExists = false;
         float height =
             m_terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, &heightQueryTerrainExists);
@@ -407,56 +414,56 @@ TEST_F(TerrainSystemTest, TerrainHeightQueriesWithBilinearSamplersUseQueryGridTo
     // Test some points and verify that the results are the expected bilinear filtered result,
     // whether they're in positive or negative space.
     // (Z contains the the expected result for convenience).
-    const AZ::Vector3 testPoints[] = {
+    const HeightTestPoint testPoints[] = {
 
         // Queries directly on grid points.  These should return values of X + Y.
-        AZ::Vector3(0.0f, 0.0f, 0.0f), // Should return a height of 0 + 0
-        AZ::Vector3(1.0f, 0.0f, 1.0f), // Should return a height of 1 + 0
-        AZ::Vector3(0.0f, 1.0f, 1.0f), // Should return a height of 0 + 1
-        AZ::Vector3(1.0f, 1.0f, 2.0f), // Should return a height of 1 + 1
-        AZ::Vector3(3.0f, 5.0f, 8.0f), // Should return a height of 3 + 5
+        { AZ::Vector2(0.0f, 0.0f), 0.0f }, // Should return a height of 0 + 0
+        { AZ::Vector2(1.0f, 0.0f), 1.0f }, // Should return a height of 1 + 0
+        { AZ::Vector2(0.0f, 1.0f), 1.0f }, // Should return a height of 0 + 1
+        { AZ::Vector2(1.0f, 1.0f), 2.0f }, // Should return a height of 1 + 1
+        { AZ::Vector2(3.0f, 5.0f), 8.0f }, // Should return a height of 3 + 5
 
-        AZ::Vector3(-1.0f,  0.0f, -1.0f), // Should return a height of -1 + 0
-        AZ::Vector3( 0.0f, -1.0f, -1.0f), // Should return a height of 0 + -1
-        AZ::Vector3(-1.0f, -1.0f, -2.0f), // Should return a height of -1 + -1
-        AZ::Vector3(-3.0f, -5.0f, -8.0f), // Should return a height of -3 + -5
+        { AZ::Vector2(-1.0f, 0.0f), -1.0f }, // Should return a height of -1 + 0
+        { AZ::Vector2(0.0f, -1.0f), -1.0f }, // Should return a height of 0 + -1
+        { AZ::Vector2(-1.0f, -1.0f), -2.0f }, // Should return a height of -1 + -1
+        { AZ::Vector2(-3.0f, -5.0f), -8.0f }, // Should return a height of -3 + -5
 
         // Queries that are on a grid edge (one axis on the grid, the other somewhere in-between).
         // These should just be a linear interpolation of the points, so it should still be X + Y.
 
-        AZ::Vector3(0.25f, 0.0f,  0.25f), // Should return a height of -0.25 + 0
-        AZ::Vector3(3.75f, 0.0f,  3.75f), // Should return a height of -3.75 + 0
-        AZ::Vector3(0.0f,  0.25f, 0.25f), // Should return a height of 0 + -0.25
-        AZ::Vector3(0.0f,  3.75f, 3.75f), // Should return a height of 0 + -3.75
+        { AZ::Vector2(0.25f, 0.0f), 0.25f }, // Should return a height of -0.25 + 0
+        { AZ::Vector2(3.75f, 0.0f), 3.75f }, // Should return a height of -3.75 + 0
+        { AZ::Vector2(0.0f, 0.25f), 0.25f }, // Should return a height of 0 + -0.25
+        { AZ::Vector2(0.0f, 3.75f), 3.75f }, // Should return a height of 0 + -3.75
 
-        AZ::Vector3(2.0f,  3.75f, 5.75f), // Should return a height of -2 + -3.75
-        AZ::Vector3(2.25f, 4.0f,  6.25f), // Should return a height of -2.25 + -4
+        { AZ::Vector2(2.0f, 3.75f), 5.75f }, // Should return a height of -2 + -3.75
+        { AZ::Vector2(2.25f, 4.0f), 6.25f }, // Should return a height of -2.25 + -4
 
-        AZ::Vector3(-0.25f, 0.0f,  -0.25f), // Should return a height of -0.25 + 0
-        AZ::Vector3(-3.75f, 0.0f,  -3.75f), // Should return a height of -3.75 + 0
-        AZ::Vector3( 0.0f, -0.25f, -0.25f), // Should return a height of 0 + -0.25
-        AZ::Vector3( 0.0f, -3.75f, -3.75f), // Should return a height of 0 + -3.75
+        { AZ::Vector2(-0.25f, 0.0f), -0.25f }, // Should return a height of -0.25 + 0
+        { AZ::Vector2(-3.75f, 0.0f), -3.75f }, // Should return a height of -3.75 + 0
+        { AZ::Vector2(0.0f, -0.25f), -0.25f }, // Should return a height of 0 + -0.25
+        { AZ::Vector2(0.0f, -3.75f), -3.75f }, // Should return a height of 0 + -3.75
 
-        AZ::Vector3(-2.0f,  -3.75f, -5.75f), // Should return a height of -2 + -3.75
-        AZ::Vector3(-2.25f, -4.0f,  -6.25f), // Should return a height of -2.25 + -4
+        { AZ::Vector2(-2.0f, -3.75f), -5.75f }, // Should return a height of -2 + -3.75
+        { AZ::Vector2(-2.25f, -4.0f), -6.25f }, // Should return a height of -2.25 + -4
 
         // Queries inside a grid square (both axes are in-between grid points)
         // This is a full bilinear interpolation, but because we're using X + Y for our heights, the interpolated values
         // should *still* be X + Y assuming the points were sampled correctly from the grid points.
 
-        AZ::Vector3(3.25f, 5.25f,  8.5f), // Should return a height of 3.25 + 5.25
-        AZ::Vector3(7.71f, 9.74f, 17.45f), // Should return a height of 7.71 + 9.74
+        { AZ::Vector2(3.25f, 5.25f), 8.5f }, // Should return a height of 3.25 + 5.25
+        { AZ::Vector2(7.71f, 9.74f), 17.45f }, // Should return a height of 7.71 + 9.74
 
-        AZ::Vector3(-3.25f, -5.25f,  -8.5f), // Should return a height of -3.25 + -5.25
-        AZ::Vector3(-7.71f, -9.74f, -17.45f), // Should return a height of -7.71 + -9.74
+        { AZ::Vector2(-3.25f, -5.25f), -8.5f }, // Should return a height of -3.25 + -5.25
+        { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
     };
 
     // Loop through every test point and validate it.
     for (auto& testPoint : testPoints)
     {
-        const float expectedHeight = testPoint.GetZ();
+        const float expectedHeight = testPoint.m_expectedHeight;
 
-        AZ::Vector3 position(testPoint.GetX(), testPoint.GetY(), 0.0f);
+        AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
         bool heightQueryTerrainExists = false;
         float height =
             m_terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, &heightQueryTerrainExists);
