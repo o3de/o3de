@@ -59,75 +59,115 @@ namespace AzFramework
         //! All the input channel ids that identify game-pad digital button input
         struct Button
         {
-            static const InputChannelId A;      //!< The bottom diamond face button
-            static const InputChannelId B;      //!< The right diamond face button
-            static const InputChannelId X;      //!< The left diamond face button
-            static const InputChannelId Y;      //!< The top diamond face button
-            static const InputChannelId L1;     //!< The top-left shoulder bumper button
-            static const InputChannelId R1;     //!< The top-right shoulder bumper button
-            static const InputChannelId L3;     //!< The left thumb-stick click button
-            static const InputChannelId R3;     //!< The right thumb-stick click button
-            static const InputChannelId DU;     //!< The up directional pad button
-            static const InputChannelId DD;     //!< The down directional pad button
-            static const InputChannelId DL;     //!< The left directional pad button
-            static const InputChannelId DR;     //!< The right directional pad button
-            static const InputChannelId Start;  //!< The start/pause/options button
-            static const InputChannelId Select; //!< The select/back button
+            static constexpr inline InputChannelId A{"gamepad_button_a"}; //!< The bottom diamond face button
+            static constexpr inline InputChannelId B{"gamepad_button_b"}; //!< The right diamond face button
+            static constexpr inline InputChannelId X{"gamepad_button_x"}; //!< The left diamond face button
+            static constexpr inline InputChannelId Y{"gamepad_button_y"}; //!< The top diamond face button
+            static constexpr inline InputChannelId L1{"gamepad_button_l1"}; //!< The top-left shoulder bumper button
+            static constexpr inline InputChannelId R1{"gamepad_button_r1"}; //!< The top-right shoulder bumper button
+            static constexpr inline InputChannelId L3{"gamepad_button_l3"}; //!< The left thumb-stick click button
+            static constexpr inline InputChannelId R3{"gamepad_button_r3"}; //!< The right thumb-stick click button
+            static constexpr inline InputChannelId DU{"gamepad_button_d_up"}; //!< The up directional pad button
+            static constexpr inline InputChannelId DD{"gamepad_button_d_down"}; //!< The down directional pad button
+            static constexpr inline InputChannelId DL{"gamepad_button_d_left"}; //!< The left directional pad button
+            static constexpr inline InputChannelId DR{"gamepad_button_d_right"}; //!< The right directional pad button
+            static constexpr inline InputChannelId Start{"gamepad_button_start"}; //!< The start/pause/options button
+            static constexpr inline InputChannelId Select{"gamepad_button_select"}; //!< The select/back button
 
             //!< All digital game-pad button ids
-            static const AZStd::array<InputChannelId, 14> All;
+            static constexpr inline AZStd::array All
+            {
+                A,
+                B,
+                X,
+                Y,
+                L1,
+                R1,
+                L3,
+                R3,
+                DU,
+                DD,
+                DL,
+                DR,
+                Start,
+                Select
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad analog trigger input
         struct Trigger
         {
-            static const InputChannelId L2; //!< The bottom-left shoulder trigger
-            static const InputChannelId R2; //!< The bottom-right shoulder trigger
+            static constexpr inline InputChannelId L2{"gamepad_trigger_l2"}; //!< The bottom-left shoulder trigger
+            static constexpr inline InputChannelId R2{"gamepad_trigger_r2"}; //!< The bottom-right shoulder trigger
 
             //!< All analog game-pad trigger ids
-            static const AZStd::array<InputChannelId, 2> All;
+            static constexpr inline AZStd::array All
+            {
+                L2,
+                R2
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad thumb-stick 2D axis input
         struct ThumbStickAxis2D
         {
-            static const InputChannelId L; //!< The left-hand thumb-stick
-            static const InputChannelId R; //!< The right-hand thumb-stick
+            static constexpr inline InputChannelId L{"gamepad_thumbstick_l"}; //!< The left-hand thumb-stick
+            static constexpr inline InputChannelId R{"gamepad_thumbstick_r"}; //!< The right-hand thumb-stick
 
             //!< All game-pad thumb-stick 2D axis input channel ids
-            static const AZStd::array<InputChannelId, 2> All;
+            static constexpr inline AZStd::array All
+            {
+                L,
+                R
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad thumb-stick 1D axis input
         struct ThumbStickAxis1D
         {
-            static const InputChannelId LX; //!< X-axis of the left-hand thumb-stick
-            static const InputChannelId LY; //!< Y-axis of the left-hand thumb-stick
-            static const InputChannelId RX; //!< X-axis of the right-hand thumb-stick
-            static const InputChannelId RY; //!< Y-axis of the right-hand thumb-stick
+            static constexpr inline InputChannelId LX{"gamepad_thumbstick_l_x"}; //!< X-axis of the left-hand thumb-stick
+            static constexpr inline InputChannelId LY{"gamepad_thumbstick_l_y"}; //!< Y-axis of the left-hand thumb-stick
+            static constexpr inline InputChannelId RX{"gamepad_thumbstick_r_x"}; //!< X-axis of the right-hand thumb-stick
+            static constexpr inline InputChannelId RY{"gamepad_thumbstick_r_y"}; //!< Y-axis of the right-hand thumb-stick
 
             //!< All game-pad thumb-stick 1D axis input channel ids
-            static const AZStd::array<InputChannelId, 4> All;
+            static constexpr inline AZStd::array All
+            {
+                LX,
+                LY,
+                RX,
+                RY
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad thumb-stick directional input
         struct ThumbStickDirection
         {
-            static const InputChannelId LU; //!< Up on the left-hand thumb-stick
-            static const InputChannelId LD; //!< Down on the left-hand thumb-stick
-            static const InputChannelId LL; //!< Left on the left-hand thumb-stick
-            static const InputChannelId LR; //!< Right on the left-hand thumb-stick
-            static const InputChannelId RU; //!< Up on the left-hand thumb-stick
-            static const InputChannelId RD; //!< Down on the left-hand thumb-stick
-            static const InputChannelId RL; //!< Left on the left-hand thumb-stick
-            static const InputChannelId RR; //!< Right on the left-hand thumb-stick
+            static constexpr inline InputChannelId LU{"gamepad_thumbstick_l_up"}; //!< Up on the left-hand thumb-stick
+            static constexpr inline InputChannelId LD{"gamepad_thumbstick_l_down"}; //!< Down on the left-hand thumb-stick
+            static constexpr inline InputChannelId LL{"gamepad_thumbstick_l_left"}; //!< Left on the left-hand thumb-stick
+            static constexpr inline InputChannelId LR{"gamepad_thumbstick_l_right"}; //!< Right on the left-hand thumb-stick
+            static constexpr inline InputChannelId RU{"gamepad_thumbstick_r_up"}; //!< Up on the left-hand thumb-stick
+            static constexpr inline InputChannelId RD{"gamepad_thumbstick_r_down"}; //!< Down on the left-hand thumb-stick
+            static constexpr inline InputChannelId RL{"gamepad_thumbstick_r_left"}; //!< Left on the left-hand thumb-stick
+            static constexpr inline InputChannelId RR{"gamepad_thumbstick_r_right"}; //!< Right on the left-hand thumb-stick
 
             //!< All game-pad thumb-stick directional input channel ids
-            static const AZStd::array<InputChannelId, 8> All;
+            static constexpr inline AZStd::array All
+            {
+                LU,
+                LD,
+                LL,
+                LR,
+                RU,
+                RD,
+                RL,
+                RR
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
