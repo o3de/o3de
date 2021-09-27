@@ -27,6 +27,7 @@
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
 {
@@ -41,6 +42,7 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
+        , private AZ::RPI::MaterialReloadNotificationBus::Handler
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -52,11 +54,15 @@ namespace Terrain
         TerrainFeatureProcessor() = default;
         ~TerrainFeatureProcessor() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
+
+        // AZ::RPI::FeatureProcessor overrides...
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
+
+        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
+        void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
 
         void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
                                uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);

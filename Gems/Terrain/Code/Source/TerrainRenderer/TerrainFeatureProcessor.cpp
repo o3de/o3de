@@ -77,26 +77,24 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-        {
-            // Load the terrain material asynchronously
-            const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
-            m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
-            *m_materialAssetLoader = AZ::RPI::AssetUtils::AsyncAssetLoader::Create<AZ::RPI::MaterialAsset>(materialFilePath, 0u,
-                [&](AZ::Data::Asset<AZ::Data::AssetData> assetData, bool success) -> void
+        // Load the terrain material asynchronously
+        const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
+        m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
+        *m_materialAssetLoader = AZ::RPI::AssetUtils::AsyncAssetLoader::Create<AZ::RPI::MaterialAsset>(materialFilePath, 0u,
+            [&](AZ::Data::Asset<AZ::Data::AssetData> assetData, bool success) -> void
+            {
+                const AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset = static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(assetData);
+                if (success)
                 {
-                    const AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset = static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(assetData);
-                    if (success)
+                    m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
+                    AZ::RPI::MaterialReloadNotificationBus::Handler::BusConnect(materialAsset->GetId());
+                    if (!materialAsset->GetObjectSrgLayout())
                     {
-                        m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
-                        if (!materialAsset->GetObjectSrgLayout())
-                        {
-                            AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
-                        }
+                        AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
                     }
                 }
-            );
-        }
-
+            }
+        );
         if (!InitializePatchModel())
         {
             AZ_Error(TerrainFPName, false, "Failed to create Terrain render buffers!");
@@ -106,8 +104,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Deactivate()
     {
-        DisableSceneNotification();
-
         m_patchModel = {};
         m_areaData = {};
     }
@@ -435,5 +431,16 @@ namespace Terrain
         m_patchModel = AZ::RPI::Model::FindOrCreate(modelAsset);
 
         return success;
+    }
+    
+    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Material>& material)
+    {
+        for (auto& sectorData : m_sectorData)
+        {
+            for (auto& drawPacket : sectorData.m_drawPackets)
+            {
+                drawPacket.Update(*GetParentScene());
+            }
+        }
     }
 }

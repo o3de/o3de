@@ -77,10 +77,16 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.roughnessLinear = TerrainMaterialSrg::m_roughnessFactor;
     surface.CalculateRoughnessA();
 
+    float2 uv = IN.m_uv * 16.0;
+    float3 sampledColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, uv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, TerrainMaterialSrg::m_baseColor.rgb, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
     // Albedo, SpecularF0
     const float specularF0Factor = TerrainMaterialSrg::m_specularF0Factor;
-    float3 color = TerrainMaterialSrg::m_baseColor;
-    surface.SetAlbedoAndSpecularF0(color, specularF0Factor, 0.0);
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, 0.0);
+
+    surface.normal = GetNormalInputWS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, uv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, true, IN.m_normal,
+                                       IN.m_tangent, IN.m_bitangent, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
 
     // Clear Coat, Transmission
     surface.clearCoat.InitializeToZero();

@@ -4,10 +4,24 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 1,
     "properties": {
-        "settings": {
-            "baseColor": {
-                "color": [ 0.78, 0.59, 0.48 ]
-            }
+        "baseColor": {
+            "color": [ 1.0, 1.0, 1.0 ],
+            "useTexture": true,
+            "textureMap": "Materials/Terrain/Detail Textures/TiledDirt.png",
+            "textureBlendMode": "Multiply"
+        },
+        "normal":
+        {
+            "useTexture": true,
+            "textureMap": "Materials/Terrain/Detail Textures/TiledDirtNormals.png"
+        },
+        "roughness":
+        {   
+            "useTexture": false
+        },
+        "specularF0":
+        {
+            "useTexture": false
         }
     }
 }

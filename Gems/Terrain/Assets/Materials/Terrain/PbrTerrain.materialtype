@@ -148,7 +148,7 @@
                     "description": "Selects the equation to use when combining Color, Factor, and Texture.",
                     "type": "Enum",
                     "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
-                    "defaultValue": "Multiply",
+                    "defaultValue": "Overlay",
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_baseColorTextureBlendMode"
@@ -287,5 +287,39 @@
         }
     ],
     "functors": [
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "baseColor.textureMap",
+                "useTextureProperty": "baseColor.useTexture",
+                "dependentProperties": ["baseColor.textureBlendMode"],
+                "shaderOption": "o_baseColor_useTexture"
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "specularF0.textureMap",
+                "useTextureProperty": "specularF0.useTexture",
+                "shaderOption": "o_specularF0_useTexture"
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "normal.textureMap",
+                "useTextureProperty": "normal.useTexture",
+                "dependentProperties": ["normal.factor", "normal.flipX", "normal.flipY"],
+                "shaderOption": "o_normal_useTexture"
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "roughness.textureMap",
+                "useTextureProperty": "roughness.useTexture",
+                "shaderOption": "o_roughness_useTexture"
+            }
+        }
     ]
 }
