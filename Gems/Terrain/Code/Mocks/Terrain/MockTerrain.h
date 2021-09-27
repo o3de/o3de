@@ -89,21 +89,19 @@ namespace UnitTest
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
 
-    class MockTerrainDataRequestsListener : public AzFramework::Terrain::TerrainDataRequestBus::Handler
+    class MockTerrainDataRequests : public AzFramework::Terrain::TerrainDataRequestBus::Handler
     {
     public:
-        MockTerrainDataRequestsListener()
+        MockTerrainDataRequests()
         {
             AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
         }
 
-        ~MockTerrainDataRequestsListener()
+        ~MockTerrainDataRequests()
         {
             AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD0(Activate, void());
-        MOCK_METHOD0(Deactivate, void());
         MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, AZ::Vector2());
         MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
