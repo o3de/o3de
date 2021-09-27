@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Achievements Gem provides a target platform agnostic interface for retrieving achievement details and unlocking achievements.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Gameplay", "Achievements"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Gameplay",
+        "Achievements"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/achievements/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/achievements/",
+    "dependencies": []
 }

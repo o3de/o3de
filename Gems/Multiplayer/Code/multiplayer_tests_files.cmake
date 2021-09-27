@@ -8,6 +8,10 @@
 
 set(FILES
     Tests/Main.cpp
+    Tests/MockInterfaces.h
+    Tests/ClientHierarchyTests.cpp
+    Tests/ServerHierarchyTests.cpp
+    Tests/CommonHierarchySetup.h
     Tests/IMultiplayerConnectionMock.h
     Tests/MultiplayerSystemTests.cpp
     Tests/RewindableContainerTests.cpp

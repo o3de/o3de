@@ -9,8 +9,11 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include "HeightfieldProviderBus.h"
 
 namespace Physics
 {
@@ -215,8 +218,20 @@ namespace Physics
 
         void* GetCachedNativeHeightfield() const;
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield) const;
+        AZ::Vector2 GetGridResolution() const;
+        void SetGridResolution(const AZ::Vector2& gridSpacing);
+        int32_t GetNumColumns() const;
+        void SetNumColumns(int32_t numColumns);
+        int32_t GetNumRows() const;
+        void SetNumRows(int32_t numRows);
+        const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
+        void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
 
         AZ::EntityId m_heightProvider;
+        AZ::Vector2 m_gridResolution{ 1.0f };
+        int32_t m_numColumns{ 0 };
+        int32_t m_numRows{ 0 };
+        AZStd::vector<Physics::HeightMaterialPoint> m_samples;
         mutable void* m_cachedNativeHeightfield{ nullptr };
     };
 } // namespace Physics

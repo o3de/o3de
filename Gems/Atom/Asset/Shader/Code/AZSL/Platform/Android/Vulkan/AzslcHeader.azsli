@@ -16,6 +16,11 @@
 
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
 
-// Uniform limitation need to be taken into consideration for mobile devices
+// Uniform limitation need to be taken into consideration for mobile devices. This would help alleviate device lost errors if the constant buffer
+// size overshoots the device's memory constraints. An example is a large number of constant buffers associated with mesh instances that would result in device lost,
+// but otherwise OK on PC. We can separate out the number of instances for the different platforms with this define.
 // [ATOM-14949]
 #define AZ_TRAIT_CONSTANT_BUFFER_LIMITATIONS 1
+
+// Different constant buffer alignment on platforms
+#define AZ_TRAIT_CONSTANT_BUFFER_ALIGNMENT      16

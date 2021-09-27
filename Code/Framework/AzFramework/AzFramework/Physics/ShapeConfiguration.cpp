@@ -35,6 +35,7 @@ namespace Physics
             REFLECT_SHAPETYPE_ENUM_VALUE(Sphere);
             REFLECT_SHAPETYPE_ENUM_VALUE(Cylinder);
             REFLECT_SHAPETYPE_ENUM_VALUE(PhysicsAsset);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Heightfield);
 
             #undef REFLECT_SHAPETYPE_ENUM_VALUE
         }
@@ -334,6 +335,10 @@ namespace Physics
     HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
         : ShapeConfiguration(other)
         , m_heightProvider(other.m_heightProvider)
+        , m_gridResolution(other.m_gridResolution)
+        , m_numColumns(other.m_numColumns)
+        , m_numRows(other.m_numRows)
+        , m_samples(other.m_samples)
         , m_cachedNativeHeightfield(nullptr)
     {
     }
@@ -344,6 +349,11 @@ namespace Physics
 
         // The EntityID is all we need to get the heightfield information.
         m_heightProvider = other.m_heightProvider;
+
+        m_gridResolution = other.m_gridResolution;
+        m_numColumns = other.m_numColumns;
+        m_numRows = other.m_numRows;
+        m_samples = other.m_samples;
 
         // Prevent raw pointer from being copied
         m_cachedNativeHeightfield = nullptr;
@@ -366,5 +376,44 @@ namespace Physics
         m_cachedNativeHeightfield = cachedNativeHeightfield;
     }
 
+    AZ::Vector2 HeightfieldShapeConfiguration::GetGridResolution() const
+    {
+        return m_gridResolution;
+    }
+
+    void HeightfieldShapeConfiguration::SetGridResolution(const AZ::Vector2& gridResolution)
+    {
+        m_gridResolution = gridResolution;
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumColumns() const
+    {
+        return m_numColumns;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumColumns(int32_t numColumns)
+    {
+        m_numColumns = numColumns;
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumRows() const
+    {
+        return m_numRows;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumRows(int32_t numRows)
+    {
+        m_numRows = numRows;
+    }
+
+    const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
+    {
+        return m_samples;
+    }
+
+    void HeightfieldShapeConfiguration::SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples)
+    {
+        m_samples = samples;
+    }
 
 }

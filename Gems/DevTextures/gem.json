@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
     "summary": "The Dev Textures Gem provides a collection of general purpose texture assets useful for prototypes and preproduction.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets", "Debug", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Debug",
+        "Utility"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/dev-textures/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/dev-textures/",
+    "dependencies": []
 }

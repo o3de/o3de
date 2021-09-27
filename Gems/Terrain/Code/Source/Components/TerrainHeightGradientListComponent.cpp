@@ -65,7 +65,7 @@ namespace Terrain
     void TerrainHeightGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("TerrainAreaService"));
-        services.push_back(AZ_CRC_CE("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainHeightGradientListComponent::Reflect(AZ::ReflectContext* context)

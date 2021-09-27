@@ -12,4 +12,5 @@ set(FILES
     Tests/LayerSpawnerTests.cpp
     Tests/TerrainPhysicsColliderTests.cpp
     Tests/MockAxisAlignedBoxShapeComponent.h
+    Tests/TerrainHeightGradientListTests.cpp
 )

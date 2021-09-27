@@ -8,7 +8,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImagePoolBase.h>
@@ -73,7 +72,7 @@ namespace AZ
 
         void FrameGraph::Clear()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: Clear");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: Clear");
             for (Scope* scope : m_scopes)
             {
                 scope->Deactivate();
@@ -126,7 +125,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: End");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {

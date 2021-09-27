@@ -10,7 +10,6 @@
 
 #include <AzCore/Debug/EventTrace.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -107,7 +106,7 @@ namespace AZ
 
         void DecalFeatureProcessor::Simulate(const RPI::FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DecalFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -131,7 +130,7 @@ namespace AZ
 
         void DecalFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DecalFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Render");
 
             AZStd::array_view<Data::Instance<RPI::Image>> baseMaps = GetImagesFromDecalData<1>();
             AZStd::array_view<Data::Instance<RPI::Image>> opacityMaps = GetImagesFromDecalData<2>();

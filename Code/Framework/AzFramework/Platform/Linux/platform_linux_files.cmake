@@ -25,7 +25,7 @@ set(FILES
     AzFramework/Windowing/NativeWindow_Linux_xcb.h
     AzFramework/Windowing/NativeWindow_Linux_xcb.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Unimplemented.cpp
-    ../Common/Unimplemented/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Unimplemented.cpp
+    AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_xcb.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Motion/InputDeviceMotion_Unimplemented.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Mouse/InputDeviceMouse_Unimplemented.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Touch/InputDeviceTouch_Unimplemented.cpp

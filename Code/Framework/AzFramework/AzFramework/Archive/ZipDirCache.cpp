@@ -774,7 +774,7 @@ namespace AZ::IO::ZipDir
             return ZD_ERROR_INVALID_CALL;
         }
 
-        if (pFileEntry->nFileDataOffset != pFileEntry->INVALID_DATA_OFFSET)
+        if (pFileEntry->nFileDataOffset != FileEntryBase::INVALID_DATA_OFFSET)
         {
             return ZD_ERROR_SUCCESS; // the data offset has been successfully read..
         }

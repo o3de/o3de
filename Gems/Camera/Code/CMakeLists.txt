@@ -18,8 +18,8 @@ ly_add_target(
         PUBLIC
             Gem::Atom_RPI.Public
             AZ::AtomCore
-        PRIVATE
-            Legacy::CryCommon
+            AZ::AzCore
+            AZ::AzFramework
 )
 
 ly_add_target(
@@ -32,7 +32,6 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::Camera.Static
 )
 
@@ -56,11 +55,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
-                Legacy::Editor.Headers
-                Legacy::EditorCommon
                 AZ::AzToolsFramework
                 Gem::Camera.Static
+                Gem::AtomToolsFramework.Static
+        RUNTIME_DEPENDENCIES
+            Legacy::EditorCommon
     )
 
     # tools and builders use the above module.
