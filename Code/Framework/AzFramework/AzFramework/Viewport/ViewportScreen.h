@@ -27,11 +27,11 @@ namespace AzFramework
 
     //! Returns a position in screen space (in the range [0-viewportSize.x, 0-viewportSize.y]) from normalized device
     //! coordinates (in the range 0.0-1.0).
-    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
+    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector2& screenNdc, const AZ::Vector2& viewportSize)
     {
         return ScreenPoint(
-            aznumeric_cast<int>(AZStd::lround(screenNDC.GetX() * viewportSize.GetX())),
-            aznumeric_cast<int>(AZStd::lround((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
+            aznumeric_cast<int>(AZStd::lround(screenNdc.GetX() * viewportSize.GetX())),
+            aznumeric_cast<int>(AZStd::lround((1.0f - screenNdc.GetY()) * viewportSize.GetY())));
     }
 
     //! Returns a position in normalized device coordinates (in the range [0.0-1.0, 0.0-1.0]) from a

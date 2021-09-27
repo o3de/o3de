@@ -10,7 +10,6 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/base.h>
 

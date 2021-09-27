@@ -114,7 +114,7 @@ namespace AzFramework
     {
         const auto ndcNormalizedPosition = WorldToScreenNdc(worldPosition, cameraView, cameraProjection);
         // scale ndc position by screen dimensions to return screen position
-        return ScreenPointFromNdc(ndcNormalizedPosition, viewportSize);
+        return ScreenPointFromNdc(AZ::Vector3ToVector2(ndcNormalizedPosition), viewportSize);
     }
 
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState)
