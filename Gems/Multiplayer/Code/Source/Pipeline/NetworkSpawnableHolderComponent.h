@@ -22,10 +22,11 @@ namespace Multiplayer
     public:
         AZ_COMPONENT(NetworkSpawnableHolderComponent, "{B0E3ADEE-FCB4-4A32-8D4F-6920F1CB08E4}");
 
-        static void Reflect(AZ::ReflectContext* context);
-
         NetworkSpawnableHolderComponent();;
         ~NetworkSpawnableHolderComponent() override = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         //! AZ::Component overrides.
         //! @{
