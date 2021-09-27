@@ -26,7 +26,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class AssetBrowserTableModel;
         class AssetBrowserFilterModel;
-        class EntryDelegate;
+        class SearchEntryDelegate;
 
         class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
             : public AzQtComponents::TableView
@@ -67,9 +67,9 @@ namespace AzToolsFramework
 
         private:
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
-            EntryDelegate* m_delegate = nullptr;
+            QPointer<AssetBrowserTableModel> m_tableModel;
+            QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
+            SearchEntryDelegate* m_delegate = nullptr;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

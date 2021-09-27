@@ -155,6 +155,15 @@ namespace AZ::SettingsRegistryMergeUtils
         //! structure which is forwarded to the SettingsRegistryInterface MergeCommandLineArgument function
         //! The structure contains a functor which returns true if a character is a valid delimiter
         SettingsRegistryInterface::CommandLineArgumentSettings m_commandLineSettings;
+
+        //! enumeration to indicate if AZ::IO::FileIOBase should be used to open the config file over AZ::IO::SystemFile
+        enum class FileReaderClass
+        {
+            UseFileIOIfAvailableFallbackToSystemFile,
+            UseSystemFileOnly,
+            UseFileIOOnly
+        };
+        FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
     };
     //! Loads basic configuration files which have structures similar to Windows INI files
     //! It is inspired by the Python configparser module: https://docs.python.org/3.10/library/configparser.html
