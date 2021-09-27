@@ -329,10 +329,9 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
                                                  "(PrefabEditorEntityOwnershipInterface unavailable)."));
             }
-
-            if (!prefabEditorEntityOwnershipInterface->GetRootPrefabInstance())
+            if (!prefabEditorEntityOwnershipInterface->IsLevelLoaded())
             {
-                return AZ::Failure(AZStd::string("Could not instantiate prefab - no level prefab is loaded."));
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - no level is loaded."));
             }
 
             InstanceOptionalReference instanceToParentUnder;
