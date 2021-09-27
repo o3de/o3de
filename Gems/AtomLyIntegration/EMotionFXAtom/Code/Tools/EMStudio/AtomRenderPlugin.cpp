@@ -7,6 +7,11 @@
  */
 
 #include <EMStudio/AtomRenderPlugin.h>
+#include <EMStudio/AnimViewportRenderer.h>
+
+#include <Integration/Components/ActorComponent.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <QHBoxLayout>
 
 namespace EMStudio
@@ -66,6 +71,11 @@ namespace EMStudio
         return EMStudioPlugin::PLUGINTYPE_RENDERING;
     }
 
+    void AtomRenderPlugin::ReinitRenderer()
+    {
+        m_animViewportWidget->GetAnimViewportRenderer()->Reinit();
+    }
+
     bool AtomRenderPlugin::Init()
     {
         m_innerWidget = new QWidget();
@@ -75,9 +85,40 @@ namespace EMStudio
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(1);
         verticalLayout->setMargin(0);
-
         m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+
+        // Register command callbacks.
+        m_createActorInstanceCallback = new CreateActorInstanceCallback(false);
+        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("CreateActorInstance", m_createActorInstanceCallback);
 
         return true;
     }
+
+    // Command callbacks
+    bool ReinitAtomRenderPlugin()
+    {
+        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(static_cast<uint32>(AtomRenderPlugin::CLASS_ID));
+        if (!plugin)
+        {
+            AZ_Error("AtomRenderPlugin", false, "Cannot execute command callback. Atom render plugin does not exist.");
+            return false;
+        }
+
+        AtomRenderPlugin* atomRenderPlugin = static_cast<AtomRenderPlugin*>(plugin);
+        atomRenderPlugin->ReinitRenderer();
+
+        return true;
+    }
+
+    bool AtomRenderPlugin::CreateActorInstanceCallback::Execute(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return ReinitAtomRenderPlugin();
+    }
+    bool AtomRenderPlugin::CreateActorInstanceCallback::Undo(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return ReinitAtomRenderPlugin();
+    }
+
 }

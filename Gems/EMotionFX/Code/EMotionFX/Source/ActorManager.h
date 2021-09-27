@@ -80,6 +80,7 @@ namespace EMotionFX
          * @result A reference to the actor object that contains the array of Actor objects.
          */
         Actor* GetActor(size_t nr) const;
+        ActorAssetData GetActorAsset(size_t nr) const;
 
         /**
          * Find the given actor by name.

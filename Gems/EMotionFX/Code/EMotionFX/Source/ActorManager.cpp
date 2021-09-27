@@ -429,6 +429,12 @@ namespace EMotionFX
     }
 
 
+    ActorManager::ActorAssetData ActorManager::GetActorAsset(size_t nr) const
+    {
+        return m_actorAssets[nr];
+    }
+
+
     const AZStd::vector<ActorInstance*>& ActorManager::GetActorInstanceArray() const
     {
         return m_actorInstances;

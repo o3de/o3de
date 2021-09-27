@@ -9,10 +9,17 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
+
 #include <EMStudio/AnimViewportWidget.h>
 #include <QWidget>
 #endif
+
+namespace AZ
+{
+    class Entity;
+}
 
 namespace EMStudio
 {
@@ -39,7 +46,12 @@ namespace EMStudio
         EMStudioPlugin* Clone();
         EMStudioPlugin::EPluginType GetPluginType() const override;
 
+        void ReinitRenderer();
+
     private:
+        MCORE_DEFINECOMMANDCALLBACK(CreateActorInstanceCallback);
+        CreateActorInstanceCallback* m_createActorInstanceCallback;
+
         QWidget* m_innerWidget;
         AnimViewportWidget* m_animViewportWidget;
     };

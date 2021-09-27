@@ -9,6 +9,7 @@
 
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
+
 namespace EMStudio
 {
     class AnimViewportRenderer;
@@ -18,6 +19,7 @@ namespace EMStudio
     {
     public:
         AnimViewportWidget(QWidget* parent = nullptr);
+        AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get();}
 
     private:
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
