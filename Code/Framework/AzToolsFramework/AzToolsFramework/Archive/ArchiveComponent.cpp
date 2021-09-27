@@ -224,7 +224,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            AZStd::vector<AZStd::string> filesInArchive;
+            AZStd::vector<AZ::IO::Path> filesInArchive;
             if (int result = archive->ListAllFiles(filesInArchive); result != AZ::IO::ZipDir::ZD_ERROR_SUCCESS)
             {
                 AZ_Error(s_traceName, false, "Failed to get list of files in archive '%s'", archivePath.c_str());
@@ -244,7 +244,7 @@ namespace AzToolsFramework
 
             for (const auto& filePath : filesInArchive)
             {
-                srcHandle = archive->FindFile(filePath);
+                srcHandle = archive->FindFile(filePath.Native());
                 AZ_Assert(srcHandle != nullptr, "File '%s' does not exist inside archive '%s'", filePath.c_str(), archivePath.c_str());
 
                 fileSize = (srcHandle != nullptr) ? archive->GetFileSize(srcHandle) : 0;
@@ -385,7 +385,13 @@ namespace AzToolsFramework
             return false;
         }
 
-        int result = archive->ListAllFiles(outFileEntries);
+        AZStd::vector<AZ::IO::Path> fileEntries;
+        int result = archive->ListAllFiles(fileEntries);
+        outFileEntries.clear();
+        for (const auto& path : fileEntries)
+        {
+            outFileEntries.emplace_back(path.String());
+        }
         return (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
     }
 

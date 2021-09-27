@@ -69,7 +69,7 @@ namespace AZ::IO
         int RemoveAll() override;
 
         // lists all the files in the archive
-        int ListAllFiles(AZStd::vector<AZStd::string>& fileEntries) override;
+        int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) override;
 
         // finds the file; you don't have to close the returned handle
         Handle FindFile(AZStd::string_view szRelativePath) override;

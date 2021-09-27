@@ -139,7 +139,7 @@ namespace AZ::IO
 
         // Summary:
         //   Lists all the files in the archive.
-        virtual int ListAllFiles(AZStd::vector<AZStd::string>& fileEntries) = 0;
+        virtual int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) = 0;
 
         // Summary:
         //   Finds the file; you don't have to close the returned handle.

@@ -97,7 +97,7 @@ namespace AZ::IO
 
     //////////////////////////////////////////////////////////////////////////
     // Helper for 'ListAllFiles' to recursively traverse the FileEntryTree and gather all the files
-    void EnumerateFilesRecursive(AZ::IO::Path currentPath, ZipDir::FileEntryTree* currentTree, AZStd::vector<AZStd::string>& fileList)
+    void EnumerateFilesRecursive(AZ::IO::Path currentPath, ZipDir::FileEntryTree* currentTree, AZStd::vector<AZ::IO::Path>& fileList)
     {
         // Drill down directories first...
         for (auto dirIter = currentTree->GetDirBegin(); dirIter != currentTree->GetDirEnd(); ++dirIter)
@@ -112,16 +112,15 @@ namespace AZ::IO
         // Then enumerate the files in current directory...
         for (auto fileIter = currentTree->GetFileBegin(); fileIter != currentTree->GetFileEnd(); ++fileIter)
         {
-            AZ::IO::Path filePath = currentPath / currentTree->GetFileName(fileIter);
-            fileList.emplace_back(filePath.c_str());
+            fileList.emplace_back(currentPath / currentTree->GetFileName(fileIter));
         }
     }
 
     //////////////////////////////////////////////////////////////////////////
     // lists all files in the archive
-    int NestedArchive::ListAllFiles(AZStd::vector<AZStd::string>& fileEntries)
+    int NestedArchive::ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries)
     {
-        AZStd::vector<AZStd::string> filesInArchive;
+        AZStd::vector<AZ::IO::Path> filesInArchive;
 
         ZipDir::FileEntryTree* tree = m_pCache->GetRoot();
         if (!tree)
@@ -131,7 +130,7 @@ namespace AZ::IO
 
         EnumerateFilesRecursive(AZ::IO::Path{ AZ::IO::PosixPathSeparator }, tree, filesInArchive);
 
-        AZStd::swap(fileEntries, filesInArchive);
+        AZStd::swap(outFileEntries, filesInArchive);
         return ZipDir::ZD_ERROR_SUCCESS;
     }
 
