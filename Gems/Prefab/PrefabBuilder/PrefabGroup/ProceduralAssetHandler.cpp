@@ -65,10 +65,12 @@ namespace AZ::Prefab
 
     void PrefabGroupAssetHandler::AssetTypeInfoHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
-        extensions.push_back("procprefab");
+        extensions.push_back(PrefabGroupAssetHandler::s_Extension);
     }
 
     // PrefabGroupAssetHandler
+
+    AZStd::string_view PrefabGroupAssetHandler::s_Extension{ "procprefab" };
 
     PrefabGroupAssetHandler::PrefabGroupAssetHandler()
     {
@@ -76,7 +78,7 @@ namespace AZ::Prefab
         if (assetCatalog)
         {
             assetCatalog->EnableCatalogForAsset(azrtti_typeid<ProceduralPrefabAsset>());
-            assetCatalog->AddExtension("procprefab");
+            assetCatalog->AddExtension(s_Extension.data());
         }
         if (AZ::Data::AssetManager::IsReady())
         {
@@ -130,7 +132,7 @@ namespace AZ::Prefab
         auto* proceduralPrefabAsset = asset.GetAs<ProceduralPrefabAsset>();
         if (!proceduralPrefabAsset)
         {
-            AZ_Error("prefab", false, "This should be a BlastChunksAsset type, as this is the only type we process!");
+            AZ_Error("prefab", false, "This should be a ProceduralPrefabAsset type, as this is the only type we process!");
             return LoadResult::Error;
         }
 

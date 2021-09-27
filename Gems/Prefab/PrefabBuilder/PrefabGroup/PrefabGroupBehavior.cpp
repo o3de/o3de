@@ -181,7 +181,7 @@ namespace AZ::SceneAPI::Behaviors
         AZStd::string filePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
             assetPath.c_str(),
             context.GetOutputDirectory(),
-            "procprefab");
+            AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
 
         AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen() == false)

@@ -8,14 +8,9 @@
 #pragma once
 
 #include <AzCore/Asset/AssetManager.h>
-#include <PrefabGroup/PrefabGroup.h>
-#include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <SceneAPI/SceneCore/Events/ProcessingResult.h>
-#include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
-#include <AzCore/JSON/rapidjson.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ::Prefab
 {
@@ -26,6 +21,8 @@ namespace AZ::Prefab
         AZ_CLASS_ALLOCATOR(PrefabGroupAssetHandler, AZ::SystemAllocator, 0);
         PrefabGroupAssetHandler();
         ~PrefabGroupAssetHandler() override;
+
+        static AZStd::string_view s_Extension;
 
     protected:
         AZ::Data::AssetData* CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override;
