@@ -7,7 +7,9 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
 #include <AzToolsFramework/ViewportSelection/ViewportEditorModeTracker.h>
 
 namespace UnitTest
@@ -18,6 +20,7 @@ namespace UnitTest
     using ViewportEditorModeInfo = AzToolsFramework::ViewportEditorModeInfo;
     using ViewportId = ViewportEditorModeInfo::IdType;
     using ViewportEditorModesInterface = AzToolsFramework::ViewportEditorModesInterface;
+    using ViewportEditorModeTrackerInterface = AzToolsFramework::ViewportEditorModeTrackerInterface;
 
     void ActivateModeAndExpectSuccess(ViewportEditorModes& editorModeState, ViewportEditorMode mode)
     {
@@ -44,6 +47,26 @@ namespace UnitTest
         for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
         {
             DeactivateModeAndExpectSuccess(editorModeState, static_cast<ViewportEditorMode>(mode));
+        }
+    }
+
+    void ExpectOnlyModeActive(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        for (auto modeIndex = 0; modeIndex < ViewportEditorModes::NumEditorModes; modeIndex++)
+        {
+            const auto currentMode = static_cast<ViewportEditorMode>(modeIndex);
+            const bool expectedActive = (mode == currentMode);
+            EXPECT_EQ(editorModeState.IsModeActive(currentMode), expectedActive);
+        }
+    }
+
+    void ExpectOnlyModeInactive(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        for (auto modeIndex = 0; modeIndex < ViewportEditorModes::NumEditorModes; modeIndex++)
+        {
+            const auto currentMode = static_cast<ViewportEditorMode>(modeIndex);
+            const bool expectedActive = (mode != currentMode);
+            EXPECT_EQ(editorModeState.IsModeActive(currentMode), expectedActive);
         }
     }
 
@@ -116,7 +139,7 @@ namespace UnitTest
             m_editorModes[mode].m_onEnter = true;
         }
 
-        virtual void OnEditorModeDeactivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
+        void OnEditorModeDeactivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override
         {
             m_editorModes[mode].m_onExit = true;
         }
@@ -156,6 +179,16 @@ namespace UnitTest
     class ViewportEditorModeTrackerIntegrationTestFixture
         : public ToolsApplicationFixture
     {
+    public:
+        void SetUpEditorFixtureImpl() override
+        {
+            m_viewportEditorModeTracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get();
+            ASSERT_NE(m_viewportEditorModeTracker, nullptr);
+            m_viewportEditorModes = m_viewportEditorModeTracker->GetViewportEditorModes({});
+        }
+
+        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr;
+        const ViewportEditorModesInterface* m_viewportEditorModes = nullptr;
     };
 
     TEST_F(ViewportEditorModesTestsFixture, NumberOfEditorModesIsEqualTo4)
@@ -174,38 +207,14 @@ namespace UnitTest
     TEST_P(ViewportEditorModesTestsFixtureWithParams, SettingModeActiveActivatesOnlyThatMode)
     {
         ActivateModeAndExpectSuccess(m_editorModes, m_selectedEditorMode);
-
-        for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
-        {
-            const auto editorMode = static_cast<ViewportEditorMode>(mode);
-            if (editorMode == m_selectedEditorMode)
-            {
-                EXPECT_TRUE(m_editorModes.IsModeActive(static_cast<ViewportEditorMode>(editorMode)));
-            }
-            else
-            {
-                EXPECT_FALSE(m_editorModes.IsModeActive(static_cast<ViewportEditorMode>(editorMode)));
-            }
-        }
+        ExpectOnlyModeActive(m_editorModes, m_selectedEditorMode);
     }
 
     TEST_P(ViewportEditorModesTestsFixtureWithParams, SettingModeInactiveInactivatesOnlyThatMode)
     {
         SetAllModesActive(m_editorModes);
         DeactivateModeAndExpectSuccess(m_editorModes, m_selectedEditorMode);
-
-        for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
-        {
-            const auto editorMode = static_cast<ViewportEditorMode>(mode);
-            if (editorMode == m_selectedEditorMode)
-            {
-                EXPECT_FALSE(m_editorModes.IsModeActive(editorMode));
-            }
-            else
-            {
-                EXPECT_TRUE(m_editorModes.IsModeActive(editorMode));
-            }
-        }
+        ExpectOnlyModeInactive(m_editorModes, m_selectedEditorMode);
     }
 
     TEST_P(ViewportEditorModesTestsFixtureWithParams, SettingMultipleModesActiveActivatesAllThoseModesNonMutuallyExclusively)
@@ -502,7 +511,53 @@ namespace UnitTest
         }
     }
 
-    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, FOO)
+    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, InitialViewportEditorModeIsDefault)
     {
+        ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
     }
+
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture, EnteringComponentModeAfterInitialStateHasViewportEditorModesDefaultAndComponentModeActive)
+    {
+        // When component mode is entered
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::BeginComponentMode,
+            AZStd::vector<AzToolsFramework::ComponentModeFramework::EntityAndComponentModeBuilders>{});
+
+        bool inComponentMode = false;
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+            inComponentMode, &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::InComponentMode);
+
+        // Expect to be in component mode
+        EXPECT_TRUE(inComponentMode);
+
+        // Expect the default and component viewport editor modes to be active
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
+
+        // ExpeDo not expect ct the pick and focus viewport editor modes to be active
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
+    }
+
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        EnteringEditorPickEntitySelectionAfterInitialStateHasOnlyViewportEditorModePickModeActive)
+    {
+        // When entering pick mode
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+        EditorInteractionSystemViewportSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
+            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+               [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            {
+                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
+            });
+
+        // Expect only the pick viewport editor mode to be active
+        ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Pick);
+    }
+
+    // FocusMode integration tests will follow (LYN-6995)
+
 } // namespace UnitTest

@@ -21,6 +21,7 @@ namespace AzToolsFramework
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
+        m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
     }
 
     EditorPickEntitySelection::~EditorPickEntitySelection()
