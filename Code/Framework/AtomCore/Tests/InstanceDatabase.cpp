@@ -206,7 +206,51 @@ namespace UnitTest
         EXPECT_NE(orphanedInstance, instance2);
     }
 
-    void ParallelInstanceCreateHelper(size_t threadCountMax, size_t assetIdCount, float durationSeconds, bool deferRemoval, bool orphan)
+    enum class ParallelInstanceTestCases
+    {
+        Create,
+        CreateAndDeferRemoval,
+        CreateAndOrphan,
+        CreateDeferRemovalAndOrphan
+    };
+
+    enum class ParralleInstanceCurrentAction
+    {
+        Create,
+        DeferredRemoval,
+        Orphan
+    };
+
+    ParralleInstanceCurrentAction ParallelInstanceGetCurrentAction(ParallelInstanceTestCases testCase)
+    {
+        switch (testCase)
+        {
+        case ParallelInstanceTestCases::CreateAndDeferRemoval:
+            switch (rand() % 2)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::DeferredRemoval;
+            }
+        case ParallelInstanceTestCases::CreateAndOrphan:
+            switch (rand() % 2)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::Orphan;
+            }
+        case ParallelInstanceTestCases::CreateDeferRemovalAndOrphan:
+            switch (rand() % 3)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::DeferredRemoval;
+            case 2: return ParralleInstanceCurrentAction::Orphan;
+            }
+        case ParallelInstanceTestCases::Create:
+        default:
+            return ParralleInstanceCurrentAction::Create;
+        }
+    }
+
+    void ParallelInstanceCreateHelper(size_t threadCountMax, size_t assetIdCount, float durationSeconds, ParallelInstanceTestCases testCase)
     {
         printf("Testing threads=%zu assetIds=%zu ... ", threadCountMax, assetIdCount);
 
@@ -253,15 +297,14 @@ namespace UnitTest
         for (size_t i = 0; i < threadCountMax; ++i)
         {
             threads.emplace_back(
-                [&instanceManager, &threadCount, &cv, &guids, &instances, &assets, &durationSeconds, &deferRemoval, &orphan, &referenceTableMutex]()
+                [&instanceManager, &threadCount, &cv, &guids, &instances, &assets, &durationSeconds, &testCase, &referenceTableMutex]()
                 {
                     AZ::Debug::Timer timer;
                     timer.Stamp();
 
-                    // If both deferRemoval and orphan are true, use 3 as the modulus so that each iteration will either orphan, release, or create
-                    // If only one is true, use 2 as the modulus so each iteration will create or defer/orphan
-                    // If neither are used, the modulus will be ignored so it doesn't matter
-                    int randomModulus = deferRemoval && orphan ? 3 : 2;
+                    bool deferRemoval = testCase == ParallelInstanceTestCases::CreateAndDeferRemoval ||
+                            testCase == ParallelInstanceTestCases::CreateDeferRemovalAndOrphan
+                        ? true : false;
 
                     while (timer.GetDeltaTimeInSeconds() < durationSeconds)
                     {
@@ -270,12 +313,14 @@ namespace UnitTest
                         const InstanceId instanceId{ uuid };
                         const AssetId assetId{ uuid };
 
-                        if (orphan && rand() % randomModulus == 0)
+                        ParralleInstanceCurrentAction currentAction = ParallelInstanceGetCurrentAction(testCase);
+
+                        if (currentAction == ParralleInstanceCurrentAction::Orphan)
                         {
                             // Orphan the instance, but don't decrease its refcount
                             instanceManager.TEMPOrphan(instanceId);
                         }
-                        else if (deferRemoval && rand() % randomModulus == 1)
+                        else if (currentAction == ParralleInstanceCurrentAction::DeferredRemoval)
                         {
                             // Drop the refcount to zero so the instance will be released
                             referenceTableMutex.lock();
@@ -310,7 +355,7 @@ namespace UnitTest
         // Used to detect a deadlock.  If we wait for more than 10 seconds, it's likely a deadlock has occurred
         while (threadCount > 0 && !timedOut)
         {
-            size_t durationSecondsRoundedUp = static_cast<size_t>(std::ceil(durationSeconds + 1.0f));
+            size_t durationSecondsRoundedUp = static_cast<size_t>(std::ceil(durationSeconds));
 
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
             timedOut =
@@ -331,11 +376,11 @@ namespace UnitTest
         printf("Took %f seconds\n", timer.GetDeltaTimeInSeconds());
     }
 
-    void ParallelCreateTest(bool deferRemoval, bool orphan)
+    void ParallelCreateTest(ParallelInstanceTestCases testCase)
     {
         // This is the original test scenario from when InstanceDatabase was first implemented
         //                           threads, AssetIds,  seconds
-        ParallelInstanceCreateHelper(8, 100, 5, deferRemoval, orphan);
+        ParallelInstanceCreateHelper(8, 100, 5, testCase);
 
         // This value is checked in as 1 so this test doesn't take too much time, but can be increased locally to soak the test.
         const size_t attempts = 1;
@@ -349,9 +394,9 @@ namespace UnitTest
             // At the time, this set of scenarios has something like a 10% failure rate.
             const float duration = 2.0f;
             //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(4, 1, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(8, 1, duration, deferRemoval, orphan);
+            ParallelInstanceCreateHelper(2, 1, duration, testCase);
+            ParallelInstanceCreateHelper(4, 1, duration, testCase);
+            ParallelInstanceCreateHelper(8, 1, duration, testCase);
         }
 
         for (size_t i = 0; i < attempts; ++i)
@@ -361,43 +406,35 @@ namespace UnitTest
             // Here we try a bunch of different threadCount:assetCount ratios to be thorough
             const float duration = 2.0f;
             //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(4, 1, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(4, 2, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(4, 4, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(8, 1, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(8, 2, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(8, 3, duration, deferRemoval, orphan);
-            ParallelInstanceCreateHelper(8, 4, duration, deferRemoval, orphan);
+            ParallelInstanceCreateHelper(2, 1, duration, testCase);
+            ParallelInstanceCreateHelper(4, 1, duration, testCase);
+            ParallelInstanceCreateHelper(4, 2, duration, testCase);
+            ParallelInstanceCreateHelper(4, 4, duration, testCase);
+            ParallelInstanceCreateHelper(8, 1, duration, testCase);
+            ParallelInstanceCreateHelper(8, 2, duration, testCase);
+            ParallelInstanceCreateHelper(8, 3, duration, testCase);
+            ParallelInstanceCreateHelper(8, 4, duration, testCase);
         }
     }
 
     TEST_F(InstanceDatabaseTest, ParallelInstanceCreate)
     {
-        bool deferRemoval = false;
-        bool orphan = false;
-        ParallelCreateTest(deferRemoval, orphan);
+        ParallelCreateTest(ParallelInstanceTestCases::Create);
     }
 
     TEST_F(InstanceDatabaseTest, ParallelInstanceCreateAndDeferRemoval)
     {
-        bool deferRemoval = true;
-        bool orphan = false;
-        ParallelCreateTest(deferRemoval, orphan);
+        ParallelCreateTest(ParallelInstanceTestCases::CreateAndDeferRemoval);
     }
 
     TEST_F(InstanceDatabaseTest, ParallelInstanceCreateAndOrphan)
     {
-        bool deferRemoval = false;
-        bool orphan = true;
-        ParallelCreateTest(deferRemoval, orphan);
+        ParallelCreateTest(ParallelInstanceTestCases::CreateAndOrphan);
     }
 
     TEST_F(InstanceDatabaseTest, ParallelInstanceCreateDeferRemovalAndOrphan)
     {
-        bool deferRemoval = true;
-        bool orphan = true;
-        ParallelCreateTest(deferRemoval, orphan);
+        ParallelCreateTest(ParallelInstanceTestCases::CreateDeferRemovalAndOrphan);
     }
 
     TEST_F(InstanceDatabaseTest, InstanceCreateNoDatabase)
