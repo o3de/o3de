@@ -85,7 +85,6 @@ namespace AZ
             {
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_PROFILE_SCOPE(AzRender, "MeshFP::Simulate() Lambda");
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)

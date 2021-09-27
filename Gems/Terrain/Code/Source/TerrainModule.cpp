@@ -13,6 +13,7 @@
 #include <Components/TerrainSystemComponent.h>
 #include <Components/TerrainWorldComponent.h>
 #include <Components/TerrainWorldDebuggerComponent.h>
+#include <Components/TerrainWorldRendererComponent.h>
 #include <Components/TerrainHeightGradientListComponent.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
@@ -26,6 +27,7 @@ namespace Terrain
                 TerrainSystemComponent::CreateDescriptor(),
                 TerrainWorldComponent::CreateDescriptor(),
                 TerrainWorldDebuggerComponent::CreateDescriptor(),
+                TerrainWorldRendererComponent::CreateDescriptor(),
                 TerrainHeightGradientListComponent::CreateDescriptor(),
                 TerrainLayerSpawnerComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),

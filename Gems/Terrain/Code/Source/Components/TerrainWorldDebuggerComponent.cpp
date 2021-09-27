@@ -95,6 +95,8 @@ namespace Terrain
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
+        RefreshCachedWireframeGrid(AZ::Aabb::CreateNull());
     }
 
     void TerrainWorldDebuggerComponent::Deactivate()
