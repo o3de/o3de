@@ -438,6 +438,11 @@ QTabBar::tab:focus {
     max-height:26px;
 }
 
+#projectActionButton, #openEditorButton {
+    min-height:26px;
+    max-height:26px;
+}
+
 #labelButtonOverlay {
     background-color: rgba(50,50,50,200);
     min-width:210px;
