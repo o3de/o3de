@@ -22,8 +22,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        explicit EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache);
-        explicit EditorPickEntitySelection(
+        EditorPickEntitySelection(
             const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         ~EditorPickEntitySelection();
 

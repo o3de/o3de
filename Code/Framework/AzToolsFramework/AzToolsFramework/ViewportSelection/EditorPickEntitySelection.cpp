@@ -16,20 +16,11 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
-    EditorPickEntitySelection::EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache)
-        : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
-    {
-    }
-
     EditorPickEntitySelection::EditorPickEntitySelection(
         const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
-        : EditorPickEntitySelection(entityDataCache)
+        : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
-        m_viewportEditorModeTracker = viewportEditorModeTracker;
-        if (m_viewportEditorModeTracker)
-        {
-            m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
-        }
     }
 
     EditorPickEntitySelection::~EditorPickEntitySelection()
@@ -39,10 +30,7 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
         }
 
-        if (m_viewportEditorModeTracker)
-        {
-             m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
-        }
+        m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
     }
 
     // note: entityIdUnderCursor is the authoritative entityId we get each frame by querying

@@ -20,36 +20,26 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
 
-    EditorDefaultSelection::EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorDefaultSelection::EditorDefaultSelection(
+        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_phantomWidget(nullptr)
         , m_entityDataCache(entityDataCache)
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
+        , m_componentModeCollection(viewportEditorModeTracker)
     {
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
-    }
-
-    EditorDefaultSelection::EditorDefaultSelection(
-        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
-        : EditorDefaultSelection(entityDataCache)
-    {
-        m_viewportEditorModeTracker = viewportEditorModeTracker;
-        if (m_viewportEditorModeTracker)
-        {
-            m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
-        }
+        m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
     }
 
     EditorDefaultSelection::~EditorDefaultSelection()
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
-        if (m_viewportEditorModeTracker)
-        {
-            m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
-        }
+        m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
     }
 
     void EditorDefaultSelection::SetOverridePhantomWidget(QWidget* phantomOverrideWidget)

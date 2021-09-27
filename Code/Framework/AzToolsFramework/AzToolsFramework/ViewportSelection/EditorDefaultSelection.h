@@ -27,8 +27,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR_DECL
 
         //! @cond
-        explicit EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache);
-        explicit EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
+        EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         EditorDefaultSelection(const EditorDefaultSelection&) = delete;
         EditorDefaultSelection& operator=(const EditorDefaultSelection&) = delete;
         virtual ~EditorDefaultSelection();

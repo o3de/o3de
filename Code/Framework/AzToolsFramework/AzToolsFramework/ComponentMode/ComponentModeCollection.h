@@ -26,8 +26,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR_DECL
 
             /// @cond
-            ComponentModeCollection() = default;
-            ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
+            explicit ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
             ~ComponentModeCollection() = default;
             ComponentModeCollection(const ComponentModeCollection&) = delete;
             ComponentModeCollection& operator=(const ComponentModeCollection&) = delete;

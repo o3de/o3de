@@ -346,7 +346,7 @@ namespace UnitTest
             [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
                [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache);
+                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });
 
         // When

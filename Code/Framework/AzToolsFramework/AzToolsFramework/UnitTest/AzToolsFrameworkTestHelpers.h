@@ -172,7 +172,7 @@ namespace UnitTest
             {
                 // create the default viewport (handles ComponentMode)
                 AZStd::unique_ptr<AzToolsFramework::EditorDefaultSelection> defaultSelection =
-                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache);
+                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
 
                 // override the phantom widget so we can use out custom test widget
                 defaultSelection->SetOverridePhantomWidget(&m_editorActions.m_componentModeWidget);
