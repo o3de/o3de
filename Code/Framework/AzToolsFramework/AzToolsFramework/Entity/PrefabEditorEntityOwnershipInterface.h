@@ -57,6 +57,6 @@ namespace AzToolsFramework
 
         virtual void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) = 0;
 
-        virtual bool IsLevelLoaded() const = 0;
+        virtual bool IsRootPrefabAssigned() const = 0;
     };
 }
