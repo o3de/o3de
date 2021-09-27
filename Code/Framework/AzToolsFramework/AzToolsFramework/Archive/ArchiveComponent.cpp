@@ -77,8 +77,8 @@ namespace AzToolsFramework
 
     void ArchiveComponent::Activate()
     {
-        m_localFileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (m_localFileIO == nullptr)
+        m_fileIO = AZ::IO::FileIOBase::GetDirectInstance();
+        if (m_fileIO == nullptr)
         {
             AZ_Error(s_traceName, false, "Failed to create a LocalFileIO instance!");
         }
@@ -96,7 +96,7 @@ namespace AzToolsFramework
     {
         ArchiveCommandsBus::Handler::BusDisconnect();
 
-        m_localFileIO = nullptr;
+        m_fileIO = nullptr;
         m_archive = nullptr;
 
         for (AZStd::thread& t : m_threads)
@@ -258,13 +258,13 @@ namespace AzToolsFramework
                 }
 
                 AZ::IO::Path destinationFile = destination / filePath;
-                if (!m_localFileIO->Open(destinationFile.c_str(), openMode, dstHandle))
+                if (!m_fileIO->Open(destinationFile.c_str(), openMode, dstHandle))
                 {
                     AZ_Error(s_traceName, false, "Failed to open '%s' for writing", destinationFile.c_str());
                     continue;
                 }
 
-                if (!m_localFileIO->Write(dstHandle, fileBuffer.data(), fileSize, &bytesWritten))
+                if (!m_fileIO->Write(dstHandle, fileBuffer.data(), fileSize, &bytesWritten))
                 {
                     AZ_Error(s_traceName, false, "Failed to write destination file '%s'", destinationFile.c_str());
                 }
@@ -273,7 +273,7 @@ namespace AzToolsFramework
                     ++numFilesWritten;
                 }
 
-                m_localFileIO->Close(dstHandle);
+                m_fileIO->Close(dstHandle);
             }
 
             p.set_value(numFilesWritten == filesInArchive.size());
@@ -337,7 +337,7 @@ namespace AzToolsFramework
             AZ::IO::Path destinationFile{ destinationPath };
             destinationFile /= fileInArchive;
             AZ::IO::OpenMode openMode = (AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeUpdate);
-            if (!m_localFileIO->Open(destinationFile.c_str(), openMode, destFileHandle))
+            if (!m_fileIO->Open(destinationFile.c_str(), openMode, destFileHandle))
             {
                 AZ_Error(s_traceName, false, "Failed to open destination file '%s' for writing", destinationFile.c_str());
                 p.set_value(false);
@@ -345,12 +345,12 @@ namespace AzToolsFramework
             }
 
             AZ::u64 bytesWritten = 0;
-            if (!m_localFileIO->Write(destFileHandle, fileBuffer.data(), fileSize, &bytesWritten))
+            if (!m_fileIO->Write(destFileHandle, fileBuffer.data(), fileSize, &bytesWritten))
             {
                 AZ_Error(s_traceName, false, "Failed to write destination file '%s'", destinationFile.c_str());
             }
 
-            m_localFileIO->Close(destFileHandle);
+            m_fileIO->Close(destFileHandle);
             p.set_value(bytesWritten == fileSize);
         };
 
@@ -367,12 +367,12 @@ namespace AzToolsFramework
 
     bool ArchiveComponent::ListFilesInArchive(const AZStd::string& archivePath, AZStd::vector<AZStd::string>& outFileEntries)
     {
-        if (!m_localFileIO || !m_archive)
+        if (!m_fileIO || !m_archive)
         {
             return false;
         }
 
-        if (!m_localFileIO->Exists(archivePath.c_str()))
+        if (!m_fileIO->Exists(archivePath.c_str()))
         {
             AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archivePath.c_str());
             return false;
@@ -525,12 +525,12 @@ namespace AzToolsFramework
 
     bool ArchiveComponent::CheckParamsForAdd(const AZStd::string& directory, const AZStd::string& file)
     {
-        if (!m_localFileIO || !m_archive)
+        if (!m_fileIO || !m_archive)
         {
             return false;
         }
 
-        if (!m_localFileIO->IsDirectory(directory.c_str()))
+        if (!m_fileIO->IsDirectory(directory.c_str()))
         {
             AZ_Error(
                 s_traceName, false, "Working directory '%s' is not a directory or doesn't exist!", directory.c_str());
@@ -540,7 +540,7 @@ namespace AzToolsFramework
         if (!file.empty())
         {
             auto filePath = AZ::IO::Path{ directory } / file;
-            if (!m_localFileIO->Exists(filePath.c_str()) || m_localFileIO->IsDirectory(filePath.c_str()))
+            if (!m_fileIO->Exists(filePath.c_str()) || m_fileIO->IsDirectory(filePath.c_str()))
             {
                 AZ_Error(s_traceName, false, "File list '%s' is a directory or doesn't exist!", filePath.c_str());
                 return false;
@@ -552,20 +552,20 @@ namespace AzToolsFramework
 
     bool ArchiveComponent::CheckParamsForExtract(const AZStd::string& archive, const AZStd::string& directory)
     {
-        if (!m_localFileIO || !m_archive)
+        if (!m_fileIO || !m_archive)
         {
             return false;
         }
 
-        if (!m_localFileIO->Exists(archive.c_str()))
+        if (!m_fileIO->Exists(archive.c_str()))
         {
             AZ_Error(s_traceName, false, "Archive '%s' does not exist!", archive.c_str());
             return false;
         }
 
-        if (!m_localFileIO->Exists(directory.c_str()))
+        if (!m_fileIO->Exists(directory.c_str()))
         {
-            if (!m_localFileIO->CreatePath(directory.c_str()))
+            if (!m_fileIO->CreatePath(directory.c_str()))
             {
                 AZ_Error(s_traceName, false, "Failed to create destination directory '%s'", directory.c_str());
                 return false;
@@ -577,18 +577,18 @@ namespace AzToolsFramework
 
     bool ArchiveComponent::CheckParamsForCreate(const AZStd::string& archive, const AZStd::string& directory)
     {
-        if (!m_localFileIO || !m_archive)
+        if (!m_fileIO || !m_archive)
         {
             return false;
         }
 
-        if (m_localFileIO->Exists(archive.c_str()))
+        if (m_fileIO->Exists(archive.c_str()))
         {
             AZ_Error(s_traceName, false, "Archive file '%s' already exists, cannot create a new archive there!");
             return false;
         }
 
-        if (!m_localFileIO->IsDirectory(directory.c_str()))
+        if (!m_fileIO->IsDirectory(directory.c_str()))
         {
             AZ_Error(s_traceName, false, "Directory '%s' is not a directory or doesn't exist!", directory.c_str());
             return false;
