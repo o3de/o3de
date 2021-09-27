@@ -374,7 +374,6 @@ namespace Multiplayer
                     &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
 
                 returnList.push_back(netBindComponent->GetEntityHandle());
-
             }
             else
             {
