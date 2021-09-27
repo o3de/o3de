@@ -5,9 +5,20 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The FastNoise Gradient Gem uses the third-party, open source FastNoise library to provide a variety of high-performance noise generation algorithms.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Utility", "Tools", "Design"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Utility",
+        "Tools",
+        "Design"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/utility/fast-noise/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/utility/fast-noise/",
+    "dependencies": [
+        "GradientSignal",
+        "LmbrCentral",
+        "SurfaceData"
+    ]
 }

@@ -10,6 +10,7 @@
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoModel.h>
+#include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoAddDialog.h>
 #include <PythonBindingsInterface.h>
 
@@ -34,7 +35,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
-       setLayout(vLayout);
+        setLayout(vLayout);
 
         m_contentStack = new QStackedWidget(this);
 
@@ -168,10 +169,6 @@ namespace O3DE::ProjectManager
 
         hLayout->addSpacing(60);
 
-        m_gemRepoInspector = new QFrame(this);
-        m_gemRepoInspector->setObjectName(tr("gemRepoInspector"));
-        m_gemRepoInspector->setFixedWidth(240);
-
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
         middleVLayout->setSpacing(0);
@@ -231,10 +228,13 @@ namespace O3DE::ProjectManager
         m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; text-align:left; border-style:none; }");
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 
-        m_gemRepoListView = new GemRepoListView(m_gemRepoModel, this);
+        m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);
         middleVLayout->addWidget(m_gemRepoListView);
 
         hLayout->addLayout(middleVLayout);
+
+        m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, this);
+        m_gemRepoInspector->setFixedWidth(240);
         hLayout->addWidget(m_gemRepoInspector);
 
         return contentFrame;

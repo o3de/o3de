@@ -8,8 +8,6 @@
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>

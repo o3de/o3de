@@ -50,10 +50,10 @@ float GetRoughnessMip(float roughness)
     return roughness * maxRoughnessMip;
 }
 
-// compute parallax corrected reflection vector
+// compute parallax corrected reflection vector, AABB version
 // we do this by finding the intersection with the volume and adjusting the reflection vector for the surface position 
 // https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-float3 ApplyParallaxCorrection(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
+float3 ApplyParallaxCorrectionAABB(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
 {
     float3 rcpReflectDir = 1.0f / reflectDir;
     float3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
@@ -62,4 +62,11 @@ float3 ApplyParallaxCorrection(float3 aabbMin, float3 aabbMax, float3 aabbPos, f
     float distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
     float3 intersectPos = reflectDir * distance + positionWS;
     return (intersectPos - aabbPos);
+}
+
+// compute parallax corrected reflection vector, OBB version
+float3 ApplyParallaxCorrectionOBB(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 positionWS, float3 reflectDir)
+{
+    float4 p = mul(obbTransformInverse, float4(positionWS, 1.0f));
+    return ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, float3(0.0f, 0.0f, 0.0f), p, reflectDir);
 }

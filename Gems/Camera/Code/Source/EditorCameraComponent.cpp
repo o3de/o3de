@@ -12,10 +12,9 @@
 #include "EditorCameraComponent.h"
 #include "ViewportCameraSelectorWindow.h"
 
-#include <MathConversion.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
@@ -33,6 +32,14 @@ namespace Camera
         CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
         m_controller.SetConfiguration(controllerConfig);
+        // Only allow our camera to activate with the component if we're currently in game mode.
+        m_controller.SetShouldActivateFunction([]()
+            {
+                bool isInGameMode = true;
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
+                return isInGameMode;
+            });
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();

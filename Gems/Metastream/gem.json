@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Metastream Gem provides functionality for an HTTP server that allows broadcasters to customize game streams with overlays of statistics and event data from a game session.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Gameplay", "Network", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Gameplay",
+        "Network",
+        "Framework"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/network/twitch/metastream/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/network/twitch/metastream/",
+    "dependencies": []
 }

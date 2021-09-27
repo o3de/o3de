@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameEventBus.h>

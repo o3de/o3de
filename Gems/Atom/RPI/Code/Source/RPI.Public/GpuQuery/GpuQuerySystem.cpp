@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>

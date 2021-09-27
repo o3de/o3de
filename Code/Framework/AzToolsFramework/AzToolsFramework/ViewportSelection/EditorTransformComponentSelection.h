@@ -270,7 +270,7 @@ namespace AzToolsFramework
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
 
         // Camera::EditorCameraNotificationBus overrides ...
-        void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
+        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
 
         // EditorContextVisibilityNotificationBus overrides ...
         void OnEntityVisibilityChanged(bool visibility) override;

@@ -21,6 +21,7 @@ QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(GemRepoInspector)
     QT_FORWARD_DECLARE_CLASS(GemRepoListView)
     QT_FORWARD_DECLARE_CLASS(GemRepoModel)
 
@@ -51,7 +52,7 @@ namespace O3DE::ProjectManager
         QTableWidget* m_gemRepoHeaderTable = nullptr;
         QHeaderView* m_gemRepoListHeader = nullptr;
         GemRepoListView* m_gemRepoListView = nullptr;
-        QFrame* m_gemRepoInspector = nullptr;
+        GemRepoInspector* m_gemRepoInspector = nullptr;
         GemRepoModel* m_gemRepoModel = nullptr;
 
         QLabel* m_lastAllUpdateLabel;

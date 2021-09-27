@@ -218,6 +218,8 @@ namespace EMotionFX
     // output the results into the internal pose object
     void AnimGraphInstance::Output(Pose* outputPose)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphInstance::Output");
+
         // reset max used
         const uint32 threadIndex = m_actorInstance->GetThreadIndex();
         AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(threadIndex)->GetPosePool();
@@ -854,6 +856,8 @@ namespace EMotionFX
     // synchronize all nodes, based on sync tracks etc
     void AnimGraphInstance::Update(float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphInstance::Update");
+
         // pass 0: (Optional, networking only) When this instance is shared between network, restore the instance using an animgraph snapshot.
         if (m_snapshot)
         {
@@ -940,6 +944,8 @@ namespace EMotionFX
     // reset all node pose ref counts
     void AnimGraphInstance::ResetPoseRefCountsForAllNodes()
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphInstance::ResetPoseRefCountsForAllNodes");
+
         const size_t numNodes = m_animGraph->GetNumNodes();
         for (size_t i = 0; i < numNodes; ++i)
         {
@@ -951,6 +957,8 @@ namespace EMotionFX
     // reset all node pose ref counts
     void AnimGraphInstance::ResetRefDataRefCountsForAllNodes()
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphInstance::ResetRefDataRefCountsForAllNodes");
+
         const size_t numNodes = m_animGraph->GetNumNodes();
         for (size_t i = 0; i < numNodes; ++i)
         {
@@ -962,6 +970,8 @@ namespace EMotionFX
     // reset all node flags
     void AnimGraphInstance::ResetFlagsForAllObjects()
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphInstance::ResetFlagsForAllObjects");
+
         MCore::MemSet(m_objectFlags.data(), 0, sizeof(uint32) * m_objectFlags.size());
 
         for (AnimGraphInstance* childInstance : m_childAnimGraphInstances)
