@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
-       setLayout(vLayout);
+        setLayout(vLayout);
 
         m_contentStack = new QStackedWidget(this);
 
