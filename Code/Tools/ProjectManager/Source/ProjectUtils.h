@@ -42,6 +42,8 @@ namespace O3DE::ProjectManager
             int commandTimeoutSeconds = ProjectCommandLineTimeoutSeconds);
 
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
+        AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

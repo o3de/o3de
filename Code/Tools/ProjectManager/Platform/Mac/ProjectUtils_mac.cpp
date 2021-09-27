@@ -8,6 +8,7 @@
 #include <ProjectUtils.h>
 
 #include <QProcess>
+#include <QStandardPaths>
 
 namespace O3DE::ProjectManager
 {
@@ -61,5 +62,38 @@ namespace O3DE::ProjectManager
 
             return AZ::Success(xcodeBuilderVersionNumber);
         }       
+
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
+        {
+            const QString cmakeHelp = QObject::tr("Please verify you've installed CMake.app from " 
+                            "<a href=\"https://cmake.org\">cmake.org</a> or, if using HomeBrew, "
+                            "have installed it with <pre>brew install --cask cmake</pre>");
+            QString cmakeAppPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, "CMake.app");
+            if (cmakeAppPath.isEmpty())
+            {
+                return AZ::Failure(QObject::tr("CMake.app not found. " + cmakeHelp);
+            }
+
+            QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
+            AZ::Outcome result = GetProjectBuildPath(projectPath);
+            if (result.IsSuccess())
+            {
+                projectBuildPath = result.GetValue();
+            }
+
+            QProcess process;
+            QProcessEnvironment currentEnvironment = cmakeProcessEnvResult.GetValue();
+
+            // if the project build path is relative, it should be relative to the project path 
+            process.setWorkingDirectory(projectPath);
+            process.setProgram("open");
+            process.setArguments({ "-a","CMake","--args","-S", projectPath, "-B", projectBuildPath });
+            if(!process.startDetached())
+            {
+                return AZ::Failure(QObject::tr("CMake.app failed to open. " + cmakeHelp);
+            }
+
+            return AZ::Success();
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

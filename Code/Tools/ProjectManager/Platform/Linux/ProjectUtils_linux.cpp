@@ -49,6 +49,12 @@ namespace O3DE::ProjectManager
                 "Make sure that the clang is installed and available from the command prompt. "
                 "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
         }
+
+
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
+        {
+            return AZ::Failure(QObject::tr("This functionality has not been implemented yet on this platform.");
+        }
         
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
