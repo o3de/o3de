@@ -10,6 +10,7 @@
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoModel.h>
+#include <GemRepo/GemRepoAddDialog.h>
 #include <PythonBindingsInterface.h>
 
 #include <QVBoxLayout>
@@ -70,6 +71,32 @@ namespace O3DE::ProjectManager
         });
     }
 
+    void GemRepoScreen::HandleAddRepoButton()
+    {
+        GemRepoAddDialog* repoAddDialog = new GemRepoAddDialog(this);
+        repoAddDialog->exec();
+
+        if (repoAddDialog->GetButtonResult() == QDialogButtonBox::ApplyRole)
+        {
+            QString repoUrl = repoAddDialog->GetRepoPath();
+            if (repoUrl.isEmpty())
+            {
+                return;
+            }
+
+            AZ::Outcome<void, AZStd::string> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUrl);
+            if (addGemRepoResult.IsSuccess())
+            {
+                Reinit();
+            }
+            else
+            {
+                QMessageBox::critical(this, tr("Operation failed"),
+                    QString("Failed to add gem repo: %1.\nError:\n%2").arg(repoUrl, addGemRepoResult.GetError().c_str()));
+            }
+        }
+    }
+
     void GemRepoScreen::FillModel()
     {
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
@@ -114,10 +141,12 @@ namespace O3DE::ProjectManager
 
         hLayout->addStretch();
 
-        m_AddRepoButton = new QPushButton(tr("Add Repository"), this);
-        m_AddRepoButton->setObjectName("gemRepoAddButton");
-        m_AddRepoButton->setMinimumWidth(120);
-        hLayout->addWidget(m_AddRepoButton);
+        QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
+        addRepoButton->setObjectName("gemRepoAddButton");
+        addRepoButton->setMinimumWidth(120);
+        hLayout->addWidget(addRepoButton);
+
+        connect(addRepoButton, &QPushButton::clicked, this, &GemRepoScreen::HandleAddRepoButton);
 
         hLayout->addStretch();
 
@@ -165,9 +194,11 @@ namespace O3DE::ProjectManager
 
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-        m_AddRepoButton = new QPushButton(tr("Add Repository"), this);
-        m_AddRepoButton->setObjectName("gemRepoAddButton");
-        topMiddleHLayout->addWidget(m_AddRepoButton);
+        QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
+        addRepoButton->setObjectName("gemRepoAddButton");
+        topMiddleHLayout->addWidget(addRepoButton);
+
+        connect(addRepoButton, &QPushButton::clicked, this, &GemRepoScreen::HandleAddRepoButton);
 
         topMiddleHLayout->addSpacing(30);
 

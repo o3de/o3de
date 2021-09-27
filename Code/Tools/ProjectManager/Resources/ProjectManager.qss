@@ -600,3 +600,7 @@ QProgressBar::chunk {
 #gemRepoInspector {
     background: #444444;
 }
+
+#gemRepoAddDialogInstructionTitleLabel {
+    font-size:14px;
+}
