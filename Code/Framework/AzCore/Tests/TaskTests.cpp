@@ -464,6 +464,7 @@ namespace UnitTest
         EXPECT_EQ(3, x);
     }
 
+    // Waiting inside a task is disallowed , test that it fails correctly
     TEST_F(TaskGraphTestFixture, SpawnSubgraph)
     {
         AZStd::atomic<int> x = 0;
@@ -510,7 +511,9 @@ namespace UnitTest
                 f.Precedes(g);
                 TaskGraphEvent ev;
                 subgraph.SubmitOnExecutor(*m_executor, &ev);
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 ev.Wait();
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             });
         auto d = graph.AddTask(
             defaultTD,
@@ -541,7 +544,7 @@ namespace UnitTest
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
-        EXPECT_EQ(3 | 0b100000, x);
+        // EXPECT_EQ(3 | 0b100000, x);
     }
 
     TEST_F(TaskGraphTestFixture, RetainedGraph)
