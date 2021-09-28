@@ -100,9 +100,9 @@ namespace AZ
                 void RunEditorMaterialFunctors();
                 void UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property);
 
-                AZ::Crc32 GetSaveStateKeyForGroup(const AZStd::string& groupNameId) const;
-                static bool AreNodePropertyValuesEqual(
-                    const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target);
+                AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
+                bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
+                const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
 
                 // Tracking the property that is actively being edited in the inspector
                 const AtomToolsFramework::DynamicProperty* m_activeProperty = {};

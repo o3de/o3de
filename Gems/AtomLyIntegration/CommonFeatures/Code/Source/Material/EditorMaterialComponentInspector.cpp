@@ -271,7 +271,8 @@ namespace AZ
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                 auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                    &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupNameId));
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId), {},
+                    [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
                 AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
             }
 
@@ -316,7 +317,8 @@ namespace AZ
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                     auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                        &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupNameId));
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId), {},
+                        [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
                     AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
                 }
 
@@ -496,19 +498,26 @@ namespace AZ
                 }
             }
 
-            AZ::Crc32 MaterialPropertyInspector::GetSaveStateKeyForGroup(const AZStd::string& groupNameId) const
+            AZ::Crc32 MaterialPropertyInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
             {
                 return AZ::Crc32(AZStd::string::format(
                     "MaterialPropertyInspector::PropertyGroup::%s::%s", m_editData.m_materialAssetId.ToString<AZStd::string>().c_str(),
                     groupNameId.c_str()));
             }
 
-            bool MaterialPropertyInspector::AreNodePropertyValuesEqual(
-                const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target)
+            bool MaterialPropertyInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
             {
-                AZ_UNUSED(source);
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+                return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+            }
+
+            const char* MaterialPropertyInspector::GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const
+            {
+                if (IsInstanceNodePropertyModifed(node))
+                {
+                    return ":/PropertyEditor/Resources/changed_data_item.png";
+                }
+                return ":/PropertyEditor/Resources/blank.png";
             }
 
             bool MaterialPropertyInspector::SaveMaterial() const
