@@ -27,7 +27,8 @@ namespace Terrain
 
         virtual ~TerrainAreaSurfaceRequests() = default;
 
-        virtual void GetSurfaceWeights(const AZ::Vector3& inPosition, SurfaceData::SurfaceTagWeightMap& surfaceWeights) const = 0;
+        //! Get the surfaces and weights from a gradient at a given position sorted into descending order of weight.
+        virtual void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const = 0;
     };
 
     using TerrainAreaSurfaceRequestBus = AZ::EBus<TerrainAreaSurfaceRequests>;

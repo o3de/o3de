@@ -7,7 +7,7 @@
 #
 
 set(FILES
-    Include/Terrain/Ebuses/TerrainGradientSurfaceListBus.h
+    Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
