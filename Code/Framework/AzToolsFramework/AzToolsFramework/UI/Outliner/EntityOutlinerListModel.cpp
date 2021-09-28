@@ -82,6 +82,8 @@ namespace AzToolsFramework
         , m_entityExpansionState()
         , m_entityFilteredState()
     {
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerListModel requires a FocusModeInterface instance on construction.");
     }
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
@@ -106,11 +108,6 @@ namespace AzToolsFramework
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr,
             "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
-
-        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        AZ_Assert(
-            m_focusModeInterface != nullptr,
-            "EntityOutlinerListModel requires a FocusModeInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const

@@ -232,6 +232,9 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->setSortIndicatorShown(false);
         m_gui->m_objectTree->header()->setStretchLastSection(false);
 
+        // Always expand root entity (level entity) - needed if the widget is re-created while a level is already open.
+        m_gui->m_objectTree->expand(m_proxyModel->index(0, 0));
+
         // resize the icon columns so that the Visibility and Lock toggle icon columns stay right-justified
         m_gui->m_objectTree->header()->setStretchLastSection(false);
         m_gui->m_objectTree->header()->setMinimumSectionSize(0);
