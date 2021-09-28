@@ -50,8 +50,16 @@ namespace MaterialEditor
         });
         m_toggleShadowCatcher->setChecked(viewportSettings->m_enableShadowCatcher);
 
-        // Add mapping selection button
+        // Add toggle alternate skybox button
+        m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), "Toggle Alternate Skybox");
+        m_toggleAlternateSkybox->setCheckable(true);
+        connect(m_toggleAlternateSkybox, &QAction::triggered, [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
+        });
+        m_toggleAlternateSkybox->setChecked(viewportSettings->m_enableAlternateSkybox);
 
+        // Add mapping selection button
         QToolButton* toneMappingButton = new QToolButton(this);
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
 
@@ -103,6 +111,11 @@ namespace MaterialEditor
     void MaterialEditorToolBar::OnGridEnabledChanged(bool enable)
     {
         m_toggleGrid->setChecked(enable);
+    }
+
+    void MaterialEditorToolBar::OnAlternateSkyboxEnabledChanged(bool enable)
+    {
+        m_toggleAlternateSkybox->setChecked(enable);
     }
 
     void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
