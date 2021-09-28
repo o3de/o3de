@@ -63,7 +63,7 @@ set(_signbase_command
     -basePath ${_cpack_wix_out_dir}
 )
 
-set(_signbootstrapper_command
+set(_signbootstrap_command
     powershell.exe
     -nologo
     -ExecutionPolicy Bypass 
