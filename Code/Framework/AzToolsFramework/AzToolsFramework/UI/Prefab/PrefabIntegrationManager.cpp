@@ -13,6 +13,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Asset/AssetManager.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -23,6 +24,12 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -207,6 +214,16 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
+            }
+
+            // Instantiate Procedural Prefab
+            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
+            {
+                QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
+                action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
+
+                QObject::connect(
+                    action, &QAction::triggered, action, [] { ContextMenu_InstantiateProceduralPrefab(); });
             }
 
             menu->addSeparator();
@@ -422,6 +439,46 @@ namespace AzToolsFramework
                 if (!createPrefabOutcome.IsSuccess())
                 {
                     WarnUserOfError("Prefab Instantiation Error",createPrefabOutcome.GetError());
+                }
+            }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_InstantiateProceduralPrefab()
+        {
+            AZStd::string prefabAssetPath;
+            bool hasUserForProceduralPrefabAsset = QueryUserForProceduralPrefabAsset(prefabAssetPath);
+
+            if (hasUserForProceduralPrefabAsset)
+            {
+                AzToolsFramework::Prefab::InstanceOptionalReference targetInstanceRef = AZStd::nullopt;
+                AZ::EntityId parentId;
+                AZ::Vector3 position = AZ::Vector3::CreateZero();
+
+                EntityIdList selectedEntities;
+                ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+                if (selectedEntities.size() == 1)
+                {
+                    parentId = selectedEntities.front();
+                    AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
+
+                    auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+                    targetInstanceRef = instanceEntityMapperInterface->FindOwningInstance(parentId);
+                    if (targetInstanceRef.has_value() == false)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    // otherwise return since it needs to be inside an authored prefab
+                    return;
+                }
+
+                // Instantiating from context menu always puts the instance at the root level
+                auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
+                if (!createPrefabOutcome.IsSuccess())
+                {
+                    WarnUserOfError("Prefab Instantiation Error", createPrefabOutcome.GetError());
                 }
             }
         }
@@ -679,6 +736,34 @@ namespace AzToolsFramework
 
             outPrefabFilePath = source->GetFullPath();
             return true;
+        }
+
+        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath)
+        {
+            using namespace AzToolsFramework;
+            auto selection = AssetBrowser::AssetSelectionModel::AssetTypeSelection(azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>());
+            EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::BrowseForAssets, selection);
+
+            if (!selection.IsValid())
+            {
+                return false;
+            }
+
+            auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
+            if (product == nullptr)
+            {
+                return false;
+            }
+
+            outPrefabAssetPath = product->GetRelativePath();
+
+            auto asset = AZ::Data::AssetManager::Instance().GetAsset(
+                product->GetAssetId(),
+                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(),
+                AZ::Data::AssetLoadBehavior::Default);
+
+            asset.QueueLoad();
+            return asset.BlockUntilLoadComplete() != AZ::Data::AssetData::AssetStatus::Error;
         }
 
         void PrefabIntegrationManager::WarnUserOfError(AZStd::string_view title, AZStd::string_view message)

@@ -139,23 +139,9 @@ namespace AZ::SceneAPI::Behaviors
             return {};
         }
 
-        // fill out a JSON DOM with all the asset IDs filled out
-        rapidjson::Document generatedInstanceDom;
-        instanceToTemplateInterface->GenerateDomForInstance(generatedInstanceDom, *instance.get());
-
+        // fill out a JSON DOM
         auto proceduralPrefab = AZStd::make_unique<rapidjson::Document>(rapidjson::kObjectType);
-
-        auto prefabId = rapidjson::Value(rapidjson::kStringType);
-        prefabId.SetString(prefabGroup->GetId().ToString<AZStd::string>().c_str(), proceduralPrefab->GetAllocator());
-
-        auto prefabName = rapidjson::Value(rapidjson::kStringType);
-        prefabName.SetString(prefabGroup->GetName().c_str(), proceduralPrefab->GetAllocator());
-
-        auto prefabTemplate = rapidjson::Value(generatedInstanceDom, proceduralPrefab->GetAllocator());
-
-        proceduralPrefab->AddMember("id", prefabId, proceduralPrefab->GetAllocator());
-        proceduralPrefab->AddMember("name", prefabName, proceduralPrefab->GetAllocator());
-        proceduralPrefab->AddMember("data", prefabTemplate, proceduralPrefab->GetAllocator());
+        instanceToTemplateInterface->GenerateDomForInstance(*proceduralPrefab.get(), *instance.get());
         return proceduralPrefab;
     }
 
@@ -164,7 +150,7 @@ namespace AZ::SceneAPI::Behaviors
         const SceneData::PrefabGroup* prefabGroup,
         const rapidjson::Document& doc) const
     {
-        //Retrieve source asset info so we can get a string with the relative path to the asset
+        // Retrieve source asset info so we can get a string with the relative path to the asset
         bool assetInfoResult;
         Data::AssetInfo info;
         AZStd::string watchFolder;
