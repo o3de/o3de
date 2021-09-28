@@ -32,9 +32,6 @@ set(_addtional_defines
     -dCPACK_RESOURCE_PATH=${CPACK_SOURCE_DIR}/Platform/Windows/Packaging
 )
 
-file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
-
 if(CPACK_LICENSE_URL)
     list(APPEND _addtional_defines -dCPACK_LICENSE_URL=${CPACK_LICENSE_URL})
 endif()
@@ -58,7 +55,7 @@ set(_light_command
     -o "${_bootstrap_output_file}"
 )
 
-file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
+file(TO_NATIVE_PATH "${CPACK_SOURCE_DIR}/scripts/signer/signer.ps1" _sign_script)
 
 set(_signbase_command
     powershell.exe
@@ -147,6 +144,8 @@ if(NOT CPACK_UPLOAD_URL)
     return()
 endif()
 
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
+file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
 file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
 file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
 

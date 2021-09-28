@@ -38,6 +38,12 @@ function Write-Signiture {
 }
 
 if ($basePath) {
+    Write-Output "### Signing EXE files ###"
+    $files = @(Get-ChildItem $basePath -Recurse *.exe | % { $_.FullName })
+    foreach ($file in $files) {
+        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
+    }
+
     Write-Output "### Signing CAB files ###"
     $files = @(Get-ChildItem $basePath -Recurse *.cab | % { $_.FullName })
     foreach ($file in $files) {
