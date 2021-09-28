@@ -311,14 +311,8 @@ namespace AzFramework
         nextCamera.m_pitch -= float(cursorDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
         nextCamera.m_yaw -= float(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
 
-        const auto clampRotation = [](const float angle)
-        {
-            return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
-        };
-
-        nextCamera.m_yaw = clampRotation(nextCamera.m_yaw);
-        // clamp pitch to be +/-90 degrees
-        nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
+        nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
+        nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
 
         return nextCamera;
     }

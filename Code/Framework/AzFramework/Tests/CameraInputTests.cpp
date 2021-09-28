@@ -26,7 +26,8 @@ namespace UnitTest
         {
             constexpr float deltaTime = 0.01666f; // 60fps
             const bool consumed = m_cameraSystem->HandleEvents(event);
-            m_camera = m_cameraSystem->StepCamera(m_targetCamera, deltaTime);
+            m_targetCamera = m_cameraSystem->StepCamera(m_targetCamera, deltaTime);
+            m_camera = m_targetCamera; // no smoothing
             return consumed;
         }
 
@@ -45,11 +46,29 @@ namespace UnitTest
             m_translateCameraInputChannelIds.m_boostChannelId = AzFramework::InputChannelId("keyboard_key_modifier_shift_l");
 
             m_firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
+            // set rotate speed to be a value that will scale motion delta (pixels moved) by a thousandth.
+            m_firstPersonRotateCamera->m_rotateSpeedFn = []()
+            {
+                return 0.001f;
+            };
+
             m_firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
                 m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivot);
 
             m_pivotCamera = AZStd::make_shared<AzFramework::PivotCameraInput>(m_pivotChannelId);
+            m_pivotCamera->SetPivotFn(
+                [this](const AZ::Vector3&, const AZ::Vector3&)
+                {
+                    return m_pivot;
+                });
+
             auto pivotRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
+            // set rotate speed to be a value that will scale motion delta (pixels moved) by a thousandth.
+            pivotRotateCamera->m_rotateSpeedFn = []()
+            {
+                return 0.001f;
+            };
+
             auto pivotTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
                 m_translateCameraInputChannelIds, AzFramework::PivotTranslation, AzFramework::TranslateOffset);
 
@@ -83,6 +102,7 @@ namespace UnitTest
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
         AZStd::shared_ptr<AzFramework::PivotCameraInput> m_pivotCamera;
+        AZ::Vector3 m_pivot = AZ::Vector3::CreateZero();
     };
 
     TEST_F(CameraInputFixture, BeginAndEndPivotCameraInputConsumesCorrectEvents)
@@ -251,15 +271,95 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), expectedCameraPosition));
 
-        m_camera = m_targetCamera;
-
         HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
 
         // verify the camera yaw has not changed and pivot point matches the expected camera position
-        using ::testing::Eq;
-        EXPECT_THAT(m_camera.m_yaw, Eq(AZ::DegToRad(90.0f)));
-        EXPECT_THAT(m_camera.m_pitch, Eq(0.0f));
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(AZ::DegToRad(90.0f), 0.001f));
+        EXPECT_THAT(m_camera.m_pitch, FloatNear(0.0f, 0.001f));
         EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
         EXPECT_THAT(m_camera.m_pivot, IsClose(expectedCameraPosition));
+    }
+
+    TEST_F(CameraInputFixture, FirstPersonRotateCameraInputRotatesYawByNinetyDegreesWithRequiredPixelDelta)
+    {
+        const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-10.0f);
+        m_targetCamera.m_pivot = cameraStartingPosition;
+
+        HandleEventAndUpdate(
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 1570 });
+
+        const float expectedYaw = AzFramework::WrapYawRotation(-AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
+        EXPECT_THAT(m_camera.m_pitch, FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(m_camera.m_pivot, IsClose(cameraStartingPosition));
+        EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
+    }
+
+    TEST_F(CameraInputFixture, FirstPersonRotateCameraInputRotatesPitchByNinetyDegreesWithRequiredPixelDelta)
+    {
+        const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-10.0f);
+        m_targetCamera.m_pivot = cameraStartingPosition;
+
+        HandleEventAndUpdate(
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ 1570 });
+
+        const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(m_camera.m_pitch, FloatNear(expectedPitch, 0.001f));
+        EXPECT_THAT(m_camera.m_pivot, IsClose(cameraStartingPosition));
+        EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
+    }
+
+    TEST_F(CameraInputFixture, PivotRotateCameraInputRotatesPitchOffsetByNinetyDegreesWithRequiredPixelDelta)
+    {
+        const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-20.0f);
+        m_targetCamera.m_pivot = cameraStartingPosition;
+
+        m_pivot = AZ::Vector3::CreateAxisY(-10.0f);
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ 1570 });
+
+        const auto expectedCameraEndingPosition = AZ::Vector3(0.0f, -10.0f, 10.0f);
+        const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(m_camera.m_pitch, FloatNear(expectedPitch, 0.001f));
+        EXPECT_THAT(m_camera.m_pivot, IsClose(m_pivot));
+        EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateAxisY(-10.0f)));
+        EXPECT_THAT(m_camera.Translation(), IsCloseTolerance(expectedCameraEndingPosition, 0.01f));
+    }
+
+    TEST_F(CameraInputFixture, PivotRotateCameraInputRotatesYawOffsetByNinetyDegreesWithRequiredPixelDelta)
+    {
+        const auto cameraStartingPosition = AZ::Vector3(15.0f, -20.0f, 0.0f);
+        m_targetCamera.m_pivot = cameraStartingPosition;
+
+        m_pivot = AZ::Vector3(10.0f, -10.0f, 0.0f);
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ -1570 });
+
+        const auto expectedCameraEndingPosition = AZ::Vector3(20.0f, -5.0f, 0.0f);
+        const float expectedYaw = AzFramework::WrapYawRotation(AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
+        EXPECT_THAT(m_camera.m_pitch, FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(m_camera.m_pivot, IsClose(m_pivot));
+        EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3(5.0f, -10.0f, 0.0f)));
+        EXPECT_THAT(m_camera.Translation(), IsCloseTolerance(expectedCameraEndingPosition, 0.01f));
     }
 } // namespace UnitTest

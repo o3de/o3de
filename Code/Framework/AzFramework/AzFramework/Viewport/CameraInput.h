@@ -302,6 +302,20 @@ namespace AzFramework
         return m_handlingEvents;
     }
 
+    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2).
+    //! @param pitch Pitch angle in radians.
+    inline float ClampPitchRotation(const float pitch)
+    {
+        return AZ::GetClamp(pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
+    }
+
+    // Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).
+    //! @param yaw Yaw angle in radians.
+    inline float WrapYawRotation(const float yaw)
+    {
+        return AZStd::fmod(yaw + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
+    }
+
     //! A camera input to handle motion deltas that can rotate or pivot the camera.
     class RotateCameraInput : public CameraInput
     {

@@ -183,7 +183,8 @@ namespace SandboxEditor
                     &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
 
                 // initially attempt to use the last set look at point after an interpolation has finished
-                if (lookAtAfterInterpolation.has_value())
+                // note: ignore this if it is the same location as the camera (e.g. after go to position)
+                if (lookAtAfterInterpolation.has_value() && !lookAtAfterInterpolation->IsClose(position))
                 {
                     return *lookAtAfterInterpolation;
                 }
