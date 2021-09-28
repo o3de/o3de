@@ -205,10 +205,10 @@ namespace AZ
                         m_blasInstanceMap.erase(itBlas);
                     }
                 }
-            }
 
-            m_meshInfoBufferNeedsUpdate = true;
-            m_materialInfoBufferNeedsUpdate = true;
+                m_meshInfoBufferNeedsUpdate = true;
+                m_materialInfoBufferNeedsUpdate = true;
+            }
         }
 
         void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)

@@ -75,6 +75,7 @@ namespace AZ
             void Init(Data::Instance<RPI::Model> model);
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
+            void RemoveRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);

@@ -540,6 +540,7 @@ namespace AZ
             
             if (model)
             {
+                m_parent->RemoveRayTracingData();
                 m_parent->Init(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
             }
@@ -605,12 +606,7 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
-            // remove from ray tracing
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (rayTracingFeatureProcessor)
-            {
-                rayTracingFeatureProcessor->RemoveMesh(m_objectId);
-            }
+            RemoveRayTracingData();
 
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
@@ -996,6 +992,16 @@ namespace AZ
             }
 
             rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
+        }
+
+        void MeshDataInstance::RemoveRayTracingData()
+        {
+            // remove from ray tracing
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (rayTracingFeatureProcessor)
+            {
+                rayTracingFeatureProcessor->RemoveMesh(m_objectId);
+            }
         }
 
         void MeshDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
