@@ -318,7 +318,6 @@ namespace Terrain
 
         uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
         size_t size = gridVertices * gridVertices;
-        size *= size;
 
         patchdata.m_positions.reserve(size);
         patchdata.m_uvs.reserve(size);
@@ -342,8 +341,6 @@ namespace Terrain
                 uint16_t topRight = topLeft + 1;
                 uint16_t bottomLeft = (y + 1) * gridVertices + x;
                 uint16_t bottomRight = bottomLeft + 1;
-
-                constexpr uint16_t one = 1;
 
                 patchdata.m_indices.emplace_back(topLeft);
                 patchdata.m_indices.emplace_back(topRight);
