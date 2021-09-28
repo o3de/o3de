@@ -20,28 +20,39 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/Buffer/BufferSystem.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
+#include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
+#include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
+#include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-
+#include <Atom/Feature/RenderCommon.h>
 
 namespace Terrain
 {
     namespace
     {
-        const uint32_t DEFAULT_UploadBufferSize = 512 * 1024; // 512k
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
+    }
+
+    namespace MaterialInputs
+    {
+        static const char* const HeightmapImage("settings.heightmapImage");
     }
 
     namespace ShaderInputs
     {
-        static const char* const HeightmapImage("m_heightmapImage");
         static const char* const ModelToWorld("m_modelToWorld");
         static const char* const TerrainData("m_terrainData");
     }
@@ -60,142 +71,44 @@ namespace Terrain
     void TerrainFeatureProcessor::Activate()
     {
         m_areaData = {};
-
-        InitializeAtomStuff();
-        EnableSceneNotification();
+        Initialize();
     }
 
-    void TerrainFeatureProcessor::ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail)
+    void TerrainFeatureProcessor::Initialize()
     {
-        if (shaderState.m_shader == nullptr)
         {
-            AZ_Assert(shaderState.m_shader || !assertOnFail, "Terrain shader failed to load correctly.");
-            return;
-        }
-
-        bool success = GetParentScene()->ConfigurePipelineState(shaderState.m_shader->GetDrawListTag(), shaderState.m_pipelineStateDescriptor);
-        AZ_Assert(success || !assertOnFail, "Couldn't configure the pipeline state.");
-        if (success)
-        {
-            shaderState.m_pipelineState = shaderState.m_shader->AcquirePipelineState(shaderState.m_pipelineStateDescriptor);
-            AZ_Assert(shaderState.m_pipelineState, "Failed to acquire default pipeline state.");
-        }
-    }
-
-    void TerrainFeatureProcessor::InitializeAtomStuff()
-    {
-        m_rhiSystem = AZ::RHI::RHISystemInterface::Get();
-
-        {       
-            auto LoadShader = [this](const char* filePath, ShaderState& shaderState)
-            {
-                shaderState.m_shader = AZ::RPI::LoadShader(filePath);
-                if (!shaderState.m_shader)
+            // Load the terrain material asynchronously
+            const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
+            m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
+            *m_materialAssetLoader = AZ::RPI::AssetUtils::AsyncAssetLoader::Create<AZ::RPI::MaterialAsset>(materialFilePath, 0u,
+                [&](AZ::Data::Asset<AZ::Data::AssetData> assetData, bool success) -> void
                 {
-                    AZ_Error(TerrainFPName, false, "Failed to find or create a shader instance from shader asset '%s'", filePath);
-                    return;
+                    const AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset = static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(assetData);
+                    if (success)
+                    {
+                        m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
+                        if (!materialAsset->GetObjectSrgLayout())
+                        {
+                            AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
+                        }
+                    }
                 }
-                
-                // Create the data layout
-                shaderState.m_pipelineStateDescriptor = AZ::RHI::PipelineStateDescriptorForDraw{};
-                {
-                    AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-
-                    layoutBuilder.AddBuffer()
-                        ->Channel("POSITION", AZ::RHI::Format::R32G32_FLOAT)
-                        ->Channel("UV", AZ::RHI::Format::R32G32_FLOAT)
-                        ;
-                    shaderState.m_pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
-                }
-
-                auto shaderVariant = shaderState.m_shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId);
-                shaderVariant.ConfigurePipelineState(shaderState.m_pipelineStateDescriptor);
-                
-                // If this fails to run now, it's ok, we'll initialize it in OnRenderPipelineAdded later.
-                ConfigurePipelineState(shaderState, false);
-            };
-            
-            LoadShader("Shaders/Terrain/Terrain.azshader", m_shaderStates[ShaderType::Forward]);
-            LoadShader("Shaders/Terrain/Terrain_DepthPass.azshader", m_shaderStates[ShaderType::Depth]);
-
-            // Forward and depth shader use same srg layout.
-            AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> perObjectSrgLayout =
-                m_shaderStates[ShaderType::Forward].m_shader->FindShaderResourceGroupLayout(AZ::Name{"ObjectSrg"});
-
-            if (!perObjectSrgLayout)
-            {
-                AZ_Error(TerrainFPName, false, "Failed to get shader resource group layout");
-                return;
-            }
-            else if (!perObjectSrgLayout->IsFinalized())
-            {
-                AZ_Error(TerrainFPName, false, "Shader resource group layout is not loaded");
-                return;
-            }
-
-            m_heightmapImageIndex = perObjectSrgLayout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::HeightmapImage));
-            AZ_Error(TerrainFPName, m_heightmapImageIndex.IsValid(), "Failed to find shader input image %s.", ShaderInputs::HeightmapImage);
-
-            m_modelToWorldIndex = perObjectSrgLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
-            AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
-
-            m_terrainDataIndex = perObjectSrgLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
-            AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
+            );
         }
 
-        AZ::RHI::BufferPoolDescriptor dmaPoolDescriptor;
-        dmaPoolDescriptor.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Host;
-        dmaPoolDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::InputAssembly;
-
-        m_hostPool = AZ::RHI::Factory::Get().CreateBufferPool();
-        m_hostPool->SetName(AZ::Name("TerrainVertexPool"));
-        AZ::RHI::ResultCode resultCode = m_hostPool->Init(*m_rhiSystem->GetDevice(), dmaPoolDescriptor);
-
-        if (resultCode != AZ::RHI::ResultCode::Success)
-        {
-            AZ_Error(TerrainFPName, false, "Failed to create host buffer pool from RPI");
-            return;
-        }
-
-        InitializeTerrainPatch();
-
-        if (!InitializeRenderBuffers())
+        if (!InitializePatchModel())
         {
             AZ_Error(TerrainFPName, false, "Failed to create Terrain render buffers!");
             return;
         }
     }
 
-    void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
-    {
-        for (ShaderState& shaderState: m_shaderStates)
-        {
-            ConfigurePipelineState(shaderState, true);
-        }
-    }
-
-    void TerrainFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] AZ::RPI::RenderPipeline* pipeline)
-    {
-    }
-
-    void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
-    {
-    }
-
-
     void TerrainFeatureProcessor::Deactivate()
     {
         DisableSceneNotification();
 
-        DestroyRenderBuffers();
+        m_patchModel = {};
         m_areaData = {};
-
-        if (m_hostPool)
-        {
-            m_hostPool.reset();
-        }
-
-        m_rhiSystem = nullptr;
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -254,240 +167,269 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
 
-        if ((m_shaderStates[ShaderType::Forward].m_shader == nullptr) ||
-            (m_shaderStates[ShaderType::Depth].m_shader == nullptr) ||
-            m_shaderStates[ShaderType::Forward].m_shader->GetDrawListTag().IsNull() ||
-            m_shaderStates[ShaderType::Depth].m_shader->GetDrawListTag().IsNull())
-        {
-            return;
-        }
-
         if (!m_areaData.m_terrainBounds.IsValid())
         {
             return;
         }
         
-        if (m_areaData.m_propertiesDirty)
+        if (m_areaData.m_propertiesDirty && m_materialInstance)
         {
             m_areaData.m_propertiesDirty = false;
             m_sectorData.clear();
 
-            AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+            AZ::RPI::MaterialPropertyIndex heightmapPropertyIndex =
+                m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
+            AZ_Error(TerrainFPName, heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
+            AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
+            m_materialInstance->SetPropertyValue(heightmapPropertyIndex, heightmapImage);
+            m_materialInstance->Compile();
 
-            uint32_t numIndices = static_cast<uint32_t>(m_gridIndices.size());
+            const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
 
-            AZ::RHI::DrawIndexed drawIndexed;
-            drawIndexed.m_indexCount = numIndices;
-            drawIndexed.m_indexOffset = 0;
-            drawIndexed.m_vertexOffset = 0;
+            m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
+            AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
+
+            m_terrainDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
+            AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
 
             float xFirstPatchStart =
-                m_areaData.m_terrainBounds.GetMin().GetX() - fmod(m_areaData.m_terrainBounds.GetMin().GetX(), m_gridMeters);
-            float xLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetX() - fmod(m_areaData.m_terrainBounds.GetMax().GetX(), m_gridMeters);
+                m_areaData.m_terrainBounds.GetMin().GetX() - fmod(m_areaData.m_terrainBounds.GetMin().GetX(), GridMeters);
+            float xLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetX() - fmod(m_areaData.m_terrainBounds.GetMax().GetX(), GridMeters);
             float yFirstPatchStart =
-                m_areaData.m_terrainBounds.GetMin().GetY() - fmod(m_areaData.m_terrainBounds.GetMin().GetY(), m_gridMeters);
-            float yLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetY() - fmod(m_areaData.m_terrainBounds.GetMax().GetY(), m_gridMeters);
+                m_areaData.m_terrainBounds.GetMin().GetY() - fmod(m_areaData.m_terrainBounds.GetMin().GetY(), GridMeters);
+            float yLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetY() - fmod(m_areaData.m_terrainBounds.GetMax().GetY(), GridMeters);
 
-            for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += m_gridMeters)
+            for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += GridMeters)
             {
-                for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += m_gridMeters)
+                for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += GridMeters)
                 {
-                    drawPacketBuilder.Begin(nullptr);
-                    drawPacketBuilder.SetDrawArguments(drawIndexed);
-                    drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
-                    auto& forwardShader = m_shaderStates[ShaderType::Forward].m_shader;
-
-                    auto resourceGroup = AZ::RPI::ShaderResourceGroup::Create(forwardShader->GetAsset(), forwardShader->GetSupervariantIndex(), AZ::Name("ObjectSrg"));
-                    if (!resourceGroup)
+                    const auto& materialAsset = m_materialInstance->GetAsset();
+                    auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                    auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
+                    if (!objectSrg)
                     {
-                        AZ_Error(TerrainFPName, false, "Failed to create shader resource group");
-                        return;
+                        AZ_Warning("TerrainFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
+                        continue;
                     }
 
-                    AZStd::array<float, 2> uvMin = { 0.0f, 0.0f };
-                    AZStd::array<float, 2> uvMax = { 1.0f, 1.0f };
+                    { // Update SRG
+                        
+                        AZStd::array<float, 2> uvMin = { 0.0f, 0.0f };
+                        AZStd::array<float, 2> uvMax = { 1.0f, 1.0f };
 
-                    uvMin[0] = (float)((xPatch - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
-                    uvMin[1] = (float)((yPatch - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
+                        uvMin[0] = (float)((xPatch - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
+                        uvMin[1] = (float)((yPatch - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
 
-                    uvMax[0] =
-                        (float)(((xPatch + m_gridMeters) - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
-                    uvMax[1] =
-                        (float)(((yPatch + m_gridMeters) - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
+                        uvMax[0] =
+                            (float)(((xPatch + GridMeters) - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
+                        uvMax[1] =
+                            (float)(((yPatch + GridMeters) - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
 
-                    AZStd::array<float, 2> uvStep =
-                    {
-                        1.0f / m_areaData.m_heightmapImageWidth, 1.0f / m_areaData.m_heightmapImageHeight,
-                    };
+                        AZStd::array<float, 2> uvStep =
+                        {
+                            1.0f / m_areaData.m_heightmapImageWidth, 1.0f / m_areaData.m_heightmapImageHeight,
+                        };
 
-                    AZ::Transform transform = m_areaData.m_transform;
-                    transform.SetTranslation(xPatch, yPatch, m_areaData.m_transform.GetTranslation().GetZ());
+                        AZ::Transform transform = m_areaData.m_transform;
+                        transform.SetTranslation(xPatch, yPatch, m_areaData.m_transform.GetTranslation().GetZ());
 
-                    AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
+                        AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
 
-                    resourceGroup->SetImage(m_heightmapImageIndex, m_areaData.m_heightmapImage);
-                    resourceGroup->SetConstant(m_modelToWorldIndex, matrix3x4);
+                        objectSrg->SetConstant(m_modelToWorldIndex, matrix3x4);
 
-                    ShaderTerrainData terrainDataForSrg;
-                    terrainDataForSrg.m_sampleSpacing = m_areaData.m_sampleSpacing;
-                    terrainDataForSrg.m_heightScale = m_areaData.m_heightScale;
-                    terrainDataForSrg.m_uvMin = uvMin;
-                    terrainDataForSrg.m_uvMax = uvMax;
-                    terrainDataForSrg.m_uvStep = uvStep;
-                    resourceGroup->SetConstant(m_terrainDataIndex, terrainDataForSrg);
+                        ShaderTerrainData terrainDataForSrg;
+                        terrainDataForSrg.m_sampleSpacing = m_areaData.m_sampleSpacing;
+                        terrainDataForSrg.m_heightScale = m_areaData.m_heightScale;
+                        terrainDataForSrg.m_uvMin = uvMin;
+                        terrainDataForSrg.m_uvMax = uvMax;
+                        terrainDataForSrg.m_uvStep = uvStep;
+                        objectSrg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
 
-                    resourceGroup->Compile();
-                    drawPacketBuilder.AddShaderResourceGroup(resourceGroup->GetRHIShaderResourceGroup());
-
-                    auto addDrawItem = [&](ShaderState& shaderState)
-                    {
-                        AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
-                        drawRequest.m_listTag = shaderState.m_shader->GetDrawListTag();
-                        drawRequest.m_pipelineState = shaderState.m_pipelineState.get();
-                        drawRequest.m_streamBufferViews = AZStd::array_view<AZ::RHI::StreamBufferView>(&m_vertexBufferView, 1);
-                        drawPacketBuilder.AddDrawItem(drawRequest);
-                    };
-
-                    for (ShaderState& shaderState : m_shaderStates)
-                    {
-                        addDrawItem(shaderState);
+                        objectSrg->Compile();
                     }
-                    //addDrawItem(m_shaderStates[ShaderType::Forward]);
-                    
-                    m_sectorData.emplace_back(
-                        drawPacketBuilder.End(),
+
+                    m_sectorData.push_back();
+                    SectorData& sectorData = m_sectorData.back();
+
+                    for (auto& lod : m_patchModel->GetLods())
+                    {
+                        AZ::RPI::ModelLod& modelLod = *lod.get();
+                        sectorData.m_drawPackets.emplace_back(modelLod, 0, m_materialInstance, objectSrg);
+                        AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
+
+                        // set the shader option to select forward pass IBL specular if necessary
+                        if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
+                        {
+                            AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                        }
+                        uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                        drawPacket.SetStencilRef(stencilRef);
+                        drawPacket.Update(*GetParentScene(), true);
+                    }
+
+                    sectorData.m_aabb =
                         AZ::Aabb::CreateFromMinMax(
                             AZ::Vector3(xPatch, yPatch, m_areaData.m_terrainBounds.GetMin().GetZ()),
-                            AZ::Vector3(xPatch + m_gridMeters, yPatch + m_gridMeters, m_areaData.m_terrainBounds.GetMax().GetZ())
-                        ),
-                        resourceGroup
-                    );
+                            AZ::Vector3(xPatch + GridMeters, yPatch + GridMeters, m_areaData.m_terrainBounds.GetMax().GetZ())
+                        );
+                    sectorData.m_srg = objectSrg;
                 }
             }
         }
-        
-        for (auto& view : process.m_views)
+
+        for (auto& sectorData : m_sectorData)
         {
-            AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-            for (auto& sectorData : m_sectorData)
+            uint8_t lodChoice = AZ::RPI::ModelLodAsset::LodCountMax;
+
+            // Go through all cameras and choose an LOD based on the closest camera.
+            for (auto& view : process.m_views)
             {
+                if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
+                {
+                    AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
+                    AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
+                    AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
+
+                    float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
+                    float lodForCamera = ceilf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
+                    lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
+                }
+            }
+
+            // Add the correct LOD draw packet for visible sectors.
+            for (auto& view : process.m_views)
+            {
+                AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
                 if (viewFrustum.IntersectAabb(sectorData.m_aabb) != AZ::IntersectResult::Exterior)
                 {
-                    view->AddDrawPacket(sectorData.m_drawPacket.get());
+                    uint8_t lodToRender = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(sectorData.m_drawPackets.size() - 1));
+                    view->AddDrawPacket(sectorData.m_drawPackets.at(lodToRender).GetRHIDrawPacket());
                 }
             }
         }
     }
 
-    void TerrainFeatureProcessor::InitializeTerrainPatch()
+    void TerrainFeatureProcessor::InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata)
     {
-        m_gridVertices.clear();
-        m_gridIndices.clear();
+        patchdata.m_positions.clear();
+        patchdata.m_uvs.clear();
+        patchdata.m_indices.clear();
 
-        for (float y = 0.0f; y < m_gridMeters; y += m_gridSpacing)
+        uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
+        size_t size = gridVertices * gridVertices;
+
+        patchdata.m_positions.reserve(size);
+        patchdata.m_uvs.reserve(size);
+
+        for (uint16_t y = 0; y < gridVertices; ++y)
         {
-            for (float x = 0.0f; x < m_gridMeters; x += m_gridSpacing)
+            for (uint16_t x = 0; x < gridVertices; ++x)
             {
-                float x0 = x;
-                float x1 = x + m_gridSpacing;
-                float y0 = y;
-                float y1 = y + m_gridSpacing;
+                patchdata.m_positions.push_back({ aznumeric_cast<float>(x) * gridSpacing, aznumeric_cast<float>(y) * gridSpacing });
+                patchdata.m_uvs.push_back({ aznumeric_cast<float>(x) / gridSize, aznumeric_cast<float>(y) / gridSize });
+            }
+        }
 
-                uint16_t startIndex = (uint16_t)(m_gridVertices.size());
+        patchdata.m_indices.reserve(gridSize * gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
+        
+        for (uint16_t y = 0; y < gridSize; ++y)
+        {
+            for (uint16_t x = 0; x < gridSize; ++x)
+            {
+                uint16_t topLeft = y * gridVertices + x;
+                uint16_t topRight = topLeft + 1;
+                uint16_t bottomLeft = (y + 1) * gridVertices + x;
+                uint16_t bottomRight = bottomLeft + 1;
 
-                m_gridVertices.emplace_back(x0, y0, x0 / m_gridMeters, y0 / m_gridMeters);
-                m_gridVertices.emplace_back(x1, y0, x1 / m_gridMeters, y0 / m_gridMeters);
-                m_gridVertices.emplace_back(x0, y1, x0 / m_gridMeters, y1 / m_gridMeters);
-                m_gridVertices.emplace_back(x1, y1, x1 / m_gridMeters, y1 / m_gridMeters);
-
-                m_gridIndices.emplace_back(startIndex);
-                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 1));
-                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 2));
-                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 1));
-                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 3));
-                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 2));
+                patchdata.m_indices.emplace_back(topLeft);
+                patchdata.m_indices.emplace_back(topRight);
+                patchdata.m_indices.emplace_back(bottomLeft);
+                patchdata.m_indices.emplace_back(bottomLeft);
+                patchdata.m_indices.emplace_back(topRight);
+                patchdata.m_indices.emplace_back(bottomRight);
             }
         }
     }
-
-    bool TerrainFeatureProcessor::InitializeRenderBuffers()
+    
+    AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> TerrainFeatureProcessor::CreateBufferAsset(
+        const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName)
     {
-        AZ::RHI::ResultCode result = AZ::RHI::ResultCode::Fail;
+        AZ::RPI::BufferAssetCreator creator;
+        creator.Begin(AZ::Uuid::CreateRandom());
 
-        // Create geometry buffers
-        m_indexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
-        m_vertexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+        AZ::RHI::BufferDescriptor bufferDescriptor;
+        bufferDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::InputAssembly | AZ::RHI::BufferBindFlags::ShaderRead;
+        bufferDescriptor.m_byteCount = static_cast<uint64_t>(bufferViewDescriptor.m_elementSize) * static_cast<uint64_t>(bufferViewDescriptor.m_elementCount);
 
-        m_indexBuffer->SetName(AZ::Name("TerrainIndexBuffer"));
-        m_vertexBuffer->SetName(AZ::Name("TerrainVertexBuffer"));
+        creator.SetBuffer(data, bufferDescriptor.m_byteCount, bufferDescriptor);
+        creator.SetBufferViewDescriptor(bufferViewDescriptor);
+        creator.SetUseCommonPool(AZ::RPI::CommonBufferPoolType::StaticInputAssembly);
 
-        AZStd::vector<AZ::RHI::Ptr<AZ::RHI::Buffer>> buffers = { m_indexBuffer , m_vertexBuffer };
-
-        // Fill our buffers with the vertex/index data
-        for (size_t bufferIndex = 0; bufferIndex < buffers.size(); ++bufferIndex)
+        AZ::Data::Asset<AZ::RPI::BufferAsset> bufferAsset;
+        if (creator.End(bufferAsset))
         {
-            AZ::RHI::Ptr<AZ::RHI::Buffer> buffer = buffers[bufferIndex];
+            bufferAsset.SetHint(bufferName);
+            return AZ::Success(bufferAsset);
+        }
 
-            // Initialize the buffer
+        return AZ::Failure();
+    }
 
-            AZ::RHI::BufferInitRequest bufferRequest;
-            bufferRequest.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, DEFAULT_UploadBufferSize };
-            bufferRequest.m_buffer = buffer.get();
+    bool TerrainFeatureProcessor::InitializePatchModel()
+    {
+        AZ::RPI::ModelAssetCreator modelAssetCreator;
+        modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
-            result = m_hostPool->InitBuffer(bufferRequest);
+        uint16_t gridSize = GridSize;
+        float gridSpacing = GridSpacing;
 
-            if (result != AZ::RHI::ResultCode::Success)
+        for (uint32_t i = 0; i < AZ::RPI::ModelLodAsset::LodCountMax && gridSize > 0; ++i)
+        {
+            PatchData patchData;
+            InitializeTerrainPatch(gridSize, gridSpacing, patchData);
+
+            auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
+            auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
+        
+            auto uvBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_uvs.size()), AZ::RHI::Format::R32G32_FLOAT);
+            auto uvsOutcome = CreateBufferAsset(patchData.m_uvs.data(), uvBufferViewDesc, "TerrainPatchUvs");
+        
+            auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
+            auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
+
+            if (!positionsOutcome.IsSuccess() || !uvsOutcome.IsSuccess() || !indicesOutcome.IsSuccess())
             {
                 AZ_Error(TerrainFPName, false, "Failed to create GPU buffers for Terrain");
                 return false;
             }
+            
+            AZ::RPI::ModelLodAssetCreator modelLodAssetCreator;
+            modelLodAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
-            // Grab a pointer to the buffer's data
+            modelLodAssetCreator.BeginMesh();
+            modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION" }, AZ::Name(), {positionsOutcome.GetValue(), positionBufferViewDesc});
+            modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "UV" }, AZ::Name(), {uvsOutcome.GetValue(), uvBufferViewDesc});
+            modelLodAssetCreator.SetMeshIndexBuffer({indicesOutcome.GetValue(), indexBufferViewDesc});
 
-            m_hostPool->OrphanBuffer(*buffer);
+            AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridMeters, GridMeters, 0.0));
+            modelLodAssetCreator.SetMeshAabb(AZStd::move(aabb));
+            modelLodAssetCreator.SetMeshName(AZ::Name("Terrain Patch"));
+            modelLodAssetCreator.EndMesh();
 
-            AZ::RHI::BufferMapResponse mapResponse;
-            m_hostPool->MapBuffer(AZ::RHI::BufferMapRequest(*buffer, 0, DEFAULT_UploadBufferSize), mapResponse);
+            AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset;
+            modelLodAssetCreator.End(modelLodAsset);
+        
+            modelAssetCreator.AddLodAsset(AZStd::move(modelLodAsset));
 
-            auto* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
-
-            //0th index should always be the index buffer
-            if (bufferIndex == 0)
-            {
-                // Fill the index buffer with our terrain patch indices
-                const uint64_t idxSize = m_gridIndices.size() * sizeof(uint16_t);
-                memcpy(mappedData, m_gridIndices.data(), idxSize);
-
-                m_indexBufferView = AZ::RHI::IndexBufferView(
-                    *buffer, 0, static_cast<uint32_t>(idxSize), AZ::RHI::IndexFormat::Uint16);
-            }
-            else
-            {
-                // Fill the vertex buffer with our terrain patch vertices
-                const uint64_t elementSize = m_gridVertices.size() * sizeof(Vertex);
-                memcpy(mappedData, m_gridVertices.data(), elementSize);
-
-                m_vertexBufferView = AZ::RHI::StreamBufferView(
-                    *buffer, 0, static_cast<uint32_t>(elementSize), static_cast<uint32_t>(sizeof(Vertex)));
-            }
-
-            m_hostPool->UnmapBuffer(*buffer);
+            gridSize = gridSize / 2;
+            gridSpacing *= 2.0f;
         }
 
-        return true;
-    }
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+        bool success = modelAssetCreator.End(modelAsset);
 
-    void TerrainFeatureProcessor::DestroyRenderBuffers()
-    {
-        m_indexBuffer.reset();
-        m_vertexBuffer.reset();
+        m_patchModel = AZ::RPI::Model::FindOrCreate(modelAsset);
 
-        m_indexBufferView = {};
-        m_vertexBufferView = {};
-
-        for (ShaderState& shaderState : m_shaderStates)
-        {
-            shaderState.Reset();
-        }
+        return success;
     }
 }

@@ -9,18 +9,6 @@
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
-    Texture2D<float> m_heightmapImage;
-    
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
     row_major float3x4 m_modelToWorld;
 
     struct TerrainData
@@ -33,13 +21,130 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     };
 
     TerrainData m_terrainData;
+
+    // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
+
+    //! Reflection Probe (smallest probe volume that overlaps the object position)
+    struct ReflectionProbeData
+    {
+        row_major float3x4 m_modelToWorld;
+        row_major float3x4 m_modelToWorldInverse; // does not include extents
+        float3 m_outerObbHalfLengths;
+        float3 m_innerObbHalfLengths;
+        float m_padding;
+        bool m_useReflectionProbe;
+        bool m_useParallaxCorrection;
+    };
+
+    ReflectionProbeData m_reflectionProbeData;
+    TextureCube m_reflectionProbeCubeMap;
+    
+    float4x4 GetReflectionProbeWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorld[0] = m_reflectionProbeData.m_modelToWorld[0];
+        modelToWorld[1] = m_reflectionProbeData.m_modelToWorld[1];
+        modelToWorld[2] = m_reflectionProbeData.m_modelToWorld[2];
+        return modelToWorld;
+    }
+
+    float4x4 GetReflectionProbeWorldMatrixInverse()
+    {
+        float4x4 modelToWorldInverse = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorldInverse[0] = m_reflectionProbeData.m_modelToWorldInverse[0];
+        modelToWorldInverse[1] = m_reflectionProbeData.m_modelToWorldInverse[1];
+        modelToWorldInverse[2] = m_reflectionProbeData.m_modelToWorldInverse[2];
+        return modelToWorldInverse;
+    }
 }
+
+ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
+{
+    Texture2D<float> m_heightmapImage;
+
+    Sampler HeightmapSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    float3 m_baseColor;
+    float m_roughness;
+}
+
+option bool o_useTerrainSmoothing = false;
 
 struct VertexInput
 {
     float2 m_position : POSITION;
     float2 m_uv : UV;
 };
+
+// Sample a texture with a 5 tap B-Spline. Consider ripping this out and putting in a more general location.
+// This function samples a 4x4 neighborhood around the uv. Normally this would take 16 samples, but by taking
+// advantage of bilinear filtering this can be done with 9 taps on the edges between pixels. The cost is further
+// reduced by dropping the diagonals.
+float SampleBSpline5Tap(Texture2D<float> texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
+{
+    // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
+    // a bottom right coordinate of 3,3.
+
+    // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
+    float2 texelPos = uv * textureSize;
+    float2 tc1= floor(texelPos - 0.5) + 0.5;
+
+    // Offset from center position to texel
+    float2 f = texelPos - tc1;
+
+    // Compute B-Spline weights based on the offset
+    float2 OneMinusF = (1.0 - f);
+    float2 OneMinusF2 = OneMinusF * OneMinusF;
+    float2 OneMinusF3 = OneMinusF2 * OneMinusF;
+    float2 w0 = OneMinusF3;
+    float2 w1 = 4.0 + 3.0 * f * f * f - 6.0 * f * f;
+    float2 w2 = 4.0 + 3.0 * OneMinusF3 - 6.0 * OneMinusF2;
+    float2 w3 = f * f * f;
+
+    float2 w12 = w1 + w2;
+
+    // Compute uv coordinates for sampling the texture
+    float2 tc0 = (tc1 - 1.0f) * rcpTextureSize;
+    float2 tc3 = (tc1 + 2.0f) * rcpTextureSize;
+    float2 tc12 = (tc1 + w2 / w12) * rcpTextureSize;
+
+    // Compute sample weights
+    float sw0 = w12.x * w12.y; // middle
+    float sw1 = w12.x * w0.y;  // top
+    float sw2 = w0.x  * w12.y; // left
+    float sw3 = w12.x * w3.y;  // bottom
+    float sw4 = w3.x  * w12.y; // right
+
+    // total weight of samples to normalize result.
+    float totalWeight = sw0 + sw1 + sw2 + sw3 + sw4;
+
+    float result = 0.0f;
+    result += texture.SampleLevel(textureSampler, float2(tc12.x, tc12.y), 0.0).r * sw0;
+    result += texture.SampleLevel(textureSampler, float2(tc12.x,  tc0.y), 0.0).r * sw1;
+    result += texture.SampleLevel(textureSampler, float2( tc0.x, tc12.y), 0.0).r * sw2;
+    result += texture.SampleLevel(textureSampler, float2(tc12.x,  tc3.y), 0.0).r * sw3;
+    result += texture.SampleLevel(textureSampler, float2( tc3.x, tc12.y), 0.0).r * sw4;
+
+    return result / totalWeight;
+}
 
 float4x4 GetObject_WorldMatrix()
 {
@@ -58,10 +163,23 @@ float4x4 GetObject_WorldMatrix()
 float GetHeight(float2 origUv)
 {
     float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
-    return ObjectSrg::m_terrainData.m_heightScale * (ObjectSrg::m_heightmapImage.SampleLevel(ObjectSrg::PointSampler, uv, 0).r - 0.5f);
+    float height = 0.0f;
+
+    if (o_useTerrainSmoothing)
+    {
+        float2 textureSize;
+        TerrainMaterialSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
+        height = SampleBSpline5Tap(TerrainMaterialSrg::m_heightmapImage, TerrainMaterialSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
+    }
+    else
+    {
+        height = TerrainMaterialSrg::m_heightmapImage.SampleLevel(TerrainMaterialSrg::HeightmapSampler, uv, 0).r;
+    }
+
+    return ObjectSrg::m_terrainData.m_heightScale * (height - 0.5f);
 }
 
-float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
+float3 GetTerrainWorldPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
 {
     // Remove all vertices outside our bounds by turning them into NaN positions.
     if (any(uv > 1.0) || any (uv < 0.0))
@@ -71,6 +189,10 @@ float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 ve
 
     // Loop up the height and calculate our final position.
     float height = GetHeight(uv);
-    float4 worldPosition = mul(GetObject_WorldMatrix(), float4(vertexPosition, height, 1.0f));
-    return mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    return mul(GetObject_WorldMatrix(), float4(vertexPosition, height, 1.0f)).xyz;
+}
+
+float4 GetTerrainProjectedPosition(ObjectSrg::TerrainData terrainData, float2 vertexPosition, float2 uv)
+{
+    return mul(ViewSrg::m_viewProjectionMatrix, float4(GetTerrainWorldPosition(terrainData, vertexPosition, uv), 1.0));
 }

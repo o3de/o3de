@@ -8,6 +8,7 @@
 
 set(FILES
     3rdParty/ACES/ACES/Aces.h
+    Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
@@ -52,7 +53,6 @@ set(FILES
     Source/FrameCaptureSystemComponent.h
     Source/ProfilingCaptureSystemComponent.cpp
     Source/ProfilingCaptureSystemComponent.h
-    Source/RenderCommon.h
     3rdParty/ACES/ACES/Aces.cpp
     Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomBase.h
