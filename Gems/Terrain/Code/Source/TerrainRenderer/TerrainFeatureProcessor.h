@@ -64,6 +64,8 @@ namespace Terrain
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
 
+        void SetWorldSize(AZ::Vector2 sizeInMeters);
+
         void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
                                uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
 

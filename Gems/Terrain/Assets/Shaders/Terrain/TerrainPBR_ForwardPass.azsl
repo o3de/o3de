@@ -77,7 +77,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.roughnessLinear = TerrainMaterialSrg::m_roughnessFactor;
     surface.CalculateRoughnessA();
 
-    float2 uv = IN.m_uv * 16.0;
+    float2 uv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
     float3 sampledColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, uv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 baseColor = BlendBaseColor(sampledColor, TerrainMaterialSrg::m_baseColor.rgb, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
 

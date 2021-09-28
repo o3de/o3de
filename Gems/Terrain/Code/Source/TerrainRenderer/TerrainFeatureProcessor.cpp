@@ -106,6 +106,7 @@ namespace Terrain
     {
         m_patchModel = {};
         m_areaData = {};
+        AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -442,5 +443,11 @@ namespace Terrain
                 drawPacket.Update(*GetParentScene());
             }
         }
+    }
+
+    void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
+    {
+        // This will control the max rendering size. Actual terrain size can be much
+        // larger but this will limit how much is rendered.
     }
 }

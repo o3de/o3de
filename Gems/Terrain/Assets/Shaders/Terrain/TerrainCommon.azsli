@@ -77,7 +77,8 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     Texture2D m_heightmapImage;
-
+    float m_detailTextureMultiplier;
+    
     Sampler HeightmapSampler
     {
         MinFilter = Linear;
