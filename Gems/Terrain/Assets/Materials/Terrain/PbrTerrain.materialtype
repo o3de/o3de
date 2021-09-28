@@ -248,6 +248,7 @@
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
+                        "id": "m_roughnessMap"
                     }
                 },
                 {
@@ -266,6 +267,7 @@
                     "max": 1.0,
                     "connection": {
                         "type": "ShaderInput",
+                        "id": "m_roughnessFactor"
                     }
                 }
             ],
