@@ -147,7 +147,7 @@ class LinuxLauncher(Launcher):
     def check_returncode(self):
         # type: () -> None
         """
-        Checks the returncode of the launcher if it exists. Raises a CrashError if the returncode is non-zero. Returns
+        Checks the return code of the launcher if it exists. Raises a CrashError if the returncode is non-zero. Returns
         None otherwise. This function must be called after exiting the launcher properly and NOT using its provided
         teardown(). Provided teardown() will always return a non-zero returncode and should not be checked.
 
