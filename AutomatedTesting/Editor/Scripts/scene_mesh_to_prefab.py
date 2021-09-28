@@ -96,13 +96,14 @@ def update_manifest(scene):
 
         created_entities.append(entity_id)
 
-    my_template = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", created_entities, source_filename_only + ".prefab")
+    prefab_filename = source_filename_only + ".prefab"
+    created_template_id = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", created_entities, prefab_filename)
 
-    if my_template == azlmbr.prefab.InvalidTemplateId:
-        raise_error("CreatePrefab failed")
+    if created_template_id == azlmbr.prefab.InvalidTemplateId:
+        raise_error("CreatePrefab {} failed".format(prefab_filename))
         return
 
-    output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", my_template)
+    output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", created_template_id)
 
     if output.IsSuccess():
         jsonString = output.GetValue()
@@ -110,7 +111,7 @@ def update_manifest(scene):
         jsonResult = json.loads(jsonString)
         scene_manifest.add_prefab_group(source_filename_only, uuid, jsonResult)
     else:
-        raise_error("SaveTemplateToString failed")
+        raise_error("SaveTemplateToString failed for template id {}, prefab {}".format(created_template_id, prefab_filename))
 
     new_manifest = scene_manifest.export()
 
@@ -123,9 +124,10 @@ def on_update_manifest(args):
         scene = args[0]
         return update_manifest(scene)
     except:
-        global sceneJobHandler
-        sceneJobHandler = None
         log_exception_traceback()
+
+    global sceneJobHandler
+    sceneJobHandler = None
 
 # try to create SceneAPI handler for processing
 try:
