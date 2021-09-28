@@ -609,7 +609,7 @@ namespace AzToolsFramework
                     settingsRegistry->Get(assetRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
                 }
                 fullPath = AZ::IO::Path(assetRootFolder) / path;
-                if (fullPath.IsAbsolute())
+                if (fullPath.IsAbsolute() && AZ::IO::SystemFile::Exists(fullPath.c_str()))
                 {
                     return fullPath;
                 }
