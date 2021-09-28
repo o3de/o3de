@@ -20,27 +20,36 @@
 namespace AzToolsFramework
 {
     class EditorFocusModeFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::ToolsApplicationFixture
     {
     protected:
-        void SetUp() override;
-        void TearDown() override;
+        void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         void GenerateTestHierarchy();
         AZ::EntityId CreateEditorEntity(const char* name, AZ::EntityId parentId);
+        void MoveEntityAndAddBoundComponent(AZ::EntityId entityId, AZ::Vector3 position);
 
-        UnitTest::ToolsTestApplication m_app{ "EditorFocusModeTests" };
-        AZ::ComponentApplication::Descriptor m_descriptor;
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
-
         FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
+        AzToolsFramework::EntityIdList GetSelectedEntities();
+
+        AzFramework::CameraState m_cameraState;
+
+        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
+        inline static const float CameraPitch = 0.0f;
+        inline static const float CameraYaw = 90.0f;
+
         inline static const char* CityEntityName = "City";
         inline static const char* StreetEntityName = "Street";
         inline static const char* CarEntityName = "Car";
         inline static const char* SportsCarEntityName = "SportsCar";
         inline static const char* Passenger1EntityName = "Passenger1";
         inline static const char* Passenger2EntityName = "Passenger2";
+
+        inline static AZ::Vector3 CityEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
+        inline static AZ::Vector3 CarEntityPosition = AZ::Vector3(5.0f, 15.0f, 10.0f);
     };
 }

@@ -11,67 +11,110 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzFramework/Viewport/ViewportScreen.h>
+
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+
 
 namespace AzToolsFramework
 {
+    using EditorFocusModeSelectionFixture = UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>;
+
+    /*
     static const AzToolsFramework::ManipulatorManagerId TestManipulatorManagerId =
         AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId"));
 
-    class EditorFocusModeSelectionFixture : public EditorFocusModeFixture
+    class EditorFocusModeSelectionFixture
+        : public EditorFocusModeFixture
     {
+        using IndirectCallManipulatorViewportInteraction = AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction;
+        using ImmediateModeActionDispatcher = AzManipulatorTestFramework::ImmediateModeActionDispatcher;
+
     protected:
-        void SetUp() override
+        void PrepareEntityForPicking(AZ::EntityId entityId, AZ::Vector3 position)
         {
-            EditorFocusModeFixture::SetUp();
+            AZ::Entity* entity = GetEntityById(entityId);
+            AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
 
-            // Add meshes and change position of entities to be able to select them via the viewport
-
-            // TODO - turn into helper so that it can be done more easily
-            AZStd::vector<AZStd::string> componentNames;
-            componentNames.push_back("Mesh");
-
-            AZStd::vector<AZ::Uuid> componentTypeIds;
-            EditorComponentAPIBus::BroadcastResult(
-                componentTypeIds, &EditorComponentAPIRequests::FindComponentTypeIdsByEntityType,
-                componentNames, EditorComponentAPIRequests::EntityType::Game);
-            ASSERT_EQ(componentTypeIds.size(), 1);
-
-            EditorComponentAPIRequests::AddComponentsOutcome outcome;
-            EditorComponentAPIBus::BroadcastResult(
-                outcome, &EditorComponentAPIRequests::AddComponentOfType,
-                m_entityMap[CarEntityName], componentTypeIds[0]);
-            ASSERT_TRUE(outcome.IsSuccess());
-
-            // TODO - move to constant
-            AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, CarPosition);
-
-            m_manipulatorManager = AZStd::make_unique<AzToolsFramework::ManipulatorManager>(TestManipulatorManagerId);
+            entity->Deactivate();
+            entity->CreateComponent<BoundsTestComponent>();
+            entity->Activate();
         }
 
-        void TearDown() override
+        void SetUpEditorFixtureImpl() override
         {
-            m_manipulatorManager.reset();
+            EditorFocusModeFixture::SetUpEditorFixtureImpl();
 
-            EditorFocusModeFixture::TearDown();
+            m_viewportManipulatorInteraction = AZStd::make_unique<IndirectCallManipulatorViewportInteraction>();
+            m_actionDispatcher = AZStd::make_unique<ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction);
+
+            // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
+            GetApplication()->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
+
+            PrepareEntityForPicking(m_entityMap[CarEntityName], CarPosition);
+
+            AzFramework::SetCameraTransform(
+                m_cameraState,
+                AZ::Transform::CreateFromQuaternionAndTranslation(
+                    AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(CameraPitch, 0.0f, CameraYaw)), CameraPosition));
         }
 
-    private:
-        AZStd::unique_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
+        void TearDownEditorFixtureImpl() override
+        {
+            m_actionDispatcher.reset();
+            m_viewportManipulatorInteraction.reset();
 
-        inline static const AZ::Vector3 CarPosition = AZ::Vector3(1.2f, 3.5f, 6.7f);
+            EditorFocusModeFixture::TearDownEditorFixtureImpl();
+        }
+
+    public:
+        AzToolsFramework::EntityIdList GetSelectedEntities()
+        {
+            AzToolsFramework::EntityIdList selectedEntities;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
+            return selectedEntities;
+        }
+
+        AzFramework::CameraState m_cameraState;
+        AZStd::unique_ptr<ImmediateModeActionDispatcher> m_actionDispatcher;
+        AZStd::unique_ptr<IndirectCallManipulatorViewportInteraction> m_viewportManipulatorInteraction;
+        AzToolsFramework::EditorVisibleEntityDataCache m_cache;
+
+        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
+        inline static const float CameraPitch = 0.0f;
+        inline static const float CameraYaw = 90.0f;
+        inline static const AZ::Vector3 CarPosition = AZ::Vector3(5.0f, 15.0f, 10.0f);
     };
+    */
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntity)
     {
-        // The Car entity has been moved to CarPosition and a Mesh component was added to it (but no Mesh - would that be necessary for selection?)
-        // The intention is to click on the viewport to select the entity, and then verify that the selection has just 1 element and it's the Car's Id.
+        auto selectedEntitiesBefore = GetSelectedEntities();
+        EXPECT_TRUE(selectedEntitiesBefore.empty());
 
+        // calculate the position in screen space of the initial entity position
+        const auto carScreenPosition = AzFramework::WorldToScreen(CarEntityPosition, m_cameraState);
+
+        // click the entity in the viewport
+        m_actionDispatcher->SetStickySelect(true)
+            ->CameraState(m_cameraState)
+            ->MousePosition(carScreenPosition)
+            ->MouseLButtonDown()
+            ->MouseLButtonUp();
+
+        // entity is selected
+        auto selectedEntitiesAfter = GetSelectedEntities();
+        EXPECT_EQ(selectedEntitiesAfter.size(), 1);
+        EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
     }
 }

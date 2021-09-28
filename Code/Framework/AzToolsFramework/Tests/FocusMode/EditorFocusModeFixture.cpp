@@ -8,14 +8,14 @@
 
 #include <Tests/FocusMode/EditorFocusModeFixture.h>
 
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+
+#include <Tests/BoundsTestComponent.h>
+
 namespace AzToolsFramework
 {
-    void EditorFocusModeFixture::SetUp()
+    void EditorFocusModeFixture::SetUpEditorFixtureImpl()
     {
-        AllocatorsTestFixture::SetUp();
-
-        m_app.Start(m_descriptor);
-
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
         // in the unit tests.
@@ -23,6 +23,9 @@ namespace AzToolsFramework
 
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
+
+        // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
+        GetApplication()->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
 
         GenerateTestHierarchy();
     }
@@ -44,6 +47,14 @@ namespace AzToolsFramework
         m_entityMap[Passenger1EntityName] = CreateEditorEntity(Passenger1EntityName,    m_entityMap[CarEntityName]);
         m_entityMap[SportsCarEntityName] =  CreateEditorEntity(SportsCarEntityName,     m_entityMap[StreetEntityName]);
         m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName,    m_entityMap[SportsCarEntityName]);
+
+        MoveEntityAndAddBoundComponent(m_entityMap[CityEntityName], CityEntityPosition);
+        MoveEntityAndAddBoundComponent(m_entityMap[CarEntityName], CarEntityPosition);
+
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(CameraPitch, 0.0f, CameraYaw)), CameraPosition));
     }
 
     AZ::EntityId EditorFocusModeFixture::CreateEditorEntity(const char* name, AZ::EntityId parentId)
@@ -57,10 +68,25 @@ namespace AzToolsFramework
         return entity->GetId();
     }
 
-    void EditorFocusModeFixture::TearDown()
+    void EditorFocusModeFixture::MoveEntityAndAddBoundComponent(AZ::EntityId entityId, AZ::Vector3 position)
     {
-        m_app.Stop();
+        AZ::Entity* entity = GetEntityById(entityId);
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
 
-        AllocatorsTestFixture::TearDown();
+        entity->Deactivate();
+        entity->CreateComponent<BoundsTestComponent>();
+        entity->Activate();
+    }
+
+    void EditorFocusModeFixture::TearDownEditorFixtureImpl()
+    {
+    }
+
+    AzToolsFramework::EntityIdList EditorFocusModeFixture::GetSelectedEntities()
+    {
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        return selectedEntities;
     }
 }
