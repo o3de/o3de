@@ -16,6 +16,15 @@ namespace AzToolsFramework
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
         EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), m_entityMap[CarEntityName]);
 
+        // Restore default expected focus.
+        m_focusModeInterface->ClearFocusRoot();
+    }
+
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_ClearFocus)
+    {
+        // Change the value from the default.
+        m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
+
         // Calling ClearFocusRoot restores the default focus root (which is an invalid EntityId).
         m_focusModeInterface->ClearFocusRoot();
         EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), AZ::EntityId());
