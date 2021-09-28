@@ -5,24 +5,25 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/XcbEventHandler.h>
+
 #include <xcb/xcb.h>
 
 namespace AzFramework
 {
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-    class NativeWindowImpl_Linux_xcb final
+    class XcbNativeWindow final
         : public NativeWindow::Implementation
-        , public LinuxXcbEventHandlerBus::Handler
+        , public XcbEventHandlerBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Linux_xcb, AZ::SystemAllocator, 0);
-        NativeWindowImpl_Linux_xcb();
-        ~NativeWindowImpl_Linux_xcb() override;
+        AZ_CLASS_ALLOCATOR(XcbNativeWindow, AZ::SystemAllocator, 0);
+        XcbNativeWindow();
+        ~XcbNativeWindow() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // NativeWindow::Implementation
@@ -37,7 +38,7 @@ namespace AzFramework
         uint32_t GetDisplayRefreshRate() const override;        
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // LinuxXcbEventHandlerBus::Handler
+        // XcbEventHandlerBus::Handler
         void HandleXcbEvent(xcb_generic_event_t* event) override;
 
     private:
@@ -49,6 +50,4 @@ namespace AzFramework
         xcb_atom_t          m_xcbAtomProtocols;
         xcb_atom_t          m_xcbAtomDeleteWindow;
     };
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
 } // namespace AzFramework

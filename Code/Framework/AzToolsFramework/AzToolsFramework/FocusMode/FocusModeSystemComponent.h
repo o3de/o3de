@@ -42,7 +42,7 @@ namespace AzToolsFramework
         void SetFocusRoot(AZ::EntityId entityId) override;
         void ClearFocusRoot() override;
         AZ::EntityId GetFocusRoot() override;
-        bool IsInFocusSubTree(AZ::EntityId entityId) override;
+        bool IsInFocusSubTree(AZ::EntityId entityId) const override;
 
     private:
         AZ::EntityId m_focusRoot;
