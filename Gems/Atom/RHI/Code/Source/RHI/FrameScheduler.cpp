@@ -482,7 +482,7 @@ namespace AZ
 
         void FrameScheduler::ExecuteGroupInternal(AZ::Job* parentJob, uint32_t groupIndex)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternalJob");
+            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal");
 
             FrameGraphExecuteGroup* executeGroup = m_frameGraphExecuter->BeginGroup(groupIndex);
             const uint32_t contextCount = executeGroup->GetContextCount();
@@ -501,8 +501,7 @@ namespace AZ
                 {
                     ExecuteContextInternal(*executeGroup, i);
                 }
-                m_frameGraphExecuter->EndGroup(groupIndex);
-           }
+            }
 
             // Spawns a job for each context in the group as a child of this job.
             else
@@ -510,13 +509,16 @@ namespace AZ
                 for (uint32_t i = 0; i < contextCount; ++i)
                 {
                     const auto jobLambda = [this, executeGroup, i]()
-                        {
-                            ExecuteContextInternal(*executeGroup, i);
-                        };
+                    {
+                        ExecuteContextInternal(*executeGroup, i);
+                    };
+
                     parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
                 }
+
                 parentJob->WaitForChildren();
             }
+
             m_frameGraphExecuter->EndGroup(groupIndex);
         }
 
@@ -555,6 +557,7 @@ namespace AZ
                     executeGroupJob->SetDependent(&jobCompletion);
                     executeGroupJob->Start();
                 }
+
                 jobCompletion.StartAndWaitForCompletion();
             }
         }
