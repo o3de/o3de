@@ -17,19 +17,15 @@ namespace AzToolsFramework
     EditorInteractionSystemComponent::EditorInteractionSystemComponent()
         : m_viewportEditorMode(AZStd::make_unique<ViewportEditorModeTracker>())
     {
-        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() == nullptr)
-        {
-            AZ::Interface<ViewportEditorModeTrackerInterface>::Register(m_viewportEditorMode.get());
-        }
+        AZ_Assert(AZ::Interface<ViewportEditorModeTrackerInterface>::Get() == nullptr, "Unexpected registration of viewport editor mode tracker.")
+        AZ::Interface<ViewportEditorModeTrackerInterface>::Register(m_viewportEditorMode.get());
     }
 
     EditorInteractionSystemComponent::~EditorInteractionSystemComponent()
     {
         m_interactionRequests.reset();
-        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() != nullptr)
-        {
-            AZ::Interface<ViewportEditorModeTrackerInterface>::Unregister(m_viewportEditorMode.get());
-        }
+        AZ_Assert(AZ::Interface<ViewportEditorModeTrackerInterface>::Get() != nullptr, "Unexpected unregistration of viewport editor mode tracker.")
+        AZ::Interface<ViewportEditorModeTrackerInterface>::Unregister(m_viewportEditorMode.get());
     }
 
     void EditorInteractionSystemComponent::Activate()

@@ -535,7 +535,7 @@ namespace UnitTest
         EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
         EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
 
-        // ExpeDo not expect ct the pick and focus viewport editor modes to be active
+        // Do not expect the pick and focus viewport editor modes to be active
         EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
         EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
     }
