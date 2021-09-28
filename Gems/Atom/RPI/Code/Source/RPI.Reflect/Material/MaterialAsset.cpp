@@ -6,8 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
-
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -254,5 +252,3 @@ namespace AZ
 
     } // namespace RPI
 } // namespace AZ
-
-#pragma optimize("", on)
