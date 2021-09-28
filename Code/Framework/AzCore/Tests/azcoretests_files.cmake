@@ -61,6 +61,7 @@ set(FILES
     Slice.cpp
     State.cpp
     Statistics.cpp
+    StatisticalProfiler.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
