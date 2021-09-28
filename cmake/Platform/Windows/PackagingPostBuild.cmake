@@ -78,9 +78,10 @@ set(_signbootstrap_command
 
 message(STATUS "Signing base files in ${_cpack_wix_out_dir}")
 execute_process(
-    COMMAND $(_signbase_command)
+    COMMAND ${_signbase_command}
     RESULT_VARIABLE _signbase_result
     ERROR_VARIABLE _signbase_errors
+    OUTPUT_VARIABLE _signbase_output
     ECHO_OUTPUT_VARIABLE
 )
 
@@ -115,9 +116,10 @@ message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_b
 
 message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
 execute_process(
-    COMMAND $(_signbootstrap_command)
+    COMMAND ${_signbootstrap_command}
     RESULT_VARIABLE _signbootstrap_result
     ERROR_VARIABLE _signbootstrap_errors
+    OUTPUT_VARIABLE _signbootstrap_output
     ECHO_OUTPUT_VARIABLE
 )
 
