@@ -12,6 +12,8 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
+    BoundsTestComponent.cpp
+    BoundsTestComponent.h
     ComponentAdapterTests.cpp
     ComponentAddRemove.cpp
     ComponentModeTestDoubles.cpp
