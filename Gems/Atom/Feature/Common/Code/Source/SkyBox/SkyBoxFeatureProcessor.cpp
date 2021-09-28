@@ -12,7 +12,6 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>

@@ -37,6 +37,10 @@ endif()
 # Set the default asset type for deployment
 set(LY_ASSET_DEPLOY_ASSET_TYPE "mac" CACHE STRING "Set the asset type for deployment.")
 
+# Set the deployment target for MacOS
+set(LY_MAC_DEPLOYMENT_TARGET "11.0" CACHE STRING "Mac Deployment Target")
+set(CMAKE_OSX_DEPLOYMENT_TARGET ${LY_MAC_DEPLOYMENT_TARGET})
+
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 

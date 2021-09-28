@@ -9,7 +9,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>

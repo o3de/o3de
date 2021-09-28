@@ -9,7 +9,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
