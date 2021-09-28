@@ -47,7 +47,7 @@ if ($basePath) {
     Write-Output "### Signing MSI files ###"
     $files = @(Get-ChildItem $basePath -Recurse *.msi | % { $_.FullName })
     foreach ($file in $files) {
-        & $insignia_path -im $files
+        & $insigniaPath -im $files
         Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 }
