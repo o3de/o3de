@@ -151,6 +151,10 @@ namespace AzToolsFramework
                     m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
                     &SearchWidget::ClearTypeFilter);
 
+                 connect(
+                    this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+                    &AssetBrowserTableView::UpdateSizeSlot);
+
                 m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
                 m_tableModel->UpdateTableModelMaps();
             }
@@ -204,6 +208,12 @@ namespace AzToolsFramework
             {
                 m_hasFilter = true;
             }
+        }
+
+        void AssetPickerDialog::resizeEvent(QResizeEvent* resizeEvent)
+        {
+            emit SizeChangedSignal(m_ui->verticalLayout_4->geometry().width());
+            QDialog::resizeEvent(resizeEvent);
         }
 
         void AssetPickerDialog::keyPressEvent(QKeyEvent* e)
