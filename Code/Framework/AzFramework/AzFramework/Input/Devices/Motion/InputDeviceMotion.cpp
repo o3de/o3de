@@ -24,44 +24,6 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMotion::Acceleration::Gravity("motion_acceleration_gravity");
-    const InputChannelId InputDeviceMotion::Acceleration::Raw("motion_acceleration_raw");
-    const InputChannelId InputDeviceMotion::Acceleration::User("motion_acceleration_user");
-    const AZStd::array<InputChannelId, 3> InputDeviceMotion::Acceleration::All =
-    {{
-        Gravity,
-        Raw,
-        User
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMotion::RotationRate::Raw("motion_rotation_rate_raw");
-    const InputChannelId InputDeviceMotion::RotationRate::Unbiased("motion_rotation_rate_unbiased");
-    const AZStd::array<InputChannelId, 2> InputDeviceMotion::RotationRate::All =
-    {{
-        Raw,
-        Unbiased
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMotion::MagneticField::North("motion_magnetic_field_north");
-    const InputChannelId InputDeviceMotion::MagneticField::Raw("motion_magnetic_field_raw");
-    const InputChannelId InputDeviceMotion::MagneticField::Unbiased("motion_magnetic_field_unbiased");
-    const AZStd::array<InputChannelId, 3> InputDeviceMotion::MagneticField::All =
-    {{
-        North,
-        Raw,
-        Unbiased
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMotion::Orientation::Current("motion_orientation_current");
-    const AZStd::array<InputChannelId, 1> InputDeviceMotion::Orientation::All =
-    {{
-        Current
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMotion::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

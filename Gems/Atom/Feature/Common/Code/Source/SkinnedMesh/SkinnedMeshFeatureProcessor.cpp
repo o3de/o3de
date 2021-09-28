@@ -22,7 +22,6 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <AzCore/Debug/EventTrace.h>

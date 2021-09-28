@@ -5,27 +5,24 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/XcbConnectionManager.h>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    class ApplicationLinux_xcb
+    class XcbApplication
         : public Application::Implementation
         , public LinuxLifecycleEvents::Bus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationLinux_xcb, AZ::SystemAllocator, 0);
-        ApplicationLinux_xcb();
-        ~ApplicationLinux_xcb() override;
+        AZ_CLASS_ALLOCATOR(XcbApplication, AZ::SystemAllocator, 0);
+        XcbApplication();
+        ~XcbApplication() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Application::Implementation
@@ -33,9 +30,6 @@ namespace AzFramework
         void PumpSystemEventLoopUntilEmpty() override;
 
     private:
-        AZStd::unique_ptr<LinuxXcbConnectionManager>    m_xcbConnectionManager;
+        AZStd::unique_ptr<XcbConnectionManager> m_xcbConnectionManager;
     };
-
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
 } // namespace AzFramework
