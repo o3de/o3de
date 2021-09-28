@@ -1344,7 +1344,10 @@ namespace AzToolsFramework
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
-        beginResetModel();
+
+        auto parentIndex = GetIndexFromEntity(parentId);
+        auto childIndex = GetIndexFromEntity(childId);
+        beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
@@ -1352,7 +1355,7 @@ namespace AzToolsFramework
         (void)childId;
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        endResetModel();
+        endRemoveRows();
 
         //must refresh partial lock/visibility of parents
         m_isFilterDirty = true;
