@@ -289,7 +289,7 @@ namespace Terrain
                     AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
 
                     float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
-                    float lodForCamera = ceilf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
+                    float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
                     lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
                 }
             }

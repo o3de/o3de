@@ -78,7 +78,7 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     Texture2D m_heightmapImage;
     float m_detailTextureMultiplier;
-    
+
     Sampler HeightmapSampler
     {
         MinFilter = Linear;
@@ -98,6 +98,9 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
         MaxAnisotropy = 16;
     };
+
+    // Macro Color
+    Texture2D m_macroColorMap;
 
     // Base Color
     float3 m_baseColor;
@@ -120,6 +123,7 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 }
 
 option bool o_useTerrainSmoothing = false;
+option bool o_macroColor_useTexture = true;
 option bool o_baseColor_useTexture = true;
 option bool o_specularF0_useTexture = true;
 option bool o_normal_useTexture = true;

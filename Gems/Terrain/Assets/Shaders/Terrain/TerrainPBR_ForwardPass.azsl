@@ -73,22 +73,34 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(IN.m_normal);
     surface.roughnessLinear = TerrainMaterialSrg::m_roughnessFactor;
     surface.CalculateRoughnessA();
 
-    float2 uv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
-    float3 sampledColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, uv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
-    float3 baseColor = BlendBaseColor(sampledColor, TerrainMaterialSrg::m_baseColor.rgb, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
-
-    // Albedo, SpecularF0
-    const float specularF0Factor = TerrainMaterialSrg::m_specularF0Factor;
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, 0.0);
-
-    surface.normal = GetNormalInputWS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, uv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, true, IN.m_normal,
+    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
+    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, IN.m_uv);
+    origUv.y = 1.0 - origUv.y;
+    float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
+    
+    // ------- Normal -------
+    surface.normal = GetNormalInputWS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, true, IN.m_normal,
                                        IN.m_tangent, IN.m_bitangent, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
 
-    // Clear Coat, Transmission
+    // ------- Macro Color -------
+    float3 macroColor = GetBaseColorInput(TerrainMaterialSrg::m_macroColorMap, TerrainMaterialSrg::m_sampler, origUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+
+    // ------- Base Color -------
+    float3 sampledColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
+    // ------- Specular -------
+    float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, 0.0);
+
+    // ------- Roughness -------
+    surface.roughnessLinear = GetRoughnessInput(TerrainMaterialSrg::m_roughnessMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_roughnessFactor, 0.0, 1.0, o_roughness_useTexture);
+    surface.CalculateRoughnessA();
+
+    // Clear Coat, Transmission (Not used for terrain)
     surface.clearCoat.InitializeToZero();
     surface.transmission.InitializeToZero();
 

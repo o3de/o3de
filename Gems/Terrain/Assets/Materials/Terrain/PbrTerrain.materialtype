@@ -111,6 +111,26 @@
                     }
                 }
             ],
+            "macroColor": [
+                {
+                    "id": "textureMap",
+                    "displayName": "Texture",
+                    "description": "Base color texture map",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_macroColorMap"
+                    }
+                },
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture.",
+                    "type": "Bool",
+                    "defaultValue": true
+                }
+
+            ],
             "baseColor": [
                 {
                     "id": "color",
@@ -298,6 +318,14 @@
         }
     ],
     "functors": [
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "macroColor.textureMap",
+                "useTextureProperty": "macroColor.useTexture",
+                "shaderOption": "o_macroColor_useTexture"
+            }
+        },
         {
             "type": "UseTexture",
             "args": {
