@@ -39,6 +39,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SUITE smoke
         COMPONENT TestTools
     )
+    
+    ly_add_pytest(
+        NAME LyTestTools_IntegTests_ProcessUtilsLinux_smoke_no_gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils_linux.py
+        TEST_SERIAL
+        TEST_SUITE smoke
+        COMPONENT TestTools
+    )
 
     # Regression tests.
     ly_add_pytest(
