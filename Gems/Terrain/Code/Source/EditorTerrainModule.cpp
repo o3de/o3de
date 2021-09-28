@@ -14,6 +14,7 @@
 #include <EditorComponents/EditorTerrainWorldComponent.h>
 #include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
 #include <EditorComponents/EditorTerrainPhysicsColliderComponent.h>
+#include <EditorComponents/EditorTerrainWorldRendererComponent.h>
 
 namespace Terrain
 {
@@ -29,6 +30,7 @@ namespace Terrain
                 Terrain::EditorTerrainWorldComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldDebuggerComponent::CreateDescriptor(),
                 Terrain::EditorTerrainPhysicsColliderComponent::CreateDescriptor(),
+                Terrain::EditorTerrainWorldRendererComponent::CreateDescriptor(),
 
             });
     }
