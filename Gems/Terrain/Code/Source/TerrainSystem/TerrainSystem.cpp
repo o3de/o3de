@@ -8,6 +8,7 @@
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/sort.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -15,6 +16,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
+
+#include <Terrain/Ebuses/TerrainGradientSurfaceListBus.h>
 
 using namespace Terrain;
 
@@ -306,33 +309,146 @@ AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler
 }
 
 
-AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
-    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(AZ::Vector3 position, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
     }
 
-    return AzFramework::SurfaceData::SurfaceTagWeight();
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet weightSet;
+
+    GetOrderedSurfaceWeights(position.GetX(), position.GetY(), sampleFilter, weightSet);
+
+    return *weightSet.begin();
+}
+
+AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter, bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet weightSet;
+
+    GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, weightSet);
+
+    return *weightSet.begin();
 }
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromFloats(
-    [[maybe_unused]] float x,
-    [[maybe_unused]] float y,
-    [[maybe_unused]] Sampler sampleFilter,
-    [[maybe_unused]] bool* terrainExistsPtr) const
+    float x, float y, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
     }
 
-    return AzFramework::SurfaceData::SurfaceTagWeight();
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet weightSet;
+
+    GetOrderedSurfaceWeights(x, y, sampleFilter, weightSet);
+
+    return *weightSet.begin();
 }
 
-const char* TerrainSystem::GetMaxSurfaceName(
-    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
+{
+    AZ::Vector3 inPosition = AZ::Vector3(x, y, 0);
+
+    // Find the highest priority layer that encompasses this position
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    AZ::EntityId bestAreaId;
+
+    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    {
+        inPosition.SetZ(areaBounds.GetMin().GetZ());
+        if (areaBounds.Contains(inPosition))
+        {
+            bounds = areaBounds;
+            return areaId;
+        }
+    }
+
+    return AZ::EntityId();
+}
+
+void TerrainSystem::GetOrderedSurfaceWeights(
+    const float x,
+    const float y,
+    [[maybe_unused]] Sampler sampler,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const
+{
+    AZ::Aabb bounds;
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(x, y, bounds);
+
+    outSurfaceWeights.clear();
+
+    if (!bestAreaId.IsValid())
+    {
+        return;
+    }
+
+    const AZ::Vector3 inPosition = AZ::Vector3(x, y, 0.0f);
+
+    SurfaceData::SurfaceTagWeightMap unorderedSurfaceWeights;
+
+    Terrain::TerrainGradientSurfaceListServiceRequestBus::Event(
+        bestAreaId, &Terrain::TerrainGradientSurfaceListServiceRequestBus::Events::GetSurfaceWeights, inPosition, unorderedSurfaceWeights);
+
+    for (auto& [crc, weight] : unorderedSurfaceWeights)
+    {
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight;
+        tagWeight.m_surfaceType = crc;
+        tagWeight.m_weight = weight;
+        outSurfaceWeights.emplace(tagWeight);
+    }
+}
+
+void TerrainSystem::GetSurfaceWeights(
+    const AZ::Vector3& inPosition,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights);
+}
+
+void TerrainSystem::GetSurfaceWeightsFromVector2(
+    const AZ::Vector2& inPosition,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights);
+}
+
+void TerrainSystem::GetSurfaceWeightsFromFloats(
+    float x,
+    float y,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(x, y, sampleFilter, outSurfaceWeights);
+}
+
+const char* TerrainSystem::GetMaxSurfaceName([[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
 {
     if (terrainExistsPtr)
     {
@@ -343,14 +459,6 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 /*
-void TerrainSystem::GetSurfaceWeights(
-    [[maybe_unused]] const AZ::Vector3& inPosition,
-    [[maybe_unused]] Sampler sampleFilter,
-    [[maybe_unused]] SurfaceData::SurfaceTagWeightMap& outSurfaceWeights)
-{
-    // TODO: implement
-}
-
 void TerrainSystem::GetSurfacePoint(
     const AZ::Vector3& inPosition, [[maybe_unused]] Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint)
 {
