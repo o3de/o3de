@@ -59,7 +59,7 @@ class _LinuxResourceManager(AbstractResourceLocator):
 
 class LinuxWorkspaceManager(AbstractWorkspaceManager):
     """
-    A Mac host WorkspaceManager. Contains Mac overridden functions for the AbstractWorkspaceManager class.
+    A Linux host WorkspaceManager. Contains Mac overridden functions for the AbstractWorkspaceManager class.
     Also creates a Mac host ResourceLocator for directory and build mappings.
     """
     def __init__(
