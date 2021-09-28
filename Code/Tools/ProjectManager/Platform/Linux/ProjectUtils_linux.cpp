@@ -53,7 +53,7 @@ namespace O3DE::ProjectManager
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
-            return AZ::Failure(QObject::tr("This functionality has not been implemented yet on this platform.");
+            return AZ::Failure(QObject::tr("This functionality has not been implemented yet on this platform."));
         }
         
     } // namespace ProjectUtils
