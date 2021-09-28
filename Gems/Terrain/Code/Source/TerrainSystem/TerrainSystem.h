@@ -70,11 +70,11 @@ namespace Terrain
         //! HOLE then *terrainExistsPtr will be set to false,
         //!                  otherwise *terrainExistsPtr will be set to true.
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
-            AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
             const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
-            float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const float x, const float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         void GetSurfaceWeights(
             const AZ::Vector3& inPosition,
@@ -116,7 +116,7 @@ namespace Terrain
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
-        bool GetOrderedSurfaceWeights(
+        void GetOrderedSurfaceWeights(
             const float x,
             const float y,
             Sampler sampler,

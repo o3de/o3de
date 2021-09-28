@@ -10,9 +10,10 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 
-#include <Terrain/Ebuses/TerrainGradientSurfaceListBus.h>
+#include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
 
 namespace LmbrCentral
 {
@@ -40,12 +41,12 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceGradientListConfig, "{E9B083AD-8D30-47DA-8F8E-AA089BFA35E9}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZStd::vector<TerrainSurfaceGradientMapping> m_gradientSurfaceMappings;
+        AZStd::vector<Terrain::TerrainSurfaceGradientMapping> m_gradientSurfaceMappings;
     };
 
     class TerrainSurfaceGradientListComponent
         : public AZ::Component
-        , private Terrain::TerrainGradientSurfaceListServiceRequestBus::Handler
+        , public Terrain::TerrainAreaSurfaceRequestBus::Handler
     {
     public:
         template<typename, typename>
@@ -67,10 +68,9 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        // TerrainGradientSurfaceListServiceRequestBus
-        void GetSurfaceWeights(const AZ::Vector3& inPosition, SurfaceData::SurfaceTagWeightMap& outSurfaceWeights) const override;
+        // TerrainAreaSurfaceRequestBus
+        void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const override;
 
-    protected:
     private:
         TerrainSurfaceGradientListConfig m_configuration;
     };
