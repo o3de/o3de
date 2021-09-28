@@ -78,6 +78,10 @@ execute_process(
     ERROR_VARIABLE _signbase_errors
 )
 
+if(NOT ${_signbase_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during signing the base files.  ${_signbase_errors}")
+endif()
+
 message(STATUS "Creating Bootstrap Installer...")
 execute_process(
     COMMAND ${_candle_command}
@@ -109,6 +113,10 @@ execute_process(
     RESULT_VARIABLE _signbootstrap_result
     ERROR_VARIABLE _signbootstrap_errors
 )
+
+if(NOT ${_signbootstrap_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during signing the bootstrapper.  ${_signbootstrap_errors}")
+endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads
 if(NOT CPACK_UPLOAD_DIRECTORY)
