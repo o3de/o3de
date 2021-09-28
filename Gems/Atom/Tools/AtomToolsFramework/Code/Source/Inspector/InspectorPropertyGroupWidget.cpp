@@ -20,7 +20,8 @@ namespace AtomToolsFramework
         QWidget* parent,
         const AZ::u32 saveStateKey,
         const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction,
-        const AzToolsFramework::IndicatorQueryFunction& indicatorQueryFunction)
+        const AzToolsFramework::IndicatorQueryFunction& indicatorQueryFunction,
+        int leafIndentSize)
         : InspectorGroupWidget(parent)
     {
         AZ::SerializeContext* context = nullptr;
@@ -33,7 +34,8 @@ namespace AtomToolsFramework
 
         m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
         m_propertyEditor->SetHideRootProperties(true);
-        m_propertyEditor->SetAutoResizeLabels(true);
+        m_propertyEditor->SetAutoResizeLabels(false);
+        m_propertyEditor->SetLeafIndentation(leafIndentSize);
         m_propertyEditor->SetValueComparisonFunction(valueComparisonFunction);
         m_propertyEditor->SetIndicatorQueryFunction(indicatorQueryFunction);
         m_propertyEditor->SetSavedStateKey(saveStateKey);

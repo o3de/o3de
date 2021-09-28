@@ -103,7 +103,7 @@ namespace MaterialEditor
         {
             return ":/PropertyEditor/Resources/changed_data_item.png";
         }
-        return nullptr;
+        return ":/PropertyEditor/Resources/blank.png";
     }
 
     void MaterialInspector::AddOverviewGroup()
@@ -130,7 +130,7 @@ namespace MaterialEditor
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
             &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId), {},
-            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); });
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -161,7 +161,7 @@ namespace MaterialEditor
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
             &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId), {},
-            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); });
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -197,7 +197,7 @@ namespace MaterialEditor
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
             auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                 &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId), {},
-                [this](const auto node) { return GetInstanceNodePropertyIndicator(node); });
+                [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
             
             bool isGroupVisible = false;
