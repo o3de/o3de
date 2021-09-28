@@ -140,7 +140,7 @@ protected:
      * ComponentApplication::RegisterCoreComponents and then register the application
      * specific core components.
      */
-     virtual void RegisterCoreComponents();
+     void RegisterCoreComponents() override;
 
      /**
           AZ::SystemTickBus::Handler
@@ -220,7 +220,7 @@ public:
     }
 
     //virtual bool QGridHubApplication::winEventFilter( MSG *msg , long *result)
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, [[maybe_unused]] long *result)
+    bool nativeEventFilter(const QByteArray &eventType, void *message, [[maybe_unused]] long *result) override
     {
 #ifdef AZ_PLATFORM_WINDOWS
         if ((eventType == "windows_generic_MSG")||(eventType == "windows_dispatcher_MSG"))

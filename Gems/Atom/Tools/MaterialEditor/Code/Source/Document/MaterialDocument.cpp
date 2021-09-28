@@ -763,6 +763,10 @@ namespace MaterialEditor
             return false;
         }
 
+        // Pipeline State Object changes are always allowed in the material editor because it only runs on developer systems
+        // where such changes are supported at runtime.
+        m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied

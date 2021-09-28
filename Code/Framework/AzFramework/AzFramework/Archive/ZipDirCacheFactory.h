@@ -33,20 +33,13 @@ namespace AZ::IO::ZipDir
             // if this is set, the archive will be created anew (the existing file will be overwritten)
             FLAGS_CREATE_NEW = 1 << 3,
 
-            // Cache will be loaded completely into the memory.
-            FLAGS_IN_MEMORY = 1 << 4,
-            FLAGS_IN_MEMORY_CPU = 1 << 5,
-
-            // Store all file names as crc32 in a flat directory structure.
-            FLAGS_FILENAMES_AS_CRC32 = 1 << 6,
-
             // if this is set, zip path will be searched inside other zips
             FLAGS_READ_INSIDE_PAK = 1 << 7,
         };
 
         // initializes the internal structures
         // nFlags can have FLAGS_READ_ONLY flag, in this case the object will be opened only for reading
-        CacheFactory (InitMethodEnum nInitMethod, uint32_t nFlags = 0);
+        CacheFactory(InitMethodEnum nInitMethod, uint32_t nFlags = 0);
         ~CacheFactory();
 
         // the new function creates a new cache

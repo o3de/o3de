@@ -15,19 +15,19 @@
 
 namespace AzManipulatorTestFramework
 {
-    //! Base class for derived immediate and retained action dispatchers.
+    //! Base class for derived immediate action dispatchers.
     template<typename DerivedDispatcherT>
     class ActionDispatcher
     {
     public:
         virtual ~ActionDispatcher() = default;
 
-        //! Enable grid snapping.
-        DerivedDispatcherT* EnableSnapToGrid();
-        //! Disable grid snapping.
-        DerivedDispatcherT* DisableSnapToGrid();
+        //! Enable/disable grid snapping.
+        DerivedDispatcherT* SetSnapToGrid(bool enabled);
         //! Set the grid size.
         DerivedDispatcherT* GridSize(float size);
+        //! Enable/disable sticky select.
+        DerivedDispatcherT* SetStickySelect(bool enabled);
         //! Enable/disable action logging.
         DerivedDispatcherT* LogActions(bool logging);
         //! Output a trace debug message.
@@ -66,9 +66,9 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* EnterComponentMode();
 
     protected:
-        // Actions to be implemented by derived immediate and retained action dispatchers.
-        virtual void EnableSnapToGridImpl() = 0;
-        virtual void DisableSnapToGridImpl() = 0;
+        // Actions to be implemented by derived immediate action dispatcher.
+        virtual void SetSnapToGridImpl(bool enabled) = 0;
+        virtual void SetStickySelectImpl(bool enabled) = 0;
         virtual void GridSizeImpl(float size) = 0;
         virtual void CameraStateImpl(const AzFramework::CameraState& cameraState) = 0;
         virtual void MouseLButtonDownImpl() = 0;
@@ -127,18 +127,18 @@ namespace AzManipulatorTestFramework
     }
 
     template<typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::EnableSnapToGrid()
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSnapToGrid(const bool enabled)
     {
-        Log("Enabling SnapToGrid");
-        EnableSnapToGridImpl();
+        Log("SnapToGrid %s", enabled ? "on" : "off");
+        SetSnapToGridImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
     template<typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::DisableSnapToGrid()
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetStickySelect(bool enabled)
     {
-        Log("Disabling SnapToGrid");
-        DisableSnapToGridImpl();
+        Log("StickySelect %s", enabled ? "on" : "off");
+        SetStickySelectImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 

@@ -10,13 +10,16 @@
 
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <EditorModularViewportCameraComposerBus.h>
 #include <SandboxAPI.h>
 
 namespace SandboxEditor
 {
     //! Type responsible for building the editor's modular viewport camera controller.
-    class EditorModularViewportCameraComposer : private EditorModularViewportCameraComposerNotificationBus::Handler
+    class EditorModularViewportCameraComposer
+        : private EditorModularViewportCameraComposerNotificationBus::Handler
+        , private Camera::EditorCameraNotificationBus::Handler
     {
     public:
         SANDBOX_API explicit EditorModularViewportCameraComposer(AzFramework::ViewportId viewportId);
@@ -31,6 +34,9 @@ namespace SandboxEditor
 
         // EditorModularViewportCameraComposerNotificationBus overrides ...
         void OnEditorModularViewportCameraComposerSettingsChanged() override;
+
+        // EditorCameraNotificationBus overrides ...
+        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
 
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_firstPersonPanCamera;

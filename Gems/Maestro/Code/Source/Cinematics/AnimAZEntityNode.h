@@ -63,7 +63,7 @@ public:
     Vec3 GetScale() override;
     //////////////////////////////////////////////////////////////////////////
 
-    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
     // this is an unfortunate hold-over from legacy entities - used when a SceneNode overrides the camera animation so
     // we must disable the transform and camera components from updating animation on this entity because the SceneNode

@@ -24,6 +24,12 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
+        //! Add heading widget above scroll area
+        virtual void AddHeading(QWidget* headingWidget) = 0;
+
+        //! Clear heading widgets
+        virtual void ClearHeading() = 0;
+
         //! Clear all inspector groups and content
         virtual void Reset() = 0;
 

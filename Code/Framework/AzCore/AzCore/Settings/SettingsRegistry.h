@@ -370,6 +370,11 @@ namespace AZ
         //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
         virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
         virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+
+        //! Stores option to indicate whether the FileIOBase instance should be used for file operations
+        //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
+        //! operations before falling back to use SystemFile
+        virtual void SetUseFileIO(bool useFileIo) = 0;
     };
 
     inline SettingsRegistryInterface::Visitor::~Visitor() = default;

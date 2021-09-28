@@ -33,8 +33,6 @@
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, ed_viewportStickySelect);
-
     class EditorVisibleEntityDataCache;
 
     using EntityIdSet = AZStd::unordered_set<AZ::EntityId>; //!< Alias for unordered_set of EntityIds.
@@ -96,6 +94,14 @@ namespace AzToolsFramework
         AZStd::optional<AZ::Vector3> m_translationOverride; //!< Translation override, if set, reset when selection is empty.
         AZStd::optional<AZ::Quaternion> m_orientationOverride; //!< Orientation override, if set, reset when selection is empty.
         AZ::u8 m_pickTypes = PickType::None; //!< What mode(s) were we in when picking an EntityId override.
+    };
+
+    //! How a manipulator should treat an adjustment.
+    //! @note Determines if a transform is applied to an individual entity or the whole group.
+    enum class Influence
+    {
+        Group,
+        Individual
     };
 
     //! What frame/space is the manipulator currently operating in.
@@ -272,7 +278,7 @@ namespace AzToolsFramework
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
 
         // Camera::EditorCameraNotificationBus overrides ...
-        void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
+        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
 
         // EditorContextVisibilityNotificationBus overrides ...
         void OnEntityVisibilityChanged(bool visibility) override;
@@ -330,7 +336,8 @@ namespace AzToolsFramework
         OptionalFrame m_pivotOverrideFrame; //!< Has a pivot override been set.
         Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
-        ReferenceFrame m_referenceFrame = ReferenceFrame::Parent; //!< What reference frame is the Manipulator currently operating in.
+        ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
+        Influence m_influence = Influence::Group; //!< What sphere of influence does the Manipulator have.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
         bool m_triedToRefresh = false; //!< Did a refresh event occur to recalculate the current Manipulator transform.
         //! Was EditorTransformComponentSelection responsible for the most recent entity selection change.

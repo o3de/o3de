@@ -97,8 +97,8 @@ namespace ScriptCanvasEditor
         ////
 
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        void OnStartPlayInEditorBegin();
-        void OnStopPlayInEditor();
+        void OnStartPlayInEditorBegin() override;
+        void OnStopPlayInEditor() override;
         ////
 
         // ScriptCavnas::Debugger::ServiceNotificationsBus

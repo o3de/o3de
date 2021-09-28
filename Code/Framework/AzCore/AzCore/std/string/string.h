@@ -168,6 +168,9 @@ namespace AZStd
         {
         }
 
+        // C++23 overload to prevent initializing a string_view via a nullptr or integer type
+        constexpr basic_string(AZStd::nullptr_t) = delete;
+
         inline ~basic_string()
         {
             // destroy the string
@@ -197,6 +200,7 @@ namespace AZStd
         inline this_type& operator=(AZStd::basic_string_view<Element, Traits> view) { return assign(view); }
         inline this_type& operator=(const_pointer ptr)          { return assign(ptr); }
         inline this_type& operator=(Element ch)             { return assign(1, ch); }
+        inline this_type& operator=(AZStd::nullptr_t) = delete;
         inline this_type& operator+=(const this_type& rhs)      { return append(rhs); }
         inline this_type& operator+=(const_pointer ptr)     { return append(ptr); }
         inline this_type& operator+=(Element ch)                { return append(1, ch); }

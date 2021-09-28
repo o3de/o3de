@@ -499,7 +499,11 @@
             {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
-            }             
+            },
+            {
+                "Name": "HDRColorGradingTemplate",
+                "Path": "Passes/HDRColorGrading.pass"
+            }            
         ]
     }
 }

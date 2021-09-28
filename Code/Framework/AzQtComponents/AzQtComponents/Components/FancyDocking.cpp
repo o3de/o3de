@@ -1615,14 +1615,16 @@ namespace AzQtComponents
             }
 
             // Handle snapping to the screen edges/other floating windows while dragging
-            QScreen* screen = Utilities::ScreenAtPoint(globalPos);
+            QScreen* screen = QApplication::screenAt(globalPos);
 
-            AdjustForSnapping(placeholder, screen);
+            if (screen)
+            {
+                AdjustForSnapping(placeholder, screen);
+                m_state.setPlaceholder(placeholder, screen);
 
-            m_state.setPlaceholder(placeholder, screen);
-
-            m_ghostWidget->Enable();
-            RepaintFloatingIndicators();
+                m_ghostWidget->Enable();
+                RepaintFloatingIndicators();
+            }
         }
 
         return m_dropZoneState.dragging();

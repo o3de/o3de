@@ -1245,7 +1245,7 @@ namespace EMotionFX
         }
         else
         {
-            SetMotionExtractionNodeIndex(MCORE_INVALIDINDEX32);
+            SetMotionExtractionNodeIndex(InvalidIndex);
         }
     }
 

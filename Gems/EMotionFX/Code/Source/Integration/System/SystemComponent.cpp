@@ -115,7 +115,7 @@ namespace EMotionFX
         public:
             AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
 
-            const AZStd::vector<EventTypes> GetHandledEventTypes() const
+            const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
                 return {
                            EVENT_TYPE_ON_EVENT,

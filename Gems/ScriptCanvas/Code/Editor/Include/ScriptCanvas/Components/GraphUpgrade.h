@@ -82,7 +82,7 @@ namespace ScriptCanvasEditor
 
         StateMachine* GetStateMachine() override { return m_stateMachine; }
 
-        virtual int GetStateId() const { return Traits::StateID(); }
+        int GetStateId() const override { return Traits::StateID(); }
 
         static int StateID() { return Traits::StateID(); }
 

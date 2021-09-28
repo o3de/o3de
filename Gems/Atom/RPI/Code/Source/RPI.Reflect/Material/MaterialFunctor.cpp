@@ -35,13 +35,15 @@ namespace AZ
             RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
             ShaderCollection* shaderCollection,
             ShaderResourceGroup* shaderResourceGroup,
-            const MaterialPropertyFlags* materialPropertyDependencies
+            const MaterialPropertyFlags* materialPropertyDependencies,
+            MaterialPropertyPsoHandling psoHandling
         )
             : m_materialPropertyValues(propertyValues)
             , m_materialPropertiesLayout(materialPropertiesLayout)
             , m_shaderCollection(shaderCollection)
             , m_shaderResourceGroup(shaderResourceGroup)
             , m_materialPropertyDependencies(materialPropertyDependencies)
+            , m_psoHandling(psoHandling)
         {}
 
         bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value)

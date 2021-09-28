@@ -67,7 +67,7 @@ class DataLakeIntegration:
         cfn_bucket = self._analytics_bucket.node.find_child('Resource')
         cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
 
-        analytics_bucket_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AnalyticsBucketName',
             description='Name of the S3 bucket for storing metrics event data',
@@ -89,6 +89,12 @@ class DataLakeIntegration:
                 name=f'{self._stack.stack_name}-EventsDatabase'.lower()
             )
         )
+        core.CfnOutput(
+            self._stack,
+            id='EventDatabaseName',
+            description='Glue database for metrics events.',
+            export_name=f"{self._application_name}:EventsDatabase",
+            value=self._events_database.ref)
 
     def _create_events_table(self) -> None:
         """
@@ -199,7 +205,7 @@ class DataLakeIntegration:
             configuration=aws_metrics_constants.CRAWLER_CONFIGURATION
         )
 
-        events_crawler_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='EventsCrawlerName',
             description='Glue Crawler to populate the AWS Glue Data Catalog with metrics events tables',

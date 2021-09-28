@@ -8,4 +8,7 @@
 
 #include <AzTest/AzTest.h>
 
+// Include any public mocks here to ensure they get compiled as a part of the test project.
+#include <LmbrCentral/Shape/MockShapes.h>
+
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

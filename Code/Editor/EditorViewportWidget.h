@@ -77,6 +77,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float AngleStep() const override;
     float ManipulatorLineBoundWidth() const override;
     float ManipulatorCircleBoundWidth() const override;
+    bool StickySelectEnabled() const override;
 };
 
 // EditorViewportWidget window
@@ -91,7 +92,6 @@ class SANDBOX_API EditorViewportWidget final
     , private AzFramework::InputSystemCursorConstraintRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
-    , private AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
@@ -210,9 +210,6 @@ private:
 
     // EditorEntityViewportInteractionRequestBus overrides ...
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
-
-    // EditorModifierKeyRequestBus overrides ...
-    AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;

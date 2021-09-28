@@ -29,7 +29,6 @@ ly_add_target(
             AZ::AzCore
         PUBLIC
             AZ::GridMate
-            3rdParty::md5
             3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4

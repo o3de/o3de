@@ -149,12 +149,13 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         // Check if in pack.
         if (cryfile.IsInPak())
         {
-            const char* sPakName = cryfile.GetPakPath();
-
             if (bMsgBoxAskForExtraction)
             {
+                AZ::IO::FixedMaxPath sPakName{ cryfile.GetPakPath() };
                 // Cannot edit file in pack, suggest to extract it for editing.
-                if (QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                if (QMessageBox::critical(QApplication::activeWindow(), QString(),
+                    QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName.c_str()),
+                    QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
                 {
                     return false;
                 }
@@ -173,10 +174,9 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
             if (diskFile.open(QFile::WriteOnly))
             {
                 // Copy data from packed file to disk file.
-                char* data = new char[cryfile.GetLength()];
-                cryfile.ReadRaw(data, cryfile.GetLength());
-                diskFile.write(data, cryfile.GetLength());
-                delete []data;
+                auto data = AZStd::make_unique<char[]>(cryfile.GetLength());
+                cryfile.ReadRaw(data.get(), cryfile.GetLength());
+                diskFile.write(data.get(), cryfile.GetLength());
             }
             else
             {
@@ -185,7 +185,14 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         }
         else
         {
-            file = cryfile.GetAdjustedFilename();
+
+            if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+            {
+                if (AZ::IO::FixedMaxPath resolvedFilePath; fileIoBase->ResolvePath(resolvedFilePath, cryfile.GetFilename()))
+                {
+                    file = QString::fromUtf8(resolvedFilePath.c_str(), static_cast<int>(resolvedFilePath.Native().size()));
+                }
+            }
         }
 
         return true;
@@ -2157,13 +2164,13 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    const char* adjustedFile = file.GetAdjustedFilename();
-    if (!AZ::IO::SystemFile::Exists(adjustedFile))
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+    if (!fileIoBase->Exists(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_INVALID;
     }
 
-    if (!AZ::IO::SystemFile::IsWritable(adjustedFile))
+    if (fileIoBase->IsReadOnly(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_NORMAL | SCC_FILE_ATTRIBUTE_READONLY;
     }

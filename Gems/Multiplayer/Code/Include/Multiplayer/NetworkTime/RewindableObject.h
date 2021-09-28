@@ -60,7 +60,7 @@ namespace Multiplayer
         //! @return value in const base type form
         const BASE_TYPE& Get() const;
 
-        //! Const base type retriever for one host frame behind Get(). Only intended for use in SyncRewind contexts.
+        //! Const base type retriever for one host frame behind Get() when contextually appropriate, otherwise identical to Get().
         //! @return value in const base type form
         const BASE_TYPE& GetPrevious() const;
 
@@ -86,8 +86,12 @@ namespace Multiplayer
     private:
 
         //! Returns what the appropriate current time is for this rewindable property.
-        //! @return the appropriate current time is for this rewindable property
+        //! @return the appropriate current time for this rewindable property
         HostFrameId GetCurrentTimeForProperty() const;
+
+        //! Returns what the appropriate previous time is for this rewindable property.
+        //! @return the appropriate previous time for this rewindable property 
+        HostFrameId GetPreviousTimeForProperty() const;
 
         //! Updates the latest value for this object instance, if frameTime represents a current or future time.
         //! Any attempts to set old values on the object will fail

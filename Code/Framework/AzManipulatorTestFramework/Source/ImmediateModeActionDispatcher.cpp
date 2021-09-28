@@ -33,10 +33,12 @@ namespace AzManipulatorTestFramework
         : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
     {
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusConnect();
     }
 
     ImmediateModeActionDispatcher::~ImmediateModeActionDispatcher()
     {
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
     }
 
@@ -49,17 +51,17 @@ namespace AzManipulatorTestFramework
         m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }
 
-    void ImmediateModeActionDispatcher::EnableSnapToGridImpl()
+    void ImmediateModeActionDispatcher::SetSnapToGridImpl(const bool enabled)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().EnableGridSnaping();
+        m_viewportManipulatorInteraction.GetViewportInteraction().SetGridSnapping(enabled);
     }
 
-    void ImmediateModeActionDispatcher::DisableSnapToGridImpl()
+    void ImmediateModeActionDispatcher::SetStickySelectImpl(const bool enabled)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().DisableGridSnaping();
+        m_viewportManipulatorInteraction.GetViewportInteraction().SetStickySelect(enabled);
     }
 
-    void ImmediateModeActionDispatcher::GridSizeImpl(float size)
+    void ImmediateModeActionDispatcher::GridSizeImpl(const float size)
     {
         m_viewportManipulatorInteraction.GetViewportInteraction().SetGridSize(size);
     }

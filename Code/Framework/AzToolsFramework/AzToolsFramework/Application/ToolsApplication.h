@@ -37,7 +37,7 @@ namespace AzToolsFramework
         ToolsApplication(int* argc = nullptr, char*** argv = nullptr);
         ~ToolsApplication();
 
-        void Stop();
+        void Stop() override;
         void CreateReflectionManager() override;
         void Reflect(AZ::ReflectContext* context) override;
 

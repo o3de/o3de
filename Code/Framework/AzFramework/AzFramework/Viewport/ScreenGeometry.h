@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/base.h>
 
 namespace AZ
 {
@@ -27,7 +26,11 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenPoint, "{8472B6C2-527F-44FC-87F8-C226B1A57A97}");
         ScreenPoint() = default;
 
-        ScreenPoint(int x, int y) : m_x(x), m_y(y) {}
+        ScreenPoint(int x, int y)
+            : m_x(x)
+            , m_y(y)
+        {
+        }
 
         int m_x; //!< X screen position.
         int m_y; //!< Y screen position.
@@ -42,7 +45,11 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenVector, "{1EAA2C62-8FDB-4A28-9FE3-1FA4F1418894}");
         ScreenVector() = default;
 
-        ScreenVector(int x, int y) : m_x(x), m_y(y) {}
+        ScreenVector(int x, int y)
+            : m_x(x)
+            , m_y(y)
+        {
+        }
 
         int m_x; //!< X screen delta.
         int m_y; //!< Y screen delta.
@@ -71,14 +78,14 @@ namespace AzFramework
 
     inline const ScreenPoint operator+(const ScreenPoint& lhs, const ScreenVector& rhs)
     {
-        ScreenPoint result{lhs};
+        ScreenPoint result{ lhs };
         result += rhs;
         return result;
     }
 
     inline const ScreenPoint operator-(const ScreenPoint& lhs, const ScreenVector& rhs)
     {
-        ScreenPoint result{lhs};
+        ScreenPoint result{ lhs };
         result -= rhs;
         return result;
     }
@@ -99,14 +106,14 @@ namespace AzFramework
 
     inline const ScreenVector operator+(const ScreenVector& lhs, const ScreenVector& rhs)
     {
-        ScreenVector result{lhs};
+        ScreenVector result{ lhs };
         result += rhs;
         return result;
     }
 
     inline const ScreenVector operator-(const ScreenVector& lhs, const ScreenVector& rhs)
     {
-        ScreenVector result{lhs};
+        ScreenVector result{ lhs };
         result -= rhs;
         return result;
     }
@@ -131,21 +138,23 @@ namespace AzFramework
         return !operator==(lhs, rhs);
     }
 
+    inline ScreenVector& operator*=(ScreenVector& lhs, const float rhs)
+    {
+        lhs.m_x = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_x) * rhs));
+        lhs.m_y = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_y) * rhs));
+        return lhs;
+    }
+
+    inline const ScreenVector operator*(const ScreenVector& lhs, const float rhs)
+    {
+        ScreenVector result{ lhs };
+        result *= rhs;
+        return result;
+    }
+
     inline float ScreenVectorLength(const ScreenVector& screenVector)
     {
         return aznumeric_cast<float>(AZStd::sqrt(screenVector.m_x * screenVector.m_x + screenVector.m_y * screenVector.m_y));
-    }
-
-    inline ScreenPoint ScreenPointFromNDC(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
-    {
-        return ScreenPoint(
-            aznumeric_caster(AZStd::round(screenNDC.GetX() * viewportSize.GetX())),
-            aznumeric_caster(AZStd::round((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
-    }
-
-    inline AZ::Vector2 NDCFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)
-    {
-        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), viewportSize.GetY() - aznumeric_cast<float>(screenPoint.m_y)) / viewportSize;
     }
 
     //! Return an AZ::Vector2 from a ScreenPoint.

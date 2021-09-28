@@ -1717,6 +1717,7 @@ AZ_POP_DISABLE_WARNING
         {
             EBusRouterNode<typename EBus::InterfaceType> m_routerNode;
         public:
+            virtual ~EBusNestedVersionRouter() = default;
             template<class Container>
             void BusRouterConnect(Container& container, int order = 0);
 

@@ -248,8 +248,8 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
 
-        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData();
-        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData);
+        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData() override;
+        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData) override;
 
         NodeIdPair CreateCustomNode(const AZ::Uuid& typeId, const AZ::Vector2& position) override;
 
@@ -325,7 +325,7 @@ namespace ScriptCanvasEditor
         }
 
     protected:
-        void PostRestore(const UndoData& restoredData);
+        void PostRestore(const UndoData& restoredData) override;
 
         void UnregisterToast(const GraphCanvas::ToastId& toastId);
 

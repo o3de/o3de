@@ -7,10 +7,12 @@
 #
 
 set(FILES
-    ../Common/Directory.Build.props
-    ../Common/VisualStudio_common.cmake
     ../Common/Configurations_common.cmake
     ../Common/MSVC/Configurations_msvc.cmake
+    ../Common/MSVC/CodeAnalysis.ruleset
+    ../Common/MSVC/Directory.Build.props
+    ../Common/MSVC/TestProject.props
+    ../Common/MSVC/VisualStudio_common.cmake
     ../Common/Install_common.cmake
     ../Common/LYWrappers_default.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake

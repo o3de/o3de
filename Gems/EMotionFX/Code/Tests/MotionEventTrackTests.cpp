@@ -122,7 +122,7 @@ namespace EMotionFX
             {
             }
 
-            virtual const AZStd::vector<EventTypes> GetHandledEventTypes() const
+            const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
                 return { EVENT_TYPE_ON_EVENT };
             }

@@ -9,7 +9,6 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                      TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev11-multiplatform                      TARGETS assimplib                   PACKAGE_HASH 1a9113788b893ef4a2ee63ac01eb71b981a92894a5a51175703fa225f5804dec)
-ly_associate_package(PACKAGE_NAME ASTCEncoder-2017_11_14-rev2-multiplatform             TARGETS ASTCEncoder                 PACKAGE_HASH c240ffc12083ee39a5ce9dc241de44d116e513e1e3e4cc1d05305e7aa3bdc326)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                                 TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                      TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
@@ -34,7 +33,7 @@ ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-windows             
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-windows                                TARGETS Lua                         PACKAGE_HASH 136faccf1f73891e3fa3b95f908523187792e56f5b92c63c6a6d7e72d1158d40)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-windows                     TARGETS PhysX                       PACKAGE_HASH 0c5ffbd9fa588e5cf7643721a7cfe74d0fe448bf82252d39b3a96d06dfca2298)
 ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-windows                      TARGETS etc2comp                    PACKAGE_HASH fc9ae937b2ec0d42d5e7d0e9e8c80e5e4d257673fb33bc9b7d6db76002117123)
-ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.1-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 511672598fa319bfb8db87f965b59abff1620bb7c1dcf7669e039a8acd8d3ff8)
+ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows                         TARGETS googletest                  PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-windows                    TARGETS GoogleBenchmark             PACKAGE_HASH 0c94ca69ae8e7e4aab8e90032b5c82c5964410429f3dd9dbb1f9bf4fe032b1d4)
@@ -49,5 +48,6 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                   
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-windows                              TARGETS zlib                        PACKAGE_HASH 9afab1d67641ed8bef2fb38fc53942da47f2ab339d9e77d3d20704a48af2da0b)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 5c3d9fa491e488ccaf802304ad23b932268a2b2846e383f088779962af2bfa84)
+ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-windows                         TARGETS astc-encoder                PACKAGE_HASH 3addc6fc1a7eb0d6b7f3d530e962af967e6d92b3825ef485da243346357cf78e)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)

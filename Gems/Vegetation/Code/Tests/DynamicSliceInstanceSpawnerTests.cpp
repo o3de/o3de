@@ -191,7 +191,7 @@ namespace UnitTest
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
             MockAssetData* temp = reinterpret_cast<MockAssetData*>(asset.GetData());
             temp->SetStatus(AZ::Data::AssetData::AssetStatus::Ready);

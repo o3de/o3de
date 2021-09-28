@@ -133,7 +133,7 @@ namespace GridMate
 
         typedef AZStd::intrusive_ptr<BitmaskInterestChunk> Ptr;
         bool IsReplicaMigratable() override { return false; }
-        bool IsBroadcast() { return true; }
+        bool IsBroadcast() override { return true; }
         static const char* GetChunkName() { return "BitmaskInterestChunk"; }
 
         void OnReplicaActivate(const ReplicaContext& rc) override;

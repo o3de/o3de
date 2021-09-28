@@ -64,15 +64,15 @@ namespace BarrierInput
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyDownEvent
-        virtual void OnRawKeyboardKeyDownEvent(uint32_t scanCode, ModifierMask activeModifiers);
+        void OnRawKeyboardKeyDownEvent(uint32_t scanCode, ModifierMask activeModifiers) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyUpEvent
-        virtual void OnRawKeyboardKeyUpEvent(uint32_t scanCode, ModifierMask activeModifiers);
+        void OnRawKeyboardKeyUpEvent(uint32_t scanCode, ModifierMask activeModifiers) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyRepeatEvent
-        virtual void OnRawKeyboardKeyRepeatEvent(uint32_t scanCode, ModifierMask activeModifiers);
+        void OnRawKeyboardKeyRepeatEvent(uint32_t scanCode, ModifierMask activeModifiers) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Thread safe method to queue raw key events to be processed in the main thread update

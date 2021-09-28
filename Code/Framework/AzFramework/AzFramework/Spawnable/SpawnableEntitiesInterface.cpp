@@ -36,6 +36,16 @@ namespace AzFramework
         return m_end;
     }
 
+    const AZ::Entity* const* SpawnableEntityContainerView::begin() const
+    {
+        return m_begin;
+    }
+
+    const AZ::Entity* const* SpawnableEntityContainerView::end() const
+    {
+        return m_end;
+    }
+
     const AZ::Entity* const* SpawnableEntityContainerView::cbegin()
     {
         return m_begin;
@@ -46,9 +56,26 @@ namespace AzFramework
         return m_end;
     }
 
-    size_t SpawnableEntityContainerView::size()
+    AZ::Entity* SpawnableEntityContainerView::operator[](size_t n)
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    const AZ::Entity* SpawnableEntityContainerView::operator[](size_t n) const
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    size_t SpawnableEntityContainerView::size() const
     {
         return AZStd::distance(m_begin, m_end);
+    }
+
+    bool SpawnableEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
     }
 
 
@@ -78,6 +105,16 @@ namespace AzFramework
         return m_end;
     }
 
+    const AZ::Entity* const* SpawnableConstEntityContainerView::begin() const
+    {
+        return m_begin;
+    }
+
+    const AZ::Entity* const* SpawnableConstEntityContainerView::end() const
+    {
+        return m_end;
+    }
+
     const AZ::Entity* const* SpawnableConstEntityContainerView::cbegin()
     {
         return m_begin;
@@ -88,9 +125,26 @@ namespace AzFramework
         return m_end;
     }
 
-    size_t SpawnableConstEntityContainerView::size()
+    const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n)
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Const Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n) const
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    size_t SpawnableConstEntityContainerView::size() const
     {
         return AZStd::distance(m_begin, m_end);
+    }
+
+    bool SpawnableConstEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
     }
 
 

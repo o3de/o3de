@@ -52,6 +52,7 @@ public:
     GUID guid;
 
 public:
+    virtual ~CXMLObjectClassDesc() = default; 
     REFGUID ClassID() override
     {
         return guid;

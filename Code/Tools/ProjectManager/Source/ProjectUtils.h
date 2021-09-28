@@ -9,8 +9,11 @@
 
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
+#include <ProjectManagerDefs.h>
 
 #include <QWidget>
+#include <QProcessEnvironment>
+
 #include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
@@ -28,8 +31,17 @@ namespace O3DE::ProjectManager
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(QWidget* parent = nullptr);
-        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QProcessEnvironment& processEnv,
+            int commandTimeoutSeconds = ProjectCommandLineTimeoutSeconds);
+
+        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

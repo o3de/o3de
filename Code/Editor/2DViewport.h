@@ -35,32 +35,32 @@ public:
     Q2DViewport(QWidget* parent = nullptr);
     virtual ~Q2DViewport();
 
-    virtual void SetType(EViewportType type);
-    virtual EViewportType GetType() const { return m_viewType; }
-    virtual float GetAspectRatio() const { return 1.0f; };
+    void SetType(EViewportType type) override;
+    EViewportType GetType() const override { return m_viewType; }
+    float GetAspectRatio() const override { return 1.0f; };
 
-    virtual void ResetContent();
-    virtual void UpdateContent(int flags);
+    void ResetContent() override;
+    void UpdateContent(int flags) override;
 
 public slots:
     // Called every frame to update viewport.
-    virtual void Update();
+    void Update() override;
 
 public:
     //! Map world space position to viewport position.
-    virtual QPoint     WorldToView(const Vec3& wp) const;
+    QPoint     WorldToView(const Vec3& wp) const override;
 
-    virtual QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const; //Eric@conffx
+    QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const override; //Eric@conffx
 
     //! Map viewport position to world space position.
-    virtual Vec3        ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
+    Vec3        ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
     //! Map viewport position to world space ray from camera.
-    virtual void        ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const;
+    void        ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
 
     void OnTitleMenu(QMenu* menu) override;
 
-    virtual bool HitTest(const QPoint& point, HitContext& hitInfo) override;
-    virtual bool IsBoundsVisible(const AABB& box) const;
+    bool HitTest(const QPoint& point, HitContext& hitInfo) override;
+    bool IsBoundsVisible(const AABB& box) const override;
 
     // ovverided from CViewport.
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
@@ -111,8 +111,8 @@ protected:
     virtual void SetZoom(float fZoomFactor, const QPoint& center);
 
     // overrides from CViewport.
-    virtual void MakeConstructionPlane(int axis);
-    virtual const Matrix34& GetConstructionMatrix(RefCoordSys coordSys);
+    void MakeConstructionPlane(int axis) override;
+    const Matrix34& GetConstructionMatrix(RefCoordSys coordSys) override;
 
     //! Calculate view transformation matrix.
     virtual void CalculateViewTM();
@@ -146,9 +146,9 @@ protected:
     void showEvent(QShowEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     int OnCreate();
-    void OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    void OnRButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    void OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta, const QPoint& pt);
+    void OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point) override;
+    void OnRButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point) override;
+    void OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta, const QPoint& pt) override;
     void OnDestroy();
 
 protected:

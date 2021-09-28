@@ -21,7 +21,7 @@
                 "Name": "Terrain_Albedo",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "HighPassMip": 5,
                 "MipMapSetting": {

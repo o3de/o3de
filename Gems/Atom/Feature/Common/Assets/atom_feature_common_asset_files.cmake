@@ -86,6 +86,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/HDRColorGrading.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -221,6 +222,8 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
@@ -286,6 +289,9 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli 
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/ViewSrg.azsli
@@ -392,6 +398,8 @@ set(FILES
     Shaders/PostProcessing/FastDepthAwareBlurVer.shader
     Shaders/PostProcessing/FullscreenCopy.azsl
     Shaders/PostProcessing/FullscreenCopy.shader
+    Shaders/PostProcessing/HDRColorGrading.azsl
+    Shaders/PostProcessing/HDRColorGrading.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl

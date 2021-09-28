@@ -397,7 +397,7 @@ namespace AZ
 
         void RenderPipeline::OnStartFrame()
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
             m_lastRenderStartTime = m_lastRenderRequestTime;
 

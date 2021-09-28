@@ -849,7 +849,7 @@ namespace AZ
             return AZ::AllocatorInstance<Parent>::Get().GetUnAllocatedMemory(isPrint);
         }
 
-        virtual IAllocatorAllocate*     GetSubAllocator() override
+        IAllocatorAllocate*     GetSubAllocator() override
         {
             return AZ::AllocatorInstance<Parent>::Get().GetSubAllocator();
         }

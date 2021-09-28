@@ -30,6 +30,7 @@ namespace AzNetworking
     {
 
     public:
+        virtual ~UdpFragmentQueue() = default;
 
         //! Updates the UdpFragmentQueue timeout queue.
         void Update();
@@ -53,7 +54,7 @@ namespace AzNetworking
         //! Handler callback for timed out items.
         //! @param item containing registered timeout details
         //! @return ETimeoutResult for whether to re-register or discard the timeout params
-        virtual TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
+        TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
 
         TimeoutQueue m_timeoutQueue;
         SequenceGenerator m_sequenceGenerator;

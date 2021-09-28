@@ -27,15 +27,15 @@ namespace ScriptCanvasEditor
         bool IsCapturingData() const override { return false; }
         
     protected:
-        void Visit(ScriptCanvas::AnnotateNodeSignal&);
-        void Visit(ScriptCanvas::ExecutionThreadEnd&);
-        void Visit(ScriptCanvas::ExecutionThreadBeginning&);
-        void Visit(ScriptCanvas::GraphActivation&);
-        void Visit(ScriptCanvas::GraphDeactivation&);
-        void Visit(ScriptCanvas::NodeStateChange&);
-        void Visit(ScriptCanvas::InputSignal&);
-        void Visit(ScriptCanvas::OutputSignal&);
-        void Visit(ScriptCanvas::VariableChange&);
+        void Visit(ScriptCanvas::AnnotateNodeSignal&) override;
+        void Visit(ScriptCanvas::ExecutionThreadEnd&) override;
+        void Visit(ScriptCanvas::ExecutionThreadBeginning&) override;
+        void Visit(ScriptCanvas::GraphActivation&) override;
+        void Visit(ScriptCanvas::GraphDeactivation&) override;
+        void Visit(ScriptCanvas::NodeStateChange&) override;
+        void Visit(ScriptCanvas::InputSignal&) override;
+        void Visit(ScriptCanvas::OutputSignal&) override;
+        void Visit(ScriptCanvas::VariableChange&) override;
 
     private:
     
