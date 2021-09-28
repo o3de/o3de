@@ -55,9 +55,8 @@ set(_light_command
     -o "${_bootstrap_output_file}"
 )
 
-if(EXISTS "${_root_path}/scripts/signer/signer.ps1")
-    execute_process(COMMAND "powershell.exe ${_root_path}/scripts/signer/signer.ps1 -basePath ${_cpack_wix_out_dir}")
-endif()
+message(STATUS "Signing base files in ${_cpack_wix_out_dir}")
+execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/signer/signer.ps1 -basePath ${_cpack_wix_out_dir}")
 
 message(STATUS "Creating Bootstrap Installer...")
 execute_process(
@@ -84,9 +83,8 @@ file(COPY ${_bootstrap_output_file}
 
 message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}")
 
-if(EXISTS "${_root_path}/scripts/signer/signer.ps1")
-    execute_process(COMMAND "powershell.exe ${_root_path}/scripts/signer/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}")
-endif()
+message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
+execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/signer/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}")
 
 # use the internal default path if somehow not specified from cpack_configure_downloads
 if(NOT CPACK_UPLOAD_DIRECTORY)
