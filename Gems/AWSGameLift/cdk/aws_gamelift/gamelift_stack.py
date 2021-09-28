@@ -66,7 +66,7 @@ class GameLiftStack(core.Stack):
         )
 
         game_session_queue_arns = []
-        if create_game_session_queue:
+        if flex_match or create_game_session_queue:
             queue = game_session_queue.GameSessionQueue(self, queue_destinations)
             game_session_queue_arns.append(queue.game_session_queue_arn)
 

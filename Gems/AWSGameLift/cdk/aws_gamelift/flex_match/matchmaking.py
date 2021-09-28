@@ -14,8 +14,8 @@ from aws_cdk import (
 
 from . import flex_match_configurations
 
-BACKFILL_MODE_MANUAL = 'MANUAL'
-FLEX_MATCH_MODE_STANDALONE = 'STANDALONE'
+FLEX_MATCH_MODE = 'WITH_QUEUE'
+
 
 class Matchmaking:
     """
@@ -31,13 +31,6 @@ class Matchmaking:
             rule_set_body=flex_match_configurations.RULE_SET_BODY
         )
 
-        # AUTOMATIC FlextMatch mode is not available when there's no game session queue.
-        flex_match_mode = FLEX_MATCH_MODE_STANDALONE if len(game_session_queue_arns) == 0 \
-            else flex_match_configurations.FLEX_MATCH_MODE
-        # Automatic backfill is not available when FlexMatchMode is set to STANDALONE.
-        backfill_mode = BACKFILL_MODE_MANUAL if flex_match_mode == FLEX_MATCH_MODE_STANDALONE \
-            else flex_match_configurations.BACKFILL_MODE
-
         matchmaking_configuration = gamelift.CfnMatchmakingConfiguration(
             scope=stack,
             id='MatchmakingConfiguration',
@@ -46,8 +39,8 @@ class Matchmaking:
             request_timeout_seconds=flex_match_configurations.REQUEST_TIMEOUT_SECONDS,
             rule_set_name=rule_set.name,
             additional_player_count=flex_match_configurations.ADDITIONAL_PLAYER_COUNT,
-            backfill_mode=backfill_mode,
-            flex_match_mode=flex_match_mode,
+            backfill_mode=flex_match_configurations.BACKFILL_MODE,
+            flex_match_mode=FLEX_MATCH_MODE,
             game_session_queue_arns=game_session_queue_arns if len(game_session_queue_arns) else None
         )
         matchmaking_configuration.node.add_dependency(rule_set)

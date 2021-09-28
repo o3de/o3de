@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # Comments are not allowed in JSON, but most elements support a description field.
 # For instructions on designing Matchmaking rule sets, please check:
 # https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-design-ruleset.html
-RULE_SET_BODY = '{}'
+RULE_SET_BODY = '{"ruleLanguageVersion":"1.0","teams":[{"name":"Players","maxPlayers":4,"minPlayers":2}]}'
 
 # A flag that determines whether a match that was created with this configuration
 # must be accepted by the matched players.
@@ -23,12 +23,5 @@ ADDITIONAL_PLAYER_COUNT = 2
 # The method used to backfill game sessions that are created with this matchmaking configuration.
 # Specify MANUAL when your game manages backfill requests manually or does not use the match backfill feature.
 # Specify AUTOMATIC to have GameLift create a StartMatchBackfill request whenever a game session has one or more
-# open slots. Automatic backfill is not available when FlexMatchMode is set to STANDALONE.
+# open slots.
 BACKFILL_MODE = 'AUTOMATIC'
-# Indicates whether this matchmaking configuration is being used with GameLift managed hosting or
-# as a standalone matchmaking solution.
-# Specify STANDALONE when FlexMatch forms matches and returns match information, including players and team assignments,
-# in a MatchmakingSucceeded event.
-# Specify WITH_QUEUE when FlexMatch forms matches and uses the specified GameLift queue to start a game session
-# for the match.
-FLEX_MATCH_MODE = 'WITH_QUEUE'
