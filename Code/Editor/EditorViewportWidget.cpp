@@ -2428,7 +2428,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     }
     else
     {
-        AZ_Error("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
+        AZ_Warning("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
         SetViewTM(preGameModeViewTM);
     }
 }
