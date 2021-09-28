@@ -12,8 +12,6 @@ set(FILES
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_Linux.h
     AzFramework/Application/Application_Linux.cpp
-    AzFramework/Application/Application_Linux_xcb.h
-    AzFramework/Application/Application_Linux_xcb.cpp
     AzFramework/Asset/AssetSystemComponentHelper_Linux.cpp
     AzFramework/Process/ProcessWatcher_Linux.cpp
     AzFramework/Process/ProcessCommon.h
@@ -22,10 +20,8 @@ set(FILES
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_Linux.cpp
-    AzFramework/Windowing/NativeWindow_Linux_xcb.h
-    AzFramework/Windowing/NativeWindow_Linux_xcb.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Unimplemented.cpp
-    AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_xcb.cpp
+    AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Linux.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Motion/InputDeviceMotion_Unimplemented.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Mouse/InputDeviceMouse_Unimplemented.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Touch/InputDeviceTouch_Unimplemented.cpp
