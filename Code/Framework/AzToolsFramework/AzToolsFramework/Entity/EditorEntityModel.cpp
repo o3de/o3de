@@ -381,12 +381,22 @@ namespace AzToolsFramework
             return;
         }
 
-        //orphan any children that remain attached to the entity
-        auto children = entityInfo.GetChildren();
-        for (auto childId : children)
+        bool isPrefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        // For slices, orphan any children that remain attached to the entity
+        // For prefabs, this is an unneeded operation because the prefab system handles the orphans
+        // and the extra reparenting operation can be problematic for consumers subscribed to entity
+        // events, such as the entity outliner.
+        if (!isPrefabSystemEnabled)
         {
-            ReparentChild(childId, AZ::EntityId(), entityId);
-            m_entityOrphanTable[entityId].insert(childId);
+            auto children = entityInfo.GetChildren();
+            for (auto childId : children)
+            {
+                ReparentChild(childId, AZ::EntityId(), entityId);
+                m_entityOrphanTable[entityId].insert(childId);
+            }
         }
 
         m_savedOrderInfo[entityId] = AZStd::make_pair(entityInfo.GetParent(), entityInfo.GetIndexForSorting());
