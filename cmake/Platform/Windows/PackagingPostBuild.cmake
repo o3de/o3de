@@ -56,7 +56,7 @@ set(_light_command
 )
 
 if(EXISTS "${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1")
-    execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}"
+    execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}")
 endif()
 
 message(STATUS "Creating Bootstrap Installer...")
@@ -85,7 +85,7 @@ file(COPY ${_bootstrap_output_file}
 message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}")
 
 if(EXISTS "${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1")
-    execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}"
+    execute_process(COMMAND "powershell.exe ${CPACK_SOURCE_DIR}/scripts/sign/signer.ps1 -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}")
 endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads
