@@ -98,6 +98,17 @@
                         "type": "ShaderInput",
                         "id": "m_heightmapImage"
                     }
+                },
+                {
+                    "id": "detailTextureMultiplier",
+                    "displayName": "Detail Texture UV Multiplier",
+                    "description": "How many times to repeat the detail texture per sector",
+                    "type": "Float",
+                    "defaultValue": 8.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailTextureMultiplier"
+                    }
                 }
             ],
             "baseColor": [
