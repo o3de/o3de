@@ -225,14 +225,14 @@ namespace AzToolsFramework
              */
             void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) override;
 
-            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt, bool immediate = false) override;
 
             /**
              * Updates all Instances owned by a Template.
              *
              * @param templateId The id of the Template owning Instances to update.
              */
-            void UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt, bool immediate = false);
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
