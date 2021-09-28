@@ -116,8 +116,12 @@ namespace Terrain
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
-        void GetOrderedSurfaceWeights(
-            const float x, const float y, Sampler sampler, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const;
+        bool GetOrderedSurfaceWeights(
+            const float x,
+            const float y,
+            Sampler sampler,
+            AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+            bool* terrainExistsPtr) const;
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
         AZ::Vector3  GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;

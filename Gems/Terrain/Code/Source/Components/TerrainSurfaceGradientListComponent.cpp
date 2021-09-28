@@ -143,7 +143,7 @@ namespace Terrain
 
         GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
 
-        for (auto mapping : m_configuration.m_gradientSurfaceMappings)
+        for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
             float weight = 0.0f;
             GradientSignal::GradientRequestBus::EventResult(weight, mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
@@ -151,4 +151,4 @@ namespace Terrain
             outSurfaceWeights[mapping.m_surfaceTag] = weight;
         }
     }
-}
+} // namespace Terrain
