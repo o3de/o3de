@@ -69,8 +69,10 @@ namespace AzToolsFramework
             AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 
-            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+            header()->setStretchLastSection(true);
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
+            UpdateSizeSlot(parentWidget()->width());
             header()->setSortIndicatorShown(false);
             header()->setSectionsClickable(false);
         }
@@ -152,9 +154,6 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
-            header()->setStretchLastSection(true);
-            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
-            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
             UpdateSizeSlot(parentWidget()->width());
         }
 
