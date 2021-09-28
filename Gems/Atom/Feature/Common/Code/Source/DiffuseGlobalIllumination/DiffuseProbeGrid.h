@@ -72,7 +72,7 @@ namespace AZ
             const AZ::Vector3& GetExtents() const { return m_extents; }
             void SetExtents(const AZ::Vector3& extents);
 
-            const AZ::Aabb& GetAabbWs() const { return m_aabbWs; }
+            const AZ::Obb& GetObbWs() const { return m_obbWs; }
 
             bool ValidateProbeSpacing(const AZ::Vector3& newSpacing);
             const AZ::Vector3& GetProbeSpacing() const { return m_probeSpacing; }
@@ -183,14 +183,14 @@ namespace AZ
             // scene
             RPI::Scene* m_scene = nullptr;
 
-            // probe grid position
-            AZ::Vector3 m_position = AZ::Vector3(0.0f, 0.0f, 0.0f);
+            // probe grid transform
+            AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
             // extents of the probe grid
             AZ::Vector3 m_extents = AZ::Vector3(0.0f, 0.0f, 0.0f);
 
-            // probe grid AABB (world space), built from position and extents
-            AZ::Aabb m_aabbWs = AZ::Aabb::CreateNull();
+            // probe grid OBB (world space), built from transform and extents
+            AZ::Obb m_obbWs;
 
             // per-axis spacing of probes in the grid
             AZ::Vector3 m_probeSpacing;
