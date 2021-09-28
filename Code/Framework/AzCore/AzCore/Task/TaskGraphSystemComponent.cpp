@@ -10,6 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
 AZ_CVAR(bool, cl_useTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag for use of TaskGraph (Note does not disable task graph system)");
@@ -20,14 +21,29 @@ namespace AZ
     {
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
-        Interface<UseTaskGraphInterface>::Register(this);
-        m_taskExecutor = aznew TaskExecutor();
-        m_taskExecutor->SetInstance(m_taskExecutor);
+        if (Interface<UseTaskGraphInterface>::Get() == nullptr)
+        {
+            Interface<UseTaskGraphInterface>::Register(this);
+            m_taskExecutor = aznew TaskExecutor();
+            m_taskExecutor->SetInstance(m_taskExecutor);
+        }
     }
 
     void TaskGraphSystemComponent::Deactivate()
     {
-        Interface<UseTaskGraphInterface>::Unregister(this);
+        if (&TaskExecutor::Instance() == m_taskExecutor) // check that our instance is the global instance (not always true in unit tests)
+        {
+            m_taskExecutor->SetInstance(nullptr);
+        }
+        if (m_taskExecutor)
+        {
+            azdestroy(m_taskExecutor);
+            m_taskExecutor = nullptr;
+        }
+        if (Interface<UseTaskGraphInterface>::Get() == this)
+        {
+            Interface<UseTaskGraphInterface>::Unregister(this);
+        }
     }
 
     void TaskGraphSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -51,6 +67,16 @@ namespace AZ
             serializeContext->Class<TaskGraphSystemComponent, AZ::Component>()
                 ->Version(1)
                 ;
+
+            if (AZ::EditContext* ec = serializeContext->GetEditContext())
+            {
+                ec->Class<TaskGraphSystemComponent>
+                    ("TaskGraph", "System component to create the default executor")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Category, "Engine")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
+                    ;
+            }
         }
     }
 

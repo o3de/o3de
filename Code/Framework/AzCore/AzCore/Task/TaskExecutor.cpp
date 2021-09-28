@@ -309,10 +309,14 @@ namespace AZ
     // TODO: Create the default executor as part of a component (as in TaskManagerComponent)
     void TaskExecutor::SetInstance(TaskExecutor* executor)
     {
-        AZ_Assert(!s_executor, "Attempting to set the global task executor more than once");
-
-        s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName);
-        s_executor.Set(executor);
+        if (!executor)
+        {
+            s_executor.Reset();
+        }
+        else if (!s_executor) // ignore any calls to set after the first (this happens in unit tests that create new system entities)
+        {
+            s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName, executor);
+        }
     }
 
     TaskExecutor::TaskExecutor(uint32_t threadCount)
