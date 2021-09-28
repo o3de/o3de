@@ -18,7 +18,7 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> modelAsset, RemoveModelFromReloaderSystemEvent::Handler& removeReloaderFromSystemHandler)
         {
             m_modelAsset.push_back(modelAsset);
-            m_pendingDependencies.reset();
+            m_pendingDependencyListStatus.reset();
             removeReloaderFromSystemHandler.Connect(m_onRemoveReloaderFromSystem);
 
             // Iterate over the model and track the assets that need to be reloaded
@@ -37,7 +37,7 @@ namespace AZ
             }
 
             AZ_Assert(
-                m_meshDependencies.size() <= m_pendingDependencies.size(),
+                m_meshDependencies.size() <= m_pendingDependencyListStatus.size(),
                 "There are more buffers used by the model %s than are supported by the ModelReloader.", modelAsset.GetHint().c_str());
 
             m_state = State::WaitingForMeshDependencies;
@@ -51,7 +51,7 @@ namespace AZ
 
         void ModelReloader::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            DependencyList& pendingDependencies = GetPendingDependencies();
+            DependencyList& pendingDependencies = GetPendingDependencyList();
 
             const Data::AssetId& reloadedAssetId = asset.GetId();
 
@@ -63,14 +63,14 @@ namespace AZ
                 "ModelReloader - handling an AssetReloaded event for an asset that is not part of the dependency list.");
             size_t currentIndex = AZStd::distance(AZStd::begin(pendingDependencies), iter);
 
-            // Keep a reference to the newly reloaded asset
+            // Keep a reference to the newly reloaded asset to prevent it from being immediately released
             pendingDependencies[currentIndex] = asset;
             Data::AssetBus::MultiHandler::BusDisconnect(reloadedAssetId);
 
             // Clear the bit, now that it has been reloaded
-            m_pendingDependencies.reset(currentIndex);
+            m_pendingDependencyListStatus.reset(currentIndex);
 
-            if (m_pendingDependencies.none())
+            if (m_pendingDependencyListStatus.none())
             {
                 AdvanceToNextLevelOfHierarchy();
             }
@@ -96,12 +96,12 @@ namespace AZ
         void ModelReloader::ReloadDependenciesAndWait()
         {
             // Get the current list of dependencies depending on the current state
-            DependencyList& dependencies = GetPendingDependencies();
+            DependencyList& dependencies = GetPendingDependencyList();
 
-            if (!m_pendingDependencies.none())
+            if (!m_pendingDependencyListStatus.none())
             {
                 AZ_Assert(
-                    m_pendingDependencies.none(),
+                    m_pendingDependencyListStatus.none(),
                     "ModelReloader attempting to add new dependencies while still waiting for other dependencies in the hierarchy to "
                     "load.");
             }
@@ -110,14 +110,16 @@ namespace AZ
                 // If the original model asset failed to load, it won't have any dependencies to reload
                 AdvanceToNextLevelOfHierarchy();
             }
-            AZ_Assert(dependencies.size() <= m_pendingDependencies.size(), "ModelReloader has more dependencies than can fit in the bitset. The size of m_pendingDependencies needs to be increased.");
+            AZ_Assert(
+                dependencies.size() <= m_pendingDependencyListStatus.size(),
+                "ModelReloader has more dependencies than can fit in the bitset. The size of m_pendingDependencyListStatus needs to be increased.");
 
             // Set all bits to 1
-            m_pendingDependencies.set();
+            m_pendingDependencyListStatus.set();
             // Clear the least significant n-bits
-            m_pendingDependencies <<= dependencies.size();
+            m_pendingDependencyListStatus <<= dependencies.size();
             // Set the least significant n-bits to 1, and the rest to 0
-            m_pendingDependencies.flip();
+            m_pendingDependencyListStatus.flip();
 
             // Reload all the assets
             for (Data::Asset<Data::AssetData>& dependencyAsset : dependencies)
@@ -153,7 +155,7 @@ namespace AZ
             }
         }
 
-        ModelReloader::DependencyList& ModelReloader::GetPendingDependencies()
+        ModelReloader::DependencyList& ModelReloader::GetPendingDependencyList()
         {
             switch (m_state)
             {

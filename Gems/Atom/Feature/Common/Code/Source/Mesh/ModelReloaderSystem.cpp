@@ -17,7 +17,7 @@ namespace AZ
         void ModelReloaderSystem::ReloadModel(Data::Asset<RPI::ModelAsset> modelAsset, ModelReloadedEvent::Handler& onReloadedEventHandler)
         {
             AZStd::scoped_lock lock(m_pendingReloadMutex);
-            if (m_pendingReloads.count(modelAsset.GetId()) == 0)
+            if (m_pendingReloads.find(modelAsset.GetId()) != m_pendingReloads.end())
             {
                 ModelReloader* reloader = new ModelReloader(modelAsset, m_removeModelHandler);
                 m_pendingReloads[modelAsset.GetId()] = reloader;
@@ -29,6 +29,9 @@ namespace AZ
         void ModelReloaderSystem::RemoveReloader(const Data::AssetId& assetId)
         {
             AZStd::scoped_lock lock(m_pendingReloadMutex);
+            // We don't delete the ModelReloader here, because its in the middle of signaling this RemoveReloader event.
+            // We only remove it from the pending reloads here.
+            // The ModelReloader will delete itself after it finishes firing this event.
             m_pendingReloads.erase(assetId);
         }
     } // namespace Render

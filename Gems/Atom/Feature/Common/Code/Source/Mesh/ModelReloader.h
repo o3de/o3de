@@ -58,7 +58,7 @@ namespace AZ
             void InsertMeshDependencyIfUnique(Data::Asset<Data::AssetData> asset);
             void ReloadDependenciesAndWait();
             void AdvanceToNextLevelOfHierarchy();
-            DependencyList& GetPendingDependencies();
+            DependencyList& GetPendingDependencyList();
 
             ModelReloadedEvent m_onModelReloaded;
             RemoveModelFromReloaderSystemEvent m_onRemoveReloaderFromSystem;
@@ -68,7 +68,7 @@ namespace AZ
             DependencyList m_meshDependencies;
             DependencyList m_modelDependencies;
             
-            AZStd::bitset<1024> m_pendingDependencies;
+            AZStd::bitset<1024> m_pendingDependencyListStatus;
             State m_state;
         };
 
