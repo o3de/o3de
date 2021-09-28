@@ -81,6 +81,7 @@ execute_process(
     COMMAND $(_signbase_command)
     RESULT_VARIABLE _signbase_result
     ERROR_VARIABLE _signbase_errors
+    ECHO_OUTPUT_VARIABLE
 )
 
 #if(NOT ${_signbase_result} EQUAL 0)
@@ -117,6 +118,7 @@ execute_process(
     COMMAND $(_signbootstrap_command)
     RESULT_VARIABLE _signbootstrap_result
     ERROR_VARIABLE _signbootstrap_errors
+    ECHO_OUTPUT_VARIABLE
 )
 
 #if(NOT ${_signbootstrap_result} EQUAL 0)
