@@ -7,15 +7,10 @@
  */
 #pragma once
 
-#include <AzCore/std/chrono/types.h>
-#include <AzCore/std/parallel/shared_spin_mutex.h>
-#include <AzCore/std/parallel/scoped_lock.h>
-#include <AzCore/std/containers/bitset.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Statistics/StatisticalProfiler.h>
-#include <AzCore/Debug/Profiler.h>
-
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/parallel/shared_spin_mutex.h>
 
 #if defined(AZ_STATISTICAL_PROFILING_ENABLED)
 
@@ -23,11 +18,12 @@
 #undef AZ_PROFILE_SCOPE
 #endif // #if defined(AZ_PROFILE_SCOPE)
 
-#define AZ_PROFILE_SCOPE(profiler, scopeNameId) \
+#define AZ_PROFILE_SCOPE(budget, scopeNameId, ...) \
     static const AZStd::string AZ_JOIN(blockName, __LINE__)(scopeNameId); \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, AZ_JOIN(blockName, __LINE__));
+    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockName, __LINE__));
 
 #endif //#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
+
 
 namespace AZ::Statistics
 {
@@ -94,6 +90,7 @@ namespace AZ::Statistics
                 }
                 m_startTime = AZStd::chrono::high_resolution_clock::now();
             }
+
             ~TimedScope()
             {
                 if (!m_profilerProxy)
@@ -122,7 +119,6 @@ namespace AZ::Statistics
 
         StatisticalProfilerProxy()
         {
-            // TODO:BUDGETS Query available budgets at registration time and create an associated profiler per type
             AZ::Interface<StatisticalProfilerProxy>::Register(this);
         }
 
@@ -135,30 +131,55 @@ namespace AZ::Statistics
         StatisticalProfilerProxy(StatisticalProfilerProxy&&) = delete;
         StatisticalProfilerProxy& operator=(StatisticalProfilerProxy&&) = delete;
 
+        void RegisterProfilerId(StatisticalProfilerId id)
+        {
+            m_profilers.try_emplace(id, AZStd::move(ProfilerInfo()));
+        }
+
         bool IsProfilerActive(StatisticalProfilerId id) const
         {
-            return m_activeProfilersFlag[static_cast<AZStd::size_t>(id)];
+            auto iter = m_profilers.find(id);
+            return (iter != m_profilers.end()) ? iter->second.m_enabled : false;
         }
 
         StatisticalProfilerType& GetProfiler(StatisticalProfilerId id)
         {
-            return m_profilers[static_cast<AZStd::size_t>(id)];
+            auto iter = m_profilers.try_emplace(id, AZStd::move(ProfilerInfo())).first;
+            return iter->second.m_profiler;
         }
 
-        void ActivateProfiler(StatisticalProfilerId id, bool activate)
+        void ActivateProfiler(StatisticalProfilerId id, bool activate, bool autoCreate = true)
         {
-            m_activeProfilersFlag[static_cast<AZStd::size_t>(id)] = activate;
+            ProfilerMap::iterator iter;
+            if (autoCreate)
+            {
+                iter = m_profilers.try_emplace(id, AZStd::move(ProfilerInfo())).first;
+            }
+            else
+            {
+                iter = m_profilers.find(id);
+            }
+            iter->second.m_enabled = activate;
         }
 
         void PushSample(StatisticalProfilerId id, const StatIdType& statId, double value)
         {
-            m_profilers[static_cast<AZStd::size_t>(id)].PushSample(statId, value);
+            if (auto iter = m_profilers.find(id); iter != m_profilers.end())
+            {
+                iter->second.m_profiler.PushSample(statId, value);
+            }
         }
 
     private:
-        // TODO:BUDGETS the number of bits allocated here must be based on the number of budgets available at profiler registration time
-        AZStd::bitset<128> m_activeProfilersFlag;
-        AZStd::vector<StatisticalProfilerType> m_profilers;
+        struct ProfilerInfo
+        {
+            StatisticalProfilerType m_profiler;
+            bool m_enabled{ false };
+        };
+
+        using ProfilerMap = AZStd::unordered_map<StatisticalProfilerId, ProfilerInfo>;
+
+        ProfilerMap m_profilers;
     }; // class StatisticalProfilerProxy
 
 }; // namespace AZ::Statistics
