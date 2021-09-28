@@ -1,0 +1,236 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Player",
+        "Components": {
+            "Component_[10761034584497908401]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 10761034584497908401
+            },
+            "Component_[11171765958722003650]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 11171765958722003650
+            },
+            "Component_[1122137833969783319]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 1122137833969783319,
+                "Parent Entity": ""
+            },
+            "Component_[11534770841913162557]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 11534770841913162557
+            },
+            "Component_[1174143949228204613]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 1174143949228204613
+            },
+            "Component_[1186621813350148335]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 1186621813350148335
+            },
+            "Component_[13145205368045251727]": {
+                "$type": "SelectionComponent",
+                "Id": 13145205368045251727
+            },
+            "Component_[13555080535184790733]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 13555080535184790733
+            },
+            "Component_[14246542098767318486]": {
+                "$type": "EditorLockComponent",
+                "Id": 14246542098767318486
+            },
+            "Component_[17664598754718527762]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 17664598754718527762
+            },
+            "Component_[7200122447120227249]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 7200122447120227249
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[45757297578429]": {
+            "Id": "Entity_[45757297578429]",
+            "Name": "Player",
+            "Components": {
+                "Component_[104121200890756253]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 104121200890756253
+                },
+                "Component_[10427708222806608369]": {
+                    "$type": "SelectionComponent",
+                    "Id": 10427708222806608369
+                },
+                "Component_[11328301176450343373]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 11328301176450343373
+                },
+                "Component_[12370308576209604713]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 12370308576209604713,
+                    "m_template": {
+                        "$type": "InputConfigurationComponent",
+                        "Input Event Bindings": {
+                            "assetId": {
+                                "guid": "{E24CBF8B-0311-5B09-8B45-174BA05EA21B}"
+                            },
+                            "assetHint": "levels/multiplayer/multiplayertest/assets/simplescriptplayer.inputbindings"
+                        }
+                    }
+                },
+                "Component_[12445598434074359840]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 12445598434074359840,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
+                    }
+                },
+                "Component_[1569643966342074001]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 1569643966342074001,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[1605823397301657756]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 1605823397301657756
+                },
+                "Component_[16581065267128705530]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 16581065267128705530
+                },
+                "Component_[17725472297570280383]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 17725472297570280383
+                },
+                "Component_[18003817796188894025]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 18003817796188894025
+                },
+                "Component_[4561178852583493885]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 4561178852583493885,
+                    "m_template": {
+                        "$type": "NetBindComponent"
+                    }
+                },
+                "Component_[6537488149309547572]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 6537488149309547572,
+                    "m_name": "NetworkTestPlayer",
+                    "m_assetHolder": {
+                        "m_asset": {
+                            "assetId": {
+                                "guid": "{76BF26E8-1EFF-5823-A7CC-7A53C3E8021C}"
+                            },
+                            "assetHint": "levels/multiplayer/multiplayertest/assets/networktestplayer.scriptcanvas"
+                        }
+                    },
+                    "runtimeDataIsValid": true,
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "assetId": {
+                                "guid": "{76BF26E8-1EFF-5823-A7CC-7A53C3E8021C}"
+                            },
+                            "assetHint": "levels/multiplayer/multiplayertest/assets/networktestplayer.scriptcanvas"
+                        }
+                    }
+                },
+                "Component_[6918074229068073116]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 6918074229068073116,
+                    "m_template": {
+                        "$type": "Multiplayer::NetworkTransformComponent"
+                    }
+                },
+                "Component_[7609280163479709008]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 7609280163479709008,
+                    "m_template": {
+                        "$type": "Multiplayer::NetworkCharacterComponent"
+                    }
+                },
+                "Component_[7624119531731152716]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 7624119531731152716
+                },
+                "Component_[7843399643878963565]": {
+                    "$type": "EditorCharacterControllerComponent",
+                    "Id": 7843399643878963565,
+                    "Configuration": {
+                        "entityId": "",
+                        "Material": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    }
+                },
+                "Component_[869295025943758148]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 869295025943758148,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{6DE0E9A8-A1C7-5D0F-9407-4E627C1F223C}",
+                                    "subId": 284780167
+                                },
+                                "assetHint": "models/sphere.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[8775263112120379398]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 8775263112120379398,
+                    "m_template": {
+                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
+                    }
+                },
+                "Component_[8829517227774570618]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 8829517227774570618,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 1569643966342074001
+                        },
+                        {
+                            "ComponentId": 12445598434074359840,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 8775263112120379398,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 6918074229068073116,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 4561178852583493885,
+                            "SortIndex": 4
+                        },
+                        {
+                            "ComponentId": 6537488149309547572,
+                            "SortIndex": 5
+                        },
+                        {
+                            "ComponentId": 7609280163479709008,
+                            "SortIndex": 6
+                        },
+                        {
+                            "ComponentId": 7843399643878963565,
+                            "SortIndex": 7
+                        },
+                        {
+                            "ComponentId": 12370308576209604713,
+                            "SortIndex": 8
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

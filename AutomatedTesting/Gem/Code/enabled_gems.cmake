@@ -57,4 +57,5 @@ set(ENABLED_GEMS
 
     
     AudioSystem
+    Multiplayer
 )
