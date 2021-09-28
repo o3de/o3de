@@ -126,10 +126,10 @@ namespace AZ
 
             //! Returns the version of the MaterialTypeAsset.
             uint32_t GetVersion() const;
-            //! Returns the version update containing the actions to perform. If a version
-            //! is not defined in m_materialVersionUpdatesMap, a material version with the specified
+            //! Returns the toVersion update containing the actions to perform. If a toVersion
+            //! is not defined in m_materialVersionUpdatesMap, a material toVersion with the specified
             //! version but empty actions will be returned. 
-            const MaterialVersionUpdate GetMaterialVersionUpdate(uint32_t version) const;
+            MaterialVersionUpdate GetMaterialVersionUpdate(uint32_t toVersion) const;
 
         private:
             bool PostLoadInit() override;

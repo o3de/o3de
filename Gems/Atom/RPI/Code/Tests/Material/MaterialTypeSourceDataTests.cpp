@@ -978,8 +978,16 @@ namespace UnitTest
         const AZStd::string inputJson = R"(
             {
                 "description": "This is a general description about the material",
+                "version": 2,
+                "versionUpdates": [
+                    {
+                        "toVersion": 2,
+                        "actions": [
+                            { "op": "rename", "from": "groupA.fooPrev", "to": "groupA.foo" }
+                        ]
+                    }
+                ],
                 "propertyLayout": {
-                    "version": 2,
                     "groups": [
                         {
                             "id": "groupA",
@@ -1061,9 +1069,12 @@ namespace UnitTest
         JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
 
         EXPECT_EQ(material.m_description, "This is a general description about the material");
-
-        EXPECT_EQ(material.m_propertyLayout.m_version, 2);
-
+        EXPECT_EQ(material.m_version, 2);
+        EXPECT_EQ(material.m_versionUpdates.size(), 1);
+        EXPECT_EQ(material.m_versionUpdates[0].m_toVersion, 2);
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_operation, "rename");
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameFrom, "groupA.fooPrev");
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameTo, "groupA.foo");
         EXPECT_EQ(material.m_propertyLayout.m_groups.size(), 2);
         EXPECT_TRUE(material.FindGroup("groupA") != nullptr);
         EXPECT_TRUE(material.FindGroup("groupB") != nullptr);

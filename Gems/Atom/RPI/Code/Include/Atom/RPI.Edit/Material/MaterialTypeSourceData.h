@@ -129,7 +129,8 @@ namespace AZ
                 AZStd::string m_renameTo;
             };
 
-            // TODO: Support script operations. We will only be supporting rename for now.
+            // TODO: Support script operations--At that point, we'll likely need to replace VersionUpdatesRenameOperationDefinition with a more generic
+            // data structure that has a custom JSON serialize. We will only be supporting rename for now.
             using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
 
             struct VersionUpdateDefinition
@@ -145,9 +146,6 @@ namespace AZ
             struct PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
-
-                //! Indicates the version of the set of available properties. Can be used to detect materials that might need to be updated.
-                uint32_t m_version = 0;
 
                 //! List of groups that will contain the available properties
                 AZStd::vector<GroupDefinition> m_groups;

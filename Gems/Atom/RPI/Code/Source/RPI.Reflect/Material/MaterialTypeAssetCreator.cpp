@@ -102,18 +102,18 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::ValidateMaterialVersion()
         {
-            AZStd::vector<AZStd::string> renamedPropertieNames;
+            AZStd::vector<AZ::Name> renamedPropertyNames;
             const auto& materialVersionUpdate = m_asset->GetMaterialVersionUpdate(m_asset->m_version);
-            for (const auto& action : materialVersionUpdate.m_actions)
+            for (const auto& action : materialVersionUpdate.GetActions())
             {
-                const auto it = action.m_argsMap.find("to");
+                const auto it = action.m_argsMap.find(AZ::Name{ "to" });
                 if (it != action.m_argsMap.end())
                 {
-                    renamedPropertieNames.push_back(it->second);
+                    renamedPropertyNames.push_back(it->second);
                 }
             }
 
-            for (const auto& propertyName : renamedPropertieNames)
+            for (const auto& propertyName : renamedPropertyNames)
             {
                 const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ propertyName });
                 if (!propertyIndex.IsValid())
@@ -121,7 +121,7 @@ namespace AZ
                     ReportError(AZStd::string::format(
                             "Renamed property '%s' not found in material property layout. Check that the property name has been "
                             "upgraded to the correct version",
-                            propertyName.c_str())
+                            propertyName.GetCStr())
                         .c_str());
                     return false;
                 }
@@ -157,7 +157,7 @@ namespace AZ
             m_asset->m_version = version;
         }
 
-        void MaterialTypeAssetCreator::AddVersionUpdate(uint32_t toVersion, MaterialVersionUpdate materialVersionUpdate)
+        void MaterialTypeAssetCreator::AddVersionUpdate(uint32_t toVersion, const MaterialVersionUpdate& materialVersionUpdate)
         {
             m_asset->m_materialVersionUpdateMap[toVersion] = materialVersionUpdate;
         }

@@ -99,7 +99,6 @@ namespace AZ
             {
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
-                exportData.m_propertyLayoutVersion = editData.m_materialTypeSourceData.m_propertyLayout.m_version;
 
                 // Converting absolute material paths to relative paths
                 bool result = false;

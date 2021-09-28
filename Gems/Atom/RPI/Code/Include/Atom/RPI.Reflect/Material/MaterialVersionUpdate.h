@@ -11,13 +11,18 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Name/Name.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        struct MaterialVersionUpdate
+        class MaterialAsset;
+
+        // This class contains a toVersion and a list of actions to specify what operations were performed to upgrade a materialType. 
+        class MaterialVersionUpdate
         {
+        public:
             AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate, "{B36E7712-AED8-46AA-AFE0-01F8F884C44A}");
 
             static void Reflect(ReflectContext* context);
@@ -26,20 +31,28 @@ namespace AZ
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::Action, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
 
-                AZStd::string m_operation;
-                AZStd::map<AZStd::string, AZStd::string> m_argsMap;
+                AZ::Name m_operation;
+                AZStd::unordered_map<AZ::Name, AZ::Name> m_argsMap;
 
                 Action() = default;
-                Action(const AZStd::string& operation, const AZStd::initializer_list<AZStd::pair<AZStd::string, AZStd::string>>& args);
-                void AddArgs(const AZStd::string& key, const AZStd::string& argument);
+                Action(const AZ::Name& operation, const AZStd::initializer_list<AZStd::pair<AZ::Name, AZ::Name>>& args);
+                void AddArg(const AZ::Name& key, const AZ::Name& argument);
             };
 
-            MaterialVersionUpdate() = default;
-            MaterialVersionUpdate(uint32_t toVersion);
+            explicit MaterialVersionUpdate() = default;
+            explicit MaterialVersionUpdate(uint32_t toVersion);
 
-            uint32_t m_toVersion;
+            uint32_t GetVersion() const;
+            void SetVersion(uint32_t toVersion);
+
+            void ApplyVersionUpdates(MaterialAsset& materialAsset) const;
 
             using Actions = AZStd::vector<Action>;
+            const Actions& GetActions() const;
+            void AddAction(const Action& action);
+
+        private:
+            uint32_t m_toVersion;
             Actions m_actions;
         };
 

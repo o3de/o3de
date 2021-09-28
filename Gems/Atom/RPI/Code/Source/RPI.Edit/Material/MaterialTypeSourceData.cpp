@@ -95,8 +95,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(1)
-                    ->Field("version", &PropertyLayout::m_version)
+                    ->Version(2)
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -317,8 +316,9 @@ namespace AZ
                 MaterialVersionUpdate materialVersionUpdate;
                 for (const auto& action : versionUpdate.m_actions)
                 {
-                    materialVersionUpdate.m_actions.push_back(
-                        MaterialVersionUpdate::Action("rename", { { "from", action.m_renameFrom }, { "to", action.m_renameTo } }));
+                    materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
+                        { AZ::Name{ "from" }, AZ::Name{ action.m_renameFrom } },
+                        { AZ::Name{ "to" }, AZ::Name{ action.m_renameTo } } }));
                 }
                 materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
             }

@@ -169,10 +169,10 @@ namespace AZ
             return m_version;
         }
 
-        const AZ::RPI::MaterialVersionUpdate MaterialTypeAsset::GetMaterialVersionUpdate(uint32_t version) const
+        MaterialVersionUpdate MaterialTypeAsset::GetMaterialVersionUpdate(uint32_t toVersion) const
         {
-            const auto it = m_materialVersionUpdateMap.find(version);
-            return it != m_materialVersionUpdateMap.end() ? it->second : MaterialVersionUpdate(version);
+            const auto it = m_materialVersionUpdateMap.find(toVersion);
+            return it != m_materialVersionUpdateMap.end() ? it->second : MaterialVersionUpdate(toVersion);
         }
 
         void MaterialTypeAsset::SetReady()

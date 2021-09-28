@@ -14,6 +14,7 @@
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -153,6 +154,14 @@ namespace UnitTest
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(assetId);
 
+            // Version updates
+            MaterialVersionUpdate versionUpdate(2);
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
+                { Name{ "from" }, Name{ "EnableSpecialPassPrev" } },
+                { Name{ "to" }, Name{ "EnableSpecialPass" } } }));
+            materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+            materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+
             // Built-in shader
 
             materialTypeCreator.AddShader(m_testShaderAsset);
@@ -198,7 +207,7 @@ namespace UnitTest
         {
             EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
             EXPECT_EQ(5, materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount());
-
+            //EXPECT_EQ(2, materialTypeAsset->GetVersion());
             // Check aliased properties
 
             const MaterialPropertyIndex colorIndex = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{ "MyColor" });
@@ -490,6 +499,32 @@ namespace UnitTest
         });
     }
 
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        // Invalid version updates
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
+            { Name{ "from" }, Name{ "EnableSpecialPassPrev" } },
+            { Name{ "to" }, Name{ "InvalidPropertyName" } } }));
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        materialTypeCreator.BeginMaterialProperty(Name{ "EnableSpecialPass" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+
+        AZ_TEST_START_ASSERTTEST;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+        AZ_TEST_STOP_ASSERTTEST(1);
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
 
     TEST_F(MaterialTypeAssetTests, MaterialTypeWithNoSRGOrProperties)
     {

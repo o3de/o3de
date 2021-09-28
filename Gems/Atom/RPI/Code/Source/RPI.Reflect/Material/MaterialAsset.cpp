@@ -6,6 +6,8 @@
  *
  */
 
+#pragma optimize("", off)
+
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -107,10 +109,9 @@ namespace AZ
             if (!m_propertyNames.empty())
             {
                 const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
-                if (m_materialTypeVersion != materialTypeVersion)
+                if (m_materialTypeVersion < materialTypeVersion)
                 {
-                    const_cast<MaterialAsset*>(this)->RenamePropertyNames();
-                    const_cast<uint32_t&>(m_materialTypeVersion) = materialTypeVersion;
+                    const_cast<MaterialAsset*>(this)->ApplyVersionUpdates();
                 }
 
                 if (m_isDirty)
@@ -194,50 +195,16 @@ namespace AZ
             m_isDirty = false;
         } 
 
-        template <typename iteratorType>
-        void MaterialAsset::RenamePropertyNames(iteratorType start, iteratorType end)
+        void MaterialAsset::ApplyVersionUpdates()
         {
-            for (iteratorType it = start; it != end; ++it)
+            for (int i = 0; i < static_cast<int>(m_materialTypeAsset->GetVersion() - m_materialTypeVersion); ++i)
             {
-                for (auto& propertyName : m_propertyNames)
-                {
-                    const auto toFromIterator = it->find(propertyName.GetCStr());
-                    if (toFromIterator != it->end())
-                    {
-                        propertyName = AZ::Name{ toFromIterator->second };
-                    }
-                }
-            }
-        }
+                const auto& versionUpdate = m_materialTypeAsset->GetMaterialVersionUpdate(m_materialTypeVersion + i + 1);
 
-        void MaterialAsset::RenamePropertyNames()
-        {
-            // construct toFrom map in ascending order of version.
-            AZStd::vector<AZStd::map<AZStd::string, AZStd::string>> versionToFrom;
-
-            const bool ascending = m_materialTypeVersion < m_materialTypeAsset->GetVersion();
-            for (int i = 0; i < AZStd::abs(static_cast<int>(m_materialTypeVersion - m_materialTypeAsset->GetVersion())); ++i)
-            {
-                const auto& versionUpdate = m_materialTypeAsset->GetMaterialVersionUpdate((m_materialTypeVersion < m_materialTypeAsset->GetVersion() ? m_materialTypeVersion : m_materialTypeAsset->GetVersion()) + i + 1);
-
-                versionToFrom.push_back();
-                for (const auto& action : versionUpdate.m_actions)
-                {
-                    const AZStd::string from = ascending ? action.m_argsMap.find("from")->second : action.m_argsMap.find("to")->second;
-                    const AZStd::string to = ascending ? action.m_argsMap.find("to")->second : action.m_argsMap.find("from")->second;
-
-                    versionToFrom[i][from] = to;
-                }
+                versionUpdate.ApplyVersionUpdates(*this);
             }
 
-            if (ascending)
-            {
-                RenamePropertyNames(versionToFrom.cbegin(), versionToFrom.cend());
-            }
-            else
-            {
-                RenamePropertyNames(versionToFrom.crbegin(), versionToFrom.crend());
-            }
+            m_materialTypeVersion = m_materialTypeAsset->GetVersion();
         }
 
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
@@ -287,3 +254,5 @@ namespace AZ
 
     } // namespace RPI
 } // namespace AZ
+
+#pragma optimize("", on)

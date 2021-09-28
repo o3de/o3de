@@ -63,6 +63,17 @@ namespace UnitTest
 
             RPITestFixture::TearDown();
         }
+
+        void UpgradeAndValidateMaterialAsset(Data::Asset<MaterialAsset> materialAsset, Data::Asset<MaterialTypeAsset> upgradedMaterialTypeAsset)
+        {
+            // Set materialTypeAsset to the upgraded version.
+            EXPECT_EQ(1, materialAsset->m_materialTypeVersion);
+            materialAsset->m_materialTypeAsset = upgradedMaterialTypeAsset;
+            materialAsset->ApplyVersionUpdates();
+
+            EXPECT_EQ(2, materialAsset->m_materialTypeVersion);
+            EXPECT_EQ(AZ::Name{ "MyBoolNext" }, materialAsset->m_propertyNames[0]);
+        }
     };
 
     TEST_F(MaterialAssetTests, Basic)
@@ -200,6 +211,48 @@ namespace UnitTest
         ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
         Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
         EXPECT_EQ(serializedAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), streamingImageAsset);
+    }
+
+    TEST_F(MaterialAssetTests, UpgradeMaterialAsset)
+    {
+        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
+
+        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
+
+        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV1;
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(shaderAsset);
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyBool" }, MaterialPropertyDataType::Bool, Name{ "m_bool" });
+        materialTypeCreator.SetPropertyValue(Name{ "MyBool" }, true);
+        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV1));
+
+        // Construct the material asset with materialTypeAsset version 1
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialAssetCreator creator;
+        creator.Begin(assetId, *testMaterialTypeAssetV1);
+        creator.SetPropertyValue(Name{ "MyBool" }, true);
+        Data::Asset<MaterialAsset> materialAsset;
+        EXPECT_TRUE(creator.End(materialAsset));
+
+        // Prepare material type asset version 2 with the update actions
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
+            { Name{ "from" }, Name{ "MyBool" } },
+            { Name{ "to" }, Name{ "MyBoolNext" } } }));
+
+        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV2;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+        materialTypeCreator.AddShader(shaderAsset);
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyBoolNext" }, MaterialPropertyDataType::Bool, Name{ "m_bool" });
+        materialTypeCreator.SetPropertyValue(Name{ "MyBoolNext" }, true);
+        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV2));
+
+        // Upgrade the material asset with the materialTypeAsset v2 and verify
+        UpgradeAndValidateMaterialAsset(materialAsset, testMaterialTypeAssetV2);
     }
 
     TEST_F(MaterialAssetTests, Error_NoBegin)

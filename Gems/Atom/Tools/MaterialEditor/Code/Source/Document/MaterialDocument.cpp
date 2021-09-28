@@ -231,7 +231,6 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
 
@@ -303,7 +302,6 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
 
@@ -374,7 +372,6 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
 
         // Only assign a parent path if the source was a .material

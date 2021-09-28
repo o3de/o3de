@@ -22,6 +22,7 @@
 namespace UnitTest
 {
     class MaterialTests;
+    class MaterialAssetTests;
 }
 
 namespace AZ
@@ -42,10 +43,12 @@ namespace AZ
             , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
+            friend class MaterialVersionUpdate;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
             friend class MaterialAssetCreatorCommon;
             friend class UnitTest::MaterialTests;
+            friend class UnitTest::MaterialAssetTests;
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
@@ -119,10 +122,8 @@ namespace AZ
             //! from m_materialTypeAsset.
             void RealignPropertyValuesAndNames();
 
-            //! Renames properties in m_propertyNames based on the MaterialTypeAsset's version update.
-            void RenamePropertyNames();
-            template <typename iteratorType>
-            void RenamePropertyNames(iteratorType start, iteratorType end);
+            //! Renames properties in m_propertyNames based on the MaterialTypeAsset's version update. Note that only version upgrades are supported.
+            void ApplyVersionUpdates();
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();

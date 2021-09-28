@@ -41,7 +41,7 @@ namespace AZ
             //! Sets the version of the MaterialTypeAsset
             void SetVersion(uint32_t version);
             //! Adds a version update object into the MaterialTypeAsset
-            void AddVersionUpdate(uint32_t toVersion, MaterialVersionUpdate materialVersionUpdate);
+            void AddVersionUpdate(uint32_t toVersion, const MaterialVersionUpdate& materialVersionUpdate);
 
             //! Indicates that this MaterialType will own the specified shader option.
             //! Material-owned shader options can be connected to material properties (either directly or through functors).
