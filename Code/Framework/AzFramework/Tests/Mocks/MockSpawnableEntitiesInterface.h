@@ -40,6 +40,11 @@ namespace AzFramework
 
         MOCK_METHOD2(DespawnAllEntities, void(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs));
 
+        MOCK_METHOD3(DespawnEntity, void(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs));
+
+        MOCK_METHOD2(
+            RetrieveEntitySpawnTicket, void(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback));
+
         MOCK_METHOD3(
             ReloadSpawnable,
             void(EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs));
