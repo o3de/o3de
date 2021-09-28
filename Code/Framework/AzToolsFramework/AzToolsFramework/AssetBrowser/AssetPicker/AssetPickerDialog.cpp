@@ -106,7 +106,7 @@ namespace AzToolsFramework
             m_persistentState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(AZ::Crc32(("AssetBrowserTreeView_Dialog_" + name).toUtf8().data()), AZ::UserSettings::CT_GLOBAL);
 
             m_ui->m_assetBrowserTableViewWidget->setVisible(false);
-            if (ed_useNewAssetBrowserTableView)
+            if (!ed_useNewAssetBrowserTableView)
             {
                 m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
                 m_ui->m_assetBrowserTableViewWidget->setVisible(true);
@@ -119,7 +119,7 @@ namespace AzToolsFramework
                     selection.GetMultiselect() ? QAbstractItemView::SelectionMode::ExtendedSelection
                                                : QAbstractItemView::SelectionMode::SingleSelection);
 
-                if (ed_hideAssetPickerPathColumn)
+                if (!ed_hideAssetPickerPathColumn)
                 {
                     m_ui->m_assetBrowserTableViewWidget->hideColumn(1);
                 }

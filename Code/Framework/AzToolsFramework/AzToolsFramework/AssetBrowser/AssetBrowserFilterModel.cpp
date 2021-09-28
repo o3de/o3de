@@ -32,7 +32,7 @@ namespace AzToolsFramework
             : QSortFilterProxyModel(parent)
         {
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
-            if (ed_useNewAssetBrowserTableView)
+            if (!ed_useNewAssetBrowserTableView)
             {
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             }
