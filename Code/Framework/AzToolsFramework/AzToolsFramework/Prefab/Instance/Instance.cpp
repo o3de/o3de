@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
@@ -28,24 +29,71 @@ namespace AzToolsFramework
         }
 
         Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity)
+            : m_parent(nullptr)
+            , m_alias(GenerateInstanceAlias())
+            , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
+            , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
         {
-            m_instanceEntityMapper = AZ::Interface<InstanceEntityMapperInterface>::Get();
-
             AZ_Assert(m_instanceEntityMapper,
                 "Instance Entity Mapper Interface could not be found. "
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
-
-            m_templateInstanceMapper = AZ::Interface<TemplateInstanceMapperInterface>::Get();
 
             AZ_Assert(m_templateInstanceMapper,
                 "Template Instance Mapper Interface could not be found. "
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            m_alias = GenerateInstanceAlias();
-            m_containerEntity = containerEntity ? AZStd::move(containerEntity)
-                                                : AZStd::make_unique<AZ::Entity>();
+            if (containerEntity)
+            {
+                m_containerEntity = AZStd::move(containerEntity);
+            }
+            else
+            {
+                AliasPath absoluteInstancePath;
+                absoluteInstancePath.Append(m_alias);
+                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+
+                AZ::EntityId containerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
+                m_containerEntity = AZStd::make_unique<AZ::Entity>(containerEntityId);
+            }
+            
+            RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
+        }
+
+        Instance::Instance(InstanceAlias alias)
+            : Instance(nullptr, AZStd::move(alias))
+        {
+        }
+
+        Instance::Instance(InstanceOptionalReference parent)
+            : Instance(parent.has_value()? &parent->get() : nullptr, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(Instance* parent, InstanceAlias alias)
+            : m_parent(parent)
+            , m_alias(alias)
+            , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
+            , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
+        {
+            AZ_Assert(m_instanceEntityMapper,
+                "Instance Entity Mapper Interface could not be found. "
+                "It is a requirement for the Prefab Instance class. "
+                "Check that it is being correctly initialized.");
+
+            AZ_Assert(m_templateInstanceMapper,
+                "Template Instance Mapper Interface could not be found. "
+                "It is a requirement for the Prefab Instance class. "
+                "Check that it is being correctly initialized.");
+
+            AliasPath absoluteInstancePath = m_parent? m_parent->GetAbsoluteInstanceAliasPath() : AliasPath();
+            absoluteInstancePath.Append(m_alias);
+            absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+
+            AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
+            m_containerEntity = AZStd::make_unique<AZ::Entity>(newContainerEntityId);
+
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
@@ -296,19 +344,20 @@ namespace AzToolsFramework
 
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
         {
-            InstanceAlias newInstanceAlias = GenerateInstanceAlias();
-            return AddInstance(AZStd::move(instance), newInstanceAlias);
-        }
-
-        Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias newInstanceAlias)
-        {
             AZ_Assert(instance.get(), "instance argument is nullptr");
+
+            if (instance->GetInstanceAlias().empty())
+            {
+                instance->m_alias = GenerateInstanceAlias();
+            }
+
             AZ_Assert(
-                m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(),
+                m_nestedInstances.find(instance->GetInstanceAlias()) == m_nestedInstances.end(),
                 "InstanceAlias' unique id collision, this should never happen.");
+
             instance->m_parent = this;
-            instance->m_alias = newInstanceAlias;
-            return *(m_nestedInstances[newInstanceAlias] = std::move(instance));
+            auto& alias = instance->GetInstanceAlias();
+            return *(m_nestedInstances[alias] = std::move(instance));
         }
 
         void Instance::DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback)

@@ -92,7 +92,25 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, bool shouldCreateLinks)
+            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity)
+        {
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
+            return CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, AZStd::move(newInstance), true);
+        }
+
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefabUnderParent(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            AZ::IO::PathView filePath, InstanceOptionalReference parent)
+        {
+            AZ_Assert(parent.has_value(), "Prefab - Null parent instance passed in during CreatePrefabUnderParent");
+
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(parent);
+            return CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, AZStd::move(newInstance), false);
+        }
+
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            AZ::IO::PathView filePath, AZStd::unique_ptr<Instance> newInstance, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GenerateRelativePath(filePath);
             if (GetTemplateIdFromFilePath(relativeFilePath) != InvalidTemplateId)
@@ -103,8 +121,6 @@ namespace AzToolsFramework
 
                 return nullptr;
             }
-
-            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
 
             for (AZ::Entity* entity : entities)
             {
@@ -256,7 +272,8 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(AZ::IO::PathView filePath)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
+            AZ::IO::PathView filePath, InstanceOptionalReference parent)
         {
             // Retrieve the template id for the source prefab filepath
             Prefab::TemplateId templateId = GetTemplateIdFromFilePath(filePath);
@@ -276,10 +293,11 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            return InstantiatePrefab(templateId);
+            return InstantiatePrefab(templateId, parent);
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(const TemplateId& templateId)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
+            const TemplateId& templateId, InstanceOptionalReference parent)
         {
             TemplateReference instantiatingTemplate = FindTemplate(templateId);
 
@@ -292,7 +310,7 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            auto newInstance = AZStd::make_unique<Instance>();
+            auto newInstance = AZStd::make_unique<Instance>(parent);
             Instance::EntityList newEntities;
             if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
             {

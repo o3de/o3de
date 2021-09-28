@@ -72,7 +72,7 @@ namespace Benchmark
             AZStd::unique_ptr<Instance> instance = m_prefabSystemComponent->CreatePrefab(
                 entities
                 , {}
-            , m_pathString);
+                , m_pathString);
 
             state.PauseTiming();
 

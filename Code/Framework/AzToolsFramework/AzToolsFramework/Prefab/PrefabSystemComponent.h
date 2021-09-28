@@ -124,14 +124,16 @@ namespace AzToolsFramework
             * @param filePath the path to the prefab source file containing the template being instantiated.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
-            AZStd::unique_ptr<Instance> InstantiatePrefab(AZ::IO::PathView filePath) override;
+            AZStd::unique_ptr<Instance> InstantiatePrefab(
+                AZ::IO::PathView filePath, InstanceOptionalReference parent = AZStd::nullopt) override;
 
             /**
             * Generates a new Prefab Instance based on the Template referenced by templateId
             * @param templateId the id of the template being instantiated.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
-            AZStd::unique_ptr<Instance> InstantiatePrefab(const TemplateId& templateId) override;
+            AZStd::unique_ptr<Instance> InstantiatePrefab(
+                const TemplateId& templateId, InstanceOptionalReference parent = AZStd::nullopt) override;
 
             /**
             * Add a new Link into Prefab System Component and create a unique id for it.
@@ -212,8 +214,11 @@ namespace AzToolsFramework
             */
             AZStd::unique_ptr<Instance> CreatePrefab(
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-                AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
-                bool ShouldCreateLinks = true) override;
+                AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr) override;
+
+            AZStd::unique_ptr<Instance> CreatePrefabUnderParent(
+                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                AZ::IO::PathView filePath, InstanceOptionalReference parent) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -236,6 +241,10 @@ namespace AzToolsFramework
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
+
+            AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+                AZStd::unique_ptr<Instance> instance, bool shouldCreateLinks);
 
             /**
              * Updates all the linked Instances corresponding to the linkIds in the provided queue.
