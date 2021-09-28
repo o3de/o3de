@@ -10,7 +10,7 @@
 
 namespace AzToolsFramework
 {
-    void EditorFocusModeTestFixture::SetUp()
+    void EditorFocusModeFixture::SetUp()
     {
         AllocatorsTestFixture::SetUp();
 
@@ -27,7 +27,7 @@ namespace AzToolsFramework
         GenerateTestHierarchy();
     }
 
-    void EditorFocusModeTestFixture::GenerateTestHierarchy() 
+    void EditorFocusModeFixture::GenerateTestHierarchy() 
     {
         /*
         *   City
@@ -46,7 +46,7 @@ namespace AzToolsFramework
         m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName,    m_entityMap[SportsCarEntityName]);
     }
 
-    AZ::EntityId EditorFocusModeTestFixture::CreateEditorEntity(const char* name, AZ::EntityId parentId)
+    AZ::EntityId EditorFocusModeFixture::CreateEditorEntity(const char* name, AZ::EntityId parentId)
     {
         AZ::Entity* entity = nullptr;
         UnitTest::CreateDefaultEditorEntity(name, &entity);
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         return entity->GetId();
     }
 
-    void EditorFocusModeTestFixture::TearDown()
+    void EditorFocusModeFixture::TearDown()
     {
         m_app.Stop();
 

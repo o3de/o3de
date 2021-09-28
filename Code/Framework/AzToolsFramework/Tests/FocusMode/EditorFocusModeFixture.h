@@ -19,7 +19,7 @@
 
 namespace AzToolsFramework
 {
-    class EditorFocusModeTestFixture
+    class EditorFocusModeFixture
         : public UnitTest::AllocatorsTestFixture
     {
     protected:

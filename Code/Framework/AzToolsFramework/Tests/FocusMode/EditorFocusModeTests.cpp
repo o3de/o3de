@@ -10,7 +10,7 @@
 
 namespace AzToolsFramework
 {
-    TEST_F(EditorFocusModeTestFixture, EditorFocusModeTests_SetFocus)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_SetFocus)
     {
         // When an entity is set as the focus root, GetFocusRoot should return its EntityId.
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
@@ -21,7 +21,7 @@ namespace AzToolsFramework
         EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), AZ::EntityId());
     }
 
-    TEST_F(EditorFocusModeTestFixture, EditorFocusModeTests_IsInFocusSubTree_AncestorsDescendants)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_AncestorsDescendants)
     {
         // When the focus is set to an entity, all its descendants are in the focus subtree while the ancestors aren't.
         {
@@ -39,7 +39,7 @@ namespace AzToolsFramework
         m_focusModeInterface->ClearFocusRoot();
     }
 
-    TEST_F(EditorFocusModeTestFixture, EditorFocusModeTests_IsInFocusSubTree_Siblings)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Siblings)
     {
         // If the root entity has siblings, they are also outside of the focus subtree.
         {
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         m_focusModeInterface->ClearFocusRoot();
     }
 
-    TEST_F(EditorFocusModeTestFixture, EditorFocusModeTests_IsInFocusSubTree_Leaf)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Leaf)
     {
         // If the root is a leaf, then the focus subtree will consists of just that entity.
         {
@@ -75,7 +75,7 @@ namespace AzToolsFramework
         m_focusModeInterface->ClearFocusRoot();
     }
 
-    TEST_F(EditorFocusModeTestFixture, EditorFocusModeTests_IsInFocusSubTree_Clear)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Clear)
     {
         // Change the value from the default.
         m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
