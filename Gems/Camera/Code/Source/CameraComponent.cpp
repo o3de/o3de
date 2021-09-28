@@ -14,9 +14,7 @@
 
 #include "CameraComponent.h"
 
-#include <MathConversion.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Camera

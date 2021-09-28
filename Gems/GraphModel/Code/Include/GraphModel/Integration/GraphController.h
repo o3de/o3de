@@ -78,8 +78,8 @@ namespace GraphModelIntegration
         GraphModel::NodePtrList GetSelectedNodes() override;
         void SetSelected(GraphModel::NodePtrList nodes, bool selected) override;
         void ClearSelection() override;
-        void EnableNode(GraphModel::NodePtr node);
-        void DisableNode(GraphModel::NodePtr node);
+        void EnableNode(GraphModel::NodePtr node) override;
+        void DisableNode(GraphModel::NodePtr node) override;
         void CenterOnNodes(GraphModel::NodePtrList nodes) override;
         AZ::Vector2 GetMajorPitch() const override;
 
@@ -166,7 +166,7 @@ namespace GraphModelIntegration
         void EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
         void DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
 
-        AZStd::string GetDataTypeString(const AZ::Uuid& typeId);
+        AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         //! This is where we find all of the graph metadata (like node positions, comments, etc) and store it in the node graph for serialization
         // CJS TODO: Use this instead of the above undo functions

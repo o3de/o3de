@@ -19,6 +19,7 @@
 #include <IConsole.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include "platform.h"
 

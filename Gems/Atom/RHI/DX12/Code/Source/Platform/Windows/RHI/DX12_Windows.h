@@ -16,9 +16,13 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
+
+AZ_PUSH_DISABLE_WARNING(4265, "-Wunknown-warning-option") // class has virtual functions, but its non-trivial destructor is not virtual; 
 #include <wrl.h>
+AZ_POP_DISABLE_WARNING
 
 #include <d3dx12.h>
+#include <d3dcommon.h>
 
 // This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
 // Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkRigidBodyComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Multiplayer/Components/NetworkRigidBodyComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+
+    <RemoteProcedure Name="SendApplyImpulse" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Applies an impulse">
+        <Param Type="AZ::Vector3" Name="impulse" />
+        <Param Type="AZ::Vector3" Name="worldPoint" />
+    </RemoteProcedure>
+
+</Component>

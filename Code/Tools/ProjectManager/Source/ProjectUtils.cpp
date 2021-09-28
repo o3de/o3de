@@ -22,6 +22,8 @@
 #include <QSpacerItem>
 #include <QGridLayout>
 
+#include <AzCore/std/chrono/chrono.h>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
@@ -441,7 +443,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
+        bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
         {
             QFileInfo original(origFile);
             if (original.exists())
@@ -506,6 +508,34 @@ namespace O3DE::ProjectManager
             }
 
             return ProjectManagerScreen::Invalid;
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QProcessEnvironment& processEnv,
+            int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
+        {
+            QProcess execProcess;
+            execProcess.setProcessEnvironment(processEnv);
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+            execProcess.start(cmd, arguments);
+            if (!execProcess.waitForStarted())
+            {
+                return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
+            }
+
+            if (!execProcess.waitForFinished(commandTimeoutSeconds * 1000 /* Milliseconds per second */))
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
+            }
+            int resultCode = execProcess.exitCode();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+            }
+            QString resultOutput = execProcess.readAllStandardOutput();
+            return AZ::Success(resultOutput);
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

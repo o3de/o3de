@@ -22,6 +22,7 @@ namespace GraphCanvas
 
         void SetEnableState(bool enableState);
 
+        using DisableContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
         
     private:

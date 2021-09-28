@@ -395,12 +395,6 @@ namespace AzToolsFramework
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForWarningComponents(const QString& message)
     {
         AzQtComponents::CardNotification * notification = CreateNotification(message);
-        const QPushButton * featureButton = notification->addButtonFeature(tr("Continue"));
-
-        connect(featureButton, &QPushButton::clicked, this, [notification]()
-        {
-            notification->close();
-        });
 
         return notification;
     }

@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>

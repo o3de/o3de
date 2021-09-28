@@ -58,7 +58,6 @@ namespace Terrain
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , private Terrain::TerrainAreaRequestBus::Handler
         , private Terrain::TerrainSpawnerRequestBus::Handler
     {
     public:
@@ -81,6 +80,7 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
+    protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -92,8 +92,7 @@ namespace Terrain
         void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
         bool GetUseGroundPlane() override;
         
-        void RegisterArea() override;
-        void RefreshArea() override;
+        void RefreshArea();
 
     private:
         TerrainLayerSpawnerConfig m_configuration;

@@ -6,16 +6,15 @@
  *
  */
 
-#include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 
 namespace AzManipulatorTestFramework
 {
     // Null debug display for dummy draw calls
-    class NullDebugDisplayRequests
-        : public AzFramework::DebugDisplayRequests
+    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
     {
     public:
         virtual ~NullDebugDisplayRequests() = default;
@@ -76,6 +75,11 @@ namespace AzManipulatorTestFramework
         return 0.1f;
     }
 
+    bool ViewportInteraction::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
     void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
     {
         visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
@@ -101,24 +105,19 @@ namespace AzManipulatorTestFramework
         return *m_nullDebugDisplayRequests;
     }
 
-    void ViewportInteraction::EnableGridSnaping()
+    void ViewportInteraction::SetGridSnapping(const bool enabled)
     {
-        m_gridSnapping = true;
+        m_gridSnapping = enabled;
     }
 
-    void ViewportInteraction::DisableGridSnaping()
+    void ViewportInteraction::SetAngularSnapping(const bool enabled)
     {
-        m_gridSnapping = false;
+        m_angularSnapping = enabled;
     }
 
-    void ViewportInteraction::EnableAngularSnaping()
+    void ViewportInteraction::SetStickySelect(const bool enabled)
     {
-        m_angularSnapping = true;
-    }
-
-    void ViewportInteraction::DisableAngularSnaping()
-    {
-        m_angularSnapping = false;
+        m_stickySelect = enabled;
     }
 
     void ViewportInteraction::SetGridSize(float size)
@@ -152,4 +151,4 @@ namespace AzManipulatorTestFramework
     {
         return 1.0f;
     }
-}// namespace AzManipulatorTestFramework
+} // namespace AzManipulatorTestFramework

@@ -231,7 +231,7 @@ function(ly_add_test)
 
         # For test projects that are custom targets, pass a props file that sets the project as "Console" so
         # it leaves the console open when it finishes
-        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/TestProject.props")
+        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/MSVC/TestProject.props")
 
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)

@@ -37,24 +37,24 @@ public:
 
     void EnableEntityPhysics(bool bEnable);
 
-    virtual EUiAnimNodeType GetType() const { return eUiAnimNodeType_AzEntity; }
+    EUiAnimNodeType GetType() const override { return eUiAnimNodeType_AzEntity; }
 
-    virtual void AddTrack(IUiAnimTrack* track);
+    void AddTrack(IUiAnimTrack* track) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CUiAnimNode
     //////////////////////////////////////////////////////////////////////////
 
     // UiAnimNodeInterface
-    virtual AZ::EntityId GetAzEntityId() override { return m_entityId; };
-    virtual void SetAzEntity(AZ::Entity* entity) override { m_entityId = entity->GetId(); }
+    AZ::EntityId GetAzEntityId() override { return m_entityId; };
+    void SetAzEntity(AZ::Entity* entity) override { m_entityId = entity->GetId(); }
     // ~UiAnimNodeInterface
 
 
-    virtual void StillUpdate();
-    virtual void Animate(SUiAnimContext& ec);
+    void StillUpdate() override;
+    void Animate(SUiAnimContext& ec) override;
 
-    virtual void CreateDefaultTracks();
+    void CreateDefaultTracks() override;
 
     bool SetParamValueAz(float time, const UiAnimParamData& param, float value) override;
     bool SetParamValueAz(float time, const UiAnimParamData& param, bool value) override;
@@ -67,30 +67,30 @@ public:
 
     bool GetParamValueAz(float time, const UiAnimParamData& param, float& value) override;
 
-    virtual void PrecacheStatic(float startTime) override;
-    virtual void PrecacheDynamic(float time) override;
+    void PrecacheStatic(float startTime) override;
+    void PrecacheDynamic(float time) override;
 
     Vec3 GetPos() { return m_pos; };
     Quat GetRotate() { return m_rotate; };
     Vec3 GetScale() { return m_scale; };
 
-    virtual void Activate(bool bActivate);
+    void Activate(bool bActivate) override;
 
     IUiAnimTrack* GetTrackForAzField(const UiAnimParamData& param) const override;
     IUiAnimTrack* CreateTrackForAzField(const UiAnimParamData& param) override;
 
     //////////////////////////////////////////////////////////////////////////
-    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
-    virtual void InitPostLoad(IUiAnimSequence* pSequence, bool remapIds, LyShine::EntityIdMap* entityIdMap);
-    void OnReset();
-    void OnResetHard();
-    void OnStart();
-    void OnPause();
-    void OnStop();
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+    void InitPostLoad(IUiAnimSequence* pSequence, bool remapIds, LyShine::EntityIdMap* entityIdMap) override;
+    void OnReset() override;
+    void OnResetHard() override;
+    void OnStart() override;
+    void OnPause() override;
+    void OnStop() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual unsigned int GetParamCount() const;
-    virtual CUiAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CUiAnimParamType GetParamType(unsigned int nIndex) const override;
     AZStd::string GetParamName(const CUiAnimParamType& param) const override;
     AZStd::string GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const override;
 
@@ -100,7 +100,7 @@ public:
     static void Reflect(AZ::SerializeContext* serializeContext);
 
 protected:
-    virtual bool GetParamInfoFromType(const CUiAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CUiAnimParamType& paramId, SParamInfo& info) const override;
 
     //! Given the class data definition and a track for a field within it,
     //! compute the offset for the field and set it in the track
@@ -115,7 +115,7 @@ protected:
     void ReleaseSounds();
 
     // functions involved in the process to parse and store lua animated properties
-    virtual void UpdateDynamicParams();
+    void UpdateDynamicParams() override;
     virtual void UpdateDynamicParams_Editor();
     virtual void UpdateDynamicParams_PureGame();
 

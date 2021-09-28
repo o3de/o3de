@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
 // Included so we can deduce the asset type from asset paths.
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -114,7 +115,7 @@ namespace AZ
         {
             rapidjson::Document jsonDoc;
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(pathToAssetListJson);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(pathToAssetListJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (!readJsonResult.IsSuccess())
             {

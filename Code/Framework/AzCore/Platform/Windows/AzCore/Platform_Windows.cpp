@@ -42,7 +42,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("System", false, "Failed to open HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\MachineGuid!")
+                    AZ_Error("System", false, "Failed to open HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\MachineGuid!");
                 }
 
                 wchar_t* hostname = machineInfo + wcslen(machineInfo);

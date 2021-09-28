@@ -42,7 +42,7 @@ namespace AZ
 
         Data::Instance<Model> Model::CreateInternal(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: CreateInternal");
             Data::Instance<Model> model = aznew Model();
             const RHI::ResultCode resultCode = model->Init(modelAsset);
 
@@ -56,7 +56,7 @@ namespace AZ
 
         RHI::ResultCode Model::Init(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: Init");
 
             m_lods.resize(modelAsset->GetLodAssets().size());
 
@@ -128,7 +128,7 @@ namespace AZ
 
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: LocalRayIntersection");
             
             if (!GetModelAsset())
             {
@@ -171,7 +171,7 @@ namespace AZ
             float& distanceNormalized,
             AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: RayIntersection");
             const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
 
             const AZ::Transform inverseTM = modelTransform.GetInverse();

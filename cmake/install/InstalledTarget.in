@@ -23,5 +23,5 @@ ly_add_target(
 
 set(configs @CMAKE_CONFIGURATION_TYPES@)
 foreach(config ${configs})
-    include("@NAME_PLACEHOLDER@_${config}.cmake" OPTIONAL)
+    include("Platform/@PAL_PLATFORM_NAME@/@LY_BUILD_PERMUTATION@/@NAME_PLACEHOLDER@_${config}.cmake" OPTIONAL)
 endforeach()

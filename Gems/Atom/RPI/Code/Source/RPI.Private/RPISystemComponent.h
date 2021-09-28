@@ -32,7 +32,7 @@ namespace AZ
          */
         class RPISystemComponent final
             : public AZ::Component
-            , public AZ::SystemTickBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -50,8 +50,9 @@ namespace AZ
         private:
             RPISystemComponent(const RPISystemComponent&) = delete;
 
-            // SystemTickBus overrides...
-            void OnSystemTick() override;
+            // TickBus overrides...
+            void OnTick(float deltaTime, ScriptTimePoint time) override;
+            int GetTickOrder() override;
 
             RPISystem m_rpiSystem;
 

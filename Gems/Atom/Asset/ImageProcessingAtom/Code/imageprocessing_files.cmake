@@ -114,6 +114,8 @@ set(FILES
     ../External/CubeMapGen/CImageSurface.cpp
     ../External/CubeMapGen/CImageSurface.h
     ../External/CubeMapGen/VectorMacros.h
+    Source/Compressors/ASTCCompressor.cpp
+    Source/Compressors/ASTCCompressor.h
     Source/Compressors/Compressor.h
     Source/Compressors/Compressor.cpp
     Source/Compressors/CTSquisher.h

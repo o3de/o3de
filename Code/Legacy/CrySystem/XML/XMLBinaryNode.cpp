@@ -125,7 +125,7 @@ bool CBinaryXmlNode::getAttr(const char* key, int64& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        azsscanf(svalue, "%" PRId64, &value);
+        value = strtoll(svalue, nullptr, 10);
         return true;
     }
     return false;
@@ -137,14 +137,7 @@ bool CBinaryXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) 
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        if (useHexFormat)
-        {
-            azsscanf(svalue, "%" PRIX64, &value);
-        }
-        else
-        {
-            azsscanf(svalue, "%" PRIu64, &value);
-        }
+        value = strtoull(svalue, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;

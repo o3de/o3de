@@ -699,7 +699,7 @@ Please note that only those seed files will get updated that are active for your
                 if (isMove)
                 {
                     report.append(AZStd::string::format(
-                        "SOURCEID: %" PRId64 ", CURRENT PATH: %s, NEW PATH: %s, CURRENT GUID: %s, NEW GUID: %s\n",
+                        "SOURCEID: %lld, CURRENT PATH: %s, NEW PATH: %s, CURRENT GUID: %s, NEW GUID: %s\n",
                         relocationInfo.m_sourceEntry.m_sourceID,
                         relocationInfo.m_oldRelativePath.c_str(),
                         relocationInfo.m_newRelativePath.c_str(),
@@ -709,7 +709,7 @@ Please note that only those seed files will get updated that are active for your
                 else
                 {
                     report.append(AZStd::string::format(
-                        "SOURCEID: %" PRId64 ", CURRENT PATH: %s, CURRENT GUID: %s\n",
+                        "SOURCEID: %lld, CURRENT PATH: %s, CURRENT GUID: %s\n",
                         relocationInfo.m_sourceEntry.m_sourceID,
                         relocationInfo.m_oldRelativePath.c_str(),
                         relocationInfo.m_sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str()));

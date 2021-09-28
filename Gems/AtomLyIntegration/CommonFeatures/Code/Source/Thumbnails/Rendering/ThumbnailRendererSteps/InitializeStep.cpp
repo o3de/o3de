@@ -72,34 +72,6 @@ namespace AZ
 
                 data->m_scene = RPI::Scene::CreateScene(sceneDesc);
 
-                // Setup scene srg modification callback (to push per-frame values to the shaders)
-                RPI::ShaderResourceGroupCallback callback = [data](RPI::ShaderResourceGroup* srg)
-                {
-                    if (srg == nullptr)
-                    {
-                        return;
-                    }
-                    bool needCompile = false;
-                    RHI::ShaderInputConstantIndex timeIndex = srg->FindShaderInputConstantIndex(Name{ "m_time" });
-                    if (timeIndex.IsValid())
-                    {
-                        srg->SetConstant(timeIndex, aznumeric_cast<float>(data->m_simulateTime));
-                        needCompile = true;
-                    }
-                    RHI::ShaderInputConstantIndex deltaTimeIndex = srg->FindShaderInputConstantIndex(Name{ "m_deltaTime" });
-                    if (deltaTimeIndex.IsValid())
-                    {
-                        srg->SetConstant(deltaTimeIndex, data->m_deltaTime);
-                        needCompile = true;
-                    }
-
-                    if (needCompile)
-                    {
-                        srg->Compile();
-                    }
-                };
-                data->m_scene->SetShaderResourceGroupCallback(callback);
-
                 // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
                 auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
                 AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");

@@ -35,13 +35,15 @@ namespace AZ
             RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
             ShaderCollection* shaderCollection,
             ShaderResourceGroup* shaderResourceGroup,
-            const MaterialPropertyFlags* materialPropertyDependencies
+            const MaterialPropertyFlags* materialPropertyDependencies,
+            MaterialPropertyPsoHandling psoHandling
         )
             : m_materialPropertyValues(propertyValues)
             , m_materialPropertiesLayout(materialPropertiesLayout)
             , m_shaderCollection(shaderCollection)
             , m_shaderResourceGroup(shaderResourceGroup)
             , m_materialPropertyDependencies(materialPropertyDependencies)
+            , m_psoHandling(psoHandling)
         {}
 
         bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value)
@@ -419,9 +421,7 @@ namespace AZ
         {
             if (!materialPropertyDependencies.test(index.GetIndex()))
             {
-#if defined(AZ_ENABLE_TRACING)
                 const MaterialPropertyDescriptor* propertyDescriptor = materialPropertiesLayout.GetPropertyDescriptor(index);
-#endif
                 AZ_Error("MaterialFunctor", false, "Material functor accessing an unregistered material property '%s'.",
                     propertyDescriptor ? propertyDescriptor->GetName().GetCStr() : "<unknown>");
             }

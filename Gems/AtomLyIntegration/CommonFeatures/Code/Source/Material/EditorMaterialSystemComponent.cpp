@@ -6,33 +6,31 @@
  *
  */
 
-#include <Material/EditorMaterialSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RHI/Factory.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Application/Application.h>
-
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-
-#include <Atom/RHI/Factory.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
+#include <Editor/LyViewPaneNames.h>
+#include <Material/EditorMaterialComponentInspector.h>
+#include <Material/EditorMaterialSystemComponent.h>
 #include <Material/MaterialThumbnail.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <QApplication>
-#include <QProcessEnvironment>
-#include <QObject>
 #include <QAction>
+#include <QApplication>
+#include <QDockWidget>
+#include <QObject>
+#include <QProcessEnvironment>
 AZ_POP_DISABLE_WARNING
 
 void InitMaterialEditorResources()
@@ -95,6 +93,7 @@ namespace AZ
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
+            AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
 
             SetupThumbnails();
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
@@ -106,6 +105,7 @@ namespace AZ
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
 
             TeardownThumbnails();
             m_materialBrowserInteractions.reset();
@@ -117,7 +117,7 @@ namespace AZ
             }
         }
 
-        void EditorMaterialSystemComponent::OpenInMaterialEditor(const AZStd::string& sourcePath)
+        void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
         {
             AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
 
@@ -140,6 +140,20 @@ namespace AZ
             AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
+        void EditorMaterialSystemComponent::OpenMaterialInspector(
+            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+        {
+            auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
+            if (dockWidget)
+            {
+                auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
+                if (inspector)
+                {
+                    inspector->LoadMaterial(entityId, materialAssignmentId);
+                }
+            }
+        }
+
         void EditorMaterialSystemComponent::OnApplicationAboutToStop()
         {
             TeardownThumbnails();
@@ -157,11 +171,12 @@ namespace AZ
                 QObject::connect(
                     m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
                     {
-                        OpenInMaterialEditor("");
+                        OpenMaterialEditor("");
                     }
                 );
 
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(&AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
+                AzToolsFramework::EditorMenuRequestBus::Broadcast(
+                    &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
             }
         }
 
@@ -174,13 +189,25 @@ namespace AZ
             }
         }
 
+        void EditorMaterialSystemComponent::NotifyRegisterViews()
+        {
+            AzToolsFramework::ViewPaneOptions inspectorOptions;
+            inspectorOptions.canHaveMultipleInstances = true;
+            inspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
+            inspectorOptions.paneRect = QRect(50, 50, 400, 700);
+            inspectorOptions.showInMenu = false;
+            inspectorOptions.showOnToolsToolbar = false;
+            AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
+                "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+        }
+
         void EditorMaterialSystemComponent::SetupThumbnails()
         {
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider,
-                MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
                 ThumbnailContext::DefaultContext);
         }
 
@@ -189,12 +216,13 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider,
-                Thumbnails::MaterialThumbnailCache::ProviderName,
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::MaterialThumbnailCache::ProviderName,
                 ThumbnailContext::DefaultContext);
         }
 
-        AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(const char* fullSourceFileName)
+        AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(
+            const char* fullSourceFileName)
         {
             static const char* MaterialTypeIconPath = ":/Icons/materialtype.svg";
             static const char* MaterialTypeExtension = "materialtype";

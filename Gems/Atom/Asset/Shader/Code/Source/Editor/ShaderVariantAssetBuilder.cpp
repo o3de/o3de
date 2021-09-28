@@ -478,7 +478,7 @@ namespace AZ
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
             // The shader options define what options are available, what are the allowed values/range
             // for each option and what is its default value.
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -509,7 +509,7 @@ namespace AZ
             }
 
             auto functionsJsonPath = functionsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -541,7 +541,7 @@ namespace AZ
             }
 
             auto srgJsonPath = srgJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -598,7 +598,7 @@ namespace AZ
             }
     
             auto bindingsJsonPath = bindingsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -630,7 +630,7 @@ namespace AZ
             }
 
             hlslSourcePath = hlslSourcePathOutcome.TakeValue();
-            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath);
+            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!hlslSourceOutcome.IsSuccess())
             {
                 AZ_Error(

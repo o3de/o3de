@@ -65,6 +65,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             Gem::Atom_RHI.Edit
+            Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
 )
 

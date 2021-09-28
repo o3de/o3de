@@ -75,7 +75,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 
     // compute specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
     float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (!ComputeProbeSpecular(IN.m_position.xy, positionWS, ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, sampleIndex, specular))
+    if (!ComputeProbeSpecular(IN.m_position.xy, positionWS, ObjectSrg::GetWorldMatrixInverse(), ObjectSrg::m_innerObbHalfLengths, sampleIndex, specular))
     {
         discard;
     }

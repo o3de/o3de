@@ -1,21 +1,13 @@
 {
- 
-    "Source" : "Terrain",
+    "Source" : "./Terrain.azsl",
 
-    
-    "RasterState" : { "CullMode" : "None" },
-
-    "DepthStencilState" : { 
-        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
-    },
-
-    "BlendState" : {
-        "Enable" : true,
-        "BlendSource" : "One",
-        "BlendAlphaSource" : "One",
-        "BlendDest" : "AlphaSourceInverse",
-        "BlendAlphaDest" : "AlphaSourceInverse",
-        "BlendAlphaOp" : "Add"
+    "DepthStencilState" :
+    { 
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual"
+        }
     },
 
     "DrawList" : "forward",
@@ -33,5 +25,9 @@
           "type": "Fragment"
         }
       ]
+    },
+
+    "BlendState" : {
+        "Enable" : false
     }
 }

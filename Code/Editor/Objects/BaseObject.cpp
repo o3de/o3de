@@ -618,12 +618,6 @@ bool CBaseObject::SetPos(const Vec3& pos, int flags)
         StoreUndo("Position", true, flags);
     }
 
-    float terrainElevation = AzFramework::Terrain::TerrainDataRequests::GetDefaultTerrainHeight();
-    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainElevation
-        , &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats
-        , pos.x, pos.y, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, nullptr);
-    m_height = pos.z - terrainElevation;
-
     if (!bPositionDelegated)
     {
         m_pos = pos;
@@ -1275,14 +1269,6 @@ void CBaseObject::OnEvent(ObjectEvent event)
 {
     switch (event)
     {
-    case EVENT_KEEP_HEIGHT:
-    {
-        float h = m_height;
-        float newz = GetIEditor()->GetTerrainElevation(m_pos.x, m_pos.y) + m_height;
-        SetPos(Vec3(m_pos.x, m_pos.y, newz));
-        m_height = h;
-    }
-    break;
     case EVENT_CONFIG_SPEC_CHANGE:
         UpdateVisibility(!IsHidden());
         break;

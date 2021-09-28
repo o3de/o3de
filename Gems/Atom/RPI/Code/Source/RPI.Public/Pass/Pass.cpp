@@ -93,8 +93,11 @@ namespace AZ
 
         void Pass::SetEnabled(bool enabled)
         {
-            m_flags.m_enabled = enabled;
-            OnHierarchyChange();
+            if (m_flags.m_enabled != enabled)
+            {
+                m_flags.m_enabled = enabled;
+                OnHierarchyChange();
+            }
         }
 
         bool Pass::IsEnabled() const

@@ -2144,7 +2144,7 @@ namespace Audio
     {
         if (bytes < (1 << 10))
         {
-            azsnprintf(buffer, bufLength, "%" PRIu64 " B", bytes);
+            azsnprintf(buffer, bufLength, "%llu B", bytes);
         }
         else if (bytes < (1 << 20))
         {
@@ -2261,10 +2261,10 @@ namespace Audio
             auxGeom.Draw2dLabel(fPosX + xTablePositions[4], posY + lineHeight, textSize, color, false, "%s", buffer);
 
             auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY, textSize, color, false, "Total Allocs");
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY + lineHeight, textSize, color, false, "%" PRIu64, totalAllocs);
+            auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY + lineHeight, textSize, color, false, "%llu", totalAllocs);
 
             auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY, textSize, color, false, "Total Frees");
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY + lineHeight, textSize, color, false, "%" PRIu64, totalFrees);
+            auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY + lineHeight, textSize, color, false, "%llu", totalFrees);
         }
         else
         {

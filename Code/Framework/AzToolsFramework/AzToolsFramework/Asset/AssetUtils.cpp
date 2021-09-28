@@ -97,6 +97,7 @@ namespace AzToolsFramework::AssetUtils
     struct EnabledPlatformsVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZStd::vector<AZStd::string> m_enabledPlatforms;

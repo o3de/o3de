@@ -35,6 +35,10 @@ namespace AZ
         static constexpr size_t MaxRegistryFolderEntries = 128;
         
         SettingsRegistryImpl();
+        //! @param useFileIo - If true attempt to redirect
+        //! file read operations through the FileIOBase instance first before falling back to SystemFile
+        //! otherwise always use SystemFile
+        explicit SettingsRegistryImpl(bool useFileIo);
         AZ_DISABLE_COPY_MOVE(SettingsRegistryImpl);
         ~SettingsRegistryImpl() override = default;
 
@@ -83,6 +87,8 @@ namespace AZ
         void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
         void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
 
+        void SetUseFileIO(bool useFileIo) override;
+
     private:
         using TagList = AZStd::fixed_vector<size_t, Specializations::MaxCount + 1>;
         struct RegistryFile
@@ -104,7 +110,7 @@ namespace AZ
         // Compares if lhs is less than rhs in terms of processing order. This can also detect and report conflicts.
         bool IsLessThan(bool& collisionFound, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
             const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
-        bool ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations);
+        bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
 
         void SignalNotifier(AZStd::string_view jsonPath, Type type);
@@ -119,5 +125,7 @@ namespace AZ
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
         JsonApplyPatchSettings m_applyPatchSettings;
+
+        bool m_useFileIo{};
     };
 } // namespace AZ

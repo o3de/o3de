@@ -287,11 +287,8 @@ namespace AZ
             const char* assetAliasPath = GetAlias("@assets@");
             if (path && assetAliasPath)
             {
-                AZStd::string assetsAlias(assetAliasPath);
-                AZStd::string pathString = path;
-                AZStd::to_lower(assetsAlias.begin(), assetsAlias.end());
-                AZStd::to_lower(pathString.begin(), pathString.end());
-                if (AZ::IO::PathView(pathString.c_str()).IsRelativeTo(assetsAlias.c_str()))
+                const AZ::IO::PathView pathView(path);
+                if (pathView.IsRelativeTo(assetAliasPath))
                 {
                     AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
                         "Attempted write location: %s", path);
@@ -587,26 +584,11 @@ namespace AZ
                 // strings that are shorter than the alias's mapped path without checking.
                 if ((longestMatch == 0) || (resolvedAlias.size() > longestMatch) && (resolvedAlias.size() <= bufStringLength))
                 {
-                    // custom strcmp that ignores slash directions
-                    constexpr AZStd::string_view pathSeparators{ "/\\" };
-                    bool allMatch = AZStd::equal(resolvedAlias.begin(), resolvedAlias.end(), inBuffer.begin(),
-                        [&pathSeparators](const char lhs, const char rhs)
+                    // Check if the input path is relative to the alias value
+                    if (AZ::IO::PathView(inBuffer).IsRelativeTo(AZ::IO::PathView(resolvedAlias)))
                     {
-                        const bool lhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        const bool rhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        return (lhsIsSeparator && rhsIsSeparator) || tolower(lhs) == tolower(rhs);
-                    });
-
-                    if (allMatch)
-                    {
-                        // Either the resolvedAlias path must match the path exactly or the path must have a path separator character
-                        // right after the resolved alias
-                        if (const size_t matchLen = resolvedAlias.size();
-                            matchLen == bufStringLength || (pathSeparators.find_first_of(inBuffer[matchLen]) != AZStd::string_view::npos))
-                        {
-                            longestMatch = matchLen;
-                            longestAlias = alias;
-                        }
+                        longestMatch = resolvedAlias.size();
+                        longestAlias = alias;
                     }
                 }
             }
@@ -712,6 +694,7 @@ namespace AZ
                 const char* assetAliasPath = GetAlias("@assets@");
                 const char* rootAliasPath = GetAlias("@root@");
                 const char* projectPlatformCacheAliasPath = GetAlias("@projectplatformcache@");
+
                 const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
                     (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
                     (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
@@ -751,7 +734,7 @@ namespace AZ
             {
                 if (AZ::StringFunc::StartsWith(pathStrView, aliasKey))
                 {
-                    // Reduce of the size result result path by the size of the and add the resolved alias size
+                    // Add to the size of result path by the resolved alias length - the alias key length
                     AZStd::string_view postAliasView = pathStrView.substr(aliasKey.size());
                     size_t requiredFixedMaxPathSize = postAliasView.size();
                     requiredFixedMaxPathSize += aliasValue.size();

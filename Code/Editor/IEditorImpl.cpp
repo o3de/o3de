@@ -632,14 +632,7 @@ void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
     CViewport* pViewport = GetActiveView();
     if (pViewport)
     {
-        //Pre and Post widget rendering calls are made here to make sure that the proper camera state is set.
-        //MakeConstructionPlane will make a call to ViewToWorldRay which needs the correct camera state
-        //in the CRenderViewport to be set.
-        pViewport->PreWidgetRendering();
-
         pViewport->MakeConstructionPlane(GetIEditor()->GetAxisConstrains());
-
-        pViewport->PostWidgetRendering();
     }
 
     Notify(eNotify_OnRefCoordSysChange);

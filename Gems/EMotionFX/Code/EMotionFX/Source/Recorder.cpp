@@ -1421,17 +1421,16 @@ namespace EMotionFX
     // extract sorted active items
     void Recorder::ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, AZStd::vector<ExtractedNodeHistoryItem>* outItems, AZStd::vector<size_t>* outMap) const
     {
-        // clear the map array
+        // Reinit the item array.
         const size_t maxIndex = CalcMaxNodeHistoryTrackIndex(actorInstanceData);
         outItems->resize(maxIndex + 1);
         for (size_t i = 0; i <= maxIndex; ++i)
         {
-            ExtractedNodeHistoryItem item;
-            item.m_trackIndex        = i;
-            item.m_value             = 0.0f;
+            ExtractedNodeHistoryItem& item = (*outItems)[i];
+            item.m_nodeHistoryItem = nullptr;
+            item.m_trackIndex = i;
             item.m_keyTrackSampleTime = 0.0f;
-            item.m_nodeHistoryItem   = nullptr;
-            outItems->emplace(AZStd::next(begin(*outItems), i), AZStd::move(item));
+            item.m_value = 0.0f;
         }
 
         // find all node history items
@@ -1440,7 +1439,7 @@ namespace EMotionFX
         {
             if (curItem->m_startTime <= timeValue && curItem->m_endTime > timeValue)
             {
-                ExtractedNodeHistoryItem item;
+                ExtractedNodeHistoryItem& item = (*outItems)[curItem->m_trackIndex];
                 item.m_trackIndex        = curItem->m_trackIndex;
                 item.m_keyTrackSampleTime = timeValue - curItem->m_startTime;
                 item.m_nodeHistoryItem   = curItem;
@@ -1463,8 +1462,6 @@ namespace EMotionFX
                     MCORE_ASSERT(false);    // unsupported mode
                     item.m_value = curItem->m_globalWeights.GetValueAtTime(item.m_keyTrackSampleTime, nullptr, nullptr, m_recordSettings.m_interpolate);
                 }
-
-                outItems->emplace(AZStd::next(begin(*outItems), curItem->m_trackIndex), item);
             }
         }
 
@@ -1472,7 +1469,7 @@ namespace EMotionFX
         outMap->resize(maxIndex + 1);
         for (size_t i = 0; i <= maxIndex; ++i)
         {
-            outMap->emplace(AZStd::next(begin(*outMap), i), i);
+            (*outMap)[i] = i;
         }
 
         // sort if desired
@@ -1482,7 +1479,7 @@ namespace EMotionFX
 
             for (size_t i = 0; i <= maxIndex; ++i)
             {
-                outMap->emplace(AZStd::next(begin(*outMap), outItems->at(i).m_trackIndex), i);
+                (*outMap)[outItems->at(i).m_trackIndex] = i;
             }
         }
     }

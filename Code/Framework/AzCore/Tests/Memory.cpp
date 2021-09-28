@@ -1179,6 +1179,8 @@ namespace UnitTest
             size_type               Capacity() const override                             { return 1 * 1024 * 1024 * 1024; }
             /// Returns max allocation size if possible. If not returned value is 0
             size_type               GetMaxAllocationSize() const override                 { return 1 * 1024 * 1024 * 1024; }
+            /// Returns max allocation size of a single contiguous allocation
+            size_type               GetMaxContiguousAllocationSize() const override       { return 1 * 1024 * 1024 * 1024; }
             /// Returns a pointer to a sub-allocator or NULL.
             IAllocatorAllocate*     GetSubAllocator() override                            { return NULL; }
         };

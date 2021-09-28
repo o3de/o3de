@@ -2300,7 +2300,7 @@ namespace AZ
         {
             if (classData->m_converter)
             {
-                AZ_Assert(false, "A deprecated element with a data converter was passed to CloneObject, this is not supported.")
+                AZ_Assert(false, "A deprecated element with a data converter was passed to CloneObject, this is not supported.");
             }
             // push a dummy node in the stack
             cloneData->m_parentStack.push_back();

@@ -45,23 +45,23 @@ public:
     void release() override;
     //////////////////////////////////////////////////////////////////////////
 
-    virtual int GetSubTrackCount() const { return 0; };
-    virtual IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const { return 0; };
+    int GetSubTrackCount() const override { return 0; };
+    IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return 0; };
     AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
-    virtual void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) { assert(0); }
+    void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) override { assert(0); }
 
-    virtual const CUiAnimParamType& GetParameterType() const { return m_nParamType; };
-    virtual void SetParameterType(CUiAnimParamType type) { m_nParamType = type; };
+    const CUiAnimParamType& GetParameterType() const override { return m_nParamType; };
+    void SetParameterType(CUiAnimParamType type) override { m_nParamType = type; };
 
-    virtual const UiAnimParamData& GetParamData() const { return m_componentParamData; }
-    virtual void SetParamData(const UiAnimParamData& param) { m_componentParamData = param; }
+    const UiAnimParamData& GetParamData() const override { return m_componentParamData; }
+    void SetParamData(const UiAnimParamData& param) override { m_componentParamData = param; }
 
-    virtual void GetKeyValueRange(float& fMin, float& fMax) const { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
-    virtual void SetKeyValueRange(float fMin, float fMax){ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
+    void GetKeyValueRange(float& fMin, float& fMax) const override { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
+    void SetKeyValueRange(float fMin, float fMax) override{ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
 
-    ISplineInterpolator* GetSpline() const { return m_spline.get(); };
+    ISplineInterpolator* GetSpline() const override { return m_spline.get(); };
 
-    virtual bool IsKeySelected(int key) const
+    bool IsKeySelected(int key) const override
     {
         if (GetSpline() && GetSpline()->IsKeySelectedAtAnyDimension(key))
         {
@@ -70,7 +70,7 @@ public:
         return false;
     }
 
-    virtual void SelectKey(int key, bool select)
+    void SelectKey(int key, bool select) override
     {
         if (GetSpline())
         {
@@ -78,22 +78,22 @@ public:
         }
     }
 
-    int GetNumKeys() const
+    int GetNumKeys() const override
     {
         return m_spline->num_keys();
     }
 
-    void SetNumKeys(int numKeys)
+    void SetNumKeys(int numKeys) override
     {
         m_spline->resize(numKeys);
     }
 
-    bool HasKeys() const
+    bool HasKeys() const override
     {
         return GetNumKeys() != 0;
     }
 
-    void RemoveKey(int num)
+    void RemoveKey(int num) override
     {
         if (m_spline && m_spline->num_keys() > num)
         {
@@ -105,7 +105,7 @@ public:
         }
     }
 
-    void GetKey(int index, IKey* key) const
+    void GetKey(int index, IKey* key) const override
     {
         assert(index >= 0 && index < GetNumKeys());
         assert(key != 0);
@@ -123,7 +123,7 @@ public:
         tcbkey->SetValue(k.value);
     }
 
-    void SetKey(int index, IKey* key)
+    void SetKey(int index, IKey* key) override
     {
         assert(index >= 0 && index < GetNumKeys());
         assert(key != 0);
@@ -140,76 +140,76 @@ public:
         Invalidate();
     }
 
-    float GetKeyTime(int index) const
+    float GetKeyTime(int index) const override
     {
         assert(index >= 0 && index < GetNumKeys());
         return m_spline->time(index);
     }
-    void SetKeyTime(int index, float time)
+    void SetKeyTime(int index, float time) override
     {
         assert(index >= 0 && index < GetNumKeys());
         m_spline->SetKeyTime(index, time);
         Invalidate();
     }
-    int GetKeyFlags(int index)
+    int GetKeyFlags(int index) override
     {
         assert(index >= 0 && index < GetNumKeys());
         return m_spline->key(index).flags;
     }
-    void SetKeyFlags(int index, int flags)
+    void SetKeyFlags(int index, int flags) override
     {
         assert(index >= 0 && index < GetNumKeys());
         m_spline->key(index).flags = flags;
     }
 
-    virtual EUiAnimCurveType GetCurveType() { assert(0); return eUiAnimCurveType_Unknown; }
-    virtual EUiAnimValue GetValueType() { assert(0); return eUiAnimValue_Unknown; }
+    EUiAnimCurveType GetCurveType() override { assert(0); return eUiAnimCurveType_Unknown; }
+    EUiAnimValue GetValueType() override { assert(0); return eUiAnimValue_Unknown; }
 
-    virtual void GetValue(float time, float& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector2& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value) { assert(0); }
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Color& value) { assert(0); }
+    void GetValue(float time, float& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector2& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value) override { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Color& value) override { assert(0); }
 
-    virtual void SetValue(float time, const float& value, bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector2& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Color& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
+    void SetValue(float time, const float& value, bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector2& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Color& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 
-    virtual void OffsetKeyPosition([[maybe_unused]] const Vec3& value) { assert(0); };
+    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
 
-    bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
-    bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset);
+    bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+    bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset) override;
 
-    void GetKeyInfo(int key, const char*& description, float& duration)
+    void GetKeyInfo(int key, const char*& description, float& duration) override
     {
         description = 0;
         duration = 0;
     }
 
     //! Sort keys in track (after time of keys was modified).
-    void SortKeys()
+    void SortKeys() override
     {
         m_spline->sort_keys();
     };
 
     //! Get track flags.
-    int GetFlags() { return m_flags; }
+    int GetFlags() override { return m_flags; }
 
     //! Check if track is masked by mask
-    virtual bool IsMasked([[maybe_unused]] const uint32 mask) const { return false; }
+    bool IsMasked([[maybe_unused]] const uint32 mask) const override { return false; }
 
     //! Set track flags.
-    void SetFlags(int flags)
+    void SetFlags(int flags) override
     {
         m_flags = flags;
         if (m_flags & eUiAnimTrackFlags_Loop)
@@ -231,12 +231,12 @@ public:
         m_spline->flag_set(Spline::MODIFIED);
     };
 
-    void SetTimeRange(const Range& timeRange)
+    void SetTimeRange(const Range& timeRange) override
     {
         m_spline->SetRange(timeRange.start, timeRange.end);
     }
 
-    int FindKey(float time)
+    int FindKey(float time) override
     {
         // Find key with given time.
         int num = m_spline->num_keys();
@@ -252,7 +252,7 @@ public:
     }
 
     //! Create key at given time, and return its index.
-    int CreateKey(float time)
+    int CreateKey(float time) override
     {
         ValueType value;
 
@@ -272,12 +272,12 @@ public:
         return m_spline->InsertKey(time, tmp);
     }
 
-    int CloneKey(int srcKey)
+    int CloneKey(int srcKey) override
     {
         return CopyKey(this, srcKey);
     }
 
-    int CopyKey(IUiAnimTrack* pFromTrack, int nFromKey)
+    int CopyKey(IUiAnimTrack* pFromTrack, int nFromKey) override
     {
         ITcbKey key;
         pFromTrack->GetKey(nFromKey, &key);
@@ -326,16 +326,16 @@ public:
         m_defaultValue = value;
     }
 
-    virtual ColorB GetCustomColor() const
+    ColorB GetCustomColor() const
     { return m_customColor; }
-    virtual void SetCustomColor(ColorB color)
+    void SetCustomColor(ColorB color)
     {
         m_customColor = color;
         m_bCustomColorSet = true;
     }
-    virtual bool HasCustomColor() const
+    bool HasCustomColor() const
     { return m_bCustomColorSet; }
-    virtual void ClearCustomColor()
+    void ClearCustomColor()
     { m_bCustomColorSet = false; }
 
     static void Reflect(AZ::SerializeContext* serializeContext) {}

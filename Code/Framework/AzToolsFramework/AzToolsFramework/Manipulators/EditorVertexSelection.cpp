@@ -11,6 +11,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
@@ -363,9 +364,7 @@ namespace AzToolsFramework
             boxSelectData.m_activeSelection = boxSelectData.m_startSelection;
         }
 
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
+        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         // box select active (clicking and dragging)
         if (editorBoxSelect.BoxRegion())
@@ -385,7 +384,7 @@ namespace AzToolsFramework
                     found, fixedVertices, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex, vertexIndex, localVertex);
 
                 const AZ::Vector3 worldVertex = worldFromLocal.TransformPoint(AZ::AdaptVertexOut<Vertex>(localVertex));
-                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, worldVertex);
+                const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(worldVertex, cameraState);
 
                 // check if a vertex is inside the box select region
                 if (editorBoxSelect.BoxRegion()->contains(ViewportInteraction::QPointFromScreenPoint(screenPosition)))
@@ -658,8 +657,7 @@ namespace AzToolsFramework
         m_editorBoxSelect.InstallDisplayScene(
             [this, vertexBoxSelectData](const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& /*debugDisplay*/)
             {
-                const auto keyboardModifiers = ViewportInteraction::KeyboardModifiers(
-                    ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+                const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
                 // when modifiers change ensure we refresh box selection for immediate update
                 if (keyboardModifiers != m_editorBoxSelect.PreviousModifiers())

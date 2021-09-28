@@ -56,12 +56,45 @@ namespace Terrain
         }
 
     private:
+
+        // System-level references to the shader, pipeline, and shader-related information
+        enum ShaderType 
+        {
+            Depth,
+            Forward,
+            Count,
+        };
+
+        struct ShaderState
+        {
+            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
+            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState;
+            AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
+
+            void Reset()
+            {
+                m_shader.reset();
+                m_pipelineState.reset();
+                m_pipelineStateDescriptor = {};
+            }
+        };
+
+        struct ShaderTerrainData // Must align with struct in Object Srg
+        {
+            AZStd::array<float, 2> m_uvMin;
+            AZStd::array<float, 2> m_uvMax;
+            AZStd::array<float, 2> m_uvStep;
+            float m_sampleSpacing;
+            float m_heightScale;
+        };
+
         // RPI::SceneNotificationBus overrides ...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void InitializeAtomStuff();
+        void ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail);
 
         void InitializeTerrainPatch();
 
@@ -77,20 +110,11 @@ namespace Terrain
         // System-level cached reference to the Atom RHI
         AZ::RHI::RHISystemInterface* m_rhiSystem = nullptr;
 
-        // System-level references to the shader, pipeline, and shader-related information
-        AZ::Data::Instance<AZ::RPI::Shader> m_shader{};
-        AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-        AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState = nullptr;
-        AZ::RHI::DrawListTag m_drawListTag;
-        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_perObjectSrgAsset;
+        AZStd::array<ShaderState, ShaderType::Count> m_shaderStates;
 
         AZ::RHI::ShaderInputImageIndex m_heightmapImageIndex;
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
-        AZ::RHI::ShaderInputConstantIndex m_heightScaleIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvMinIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvMaxIndex;
-        AZ::RHI::ShaderInputConstantIndex m_uvStepIndex;
-
+        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
 
         // Pos_float_2 + UV_float_2
         struct Vertex
@@ -125,11 +149,12 @@ namespace Terrain
         {
             AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
-            float m_heightScale;
+            float m_heightScale{ 0.0f };
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
-            uint32_t m_heightmapImageWidth;
-            uint32_t m_heightmapImageHeight;
+            uint32_t m_heightmapImageWidth{ 0 };
+            uint32_t m_heightmapImageHeight{ 0 };
             bool m_propertiesDirty{ true };
+            float m_sampleSpacing{ 0.0f };
         };
 
         TerrainAreaData m_areaData;

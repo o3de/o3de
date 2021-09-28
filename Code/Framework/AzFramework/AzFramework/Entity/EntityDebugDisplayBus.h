@@ -105,7 +105,7 @@ namespace AzFramework
         virtual AZ::Matrix3x4 PopPremultipliedMatrix() { return AZ::Matrix3x4::CreateIdentity(); }
 
     protected:
-        ~DebugDisplayRequests() = default;
+        virtual ~DebugDisplayRequests() = default;
     };
 
     /// Inherit from DebugDisplayRequestBus::Handler to implement the DebugDisplayRequests interface.

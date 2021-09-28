@@ -82,7 +82,7 @@ partial ShaderResourceGroup ViewSrg
     {
         float4x4 m_depthBiasMatrix;
         uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
-        uint m_shadowFilterMethod; // Includes overall filter method in top 16 bits and pcf method in bottom 16 bits.
+        uint m_shadowFilterMethod; 
         float m_boundaryScale;
         uint m_predictionSampleCount;
         uint m_filteringSampleCount;
@@ -117,8 +117,6 @@ partial ShaderResourceGroup ViewSrg
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
-        uint m_pcfFilterMethod; // Matches with PcfFilterMethod in ShadowConstants.h
-        uint m_padding[3];
     };
 
     enum ShadowFilterMethod

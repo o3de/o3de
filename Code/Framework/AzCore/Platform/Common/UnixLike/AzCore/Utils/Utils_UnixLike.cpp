@@ -9,6 +9,7 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <cstdlib>
+#include <pwd.h>
 
 namespace AZ
 {
@@ -39,6 +40,14 @@ namespace AZ
                 AZ::IO::FixedMaxPath path{homePath};
                 return path.Native();
             }
+
+            struct passwd* pass = getpwuid(getuid());
+            if (pass)
+            {
+                AZ::IO::FixedMaxPath path{pass->pw_dir};
+                return path.Native();
+            }
+            
             return {};
         }
 

@@ -93,9 +93,26 @@ namespace PhysX
 
         ////////////////////////////////////////////////////////////////////////
         // TerrainDataRequestBus interface dummy implementation
-        AZ::Vector2 GetTerrainGridResolution() const override { return {}; }
-        AZ::Aabb GetTerrainAabb() const override { return {}; }
-        float GetHeight(AZ::Vector3, Sampler, bool*) const override { return {}; }
+        AZ::Vector2 GetTerrainHeightQueryResolution() const override
+        {
+            return {};
+        }
+        void SetTerrainHeightQueryResolution([[maybe_unused]] AZ::Vector2 queryResolution) override
+        {
+        }
+
+        AZ::Aabb GetTerrainAabb() const override
+        {
+            return {};
+        }
+        void SetTerrainAabb([[maybe_unused]] const AZ::Aabb& worldBounds) override
+        {
+        }
+
+        float GetHeight(AZ::Vector3, Sampler, bool*) const override
+        {
+            return {};
+        }
         float GetHeightFromFloats(float, float, Sampler, bool*) const override { return {}; }
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(AZ::Vector3, Sampler, bool*) const override { return {}; }
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float, float, Sampler, bool*) const override { return {}; }

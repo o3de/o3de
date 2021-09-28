@@ -21,14 +21,14 @@ namespace JsonSerializationTests
         public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>
     {
     public:
-        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
             AZ::RPI::MaterialPropertyDescriptor::Reflect(context.get());
             AZ::RPI::ReflectMaterialDynamicMetadata(context.get());
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
         }

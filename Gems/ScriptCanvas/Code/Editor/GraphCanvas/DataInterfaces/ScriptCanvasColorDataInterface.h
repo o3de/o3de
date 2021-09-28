@@ -131,7 +131,7 @@ namespace ScriptCanvasEditor
             return "vectorized";
         }
         
-        virtual AZStd::string GetElementStyle(int index) const
+        AZStd::string GetElementStyle(int index) const override
         {
             return AZStd::string::format("vector_%i", index);
         }

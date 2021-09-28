@@ -6,11 +6,10 @@
  *
  */
 #pragma once
-#ifndef AZSTD_DEQUE_H
-#define AZSTD_DEQUE_H 1
 
 
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
@@ -350,7 +349,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type size() const      { return m_size; }
-        AZ_FORCE_INLINE size_type max_size() const  { return m_allocator.get_max_size() / sizeof(block_node_type); }
+        AZ_FORCE_INLINE size_type max_size() const  { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(block_node_type); }
         AZ_FORCE_INLINE bool empty() const          { return m_size == 0; }
 
         AZ_FORCE_INLINE const_reference at(size_type offset) const { return *const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + offset, this)); }
@@ -1243,5 +1242,3 @@ namespace AZStd
         return removedCount;
     }
 }
-
-#endif // AZSTD_DEQUE_H

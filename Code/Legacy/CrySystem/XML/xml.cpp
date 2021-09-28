@@ -400,7 +400,7 @@ bool CXmlNode::getAttr(const char* key, int64& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        azsscanf(svalue, "%" PRId64, &value);
+        value = strtoll(key, nullptr, 10);
         return true;
     }
     return false;
@@ -412,14 +412,7 @@ bool CXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        if (useHexFormat)
-        {
-            azsscanf(svalue, "%" PRIX64, &value);
-        }
-        else
-        {
-            azsscanf(svalue, "%" PRIu64, &value);
-        }
+        value = strtoull(key, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;
@@ -955,10 +948,12 @@ void CXmlNode::AddToXmlString(XmlString& xml, int level, AZ::IO::HandleType file
 {
     if (fileHandle != AZ::IO::InvalidHandle && chunkSize > 0)
     {
+        auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIoBase != nullptr, "FileIOBase is expected to be initialized for CXmlNode");
         size_t len = xml.length();
         if (len >= chunkSize)
         {
-            gEnv->pCryPak->FWrite(xml.c_str(), len, 1, fileHandle);
+            fileIoBase->Write(fileHandle, xml.c_str(), len);
             xml.assign (""); // should not free memory and does not!
         }
     }
@@ -1265,7 +1260,8 @@ bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSiz
     XmlString xml;
     xml.assign ("");
     xml.reserve(chunkSize * 2); // we reserve double memory, as writing in chunks is not really writing in fixed blocks but a bit fuzzy
-    auto pCryPak = gEnv->pCryPak;
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+    AZ_Assert(fileIoBase != nullptr, "FileIOBase is expected to be initialized for CXmlNode");
     if (fileHandle == AZ::IO::InvalidHandle)
     {
         return false;
@@ -1274,7 +1270,7 @@ bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSiz
     size_t len = xml.length();
     if (len > 0)
     {
-        pCryPak->FWrite(xml.c_str(), len, 1, fileHandle);
+        fileIoBase->Write(fileHandle, xml.c_str(), len);
     }
     xml.clear(); // xml.resize(0) would not reclaim memory
     return true;
@@ -1646,10 +1642,18 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
         }
-        adjustedFilename = xmlFile.GetAdjustedFilename();
-        AZStd::replace(adjustedFilename.begin(), adjustedFilename.end(), '\\', '/');
-        pakPath = xmlFile.GetPakPath();
-        AZStd::replace(pakPath.begin(), pakPath.end(), '\\', '/');
+
+        AZ::IO::FixedMaxPath resolvedPath(AZ::IO::PosixPathSeparator);
+        auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIoBase != nullptr, "FileIOBase is expected to be initialized for CXmlNode");
+        if (fileIoBase->ResolvePath(resolvedPath, xmlFile.GetFilename()))
+        {
+            adjustedFilename = resolvedPath.MakePreferred().Native();
+        }
+        if (fileIoBase->ResolvePath(resolvedPath, xmlFile.GetPakPath()))
+        {
+            pakPath = resolvedPath.MakePreferred().Native();
+        }
     }
 
     XMLBinary::XMLBinaryReader reader;

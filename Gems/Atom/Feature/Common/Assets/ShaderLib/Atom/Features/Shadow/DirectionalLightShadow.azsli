@@ -101,7 +101,6 @@ class DirectionalLightShadow
     // This outputs visibility ratio (from 0.0 to 1.0) for ESM+PCF.
     float GetVisibilityFromLightEsmPcf();
 
-    float SamplePcfBicubic();
     float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade);
 
     uint m_lightIndex;
@@ -278,70 +277,26 @@ float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightPcf()
-{
-    const uint predictionCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_predictionSampleCount;
+{   
+    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
+    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
 
-    if (predictionCount <= 1)
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
-        return GetVisibilityFromLightNoFilter();
-    }
+        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
     
-    if (ViewSrg::m_directionalLightShadows[m_lightIndex].m_pcfFilterMethod == PcfFilterMethod_Bicubic)
-    {
-        return SamplePcfBicubic();
-    }    
-
-    const float3 lightDirection = 
-        normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
-    const float4 jitterUnitVectorDepthDiffBase = 
-        Shadow::GetJitterUnitVectorDepthDiffBase(m_normalVector, lightDirection);
-    const float3 jitterUnit = jitterUnitVectorDepthDiffBase.xyz;
-    const float jitterDepthDiffBase = jitterUnitVectorDepthDiffBase.w;
-
-    uint shadowedCount = 0;
-    uint jitterIndex = 0;
-
-    // Predicting
-    for (; jitterIndex < predictionCount; ++jitterIndex)
-    {
-        if (IsShadowedWithJitter(
-            jitterUnit,
-            jitterDepthDiffBase,
-            jitterIndex))
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
+            shadowCoord.z < 1. - DepthMargin)
         {
-            ++shadowedCount;
+            m_debugInfo.m_cascadeIndex = indexOfCascade;
+            return SamplePcfBicubic(shadowCoord, indexOfCascade);
         }
     }
-    if (shadowedCount == 0)
-    {
-        return 1.;
-    }
-    else if (shadowedCount == predictionCount)
-    {
-        return 0.;
-    }
-
-    // Filtering
-
-    // When the prediction detects the point on the boundary of shadow,
-    // i.e., both of a lit point and a a shadowed one exists in the jittering area,
-    // we calculate the more precious lit ratio in the area.
-    const uint filteringCount = max(
-        predictionCount,
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount);
-
-    for (; jitterIndex < filteringCount; ++jitterIndex)
-    {
-        if (IsShadowedWithJitter(
-            jitterUnit,
-            jitterDepthDiffBase,
-            jitterIndex))
-        {
-            ++shadowedCount;
-        }
-    }
-
-    return (filteringCount - shadowedCount) * 1. / filteringCount;
+    m_debugInfo.m_cascadeIndex = cascadeCount;
+    return 1.;
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightEsm()
@@ -411,29 +366,6 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
     }
 
     m_debugInfo.m_usePcfFallback = false;
-    m_debugInfo.m_cascadeIndex = cascadeCount;
-    return 1.;
-}
-
-float DirectionalLightShadow::SamplePcfBicubic()
-{
-    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-
-    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {
-        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
-    
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
-            shadowCoord.z < 1. - DepthMargin)
-        {
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
-            return SamplePcfBicubic(shadowCoord, indexOfCascade);
-        }
-    }
     m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 }

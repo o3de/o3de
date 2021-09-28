@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace Terrain
 {
@@ -85,17 +86,16 @@ namespace Terrain
 
     void TerrainWorldComponent::Activate()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::SetWorldBounds,
-            AZ::Aabb::CreateFromMinMax(m_configuration.m_worldMin, m_configuration.m_worldMax)
-        );
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::SetHeightQueryResolution, m_configuration.m_heightQueryResolution);
-
         // Currently, the Terrain System Component owns the Terrain System instance because the Terrain World component gets recreated
         // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
         // the level component.
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::Activate);
+
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainAabb,
+            AZ::Aabb::CreateFromMinMax(m_configuration.m_worldMin, m_configuration.m_worldMax));
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainHeightQueryResolution, m_configuration.m_heightQueryResolution);
     }
 
     void TerrainWorldComponent::Deactivate()

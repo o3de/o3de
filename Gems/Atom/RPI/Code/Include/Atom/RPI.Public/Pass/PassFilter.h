@@ -53,6 +53,8 @@ namespace AZ
             //! Construct filter with only pass name. 
             PassHierarchyFilter(const Name& passName);
 
+            virtual ~PassHierarchyFilter() = default;
+
             //! Construct filter with pass name and its parents' names in the order of the hierarchy
             //! This means k-th element is always an ancestor of the (k-1)-th element.
             //! And the last element is the pass name. 

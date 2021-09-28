@@ -54,39 +54,39 @@ public:
     {
     }
 
-    void BeginGroup(const char* szName)
+    void BeginGroup(const char* szName) override
     {
         m_impl.BeginGroup(szName);
     }
 
-    bool BeginOptionalGroup(const char* szName, bool condition)
+    bool BeginOptionalGroup(const char* szName, bool condition) override
     {
         return m_impl.BeginOptionalGroup(szName, condition);
     }
 
-    void EndGroup()
+    void EndGroup() override
     {
         m_impl.EndGroup();
     }
 
-    bool IsReading() const
+    bool IsReading() const override
     {
         return m_impl.IsReading();
     }
 
-    void WriteStringValue(const char* name, SSerializeString& value)
+    void WriteStringValue(const char* name, SSerializeString& value) override
     {
         m_impl.Value(name, value);
     }
-    void ReadStringValue(const char* name, SSerializeString& curValue)
+    void ReadStringValue(const char* name, SSerializeString& curValue) override
     {
         m_impl.Value(name, curValue);
     }
 
-#define SERIALIZATION_TYPE(T)                                                                                                              \
-    void Value(const char* name, T& x) override                                                                              \
-    {                                                                                                                                      \
-        m_impl.Value(name, x);                                                                                                     \
+#define SERIALIZATION_TYPE(T)                   \
+    void Value(const char* name, T& x) override \
+    {                                           \
+        m_impl.Value(name, x);                  \
     }
 #include "SerializationTypes.h"
 #undef SERIALIZATION_TYPE

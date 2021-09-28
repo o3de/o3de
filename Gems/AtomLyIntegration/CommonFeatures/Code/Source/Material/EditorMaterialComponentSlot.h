@@ -33,29 +33,26 @@ namespace AZ
             AZ::Data::AssetId GetDefaultAssetId() const;
             AZStd::string GetLabel() const;
             bool HasSourceData() const;
-            void OpenMaterialEditor() const;
-            void ResetToDefaultAsset();
+
+            void SetAsset(const Data::AssetId& assetId);
+            void SetAsset(const Data::Asset<RPI::MaterialAsset>& asset);
             void Clear();
+            void ClearToDefaultAsset();
             void ClearOverrides();
+
             void OpenMaterialExporter();
+            void OpenMaterialEditor() const;
             void OpenMaterialInspector();
             void OpenUvNameMapInspector();
 
+            AZ::EntityId m_entityId;
             MaterialAssignmentId m_id;
-            AZStd::string m_label;
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
-            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
-            MaterialPropertyOverrideMap m_propertyOverrides;
-            AZStd::function<void()> m_materialChangedCallback;
-            AZStd::function<void()> m_propertyChangedCallback;
-
-            RPI::MaterialModelUvOverrideMap m_matModUvOverrides;
-            AZStd::unordered_set<AZ::Name> m_modelUvNames; // Cached for override options.
 
         private:
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
             void OnMaterialChanged() const;
-            void OnPropertyChanged() const;
+            void OnDataChanged() const;
         };
 
         // Vector of slots for assignable or overridable material data.

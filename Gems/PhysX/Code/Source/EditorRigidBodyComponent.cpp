@@ -286,6 +286,9 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
+        PhysX::EditorColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 

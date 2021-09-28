@@ -40,7 +40,7 @@ namespace AzToolsFramework
         //! Returns the item tooltip text to display in the Outliner.
         virtual QString GenerateItemTooltip(AZ::EntityId entityId) const;
         //! Returns the item icon pixmap to display in the Outliner.
-        virtual QPixmap GenerateItemIcon(AZ::EntityId entityId) const;
+        virtual QIcon GenerateItemIcon(AZ::EntityId entityId) const;
         //! Returns whether the element's lock and visibility state should be accessible in the Outliner
         virtual bool CanToggleLockVisibility(AZ::EntityId entityId) const;
         //! Returns whether the element's name should be editable

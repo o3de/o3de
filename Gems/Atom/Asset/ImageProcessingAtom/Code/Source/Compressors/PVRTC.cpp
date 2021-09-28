@@ -19,7 +19,7 @@
 
 namespace ImageProcessingAtom
 {
-    // Note: PVRTexLib supports ASTC formats, ETC formats, PVRTC formats and BC formats
+    // Note: PVRTexLib supports ETC formats, PVRTC formats and BC formats
     // We haven't tested the performace to compress BC formats compare to CTSquisher
     // For PVRTC formats, we only added PVRTC 1 support for now
     // The compression for ePVRTPF_EAC_R11 and ePVRTPF_EAC_RG11 are very slow. It takes 7 and 14 minutes for a 2048x2048 texture.
@@ -27,34 +27,6 @@ namespace ImageProcessingAtom
     {
         switch (fmt)
         {
-        case ePixelFormat_ASTC_4x4:
-            return ePVRTPF_ASTC_4x4;
-        case ePixelFormat_ASTC_5x4:
-            return ePVRTPF_ASTC_5x4;
-        case ePixelFormat_ASTC_5x5:
-            return ePVRTPF_ASTC_5x5;
-        case ePixelFormat_ASTC_6x5:
-            return ePVRTPF_ASTC_6x5;
-        case ePixelFormat_ASTC_6x6:
-            return ePVRTPF_ASTC_6x6;
-        case ePixelFormat_ASTC_8x5:
-            return ePVRTPF_ASTC_8x5;
-        case ePixelFormat_ASTC_8x6:
-            return ePVRTPF_ASTC_8x6;
-        case ePixelFormat_ASTC_8x8:
-            return ePVRTPF_ASTC_8x8;
-        case ePixelFormat_ASTC_10x5:
-            return ePVRTPF_ASTC_10x5;
-        case ePixelFormat_ASTC_10x6:
-            return ePVRTPF_ASTC_10x6;
-        case ePixelFormat_ASTC_10x8:
-            return ePVRTPF_ASTC_10x8;
-        case ePixelFormat_ASTC_10x10:
-            return ePVRTPF_ASTC_10x10;
-        case ePixelFormat_ASTC_12x10:
-            return ePVRTPF_ASTC_12x10;
-        case ePixelFormat_ASTC_12x12:
-            return ePVRTPF_ASTC_12x12;
         case ePixelFormat_PVRTC2:
             return ePVRTPF_PVRTCI_2bpp_RGBA;
         case ePixelFormat_PVRTC4:
@@ -156,26 +128,7 @@ namespace ImageProcessingAtom
                 internalQuality = pvrtexture::eETCSlow;
             }
         }
-        else if (IsASTCFormat(fmtDst))
-        {
-            if (quality == eQuality_Preview)
-            {
-                internalQuality = pvrtexture::eASTCVeryFast;
-            }
-            else if (quality == eQuality_Fast)
-            {
-                internalQuality = pvrtexture::eASTCFast;
-            }
-            else if (quality == eQuality_Normal)
-            {
-                internalQuality = pvrtexture::eASTCMedium;
-            }
-            else
-            {
-                internalQuality = pvrtexture::eASTCThorough;
-            }
-        }
-        else
+        else 
         {
             if (quality == eQuality_Preview)
             {
@@ -252,7 +205,7 @@ namespace ImageProcessingAtom
 
             if (!isSuccess)
             {
-                AZ_Error("Image Processing", false, "Failed to compress image with PVRTexLib. You may not have astcenc.exe for compressing ASTC formates");
+                AZ_Error("Image Processing", false, "Failed to compress image with PVRTexLib.");
                 return nullptr;
             }
 

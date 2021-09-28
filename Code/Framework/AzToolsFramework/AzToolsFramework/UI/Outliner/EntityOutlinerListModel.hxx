@@ -36,6 +36,7 @@
 namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
+    class FocusModeInterface;
 
     namespace EntityOutliner
     {
@@ -230,7 +231,7 @@ namespace AzToolsFramework
         bool DropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
         bool CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
 
-        QMap<int, QVariant> itemData(const QModelIndex& index) const;
+        QMap<int, QVariant> itemData(const QModelIndex& index) const override;
         QVariant dataForAll(const QModelIndex& index, int role) const;
         QVariant dataForName(const QModelIndex& index, int role) const;
         QVariant dataForVisibility(const QModelIndex& index, int role) const;
@@ -273,7 +274,8 @@ namespace AzToolsFramework
         QVariant GetEntityIcon(const AZ::EntityId& id) const;
         QVariant GetEntityTooltip(const AZ::EntityId& id) const;
         
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox

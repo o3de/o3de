@@ -102,6 +102,13 @@ namespace AzToolsFramework
             TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
 
             /**
+             * Updates relative filepath location of a prefab (in case of SaveAs operation).
+             * @param templateId An id of a Template to change filepath of.
+             * @param filePath new relative path of the Template.
+             */
+            void UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath) override;
+
+            /**
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */
@@ -182,6 +189,12 @@ namespace AzToolsFramework
              * @param dirty The new value of the dirty flag.
              */
             void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
+
+            bool AreDirtyTemplatesPresent(TemplateId rootTemplateId) override;
+
+            void SaveAllDirtyTemplates(TemplateId rootTemplateId) override;
+
+            AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId rootTemplateId) override;
 
             //////////////////////////////////////////////////////////////////////////
 
@@ -335,6 +348,9 @@ namespace AzToolsFramework
              */
             bool RemoveLinkFromTargetTemplate(const LinkId& linkId, const Link& link);
 
+            // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
+            void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
+
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
 
@@ -353,7 +369,7 @@ namespace AzToolsFramework
             // A counter for generating unique Link Ids.
             AZStd::atomic<LinkId> m_linkIdCounter = 0u;
 
-            // Used for finding the owning instance of an arbitrary entity
+            // Used for finding the owning instance of an arbitrary entity.
             InstanceEntityMapper m_instanceEntityMapper;
 
             // Used for finding the Instances owned by an arbitrary Template.
@@ -362,16 +378,16 @@ namespace AzToolsFramework
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
 
-            // Handler the public Prefab API used by UI and scripting
+            // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;
 
-            // Used for updating Templates when Instances are modified
+            // Used for updating Templates when Instances are modified.
             InstanceToTemplatePropagator m_instanceToTemplatePropagator;
 
-            // Handler of the public Prefab requests
+            // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
         };
     } // namespace Prefab

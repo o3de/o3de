@@ -56,12 +56,16 @@ namespace O3DE::ProjectManager
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
+        // Gem Repos
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
+
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
+        GemRepoInfo GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         bool RegisterThisEngine();

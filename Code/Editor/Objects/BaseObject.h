@@ -712,7 +712,7 @@ protected:
     // May be overridden in derived classes to handle helpers scaling.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetHelperScale([[maybe_unused]] float scale) {};
-    virtual float GetHelperScale() { return 1; };
+    virtual float GetHelperScale() { return 1.0f; };
 
     void SetNameInternal(const QString& name) { m_name = name; }
 
@@ -742,9 +742,6 @@ private:
     //! Set class description for this object,
     //! Only called once after creation by ObjectManager.
     void SetClassDesc(CObjectClassDesc* classDesc);
-
-    // From CObject, (not implemented)
-    virtual void Serialize([[maybe_unused]] CArchive& ar) {};
 
     EScaleWarningLevel GetScaleWarningLevel() const;
     ERotationWarningLevel GetRotationWarningLevel() const;
@@ -798,8 +795,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     //! Area radius around object, where terrain is flatten and static objects removed.
     float m_flattenArea;
-    //! Every object keeps for itself height above terrain.
-    float m_height;
     //! Object's name.
     QString m_name;
     //! Class description for this object.

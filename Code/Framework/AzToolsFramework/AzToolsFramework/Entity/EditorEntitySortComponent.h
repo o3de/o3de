@@ -65,7 +65,7 @@ namespace AzToolsFramework
                 /**
                 * Called right before we start reading from the instance pointed by classPtr.
                 */
-                void OnReadBegin(void* classPtr)
+                void OnReadBegin(void* classPtr) override
                 {
                     EditorEntitySortComponent* component = reinterpret_cast<EditorEntitySortComponent*>(classPtr);
                     component->PrepareSave();

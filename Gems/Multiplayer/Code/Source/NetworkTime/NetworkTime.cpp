@@ -65,11 +65,6 @@ namespace Multiplayer
         return m_rewindingConnectionId;
     }
 
-    HostFrameId NetworkTime::GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
-    {
-        return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
-    }
-
     void NetworkTime::ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs)
     {
         AZ_Assert(!IsTimeRewound(), "Forcibly setting network time is unsupported under a rewound time scope");
@@ -79,20 +74,23 @@ namespace Multiplayer
         m_rewindingConnectionId = AzNetworking::InvalidConnectionId;
     }
 
-    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
+    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId rewindConnectionId)
     {
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
-        m_rewindingConnectionId = rewindConnectionId;
-    }
-
-    void NetworkTime::AlterBlendFactor(float blendFactor)
-    {
         m_hostBlendFactor = blendFactor;
+        m_rewindingConnectionId = rewindConnectionId;
     }
 
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
     {
+        if (!IsTimeRewound())
+        {
+            // If we're not inside a rewind scope then reset any rewound state and exit
+            ClearRewoundEntities();
+            return;
+        }
+
         // Since the vis system doesn't support rewound queries, first query with an expanded volume to catch any fast moving entities
         const AZ::Aabb expandedVolume = rewindVolume.GetExpanded(AZ::Vector3(sv_RewindVolumeExtrudeDistance));
 
@@ -114,8 +112,15 @@ namespace Multiplayer
 
                     if (networkTransform != nullptr)
                     {
-                        // We're not presently factoring in interpolated position here
-                        const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
+                        // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
+                        AZ::Vector3 rewindCenter = networkTransform->GetTranslation();
+                        const AZ::Vector3 rewindCenterPrevious = networkTransform->GetTranslationPrevious();
+                        const float blendFactor = GetNetworkTime()->GetHostBlendFactor();
+                        if (!AZ::IsClose(blendFactor, 1.0f) && !rewindCenter.IsClose(rewindCenterPrevious))
+                        {
+                            // If we have a blend factor, lerp the translation for accuracy
+                            rewindCenter = rewindCenterPrevious.Lerp(rewindCenter, blendFactor);
+                        }
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
 

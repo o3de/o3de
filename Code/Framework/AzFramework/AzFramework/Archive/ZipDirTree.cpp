@@ -9,7 +9,6 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Archive/ZipFileFormat.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
 #include <AzFramework/Archive/ZipDirTree.h>
@@ -18,37 +17,42 @@ namespace AZ::IO::ZipDir
 {
     // Adds or finds the file. Returns non-initialized structure if it was added,
     // or an IsInitialized() structure if it was found
-    FileEntry* FileEntryTree::Add(AZStd::string_view szPath)
+    FileEntry* FileEntryTree::Add(AZ::IO::PathView inputPathView)
     {
-        AZStd::optional<AZStd::string_view> pathEntry = AZ::StringFunc::TokenizeNext(szPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-        if (!pathEntry)
+        if (inputPathView.empty())
         {
             AZ_Assert(false, "An empty file path cannot be added to the zip file entry tree");
             return nullptr;
         }
 
         // If a path separator was found, add a subdirectory
-        if (!szPath.empty())
+        auto inputPathIter = inputPathView.begin();
+        AZ::IO::PathView firstPathSegment(*inputPathIter);
+        auto inputPathNextIter = inputPathIter == inputPathView.end() ? inputPathView.end() : AZStd::next(inputPathIter, 1);
+        AZ::IO::PathView remainingPath = inputPathNextIter != inputPathView.end() ?
+            AZStd::string_view(inputPathNextIter->Native().begin(), inputPathView.Native().end())
+            : AZStd::string_view{};
+        if (!remainingPath.empty())
         {
-            auto dirEntryIter = m_mapDirs.find(*pathEntry);
+            auto dirEntryIter = m_mapDirs.find(firstPathSegment);
             // we have a subdirectory here - create the file in it
             if (dirEntryIter == m_mapDirs.end())
             {
-                dirEntryIter = m_mapDirs.emplace(*pathEntry, AZStd::make_unique<FileEntryTree>()).first;
+                dirEntryIter = m_mapDirs.emplace(firstPathSegment, AZStd::make_unique<FileEntryTree>()).first;
             }
-            return dirEntryIter->second->Add(szPath);
+            return dirEntryIter->second->Add(remainingPath);
         }
         // Add the filename
-        auto fileEntryIter = m_mapFiles.find(*pathEntry);
+        auto fileEntryIter = m_mapFiles.find(firstPathSegment);
         if (fileEntryIter == m_mapFiles.end())
         {
-            fileEntryIter = m_mapFiles.emplace(*pathEntry, AZStd::make_unique<FileEntry>()).first;
+            fileEntryIter = m_mapFiles.emplace(firstPathSegment, AZStd::make_unique<FileEntry>()).first;
         }
         return fileEntryIter->second.get();
     }
 
     // adds a file to this directory
-    ErrorEnum FileEntryTree::Add(AZStd::string_view szPath, const FileEntryBase& file)
+    ErrorEnum FileEntryTree::Add(AZ::IO::PathView szPath, const FileEntryBase& file)
     {
         FileEntry* pFile = Add(szPath);
         if (!pFile)
@@ -63,7 +67,7 @@ namespace AZ::IO::ZipDir
         return ZD_ERROR_SUCCESS;
     }
 
-    // returns the number of files in this tree, including this and sublevels
+    // returns the number of files in this tree, including this and subdirectories
     uint32_t FileEntryTree::NumFilesTotal() const
     {
         uint32_t numFiles = aznumeric_cast<uint32_t>(m_mapFiles.size());
@@ -91,21 +95,6 @@ namespace AZ::IO::ZipDir
         m_mapFiles.clear();
     }
 
-    size_t FileEntryTree::GetSize() const
-    {
-        size_t nSize = sizeof(*this);
-        for (const auto& [dirname, dirEntry] : m_mapDirs)
-        {
-            nSize += dirname.size() + sizeof(decltype(m_mapDirs)::value_type) + dirEntry->GetSize();
-        }
-
-        for (const auto& [filename, fileEntry] : m_mapFiles)
-        {
-            nSize += filename.size() + sizeof(decltype(m_mapFiles)::value_type);
-        }
-        return nSize;
-    }
-
     bool FileEntryTree::IsOwnerOf(const FileEntry* pFileEntry) const
     {
         for (const auto& [path, fileEntry] : m_mapFiles)
@@ -127,7 +116,7 @@ namespace AZ::IO::ZipDir
         return false;
     }
 
-    FileEntryTree* FileEntryTree::FindDir(AZStd::string_view szDirName)
+    FileEntryTree* FileEntryTree::FindDir(AZ::IO::PathView szDirName)
     {
         if (auto it = m_mapDirs.find(szDirName); it != m_mapDirs.end())
         {
@@ -137,7 +126,7 @@ namespace AZ::IO::ZipDir
         return nullptr;
     }
 
-    FileEntryTree::FileMap::iterator FileEntryTree::FindFile(AZStd::string_view szFileName)
+    FileEntryTree::FileMap::iterator FileEntryTree::FindFile(AZ::IO::PathView szFileName)
     {
         return m_mapFiles.find(szFileName);
     }
@@ -152,7 +141,7 @@ namespace AZ::IO::ZipDir
         return it == GetDirEnd() ? nullptr : it->second.get();
     }
 
-    ErrorEnum FileEntryTree::RemoveDir(AZStd::string_view szDirName)
+    ErrorEnum FileEntryTree::RemoveDir(AZ::IO::PathView szDirName)
     {
         SubdirMap::iterator itRemove = m_mapDirs.find(szDirName);
         if (itRemove == m_mapDirs.end())
@@ -164,7 +153,13 @@ namespace AZ::IO::ZipDir
         return ZD_ERROR_SUCCESS;
     }
 
-    ErrorEnum FileEntryTree::RemoveFile(AZStd::string_view szFileName)
+    ErrorEnum FileEntryTree::RemoveAll()
+    {
+        Clear();
+        return ZD_ERROR_SUCCESS;
+    }
+
+    ErrorEnum FileEntryTree::RemoveFile(AZ::IO::PathView szFileName)
     {
         FileMap::iterator itRemove = m_mapFiles.find(szFileName);
         if (itRemove == m_mapFiles.end())

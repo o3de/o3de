@@ -286,7 +286,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
-        AZ_FORCE_INLINE size_type   max_size() const        { return m_allocator.max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const        { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool    empty() const               { return (m_numElements == 0); }
 
         AZ_FORCE_INLINE iterator begin()                    { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }

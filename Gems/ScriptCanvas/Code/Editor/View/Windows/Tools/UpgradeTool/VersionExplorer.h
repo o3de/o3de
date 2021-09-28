@@ -20,11 +20,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/StyledDialog.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Core.h>
 
 #include <ISystem.h>
 #include <IConsole.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include "UpgradeTool.h"
 #endif
 
 class QPushButton;
@@ -41,6 +41,19 @@ namespace AzQtComponents
 
 namespace ScriptCanvasEditor
 {
+    //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
+    //! the upgrade tool to work even if the editor is not in the foreground
+    class EditorKeepAlive
+    {
+    public:
+        EditorKeepAlive();
+        ~EditorKeepAlive();
+
+    private:
+        int m_keepEditorActive;
+        ICVar* m_edKeepEditorActive;
+    };
+
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
     class VersionExplorer
         : public AzQtComponents::StyledDialog
@@ -71,13 +84,9 @@ namespace ScriptCanvasEditor
             Inactive,
             Backup,
             Scan,
-            Upgrade
+            Upgrade,
         };
         ProcessState m_state = ProcessState::Inactive;
-
-        bool DoBackup();
-        void BackupAsset(const AZ::Data::AssetInfo& assetInfo);
-        void BackupComplete();
 
         void DoScan();
         void ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>&);
@@ -97,24 +106,21 @@ namespace ScriptCanvasEditor
         bool OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override;
         //
 
-        void CaptureLogFromTraceBus(const char* window, const char* message);
+        bool CaptureLogFromTraceBus(const char* window, const char* message);
 
         enum class OperationResult
         {
             Success,
-            SkipBackup,
-            BackupSuccess,
-            BackupFail,
-            BackupFail_CreateFolder,
-            BackupFail_FileNotFound
+            Failure,
         };
 
-        void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>&, OperationResult result = OperationResult::Success);
+        void GraphUpgradeComplete(const AZ::Data::Asset<AZ::Data::AssetData>, OperationResult result, AZStd::string_view message);
 
         bool IsUpgrading() const;
 
         bool m_inProgress = false;
-        size_t m_currentAssetIndex = 0;
+        // scan fields
+        size_t m_currentAssetRowIndex = 0;
         size_t m_inspectedAssets = 0;
         size_t m_failedAssets = 0;
         size_t m_discoveredAssets = 0;
@@ -129,7 +135,16 @@ namespace ScriptCanvasEditor
 
         AZStd::unique_ptr<Ui::VersionExplorer> m_ui;
 
+        AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
+
+        // upgrade fields
         AZStd::recursive_mutex m_mutex;
+        bool m_upgradeComplete = false;
+        AZ::Data::Asset<AZ::Data::AssetData> m_upgradeAsset;
+        int m_upgradeAssetIndex = 0;
+        OperationResult m_upgradeResult;
+        AZStd::string m_upgradeMessage;
+        AZStd::string m_tmpFileName;
 
         AZStd::unique_ptr<EditorKeepAlive> m_keepEditorAlive;
 
@@ -146,18 +161,19 @@ namespace ScriptCanvasEditor
         void FinalizeUpgrade();
         void FinalizeScan();
 
-        OperationResult BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
+        void BackupComplete();
+        AZStd::string BackupGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
         void UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>&);
 
-        void RetryMove(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target);
-
-        void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData>& asset, OperationResult result = OperationResult::Success);
+        void GraphUpgradeCompleteUIUpdate(const AZ::Data::Asset<AZ::Data::AssetData> asset, OperationResult result, AZStd::string_view message);
         void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) override;
+
+        void OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
         void closeEvent(QCloseEvent* event) override;
 
         bool m_overwriteAll = false;
-        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target);
+        void PerformMove(AZ::Data::Asset<AZ::Data::AssetData> asset, AZStd::string source, AZStd::string target, size_t remainingAttempts);
 
         void Log(const char* format, ...);
     };

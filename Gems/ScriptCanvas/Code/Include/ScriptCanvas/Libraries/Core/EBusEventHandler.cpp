@@ -610,7 +610,7 @@ namespace ScriptCanvas
             void EBusEventHandler::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-                if (!m_ebus)
+                if (!m_ebus && !m_ebusName.empty())
                 {
                     CreateHandler(m_ebusName);
                 }

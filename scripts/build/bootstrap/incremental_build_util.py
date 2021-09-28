@@ -320,10 +320,14 @@ def mount_volume_to_device(created):
         time.sleep(1)
 
     else:
-        subprocess.call(['file', '-s', '/dev/xvdf'])
+        device_name = '/dev/xvdf'
+        nvme_device_name = '/dev/nvme1n1'
+        if os.path.exists(nvme_device_name):
+            device_name = nvme_device_name
+        subprocess.call(['file', '-s', device_name])
         if created:
-            subprocess.call(['mkfs', '-t', 'ext4', '/dev/xvdf'])
-        subprocess.call(['mount', '/dev/xvdf', MOUNT_PATH])
+            subprocess.call(['mkfs', '-t', 'ext4', device_name])
+        subprocess.call(['mount', device_name, MOUNT_PATH])
 
 
 def attach_volume_to_ec2_instance(volume, volume_id, instance_id, timeout_duration=DEFAULT_TIMEOUT):

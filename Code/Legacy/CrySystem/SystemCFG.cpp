@@ -272,14 +272,12 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
     CCryFile file;
     AZStd::string filenameLog;
     {
-        int flags = AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK;
-
         if (filename[0] == '@')
         {
             // this is used when theres a very specific file to read, like @user@/game.cfg which is read
             // IN ADDITION to the one in the game folder, and afterwards to override values in it.
             // if the file is missing and its already prefixed with an alias, there is no need to look any further.
-            if (!(file.Open(filename.c_str(), "rb", flags)))
+            if (!(file.Open(filename.c_str(), "rb")))
             {
                 if (warnIfMissing)
                 {
@@ -293,11 +291,11 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             // otherwise, if the file isn't prefixed with an alias, then its likely one of the convenience mappings
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
-                !(file.Open(filename.c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@root@/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/config/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb", flags))
+                !(file.Open(filename.c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@root@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@assets@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@assets@/config/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb"))
                 )
             {
                 if (warnIfMissing)
@@ -308,7 +306,9 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             }
         }
 
-        filenameLog = file.GetAdjustedFilename();
+        AZ::IO::FixedMaxPath resolvedFilePath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedFilePath, file.GetFilename());
+        filenameLog = resolvedFilePath.String();
     }
 
     INDENT_LOG_DURING_SCOPE();

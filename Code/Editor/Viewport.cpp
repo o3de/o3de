@@ -43,12 +43,7 @@
 void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
 {
     context.m_hitLocation = AZ::Vector3::CreateZero();
-
-    PreWidgetRendering(); // required so that the current render cam is set.
-
     context.m_hitLocation = GetHitLocation(pt);
-
-    PostWidgetRendering();
 }
 
 
@@ -1351,28 +1346,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
     {
         return true;
     }
-
-    // RAII wrapper for Pre / PostWidgetRendering calls.
-    // It also tracks the times a mouse callback potentially created a new viewport context.
-    struct ScopedProcessingMouseCallback
-    {
-        explicit ScopedProcessingMouseCallback(QtViewport* viewport)
-            : m_viewport(viewport)
-        {
-            m_viewport->m_processingMouseCallbacksCounter++;
-            m_viewport->PreWidgetRendering();
-        }
-
-        ~ScopedProcessingMouseCallback()
-        {
-            m_viewport->PostWidgetRendering();
-            m_viewport->m_processingMouseCallbacksCounter--;
-        }
-
-        QtViewport* m_viewport;
-    };
-
-    ScopedProcessingMouseCallback scopedProcessingMouseCallback(this);
 
     //////////////////////////////////////////////////////////////////////////
     // Hit test gizmo objects.

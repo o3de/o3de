@@ -114,7 +114,7 @@ void GradientSlider::mouseMoveEvent(QMouseEvent* event)
 {
     int intValue = Slider::valueFromPosition(this, event->pos(), width(), height(), rect().bottom());
 
-    qreal value = (aznumeric_cast<qreal, int>(intValue - minimum()) / aznumeric_cast<qreal, int>(maximum() - minimum()));
+    qreal value = (aznumeric_cast<qreal>(intValue - minimum()) / aznumeric_cast<qreal>(maximum() - minimum()));
 
     const QString toolTipText = m_toolTipFunction(value);
 

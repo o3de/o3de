@@ -94,11 +94,11 @@ struct SNoDataEvent
 {
     SNoDataEvent()
         : IRemoteEvent(T) {};
-    virtual IRemoteEvent* Clone() { return new SNoDataEvent<T>(); }
+    IRemoteEvent* Clone() override { return new SNoDataEvent<T>(); }
 
 protected:
-    virtual void WriteToBuffer([[maybe_unused]] char* buffer, int& size, [[maybe_unused]] int maxsize) {  size = 0; }
-    virtual IRemoteEvent* CreateFromBuffer([[maybe_unused]] const char* buffer, [[maybe_unused]] int size) { return Clone(); }
+    void WriteToBuffer([[maybe_unused]] char* buffer, int& size, [[maybe_unused]] int maxsize) override {  size = 0; }
+    IRemoteEvent* CreateFromBuffer([[maybe_unused]] const char* buffer, [[maybe_unused]] int size) override { return Clone(); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,17 +109,17 @@ struct SStringEvent
     SStringEvent(const char* data)
         : IRemoteEvent(T)
         , m_data(data) {};
-    virtual IRemoteEvent* Clone() { return new SStringEvent<T>(GetData()); }
+    IRemoteEvent* Clone() override { return new SStringEvent<T>(GetData()); }
     const char* GetData() const { return m_data.c_str(); }
 
 protected:
-    virtual void WriteToBuffer(char* buffer, int& size, int maxsize)
+    void WriteToBuffer(char* buffer, int& size, int maxsize) override
     {
         const char* data = GetData();
         size = min((int)strlen(data), maxsize);
         memcpy(buffer, data, size);
     }
-    virtual IRemoteEvent* CreateFromBuffer(const char* buffer, [[maybe_unused]] int size) { return new SStringEvent<T>(buffer); }
+    IRemoteEvent* CreateFromBuffer(const char* buffer, [[maybe_unused]] int size) override { return new SStringEvent<T>(buffer); }
 
 private:
     AZStd::string m_data;

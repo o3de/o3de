@@ -342,7 +342,7 @@ namespace AzQtComponents
         config.toolTipPaddingInPixels = 5;
         config.headerIconSizeInPixels = CardHeader::defaultIconSize();
         config.rootLayoutSpacing = 0;
-        config.warningIcon = QStringLiteral(":/Cards/img/UI20/Cards/warning.svg");
+        config.warningIcon = QStringLiteral(":/Notifications/warning.svg");
         config.warningIconSize = {24, 24};
         config.disabledIconAlpha = 0.25;
 

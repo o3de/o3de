@@ -595,137 +595,137 @@ namespace Twitch
                 StartChannelCommercial,
                 ResetChannelStreamKey);
 
-            void UserIDNotify(const StringValue& userID)
+            void UserIDNotify(const StringValue& userID) override
             {
                 Call(FN_UserIDNotify, userID);
             }
 
-            void OAuthTokenNotify(const StringValue& token)
+            void OAuthTokenNotify(const StringValue& token) override
             {
                 Call(FN_OAuthTokenNotify, token);
             }
 
-            void GetUser(const UserInfoValue& result)
+            void GetUser(const UserInfoValue& result) override
             {
                 Call(FN_GetUser, result);
             }
 
-            void ResetFriendsNotificationCountNotify(const Int64Value& result)
+            void ResetFriendsNotificationCountNotify(const Int64Value& result) override
             {
                 Call(FN_ResetFriendsNotificationCountNotify, result);
             }
 
-            void GetFriendNotificationCount(const Int64Value& result)
+            void GetFriendNotificationCount(const Int64Value& result) override
             {
                 Call(FN_GetFriendNotificationCount, result);
             }
 
-            void GetFriendRecommendations(const FriendRecommendationValue& result)
+            void GetFriendRecommendations(const FriendRecommendationValue& result) override
             {
                 Call(FN_GetFriendRecommendations, result);
             }
 
-            void GetFriends(const GetFriendValue& result)
+            void GetFriends(const GetFriendValue& result) override
             {
                 Call(FN_GetFriends, result);
             }
 
-            void GetFriendStatus(const FriendStatusValue& result)
+            void GetFriendStatus(const FriendStatusValue& result) override
             {
                 Call(FN_GetFriendStatus, result);
             }
 
-            void AcceptFriendRequest(const Int64Value& result)
+            void AcceptFriendRequest(const Int64Value& result) override
             {
                 Call(FN_AcceptFriendRequest, result);
             }
 
-            void GetFriendRequests(const FriendRequestValue& result)
+            void GetFriendRequests(const FriendRequestValue& result) override
             {
                 Call(FN_GetFriendRequests, result);
             }
 
-            void CreateFriendRequest(const Int64Value& result)
+            void CreateFriendRequest(const Int64Value& result) override
             {
                 Call(FN_CreateFriendRequest, result);
             }
 
-            void DeclineFriendRequest(const Int64Value& result)
+            void DeclineFriendRequest(const Int64Value& result) override
             {
                 Call(FN_DeclineFriendRequest, result);
             }
 
-            void UpdatePresenceStatus(const Int64Value& result)
+            void UpdatePresenceStatus(const Int64Value& result) override
             {
                 Call(FN_UpdatePresenceStatus, result);
             }
 
-            void GetPresenceStatusofFriends(const PresenceStatusValue& result)
+            void GetPresenceStatusofFriends(const PresenceStatusValue& result) override
             {
                 Call(FN_GetPresenceStatusofFriends, result);
             }
 
-            void GetPresenceSettings(const PresenceSettingsValue& result)
+            void GetPresenceSettings(const PresenceSettingsValue& result) override
             {
                 Call(FN_GetPresenceSettings, result);
             }
 
-            void UpdatePresenceSettings(const PresenceSettingsValue& result)
+            void UpdatePresenceSettings(const PresenceSettingsValue& result) override
             {
                 Call(FN_UpdatePresenceSettings, result);
             }
 
-            void GetChannelbyID(const ChannelInfoValue& result)
+            void GetChannelbyID(const ChannelInfoValue& result) override
             {
                 Call(FN_GetChannelbyID, result);
             }
 
-            void GetChannel(const ChannelInfoValue& result)
+            void GetChannel(const ChannelInfoValue& result) override
             {
                 Call(FN_GetChannel, result);
             }
 
-            void UpdateChannel(const ChannelInfoValue& result)
+            void UpdateChannel(const ChannelInfoValue& result) override
             {
                 Call(FN_UpdateChannel, result);
             }
 
-            void GetChannelEditors(const UserInfoListValue& result)
+            void GetChannelEditors(const UserInfoListValue& result) override
             {
                 Call(FN_GetChannelEditors, result);
             }
 
-            void GetChannelFollowers(const FollowerResultValue& result)
+            void GetChannelFollowers(const FollowerResultValue& result) override
             {
                 Call(FN_GetChannelFollowers, result);
             }
 
-            void GetChannelTeams(const ChannelTeamValue& result)
+            void GetChannelTeams(const ChannelTeamValue& result) override
             {
                 Call(FN_GetChannelTeams, result);
             }
 
-            void GetChannelSubscribers(const SubscriberValue& result)
+            void GetChannelSubscribers(const SubscriberValue& result) override
             {
                 Call(FN_GetChannelSubscribers, result);
             }
 
-            void CheckChannelSubscriptionbyUser(const SubscriberbyUserValue& result)
+            void CheckChannelSubscriptionbyUser(const SubscriberbyUserValue& result) override
             {
                 Call(FN_CheckChannelSubscriptionbyUser, result);
             }
 
-            void GetChannelVideos(const VideoReturnValue& result)
+            void GetChannelVideos(const VideoReturnValue& result) override
             {
                 Call(FN_GetChannelVideos, result);
             }
 
-            void StartChannelCommercial(const StartChannelCommercialValue& result)
+            void StartChannelCommercial(const StartChannelCommercialValue& result) override
             {
                 Call(FN_StartChannelCommercial, result);
             }
 
-            void ResetChannelStreamKey(const ChannelInfoValue& result)
+            void ResetChannelStreamKey(const ChannelInfoValue& result) override
             {
                 Call(FN_ResetChannelStreamKey, result);
             }

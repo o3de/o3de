@@ -12,7 +12,7 @@
             "android": {
                 "UUID": "{3000A993-0A04-4E08-A813-DFB1A47A0980}",
                 "Name": "LensOptics",
-                "PixelFormat": "ETC2"
+                "PixelFormat": "ASTC_4x4"
             },
             "ios": {
                 "UUID": "{3000A993-0A04-4E08-A813-DFB1A47A0980}",

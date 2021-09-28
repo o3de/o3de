@@ -239,6 +239,11 @@ void SRemoteServer::Run()
 
     while (m_bAcceptClients)
     {
+        AZTIMEVAL timeout { 1, 0 };
+        if (!AZ::AzSock::IsRecvPending(m_socket, &timeout))
+        {
+            continue;
+        }
         AZ::AzSock::AzSocketAddress clientAddress;
         sClient = AZ::AzSock::Accept(m_socket, clientAddress);
         if (!m_bAcceptClients || !AZ::AzSock::IsAzSocketValid(sClient))

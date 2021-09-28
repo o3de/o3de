@@ -283,7 +283,7 @@ namespace AZ
         FontTexture* m_fontTexture = nullptr;
 
         size_t m_fontBufferSize = 0;
-        unsigned char* m_fontBuffer = nullptr;
+        AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;

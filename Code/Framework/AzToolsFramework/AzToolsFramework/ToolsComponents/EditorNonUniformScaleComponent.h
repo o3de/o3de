@@ -37,7 +37,7 @@ namespace AzToolsFramework
             // AZ::NonUniformScaleRequestBus::Handler ...
             AZ::Vector3 GetScale() const override;
             void SetScale(const AZ::Vector3& scale) override;
-            void RegisterScaleChangedEvent(AZ::NonUniformScaleChangedEvent::Handler& handler);
+            void RegisterScaleChangedEvent(AZ::NonUniformScaleChangedEvent::Handler& handler) override;
 
         private:
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);

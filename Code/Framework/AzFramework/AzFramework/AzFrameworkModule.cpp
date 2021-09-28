@@ -16,6 +16,7 @@
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
+#include <AzFramework/Input/Contexts/InputContextComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
@@ -47,6 +48,7 @@ namespace AzFramework
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
+            AzFramework::InputContextComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),

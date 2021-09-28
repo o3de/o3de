@@ -23,6 +23,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/IO/SystemFile.h>

@@ -95,6 +95,8 @@ namespace Terrain
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
+        RefreshCachedWireframeGrid(AZ::Aabb::CreateNull());
     }
 
     void TerrainWorldDebuggerComponent::Deactivate()
@@ -171,7 +173,7 @@ namespace Terrain
                 // Determine how far to draw in each direction in world space based on our MaxSectorsToDraw
                 AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+                    queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
                 AZ::Vector3 viewDistance(
                     queryResolution.GetX() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
                     queryResolution.GetY() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
@@ -214,7 +216,7 @@ namespace Terrain
 
         AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // Calculate the world size of each sector.  Note that this size actually ends at the last point, not the last square.
         // So for example, the sector size for 3 points will go from (*--*--*) even though it will be used to draw (*--*--*--).
@@ -285,13 +287,13 @@ namespace Terrain
 
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z00, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z01, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y1,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         z10, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
 
                     sector.m_lineVertices.push_back(AZ::Vector3(x, y, z00));
                     sector.m_lineVertices.push_back(AZ::Vector3(x1, y, z10));

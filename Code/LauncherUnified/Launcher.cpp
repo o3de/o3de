@@ -232,12 +232,16 @@ namespace
         // our frame time to be managed by AzGameFramework::GameApplication
         // instead, which probably isn't going to happen anytime soon given
         // how many things depend on the ITimer interface).
-        bool continueRunning = true;
         ISystem* system = gEnv ? gEnv->pSystem : nullptr;
-        while (continueRunning)
+        while (!gameApplication.WasExitMainLoopRequested())
         {
             // Pump the system event loop
             gameApplication.PumpSystemEventLoopUntilEmpty();
+
+            if (gameApplication.WasExitMainLoopRequested())
+            {
+                break;
+            }
 
             // Update the AzFramework system tick bus
             gameApplication.TickSystem();
@@ -256,9 +260,6 @@ namespace
             {
                 system->UpdatePostTickBus();
             }
-
-            // Check for quit requests
-            continueRunning = !gameApplication.WasExitMainLoopRequested() && continueRunning;
         }
     }
 }
@@ -626,11 +627,8 @@ namespace O3DELauncher
             AZ_TracePrintf("Launcher", "Application is configured for VFS");
             AZ_TracePrintf("Launcher", "Log and cache files will be written to the Cache directory on your host PC");
 
-#if defined(AZ_ENABLE_TRACING)
-            const char* message = "If your game does not run, check any of the following:\n"
-                                  "\t- Verify the remote_ip address is correct in bootstrap.cfg";
-#endif
-
+            constexpr const char* message = "If your game does not run, check any of the following:\n"
+                                            "\t- Verify the remote_ip address is correct in bootstrap.cfg";
             if (mainInfo.m_additionalVfsResolution)
             {
                 AZ_TracePrintf("Launcher", "%s\n%s", message, mainInfo.m_additionalVfsResolution)

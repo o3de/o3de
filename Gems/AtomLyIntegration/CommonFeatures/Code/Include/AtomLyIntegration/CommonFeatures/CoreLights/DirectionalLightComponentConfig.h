@@ -105,15 +105,9 @@ namespace AZ
             //! If this is 0, edge softening is disabled.  Units are in meters.
             float m_boundaryWidth = 0.03f; // 3cm
 
-            //! Sample Count for prediction of whether the pixel is on the boundary (from 4 to 16)
-            //! The value should be less than or equal to m_filteringSampleCount.
-            uint16_t m_predictionSampleCount = 4;
-
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;
-
-            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
 
             //! Whether not to enable the receiver plane bias.
             //! This uses partial derivatives to reduce shadow acne when using large pcf kernels.
@@ -124,8 +118,6 @@ namespace AZ
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
-            bool IsPcfBoundarySearchDisabled() const;
-            bool IsSofteningBoundaryWidthDisabled() const;
             bool IsEsmDisabled() const;
         };
     } // namespace Render

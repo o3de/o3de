@@ -57,6 +57,7 @@ namespace AZ
 
         MOCK_METHOD1(SetApplyPatchSettings, void(const JsonApplyPatchSettings&));
         MOCK_METHOD1(GetApplyPatchSettings, void(JsonApplyPatchSettings&));
+        MOCK_METHOD1(SetUseFileIO, void(bool));
     };
 } // namespace AZ
 

@@ -15,6 +15,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/std/string/string.h>
@@ -64,7 +65,7 @@ namespace AZ
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath);
+                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());

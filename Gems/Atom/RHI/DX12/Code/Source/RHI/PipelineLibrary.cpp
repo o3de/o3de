@@ -7,6 +7,7 @@
  */
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI/Factory.h>
 
 namespace AZ
 {
@@ -46,7 +47,18 @@ namespace AZ
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::array_view<uint8_t> bytes;
-            if (serializedData)
+
+            bool shouldCreateLibFromSerializedData = true;
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
+            {
+                // CreatePipelineLibrary api does not function properly if Renderdoc, Pix or Warp is enabled
+                shouldCreateLibFromSerializedData = false;
+            }
+
+
+            if (serializedData && shouldCreateLibFromSerializedData)
             {
                 bytes = serializedData->GetData();
             }
@@ -205,10 +217,13 @@ namespace AZ
 
         RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
         {
-#if defined(USE_PIX) || defined(USE_RENDERDOC)
-            // StorePipeline api does not function properly if Pix or RenderDoc is enabled
-            return RHI::ResultCode::Fail;
-#else
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
+            {
+                // StorePipeline api does not function properly if RenderDoc, Pix or Warp is enabled
+                return RHI::ResultCode::Fail;
+            }
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
@@ -226,8 +241,7 @@ namespace AZ
                 }
             }
 #endif
-            return RHI::ResultCode::Success;
-#endif           
+            return RHI::ResultCode::Success;           
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
@@ -252,7 +266,11 @@ namespace AZ
 
         bool PipelineLibrary::IsMergeRequired() const
         {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             return !m_pipelineStates.empty();
+#else
+            return false;
+#endif
         }
     }
 }

@@ -29,30 +29,40 @@ namespace AtomToolsFramework
     {
     }
 
+    void InspectorWidget::AddHeading(QWidget* headingWidget)
+    {
+        headingWidget->setParent(m_ui->m_headingSection);
+        m_ui->m_headingSectionLayout->addWidget(headingWidget);
+    }
+
+    void InspectorWidget::ClearHeading()
+    {
+        qDeleteAll(m_ui->m_headingSection->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+        qDeleteAll(m_ui->m_headingSectionLayout->children());
+    }
+
     void InspectorWidget::Reset()
     {
-        qDeleteAll(m_ui->m_propertyContent->children());
-        m_layout = new QVBoxLayout(m_ui->m_propertyContent);
-        m_layout->setContentsMargins(0, 0, 0, 0);
-        m_layout->setSpacing(0);
+        qDeleteAll(m_ui->m_groupContents->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+        qDeleteAll(m_ui->m_groupContentsLayout->children());
         m_groups.clear();
     }
 
     void InspectorWidget::AddGroupsBegin()
     {
-        setUpdatesEnabled(false);
+        setVisible(false);
 
         Reset();
     }
 
     void InspectorWidget::AddGroupsEnd()
     {
-        m_layout->addStretch();
+        m_ui->m_groupContentsLayout->addStretch();
 
         // Scroll to top whenever there is new content
-        m_ui->m_propertyScrollArea->verticalScrollBar()->setValue(m_ui->m_propertyScrollArea->verticalScrollBar()->minimum());
+        m_ui->m_groupScrollArea->verticalScrollBar()->setValue(m_ui->m_groupScrollArea->verticalScrollBar()->minimum());
 
-        setUpdatesEnabled(true);
+        setVisible(true);
     }
 
     void InspectorWidget::AddGroup(
@@ -61,14 +71,14 @@ namespace AtomToolsFramework
         const AZStd::string& groupDescription,
         QWidget* groupWidget)
     {
-        InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_propertyContent);
+        InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_groupContents);
         groupHeader->setText(groupDisplayName.c_str());
         groupHeader->setToolTip(groupDescription.c_str());
-        m_layout->addWidget(groupHeader);
+        m_ui->m_groupContentsLayout->addWidget(groupHeader);
 
         groupWidget->setObjectName(groupNameId.c_str());
-        groupWidget->setParent(m_ui->m_propertyContent);
-        m_layout->addWidget(groupWidget);
+        groupWidget->setParent(m_ui->m_groupContents);
+        m_ui->m_groupContentsLayout->addWidget(groupWidget);
 
         m_groups[groupNameId] = {groupHeader, groupWidget};
 
@@ -101,28 +111,18 @@ namespace AtomToolsFramework
     bool InspectorWidget::IsGroupVisible(const AZStd::string& groupNameId) const
     {
         auto groupItr = m_groups.find(groupNameId);
-        if (groupItr != m_groups.end())
-        {
-            return groupItr->second.m_header->isVisible();
-        }
-
-        return false;
+        return groupItr != m_groups.end() ? groupItr->second.m_header->isVisible() : false;
     }
     
     bool InspectorWidget::IsGroupHidden(const AZStd::string& groupNameId) const
     {
         auto groupItr = m_groups.find(groupNameId);
-        if (groupItr != m_groups.end())
-        {
-            return groupItr->second.m_header->isHidden();
-        }
-
-        return false;
+        return groupItr != m_groups.end() ? groupItr->second.m_header->isHidden() : false;
     }
 
     void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
     {
-        for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
         {
             groupWidget->Refresh();
         }
@@ -130,7 +130,7 @@ namespace AtomToolsFramework
 
     void InspectorWidget::RebuildGroup(const AZStd::string& groupNameId)
     {
-        for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>(groupNameId.c_str()))
         {
             groupWidget->Rebuild();
         }
@@ -138,7 +138,7 @@ namespace AtomToolsFramework
 
     void InspectorWidget::RefreshAll()
     {
-        for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>())
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>())
         {
             groupWidget->Refresh();
         }
@@ -146,7 +146,7 @@ namespace AtomToolsFramework
 
     void InspectorWidget::RebuildAll()
     {
-        for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>())
+        for (auto groupWidget : m_ui->m_groupContents->findChildren<InspectorGroupWidget*>())
         {
             groupWidget->Rebuild();
         }
