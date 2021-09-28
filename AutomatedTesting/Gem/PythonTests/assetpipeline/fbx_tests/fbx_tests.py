@@ -34,11 +34,13 @@ logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
 
 @pytest.fixture
+@pytest.mark.SUITE_sandbox
 def local_resources(request, workspace, ap_setup_fixture):
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
 
 @dataclass
+@pytest.mark.SUITE_sandbox
 class BlackboxAssetTest:
     test_name: str
     asset_folder: str
@@ -338,9 +340,11 @@ blackbox_fbx_special_tests = [
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_sandbox
 class TestsFBX_AllPlatforms(object):
 
     @pytest.mark.BAT
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.parametrize("blackbox_param", blackbox_fbx_tests)
     def test_FBXBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace,
                                                                             ap_setup_fixture, asset_processor, project,
@@ -359,6 +363,7 @@ class TestsFBX_AllPlatforms(object):
                           asset_processor, project, blackbox_param)
 
     @pytest.mark.BAT
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.parametrize("blackbox_param", blackbox_fbx_special_tests)
     def test_FBXBlackboxTest_AssetInfoModified_AssetReprocessed_ResultInExpectedProducts(self,
                                                                                          workspace, ap_setup_fixture,

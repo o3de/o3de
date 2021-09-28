@@ -39,7 +39,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(deviceBase);
             m_currentFrameIndex = 0;
-            m_frameFences.resize(RHI::Limits::Device::FrameCountMax - 1);
+            m_frameFences.resize(RHI::Limits::Device::FrameCountMax);
             for (FenceSet& fences : m_frameFences)
             {
                 fences.Init(device.GetDevice(), RHI::FenceState::Signaled);
