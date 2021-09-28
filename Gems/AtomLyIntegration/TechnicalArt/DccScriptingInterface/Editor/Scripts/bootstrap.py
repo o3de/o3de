@@ -107,7 +107,7 @@ if __name__ == '__main__':
     
     _LOGGER.info(f'DCCSIG_PATH: {_settings.DCCSIG_PATH}')
     _LOGGER.info(f'DCCSI_PYTHON_LIB_PATH: {_settings.DCCSI_PYTHON_LIB_PATH}')
-    _LOGGER.info(f'DDCCSI_PY_BASE: {_settings.DDCCSI_PY_BASE}')
+    _LOGGER.info(f'DCCSI_PY_BASE: {_settings.DCCSI_PY_BASE}')
 
     if _G_TEST_PYSIDE:
         try:
