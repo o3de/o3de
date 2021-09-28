@@ -95,7 +95,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(2)
+                    ->Version(2) // Material Version Update
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -103,7 +103,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(4)
+                    ->Version(4) // Material Version Update
                     ->Field("description", &MaterialTypeSourceData::m_description)
                     ->Field("version", &MaterialTypeSourceData::m_version)
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)

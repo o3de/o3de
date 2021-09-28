@@ -207,7 +207,7 @@ namespace UnitTest
         {
             EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
             EXPECT_EQ(5, materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount());
-            //EXPECT_EQ(2, materialTypeAsset->GetVersion());
+            EXPECT_EQ(2, materialTypeAsset->GetVersion());
             // Check aliased properties
 
             const MaterialPropertyIndex colorIndex = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{ "MyColor" });
