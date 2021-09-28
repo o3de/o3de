@@ -625,5 +625,20 @@ namespace AZ
         {
             return m_isAftermathInitialized;
         }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
+        }
     }
 }

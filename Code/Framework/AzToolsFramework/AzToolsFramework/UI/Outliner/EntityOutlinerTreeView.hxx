@@ -61,6 +61,7 @@ namespace AzToolsFramework
         void startDrag(Qt::DropActions supportedActions) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
+        void leaveEvent(QEvent* event) override;
 
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId entityId) override;
@@ -77,8 +78,10 @@ namespace AzToolsFramework
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
+        void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
+        QPoint m_mousePosition;
         bool m_draggingUnselectedItem; // This is set when an item is dragged outside its bounding box.
 
         int m_expandOnlyDelay = -1;
