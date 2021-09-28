@@ -71,8 +71,27 @@ namespace Terrain
         //!                  otherwise *terrainExistsPtr will be set to true.
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
             AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
+            const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+
+        void GetSurfaceWeights(
+            const AZ::Vector3& inPosition,
+            AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfaceWeightsFromVector2(
+            const AZ::Vector2& inPosition,
+            AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfaceWeightsFromFloats(
+            float x,
+            float y,
+            AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
 
         //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
         //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats. Not available in the behavior context. Returns nullptr if the position is
@@ -96,6 +115,9 @@ namespace Terrain
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
+        AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
+        void GetOrderedSurfaceWeights(
+            const float x, const float y, Sampler sampler, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const;
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
         AZ::Vector3  GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
