@@ -33,17 +33,14 @@ namespace AzFramework
         {
             bool operator()(const SurfaceTagWeight& tagWeight1, const SurfaceTagWeight& tagWeight2) const
             {
-                if (tagWeight1.m_weight < tagWeight2.m_weight)
+                if (!AZ::IsClose(tagWeight1.m_weight, tagWeight2.m_weight))
                 {
-                    return false;
+                    return tagWeight1.m_weight > tagWeight2.m_weight;
                 }
-
-                if (tagWeight1.m_weight > tagWeight2.m_weight)
+                else
                 {
-                    return true;
+                    return tagWeight1.m_surfaceType > tagWeight2.m_surfaceType;
                 }
-
-                return tagWeight1.m_surfaceType > tagWeight2.m_surfaceType;
             }
         };
 
@@ -99,8 +96,8 @@ namespace AzFramework
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
-            // Given an XY coordinate, return the set of surface types and weights.  The Vector3 input position version is defined to ignore
-            // the input Z value.
+            //! Given an XY coordinate, return the set of surface types and weights.  The Vector3 input position version is defined to ignore
+            //! the input Z value.
             virtual void GetSurfaceWeights(
                 const AZ::Vector3& inPosition,
                 SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,

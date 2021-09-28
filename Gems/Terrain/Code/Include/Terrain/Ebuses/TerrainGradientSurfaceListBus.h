@@ -14,9 +14,8 @@
 
 namespace Terrain
 {
-    /**
-     * This bus provides retrieval of information from the SurfaceGradientHeightListComponent.
-     */
+
+    //! This bus provides retrieval of information from the SurfaceGradientHeightListComponent.
     class TerrainGradientSurfaceListServiceRequests
         : public AZ::ComponentBus
     {

@@ -33,8 +33,7 @@ namespace Terrain
         SurfaceData::SurfaceTag m_surfaceTag;
     };
 
-    class TerrainSurfaceGradientListConfig
-        : public AZ::ComponentConfig
+    class TerrainSurfaceGradientListConfig : public AZ::ComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientListConfig, AZ::SystemAllocator, 0);
@@ -72,9 +71,7 @@ namespace Terrain
         void GetSurfaceWeights(const AZ::Vector3& inPosition, SurfaceData::SurfaceTagWeightMap& outSurfaceWeights) const override;
 
     protected:
-        
-
     private:
         TerrainSurfaceGradientListConfig m_configuration;
     };
-}
+} // namespace Terrain
