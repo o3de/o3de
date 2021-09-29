@@ -66,6 +66,7 @@ namespace Multiplayer
         bool IsReadyToActivate() const;
 
         NetworkEntityUpdateMessage GenerateUpdatePacket();
+        void FinalizeSerialization(AzNetworking::PacketId sentId);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 

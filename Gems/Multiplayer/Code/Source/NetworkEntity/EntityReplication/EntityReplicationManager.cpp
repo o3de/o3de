@@ -10,7 +10,6 @@
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
@@ -107,10 +106,34 @@ namespace Multiplayer
         }
     }
 
-    void EntityReplicationManager::SendUpdates(AZ::TimeMs hostTimeMs)
+    void EntityReplicationManager::SendUpdates()
     {
         m_frameTimeMs = AZ::GetElapsedTimeMs();
-        SendEntityUpdates(hostTimeMs);
+
+        {
+            EntityReplicatorList toSendList = GenerateEntityUpdateList();
+
+            AZLOG
+            (
+                NET_ReplicationInfo,
+                "Sending %zd updates from %s to %s",
+                toSendList.size(),
+                GetNetworkEntityManager()->GetHostId().GetString().c_str(),
+                GetRemoteHostId().GetString().c_str()
+            );
+
+            // Prep a replication record for send, at this point, everything needs to be sent
+            for (EntityReplicator* replicator : toSendList)
+            {
+                replicator->GetPropertyPublisher()->PrepareSerialization();
+            }
+
+            // While our to send list is not empty, build up another packet to send
+            do
+            {
+                SendEntityUpdateMessages(toSendList);
+            } while (!toSendList.empty());
+        }
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
         SendEntityRpcs(m_deferredRpcMessagesUnreliable, false);
@@ -128,65 +151,6 @@ namespace Multiplayer
             aznumeric_cast<uint32_t>(m_deferredRpcMessagesReliable.size()),
             aznumeric_cast<uint32_t>(m_deferredRpcMessagesUnreliable.size())
         );
-    }
-
-    void EntityReplicationManager::SendEntityUpdatesPacketHelper
-    (
-        AZ::TimeMs hostTimeMs,
-        EntityReplicatorList& toSendList,
-        uint32_t maxPayloadSize,
-        AzNetworking::IConnection& connection
-    )
-    {
-        uint32_t pendingPacketSize = 0;
-        EntityReplicatorList replicatorUpdatedList;
-        MultiplayerPackets::EntityUpdates entityUpdatePacket;
-        entityUpdatePacket.SetHostTimeMs(hostTimeMs);
-        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
-        // Serialize everything
-        while (!toSendList.empty())
-        {
-            EntityReplicator* replicator = toSendList.front();
-            NetworkEntityUpdateMessage updateMessage(replicator->GenerateUpdatePacket());
-
-            const uint32_t nextMessageSize = updateMessage.GetEstimatedSerializeSize();
-
-            // Check if we are over our limits
-            const bool payloadFull = (pendingPacketSize + nextMessageSize > maxPayloadSize);
-            const bool capacityReached = (entityUpdatePacket.GetEntityMessages().size() >= entityUpdatePacket.GetEntityMessages().capacity());
-            const bool largeEntityDetected = (payloadFull && replicatorUpdatedList.empty());
-            if (capacityReached || (payloadFull && !largeEntityDetected))
-            {
-                break;
-            }
-
-            pendingPacketSize += nextMessageSize;
-            entityUpdatePacket.ModifyEntityMessages().push_back(updateMessage);
-            replicatorUpdatedList.push_back(replicator);
-            toSendList.pop_front();
-
-            if (largeEntityDetected)
-            {
-                AZLOG_WARN("\n\n*******************************");
-                AZLOG_WARN
-                (
-                    "Serializing extremely large entity (%u) - MaxPayload: %d NeededSize %d",
-                    aznumeric_cast<uint32_t>(replicator->GetEntityHandle().GetNetEntityId()),
-                    maxPayloadSize,
-                    nextMessageSize
-                );
-                AZLOG_WARN("*******************************");
-                break;
-            }
-        }
-
-        const AzNetworking::PacketId sentId = connection.SendUnreliablePacket(entityUpdatePacket);
-
-        // Update the sent things with the packet id
-        for (EntityReplicator* replicator : replicatorUpdatedList)
-        {
-            replicator->GetPropertyPublisher()->FinalizeSerialization(sentId);
-        }
     }
 
     EntityReplicationManager::EntityReplicatorList EntityReplicationManager::GenerateEntityUpdateList()
@@ -260,76 +224,92 @@ namespace Multiplayer
         return toSendList;
     }
 
-    void EntityReplicationManager::SendEntityUpdates(AZ::TimeMs hostTimeMs)
+    void EntityReplicationManager::SendEntityUpdateMessages(EntityReplicatorList& replicatorList)
     {
-        EntityReplicatorList toSendList = GenerateEntityUpdateList();
-
-        AZLOG
-        (
-            NET_ReplicationInfo,
-            "Sending %zd updates from %s to %s",
-            toSendList.size(),
-            GetNetworkEntityManager()->GetHostId().GetString().c_str(),
-            GetRemoteHostId().GetString().c_str()
-        );
-
-        // prep a replication record for send, at this point, everything needs to be sent
-        for (EntityReplicator* replicator : toSendList)
+        uint32_t pendingPacketSize = 0;
+        EntityReplicatorList replicatorUpdatedList;
+        NetworkEntityUpdateVector entityUpdates;
+        // Serialize everything
+        while (!replicatorList.empty())
         {
-            replicator->GetPropertyPublisher()->PrepareSerialization();
+            EntityReplicator* replicator = replicatorList.front();
+            NetworkEntityUpdateMessage updateMessage(replicator->GenerateUpdatePacket());
+
+            const uint32_t nextMessageSize = updateMessage.GetEstimatedSerializeSize();
+
+            // Check if we are over our limits
+            const bool payloadFull = (pendingPacketSize + nextMessageSize > m_maxPayloadSize);
+            const bool capacityReached = (entityUpdates.size() >= entityUpdates.capacity());
+            const bool largeEntityDetected = (payloadFull && replicatorUpdatedList.empty());
+            if (capacityReached || (payloadFull && !largeEntityDetected))
+            {
+                break;
+            }
+
+            pendingPacketSize += nextMessageSize;
+            entityUpdates.push_back(updateMessage);
+            replicatorUpdatedList.push_back(replicator);
+            replicatorList.pop_front();
+
+            if (largeEntityDetected)
+            {
+                AZLOG_WARN
+                (
+                    "Serializing extremely large entity (%u) - MaxPayload: %d NeededSize %d",
+                    aznumeric_cast<uint32_t>(replicator->GetEntityHandle().GetNetEntityId()),
+                    m_maxPayloadSize,
+                    nextMessageSize
+                );
+                break;
+            }
         }
 
-        // While our to send list is not empty, build up another packet to send
-        do
+        const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
+
+        // Update the sent things with the packet id
+        for (EntityReplicator* replicator : replicatorUpdatedList)
         {
-            SendEntityUpdatesPacketHelper(hostTimeMs, toSendList, m_maxPayloadSize, m_connection);
-        } while (!toSendList.empty());
+            replicator->FinalizeSerialization(sentId);
+        }
     }
 
-    void EntityReplicationManager::SendEntityRpcs(RpcMessages& deferredRpcs, bool reliable)
+    void EntityReplicationManager::SendEntityRpcs(RpcMessages& rpcMessages, bool reliable)
     {
-        while (!deferredRpcs.empty())
+        while (!rpcMessages.empty())
         {
-            MultiplayerPackets::EntityRpcs entityRpcsPacket;
+            NetworkEntityRpcVector entityRpcs;
             uint32_t pendingPacketSize = 0;
 
-            while (!deferredRpcs.empty())
+            while (!rpcMessages.empty())
             {
-                NetworkEntityRpcMessage& message = deferredRpcs.front();
+                NetworkEntityRpcMessage& message = rpcMessages.front();
 
                 const uint32_t nextRpcSize = message.GetEstimatedSerializeSize();
 
                 if ((pendingPacketSize + nextRpcSize) > m_maxPayloadSize)
                 {
                     // We're over our limit, break and send an Rpc packet
-                    if (entityRpcsPacket.GetEntityRpcs().size() == 0)
+                    if (entityRpcs.size() == 0)
                     {
                         AZLOG(NET_Replicator, "Encountered an RPC that is above our MTU, message will be segmented (object size %u, max allowed size %u)", nextRpcSize, m_maxPayloadSize);
-                        entityRpcsPacket.ModifyEntityRpcs().push_back(message);
-                        deferredRpcs.pop_front();
+                        entityRpcs.push_back(message);
+                        rpcMessages.pop_front();
                     }
                     break;
                 }
 
                 pendingPacketSize += nextRpcSize;
-                if (entityRpcsPacket.GetEntityRpcs().full())
+                if (entityRpcs.full())
                 {
                     // Packet was full, send what we've accumulated so far
-                    AZLOG(NET_Replicator, "We've hit our RPC message limit (RPC count %u, packet size %u)", aznumeric_cast<uint32_t>(entityRpcsPacket.GetEntityRpcs().size()), pendingPacketSize);
+                    AZLOG(NET_Replicator, "We've hit our RPC message limit (RPC count %u, packet size %u)", aznumeric_cast<uint32_t>(entityRpcs.size()), pendingPacketSize);
                     break;
                 }
-                entityRpcsPacket.ModifyEntityRpcs().push_back(message);
-                deferredRpcs.pop_front();
+                entityRpcs.push_back(message);
+                rpcMessages.pop_front();
             }
 
-            if (reliable)
-            {
-                m_connection.SendReliablePacket(entityRpcsPacket);
-            }
-            else
-            {
-                m_connection.SendUnreliablePacket(entityRpcsPacket);
-            }
+            m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
         }
     }
 
@@ -474,7 +454,7 @@ namespace Multiplayer
     }
 
     // @nt: TODO - delete once dropped RPC problem fixed
-    void EntityReplicationManager::AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler)
+    void EntityReplicationManager::AddAutonomousEntityReplicatorCreatedHandler(AZ::Event<NetEntityId>::Handler& handler)
     {
         handler.Connect(m_autonomousEntityReplicatorCreated);
     }

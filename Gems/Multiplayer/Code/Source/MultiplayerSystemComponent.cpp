@@ -307,7 +307,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         const AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
-        const AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
         const AZ::TimeMs serverRateMs = static_cast<AZ::TimeMs>(sv_serverSendRateMs);
         const float serverRateSeconds = static_cast<float>(serverRateMs) / 1000.0f;
 
@@ -344,12 +343,12 @@ namespace Multiplayer
 
         // Send out the game state update to all connections
         {
-            auto sendNetworkUpdates = [hostTimeMs, &stats](IConnection& connection)
+            auto sendNetworkUpdates = [&stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
                 {
                     IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                    connectionData->Update(hostTimeMs);
+                    connectionData->Update();
                     if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
                     {
                         stats.m_clientConnectionCount++;
@@ -671,7 +670,7 @@ namespace Multiplayer
         else
         {
             connection->SetUserData(new ClientToServerConnectionData(connection, *this, providerTicket));
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>(connection);
             reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
     }

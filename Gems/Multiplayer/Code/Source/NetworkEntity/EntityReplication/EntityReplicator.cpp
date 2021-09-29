@@ -14,7 +14,6 @@
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
@@ -493,6 +492,11 @@ namespace Multiplayer
         updateMessage.ModifyData().Resize(inputSerializer.GetSize());
 
         return updateMessage;
+    }
+
+    void EntityReplicator::FinalizeSerialization(AzNetworking::PacketId sentId)
+    {
+        m_propertyPublisher->FinalizeSerialization(sentId);
     }
 
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)

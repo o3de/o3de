@@ -30,7 +30,7 @@ namespace Multiplayer
         ConnectionDataType GetConnectionDataType() const override;
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
-        void Update(AZ::TimeMs hostTimeMs) override;
+        void Update() override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}

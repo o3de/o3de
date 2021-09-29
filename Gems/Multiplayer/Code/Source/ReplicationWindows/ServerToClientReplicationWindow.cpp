@@ -7,6 +7,7 @@
  */
 
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
@@ -50,7 +51,7 @@ namespace Multiplayer
         return m_priority < rhs.m_priority;
     }
 
-    ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection)
+    ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection)
         : m_controlledEntity(controlledEntity)
         , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
         , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
@@ -177,6 +178,29 @@ namespace Multiplayer
         //{
         //    CollectControlledEntitiesRecursive(m_replicationSet, *hierarchyController);
         //}
+    }
+
+    AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
+    {
+        MultiplayerPackets::EntityUpdates entityUpdatePacket;
+        entityUpdatePacket.SetHostTimeMs(GetNetworkTime()->GetHostTimeMs());
+        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
+        entityUpdatePacket.SetEntityMessages(entityUpdateVector);
+        return m_connection->SendUnreliablePacket(entityUpdatePacket);
+    }
+
+    void ServerToClientReplicationWindow::SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable)
+    {
+        MultiplayerPackets::EntityRpcs entityRpcsPacket;
+        entityRpcsPacket.SetEntityRpcs(entityRpcVector);
+        if (reliable)
+        {
+            m_connection->SendReliablePacket(entityRpcsPacket);
+        }
+        else
+        {
+            m_connection->SendUnreliablePacket(entityRpcsPacket);
+        }
     }
 
     void ServerToClientReplicationWindow::DebugDraw() const

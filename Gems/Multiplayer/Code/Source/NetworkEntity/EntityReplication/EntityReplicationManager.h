@@ -79,7 +79,7 @@ namespace Multiplayer
 
         void AddDeferredRpcMessage(NetworkEntityRpcMessage& rpcMessage);
 
-        void AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler);
+        void AddAutonomousEntityReplicatorCreatedHandler(AZ::Event<NetEntityId>::Handler& handler);
 
         bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
@@ -117,10 +117,8 @@ namespace Multiplayer
         using EntityReplicatorList = AZStd::deque<EntityReplicator*>;
         EntityReplicatorList GenerateEntityUpdateList();
 
-        void SendEntityUpdatesPacketHelper(AZ::TimeMs hostTimeMs, EntityReplicatorList& toSendList, uint32_t maxPayloadSize, AzNetworking::IConnection& connection);
-
-        void SendEntityUpdates(AZ::TimeMs hostTimeMs);
-        void SendEntityRpcs(RpcMessages& deferredRpcs, bool reliable);
+        void SendEntityUpdateMessages(EntityReplicatorList& replicatorList);
+        void SendEntityRpcs(RpcMessages& rpcMessages, bool reliable);
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);

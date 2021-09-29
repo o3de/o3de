@@ -69,7 +69,7 @@ namespace Multiplayer
         return m_entityReplicationManager;
     }
 
-    void ServerToClientConnectionData::Update(AZ::TimeMs hostTimeMs)
+    void ServerToClientConnectionData::Update()
     {
         m_entityReplicationManager.ActivatePendingEntities();
 
@@ -79,7 +79,7 @@ namespace Multiplayer
             // potentially false if we just migrated the player, if that is the case, don't send any more updates
             if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority))
             {
-                m_entityReplicationManager.SendUpdates(hostTimeMs);
+                m_entityReplicationManager.SendUpdates();
             }
         }
     }

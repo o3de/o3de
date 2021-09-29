@@ -33,6 +33,9 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
