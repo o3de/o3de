@@ -8,6 +8,8 @@
 
 #include <AzCore/PlatformIncl.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 
