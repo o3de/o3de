@@ -65,8 +65,16 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides - Application is a singleton
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            typedef AZStd::recursive_mutex MutexType;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            using MutexType = AZStd::recursive_mutex;
+
+            static constexpr bool EnableEventQueue = true;
+            using EventQueueMutexType = AZStd::mutex;
+            struct AssetCatalogRequestsQueuedFunctionDispatch
+            {
+                void operator()(const EBusPolicies::PostDispatchTagType);
+            };
+            using ThreadDispatchPolicy = AssetCatalogRequestsQueuedFunctionDispatch;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetCatalogRequests() = default;
@@ -199,6 +207,11 @@ namespace AZ
         };
 
         using AssetCatalogRequestBus = AZ::EBus<AssetCatalogRequests>;
+
+        inline void AssetCatalogRequests::AssetCatalogRequestsQueuedFunctionDispatch::operator()(EBusPolicies::PostDispatchTagType)
+        {
+            AssetCatalogRequestBus::ExecuteQueuedEvents();
+        }
 
         /*
          * Events that AssetManager listens for
