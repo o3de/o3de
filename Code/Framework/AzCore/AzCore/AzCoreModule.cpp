@@ -22,6 +22,7 @@
 #include <AzCore/Time/TimeSystemComponent.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
+#include <AzCore/Statistics/StatisticalProfilerProxySystemComponent.h>
 
 namespace AZ
 {
@@ -42,6 +43,10 @@ namespace AZ
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
 
+#if !defined(_RELEASE)
+            Statistics::StatisticalProfilerProxySystemComponent::CreateDescriptor(),
+#endif
+
 #if !defined(AZCORE_EXCLUDE_LUA)
             ScriptSystemComponent::CreateDescriptor(),
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
@@ -55,6 +60,10 @@ namespace AZ
             azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),
+
+#if !defined(_RELEASE)
+            azrtti_typeid<Statistics::StatisticalProfilerProxySystemComponent>(),
+#endif
         };
     }
 }
