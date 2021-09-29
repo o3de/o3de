@@ -309,7 +309,7 @@ namespace AzFramework
         return AZ::GetClamp(pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
     }
 
-    // Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).
+    //! Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).
     //! @param yaw Yaw angle in radians.
     inline float WrapYawRotation(const float yaw)
     {

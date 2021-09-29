@@ -103,6 +103,10 @@ namespace UnitTest
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
         AZStd::shared_ptr<AzFramework::PivotCameraInput> m_pivotCamera;
         AZ::Vector3 m_pivot = AZ::Vector3::CreateZero();
+
+        //! This is approximately Pi/2 * 1000 - this can be used to rotate the camera 90 degrees (pitch or yaw based
+        //! on vertical or horizontal motion) as the rotate speed function is set to be 1/1000.
+        inline static const int PixelMotionDelta = 1570;
     };
 
     TEST_F(CameraInputFixture, BeginAndEndPivotCameraInputConsumesCorrectEvents)
@@ -288,7 +292,7 @@ namespace UnitTest
 
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 1570 });
+        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ PixelMotionDelta });
 
         const float expectedYaw = AzFramework::WrapYawRotation(-AZ::Constants::HalfPi);
 
@@ -306,7 +310,7 @@ namespace UnitTest
 
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ 1570 });
+        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ PixelMotionDelta });
 
         const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
 
@@ -327,7 +331,7 @@ namespace UnitTest
         HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ 1570 });
+        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ PixelMotionDelta });
 
         const auto expectedCameraEndingPosition = AZ::Vector3(0.0f, -10.0f, 10.0f);
         const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
@@ -350,7 +354,7 @@ namespace UnitTest
         HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ -1570 });
+        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ -PixelMotionDelta });
 
         const auto expectedCameraEndingPosition = AZ::Vector3(20.0f, -5.0f, 0.0f);
         const float expectedYaw = AzFramework::WrapYawRotation(AZ::Constants::HalfPi);
