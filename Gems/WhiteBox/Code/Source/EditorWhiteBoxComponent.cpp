@@ -16,6 +16,7 @@
 #include "Util/WhiteBoxEditorUtil.h"
 #include "WhiteBoxComponent.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/IntersectSegment.h>
