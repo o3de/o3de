@@ -75,10 +75,8 @@ namespace AzToolsFramework
                 const TemplateId& templateId, InstanceOptionalReference parent = AZStd::nullopt) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
-                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr) = 0;
-            virtual AZStd::unique_ptr<Instance> CreatePrefabUnderParent(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
-                InstanceOptionalReference parent) = 0;
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) = 0;
         };
 
 

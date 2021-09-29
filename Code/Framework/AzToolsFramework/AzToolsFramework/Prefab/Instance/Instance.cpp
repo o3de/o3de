@@ -44,20 +44,9 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            if (containerEntity)
-            {
-                m_containerEntity = AZStd::move(containerEntity);
-            }
-            else
-            {
-                AliasPath absoluteInstancePath;
-                absoluteInstancePath.Append(m_alias);
-                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+            m_containerEntity = containerEntity ? AZStd::move(containerEntity)
+                                                : AZStd::make_unique<AZ::Entity>();
 
-                AZ::EntityId containerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
-                m_containerEntity = AZStd::make_unique<AZ::Entity>(containerEntityId);
-            }
-            
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
@@ -87,13 +76,20 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            AliasPath absoluteInstancePath = m_parent? m_parent->GetAbsoluteInstanceAliasPath() : AliasPath();
-            absoluteInstancePath.Append(m_alias);
-            absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+            if (parent)
+            {
+                AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
+                absoluteInstancePath.Append(m_alias);
+                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
 
-            AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
-            m_containerEntity = AZStd::make_unique<AZ::Entity>(newContainerEntityId);
-
+                AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
+                m_containerEntity = AZStd::make_unique<AZ::Entity>(newContainerEntityId);
+            }
+            else
+            {
+                m_containerEntity = AZStd::make_unique<AZ::Entity>();
+            }
+            
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 

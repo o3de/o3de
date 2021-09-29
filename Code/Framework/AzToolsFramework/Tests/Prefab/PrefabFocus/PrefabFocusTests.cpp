@@ -49,7 +49,7 @@ namespace UnitTest
             m_instanceMap["sportsCar"] = sportsCarInstance.get();
 
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> streetInstance =
-                m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(carInstance), AZStd::move(sportsCarInstance) ), "test/street");
+                m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(carInstance), AZStd::move(sportsCarInstance)), "test/street");
             ASSERT_TRUE(streetInstance);
             m_instanceMap["street"] = streetInstance.get();
 

@@ -165,7 +165,7 @@ namespace Benchmark
             {
                 nestedInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(nestedInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(nestedInstanceRoot)),
                     m_paths[instanceCounter]);
             }
 
