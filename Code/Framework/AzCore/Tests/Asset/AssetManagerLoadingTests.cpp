@@ -365,10 +365,12 @@ namespace UnitTest
 
     };
 
+    static constexpr AZStd::chrono::seconds MaxDispatchTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12;
+    
     template <typename Pred>
     bool DispatchEventsUntilCondition(AZ::Data::AssetManager& assetManager, Pred&& conditionPredicate,
         AZStd::chrono::seconds logIntervalSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds,
-        AZStd::chrono::seconds maxTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12)
+        AZStd::chrono::seconds maxTimeoutSeconds = MaxDispatchTimeoutSeconds)
     {
         // If the Max Timeout is hit the test will be marked as a failure
 
@@ -1417,7 +1419,7 @@ namespace UnitTest
             // event or the timeout has been reached
             EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetOnlyReady))
                 << "The DispatchEventsUntiTimeout function has not completed in "
-                << (DefaultTimeoutSeconds * 12).count() << " seconds. The test will be marked as a failure\n";
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
 
             // Dispatch AssetBus events until the asset container used to load
             // NoLoadAssetId has signaled an OnAssetContainerReady event
@@ -1437,7 +1439,7 @@ namespace UnitTest
             // load
             EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
                 << "The DispatchEventsUntiTimeout function has not completed in "
-                << (DefaultTimeoutSeconds * 12).count() << " seconds. The test will be marked as a failure\n";
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
 
             // Reset the ContainerLoadingComplete ready status back to 0
             containerLoadingCompleteListener.m_ready = 0;
@@ -1451,14 +1453,14 @@ namespace UnitTest
             // an OnAssetReady event or the timeout has been reached
             EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetAndDependencyReady))
                 << "The DispatchEventsUntiTimeout function has not completed in "
-                << (DefaultTimeoutSeconds * 12).count() << " seconds. The test will be marked as a failure\n";
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
 
             EXPECT_EQ(readyListener.m_ready, 1);
             EXPECT_EQ(dependencyListener.m_ready, 1);
 
             EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
                 << "The DispatchEventsUntiTimeout function has not completed in "
-                << (DefaultTimeoutSeconds * 12).count() << " seconds. The test will be marked as a failure\n";
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
         }
 
         CheckFinishedCreationsAndDestructions();
