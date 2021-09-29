@@ -194,41 +194,13 @@ namespace AZ
             incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
         }
 
-        // [GFX TODO] [ATOM-13339] Remove the ModelAsset id fix up function in MeshComponentController
-        // Model id was changed due to fix for [ATOM-13312]. We can remove this code when all the levels are updated.
-        void FixUpModelAsset(Data::Asset<RPI::ModelAsset>& modelAsset)
-        {
-            Data::AssetId assetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                modelAsset.GetHint().c_str(),
-                AZ::RPI::ModelAsset::TYPEINFO_Uuid(),
-                false);
-            if (assetId != modelAsset.GetId())
-            {
-                if (assetId.IsValid())
-                {
-                    modelAsset = Data::Asset<RPI::ModelAsset>{ assetId, AZ::RPI::ModelAsset::TYPEINFO_Uuid(), modelAsset.GetHint().c_str() };
-                    modelAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::QueueLoad);
-                }
-                else
-                {
-                    AZ_Error("MeshComponentController", false, "Failed to find asset id for [%s] ", modelAsset.GetHint().c_str());
-                }
-            }
-        }
-
         MeshComponentController::MeshComponentController(const MeshComponentConfig& config)
             : m_configuration(config)
         {
-            FixUpModelAsset(m_configuration.m_modelAsset);
         }
 
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
-            FixUpModelAsset(m_configuration.m_modelAsset);
-
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
