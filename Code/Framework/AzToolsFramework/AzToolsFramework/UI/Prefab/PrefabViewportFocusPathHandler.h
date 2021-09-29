@@ -12,7 +12,7 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
-#include <AzQtComponents/Components/Widgets/Breadcrumbs.h>
+#include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
 
 #include <QLayout>
 #include <QToolButton>
