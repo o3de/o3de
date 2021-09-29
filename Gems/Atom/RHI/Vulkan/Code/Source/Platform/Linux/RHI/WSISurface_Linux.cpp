@@ -10,6 +10,10 @@
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbConnectionManager.h>
+#endif
+
 namespace AZ
 {
     namespace Vulkan
@@ -21,7 +25,7 @@ namespace AZ
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
             xcb_connection_t* xcb_connection = nullptr;
-            if (auto xcbConnectionManager = AzFramework::LinuxXcbConnectionManagerInterface::Get();
+            if (auto xcbConnectionManager = AzFramework::XcbConnectionManagerInterface::Get();
                 xcbConnectionManager != nullptr)
             {
                 xcb_connection = xcbConnectionManager->GetXcbConnection();

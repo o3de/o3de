@@ -11,6 +11,7 @@
 #include "EditorWhiteBoxMeshAsset.h"
 #include "Util/WhiteBoxEditorUtil.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
