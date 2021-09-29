@@ -25,10 +25,8 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
-#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -459,13 +457,6 @@ namespace AzToolsFramework
                 {
                     parentId = selectedEntities.front();
                     AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
-
-                    auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
-                    targetInstanceRef = instanceEntityMapperInterface->FindOwningInstance(parentId);
-                    if (targetInstanceRef.has_value() == false)
-                    {
-                        return;
-                    }
                 }
                 else
                 {
