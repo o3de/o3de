@@ -65,18 +65,18 @@ set(_signing_command
     -File ${_sign_script}
 )
 
-message(STATUS "Signing base files in ${_cpack_wix_out_dir}")
+message(STATUS "Signing package files in ${_cpack_wix_out_dir}")
 execute_process(
-    COMMAND ${_signing_command} -basePath ${_cpack_wix_out_dir}
+    COMMAND ${_signing_command} -packagePath ${_cpack_wix_out_dir}
     RESULT_VARIABLE _signing_result
     ERROR_VARIABLE _signing_errors
     OUTPUT_VARIABLE _signing_output
     ECHO_OUTPUT_VARIABLE
 )
 
-#if(NOT ${_signbase_result} EQUAL 0)
-#    message(FATAL_ERROR "An error occurred during signing base files.  ${_signbase_errors}")
-#endif()
+if(NOT ${_signing_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during signing package files.  ${_signing_errors}")
+endif()
 
 message(STATUS "Creating Bootstrap Installer...")
 execute_process(
@@ -112,9 +112,9 @@ execute_process(
     ECHO_OUTPUT_VARIABLE
 )
 
-#if(NOT ${_signbootstrap_result} EQUAL 0)
-#    message(FATAL_ERROR "An error occurred during signing the bootstrapper.  ${_signbootstrap_errors}")
-#endif()
+if(NOT ${_signing_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
+endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads
 if(NOT CPACK_UPLOAD_DIRECTORY)

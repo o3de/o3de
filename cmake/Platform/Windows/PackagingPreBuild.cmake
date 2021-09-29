@@ -17,7 +17,7 @@ set(_signing_command
     -File ${_sign_script}
 )
 
-message(STATUS "Signing exe files in ${_cpack_binary_dir}")
+message(STATUS "Signing executable files in ${_cpack_binary_dir}")
 execute_process(
     COMMAND ${_signing_command} -exePath ${_cpack_binary_dir}
     RESULT_VARIABLE _signing_result
@@ -25,5 +25,9 @@ execute_process(
     OUTPUT_VARIABLE _signing_output
     ECHO_OUTPUT_VARIABLE
 )
+
+if(NOT ${_signing_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during signing executable files.  ${_signing_errors}")
+endif()
 
 message(STATUS "Signing exes complete!")
