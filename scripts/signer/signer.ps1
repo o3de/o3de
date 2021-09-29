@@ -7,7 +7,7 @@
 
 param (
     [String[]] $exePath,
-    [String[]] $basePath,
+    [String[]] $packagePath,
     [String[]] $bootstrapPath,
     [String[]] $certificate
 )
@@ -53,21 +53,21 @@ function Write-Signiture {
 # Looping through each path insteaad of globbing to prevent hitting maximum command string length limit
 if ($exePath) {
     Write-Output "### Signing EXE files ###"
-    $files = @(Get-ChildItem $basePath -Recurse *.exe | % { $_.FullName })
+    $files = @(Get-ChildItem $exePath -Recurse *.exe | % { $_.FullName })
     foreach ($file in $files) {
         Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 }
 
-if ($basePath) {
+if ($packagePath) {
     Write-Output "### Signing CAB files ###"
-    $files = @(Get-ChildItem $basePath -Recurse *.cab | % { $_.FullName })
+    $files = @(Get-ChildItem $packagePath -Recurse *.cab | % { $_.FullName })
     foreach ($file in $files) {
         Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 
     Write-Output "### Signing MSI files ###"
-    $files = @(Get-ChildItem $basePath -Recurse *.msi | % { $_.FullName })
+    $files = @(Get-ChildItem $packagePath -Recurse *.msi | % { $_.FullName })
     foreach ($file in $files) {
         & $insigniaPath -im $files
         Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
