@@ -14,9 +14,11 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/DrawPacket.h>
@@ -25,6 +27,15 @@
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+
+namespace AZ::RPI
+{
+    namespace AssetUtils
+    {
+        class AsyncAssetLoader;
+    }
+    class Model;
+}
 
 namespace Terrain
 {
@@ -57,28 +68,6 @@ namespace Terrain
 
     private:
 
-        // System-level references to the shader, pipeline, and shader-related information
-        enum ShaderType 
-        {
-            Depth,
-            Forward,
-            Count,
-        };
-
-        struct ShaderState
-        {
-            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
-            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState;
-            AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-
-            void Reset()
-            {
-                m_shader.reset();
-                m_pipelineState.reset();
-                m_pipelineStateDescriptor = {};
-            }
-        };
-
         struct ShaderTerrainData // Must align with struct in Object Srg
         {
             AZStd::array<float, 2> m_uvMin;
@@ -87,62 +76,47 @@ namespace Terrain
             float m_sampleSpacing;
             float m_heightScale;
         };
-
-        // RPI::SceneNotificationBus overrides ...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override;
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
-
-        void InitializeAtomStuff();
-        void ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail);
-
-        void InitializeTerrainPatch();
-
-        bool InitializeRenderBuffers();
-        void DestroyRenderBuffers();
-
-        void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
-
-        // System-level parameters
-        const float m_gridSpacing{ 1.0f };
-        const float m_gridMeters{ 32.0f };
-
-        // System-level cached reference to the Atom RHI
-        AZ::RHI::RHISystemInterface* m_rhiSystem = nullptr;
-
-        AZStd::array<ShaderState, ShaderType::Count> m_shaderStates;
-
-        AZ::RHI::ShaderInputImageIndex m_heightmapImageIndex;
-        AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
-        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
-
-        // Pos_float_2 + UV_float_2
-        struct Vertex
+        
+        struct VertexPosition
         {
             float m_posx;
             float m_posy;
-            float m_u;
-            float m_v;
-
-            Vertex(float posx, float posy, float u, float v)
-                : m_posx(posx)
-                , m_posy(posy)
-                , m_u(u)
-                , m_v(v)
-            {
-            }
         };
 
-        // System-level definition of a grid patch.  (ex: 32m x 32m)
-        AZStd::vector<Vertex> m_gridVertices;
-        AZStd::vector<uint16_t> m_gridIndices;
+        struct VertexUv
+        {
+            float m_u;
+            float m_v;
+        };
 
-        // System-level data related to the grid patch
-        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_hostPool = nullptr;
-        AZ::RHI::Ptr<AZ::RHI::Buffer> m_indexBuffer;
-        AZ::RHI::Ptr<AZ::RHI::Buffer> m_vertexBuffer;
-        AZ::RHI::IndexBufferView m_indexBufferView;
-        AZ::RHI::StreamBufferView m_vertexBufferView;
+        struct PatchData
+        {
+            AZStd::vector<VertexPosition> m_positions;
+            AZStd::vector<VertexUv> m_uvs;
+            AZStd::vector<uint16_t> m_indices;
+        };
+        
+        void Initialize();
+        void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
+        bool InitializePatchModel();
+
+        void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
+        
+        AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
+            const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
+
+        // System-level parameters
+        static constexpr float GridSpacing{ 1.0f };
+        static constexpr uint32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr float GridMeters{ GridSpacing * GridSize };
+
+        AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
+        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+
+        AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
+        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
+
+        AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
 
         // Per-area data
         struct TerrainAreaData
@@ -161,15 +135,9 @@ namespace Terrain
 
         struct SectorData
         {
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
             AZ::Aabb m_aabb;
-            AZStd::unique_ptr<const AZ::RHI::DrawPacket> m_drawPacket;
-
-            SectorData(const AZ::RHI::DrawPacket* drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
-                : m_srg(srg)
-                , m_aabb(aabb)
-                , m_drawPacket(drawPacket)
-            {}
+            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
         };
 
         AZStd::vector<SectorData> m_sectorData;
