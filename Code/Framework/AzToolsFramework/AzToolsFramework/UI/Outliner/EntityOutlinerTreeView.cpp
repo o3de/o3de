@@ -39,7 +39,12 @@ namespace AzToolsFramework
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
 
-        FocusModeNotificationBus::Handler::BusConnect();
+        
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         viewport()->setMouseTracking(true);
     }
