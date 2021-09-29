@@ -21,6 +21,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
