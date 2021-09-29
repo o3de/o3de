@@ -20,13 +20,17 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-
+#include <QResizeEvent>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        const float MinHeaderResizeProportion = .25f;
+        const float MaxHeaderResizeProportion = .75f;
+        const float DefaultHeaderResizeProportion = .5f;
+
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : AzQtComponents::TableView(parent)
             , m_delegate(new SearchEntryDelegate(this))
@@ -65,8 +69,10 @@ namespace AzToolsFramework
             AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 
-            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+            header()->setStretchLastSection(true);
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
+            UpdateSizeSlot(parentWidget()->width());
             header()->setSortIndicatorShown(false);
             header()->setSectionsClickable(false);
         }
@@ -148,7 +154,16 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
+            UpdateSizeSlot(parentWidget()->width());
         }
+
+        void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
+        {
+            setColumnWidth(0, aznumeric_cast<int>(newWidth * DefaultHeaderResizeProportion));
+            header()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
+            header()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
+        }
+
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {

@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
@@ -103,7 +102,6 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
         , public ModularViewportCameraControllerRequestBus::Handler
-        , private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModularViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
@@ -121,9 +119,6 @@ namespace AtomToolsFramework
         void ClearReferenceFrame() override;
 
     private:
-        // AzFramework::ViewportDebugDisplayEventBus overrides ...
-        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
-
         //! Update the reference frame after a change has been made to the camera
         //! view without updating the internal camera via user input.
         void RefreshReferenceFrame();
