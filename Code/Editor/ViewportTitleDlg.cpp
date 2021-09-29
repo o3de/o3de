@@ -37,9 +37,13 @@
 #include "MathConversion.h"
 #include "EditorViewportSettings.h"
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
+<<<<<<< HEAD
 #include <AzFramework/API/ApplicationAPI.h>
+=======
+#include <AzCore/std/algorithm.h>
+>>>>>>> a8559c4000297b8c2876b8213d83f1678dbc3d84
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
