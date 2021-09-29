@@ -236,6 +236,17 @@ namespace AZ
         * code before or after an event.
         */
         using EventProcessingPolicy = EBusEventProcessingPolicy;
+
+        /**
+         * Policy used to configure any post dispatch callbacks that occurs
+         * after a thread has finished dispatching all of it's EBus events
+         * and after the thread has release it's mutex.
+         * This allows avoiding deadlocking scenarios where another thread is waiting on a notificaton
+         * from an event that is being dispatched on the current thread for this EBus and that other thread
+         * tries to invoke another EBus event function from itself causing a deadlock to occur.
+         *
+         */
+        using ThreadDispatchPolicy = EBusPolicies::ThreadDispatch;
     };
 
     namespace Internal
@@ -496,6 +507,12 @@ namespace AZ
          */
         static const bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
 
+        /**
+         * True if the EBusTraits has ben configured with a ThreadDispatchPolicy
+         * with an callable operator()
+         */
+        static constexpr bool EnablePostDispatch = ImplTraits::EnablePostDispatch;
+
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
         /// @cond EXCLUDE_DOCS
@@ -619,12 +636,42 @@ namespace AZ
              */
             using ContextMutexType = AZStd::conditional_t<BusTraits::LocklessDispatch && AZStd::is_same_v<MutexType, AZ::NullMutex>, AZStd::shared_mutex, MutexType>;
 
+            struct ThreadPostDispatchLockGuard
+            {
+                struct DispatchPolicyInvoker
+                {
+                    DispatchPolicyInvoker(Context& context)
+                        : m_context{ context }
+                    {}
+                    ~DispatchPolicyInvoker()
+                    {
+                        if constexpr (EnablePostDispatch)
+                        {
+                            if (!IsInDispatchThisThread(&m_context))
+                            {
+                                typename Traits::ThreadDispatchPolicy{}(EBusPolicies::PostDispatchTag);
+                            }
+                        }
+                    }
+
+                    Context& m_context;
+                };
+                ThreadPostDispatchLockGuard(Context& context, ContextMutexType& contextMutex);
+                ThreadPostDispatchLockGuard(Context& context, ContextMutexType& contextMutex, AZStd::adopt_lock_t);
+                ThreadPostDispatchLockGuard(const ThreadPostDispatchLockGuard&) = delete;
+                ~ThreadPostDispatchLockGuard() = default;
+                ThreadPostDispatchLockGuard& operator=(const ThreadPostDispatchLockGuard&) = delete;
+            private:
+                DispatchPolicyInvoker m_threadPolicyInvoker;
+                using LockType = AZStd::conditional_t<BusTraits::LocklessDispatch, AZ::Internal::NullLockGuard<ContextMutexType>, AZStd::scoped_lock<ContextMutexType>>;
+                LockType m_lock;
+            };
             /**
              * The scoped lock guard to use (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = AZStd::conditional_t<BusTraits::LocklessDispatch, AZ::Internal::NullLockGuard<ContextMutexType>, AZStd::scoped_lock<ContextMutexType>>;
+            using DispatchLockGuard = ThreadPostDispatchLockGuard;
 
             /**
             * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which
@@ -704,6 +751,12 @@ namespace AZ
         static Context& GetOrCreateContext(bool trackCallstack=true);
 
         static bool IsInDispatch(Context* context = GetContext(false));
+
+        /**
+         *Returns whether the EBus context is in the middle of a dispatch on the current thread
+         *
+        */
+        static bool IsInDispatchThisThread(Context* context = GetContext(false));
         /// @cond EXCLUDE_DOCS
         struct RouterCallstackEntry
             : public CallstackEntry
@@ -964,6 +1017,20 @@ namespace AZ
         s_callstack = nullptr;
     }
 
+    //! ThreadPostDispatchLockGuard implementation
+    template<class Interface, class Traits>
+    EBus<Interface, Traits>::Context::ThreadPostDispatchLockGuard::ThreadPostDispatchLockGuard(Context& context,
+        Context::ContextMutexType& contextMutex)
+        : m_threadPolicyInvoker{ context }
+        , m_lock{ contextMutex }
+    {}
+    template<class Interface, class Traits>
+    EBus<Interface, Traits>::Context::ThreadPostDispatchLockGuard::ThreadPostDispatchLockGuard(Context& context,
+        Context::ContextMutexType& contextMutex, AZStd::adopt_lock_t adopt_lock)
+        : m_threadPolicyInvoker{ context }
+        , m_lock{ contextMutex, adopt_lock }
+    {}
+
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")
 
     //=========================================================================
@@ -1206,6 +1273,13 @@ AZ_POP_DISABLE_WARNING
     bool EBus<Interface, Traits>::IsInDispatch(Context* context)
     {
         return context != nullptr && context->m_dispatches > 0;
+    }
+
+    template<class Interface, class Traits>
+    bool EBus<Interface, Traits>::IsInDispatchThisThread(Context* context)
+    {
+        return context != nullptr && context->s_callstack != nullptr
+            && context->s_callstack->m_prev != nullptr;
     }
 
     //=========================================================================

@@ -130,6 +130,7 @@ set(FILES
     Driller/Stream.cpp
     Driller/Stream.h
     EBus/BusImpl.h
+    EBus/DispatchPolicies.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
     EBus/Environment.h

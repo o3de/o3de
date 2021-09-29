@@ -3995,6 +3995,168 @@ namespace UnitTest
 
         idTestRequest.Disconnect();
     }
+
+    // IsInDispatchThisThread
+    struct IsInThreadDispatchRequests
+        : AZ::EBusTraits
+    {
+        using MutexType = AZStd::recursive_mutex;
+    };
+
+    using IsInThreadDispatchBus = AZ::EBus<IsInThreadDispatchRequests>;
+
+    class IsInThreadDispatchHandler
+        : public IsInThreadDispatchBus::Handler
+    {};
+
+    TEST_F(EBus, InvokingIsInThisThread_ReturnsSuccess_OnlyIfThreadIsInDispatch)
+    {
+        IsInThreadDispatchHandler handler;
+        handler.BusConnect();
+
+        auto ThreadDispatcher = [](IsInThreadDispatchRequests*)
+        {
+            EXPECT_TRUE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            auto PerThreadBusDispatch = []()
+            {
+                EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            };
+            AZStd::array threads{ AZStd::thread(PerThreadBusDispatch), AZStd::thread(PerThreadBusDispatch) };
+            for (AZStd::thread& thread : threads)
+            {
+                thread.join();
+            }
+        };
+
+        static constexpr size_t ThreadDispatcherIterations = 4;
+        for (size_t iteration = 0; iteration < ThreadDispatcherIterations; ++iteration)
+        {
+            EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            IsInThreadDispatchBus::Broadcast(ThreadDispatcher);
+            EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+        }
+    }
+
+    // Thread Dispatch Policy
+    struct ThreadDispatchTestBusTraits
+        : AZ::EBusTraits
+    {
+        using MutexType = AZStd::recursive_mutex;
+
+        struct ThreadDispatchPolicyTest
+        {
+            void operator()(AZ::EBusPolicies::PostDispatchTagType)
+            {
+                ++s_threadPostDispatchCalls;
+            }
+        };
+
+        using ThreadDispatchPolicy = ThreadDispatchPolicyTest;
+
+        static inline AZStd::atomic<int32_t> s_threadPostDispatchCalls;
+    };
+
+    class ThreadDispatchTestRequests
+    {
+    public:
+        virtual void FirstCall() = 0;
+        virtual void SecondCall() = 0;
+        virtual void ThirdCall() = 0;
+    };
+
+    using ThreadDispatchTestBus = AZ::EBus<ThreadDispatchTestRequests, ThreadDispatchTestBusTraits>;
+
+    class ThreadDispatchTestHandler
+        : public ThreadDispatchTestBus::Handler
+    {
+    public:
+        void Connect()
+        {
+            ThreadDispatchTestBus::Handler::BusConnect();
+        }
+        void Disconnect()
+        {
+            ThreadDispatchTestBus::Handler::BusDisconnect();
+        }
+
+        void FirstCall() override
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::SecondCall);
+        }
+        void SecondCall() override
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::ThirdCall);
+        }
+        void ThirdCall() override
+        {
+        }
+    };
+
+    template <typename ParamType>
+    class EBusParamFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<ParamType>
+    {};
+
+    struct ThreadDispatchParams
+    {
+        size_t m_threadCount{};
+        size_t m_handlerCount{};
+    };
+
+    using ThreadDispatchParamFixture = EBusParamFixture<ThreadDispatchParams>;
+
+    INSTANTIATE_TEST_CASE_P(
+        ThreadDispatch,
+        ThreadDispatchParamFixture,
+        ::testing::Values(
+            ThreadDispatchParams{ 1, 1 },
+            ThreadDispatchParams{ 2, 1 },
+            ThreadDispatchParams{ 1, 2 },
+            ThreadDispatchParams{ 2, 2 },
+            ThreadDispatchParams{ 16, 8 }
+            )
+    );
+
+    TEST_P(ThreadDispatchParamFixture, ThreadDispatchPolicy_WithCallablePostDispatch_FunctionDispatchesWhenThreadCompletesWithEBus)
+    {
+        ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
+        ThreadDispatchParams threadDispatchParams = GetParam();
+        AZStd::vector<AZStd::thread> testThreads;
+        AZStd::vector<ThreadDispatchTestHandler> testHandlers(threadDispatchParams.m_handlerCount);
+        for (ThreadDispatchTestHandler& testHandler : testHandlers)
+        {
+            testHandler.Connect();
+        }
+
+        static constexpr size_t DispatchThreadCalls = 3;
+        const size_t totalThreadDispatchCalls = threadDispatchParams.m_threadCount * DispatchThreadCalls;
+
+        auto DispatchThreadWorker = []()
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::FirstCall);
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::SecondCall);
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::ThirdCall);
+        };
+
+        for (size_t threadIndex = 0; threadIndex < threadDispatchParams.m_threadCount; ++threadIndex)
+        {
+            testThreads.emplace_back(DispatchThreadWorker);
+        }
+
+        for (AZStd::thread& thread : testThreads)
+        {
+            thread.join();
+        }
+
+        for (ThreadDispatchTestHandler& testHandler : testHandlers)
+        {
+            testHandler.Disconnect();
+        }
+
+        EXPECT_EQ(totalThreadDispatchCalls, ThreadDispatchTestBusTraits::s_threadPostDispatchCalls);
+        ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
+    }
 } // namespace UnitTest
 
 #if defined(HAVE_BENCHMARK)

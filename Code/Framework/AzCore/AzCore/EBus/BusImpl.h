@@ -20,6 +20,7 @@
 
 #include <AzCore/EBus/Internal/BusContainer.h>
 #include <AzCore/EBus/Internal/Debug.h>
+#include <AzCore/EBus/DispatchPolicies.h>
 #include <AzCore/EBus/Policies.h>
 
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -160,8 +161,8 @@ namespace AZ
             /**
              * Locking primitive that is used when executing events in the event queue.
              */
-            using EventQueueMutexType = typename AZStd::Utils::if_c<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
-                MutexType, typename Traits::EventQueueMutexType>::type;
+            using EventQueueMutexType = AZStd::conditional_t<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
+                MutexType, typename Traits::EventQueueMutexType>;
 
             /**
              * Pointer to an address on the bus.
@@ -180,14 +181,20 @@ namespace AZ
              * `<BusName>::ExecuteQueuedEvents()`.
              * By default, the event queue is disabled.
              */
-            static const bool EnableEventQueue = Traits::EnableEventQueue;
-            static const bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
-            static const bool EnableQueuedReferences = Traits::EnableQueuedReferences;
+            static constexpr bool EnableEventQueue = Traits::EnableEventQueue;
+            static constexpr bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
+            static constexpr bool EnableQueuedReferences = Traits::EnableQueuedReferences;
 
             /**
              * True if the EBus supports more than one address. Otherwise, false.
              */
-            static const bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+            static constexpr bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+
+            /**
+             * True if the ThreadDispatchPolicy type alias is a structure that implements
+             * the <ret-type> operator()(PostDispatchTagType) signature
+             */
+            static constexpr bool EnablePostDispatch = AZStd::is_invocable_v<Traits::ThreadDispatchPolicy, EBusPolicies::PostDispatchTagType>;
         };
 
         /**
@@ -581,7 +588,7 @@ namespace AZ
             , public EBusBroadcaster<Bus, Traits>
             , public EBusEventer<Bus, Traits>
             , public EBusEventEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
@@ -599,7 +606,7 @@ namespace AZ
             : public EventDispatcher<Bus, Traits>
             , public EBusBroadcaster<Bus, Traits>
             , public EBusBroadcastEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
