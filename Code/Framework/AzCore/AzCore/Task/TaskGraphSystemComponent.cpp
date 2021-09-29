@@ -14,6 +14,9 @@
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
 AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
+AZ_CVAR(uint32_t, cl_numeratorTaskGraphThreads, 3, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph multiplier on the number of hw threads the machine supports to create at initialization");
+AZ_CVAR(uint32_t, cl_denominatorTaskGraphThreads, 4, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph divisor on the number of hw threads the machine supports to create at initialization");
+
 static constexpr uint32_t TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
 namespace AZ
@@ -24,9 +27,10 @@ namespace AZ
 
         if (Interface<TaskGraphActiveInterface>::Get() == nullptr)
         {
-            Interface<TaskGraphActiveInterface>::Register(this);
-            m_taskExecutor = aznew TaskExecutor();
+        	uint32_t numThreads = cl_numeratorTaskGraphThreads * AZStd::thread::hardware_concurrency() / cl_denominatorTaskGraphThreads;
+        	m_taskExecutor = aznew TaskExecutor(numThreads);
             TaskExecutor::SetInstance(m_taskExecutor);
+			Interface<UseTaskGraphInterface>::Register(this);
         }
     }
 

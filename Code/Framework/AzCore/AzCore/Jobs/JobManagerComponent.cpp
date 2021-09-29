@@ -18,6 +18,11 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Math/MathUtils.h>
 
+#include <AzCore/Console/IConsole.h>
+
+AZ_CVAR(uint32_t, cl_numeratorJobThreads, 1, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine supports to create at initialization");
+AZ_CVAR(uint32_t, cl_denominatorJobThreads, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system divisor on the number of hw threads the machine supports to create at initialization");
+
 namespace AZ
 {
     //=========================================================================
@@ -46,9 +51,9 @@ namespace AZ
         JobManagerThreadDesc threadDesc;
 
         int numberOfWorkerThreads = m_numberOfWorkerThreads;
-        if (numberOfWorkerThreads <= 0)
+        if (numberOfWorkerThreads <= 0) // spawn default number of threads
         {
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), AZStd::thread::hardware_concurrency());
+            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), cl_numeratorJobThreads * AZStd::thread::hardware_concurrency() / cl_denominatorJobThreads);
         #if (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
             numberOfWorkerThreads = AZ::GetMin(numberOfWorkerThreads, AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS);
         #endif // (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
