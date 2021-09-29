@@ -8,6 +8,7 @@
 
 #include <Multiplayer/Components/NetworkCharacterComponent.h>
 #include <Multiplayer/Components/NetworkRigidBodyComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
@@ -19,7 +20,7 @@
 
 namespace Multiplayer
 {
-    
+
     bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB)
     {
         PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
@@ -82,7 +83,7 @@ namespace Multiplayer
 
         return physx::PxQueryHitType::eNONE;
     }
-    
+
     void NetworkCharacterComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -116,7 +117,7 @@ namespace Multiplayer
                 callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
             }
         }
-        
+
         if (!HasController())
         {
             GetNetworkTransformComponent()->TranslationAddEvent(m_translationEventHandler);
@@ -134,7 +135,7 @@ namespace Multiplayer
     }
 
     void NetworkCharacterComponent::OnSyncRewind()
-    { 
+    {
         if (m_physicsCharacter == nullptr)
         {
             return;
