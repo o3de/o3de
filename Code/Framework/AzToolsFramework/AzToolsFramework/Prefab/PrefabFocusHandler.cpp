@@ -60,7 +60,7 @@ namespace AzToolsFramework::Prefab
         return FocusOnPrefabInstance(focusedInstance);
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex(int index)
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
     {
         if (index < 0 || index >= m_instanceFocusVector.size())
         {
@@ -115,12 +115,13 @@ namespace AzToolsFramework::Prefab
         return AZ::Success();
     }
     
-    TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId() const
+    TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_focusedTemplateId;
     }
 
-    InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance() const
+    InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance(
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_focusedInstance;
     }
@@ -143,12 +144,12 @@ namespace AzToolsFramework::Prefab
         return instance.has_value() && (&instance->get() == &m_focusedInstance->get());
     }
 
-    const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath() const
+    const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_instanceFocusPath;
     }
 
-    const int PrefabFocusHandler::GetPrefabFocusPathLength() const
+    const int PrefabFocusHandler::GetPrefabFocusPathLength([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return aznumeric_cast<int>(m_instanceFocusVector.size());
     }

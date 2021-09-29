@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
 #include <AzQtComponents/Components/Widgets/Breadcrumbs.h>
@@ -35,6 +37,8 @@ namespace AzToolsFramework::Prefab
     private:
         AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
         QToolButton* m_backButton = nullptr;
+
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
         PrefabFocusInterface* m_prefabFocusInterface = nullptr;
     };

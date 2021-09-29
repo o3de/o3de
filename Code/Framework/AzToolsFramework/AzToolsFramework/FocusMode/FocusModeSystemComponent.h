@@ -40,8 +40,8 @@ namespace AzToolsFramework
 
         // FocusModeInterface overrides ...
         void SetFocusRoot(AZ::EntityId entityId) override;
-        void ClearFocusRoot() override;
-        AZ::EntityId GetFocusRoot() override;
+        void ClearFocusRoot(AzFramework::EntityContextId entityContextId) override;
+        AZ::EntityId GetFocusRoot(AzFramework::EntityContextId entityContextId) override;
         bool IsInFocusSubTree(AZ::EntityId entityId) const override;
 
     private:

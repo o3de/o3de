@@ -8,19 +8,18 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 
 namespace AzToolsFramework::Prefab
 {
     PrefabViewportFocusPathHandler::PrefabViewportFocusPathHandler()
     {
-        // Connect to Prefab Focus Notifications
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        // Get default EntityContextId
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
-        PrefabFocusNotificationBus::Handler::BusConnect(editorEntityContextId);
+        // Connect to Prefab Focus Notifications
+        PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
     }
 
     PrefabViewportFocusPathHandler::~PrefabViewportFocusPathHandler()
@@ -47,7 +46,7 @@ namespace AzToolsFramework::Prefab
         connect(m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
             [&](const QString&, int linkIndex)
             {
-                m_prefabFocusInterface->FocusOnPathIndex(linkIndex);
+                m_prefabFocusInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
             }
         );
 
@@ -55,9 +54,9 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                if (int length = m_prefabFocusInterface->GetPrefabFocusPathLength(); length > 1)
+                if (int length = m_prefabFocusInterface->GetPrefabFocusPathLength(m_editorEntityContextId); length > 1)
                 {
-                    m_prefabFocusInterface->FocusOnPathIndex(length - 2);
+                    m_prefabFocusInterface->FocusOnPathIndex(m_editorEntityContextId, length - 2);
                 }
             }
         );
@@ -66,7 +65,7 @@ namespace AzToolsFramework::Prefab
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()
     {
         // Push new Path
-        m_breadcrumbsWidget->pushPath(m_prefabFocusInterface->GetPrefabFocusPath().c_str());
+        m_breadcrumbsWidget->pushPath(m_prefabFocusInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
     }
 
 } // namespace AzToolsFramework::Prefab
