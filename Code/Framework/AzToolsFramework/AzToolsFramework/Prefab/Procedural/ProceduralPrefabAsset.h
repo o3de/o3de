@@ -67,6 +67,8 @@ namespace AZ::Prefab
         AZ_CLASS_ALLOCATOR(ProceduralPrefabAsset, AZ::SystemAllocator, 0);
         AZ_RTTI(ProceduralPrefabAsset, "{9B7C8459-471E-4EAD-A363-7990CC4065A9}", AZ::Data::AssetData);
 
+        static bool UseProceduralPrefabs();
+
         ProceduralPrefabAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId());
         ~ProceduralPrefabAsset() override = default;
         ProceduralPrefabAsset(const ProceduralPrefabAsset& rhs) = delete;

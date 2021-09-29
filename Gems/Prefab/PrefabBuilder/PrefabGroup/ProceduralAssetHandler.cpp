@@ -108,12 +108,7 @@ namespace AZ::Prefab
 
     void PrefabGroupAssetHandler::DestroyAsset(AZ::Data::AssetData* ptr)
     {
-        auto* prefabSystemComponent = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-        if (prefabSystemComponent)
-        {
-            auto* prefabAsset = azrtti_cast<ProceduralPrefabAsset*>(ptr);
-            prefabSystemComponent->RemoveTemplate(prefabAsset->GetTemplateId());
-        }
+        // Note: the PrefabLoaderInterface will handle the lifetime of the Prefab Template
         delete ptr;
     }
 
@@ -153,26 +148,14 @@ namespace AZ::Prefab
             return LoadResult::Error;
         }
 
-        if (jsonDoc.FindMember("name") == jsonDoc.MemberEnd())
+        if (jsonDoc.FindMember("Source") == jsonDoc.MemberEnd())
         {
             return LoadResult::Error;
         }
-        const auto& templateName = jsonDoc["name"];
+        const auto& templateName = jsonDoc["Source"];
 
-        if (jsonDoc.FindMember("data") == jsonDoc.MemberEnd())
-        {
-            return LoadResult::Error;
-        }
-        const auto& prefabData = jsonDoc["data"];
-        if (prefabData.IsObject() == false)
-        {
-            return LoadResult::Error;
-        }
-
-        rapidjson::Document prefabDoc;
-        prefabDoc.CopyFrom(prefabData, prefabDoc.GetAllocator());
         AZStd::string stringJson;
-        auto stringOutcome = AZ::JsonSerializationUtils::WriteJsonString(prefabDoc, stringJson);
+        auto stringOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDoc, stringJson);
         if (stringOutcome.IsSuccess() == false)
         {
             AZ_Error("prefab", false, "Could not write to JSON string %s", stringOutcome.GetError().c_str());
