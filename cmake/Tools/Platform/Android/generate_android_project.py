@@ -368,7 +368,6 @@ def main(args):
     if not third_party_path.is_dir():
         raise common.LmbrCmdError(f"Invalid --third-party-path '{parsed_args.third_party_path}'.",
                                   common.ERROR_CODE_INVALID_PARAMETER)
-    third_party_path = third_party_path.parent
 
     build_dir = parsed_args.build_dir
 
