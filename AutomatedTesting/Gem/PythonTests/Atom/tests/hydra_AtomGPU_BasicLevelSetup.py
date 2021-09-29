@@ -114,7 +114,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # Test steps begin.
         # 1. Wait for the level to load and update the viewport size.
         helper.after_level_load()
-        Report.result(Tests.viewport_set, initial_viewport_setup(SCREEN_WIDTH, SCREEN_HEIGHT))
+        Report.critical_result(Tests.viewport_set, initial_viewport_setup(SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # 2. Create Default Level Entity.
         default_level_name = "Default Level"
