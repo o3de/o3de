@@ -204,7 +204,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
         break;
     }
 
-    // Temporary fix as terrainExistsPtr is not yet correctly set.
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = terrainExists;
@@ -395,7 +395,7 @@ void TerrainSystem::GetSurfaceWeightsFromVector2(
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
-    // Temporary fix as terrainExistsPtr is not yet correctly set. 
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
@@ -411,7 +411,7 @@ void TerrainSystem::GetSurfaceWeightsFromFloats(
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
-    // Temporary fix as terrainExistsPtr is not yet correctly set.
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
@@ -422,7 +422,7 @@ void TerrainSystem::GetSurfaceWeightsFromFloats(
 
 const char* TerrainSystem::GetMaxSurfaceName([[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
 {
-    // Temporary fix as terrainExistsPtr is not yet correctly set.
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
