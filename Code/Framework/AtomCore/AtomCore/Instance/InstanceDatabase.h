@@ -203,6 +203,16 @@ namespace AZ
             //! Calls FindOrCreate using a random InstanceId
             Data::Instance<Type> Create(const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
+            /**
+             * Removes the instance data from the database. Does not release it.
+             * References to existing instances will remain valid, but new calls to Create/FindOrCreate will create a new instance
+             * This function is temporary, to provide functionality needed for Model hot-reloading, but will be removed
+             * once the Model class does not need it anymore.
+             *
+             * @param id The id of the instance to remove
+             */
+            void TEMPOrphan(const InstanceId& id);
+
         private:
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
@@ -357,6 +367,20 @@ namespace AZ
         }
 
         template<typename Type>
+        void InstanceDatabase<Type>::TEMPOrphan(const InstanceId& id)
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            // Check if the instance is still in the database, in case it was orphaned twice
+            auto instanceItr = m_database.find(id);
+            if (instanceItr != m_database.end())
+            {
+                // Mark the instance as orphaned, and remove it from the database
+                instanceItr->second->m_isOrphaned = true;
+                m_database.erase(instanceItr);
+            }
+        }
+
+        template<typename Type>
         void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
@@ -372,6 +396,12 @@ namespace AZ
                 instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
             {
                 m_database.erase(instance->GetId());
+                m_instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
+            }
+            else if (instance->m_isOrphaned && instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
+            {
+                // If the instance was orphaned, it has already been removed from the database,
+                // but still needs to be deleted when the refcount drops to 0
                 m_instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
             }
         }
