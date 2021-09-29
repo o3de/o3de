@@ -6,8 +6,9 @@
 #
 #
 
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
 file(REAL_PATH "${CPACK_BINARY_DIR}/.." _cpack_binary_dir)
-file(TO_NATIVE_PATH "${CPACK_SOURCE_DIR}/scripts/signer/signer.ps1" _sign_script)
+file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
 
 set(_signexe_command
     powershell.exe
