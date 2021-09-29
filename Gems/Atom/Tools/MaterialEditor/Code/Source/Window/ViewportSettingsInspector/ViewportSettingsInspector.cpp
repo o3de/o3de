@@ -9,6 +9,7 @@
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>

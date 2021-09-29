@@ -7,6 +7,7 @@
  */
 #include "EditorLayerComponent.h"
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

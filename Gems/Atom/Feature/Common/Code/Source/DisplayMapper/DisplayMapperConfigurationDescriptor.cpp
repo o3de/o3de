@@ -7,6 +7,7 @@
  */
 
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>

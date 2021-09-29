@@ -9,6 +9,7 @@
 #include "RuntimeAsset.h"
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasRuntimeAssetCpp
 {

@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>

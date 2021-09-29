@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>

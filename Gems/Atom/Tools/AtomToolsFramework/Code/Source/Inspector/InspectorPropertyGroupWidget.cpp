@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
 namespace AtomToolsFramework
 {

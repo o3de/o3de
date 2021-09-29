@@ -8,6 +8,7 @@
 
 #include <cinttypes>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/DataPatchBus.h>
 #include <AzCore/Serialization/DataPatchUpgradeManager.h>

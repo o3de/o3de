@@ -12,6 +12,7 @@
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasBuilderCpp
 {

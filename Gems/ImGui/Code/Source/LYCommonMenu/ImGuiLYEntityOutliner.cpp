@@ -11,6 +11,7 @@
 #ifdef IMGUI_ENABLED
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/Entity/EntityContext.h>

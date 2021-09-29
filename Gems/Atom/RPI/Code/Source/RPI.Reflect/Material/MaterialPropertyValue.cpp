@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

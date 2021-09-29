@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>

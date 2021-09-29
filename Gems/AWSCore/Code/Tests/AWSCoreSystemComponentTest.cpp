@@ -11,6 +11,7 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobCancelGroup.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

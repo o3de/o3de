@@ -10,12 +10,14 @@
 #include "Utils.h"
 #include "Material.h"
 #include "Shape.h"
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/WindBus.h>

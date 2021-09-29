@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -31,6 +32,7 @@
 #include <Source/MeshColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
 #include <Source/Utils.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <LyViewPaneNames.h>
 #include <Editor/ConfigurationWindowBus.h>

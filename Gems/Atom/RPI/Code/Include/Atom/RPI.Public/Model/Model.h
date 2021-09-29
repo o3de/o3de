@@ -24,6 +24,8 @@ namespace AZ
 {
     namespace RPI
     {
+        class ModelAsset;
+
         class Model final
             : public Data::InstanceData
         {
