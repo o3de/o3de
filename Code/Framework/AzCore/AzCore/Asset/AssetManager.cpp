@@ -340,6 +340,14 @@ namespace AZ
                     // (Load jobs will attempt to reuse blocked threads before spinning off new job threads)
                     ProcessLoadJob();
                 }
+
+                // Pump the AssetBus function queue once more after the load has completed in case additional
+                // functions have been queued between the last call to DispatchEvents and the completion
+                // of the current load job
+                if (m_shouldDispatchEvents)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
             }
 
             void Finish()
@@ -567,10 +575,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(AzCore);
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchBegin);
-            while (AssetBus::QueuedEventCount())
-            {
-                AssetBus::ExecuteQueuedEvents();
-            }
+            AssetBus::ExecuteQueuedEvents();
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchEnd);
         }
 
