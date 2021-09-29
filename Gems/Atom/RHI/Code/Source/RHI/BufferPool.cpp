@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 

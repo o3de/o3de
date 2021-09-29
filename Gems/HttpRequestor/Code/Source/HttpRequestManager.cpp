@@ -49,7 +49,6 @@ namespace HttpRequestor
         {
             m_thread.join();
         }
-
     }
 
     void Manager::AddRequest(Parameters && httpRequestParameters)

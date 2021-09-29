@@ -17,6 +17,7 @@
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
 #include <PostProcess/Ssao/SsaoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
+#include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ
