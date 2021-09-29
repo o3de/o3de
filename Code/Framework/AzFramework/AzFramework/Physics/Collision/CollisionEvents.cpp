@@ -9,6 +9,7 @@
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 

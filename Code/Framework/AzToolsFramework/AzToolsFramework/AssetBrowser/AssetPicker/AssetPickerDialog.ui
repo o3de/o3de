@@ -118,6 +118,9 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget"/>
+       </item>
+       <item>
         <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTreeView" name="m_assetBrowserTreeViewWidget">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -141,9 +144,6 @@
           <enum>QAbstractItemView::DragOnly</enum>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget"/>
        </item>
       </layout>
      </widget>

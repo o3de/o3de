@@ -8,12 +8,12 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResourceInvalidateBus.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/TickBus.h>
 
 #if defined(USE_RENDERDOC) || defined(USE_PIX)
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <Atom/RHI/RHIUtils.h>
 #include <Atom_RHI_Traits_Platform.h>
 #endif
 
@@ -27,6 +27,8 @@ static bool s_isRenderDocDllLoaded = false;
 static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
 static bool s_isPixGpuCaptureDllLoaded = false;
 #endif
+
+static bool s_usingWarpDevice = false;
 
 namespace AZ
 {
@@ -55,6 +57,8 @@ namespace AZ
 
         Factory::Factory()
         {
+            AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
+            s_usingWarpDevice = preferredUserAdapterName == "Microsoft Basic Render Driver";
 #if defined(USE_RENDERDOC)
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
@@ -196,6 +200,11 @@ namespace AZ
 #else
             return false;
 #endif
+        }
+
+        bool Factory::UsingWarpDevice()
+        {
+            return s_usingWarpDevice;
         }
     }
 }

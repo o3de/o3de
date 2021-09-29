@@ -8,8 +8,10 @@ Reg cleaner: tools for working with the lumberyard windows registry keys
 """
 import logging
 import os
-import winreg
 
+import ly_test_tools
+if ly_test_tools.WINDOWS:
+    import winreg  # OS-specific module availability, must be mocked if this file is accessed elsewhere e.g. unit tests
 import ly_test_tools.environment.process_utils as process_utils
 
 CONST_LY_REG = r'SOFTWARE\O3DE\O3DE'
