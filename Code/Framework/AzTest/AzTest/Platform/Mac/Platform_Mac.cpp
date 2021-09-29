@@ -21,9 +21,13 @@ public:
         : m_libHandle(nullptr)
     {
         std::string libext = lib;
-        if (!AZ::Test::EndsWith(libext, ".dylib"))
+        if (!AZ::Test::StartsWith(libext, AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
         {
-            libext += ".dylib";
+            libext = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + libext;
+        }
+        if (!AZ::Test::EndsWith(libext, AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+        {
+            libext += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
         }
         m_libHandle = dlopen(libext.c_str(), RTLD_NOW);
         const char* error = dlerror();
