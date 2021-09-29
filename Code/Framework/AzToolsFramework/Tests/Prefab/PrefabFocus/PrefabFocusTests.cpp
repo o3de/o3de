@@ -69,15 +69,19 @@ namespace UnitTest
     {
         GenerateTestHierarchy();
 
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
         PrefabFocusInterface* prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
         EXPECT_TRUE(prefabFocusInterface != nullptr);
         
         // Verify FocusOnOwningPrefab works when passing the container entity of the root prefab.
         {
             prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["city"]->GetContainerEntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["city"]->GetTemplateId());
+            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId), m_instanceMap["city"]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), m_instanceMap["city"]);
         }
@@ -85,9 +89,9 @@ namespace UnitTest
         // Verify FocusOnOwningPrefab works when passing a nested entity of the root prefab.
         {
             prefabFocusInterface->FocusOnOwningPrefab(m_entityMap["city"]->GetId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["city"]->GetTemplateId());
+            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId), m_instanceMap["city"]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), m_instanceMap["city"]);
         }
@@ -95,9 +99,9 @@ namespace UnitTest
         // Verify FocusOnOwningPrefab works when passing the container entity of a nested prefab.
         {
             prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["car"]->GetContainerEntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["car"]->GetTemplateId());
+            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId), m_instanceMap["car"]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), m_instanceMap["car"]);
         }
@@ -105,9 +109,9 @@ namespace UnitTest
         // Verify FocusOnOwningPrefab works when passing a nested entity of the a nested prefab.
         {
             prefabFocusInterface->FocusOnOwningPrefab(m_entityMap["passenger1"]->GetId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["car"]->GetTemplateId());
+            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId), m_instanceMap["car"]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), m_instanceMap["car"]);
         }
@@ -121,9 +125,9 @@ namespace UnitTest
             EXPECT_TRUE(rootPrefabInstance.has_value());
 
             prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), rootPrefabInstance->get().GetTemplateId());
+            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId), rootPrefabInstance->get().GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), &rootPrefabInstance->get());
         }
