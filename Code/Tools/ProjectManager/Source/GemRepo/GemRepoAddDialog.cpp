@@ -12,6 +12,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit.h>
+#include <QDialogButtonBox>
 #include <QPushButton>
 
 namespace O3DE::ProjectManager
@@ -21,6 +22,7 @@ namespace O3DE::ProjectManager
     {
         setWindowTitle(tr("Add a User Repository"));
         setModal(true);
+        setObjectName("addGemRepoDialog");
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(30, 30, 25, 10);
@@ -39,7 +41,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(instructionContextLabel);
 
         m_repoPath = new FormLineEditWidget(tr("Repository Path"), "", this);
-        m_repoPath->setFixedWidth(500);
+        m_repoPath->setFixedWidth(600);
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(40);
@@ -50,31 +52,14 @@ namespace O3DE::ProjectManager
 
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
-        QPushButton* continueButton = dialogButtons->addButton(tr("Add"), QDialogButtonBox::ApplyRole);
+        QPushButton* applyButton = dialogButtons->addButton(tr("Add"), QDialogButtonBox::ApplyRole);
 
-        connect(cancelButton, &QPushButton::clicked, this, &GemRepoAddDialog::CancelButtonPressed);
-        connect(continueButton, &QPushButton::clicked, this, &GemRepoAddDialog::ContinueButtonPressed);
-    }
-
-    QDialogButtonBox::ButtonRole GemRepoAddDialog::GetButtonResult()
-    {
-        return m_buttonResult;
+        connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+        connect(applyButton, &QPushButton::clicked, this, &QDialog::accept);
     }
 
     QString GemRepoAddDialog::GetRepoPath()
     {
         return m_repoPath->lineEdit()->text();
-    }
-
-    void GemRepoAddDialog::CancelButtonPressed()
-    {
-        m_buttonResult = QDialogButtonBox::RejectRole;
-        close();
-    }
-
-    void GemRepoAddDialog::ContinueButtonPressed()
-    {
-        m_buttonResult = QDialogButtonBox::ApplyRole;
-        close();
     }
 } // namespace O3DE::ProjectManager
