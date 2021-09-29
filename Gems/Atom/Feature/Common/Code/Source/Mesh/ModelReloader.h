@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <RenderCommon.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Source/Mesh/ModelReloaderSystem.h>
 
