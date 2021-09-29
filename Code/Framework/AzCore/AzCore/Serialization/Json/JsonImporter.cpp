@@ -125,7 +125,7 @@ namespace AZ
             rapidjson::Value& importedDoc = importedObject.GetValue();
             rapidjson::Value patch;
             JsonSerialization::CreatePatch(patch, allocator, importedDoc, importedValue, JsonMergeApproach::JsonMergePatch);
-            if (!patch.ObjectEmpty())
+            if (patch.IsObject())
             {
                 importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
                 importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);

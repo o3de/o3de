@@ -155,7 +155,7 @@ namespace JsonSerializationTests
         testClass->GetTestDocument(filePath.String(), importedDoc, allocator);
         rapidjson::Value patch;
         AZ::JsonSerialization::CreatePatch(patch, allocator, importedDoc, importedValue, AZ::JsonMergeApproach::JsonMergePatch);
-        if (!patch.ObjectEmpty())
+        if (patch.IsObject())
         {
             importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
             importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);
