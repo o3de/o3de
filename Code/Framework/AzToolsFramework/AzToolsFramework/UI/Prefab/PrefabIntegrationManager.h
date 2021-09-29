@@ -17,7 +17,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
-#include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
+
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
@@ -28,7 +28,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-
+        class PrefabFocusInterface;
         class PrefabLoaderInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
@@ -80,9 +80,6 @@ namespace AzToolsFramework
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
 
         private:
-            // Manages the Edit Mode UI for prefabs
-            PrefabEditManager m_prefabEditManager;
-
             // Used to handle the UI for the level root
             LevelRootUiHandler m_levelRootUiHandler;
 
@@ -135,13 +132,12 @@ namespace AzToolsFramework
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
-
             static const AZStd::string s_prefabFileExtension;
 
             static EditorEntityUiInterface* s_editorEntityUiInterface;
-            static PrefabPublicInterface* s_prefabPublicInterface;
-            static PrefabEditInterface* s_prefabEditInterface;
+            static PrefabFocusInterface* s_prefabFocusInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
+            static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
         };
     }

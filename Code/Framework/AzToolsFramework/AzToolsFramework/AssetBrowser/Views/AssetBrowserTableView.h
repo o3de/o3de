@@ -13,9 +13,10 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 
+#include <AzQtComponents/Components/Widgets/TableView.h>
+
 #include <QModelIndex>
 #include <QPointer>
-#include <QTableView>
 #endif
 
 namespace AzToolsFramework
@@ -25,10 +26,10 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class AssetBrowserTableModel;
         class AssetBrowserFilterModel;
-        class EntryDelegate;
+        class SearchEntryDelegate;
 
         class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
-            : public QTableView
+            : public AzQtComponents::TableView
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
         {
@@ -58,17 +59,19 @@ namespace AzToolsFramework
             void ClearStringFilter();
             void ClearTypeFilter();
 
+        public Q_SLOTS:
+            void UpdateSizeSlot(int newWidth);
+
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
             void layoutChangedSlot(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
                 QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-
         private:
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
-            EntryDelegate* m_delegate = nullptr;
+            QPointer<AssetBrowserTableModel> m_tableModel;
+            QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
+            SearchEntryDelegate* m_delegate = nullptr;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

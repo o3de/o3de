@@ -128,7 +128,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncWorkQueue: WaitToFinish");
 
             AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
             m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });

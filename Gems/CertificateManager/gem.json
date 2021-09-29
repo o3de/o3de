@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Certificate Manager Gem provides access to authentication files for secure game connections from Amazon S3, files on disk, and other 3rd party sources.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Network", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Network",
+        "Framework"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/network/certificate-manager/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/network/certificate-manager/",
+    "dependencies": []
 }

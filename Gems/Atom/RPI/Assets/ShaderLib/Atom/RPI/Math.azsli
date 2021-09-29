@@ -116,6 +116,22 @@ float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax
     return totalDistance > 0.0f ? saturate(shortestDistance / totalDistance) : 1.0f;
 }
 
+// returns true if the Obb contains the specified point
+bool ObbContainsPoint(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 testPoint)
+{
+    // get the position in Obb local space, force to positive quadrant with abs()
+    float4 p = abs(mul(obbTransformInverse, float4(testPoint, 1.0f)));
+    return AabbContainsPoint(-obbHalfExtents, obbHalfExtents, p);
+}
+
+// computes [0..1] percentage of a point that's in between the inner and outer OBBs
+float ComputeLerpBetweenInnerOuterOBBs(float3x4 obbTransformInverse, float3 innerObbHalfExtents, float3 outerObbHalfExtents, float3 position)
+{
+    // get the position in Obb local space, force to positive quadrant with abs()
+    float3 p = abs(mul(obbTransformInverse, float4(position, 1.0f)));
+    return ComputeLerpBetweenInnerOuterAABBs(-innerObbHalfExtents, innerObbHalfExtents, outerObbHalfExtents, float3(0.0f, 0.0f, 0.0f), p);
+}
+
 // ---------- Normal Encoding -----------
 
 // Encode/Decode functions for Signed Octahedron normals

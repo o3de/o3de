@@ -16,8 +16,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -161,7 +159,7 @@ namespace AZ
 
         void SMAAFeatureProcessor::Render([[maybe_unused]] const SMAAFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SMAAFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "SMAAFeatureProcessor: Render");
 
             UpdateConvertToPerceptualPass();
             UpdateEdgeDetectionPass();

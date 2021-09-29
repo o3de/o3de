@@ -18,7 +18,7 @@
                 "UUID": "{8BCC23A5-D08E-458E-B0B3-087C65FA1D31}",
                 "Name": "MuzzleFlash",
                 "SuppressEngineReduce": true,
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

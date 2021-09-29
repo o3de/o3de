@@ -19,7 +19,7 @@
                 "UUID": "{0D2F4C31-A665-4862-9C63-9E49A58E9A37}",
                 "Name": "Minimap",
                 "SuppressEngineReduce": true,
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "SizeReduceLevel": 1,
                 "MipMapSetting": {
