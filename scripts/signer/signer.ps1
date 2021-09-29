@@ -6,6 +6,7 @@
 # 
 
 param (
+    [String[]] $exePath,
     [String[]] $basePath,
     [String[]] $bootstrapPath
 )
@@ -37,13 +38,15 @@ function Write-Signiture {
     }
 }
 
-if ($basePath) {
+if ($exePath) {
     Write-Output "### Signing EXE files ###"
     $files = @(Get-ChildItem $basePath -Recurse *.exe | % { $_.FullName })
     foreach ($file in $files) {
         Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
+}
 
+if ($basePath) {
     Write-Output "### Signing CAB files ###"
     $files = @(Get-ChildItem $basePath -Recurse *.cab | % { $_.FullName })
     foreach ($file in $files) {
