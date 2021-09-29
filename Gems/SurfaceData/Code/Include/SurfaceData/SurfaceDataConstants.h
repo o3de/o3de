@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Crc.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace SurfaceData
 {
