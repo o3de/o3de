@@ -51,11 +51,11 @@ namespace EMStudio
 
     private:
 
-        // This function reset the light, camera and other environment settings.
+        // This function resets the light, camera and other environment settings.
         void ResetEnvironment();
 
-        // This function create in-editor entities for all the actor asset stored in the actor manager,
-        // and delete all the actor entities that no longer has an actor asset in the actor manager.
+        // This function creates in-editor entities for all actor assets stored in the actor manager,
+        // and deletes all the actor entities that no longer has an actor asset in the actor manager.
         // Those entities are used in atom render viewport to visualize actors in animation editor.
         void ReinitActorEntities();
 

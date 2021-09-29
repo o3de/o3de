@@ -40,7 +40,6 @@
 namespace EMStudio
 {
     static constexpr float DepthNear = 0.01f;
-    static constexpr const char* const s_actorComponentTypeId = "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}";
 
     AnimViewportRenderer::AnimViewportRenderer(AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext)
         : m_windowContext(windowContext)
@@ -229,7 +228,7 @@ namespace EMStudio
 
     void AnimViewportRenderer::ReinitActorEntities()
     {
-        // 1. Destroy all the entities that does not point to any actorAsset anymore.
+        // 1. Destroy all the entities that do not point to any actorAsset anymore.
         AZStd::set<AZ::Data::AssetId> assetLookup;
         AzFramework::EntityContext* entityContext = m_entityContext.get();
         const size_t numActors = EMotionFX::GetActorManager().GetNumActors();
@@ -285,7 +284,7 @@ namespace EMStudio
     AZ::Entity* AnimViewportRenderer::CreateActorEntity(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset)
     {
         AZ::Entity* actorEntity = m_entityContext->CreateEntity(actorAsset->GetActor()->GetName());
-        actorEntity->CreateComponent(s_actorComponentTypeId);
+        actorEntity->CreateComponent(azrtti_typeid<EMotionFX::Integration::ActorComponent>());
         actorEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         actorEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
         actorEntity->Activate();

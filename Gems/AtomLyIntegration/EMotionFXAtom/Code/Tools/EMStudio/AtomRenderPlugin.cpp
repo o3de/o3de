@@ -89,7 +89,9 @@ namespace EMStudio
 
         // Register command callbacks.
         m_createActorInstanceCallback = new CreateActorInstanceCallback(false);
+        m_removeActorInstanceCallback = new RemoveActorInstanceCallback(false);
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("CreateActorInstance", m_createActorInstanceCallback);
+        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", m_removeActorInstanceCallback);
 
         return true;
     }
@@ -116,6 +118,17 @@ namespace EMStudio
         return ReinitAtomRenderPlugin();
     }
     bool AtomRenderPlugin::CreateActorInstanceCallback::Undo(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return ReinitAtomRenderPlugin();
+    }
+
+    bool AtomRenderPlugin::RemoveActorInstanceCallback::Execute(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return ReinitAtomRenderPlugin();
+    }
+    bool AtomRenderPlugin::RemoveActorInstanceCallback::Undo(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         return ReinitAtomRenderPlugin();

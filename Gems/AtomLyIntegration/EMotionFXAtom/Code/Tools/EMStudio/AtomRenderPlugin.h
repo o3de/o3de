@@ -50,7 +50,9 @@ namespace EMStudio
 
     private:
         MCORE_DEFINECOMMANDCALLBACK(CreateActorInstanceCallback);
+        MCORE_DEFINECOMMANDCALLBACK(RemoveActorInstanceCallback);
         CreateActorInstanceCallback* m_createActorInstanceCallback;
+        RemoveActorInstanceCallback* m_removeActorInstanceCallback;
 
         QWidget* m_innerWidget;
         AnimViewportWidget* m_animViewportWidget;
