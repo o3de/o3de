@@ -177,7 +177,7 @@ protected:
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
 
-    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler m_prefabViewportFocusPathHandler;
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };
