@@ -10,8 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog.h>
-
-#include <QDialogButtonBox>
 #endif
 
 namespace O3DE::ProjectManager
@@ -25,15 +23,9 @@ namespace O3DE::ProjectManager
         explicit GemRepoAddDialog(QWidget* parent = nullptr);
         ~GemRepoAddDialog() = default;
 
-        QDialogButtonBox::ButtonRole GetButtonResult();
         QString GetRepoPath();
 
     private:
-        void CancelButtonPressed();
-        void ContinueButtonPressed();
-
         FormLineEditWidget* m_repoPath = nullptr;
-
-        QDialogButtonBox::ButtonRole m_buttonResult = QDialogButtonBox::RejectRole;
     };
 } // namespace O3DE::ProjectManager
