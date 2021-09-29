@@ -15,6 +15,13 @@
 
 namespace AZ
 {
+    class JsonDeserializerContext;
+
+    namespace JsonSerializationResult
+    {
+        union ResultCode;
+    }
+
     namespace RPI
     {
         class MaterialTypeSourceData;
@@ -35,6 +42,17 @@ namespace AZ
             //! @param filePath a relative path if document is provided, an absolute path if document is not provided.
             //! @param document the loaded json document.
             AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, const rapidjson::Value* document = nullptr);
+
+            //! Utility function for custom JSON serializers to report results as "Skipped" when encountering keys that aren't recognized
+            //! as part of the custom format.
+            //! @param acceptedFieldNames an array of names that are recognized by the custom format
+            //! @param acceptedFieldNameCount the number of elements in @acceptedFieldNames
+            //! @param object the JSON object being loaded
+            //! @param context the common JsonDeserializerContext that is central to the serialization process
+            //! @param result the ResultCode that well be updated with the Outcomes "Skipped" if an unrecognized field is encountered
+            void CheckForUnrecognizedJsonFields(
+                const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount,
+                const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode& result);
         }
     }
 }
