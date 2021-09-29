@@ -13,9 +13,10 @@
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
-#include <Components/TerrainHeightGradientListComponent.h>
 
+#include <GradientSignal/Ebuses/MockGradientRequestBus.h>
 #include <Terrain/MockTerrain.h>
+#include <Terrain/MockTerrainSurfaceGradientListComponent.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
 
 using ::testing::AtLeast;
@@ -25,6 +26,7 @@ using ::testing::IsFalse;
 using ::testing::Ne;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::SetArgReferee;
 
 class TerrainSystemTest : public ::testing::Test
 {
@@ -34,6 +36,12 @@ protected:
     {
         AZ::Vector2 m_testLocation;
         float m_expectedHeight;
+    };
+
+    struct SurfaceTestWeight
+    {
+        AZ::Crc32 m_crc;
+        float m_weight;
     };
 
     AZ::ComponentApplication m_app;
@@ -472,4 +480,91 @@ TEST_F(TerrainSystemTest, TerrainHeightQueriesWithBilinearSamplersUseQueryGridTo
         constexpr float epsilon = 0.0001f;
         EXPECT_NEAR(height, expectedHeight, epsilon);
     }
+}
+
+TEST_F(TerrainSystemTest, GetSurfaceWeightsReturnsAllValidSurfaceWeights)
+{
+    CreateAndActivateTerrainSystem();
+
+    const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+    auto entity = CreateAndActivateMockTerrainLayerSpawner(
+        aabb,
+        [](AZ::Vector3& position, bool& terrainExists)
+        {
+            position.SetZ(1.0f);
+            terrainExists = true;
+        });
+
+    const AZ::Crc32 tag1("tag1");
+    const AZ::Crc32 tag2("tag2");
+    
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet orderedSurfaceWeights;
+
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+    tagWeight1.m_surfaceType = tag1;
+    tagWeight1.m_weight = 1.0f;
+    orderedSurfaceWeights.emplace(tagWeight1);
+
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+    tagWeight2.m_surfaceType = tag2;
+    tagWeight2.m_weight = 0.8f;
+    orderedSurfaceWeights.emplace(tagWeight2);
+
+    NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
+    ON_CALL(mockSurfaceRequests, GetSurfaceWeights)
+        .WillByDefault(SetArgReferee<1>(orderedSurfaceWeights));
+
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet outSurfaceWeights;
+
+    // Asking for values outside the layer spawner bounds, should result in no results.
+    m_terrainSystem->GetSurfaceWeights(aabb.GetMax() + AZ::Vector3::CreateOne(), outSurfaceWeights);
+    EXPECT_TRUE(outSurfaceWeights.empty());
+
+    // Inside the layer spawner box should give us both the added surface weights.
+    m_terrainSystem->GetSurfaceWeights(aabb.GetCenter(), outSurfaceWeights);
+
+    EXPECT_EQ(outSurfaceWeights.size(), 2);
+}
+
+TEST_F(TerrainSystemTest, GetMaxSurfaceWeightsReturnsBiggestValidSurfaceWeight)
+{
+    CreateAndActivateTerrainSystem();
+
+    const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+    auto entity = CreateAndActivateMockTerrainLayerSpawner(
+        aabb,
+        [](AZ::Vector3& position, bool& terrainExists)
+        {
+            position.SetZ(1.0f);
+            terrainExists = true;
+        });
+
+    const AZ::Crc32 tag1("tag1");
+    const AZ::Crc32 tag2("tag2");
+
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet orderedSurfaceWeights;
+
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+    tagWeight1.m_surfaceType = tag1;
+    tagWeight1.m_weight = 1.0f;
+    orderedSurfaceWeights.emplace(tagWeight1);
+
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+    tagWeight2.m_surfaceType = tag2;
+    tagWeight2.m_weight = 0.8f;
+    orderedSurfaceWeights.emplace(tagWeight2);
+
+    NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
+    ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(SetArgReferee<1>(orderedSurfaceWeights));
+
+    // Asking for values outside the layer spawner bounds, should result in an invalid result.
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight = m_terrainSystem->GetMaxSurfaceWeight(aabb.GetMax() + AZ::Vector3::CreateOne());
+
+    EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::s_unassignedTagName));
+
+    // Inside the layer spawner box should give us the highest weighted tag (tag1).
+    tagWeight = m_terrainSystem->GetMaxSurfaceWeight(aabb.GetCenter());
+
+    EXPECT_EQ(tagWeight.m_surfaceType, tagWeight1.m_surfaceType);
+    EXPECT_NEAR(tagWeight.m_weight, tagWeight1.m_weight, 0.01f);
 }

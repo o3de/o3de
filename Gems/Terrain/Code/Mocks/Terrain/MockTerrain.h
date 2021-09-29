@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace UnitTest
 {
@@ -109,7 +110,11 @@ namespace UnitTest
         MOCK_CONST_METHOD3(GetHeight, float(AZ::Vector3, Sampler, bool*));
         MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceWeight, AzFramework::SurfaceData::SurfaceTagWeight(AZ::Vector3, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceWeightFromVector2, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetMaxSurfaceWeightFromFloats, AzFramework::SurfaceData::SurfaceTagWeight(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetSurfaceWeights, void(const AZ::Vector3&, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetSurfaceWeightsFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*));
+        MOCK_CONST_METHOD5(GetSurfaceWeightsFromFloats, void(float, float, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceName, const char*(AZ::Vector3, Sampler, bool*));
         MOCK_CONST_METHOD3(GetIsHoleFromFloats, bool(float, float, Sampler));
         MOCK_CONST_METHOD3(GetNormal, AZ::Vector3(AZ::Vector3, Sampler, bool*));
