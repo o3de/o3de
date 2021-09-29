@@ -78,6 +78,8 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     Texture2D m_heightmapImage;
     float m_detailTextureMultiplier;
+    float m_detailFadeDistance;
+    float m_detailFadeLength;
 
     Sampler HeightmapSampler
     {
@@ -102,6 +104,11 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
     // Macro Color
     Texture2D m_macroColorMap;
 
+    // Macro normal
+    Texture2D m_macroNormalMap;
+    bool m_flipMacroNormalX;
+    bool m_flipMacroNormalY;
+
     // Base Color
     float3 m_baseColor;
     float m_baseColorFactor;
@@ -124,6 +131,7 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 
 option bool o_useTerrainSmoothing = false;
 option bool o_macroColor_useTexture = true;
+option bool o_macroNormal_useTexture = true;
 option bool o_baseColor_useTexture = true;
 option bool o_specularF0_useTexture = true;
 option bool o_normal_useTexture = true;

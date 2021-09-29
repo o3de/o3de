@@ -5,24 +5,22 @@
     "propertyLayoutVersion": 1,
     "properties": {
         "macroColor": {
-            "useTexture": true,
-            "textureMap": "Materials/Terrain/Macro Textures/maui_megatexture.bmp"
+            "useTexture": false
+        },
+        "macroNormal": {
+            "useTexture": false
         },
         "baseColor": {
-            "color": [ 1.0, 0.4, 0.1 ],
-            "useTexture": true,
-            "textureMap": "Materials/Terrain/Detail Textures/Sandy Rocks/sandy_rocks1_albedo.png",
-            "textureBlendMode": "Multiply"
+            "color": [ 0.18, 0.18, 0.18 ],
+            "useTexture": false
         },
         "normal":
         {
-            "useTexture": true,
-            "textureMap": "Materials/Terrain/Detail Textures/Sandy Rocks/sandy_rocks1_Normal-ogl.png"
+            "useTexture": false
         },
         "roughness":
         {   
-            "useTexture": true,
-            "textureMap": "Materials/Terrain/Detail Textures/Sandy Rocks/sandy_rocks1_Roughness.png"
+            "useTexture": false
         },
         "specularF0":
         {
