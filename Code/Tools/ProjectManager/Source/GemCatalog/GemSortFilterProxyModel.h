@@ -25,16 +25,23 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        enum GemStatus
+        enum class GemSelected
         {
             NoFilter = -1,
             Unselected,
             Selected
         };
+        enum class GemActive
+        {
+            NoFilter = -1,
+            Inactive,
+            Active 
+        };
 
         GemSortFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);
 
-        static QString GetGemStatusString(GemStatus status);
+        static QString GetGemSelectedString(GemSelected status);
+        static QString GetGemActiveString(GemActive status);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
@@ -43,8 +50,11 @@ namespace O3DE::ProjectManager
 
         void SetSearchString(const QString& searchString) { m_searchString = searchString; InvalidateFilter(); }
 
-        GemStatus GetGemStatus() const { return m_gemStatusFilter; }
-        void SetGemStatus(GemStatus gemStatus) { m_gemStatusFilter = gemStatus; InvalidateFilter(); }
+        GemSelected GetGemSelected() const { return m_gemSelectedFilter; }
+        void SetGemSelected(GemSelected selected) { m_gemSelectedFilter = selected; InvalidateFilter(); }
+
+        GemActive GetGemActive() const { return m_gemActiveFilter; }
+        void SetGemActive(GemActive enabled) { m_gemActiveFilter = enabled; InvalidateFilter(); }
 
         GemInfo::GemOrigins GetGemOrigins() const { return m_gemOriginFilter; }
         void SetGemOrigins(const GemInfo::GemOrigins& gemOrigins) { m_gemOriginFilter = gemOrigins; InvalidateFilter(); }
@@ -69,7 +79,8 @@ namespace O3DE::ProjectManager
         AzQtComponents::SelectionProxyModel* m_selectionProxyModel = nullptr;
 
         QString m_searchString;
-        GemStatus m_gemStatusFilter = GemStatus::NoFilter;
+        GemSelected m_gemSelectedFilter = GemSelected::NoFilter;
+        GemActive m_gemActiveFilter = GemActive::NoFilter;
         GemInfo::GemOrigins m_gemOriginFilter = {};
         GemInfo::Platforms m_platformFilter = {};
         GemInfo::Types m_typeFilter = {};

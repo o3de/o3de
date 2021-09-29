@@ -5,9 +5,15 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Custom Asset Example Gem provides example code for creating a custom asset for Open 3D Engine's asset pipeline.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets", "Tools"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Tools"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/custom-asset-example/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/custom-asset-example/",
+    "dependencies": []
 }

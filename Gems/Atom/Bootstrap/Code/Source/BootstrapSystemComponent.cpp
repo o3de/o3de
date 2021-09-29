@@ -176,7 +176,10 @@ namespace AZ
 
                 m_isAssetCatalogLoaded = true;
 
-                RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+                if (!RPI::RPISystemInterface::Get()->IsInitialized())
+                {
+                    RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+                }
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {

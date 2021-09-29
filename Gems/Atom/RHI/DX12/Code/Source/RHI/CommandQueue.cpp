@@ -195,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: UpdateTileMappings");
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -229,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: WaitForIdle");
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

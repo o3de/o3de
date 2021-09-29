@@ -5,118 +5,116 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-import sys
 
-import azlmbr.math as math
-import azlmbr.legacy.general as general
-import azlmbr.paths
-import azlmbr.surface_data as surface_data
-import azlmbr.vegetation as vegetation
-
-sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
-import editor_python_test_tools.hydra_editor_utils as hydra
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
-from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
+class Tests:
+    inherit_behavior_checked = (
+        "Found no instances with Inherit Behavior checked as expected",
+        "Unexpectedly found instances with Inherit Behavior checked"
+    )
+    inherit_behavior_unchecked = (
+        "Found instances with Inherit Behavior unchecked as expected",
+        "Unexpectedly found no instances with Inherit Behavior unchecked"
+    )
 
 
-class TestLayerSpawnerInheritBehavior(EditorTestHelper):
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="LayerSpawner_InheritBehavior", args=["level"])
+def LayerSpawner_InheritBehaviorFlag():
+    """
+    Summary:
+    Verifies if Inherit Behavior Flag works as expected.
 
-    def run_test(self):
-        """
-        Summary:
-        C4762381 Verifies if Inherit Behavior Flag works as expected.
+    Expected Result:
+    The spawner with Inherit Behavior toggled off no longer obeys
+    Vegetation Surface Mask Filter of the Vegetation Layer Blender entity and plants on the surface.
 
-        Expected Result:
-        The spawner with Inherit Behavior toggled off no longer obeys
-        Vegetation Surface Mask Filter of the Vegetation Layer Blender entity and plants on the surface.
+    :return: None
+    """
+    import os
 
-        :return: None
-        """
+    import azlmbr.math as math
+    import azlmbr.legacy.general as general
+    import azlmbr.surface_data as surface_data
+    import azlmbr.vegetation as vegetation
 
-        SURFACE_TAG = "test_tag"
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
-        def set_dynamic_slice_asset(entity_obj, component_index, dynamic_slice_asset_path):
-            dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
-            dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-            descriptor = hydra.get_component_property_value(
-                entity_obj.components[component_index], "Configuration|Embedded Assets|[0]"
-            )
-            descriptor.spawner = dynamic_slice_spawner
-            entity_obj.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
+    SURFACE_TAG = "test_tag"
 
-        # Create empty level
-        self.test_success = self.create_level(
-            self.args["level"],
-            heightmap_resolution=1024,
-            heightmap_meters_per_pixel=1,
-            terrain_texture_resolution=4096,
-            use_terrain=False,
+    def set_dynamic_slice_asset(entity_obj, component_index, dynamic_slice_asset_path):
+        dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
+        dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
+        descriptor = hydra.get_component_property_value(
+            entity_obj.components[component_index], "Configuration|Embedded Assets|[0]"
         )
+        descriptor.spawner = dynamic_slice_spawner
+        entity_obj.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
 
-        general.set_current_view_position(512.0, 480.0, 38.0)
+    # Open an existing simple level
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
-        # Create Emitter entity and add the required components
-        position = math.Vector3(512.0, 512.0, 32.0)
-        emitter_entity = dynveg.create_surface_entity("emitter_entity", position, 16.0, 16.0, 1.0)
+    general.set_current_view_position(512.0, 480.0, 38.0)
 
-        # Add surface tag to the Surface Tag Emitter
-        tag = surface_data.SurfaceTag()
-        tag.SetTag(SURFACE_TAG)
-        pte = hydra.get_property_tree(emitter_entity.components[1])
-        path = "Configuration|Generated Tags"
-        pte.add_container_item(path, 0, tag)
-        emitter_entity.get_set_test(1, "Configuration|Generated Tags|[0]", tag)
+    # Create Emitter entity and add the required components
+    position = math.Vector3(512.0, 512.0, 32.0)
+    emitter_entity = dynveg.create_surface_entity("emitter_entity", position, 16.0, 16.0, 1.0)
 
-        # Create Blender entity and add required components
-        components_to_add = ["Box Shape", "Vegetation Layer Blender"]
-        blender_entity = hydra.Entity("blender_entity")
-        blender_entity.create_entity(position, components_to_add)
-        blender_entity.get_set_test(0, "Box Shape|Box Configuration|Dimensions", math.Vector3(16.0, 16.0, 1.0))
+    # Add surface tag to the Surface Tag Emitter
+    tag = surface_data.SurfaceTag()
+    tag.SetTag(SURFACE_TAG)
+    pte = hydra.get_property_tree(emitter_entity.components[1])
+    path = "Configuration|Generated Tags"
+    pte.add_container_item(path, 0, tag)
+    emitter_entity.get_set_test(1, "Configuration|Generated Tags|[0]", tag)
 
-        # Create Vegetation area and assign a valid asset
-        veg_1 = hydra.Entity("veg_1")
-        veg_1.create_entity(
-            position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
-        )
-        set_dynamic_slice_asset(veg_1, 2, os.path.join("Slices", "PinkFlower.dynamicslice"))
-        veg_1.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
+    # Create Blender entity and add required components
+    components_to_add = ["Box Shape", "Vegetation Layer Blender"]
+    blender_entity = hydra.Entity("blender_entity")
+    blender_entity.create_entity(position, components_to_add)
+    blender_entity.get_set_test(0, "Box Shape|Box Configuration|Dimensions", math.Vector3(16.0, 16.0, 1.0))
 
-        # Create second vegetation area and assign a valid asset
-        veg_2 = hydra.Entity("veg_2")
-        veg_2.create_entity(
-            position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
-        )
-        set_dynamic_slice_asset(veg_2, 2, os.path.join("Slices", "PurpleFlower.dynamicslice"))
-        veg_2.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
+    # Create Vegetation area and assign a valid asset
+    veg_1 = hydra.Entity("veg_1")
+    veg_1.create_entity(
+        position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
+    )
+    set_dynamic_slice_asset(veg_1, 2, os.path.join("Slices", "PinkFlower.dynamicslice"))
+    veg_1.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
 
-        # Assign the vegetation areas to the Blender entity
-        pte = hydra.get_property_tree(blender_entity.components[1])
-        path = "Configuration|Vegetation Areas"
-        pte.update_container_item(path, 0, veg_1.id)
-        pte.add_container_item(path, 1, veg_2.id)
+    # Create second vegetation area and assign a valid asset
+    veg_2 = hydra.Entity("veg_2")
+    veg_2.create_entity(
+        position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
+    )
+    set_dynamic_slice_asset(veg_2, 2, os.path.join("Slices", "PurpleFlower.dynamicslice"))
+    veg_2.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
 
-        # Add Vegetation Surface Mask Filter to the blender entity and add a Exclusion tag
-        tag = surface_data.SurfaceTag()
-        tag.SetTag(SURFACE_TAG)
-        blender_entity.add_component("Vegetation Surface Mask Filter")
-        pte = hydra.get_property_tree(blender_entity.components[2])
-        path = "Configuration|Exclusion|Surface Tags"
-        pte.add_container_item(path, 0, tag)
-        blender_entity.get_set_test(2, "Configuration|Exclusion|Surface Tags|[0]", tag)
+    # Assign the vegetation areas to the Blender entity
+    pte = hydra.get_property_tree(blender_entity.components[1])
+    path = "Configuration|Vegetation Areas"
+    pte.update_container_item(path, 0, veg_1.id)
+    pte.add_container_item(path, 1, veg_2.id)
 
-        # Toggle Inherit Behavior flag and verify vegetation instances
-        self.log(
-            f"Vegetation is not planted when Inherit Behavior flag is checked: {dynveg.validate_instance_count(position, 16.0, 0)}"
-        )
-        veg_1.get_set_test(0, "Configuration|Inherit Behavior", False)
-        self.wait_for_condition(lambda: dynveg.validate_instance_count(position, 16.0, 400), 2.0)
-        self.log(
-            f"Vegetation plant when Inherit Behavior flag is unchecked: {dynveg.validate_instance_count(position, 16.0, 400)}"
-        )
+    # Add Vegetation Surface Mask Filter to the blender entity and add a Exclusion tag
+    tag = surface_data.SurfaceTag()
+    tag.SetTag(SURFACE_TAG)
+    blender_entity.add_component("Vegetation Surface Mask Filter")
+    pte = hydra.get_property_tree(blender_entity.components[2])
+    path = "Configuration|Exclusion|Surface Tags"
+    pte.add_container_item(path, 0, tag)
+    blender_entity.get_set_test(2, "Configuration|Exclusion|Surface Tags|[0]", tag)
+
+    # Toggle Inherit Behavior flag and verify vegetation instances
+    flag_checked_instance_count = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 16.0, 0), 2.0)
+    Report.result(Tests.inherit_behavior_checked, flag_checked_instance_count)
+    veg_1.get_set_test(0, "Configuration|Inherit Behavior", False)
+    flag_unchecked_instance_count = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 16.0, 400), 2.0)
+    Report.result(Tests.inherit_behavior_unchecked, flag_unchecked_instance_count)
 
 
-test = TestLayerSpawnerInheritBehavior()
-test.run()
+if __name__ == "__main__":
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(LayerSpawner_InheritBehaviorFlag)

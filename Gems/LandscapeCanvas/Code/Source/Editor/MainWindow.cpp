@@ -2512,6 +2512,26 @@ namespace LandscapeCanvasEditor
     {
         // See comment above in OnPrefabInstancePropagationBegin
         m_prefabPropagationInProgress = false;
+
+        // After prefab propagation is complete, the entity tied to one of our open
+        // graphs might have been deleted (e.g. if a prefab was created from that entity).
+        // Any open graphs tied to an entity that no longer exists will need to be closed.
+        // We need to close them in a separate iterator because the CloseEditor API will
+        // end up modifying m_dockWidgetsByEntity.
+        AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToDelete;
+        for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            if (!entity)
+            {
+                dockWidgetsToDelete.push_back(dockWidgetId);
+            }
+        }
+        for (auto dockWidgetId : dockWidgetsToDelete)
+        {
+            CloseEditor(dockWidgetId);
+        }
     }
 
     void MainWindow::OnCryEditorEndCreate()

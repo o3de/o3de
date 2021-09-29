@@ -102,7 +102,8 @@
       "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
+      "TEST_RESULTS": "True"
     }
   },
   "benchmark_test_profile": {
@@ -118,7 +119,8 @@
       "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
+      "TEST_RESULTS": "True"
     }
   },
   "release": {

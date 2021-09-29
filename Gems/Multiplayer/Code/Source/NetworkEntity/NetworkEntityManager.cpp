@@ -465,8 +465,60 @@ namespace Multiplayer
         return netEntityId;
     }
 
-    void NetworkEntityManager::OnRootSpawnableAssigned(
-        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    AZStd::unique_ptr<AzFramework::EntitySpawnTicket> NetworkEntityManager::RequestNetSpawnableInstantiation(
+        const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform)
+    {
+        // Prepare the parameters for the spawning process
+        AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+        optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
+
+        const AZ::Name netSpawnableName =
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnable.GetId());
+
+        if (netSpawnableName.IsEmpty())
+        {
+            AZ_Error("NetworkEntityManager", false,
+                "RequestNetSpawnableInstantiation: Requested spawnable %s doesn't exist in the NetworkSpawnableLibrary. Please make sure it is a network spawnable",
+                netSpawnable.GetHint().c_str());
+            return nullptr;
+        }
+
+        // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
+        optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
+        {
+            bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
+
+            for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
+                netEntityIndex < entitiesSize; ++netEntityIndex)
+            {
+                AZ::Entity* netEntity = *(entities.begin() + netEntityIndex);
+
+                if (shouldUpdateTransform)
+                {
+                    AzFramework::TransformComponent* netEntityTransform =
+                        netEntity->FindComponent<AzFramework::TransformComponent>();
+
+                    AZ::Transform worldTm = netEntityTransform->GetWorldTM();
+                    worldTm = rootTransform * worldTm;
+                    netEntityTransform->SetWorldTM(worldTm);
+                }
+
+                PrefabEntityId prefabEntityId;
+                prefabEntityId.m_prefabName = netSpawnableName;
+                prefabEntityId.m_entityOffset = netEntityIndex;
+                AZ::Interface<INetworkEntityManager>::Get()->SetupNetEntity(netEntity, prefabEntityId, NetEntityRole::Authority);
+            }
+        };
+
+        // Spawn with the newly created ticket. This allows the calling code to manage the lifetime of the constructed entities
+        auto ticket = AZStd::make_unique<AzFramework::EntitySpawnTicket>(netSpawnable);
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*ticket, AZStd::move(optionalArgs));
+        return ticket;
+    }
+
+    void NetworkEntityManager::OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable,
+        [[maybe_unused]] uint32_t generation)
     {
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
@@ -479,7 +531,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
     {
-        // TODO: Do we need to clear all entities here?
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 
 #include <chrono>
@@ -21,10 +22,9 @@ namespace AzFramework
     //! (mouse down with movement and then mouse up).
     class ClickDetector
     {
-        //! Alias for recording time of mouse down events
-        using Time = std::chrono::time_point<std::chrono::steady_clock>;
-
     public:
+        ClickDetector();
+
         //! Internal representation of click event (map from external event for this when
         //! calling DetectClick).
         enum class ClickEvent
@@ -51,6 +51,10 @@ namespace AzFramework
         void SetDoubleClickInterval(float doubleClickInterval);
         //! Override the dead zone before a 'move' outcome will be triggered.
         void SetDeadZone(float deadZone);
+        //! Override how the current time is retrieved.
+        //! This is helpful to override when it comes to simulating different passages of
+        //! time to avoid double click issues in tests for example.
+        void OverrideTimeNowFn(AZStd::function<AZStd::chrono::milliseconds()> timeNowFn);
 
     private:
         //! Internal state of ClickDetector based on incoming events.
@@ -65,7 +69,9 @@ namespace AzFramework
         float m_deadZone = 2.0f; //!< How far to move before a click is cancelled (when Move will fire).
         float m_doubleClickInterval = 0.4f; //!< Default double click interval, can be overridden.
         DetectionState m_detectionState; //!< Internal state of ClickDetector.
-        AZStd::optional<Time> m_tryBeginTime; //!< Mouse down time (happens each mouse down, helps with double click handling).
+        //! Mouse down time (happens each mouse down, helps with double click handling).
+        AZStd::optional<AZStd::chrono::milliseconds> m_tryBeginTime;
+        AZStd::function<AZStd::chrono::milliseconds()> m_timeNowFn; //!< Interface to query the current time.
     };
 
     inline void ClickDetector::SetDoubleClickInterval(const float doubleClickInterval)

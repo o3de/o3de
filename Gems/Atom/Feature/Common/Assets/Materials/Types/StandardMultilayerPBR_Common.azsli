@@ -104,6 +104,7 @@ option bool o_layer3_enabled;
 enum class DebugDrawMode { None, BlendMask, Displacement, FinalBlendWeights };
 option DebugDrawMode o_debugDrawMode;
 
+// If you modify this enum, you must update the BlendSourceUsesDisplacement function in StandardMultilayerPBR_Displacement.lua
 enum class LayerBlendSource { BlendMaskTexture, BlendMaskVertexColors, Displacement, Displacement_With_BlendMaskTexture, Displacement_With_BlendMaskVertexColors, Fallback };
 option LayerBlendSource o_layerBlendSource;
 
