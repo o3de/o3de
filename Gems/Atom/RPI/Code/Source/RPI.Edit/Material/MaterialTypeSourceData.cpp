@@ -9,6 +9,8 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -46,28 +48,16 @@ namespace AZ
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
                 jsonContext->Serializer<JsonMaterialPropertySerializer>()->HandlesType<MaterialTypeSourceData::PropertyDefinition>();
+                jsonContext->Serializer<JsonMaterialPropertyConnectionSerializer>()->HandlesType<MaterialTypeSourceData::PropertyConnection>();
+                jsonContext->Serializer<JsonMaterialPropertyGroupSerializer>()->HandlesType<MaterialTypeSourceData::GroupDefinition>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<PropertyConnection>()
-                    ->Version(2)
-                    ->Field("type", &PropertyConnection::m_type)
-                    ->Field("name", &PropertyConnection::m_fieldName)
-                    ->Field("shaderIndex", &PropertyConnection::m_shaderIndex)
-                    ;
+                serializeContext->Class<PropertyConnection>()->Version(3);
+                serializeContext->Class<GroupDefinition>()->Version(4);
+                serializeContext->Class<PropertyDefinition>()->Version(1);
 
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
-
-                serializeContext->Class<GroupDefinition>()
-                    ->Version(2)
-                    ->Field("name", &GroupDefinition::m_name)
-                    ->Field("displayName", &GroupDefinition::m_displayName)
-                    ->Field("description", &GroupDefinition::m_description)
-                    ;
-
-                serializeContext->Class<PropertyDefinition>()
-                    ->Version(1)
-                    ;
 
                 serializeContext->Class<ShaderVariantReferenceData>()
                     ->Version(2)

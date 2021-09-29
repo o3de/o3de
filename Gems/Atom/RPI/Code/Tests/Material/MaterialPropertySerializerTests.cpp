@@ -828,6 +828,41 @@ namespace UnitTest
 
         TestStoreToJson(propertyData, inputJson);
     }
+    
+    TEST_F(MaterialPropertySerializerTests, LoadUsingOldFormat)
+    {
+        // Tests backward compatibility for when "id" was the key instead of "name", for both the property and its connections.
+
+        const AZStd::string inputJson = R"(
+        {
+            "id": "testProperty",
+            "type": "Float",
+            "connection": {
+                "type": "ShaderOption",
+                "id": "o_foo",
+                "shaderIndex": 2
+            }
+        }
+        )";
+
+        MaterialTypeSourceData::PropertyDefinition propertyData;
+        JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
+
+        EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
+        EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
+        
+        EXPECT_EQ("testProperty", propertyData.m_name);
+
+        EXPECT_EQ(1, propertyData.m_outputConnections.size());
+        EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
+        EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
+
+        EXPECT_TRUE(loadResult.ContainsMessage("/connection/type", "Success"));
+        EXPECT_TRUE(loadResult.ContainsMessage("/connection/id", "Success"));
+        EXPECT_TRUE(loadResult.ContainsMessage("/connection/shaderIndex", "Success"));
+        EXPECT_FALSE(loadResult.ContainsOutcome(JsonSerializationResult::Outcomes::Skipped));
+    }
 
     TEST_F(MaterialPropertySerializerTests, LoadAndStoreJson_MultipleConnections)
     {
