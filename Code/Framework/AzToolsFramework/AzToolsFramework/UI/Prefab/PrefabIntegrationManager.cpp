@@ -762,7 +762,6 @@ namespace AzToolsFramework
                 azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(),
                 AZ::Data::AssetLoadBehavior::Default);
 
-            asset.QueueLoad();
             return asset.BlockUntilLoadComplete() != AZ::Data::AssetData::AssetStatus::Error;
         }
 

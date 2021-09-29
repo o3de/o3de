@@ -13,6 +13,8 @@
 
 namespace AZ::Prefab
 {
+    static constexpr const char s_useProceduralPrefabsKey[] = "/O3DE/Preferences/Prefabs/UseProceduralPrefabs";
+
     // ProceduralPrefabAsset
 
     ProceduralPrefabAsset::ProceduralPrefabAsset(const AZ::Data::AssetId& assetId)
