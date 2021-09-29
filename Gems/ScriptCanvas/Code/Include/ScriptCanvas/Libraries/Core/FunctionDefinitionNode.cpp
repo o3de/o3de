@@ -14,6 +14,7 @@
 #include <ScriptCanvas/Libraries/Core/FunctionBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidPropertyEvent.h>
+#include <AzCore/std/string/regex.h>
 
 namespace FunctionDefinitionNodeCpp
 {

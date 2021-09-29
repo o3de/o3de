@@ -13,6 +13,7 @@
 #include <Builder/ScriptEventsBuilderComponent.h>
 #include <ScriptEvents/ScriptEventsBus.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #if defined(SCRIPTEVENTS_EDITOR)
 
 namespace ScriptEvents

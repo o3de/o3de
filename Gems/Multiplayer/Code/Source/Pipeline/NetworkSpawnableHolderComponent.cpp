@@ -8,6 +8,7 @@
 
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <Multiplayer/IMultiplayer.h>
 
@@ -24,6 +25,13 @@ namespace Multiplayer
         }
     }
 
+    void NetworkSpawnableHolderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        // TransformService isn't strictly required in this component (Identity transform will be used by default)
+        // However we need to make sure if there's a component providing TransformService it is activated first.
+        dependent.push_back(AZ_CRC_CE("TransformService"));
+    }
+
     NetworkSpawnableHolderComponent::NetworkSpawnableHolderComponent()
     {
     }
@@ -38,11 +46,9 @@ namespace Multiplayer
         {
             AZ::Transform rootEntityTransform = AZ::Transform::CreateIdentity();
 
-            AzFramework::TransformComponent* rootEntityTransformComponent =
-                GetEntity()->FindComponent<AzFramework::TransformComponent>();
-            if (rootEntityTransformComponent)
+            if(auto* transformInterface = GetEntity()->GetTransform())
             {
-                rootEntityTransform = rootEntityTransformComponent->GetWorldTM();
+                rootEntityTransform = transformInterface->GetWorldTM();
             }
 
             INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();

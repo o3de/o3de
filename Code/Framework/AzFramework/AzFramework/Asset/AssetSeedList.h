@@ -8,7 +8,6 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Platform/PlatformDefaults.h>

@@ -8,7 +8,6 @@
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RHI/RHISystemInterface.h>

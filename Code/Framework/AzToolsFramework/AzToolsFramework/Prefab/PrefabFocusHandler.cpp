@@ -35,7 +35,7 @@ namespace AzToolsFramework::Prefab
     {
         InstanceOptionalReference focusedInstance;
 
-        if (entityId == AZ::EntityId())
+        if (!entityId.IsValid())
         {
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -83,7 +83,13 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId)
     {
-        if (entityId == AZ::EntityId())
+        if (!m_focusedInstance.has_value())
+        {
+            // PrefabFocusHandler has not been initialized yet.
+            return false;
+        }
+
+        if (!entityId.IsValid())
         {
             return false;
         }

@@ -50,7 +50,7 @@ namespace AZ
 
         void CommandListBase::SetNameInternal(const AZStd::string_view& name)
         {
-            AZStd::wstring wname;
+            AZStd::fixed_wstring<256> wname;
             AZStd::to_wstring(wname, name.data());
             GetCommandList()->SetName(wname.data());
         }
