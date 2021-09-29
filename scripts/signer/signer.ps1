@@ -8,15 +8,27 @@
 param (
     [String[]] $exePath,
     [String[]] $basePath,
-    [String[]] $bootstrapPath
+    [String[]] $bootstrapPath,
+    [String[]] $certificate
 )
 
+# Get prerequisites, certs, and paths ready
 $tempPath = "C:\\temp"
+$certThumbprint = Get-ChildItem -Path Cert:LocalMachine\MY -ErrorAction Stop | Select-Object -ExpandProperty Thumbprint # Grab first certificate from local machine store
 
-$certThumbprint = Get-ChildItem -Path Cert:LocalMachine\MY | Select-Object -ExpandProperty Thumbprint
+if ($certificate) {
+    Write-Output "Checking certificate thumbprint $certificate"
+    Get-ChildItem -Path Cert:LocalMachine\MY -ErrorAction SilentlyContinue | Where-Object {$_.Thumbprint -eq $certificate} # Prints certificate Thumbprint and Subject if found
+    if($?) {
+        $certThumbprint = $certificate
+    }
+    else {
+        Write-Error "$certificate thumbprint not found, using $certThumbprint thumbprint instead"
+    }
+}
 
 Try { 
-    $signtoolPath =  Resolve-Path  "C:\Program Files*\Windows Kits\10\bin\*\x64\signtool.exe" -ErrorAction Stop | Select-Object -Last 1 -ExpandProperty Path
+    $signtoolPath = Resolve-Path "C:\Program Files*\Windows Kits\10\bin\*\x64\signtool.exe" -ErrorAction Stop | Select-Object -Last 1 -ExpandProperty Path
     $insigniaPath = Resolve-Path "C:\Program Files*\WiX*\bin\insignia.exe" -ErrorAction Stop | Select-Object -Last 1 -ExpandProperty Path
 }
 Catch {
@@ -38,6 +50,7 @@ function Write-Signiture {
     }
 }
 
+# Looping through each path insteaad of globbing to prevent hitting maximum command string length limit
 if ($exePath) {
     Write-Output "### Signing EXE files ###"
     $files = @(Get-ChildItem $basePath -Recurse *.exe | % { $_.FullName })
