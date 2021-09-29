@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AzToolsFramework
+{
+    using ContainerEntityOperationResult = AZ::Outcome<void, AZStd::string>;
+
+    //! ContainerEntityInterface
+    //! Interface to register and query container entities.
+    class ContainerEntityInterface
+    {
+    public:
+        AZ_RTTI(ContainerEntityInterface, "{0A877C3A-726C-4FD2-BAFE-A2B9F1DE78E4}");
+
+        //! Registers the entity as a container. The container will be closed by default.
+        //! @param entityId The entityId that will be registered as a container.
+        virtual ContainerEntityOperationResult RegisterEntityAsContainer(AZ::EntityId entityId) = 0;
+
+        //! Unregisters the entity as a container.
+        //! @param entityId The entityId that will be unregistered as a container.
+        virtual ContainerEntityOperationResult UnregisterEntityAsContainer(AZ::EntityId entityId) = 0;
+
+        //! Returns whether the entity id provided is registered as a container.
+        virtual bool IsContainer(AZ::EntityId entityId) const = 0;
+
+        //! Sets the closed state of the container entity provided.
+        //! @param entityId The entityId whose closed state will be set.
+        //! @param closed The closed state. If false, the container will be set to open.
+        //! @return An error message if the operation was invalid, success otherwise.
+        virtual ContainerEntityOperationResult SetContainerClosedState(AZ::EntityId entityId, bool closed) = 0;
+
+        //! Returns whether the entity id provided is registered as a container, and its state is closed.
+        virtual bool IsContainerClosed(AZ::EntityId entityId) const = 0;
+    };
+
+} // namespace AzToolsFramework
