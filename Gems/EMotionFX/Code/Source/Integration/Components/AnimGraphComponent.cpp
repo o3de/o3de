@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

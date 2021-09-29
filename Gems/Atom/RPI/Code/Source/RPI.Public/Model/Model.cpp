@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Atom/RHI/Factory.h>
 
