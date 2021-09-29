@@ -204,6 +204,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
         break;
     }
 
+    // Temporary fix as terrainExistsPtr is not yet correctly set.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = terrainExists;
@@ -318,11 +319,9 @@ AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFro
 
     if (weightSet.empty())
     {
-        AzFramework::SurfaceData::SurfaceTagWeight emptyTagWeight;
-        emptyTagWeight.m_surfaceType = SurfaceData::Constants::s_unassignedTagCrc;
-        emptyTagWeight.m_weight = 0.0f;
-        return emptyTagWeight;
+        return {};
     }
+
     return *weightSet.begin();
 }
 
@@ -334,7 +333,7 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::A
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
-    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    for (const auto& [areaId, areaBounds] : m_registeredAreas)
     {
         inPosition.SetZ(areaBounds.GetMin().GetZ());
         if (areaBounds.Contains(inPosition))
@@ -396,6 +395,7 @@ void TerrainSystem::GetSurfaceWeightsFromVector2(
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
+    // Temporary fix as terrainExistsPtr is not yet correctly set. 
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
@@ -411,6 +411,7 @@ void TerrainSystem::GetSurfaceWeightsFromFloats(
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
+    // Temporary fix as terrainExistsPtr is not yet correctly set.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
@@ -421,6 +422,7 @@ void TerrainSystem::GetSurfaceWeightsFromFloats(
 
 const char* TerrainSystem::GetMaxSurfaceName([[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
 {
+    // Temporary fix as terrainExistsPtr is not yet correctly set.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;

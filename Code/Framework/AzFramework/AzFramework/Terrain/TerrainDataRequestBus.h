@@ -18,12 +18,17 @@ namespace AzFramework
 {
     namespace SurfaceData
     {
+        namespace Constants
+        {
+            static const char* s_unassignedTagName = "(unassigned)";
+        }
+
         struct SurfaceTagWeight
         {
             AZ_TYPE_INFO(SurfaceTagWeight, "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}");
 
-            AZ::Crc32 m_surfaceType;
-            float m_weight; //! A Value in the range [0.0f .. 1.0f]
+            AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
+            float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
 
             //! Don't call this directly. TerrainDataRequests::Reflect is doing it already.
             static void Reflect(AZ::ReflectContext* context);
