@@ -7,7 +7,7 @@
 #
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(REAL_PATH "${CPACK_BINARY_DIR}/.." _cpack_binary_dir)
+set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
 file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
 
 set(_signing_command
@@ -17,9 +17,9 @@ set(_signing_command
     -File ${_sign_script}
 )
 
-message(STATUS "Signing executable files in ${_cpack_binary_dir}")
+message(STATUS "Signing executable files in ${_cpack_wix_out_dir}")
 execute_process(
-    COMMAND ${_signing_command} -exePath ${_cpack_binary_dir}
+    COMMAND ${_signing_command} -exePath ${_cpack_wix_out_dir}
     RESULT_VARIABLE _signing_result
     ERROR_VARIABLE _signing_errors
     OUTPUT_VARIABLE _signing_output
