@@ -195,7 +195,25 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-        m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active);
+
+        if (m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active); m_isStarted)
+        {
+            if (m_startupParameters.m_loadAssetCatalog)
+            {
+                // Start Monitoring Asset changes over the network and load the AssetCatalog
+                auto StartMonitoringAssetsAndLoadCatalog = [this](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+                {
+                    if (AZ::IO::FixedMaxPath assetCatalogPath;
+                        m_settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+                    {
+                        assetCatalogPath /= "assetcatalog.xml";
+                        assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+                    }
+                };
+                using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
+                AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
+            }
+        }
     }
 
     void Application::PreModuleLoad()
@@ -209,6 +227,17 @@ namespace AzFramework
     {
         if (m_isStarted)
         {
+            if (m_startupParameters.m_loadAssetCatalog)
+            {
+                // Stop Monitoring Assets changes
+                auto StopMonitoringAssets = [](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+                {
+                    assetCatalogRequests->StopMonitoringAssets();
+                };
+                using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
+                AssetCatalogBus::Broadcast(AZStd::move(StopMonitoringAssets));
+            }
+
             ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::OnApplicationAboutToStop);
 
             m_pimpl.reset();
