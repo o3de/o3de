@@ -27,11 +27,11 @@ namespace AzToolsFramework
         virtual void SetFocusRoot(AZ::EntityId entityId) = 0;
 
         //! Clears the Editor focus, allowing the user to select the whole level again.
-        virtual void ClearFocusRoot() = 0;
+        virtual void ClearFocusRoot(AzFramework::EntityContextId entityContextId) = 0;
 
         //! Returns the entity id of the root of the current Editor focus.
         //! @return The entity id of the root of the Editor focus, or an invalid entity id if no focus is set.
-        virtual AZ::EntityId GetFocusRoot() = 0;
+        virtual AZ::EntityId GetFocusRoot(AzFramework::EntityContextId entityContextId) = 0;
 
         //! Returns whether the entity id provided is part of the focused sub-tree.
         virtual bool IsInFocusSubTree(AZ::EntityId entityId) const = 0;

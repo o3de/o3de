@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
@@ -30,13 +32,13 @@ namespace AzToolsFramework::Prefab
 
         //! Set the focused prefab instance to the instance at position index of the current path.
         //! @param index The index of the instance in the current path that we want the prefab system to focus on.
-        virtual PrefabFocusOperationResult FocusOnPathIndex(int index) = 0;
+        virtual PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) = 0;
 
         //! Returns the template id of the instance the prefab system is focusing on.
-        virtual TemplateId GetFocusedPrefabTemplateId() const = 0;
+        virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
 
         //! Returns a reference to the instance the prefab system is focusing on.
-        virtual InstanceOptionalReference GetFocusedPrefabInstance() const = 0;
+        virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
 
         //! Returns whether the entity belongs to the instance that is being focused on, or one of its descendants.
         //! @param entityId The entityId of the queried entity.
@@ -45,10 +47,10 @@ namespace AzToolsFramework::Prefab
 
         //! Returns the path from the root instance to the currently focused instance.
         //! @return A path composed from the names of the container entities for the instance path.
-        virtual const AZ::IO::Path& GetPrefabFocusPath() const = 0;
+        virtual const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const = 0;
 
         //! Returns the size of the path to the currently focused instance.
-        virtual const int GetPrefabFocusPathLength() const = 0;
+        virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
     };
 
 } // namespace AzToolsFramework::Prefab
