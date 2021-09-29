@@ -11,19 +11,28 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AzToolsFramework
 {
     //! Used to notify when the editor focus changes.
     class FocusModeNotifications
         : public AZ::EBusTraits
     {
-    protected:
-        ~FocusModeNotifications() = default;
-
     public:
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AzFramework::EntityContextId;
+        //////////////////////////////////////////////////////////////////////////
+        
         //! Triggered when the editor focus is changed to a different entity.
         //! @param entityId The entity the focus has been moved to.
         virtual void OnEditorFocusChanged(AZ::EntityId entityId) = 0;
+
+    protected:
+        ~FocusModeNotifications() = default;
     };
 
     using FocusModeNotificationBus = AZ::EBus<FocusModeNotifications>;

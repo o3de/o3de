@@ -6,15 +6,21 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
+
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 
 namespace AzToolsFramework::Prefab
 {
     PrefabViewportFocusPathHandler::PrefabViewportFocusPathHandler()
     {
         // Connect to Prefab Focus Notifications
-        PrefabFocusNotificationBus::Handler::BusConnect();
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        PrefabFocusNotificationBus::Handler::BusConnect(editorEntityContextId);
     }
 
     PrefabViewportFocusPathHandler::~PrefabViewportFocusPathHandler()

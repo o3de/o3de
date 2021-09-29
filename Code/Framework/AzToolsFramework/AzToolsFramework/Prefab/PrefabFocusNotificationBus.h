@@ -17,12 +17,19 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusNotifications
         : public AZ::EBusTraits
     {
-    protected:
-        ~PrefabFocusNotifications() = default;
-
     public:
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AzFramework::EntityContextId;
+        //////////////////////////////////////////////////////////////////////////
+        
         //! Triggered when the editor focus is changed to a different prefab.
         virtual void OnPrefabFocusChanged() = 0;
+
+    protected:
+        ~PrefabFocusNotifications() = default;
     };
 
     using PrefabFocusNotificationBus = AZ::EBus<PrefabFocusNotifications>;

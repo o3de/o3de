@@ -96,6 +96,10 @@ namespace AzToolsFramework::Prefab
             else
             {
                 containerEntityId = AZ::EntityId();
+
+                // Clear the selection
+                AzToolsFramework::SelectEntities({});
+                
             }
             
             // Focus on the descendants of the container entity
