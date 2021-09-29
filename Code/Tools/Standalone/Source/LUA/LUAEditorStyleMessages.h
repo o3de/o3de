@@ -8,6 +8,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
