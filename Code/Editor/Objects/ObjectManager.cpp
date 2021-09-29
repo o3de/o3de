@@ -33,10 +33,6 @@
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
 
-AZ_CVAR(
-    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-
 /*!
  *  Class Description used for object templates.
  *  This description filled from Xml template files.
@@ -1301,89 +1297,9 @@ void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
     FindDisplayableObjects(dc, false);
 }
 
-void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]] bool bDisplay)
+void CObjectManager::FindDisplayableObjects([[maybe_unused]] DisplayContext& dc, [[maybe_unused]] bool bDisplay)
 {
-    // if the new IVisibilitySystem is being used, do not run this logic
-    if (ed_visibility_use)
-    {
-        return;
-    }
-
-    AZ_PROFILE_FUNCTION(Editor);
-
-    auto start = std::chrono::steady_clock::now();
-    CBaseObjectsCache* pDispayedViewObjects = dc.view->GetVisibleObjectsCache();
-    if (!pDispayedViewObjects)
-    {
-        return;
-    }
-
-    pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
-
-    AABB bbox;
-    bbox.min.zero();
-    bbox.max.zero();
-
-    pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
-
-    if (dc.flags & DISPLAY_2D)
-    {
-        int numVis = static_cast<int>(m_visibleObjects.size());
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            obj->GetBoundBox(bbox);
-            if (dc.box.IsIntersectBox(bbox))
-            {
-                pDispayedViewObjects->AddObject(obj);
-            }
-        }
-    }
-    else
-    {
-        CSelectionGroup* pSelection = GetSelection();
-        if (pSelection && pSelection->GetCount() > 1)
-        {
-            AABB mergedAABB;
-            mergedAABB.Reset();
-            for (int i = 0, iCount(pSelection->GetCount()); i < iCount; ++i)
-            {
-                CBaseObject* pObj(pSelection->GetObject(i));
-                if (pObj == nullptr)
-                {
-                    continue;
-                }
-                AABB aabb;
-                pObj->GetBoundBox(aabb);
-                mergedAABB.Add(aabb);
-            }
-
-            pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
-        }
-
-        int numVis = static_cast<int>(m_visibleObjects.size());
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            if (obj)
-            {
-                if ((dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
-                {
-                    pDispayedViewObjects->AddObject(obj);
-                }
-            }
-        }
-    }
-
-    if (ed_visibility_logTiming && !ed_visibility_use)
-    {
-        auto stop = std::chrono::steady_clock::now();
-        std::chrono::duration<double> diff = stop - start;
-        AZ_Printf("Visibility", "FindDisplayableObjects (old) - Duration: %f", diff);
-    }
+    // unused
 }
 
 void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
