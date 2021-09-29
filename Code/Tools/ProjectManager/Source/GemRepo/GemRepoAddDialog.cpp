@@ -11,7 +11,7 @@
 
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QLineEdit.h>
+#include <QLineEdit>
 #include <QDialogButtonBox>
 #include <QPushButton>
 
